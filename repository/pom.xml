@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>23.4.0.9-SNAPSHOT</version>
+        <version>25.2.0.51-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -94,7 +94,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.14.0</version>
+            <version>3.17.0</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -358,7 +358,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>6.5.1</version>
+            <version>7.0.0</version>
         </dependency>
 
         <dependency>
@@ -397,12 +397,12 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
-            <version>3.5.13</version>
+            <version>3.5.17</version>
         </dependency>
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis-spring</artifactId>
-            <version>3.0.3</version>
+            <version>3.0.4</version>
         </dependency>
 
         <!-- Activiti -->
@@ -628,11 +628,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.epam.reportportal</groupId>
-            <artifactId>agent-java-testng</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
@@ -850,12 +845,12 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <complianceLevel>1.8</complianceLevel>
+                    <complianceLevel>17</complianceLevel>
                     <outxml>false</outxml>
                     <verbose>true</verbose>
                     <showWeaveInfo>true</showWeaveInfo>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>17</source>
+                    <target>17</target>
                     <additionalCompilerArgs>
                         <arg>-parameters</arg>
                     </additionalCompilerArgs>

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,15 +45,11 @@ public class RM1887Test extends BaseRMTestCase
     }
 
     /**
-     * Given that a record is unfiled
-     * And an unfiled folder has been created
-     * When I move the unfiled record into the unfiled folder
-     * Then the filed date of the unfiled record remains unset
+     * Given that a record is unfiled And an unfiled folder has been created When I move the unfiled record into the unfiled folder Then the filed date of the unfiled record remains unset
      */
     public void testMoveUnfiledRecord() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef unfiledRecordFolder;
             private NodeRef unfiledRecord;
 
@@ -85,6 +81,5 @@ public class RM1887Test extends BaseRMTestCase
         });
 
     }
-
 
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,12 +43,10 @@ public class SortUtils
 
     /** Private constructor for util class. */
     private SortUtils()
-    {
-    }
+    {}
 
     /**
-     * Get a string comparator that sorts strings according to the locale of the server, and which treats spaces as
-     * earlier than alphanumeric characters.
+     * Get a string comparator that sorts strings according to the locale of the server, and which treats spaces as earlier than alphanumeric characters.
      *
      * @return The comparator.
      */

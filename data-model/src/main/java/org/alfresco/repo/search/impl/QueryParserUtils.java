@@ -75,7 +75,7 @@ public class QueryParserUtils implements QueryConstants
         }
         return fieldName;
     }
-    
+
     public static String matchURI(NamespacePrefixResolver namespacePrefixResolver, String prefix)
     {
         HashSet<String> prefixes = new HashSet<String>(namespacePrefixResolver.getPrefixes());
@@ -165,7 +165,7 @@ public class QueryParserUtils implements QueryConstants
             return dictionaryService.getClass(match);
         }
     }
-    
+
     public static AspectDefinition matchAspectDefinition(String defaultNameSpaceUri, NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, String string)
     {
         QName search = QName.createQName(expandQName(defaultNameSpaceUri, namespacePrefixResolver, string));
@@ -204,8 +204,8 @@ public class QueryParserUtils implements QueryConstants
             return dictionaryService.getAspect(match);
         }
     }
-    
-    public static TypeDefinition matchTypeDefinition(String defaultNameSpaceUri, NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, String string) 
+
+    public static TypeDefinition matchTypeDefinition(String defaultNameSpaceUri, NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, String string)
     {
         QName search = QName.createQName(expandQName(defaultNameSpaceUri, namespacePrefixResolver, string));
         TypeDefinition typeDefinition = dictionaryService.getType(QName.createQName(expandQName(defaultNameSpaceUri, namespacePrefixResolver, string)));
@@ -243,8 +243,8 @@ public class QueryParserUtils implements QueryConstants
             return dictionaryService.getType(match);
         }
     }
-    
-    public static DataTypeDefinition matchDataTypeDefinition(String defaultNameSpaceUri, NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, String string) 
+
+    public static DataTypeDefinition matchDataTypeDefinition(String defaultNameSpaceUri, NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService, String string)
     {
         QName search = QName.createQName(QueryParserUtils.expandQName(defaultNameSpaceUri, namespacePrefixResolver, string));
         DataTypeDefinition dataTypeDefinition = dictionaryService.getDataType(QName.createQName(QueryParserUtils.expandQName(defaultNameSpaceUri, namespacePrefixResolver, string)));
@@ -368,7 +368,7 @@ public class QueryParserUtils implements QueryConstants
             propertyFieldName = field.substring(field.startsWith("@") ? 1 : 0, field.length() - FIELD_TRANSFORMATION_STATUS_SUFFIX.length());
             ending = FIELD_TRANSFORMATION_STATUS_SUFFIX;
         }
-        // ordering matters .__.u before .u 
+        // ordering matters .__.u before .u
         else if (field.endsWith(FIELD_SOLR_NOLOCALE_UNTOKENISED_SUFFIX))
         {
             propertyFieldName = field.substring(field.startsWith("@") ? 1 : 0, field.length() - FIELD_SOLR_NOLOCALE_UNTOKENISED_SUFFIX.length());
@@ -435,5 +435,5 @@ public class QueryParserUtils implements QueryConstants
         }
         return new Pair<>(propertyFieldName, ending);
     }
- 
+
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,7 +26,6 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 import static com.nimbusds.jose.HeaderParameterNames.KEY_ID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,10 +50,6 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
-
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtAudienceValidator;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtDecoderProvider;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtIssuerValidator;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +61,10 @@ import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.client.RestOperations;
+
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtAudienceValidator;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtDecoderProvider;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtIssuerValidator;
 
 public class IdentityServiceFacadeFactoryBeanTest
 {
@@ -80,7 +79,7 @@ public class IdentityServiceFacadeFactoryBeanTest
     public void shouldCreateJwtDecoderWithoutIDSWhenPublicKeyIsProvided()
     {
         when(config.getRealmKey()).thenReturn(
-            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAve3MabX/rp3LbE7/zNqKxuid8WT7y4qSXsNaiPvl/OVbNWW/cu5td1VndItYhH6/gL7Z5W/r4MOeTlz/fOdXfjrRJou2f3UiPQwLV9RdOH3oS4/BUe+sviD8Q3eRfWBWWz3yw8f2YNtD4bMztIMMjqthvwdEEb9S9jbxxD0o71Bsrz/FwPi7HhSDA+Z/p01Hct8m4wx13ZlKRd4YjyC12FBmi9MSgsrFuWzyQHhHTeBDoALpfuiut3rhVxUtFmVTpy6p9vil7C5J5pok4MXPH0dJCyDNQz05ww5+fD+tfksIEpFeokRpN226F+P21oQVFUWwYIaXaFlG/hfvwmnlfQIDAQAB");
+                "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAve3MabX/rp3LbE7/zNqKxuid8WT7y4qSXsNaiPvl/OVbNWW/cu5td1VndItYhH6/gL7Z5W/r4MOeTlz/fOdXfjrRJou2f3UiPQwLV9RdOH3oS4/BUe+sviD8Q3eRfWBWWz3yw8f2YNtD4bMztIMMjqthvwdEEb9S9jbxxD0o71Bsrz/FwPi7HhSDA+Z/p01Hct8m4wx13ZlKRd4YjyC12FBmi9MSgsrFuWzyQHhHTeBDoALpfuiut3rhVxUtFmVTpy6p9vil7C5J5pok4MXPH0dJCyDNQz05ww5+fD+tfksIEpFeokRpN226F+P21oQVFUWwYIaXaFlG/hfvwmnlfQIDAQAB");
         when(config.isClientIdValidationDisabled()).thenReturn(true);
         when(providerDetails.getIssuerUri()).thenReturn("https://my.issuer");
 
@@ -89,13 +88,13 @@ public class IdentityServiceFacadeFactoryBeanTest
         final JwtDecoder decoder = provider.createJwtDecoder(null, providerDetails);
 
         final Jwt decodedToken = decoder.decode(
-            "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjIxNDc0ODM2NDcsImp0aSI6IjEyMzQiLCJpc3MiOiJodHRwczovL215Lmlzc3VlciIsInN1YiI6ImFiYzEyMyIsInR5cCI6IkJlYXJlciIsInByZWZlcnJlZF91c2VybmFtZSI6InBpb3RyZWsifQ.k_KaOrLLh3QsT8mKphkcz2vKpulgxp92UoEDccpHJ1mxE3Pa3gFXPKTj4goUBKXieGPZRMvBDhfWNxMvRYZPiQr2NXJKapkh0bTd0qoaSWz9ICe9Nu3eg7_VA_nwUVPz_35wwmrxgVk0_kpUYQN_VtaO7ZgFE2sJzFjbkVls5aqfAMnEjEgQl837hqZvmlW2ZRWebtxXfQxAjtp0gcTg-xtAHKIINYo_1_uAtt_H9L8KqFaioxrVAEDDIlcKnb-Ks3Y62CrZauaGUJeN_aNj2gdOpdkhvCw79yJyZSGZ7okjGbidCNSAf7Bo2Y6h3dP1Gga7kRmD648ftZESrNvbyg");
+                "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjIxNDc0ODM2NDcsImp0aSI6IjEyMzQiLCJpc3MiOiJodHRwczovL215Lmlzc3VlciIsInN1YiI6ImFiYzEyMyIsInR5cCI6IkJlYXJlciIsInByZWZlcnJlZF91c2VybmFtZSI6InBpb3RyZWsifQ.k_KaOrLLh3QsT8mKphkcz2vKpulgxp92UoEDccpHJ1mxE3Pa3gFXPKTj4goUBKXieGPZRMvBDhfWNxMvRYZPiQr2NXJKapkh0bTd0qoaSWz9ICe9Nu3eg7_VA_nwUVPz_35wwmrxgVk0_kpUYQN_VtaO7ZgFE2sJzFjbkVls5aqfAMnEjEgQl837hqZvmlW2ZRWebtxXfQxAjtp0gcTg-xtAHKIINYo_1_uAtt_H9L8KqFaioxrVAEDDIlcKnb-Ks3Y62CrZauaGUJeN_aNj2gdOpdkhvCw79yJyZSGZ7okjGbidCNSAf7Bo2Y6h3dP1Gga7kRmD648ftZESrNvbyg");
         assertThat(decodedToken).isNotNull();
 
         final Map<String, Object> claims = decodedToken.getClaims();
         assertThat(claims).isNotNull()
-            .isNotEmpty()
-            .containsEntry(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME, "piotrek");
+                .isNotEmpty()
+                .containsEntry(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME, "piotrek");
     }
 
     @Test
@@ -124,8 +123,8 @@ public class IdentityServiceFacadeFactoryBeanTest
 
         final Map<String, Object> claims = decodedToken.getClaims();
         assertThat(claims).isNotNull()
-            .isNotEmpty()
-            .containsEntry(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME, "userA");
+                .isNotEmpty()
+                .containsEntry(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME, "userA");
     }
 
     @Test
@@ -183,7 +182,7 @@ public class IdentityServiceFacadeFactoryBeanTest
         final JwtIssuerValidator issuerValidator = new JwtIssuerValidator(EXPECTED_ISSUER);
 
         final OAuth2TokenValidatorResult validationResult = issuerValidator.validate(
-            tokenWithIssuer("different-issuer"));
+                tokenWithIssuer("different-issuer"));
         assertThat(validationResult).isNotNull();
         assertThat(validationResult.hasErrors()).isTrue();
         assertThat(validationResult.getErrors()).hasSize(1);
@@ -225,7 +224,7 @@ public class IdentityServiceFacadeFactoryBeanTest
         final JwtAudienceValidator audienceValidator = new JwtAudienceValidator(EXPECTED_AUDIENCE);
 
         final OAuth2TokenValidatorResult validationResult = audienceValidator.validate(
-            tokenWithAudience(List.of("different-audience")));
+                tokenWithAudience(List.of("different-audience")));
         assertThat(validationResult).isNotNull();
         assertThat(validationResult.hasErrors()).isTrue();
         assertThat(validationResult.getErrors()).hasSize(1);
@@ -256,7 +255,7 @@ public class IdentityServiceFacadeFactoryBeanTest
         final JwtAudienceValidator audienceValidator = new JwtAudienceValidator(EXPECTED_AUDIENCE);
 
         final OAuth2TokenValidatorResult validationResult = audienceValidator.validate(
-            tokenWithAudience(List.of(EXPECTED_AUDIENCE)));
+                tokenWithAudience(List.of(EXPECTED_AUDIENCE)));
         assertThat(validationResult).isNotNull();
         assertThat(validationResult.hasErrors()).isFalse();
         assertThat(validationResult.getErrors()).isEmpty();
@@ -268,9 +267,9 @@ public class IdentityServiceFacadeFactoryBeanTest
         final JwtAudienceValidator audienceValidator = new JwtAudienceValidator(EXPECTED_AUDIENCE);
 
         final Jwt token = Jwt.withTokenValue(UUID.randomUUID().toString())
-            .claim("aud", EXPECTED_AUDIENCE)
-            .header("JUST", "FOR TESTING")
-            .build();
+                .claim("aud", EXPECTED_AUDIENCE)
+                .header("JUST", "FOR TESTING")
+                .build();
         final OAuth2TokenValidatorResult validationResult = audienceValidator.validate(token);
         assertThat(validationResult).isNotNull();
         assertThat(validationResult.hasErrors()).isFalse();
@@ -280,37 +279,37 @@ public class IdentityServiceFacadeFactoryBeanTest
     private static RSAKey getRsaKey() throws JOSEException
     {
         return new RSAKeyGenerator(2048)
-            .keyUse(KeyUse.SIGNATURE)
-            .algorithm(new Algorithm("PS256"))
-            .keyID(KEY_ID)
-            .generate();
+                .keyUse(KeyUse.SIGNATURE)
+                .algorithm(new Algorithm("PS256"))
+                .keyID(KEY_ID)
+                .generate();
     }
 
     private static SignedJWT getSignedJWT(RSAKey rsaKey, String type, String usernameClaim, String issuer)
     {
         final JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-            .issuer(issuer)
-            .claim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME, usernameClaim)
-            .build();
+                .issuer(issuer)
+                .claim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME, usernameClaim)
+                .build();
         return new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.PS256)
-            .type(new JOSEObjectType(type))
-            .keyID(rsaKey.getKeyID()).build(), claimsSet);
+                .type(new JOSEObjectType(type))
+                .keyID(rsaKey.getKeyID()).build(), claimsSet);
     }
 
     private Jwt tokenWithIssuer(String issuer)
     {
         return Jwt.withTokenValue(UUID.randomUUID().toString())
-            .issuer(issuer)
-            .header("JUST", "FOR TESTING")
-            .build();
+                .issuer(issuer)
+                .header("JUST", "FOR TESTING")
+                .build();
     }
 
     private Jwt tokenWithAudience(Collection<String> audience)
     {
         return Jwt.withTokenValue(UUID.randomUUID().toString())
-            .audience(audience)
-            .header("JUST", "FOR TESTING")
-            .build();
+                .audience(audience)
+                .header("JUST", "FOR TESTING")
+                .build();
     }
 
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,6 +30,7 @@ package org.alfresco.rm.rest.api.impl;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,14 +38,20 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.Group;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinitionImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.ContentInfo;
@@ -52,7 +59,9 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rm.rest.api.model.CapabilityModel;
 import org.alfresco.rm.rest.api.model.FilePlan;
+import org.alfresco.rm.rest.api.model.GroupModel;
 import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.rm.rest.api.model.RMNode;
 import org.alfresco.rm.rest.api.model.Record;
@@ -60,7 +69,10 @@ import org.alfresco.rm.rest.api.model.RecordCategory;
 import org.alfresco.rm.rest.api.model.RecordCategoryChild;
 import org.alfresco.rm.rest.api.model.RecordFolder;
 import org.alfresco.rm.rest.api.model.RetentionPeriod;
+import org.alfresco.rm.rest.api.model.RetentionSchedule;
+import org.alfresco.rm.rest.api.model.RetentionScheduleActionDefinition;
 import org.alfresco.rm.rest.api.model.RetentionSteps;
+import org.alfresco.rm.rest.api.model.RoleModel;
 import org.alfresco.rm.rest.api.model.Transfer;
 import org.alfresco.rm.rest.api.model.TransferChild;
 import org.alfresco.rm.rest.api.model.TransferContainer;
@@ -69,8 +81,6 @@ import org.alfresco.rm.rest.api.model.UnfiledContainer;
 import org.alfresco.rm.rest.api.model.UnfiledContainerChild;
 import org.alfresco.rm.rest.api.model.UnfiledRecordFolder;
 import org.alfresco.rm.rest.api.model.UnfiledRecordFolderChild;
-import org.alfresco.rm.rest.api.model.RetentionSchedule;
-import org.alfresco.rm.rest.api.model.RetentionScheduleActionDefinition;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -81,12 +91,9 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Utility class containing Alfresco and RM java services required by the API
- * endpoints
+ * Utility class containing Alfresco and RM java services required by the API endpoints
  *
  * @author Ana Bozianu
  * @since 2.6
@@ -367,7 +374,7 @@ public class ApiNodesModelFactory
             transferContainer.setProperties(mapFromNodeProperties(info.getProperties()));
         }
 
-        //optional parameters
+        // optional parameters
         if (includeParam == null || includeParam.isEmpty())
         {
             return;
@@ -422,7 +429,7 @@ public class ApiNodesModelFactory
                 mapUserInfo = new HashMap<>(2);
             }
             UserInfo creator = Node.lookupUserInfo((String) info.getProperties().get(ContentModel.PROP_CREATOR), mapUserInfo,
-                        personService);
+                    personService);
             transfer.setCreatedByUser(creator);
         }
         if (!isMinimalInfo && propertyFilter.isAllowed(RMNode.PARAM_ASPECT_NAMES))
@@ -434,7 +441,7 @@ public class ApiNodesModelFactory
             transfer.setProperties(mapFromNodeProperties(info.getProperties()));
         }
 
-        //optional parameters
+        // optional parameters
         if (isMinimalInfo && includeParam == null || includeParam.isEmpty())
         {
             return;
@@ -488,7 +495,7 @@ public class ApiNodesModelFactory
             {
                 transferChild.setIsRecord(false);
             }
-            if(isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED))
+            if (isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED))
             {
                 transferChild.setIsClosed((Boolean) nodeService.getProperty(info.getNodeRef(), RecordsManagementModel.PROP_IS_CLOSED));
             }
@@ -503,7 +510,7 @@ public class ApiNodesModelFactory
             {
                 transferChild.setIsRecord(true);
             }
-            if(isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED))
+            if (isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED))
             {
                 transferChild.setIsClosed(null);
             }
@@ -513,9 +520,12 @@ public class ApiNodesModelFactory
     /**
      * Helper method that sets the information for record category child type.
      *
-     * @param recordCategoryChild the record category child to set the fields to
-     * @param info info of the record category child
-     * @param includeParam the requested include parameters
+     * @param recordCategoryChild
+     *            the record category child to set the fields to
+     * @param info
+     *            info of the record category child
+     * @param includeParam
+     *            the requested include parameters
      * @param propertyFilter
      */
     private void mapRecordCategoryChildInfo(RecordCategoryChild recordCategoryChild, FileInfo info, List<String> includeParam, BeanPropertiesFilter propertyFilter, boolean isMinimalInfo)
@@ -524,7 +534,7 @@ public class ApiNodesModelFactory
         {
             return;
         }
-        if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(info.getType()))
+        if (RecordsManagementModel.TYPE_RECORD_FOLDER.equals(info.getType()))
         {
             if (isRecordFolder(isMinimalInfo, propertyFilter, includeParam))
             {
@@ -580,13 +590,15 @@ public class ApiNodesModelFactory
         return (!isMinimalInfo && propertyFilter.isAllowed(RecordCategoryChild.PARAM_IS_RECORD_FOLDER)) || (isMinimalInfo && includeParam.contains(RecordCategoryChild.PARAM_IS_RECORD_FOLDER));
     }
 
-
     /**
      * Utility method that maps record specific fields
      *
-     * @param record the record to set the fields to
-     * @param info info of the record
-     * @param includeParam the requested include parameters
+     * @param record
+     *            the record to set the fields to
+     * @param info
+     *            info of the record
+     * @param includeParam
+     *            the requested include parameters
      */
     private void mapRecordInfo(Record record, FileInfo info, List<String> includeParam)
     {
@@ -598,13 +610,13 @@ public class ApiNodesModelFactory
         {
             record.setIsCompleted(nodeService.hasAspect(info.getNodeRef(), RecordsManagementModel.ASPECT_DECLARED_RECORD));
         }
-        if(includeParam.contains(Record.PARAM_CONTENT))
+        if (includeParam.contains(Record.PARAM_CONTENT))
         {
             Serializable val = info.getProperties().get(ContentModel.PROP_CONTENT);
 
             if (val instanceof ContentData)
             {
-                ContentData cd = (ContentData)val;
+                ContentData cd = (ContentData) val;
                 String mimeType = cd.getMimetype();
                 String mimeTypeName = serviceRegistry.getMimetypeService().getDisplaysByMimetype().get(mimeType);
                 ContentInfo contentInfo = new ContentInfo(mimeType, mimeTypeName, cd.getSize(), cd.getEncoding());
@@ -676,25 +688,56 @@ public class ApiNodesModelFactory
         }
     }
 
-
     /**
      * Creates an object of type HoldModel
      *
-     * @param info info of the hold
+     * @param info
+     *            info of the hold
      * @return HoldModel object
      */
     public HoldModel createHoldModel(FileInfo info)
     {
         return new HoldModel(info.getNodeRef().getId(),
-            (String) info.getProperties().get(ContentModel.PROP_NAME),
-            (String) info.getProperties().get(ContentModel.PROP_DESCRIPTION),
-            (String)  info.getProperties().get(RecordsManagementModel.PROP_HOLD_REASON));
+                (String) info.getProperties().get(ContentModel.PROP_NAME),
+                (String) info.getProperties().get(ContentModel.PROP_DESCRIPTION),
+                (String) info.getProperties().get(RecordsManagementModel.PROP_HOLD_REASON));
+    }
+
+    public RoleModel createRoleModel(Role role, List<String> assignedUsers, List<String> assignedGroups)
+    {
+        return new RoleModel(role.getName(),
+                role.getDisplayLabel(),
+                role.getCapabilities()
+                        .stream()
+                        .map(this::createCapabilityModel)
+                        .sorted(Comparator.comparing(CapabilityModel::name))
+                        .toList(),
+                role.getRoleGroupName(),
+                role.getGroupShortName(),
+                assignedUsers,
+                assignedGroups);
+    }
+
+    public CapabilityModel createCapabilityModel(Capability capability)
+    {
+        return new CapabilityModel(capability.getName(), capability.getTitle(), capability.getDescription(),
+                createGroupModel(capability.getGroup()), capability.getIndex());
+    }
+
+    public GroupModel createGroupModel(Group group)
+    {
+        if (group == null)
+        {
+            return null;
+        }
+        return new GroupModel(group.getId(), group.getTitle());
     }
 
     /**
      * Creates an object of type FilePlan
      *
-     * @param info info of the file plan
+     * @param info
+     *            info of the file plan
      * @param parameters
      * @param mapUserInfo
      * @param isMinimalInfo
@@ -711,7 +754,8 @@ public class ApiNodesModelFactory
     /**
      * Creates an object of type RecordCategory
      *
-     * @param info info of the record category
+     * @param info
+     *            info of the record category
      * @param parameters
      * @param mapUserInfo
      * @param isMinimalInfo
@@ -802,7 +846,7 @@ public class ApiNodesModelFactory
      * @return UnfiledContainer object
      */
     public Transfer createTransfer(FileInfo info, Parameters parameters, Map<String, UserInfo> mapUserInfo,
-                boolean isMinimalInfo)
+            boolean isMinimalInfo)
     {
         Transfer transfer = new Transfer();
         mapTransferInfo(transfer, info, mapUserInfo, parameters.getFilter(), parameters.getInclude(), isMinimalInfo);
@@ -819,7 +863,7 @@ public class ApiNodesModelFactory
      * @return UnfiledContainer object
      */
     public TransferChild createTransferChild(FileInfo info, Parameters parameters, Map<String, UserInfo> mapUserInfo,
-                boolean isMinimalInfo)
+            boolean isMinimalInfo)
     {
         TransferChild transferChild = new TransferChild();
         mapBasicInfo(transferChild, info, parameters.getFilter(), mapUserInfo, isMinimalInfo);
@@ -901,8 +945,8 @@ public class ApiNodesModelFactory
      * @param isMinimalInfo
      * @return
      */
-    public RecordCategoryChild createRecordCategoryChild(FileInfo info, Parameters parameters,  Map<String, UserInfo> mapUserInfo,
-                boolean isMinimalInfo)
+    public RecordCategoryChild createRecordCategoryChild(FileInfo info, Parameters parameters, Map<String, UserInfo> mapUserInfo,
+            boolean isMinimalInfo)
     {
         RecordCategoryChild recordCategoryChild = new RecordCategoryChild();
         mapBasicInfo(recordCategoryChild, info, parameters.getFilter(), mapUserInfo, isMinimalInfo);
@@ -932,6 +976,7 @@ public class ApiNodesModelFactory
 
     /**
      * Helper method that sets the information for the retention schedule type.
+     * 
      * @param dispositionSchedule
      * @return RetentionSchedule
      */
@@ -939,7 +984,8 @@ public class ApiNodesModelFactory
     {
         RetentionSchedule retentionSchedule = new RetentionSchedule();
         retentionSchedule.setId(dispositionSchedule.getNodeRef().getId());
-        if (dispositionSchedule.getNodeRef() != null) {
+        if (dispositionSchedule.getNodeRef() != null)
+        {
             NodeRef parent = this.nodeService.getPrimaryParent(dispositionSchedule.getNodeRef()).getParentRef();
             retentionSchedule.setParentId(parent.getId());
         }
@@ -956,6 +1002,7 @@ public class ApiNodesModelFactory
 
     /**
      * Helper method that sets the information for the retention schedule action definition type.
+     * 
      * @param dispositionActionDefinition
      * @return RetentionScheduleActionDefinition
      */
@@ -973,6 +1020,7 @@ public class ApiNodesModelFactory
 
     /**
      * Helper method that sets core information for the retention schedule action definition type.
+     * 
      * @param dispositionActionDefinition
      * @param retentionScheduleActionDefinition
      */
@@ -996,6 +1044,7 @@ public class ApiNodesModelFactory
 
     /**
      * Helper method that sets the period-related information for the retention schedule action definition type.
+     * 
      * @param dispositionActionDefinition
      * @param retentionScheduleActionDefinition
      */
@@ -1038,6 +1087,7 @@ public class ApiNodesModelFactory
 
     /**
      * Helper method that sets the events information for the retention schedule action definition type.
+     * 
      * @param dispositionActionDefinition
      * @param retentionScheduleActionDefinition
      */
@@ -1055,6 +1105,7 @@ public class ApiNodesModelFactory
 
     /**
      * Helper method that sets the optional information for the retention schedule type.
+     * 
      * @param retentionSchedule
      * @param schedule
      * @param includeParam
@@ -1072,12 +1123,14 @@ public class ApiNodesModelFactory
 
     /**
      * this method is used for creation of retention schedule action definition params
-     * @param nodeInfo retention schedule action definition
+     * 
+     * @param nodeInfo
+     *            retention schedule action definition
      * @return Map<QName, Serializable>
      */
     public Map<QName, Serializable> createRetentionActionDefinitionParams(RetentionScheduleActionDefinition nodeInfo)
     {
-        Map<QName, Serializable>  actionDefinitionParams= new HashMap<>();
+        Map<QName, Serializable> actionDefinitionParams = new HashMap<>();
 
         String retentionActionName = nodeInfo.getName();
 
@@ -1103,7 +1156,7 @@ public class ApiNodesModelFactory
         boolean combineConditions = nodeInfo.getName().equals(RetentionSteps.ACCESSION.stepName) && nodeInfo.isCombineRetentionStepConditions();
         actionDefinitionParams.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS, combineConditions);
 
-        if(nodeInfo.getLocation() != null && nodeInfo.getName().equals(RetentionSteps.TRANSFER.stepName))
+        if (nodeInfo.getLocation() != null && nodeInfo.getName().equals(RetentionSteps.TRANSFER.stepName))
         {
             actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
                     nodeInfo.getLocation());
@@ -1124,7 +1177,9 @@ public class ApiNodesModelFactory
 
     /**
      * this method is used retrieve retention schedule action details
-     * @param retentionScheduleNodeRef nodeRef
+     * 
+     * @param retentionScheduleNodeRef
+     *            nodeRef
      * @return List<DispositionActionDefinition>
      */
     public List<DispositionActionDefinition> getRetentionActions(NodeRef retentionScheduleNodeRef)
@@ -1137,8 +1192,7 @@ public class ApiNodesModelFactory
         // setting the index value for each action.
         List<DispositionActionDefinition> actions;
         actions = IntStream.range(0, assocs.size())
-                .mapToObj(index ->
-                {
+                .mapToObj(index -> {
                     ChildAssociationRef assoc = assocs.get(index);
                     return new DispositionActionDefinitionImpl(
                             services.getRecordsManagementEventService(),
@@ -1153,7 +1207,9 @@ public class ApiNodesModelFactory
 
     /**
      * this method is used to check period amount applicable or not for particular period
-     * @param period period
+     * 
+     * @param period
+     *            period
      * @return boolean
      */
     private boolean isPeriodAmountApplicable(String period)

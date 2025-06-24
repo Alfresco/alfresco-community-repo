@@ -43,15 +43,16 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.workflow.api.Processes;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
 
-@EntityResource(name="processes", title = "Processes")
-public class ProcessesRestEntityResource implements EntityResourceAction.Read<ProcessInfo>, 
-                                                           EntityResourceAction.ReadById<ProcessInfo>,
-                                                           EntityResourceAction.Create<ProcessInfo>,
-                                                           EntityResourceAction.Delete,
-                                                           BinaryResourceAction.Read {
+@EntityResource(name = "processes", title = "Processes")
+public class ProcessesRestEntityResource implements EntityResourceAction.Read<ProcessInfo>,
+        EntityResourceAction.ReadById<ProcessInfo>,
+        EntityResourceAction.Create<ProcessInfo>,
+        EntityResourceAction.Delete,
+        BinaryResourceAction.Read
+{
 
     Processes processes;
-    
+
     public void setProcesses(Processes processes)
     {
         this.processes = processes;
@@ -59,31 +60,31 @@ public class ProcessesRestEntityResource implements EntityResourceAction.Read<Pr
 
     @Override
     @WebApiDescription(title = "Start a new process instance", description = "Start a new process instance")
-    @WebApiParameters(value = { 
-            @WebApiParam(name = "processDefinitionId", title = "The process instance will be started in the given process definition", kind=ResourceParameter.KIND.HTTP_BODY_OBJECT),
-            @WebApiParam(name = "processDefinitionKey", title = "The process instance will be started in the latest version of the process definition having the given key", kind=ResourceParameter.KIND.HTTP_BODY_OBJECT),
-            @WebApiParam(name = "businessKey", title = "The business key is a unique, user defined reference to the newly created process instance that can be used in future queries", kind=ResourceParameter.KIND.HTTP_BODY_OBJECT),
-            @WebApiParam(name = "variables", title = "A set of process instance variables that will be set on the new process instance", kind=ResourceParameter.KIND.HTTP_BODY_OBJECT),
-            @WebApiParam(name = "items", title = "A list of nodes in the repository that will be associated with this process instance", kind=ResourceParameter.KIND.HTTP_BODY_OBJECT),
-            })
+    @WebApiParameters(value = {
+            @WebApiParam(name = "processDefinitionId", title = "The process instance will be started in the given process definition", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT),
+            @WebApiParam(name = "processDefinitionKey", title = "The process instance will be started in the latest version of the process definition having the given key", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT),
+            @WebApiParam(name = "businessKey", title = "The business key is a unique, user defined reference to the newly created process instance that can be used in future queries", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT),
+            @WebApiParam(name = "variables", title = "A set of process instance variables that will be set on the new process instance", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT),
+            @WebApiParam(name = "items", title = "A list of nodes in the repository that will be associated with this process instance", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT),
+    })
     public List<ProcessInfo> create(List<ProcessInfo> entity, Parameters parameters)
     {
         List<ProcessInfo> result = new ArrayList<ProcessInfo>(entity.size());
         for (ProcessInfo process : entity)
         {
-           result.add(processes.create(process));
+            result.add(processes.create(process));
         }
         return result;
     }
 
     @Override
     @WebApiDescription(title = "Get Process Instances", description = "Get information for the process instances")
-    @WebApiParameters(value = { @WebApiParam(name = "where", title = "Where parameter to define the process query", kind=ResourceParameter.KIND.QUERY_STRING)})
+    @WebApiParameters(value = {@WebApiParam(name = "where", title = "Where parameter to define the process query", kind = ResourceParameter.KIND.QUERY_STRING)})
     public CollectionWithPagingInfo<ProcessInfo> readAll(Parameters params)
     {
         return processes.getProcesses(params);
     }
-    
+
     @Override
     @WebApiDescription(title = "Get a process instance image", description = "Get a process instance image")
     @BinaryProperties({"image"})

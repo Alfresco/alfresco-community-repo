@@ -37,6 +37,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.rule.RuntimeRuleService;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -51,8 +54,6 @@ import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Experimental
 public class RuleSetsImpl implements RuleSets
@@ -71,11 +72,11 @@ public class RuleSetsImpl implements RuleSets
         NodeRef folderNode = validator.validateFolderNode(folderNodeId, false);
 
         List<RuleSet> ruleSets = ruleService.getNodesSupplyingRuleSets(folderNode)
-                                            .stream()
-                                            .map(supplyingNode -> loadRuleSet(supplyingNode, folderNode, includes))
-                                            .filter(Objects::nonNull)
-                                            .distinct()
-                                            .collect(toList());
+                .stream()
+                .map(supplyingNode -> loadRuleSet(supplyingNode, folderNode, includes))
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(toList());
 
         return ListPage.of(ruleSets, paging);
     }
@@ -83,9 +84,12 @@ public class RuleSetsImpl implements RuleSets
     /**
      * Load the specified rule set if the user has permission.
      *
-     * @param supplyingNode The folder supplying a rule set.
-     * @param folderNode The folder being supplied with rule sets.
-     * @param includes The list of optional fields to include for each rule set in the response.
+     * @param supplyingNode
+     *            The folder supplying a rule set.
+     * @param folderNode
+     *            The folder being supplied with rule sets.
+     * @param includes
+     *            The list of optional fields to include for each rule set in the response.
      * @return The rule set from the DB or null if the folder has no rule set, or the current user does not have permission to view it.
      */
     private RuleSet loadRuleSet(NodeRef supplyingNode, NodeRef folderNode, List<String> includes)
@@ -140,8 +144,7 @@ public class RuleSetsImpl implements RuleSets
                 throw new InvalidArgumentException("Unexpected set of rule ids - received " + suppliedRuleIds + " but expected " + existingRuleIds);
             }
 
-            IntStream.range(0, suppliedRuleIds.size()).forEach(index ->
-            {
+            IntStream.range(0, suppliedRuleIds.size()).forEach(index -> {
                 NodeRef ruleNode = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, suppliedRuleIds.get(index));
                 ruleService.setRulePosition(folderNode, ruleNode, index);
             });
@@ -158,19 +161,21 @@ public class RuleSetsImpl implements RuleSets
     public RuleSetLink linkToRuleSet(String folderNodeId, String linkToNodeId)
     {
 
-        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,true);
+        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, true);
         final boolean isRuleSetNode = validator.isRuleSetNode(linkToNodeId);
         final NodeRef linkToNodeRef = isRuleSetNode
                 ? validator.validateRuleSetNode(linkToNodeId, false)
                 : validator.validateFolderNode(linkToNodeId, false);
 
-        //The target node should have pre-existing rules to link to
-        if (!ruleService.hasRules(linkToNodeRef)) {
+        // The target node should have pre-existing rules to link to
+        if (!ruleService.hasRules(linkToNodeRef))
+        {
             throw new InvalidArgumentException("The target node has no rules to link.");
         }
 
-        //The folder shouldn't have any pre-existing rules
-        if (ruleService.hasNonInheritedRules(folderNodeRef)) {
+        // The folder shouldn't have any pre-existing rules
+        if (ruleService.hasNonInheritedRules(folderNodeRef))
+        {
             throw new InvalidArgumentException("Unable to link to a rule set because the folder has pre-existing rules or is already linked to a rule set.");
         }
 
@@ -188,17 +193,17 @@ public class RuleSetsImpl implements RuleSets
     @Override
     public void unlinkRuleSet(String folderNodeId, String ruleSetId)
     {
-        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,true);
+        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, true);
         final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
 
-        //The folder should be linked to a rule set
+        // The folder should be linked to a rule set
         if (!ruleService.isLinkedToRuleNode(folderNodeRef))
         {
             throw new InvalidArgumentException("The folder is not linked to a rule set.");
         }
 
-        //The following line also handles the deletion of the parent-child association that gets created during linking
-        nodeService.removeAspect(folderNodeRef,RuleModel.ASPECT_RULES);
+        // The following line also handles the deletion of the parent-child association that gets created during linking
+        nodeService.removeAspect(folderNodeRef, RuleModel.ASPECT_RULES);
     }
 
     public void setRuleSetLoader(RuleSetLoader ruleSetLoader)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -39,12 +39,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.6
  *
  */
-public class RM4293Test  extends BaseRMTestCase
+public class RM4293Test extends BaseRMTestCase
 {
-    public void testDeleteSpecialContainers()  throws Exception
+    public void testDeleteSpecialContainers() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -64,8 +63,7 @@ public class RM4293Test  extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -84,8 +82,7 @@ public class RM4293Test  extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -105,8 +102,7 @@ public class RM4293Test  extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {

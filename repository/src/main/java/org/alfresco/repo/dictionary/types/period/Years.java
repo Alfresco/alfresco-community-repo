@@ -29,6 +29,7 @@ import java.util.Calendar;
 
 /**
  * Years
+ * 
  * @author andyh
  *
  */
@@ -37,7 +38,7 @@ public class Years extends AbstractCalendarPeriodProvider
     /**
      * 
      */
-    public static final String PERIOD_TYPE = "year"; 
+    public static final String PERIOD_TYPE = "year";
 
     public String getPeriodType()
     {

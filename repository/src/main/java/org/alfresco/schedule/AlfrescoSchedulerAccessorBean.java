@@ -28,6 +28,7 @@ package org.alfresco.schedule;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
@@ -36,8 +37,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.scheduling.quartz.SchedulerAccessorBean;
 
 /**
- * The class is designed to add <code>enabled</code> check to switch on/off the triggers scheduling.
- * The default is <code>true</code>.
+ * The class is designed to add <code>enabled</code> check to switch on/off the triggers scheduling. The default is <code>true</code>.
  *
  * @since 6.0
  *
@@ -45,8 +45,7 @@ import org.springframework.scheduling.quartz.SchedulerAccessorBean;
  */
 public class AlfrescoSchedulerAccessorBean extends SchedulerAccessorBean implements DisposableBean
 {
-    @Nullable
-    private List<TriggerKey> triggerKeys;
+    @Nullable private List<TriggerKey> triggerKeys;
     private boolean enabled = true;
 
     public boolean isEnabled()

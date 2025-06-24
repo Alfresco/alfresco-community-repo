@@ -32,55 +32,20 @@
 
 package org.alfresco.rest.model;
 
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Base Path {@linkplain /alfresco/healthcheck}
  * 
- * @author Meenal Bhave
- * Example:
- *    {
-    "activeMQConnection": {
-        "healthy": true,
-        "message": "ActiveMQ connection Ok"
-    },
-    "databaseConnection": {
-        "healthy": true,
-        "message": "Database connection Ok"
-    },
-    "deadlocks": {
-        "healthy": true
-    },
-    "eventsHealthCheck": {
-        "healthy": true,
-        "message": "Ok"
-    },
-    "minimumClientVersion": {
-        "healthy": true,
-        "message": "1.0.1"
-    },
-    "repositoryConnection": {
-        "healthy": true,
-        "message": "Repository connection Ok"
-    },
-    "syncServiceIdCheck": {
-        "healthy": true,
-        "message": "41ca6903-3b40-3154-b9ae-a406d83e02c9"
-    },
-    "versionCheck": {
-        "healthy": true,
-        "message": "2.2-SNAPSHOT (2017-10-04T08:41:58Z)"
-    }
-}
+ * @author Meenal Bhave Example: { "activeMQConnection": { "healthy": true, "message": "ActiveMQ connection Ok" }, "databaseConnection": { "healthy": true, "message": "Database connection Ok" }, "deadlocks": { "healthy": true }, "eventsHealthCheck": { "healthy": true, "message": "Ok" }, "minimumClientVersion": { "healthy": true, "message": "1.0.1" }, "repositoryConnection": { "healthy": true, "message": "Repository connection Ok" }, "syncServiceIdCheck": { "healthy": true, "message": "41ca6903-3b40-3154-b9ae-a406d83e02c9" }, "versionCheck": { "healthy": true, "message": "2.2-SNAPSHOT (2017-10-04T08:41:58Z)" } }
  */
 public class RestSyncServiceHealthCheckModel extends TestModel
 {
 
     public RestSyncServiceHealthCheckModel()
-    {
-    }
+    {}
 
     @JsonProperty(required = true)
     private RestSyncServiceComponentModel activeMQConnection;

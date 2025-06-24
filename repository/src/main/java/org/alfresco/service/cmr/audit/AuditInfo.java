@@ -26,7 +26,6 @@
 package org.alfresco.service.cmr.audit;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.util.Date;
 import java.util.Map;
 
@@ -104,8 +103,7 @@ public interface AuditInfo
     public String getKeyGUID();
 
     /**
-     * The serialized properties on the key node, if one exists, after the method invocation. Note these values are serialized before the method is called so they are unaffected by
-     * the method invocation. In V1.4 these are not stored.
+     * The serialized properties on the key node, if one exists, after the method invocation. Note these values are serialized before the method is called so they are unaffected by the method invocation. In V1.4 these are not stored.
      * 
      * @return Map
      */
@@ -174,7 +172,7 @@ public interface AuditInfo
     /**
      * Get the session id.
      * 
-     * This is not stored in V1.4. 
+     * This is not stored in V1.4.
      * 
      * @return String
      */
@@ -182,7 +180,7 @@ public interface AuditInfo
 
     /**
      * Get the deserialized error, if one occurred.
-     *  
+     * 
      * @return the throwable or null.
      */
     public Throwable getThrowable();

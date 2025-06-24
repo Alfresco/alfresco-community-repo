@@ -92,9 +92,12 @@ public abstract class AbstractAppliedPatchDAOImpl implements AppliedPatchDAO
     {
         throw new UnsupportedOperationException();
     }
-    
+
     protected abstract void createAppliedPatchEntity(AppliedPatchEntity entity);
+
     protected abstract void updateAppliedPatchEntity(AppliedPatchEntity appliedPatch);
+
     protected abstract AppliedPatchEntity getAppliedPatchEntity(String id);
+
     protected abstract List<AppliedPatchEntity> getAppliedPatchEntities();
 }

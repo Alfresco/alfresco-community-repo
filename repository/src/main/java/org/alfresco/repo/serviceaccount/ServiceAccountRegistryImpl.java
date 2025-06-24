@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,35 +32,33 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.util.PropertyCheck;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * Processes the <b>alfresco-global</b> properties file and applies a naming convention to distinguish the service
- * account's name and role.
+ * Processes the <b>alfresco-global</b> properties file and applies a naming convention to distinguish the service account's name and role.
  * <p>
  * The naming convention adheres to the following format:
  * <p>
+ * 
  * <pre>
  *   {@code
  *     serviceaccount.role.<service-account-name>=<service-account-role>
  *   }
  * </pre>
  * <p>
- * Please note, any property with an invalid role value will be disregarded and the corresponding service account
- * will not be registered.
+ * Please note, any property with an invalid role value will be disregarded and the corresponding service account will not be registered.
  * <p>
- * For instance, to register a service account named 'custom-app-sa' with the 'Editor' role (which allows it to
- * update node properties), the following should be defined in the <b>alfresco-global</b> properties file:
+ * For instance, to register a service account named 'custom-app-sa' with the 'Editor' role (which allows it to update node properties), the following should be defined in the <b>alfresco-global</b> properties file:
  * <ul>
- *   <li>serviceaccount.role.custom-app-sa=EDITOR_SERVICE_ACCOUNT</li>
- *   <li>or</li>
- *   <li>serviceaccount.role.custom-app-sa=ROLE_EDITOR_SERVICE_ACCOUNT</li>
+ * <li>serviceaccount.role.custom-app-sa=EDITOR_SERVICE_ACCOUNT</li>
+ * <li>or</li>
+ * <li>serviceaccount.role.custom-app-sa=ROLE_EDITOR_SERVICE_ACCOUNT</li>
  * </ul>
  *
  * @author Jamal Kaabi-Mofrad
@@ -149,7 +147,7 @@ public class ServiceAccountRegistryImpl implements ServiceAccountRegistry, Initi
         if (StringUtils.isBlank(value))
         {
             LOGGER.warn("Invalid service account {} defined in the property '{}'. The {} cannot be an empty string.",
-                        valueType, key, valueType);
+                    valueType, key, valueType);
             return true;
         }
         return false;

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,12 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Class to represent an audit event
@@ -44,7 +45,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 @AlfrescoPublicApi
 public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent>
 {
-	/** Name */
+    /** Name */
     private String name;
 
     /** Label */
@@ -54,7 +55,8 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
     protected RecordsManagementAuditService recordsManagementAuditService;
 
     /**
-     * @param recordsManagementAuditService     records management audit service
+     * @param recordsManagementAuditService
+     *            records management audit service
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
     {
@@ -83,8 +85,10 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
     /**
      * Default constructor.
      *
-     * @param name  audit event name
-     * @param label audit event label (can be actual label or I18N lookup key)
+     * @param name
+     *            audit event name
+     * @param label
+     *            audit event label (can be actual label or I18N lookup key)
      */
     public AuditEvent(String name, String label)
     {
@@ -96,7 +100,7 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
     }
 
     /**
-     * @return  audit event name
+     * @return audit event name
      */
     public String getName()
     {
@@ -104,38 +108,41 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
     }
 
     /**
-     * @param name  audit event name
+     * @param name
+     *            audit event name
      */
     public void setName(String name)
     {
-		this.name = name;
-	}
-
-    /**
-     * @return   audit event label
-     */
-    public String getLabel()
-    {
-    	String lookup = I18NUtil.getMessage(label);
-    	if (StringUtils.isBlank(lookup))
-    	{
-    		lookup = label;
-    	}
-    	return lookup;
+        this.name = name;
     }
 
     /**
-     * @param label audit event label
+     * @return audit event label
+     */
+    public String getLabel()
+    {
+        String lookup = I18NUtil.getMessage(label);
+        if (StringUtils.isBlank(lookup))
+        {
+            lookup = label;
+        }
+        return lookup;
+    }
+
+    /**
+     * @param label
+     *            audit event label
      */
     public void setLabel(String label)
     {
-		this.label = label;
-	}
+        this.label = label;
+    }
 
     /**
      * Compare by label.
      *
-     * @param compare   compare to audit event
+     * @param compare
+     *            compare to audit event
      * @return int
      */
     @Override

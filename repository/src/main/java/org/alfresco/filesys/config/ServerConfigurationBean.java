@@ -36,6 +36,9 @@ import java.security.KeyStoreException;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.extensions.config.element.GenericConfigElement;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.AbstractServerConfigurationBean;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
@@ -62,19 +65,14 @@ import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.jlan.server.filesys.cache.FileStateLockManager;
 import org.alfresco.jlan.server.filesys.cache.StandaloneFileStateCache;
 import org.alfresco.jlan.server.thread.ThreadRequestPool;
-import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.jlan.util.MemorySize;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.extensions.config.element.GenericConfigElement;
-
 
 /**
  * Alfresco File Server Configuration Bean Class
  * <p>
- * Acts as an adaptor between JLAN's configuration requirements and the spring configuration of
- * the Alfresco filesystem subsystem.
+ * Acts as an adaptor between JLAN's configuration requirements and the spring configuration of the Alfresco filesystem subsystem.
  * <p>
- * Also contains an amount of initialisation logic. 
+ * Also contains an amount of initialisation logic.
  * 
  * @author gkspencer
  * @author dward
@@ -112,7 +110,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
     {
         this.ftpConfigBean = ftpConfigBean;
     }
-    
+
     public void setFilesystemContexts(List<DeviceContext> filesystemContexts)
     {
         this.filesystemContexts = filesystemContexts;
@@ -358,36 +356,38 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 throw new AlfrescoRuntimeException("FTP authenticator not specified");
 
             // Check if a data port range has been specified
-            
-            if ( ftpConfigBean.getDataPortFrom() != 0 && ftpConfigBean.getDataPortTo() != 0) {
-            	
-            	// Range check the data port values
-            	
-            	int rangeFrom = ftpConfigBean.getDataPortFrom();
-            	int rangeTo   = ftpConfigBean.getDataPortTo();
-            	
-            	if ( rangeFrom != 0 && rangeTo != 0) {
-            		
-            		// Validate the FTP data port range
-            	
-	    			if ( rangeFrom < 1024 || rangeFrom > 65535)
-	    				throw new InvalidConfigurationException("Invalid FTP data port range from value, " + rangeFrom);
-	
-	    			if ( rangeTo < 1024 || rangeTo > 65535)
-	    				throw new InvalidConfigurationException("Invalid FTP data port range to value, " + rangeTo);
-	
-	    			if ( rangeFrom >= rangeTo)
-	    				throw new InvalidConfigurationException("Invalid FTP data port range, " + rangeFrom + "-" + rangeTo);
-	
-	    			// Set the FTP data port range
-	
-	    			ftpConfig.setFTPDataPortLow(rangeFrom);
-	    			ftpConfig.setFTPDataPortHigh(rangeTo);
-	    			
-	    			// Log the data port range
-	    			
-	    			logger.info("FTP server data ports restricted to range " + rangeFrom + ":" + rangeTo);
-            	}
+
+            if (ftpConfigBean.getDataPortFrom() != 0 && ftpConfigBean.getDataPortTo() != 0)
+            {
+
+                // Range check the data port values
+
+                int rangeFrom = ftpConfigBean.getDataPortFrom();
+                int rangeTo = ftpConfigBean.getDataPortTo();
+
+                if (rangeFrom != 0 && rangeTo != 0)
+                {
+
+                    // Validate the FTP data port range
+
+                    if (rangeFrom < 1024 || rangeFrom > 65535)
+                        throw new InvalidConfigurationException("Invalid FTP data port range from value, " + rangeFrom);
+
+                    if (rangeTo < 1024 || rangeTo > 65535)
+                        throw new InvalidConfigurationException("Invalid FTP data port range to value, " + rangeTo);
+
+                    if (rangeFrom >= rangeTo)
+                        throw new InvalidConfigurationException("Invalid FTP data port range, " + rangeFrom + "-" + rangeTo);
+
+                    // Set the FTP data port range
+
+                    ftpConfig.setFTPDataPortLow(rangeFrom);
+                    ftpConfig.setFTPDataPortHigh(rangeTo);
+
+                    // Log the data port range
+
+                    logger.info("FTP server data ports restricted to range " + rangeFrom + ":" + rangeTo);
+                }
             }
 
             // Check for an external address
@@ -398,136 +398,149 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
             }
 
             // FTPS parameter parsing
-    		//
-    		// Check if a key store path has been specified
-    		
-    		if ( ftpConfigBean.getKeyStorePath() != null && ftpConfigBean.getKeyStorePath().length() > 0) {
+            //
+            // Check if a key store path has been specified
 
-    			// Get the path to the key store, check that the file exists
+            if (ftpConfigBean.getKeyStorePath() != null && ftpConfigBean.getKeyStorePath().length() > 0)
+            {
 
-    			String keyStorePath = ftpConfigBean.getKeyStorePath();
-    			File keyStoreFile = new File( keyStorePath);
-    			
-    			if ( keyStoreFile.exists() == false)
-    				throw new InvalidConfigurationException("FTPS key store file does not exist, " + keyStorePath);
-    			else if ( keyStoreFile.isDirectory())
-    				throw new InvalidConfigurationException("FTPS key store path is a directory, " + keyStorePath);
-    			
-    			// Set the key store path
-    			
-    			ftpConfig.setKeyStorePath( keyStorePath);
-    		
-	    		// Check if the key store type has been specified
-	    		
-	    		if ( ftpConfigBean.getKeyStoreType() != null && ftpConfigBean.getKeyStoreType().length() > 0) {
-	    			
-	    			// Get the key store type, and validate
-	    			
-	    			String keyStoreType = ftpConfigBean.getKeyStoreType();
-	    			
-	    			if ( keyStoreType == null || keyStoreType.length() == 0)
-	    				throw new InvalidConfigurationException("FTPS key store type is invalid");
-	    			
-	    			try {
-	    				KeyStore.getInstance( keyStoreType);
-	    			}
-	    			catch ( KeyStoreException ex) {
-	    				throw new InvalidConfigurationException("FTPS key store type is invalid, " + keyStoreType, ex);
-	    			}
-	    			
-	    			// Set the key store type
-	    			
-	    			ftpConfig.setKeyStoreType( keyStoreType);
-	    		}
+                // Get the path to the key store, check that the file exists
 
-	    		// Check if the key store passphrase has been specified
-	    		
-	    		if ( ftpConfigBean.getKeyStorePassphrase() != null && ftpConfigBean.getKeyStorePassphrase().length() > 0) {
+                String keyStorePath = ftpConfigBean.getKeyStorePath();
+                File keyStoreFile = new File(keyStorePath);
 
-	    			// Set the key store passphrase
-	    			
-	    			ftpConfig.setKeyStorePassphrase( ftpConfigBean.getKeyStorePassphrase());
-	    		}
-    		}
-    		
-    		// Check if the trust store path has been specified
-    		
-    		if ( ftpConfigBean.getTrustStorePath() != null && ftpConfigBean.getTrustStorePath().length() > 0) {
+                if (keyStoreFile.exists() == false)
+                    throw new InvalidConfigurationException("FTPS key store file does not exist, " + keyStorePath);
+                else if (keyStoreFile.isDirectory())
+                    throw new InvalidConfigurationException("FTPS key store path is a directory, " + keyStorePath);
 
-    			// Get the path to the trust store, check that the file exists
-    			
-    			String trustStorePath = ftpConfigBean.getTrustStorePath();
-    			File trustStoreFile = new File( trustStorePath);
-    			
-    			if ( trustStoreFile.exists() == false)
-    				throw new InvalidConfigurationException("FTPS trust store file does not exist, " + trustStorePath);
-    			else if ( trustStoreFile.isDirectory())
-    				throw new InvalidConfigurationException("FTPS trust store path is a directory, " + trustStorePath);
-    			
-    			// Set the trust store path
-    			
-    			ftpConfig.setTrustStorePath( trustStorePath);
+                // Set the key store path
 
-	    		// Check if the trust store type has been specified
-	    		
-	    		if ( ftpConfigBean.getTrustStoreType() != null && ftpConfigBean.getTrustStoreType().length() > 0) {
-	    			
-	    			// Get the trust store type, and validate
-	    			
-	    			String trustStoreType = ftpConfigBean.getTrustStoreType();
-	    			
-	    			if ( trustStoreType == null || trustStoreType.length() == 0)
-	    				throw new InvalidConfigurationException("FTPS trust store type is invalid");
-	    			
-	    			try {
-	    				KeyStore.getInstance( trustStoreType);
-	    			}
-	    			catch ( KeyStoreException ex) {
-	    				throw new InvalidConfigurationException("FTPS trust store type is invalid, " + trustStoreType, ex);
-	    			}
-	    			
-	    			// Set the trust store type
-	    			
-	    			ftpConfig.setTrustStoreType( trustStoreType);
-	    		}
-    		
-	    		// Check if the trust store passphrase has been specified
-	    		
-	    		if ( ftpConfigBean.getTrustStorePassphrase() != null && ftpConfigBean.getTrustStorePassphrase().length() > 0) {
-	
-	    			// Set the trust store passphrase
-	    			
-	    			ftpConfig.setTrustStorePassphrase( ftpConfigBean.getTrustStorePassphrase());
-	    		}
-    		}
-    		
-    		// Check if only secure sessions should be allowed to logon
-    		
-    		if ( ftpConfigBean.hasRequireSecureSession()) {
+                ftpConfig.setKeyStorePath(keyStorePath);
 
-    			// Only allow secure sessions to logon to the FTP server
+                // Check if the key store type has been specified
 
-    			ftpConfig.setRequireSecureSession( true);
-    		}
-    		
-    		// Check that all the required FTPS parameters have been set
-    		// MNT-7301 FTPS server requires unnecessarly to have a trustStore while a keyStore should be sufficient
-    		if ( ftpConfig.getKeyStorePath() != null) {
-    			
-    			// Make sure all parameters are set
-    			
-    			if ( ftpConfig.getKeyStorePath() == null)
-    				throw new InvalidConfigurationException("FTPS configuration requires keyStore to be set");
-    		}
-    		
-    		// Check if SSLEngine debug output should be enabled
-    		
-    		if ( ftpConfigBean.hasSslEngineDebug()) {
+                if (ftpConfigBean.getKeyStoreType() != null && ftpConfigBean.getKeyStoreType().length() > 0)
+                {
 
-    			// Enable SSLEngine debug output
+                    // Get the key store type, and validate
 
-    			System.setProperty("javax.net.debug", "ssl,handshake");
-    		}
+                    String keyStoreType = ftpConfigBean.getKeyStoreType();
+
+                    if (keyStoreType == null || keyStoreType.length() == 0)
+                        throw new InvalidConfigurationException("FTPS key store type is invalid");
+
+                    try
+                    {
+                        KeyStore.getInstance(keyStoreType);
+                    }
+                    catch (KeyStoreException ex)
+                    {
+                        throw new InvalidConfigurationException("FTPS key store type is invalid, " + keyStoreType, ex);
+                    }
+
+                    // Set the key store type
+
+                    ftpConfig.setKeyStoreType(keyStoreType);
+                }
+
+                // Check if the key store passphrase has been specified
+
+                if (ftpConfigBean.getKeyStorePassphrase() != null && ftpConfigBean.getKeyStorePassphrase().length() > 0)
+                {
+
+                    // Set the key store passphrase
+
+                    ftpConfig.setKeyStorePassphrase(ftpConfigBean.getKeyStorePassphrase());
+                }
+            }
+
+            // Check if the trust store path has been specified
+
+            if (ftpConfigBean.getTrustStorePath() != null && ftpConfigBean.getTrustStorePath().length() > 0)
+            {
+
+                // Get the path to the trust store, check that the file exists
+
+                String trustStorePath = ftpConfigBean.getTrustStorePath();
+                File trustStoreFile = new File(trustStorePath);
+
+                if (trustStoreFile.exists() == false)
+                    throw new InvalidConfigurationException("FTPS trust store file does not exist, " + trustStorePath);
+                else if (trustStoreFile.isDirectory())
+                    throw new InvalidConfigurationException("FTPS trust store path is a directory, " + trustStorePath);
+
+                // Set the trust store path
+
+                ftpConfig.setTrustStorePath(trustStorePath);
+
+                // Check if the trust store type has been specified
+
+                if (ftpConfigBean.getTrustStoreType() != null && ftpConfigBean.getTrustStoreType().length() > 0)
+                {
+
+                    // Get the trust store type, and validate
+
+                    String trustStoreType = ftpConfigBean.getTrustStoreType();
+
+                    if (trustStoreType == null || trustStoreType.length() == 0)
+                        throw new InvalidConfigurationException("FTPS trust store type is invalid");
+
+                    try
+                    {
+                        KeyStore.getInstance(trustStoreType);
+                    }
+                    catch (KeyStoreException ex)
+                    {
+                        throw new InvalidConfigurationException("FTPS trust store type is invalid, " + trustStoreType, ex);
+                    }
+
+                    // Set the trust store type
+
+                    ftpConfig.setTrustStoreType(trustStoreType);
+                }
+
+                // Check if the trust store passphrase has been specified
+
+                if (ftpConfigBean.getTrustStorePassphrase() != null && ftpConfigBean.getTrustStorePassphrase().length() > 0)
+                {
+
+                    // Set the trust store passphrase
+
+                    ftpConfig.setTrustStorePassphrase(ftpConfigBean.getTrustStorePassphrase());
+                }
+            }
+
+            // Check if only secure sessions should be allowed to logon
+
+            if (ftpConfigBean.hasRequireSecureSession())
+            {
+
+                // Only allow secure sessions to logon to the FTP server
+
+                ftpConfig.setRequireSecureSession(true);
+            }
+
+            // Check that all the required FTPS parameters have been set
+            // MNT-7301 FTPS server requires unnecessarly to have a trustStore while a keyStore should be sufficient
+            if (ftpConfig.getKeyStorePath() != null)
+            {
+
+                // Make sure all parameters are set
+
+                if (ftpConfig.getKeyStorePath() == null)
+                    throw new InvalidConfigurationException("FTPS configuration requires keyStore to be set");
+            }
+
+            // Check if SSLEngine debug output should be enabled
+
+            if (ftpConfigBean.hasSslEngineDebug())
+            {
+
+                // Enable SSLEngine debug output
+
+                System.setProperty("javax.net.debug", "ssl,handshake");
+            }
         }
         catch (InvalidConfigurationException ex)
         {
@@ -574,26 +587,27 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
 
                     // Create state cache here and inject
                     StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-                    standaloneCache.initializeCache( new GenericConfigElement( ""), this);
+                    standaloneCache.initializeCache(new GenericConfigElement(""), this);
                     filesysContext.setStateCache(standaloneCache);
-                    
-                    if ( filesysContext.hasStateCache()) {
-                        
+
+                    if (filesysContext.hasStateCache())
+                    {
+
                         // Register the state cache with the reaper thread
-                        // has many side effects including initialisation of the cache    
-                        fsysConfig.addFileStateCache( filesystem.getDeviceName(), filesysContext.getStateCache());
-                        
+                        // has many side effects including initialisation of the cache
+                        fsysConfig.addFileStateCache(filesystem.getDeviceName(), filesysContext.getStateCache());
+
                         // Create the lock manager for the context.
                         FileStateLockManager lockMgr = new FileStateLockManager(filesysContext.getStateCache());
-                        filesysContext.setLockManager(lockMgr); 
+                        filesysContext.setLockManager(lockMgr);
                         filesysContext.setOpLockManager(lockMgr);
                     }
-                    
+
                     if (!ftpConfigBean.getServerEnabled() && isContentDiskDriver2(filesysDriver))
                     {
                         ((ContentContext) filesystem).setDisableNodeMonitor(true);
                     }
-                    
+
                     filesysDriver.registerContext(filesystem);
 
                     // Check if an access control list has been specified
@@ -615,19 +629,17 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                     // Create the shared filesystem
 
                     filesys = new DiskSharedDevice(filesystem.getDeviceName(), filesysDriver, filesysContext);
-                    filesys.setConfiguration( this);
+                    filesys.setConfiguration(this);
 
                     // Add any access controls to the share
 
                     filesys.setAccessControlList(acls);
 
-
-                    
                     // Check if change notifications should be enabled
-                    
-                    if ( filesysContext.getDisableChangeNotifications() == false)
-                        filesysContext.enableChangeHandler( true);
-                    
+
+                    if (filesysContext.getDisableChangeNotifications() == false)
+                        filesysContext.enableChangeHandler(true);
+
                     // Start the filesystem
 
                     filesysContext.startFilesystem(filesys);
@@ -657,11 +669,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
     }
 
     /**
-     * Returns true if either: the disk interface is a ContentDiskDriver2; or
-     * the disk interface is a {@link BufferedContentDiskDriver} and its disk
-     * interface is a ContentDiskDriver2 (wrapped by several other DiskInterface objects).
+     * Returns true if either: the disk interface is a ContentDiskDriver2; or the disk interface is a {@link BufferedContentDiskDriver} and its disk interface is a ContentDiskDriver2 (wrapped by several other DiskInterface objects).
      * 
-     * @param diskInterface ExtendedDiskInterface
+     * @param diskInterface
+     *            ExtendedDiskInterface
      * @return boolean
      */
     private boolean isContentDiskDriver2(ExtendedDiskInterface diskInterface)
@@ -674,12 +685,12 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
         {
             BufferedContentDiskDriver bufferedDriver = (BufferedContentDiskDriver) diskInterface;
             ExtendedDiskInterface underlyingDriver = bufferedDriver.getDiskInterface();
-            
+
             if (underlyingDriver instanceof LegacyFileStateDriver)
             {
                 LegacyFileStateDriver legacyDriver = (LegacyFileStateDriver) underlyingDriver;
                 underlyingDriver = legacyDriver.getDiskInterface();
-                
+
                 if (underlyingDriver instanceof NonTransactionalRuleContentDiskDriver)
                 {
                     // This is the best we can do. The underlying driver of this driver (the
@@ -714,10 +725,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 if (acls != null)
                     secConfig.setGlobalAccessControls(acls);
             }
-           
 
             // Check if a JCE provider class has been specified
-            
+
             String jceProvider = securityConfigBean.getJCEProvider();
             if (jceProvider != null && jceProvider.length() > 0)
             {
@@ -758,7 +768,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
         // Create the core server configuration section
 
         CoreServerConfigSection coreConfig = new CoreServerConfigSection(this);
-    	
+
         // Check if the server core element has been specified
 
         if (coreServerConfigBean == null)
@@ -807,7 +817,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
             throw new InvalidConfigurationException("Thread pool maximum size above maximum allowed size");
 
         if (maxSize < initSize)
-            throw new InvalidConfigurationException("Initial size is larger than maxmimum size");        
+            throw new InvalidConfigurationException("Initial size is larger than maxmimum size");
 
         // Configure the thread pool
 
@@ -889,7 +899,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 if (maxAlloc == null)
                     throw new InvalidConfigurationException("Memory pool maximum allocation not specified");
 
-               // Range check the maximum allocation
+                // Range check the maximum allocation
 
                 if (maxAlloc < MemoryPoolMinimumAllocation)
                     throw new InvalidConfigurationException("Maximum memory pool allocation below minimum of "
@@ -944,49 +954,52 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
             coreConfig.setMemoryPool(DefaultMemoryPoolBufSizes, DefaultMemoryPoolInitAlloc, DefaultMemoryPoolMaxAlloc);
         }
     }
-    
+
     /**
      * Initialise a runtime context - not configured through spring e.g MT.
      * 
      * TODO - what about desktop actions etc?
      * 
-     * @param uniqueName String
-     * @param diskCtx AlfrescoContext
+     * @param uniqueName
+     *            String
+     * @param diskCtx
+     *            AlfrescoContext
      */
     public void initialiseRuntimeContext(String uniqueName, AlfrescoContext diskCtx)
     {
         logger.debug("initialiseRuntimeContext" + diskCtx);
-        
-        if (diskCtx.getStateCache() == null) {
-          
-          // Set the state cache, use a hard coded standalone cache for now
-          FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) this.getConfigSection( FilesystemsConfigSection.SectionName);
-  
-          if ( filesysConfig != null) 
-          {
-              
-              try 
-              {
-                  // Create a standalone state cache
-                  StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-                  standaloneCache.initializeCache( new GenericConfigElement( ""), this);
-                  filesysConfig.addFileStateCache( diskCtx.getDeviceName(), standaloneCache);
-                  diskCtx.setStateCache( standaloneCache);
-                    
-                  // Register the state cache with the reaper thread
-                  // has many side effects including initialisation of the cache    
-                 filesysConfig.addFileStateCache( diskCtx.getShareName(), diskCtx.getStateCache());
-                       
-                 FileStateLockManager lockMgr = new FileStateLockManager(diskCtx.getStateCache());
-                 diskCtx.setLockManager(lockMgr); 
-                 diskCtx.setOpLockManager(lockMgr); 
-              }
-              catch ( InvalidConfigurationException ex) 
-              {
-                  throw new AlfrescoRuntimeException( "Failed to initialize standalone state cache for " + diskCtx.getDeviceName());
-              }
-          }
-      }
+
+        if (diskCtx.getStateCache() == null)
+        {
+
+            // Set the state cache, use a hard coded standalone cache for now
+            FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) this.getConfigSection(FilesystemsConfigSection.SectionName);
+
+            if (filesysConfig != null)
+            {
+
+                try
+                {
+                    // Create a standalone state cache
+                    StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
+                    standaloneCache.initializeCache(new GenericConfigElement(""), this);
+                    filesysConfig.addFileStateCache(diskCtx.getDeviceName(), standaloneCache);
+                    diskCtx.setStateCache(standaloneCache);
+
+                    // Register the state cache with the reaper thread
+                    // has many side effects including initialisation of the cache
+                    filesysConfig.addFileStateCache(diskCtx.getShareName(), diskCtx.getStateCache());
+
+                    FileStateLockManager lockMgr = new FileStateLockManager(diskCtx.getStateCache());
+                    diskCtx.setLockManager(lockMgr);
+                    diskCtx.setOpLockManager(lockMgr);
+                }
+                catch (InvalidConfigurationException ex)
+                {
+                    throw new AlfrescoRuntimeException("Failed to initialize standalone state cache for " + diskCtx.getDeviceName());
+                }
+            }
+        }
     }
 
     @Override

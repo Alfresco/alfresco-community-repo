@@ -46,7 +46,8 @@ public interface QuickShareService
     /**
      * Share content identified by nodeRef.
      * 
-     * @param nodeRef The NodeRef of the content to share
+     * @param nodeRef
+     *            The NodeRef of the content to share
      * @return QuickDTO with details of the share
      */
     public QuickShareDTO shareContent(NodeRef nodeRef) throws QuickShareDisabledException, InvalidNodeRefException;
@@ -54,16 +55,19 @@ public interface QuickShareService
     /**
      * Share content identified by nodeRef and optionally set an expiry date for the shared link.
      *
-     * @param nodeRef The NodeRef of the content to share
-     * @param expiryDate The expiry date of the shared link
+     * @param nodeRef
+     *            The NodeRef of the content to share
+     * @param expiryDate
+     *            The expiry date of the shared link
      * @return QuickDTO with details of the share
      */
     QuickShareDTO shareContent(NodeRef nodeRef, Date expiryDate) throws QuickShareDisabledException, InvalidNodeRefException;
 
     /**
      * Get QuickShare related metadata for the given node.
-     *  
-     * @param nodeRef NodeRef
+     * 
+     * @param nodeRef
+     *            NodeRef
      * @return Map
      */
     public Map<String, Object> getMetaData(NodeRef nodeRef) throws QuickShareDisabledException, InvalidNodeRefException;
@@ -71,7 +75,8 @@ public interface QuickShareService
     /**
      * Get QuickShare related metadata for the given shareId.
      *
-     * @param shareId String
+     * @param shareId
+     *            String
      * @return Map
      */
     public Map<String, Object> getMetaData(String shareId) throws QuickShareDisabledException, InvalidSharedIdException;
@@ -79,15 +84,17 @@ public interface QuickShareService
     /**
      * Get the tenant domain and node reference for the the given share id.
      * 
-     * @param sharedId String
+     * @param sharedId
+     *            String
      * @return Pair
      */
     public Pair<String, NodeRef> getTenantNodeRefFromSharedId(String sharedId) throws QuickShareDisabledException, InvalidSharedIdException;
 
     /**
      * Unshare the content identified by sharedId
-     *  
-     * @param sharedId The shared id of the content to unshare.
+     * 
+     * @param sharedId
+     *            The shared id of the content to unshare.
      */
     public void unshareContent(String sharedId) throws QuickShareDisabledException, InvalidSharedIdException;
 
@@ -99,7 +106,8 @@ public interface QuickShareService
     /**
      * Notifies users by email that a content has been shared with them, and the details of it.
      *
-     * @param emailRequest The email details including its template details
+     * @param emailRequest
+     *            The email details including its template details
      */
     public void sendEmailNotification(QuickShareEmailRequest emailRequest);
 
@@ -117,10 +125,10 @@ public interface QuickShareService
     boolean isQuickShareEnabled();
 
     /**
-     * Removes (hard deletes) the previously persisted {@link QuickShareLinkExpiryAction} and its related
-     * schedule {@link org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction} from the repository.
+     * Removes (hard deletes) the previously persisted {@link QuickShareLinkExpiryAction} and its related schedule {@link org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction} from the repository.
      *
-     * @param quickShareLinkExpiryAction The {@link QuickShareLinkExpiryAction} to be deleted.
+     * @param quickShareLinkExpiryAction
+     *            The {@link QuickShareLinkExpiryAction} to be deleted.
      */
     void deleteQuickShareLinkExpiryAction(QuickShareLinkExpiryAction quickShareLinkExpiryAction);
 }

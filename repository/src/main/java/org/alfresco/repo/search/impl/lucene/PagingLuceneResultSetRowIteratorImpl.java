@@ -52,7 +52,8 @@ public class PagingLuceneResultSetRowIteratorImpl implements ListIterator<Result
     /**
      * Create an iterator over the result set. Follows stadard ListIterator conventions
      * 
-     * @param resultSet PagingLuceneResultSet
+     * @param resultSet
+     *            PagingLuceneResultSet
      */
     public PagingLuceneResultSetRowIteratorImpl(PagingLuceneResultSet resultSet)
     {
@@ -65,9 +66,7 @@ public class PagingLuceneResultSetRowIteratorImpl implements ListIterator<Result
         return resultSet;
     }
 
-    /*
-     * ListIterator implementation
-     */
+    /* ListIterator implementation */
     public boolean hasNext()
     {
         return position < (max - 1);
@@ -113,9 +112,7 @@ public class PagingLuceneResultSetRowIteratorImpl implements ListIterator<Result
         return position - 1;
     }
 
-    /*
-     * Mutation is not supported
-     */
+    /* Mutation is not supported */
 
     public void remove()
     {

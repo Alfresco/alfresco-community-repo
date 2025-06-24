@@ -30,9 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.Test;
 
 public class VirtualProtocolTest extends TestCase
 {
@@ -60,11 +60,11 @@ public class VirtualProtocolTest extends TestCase
         actual1 = new RepositoryResource(new RepositoryNodeRef(new NodeRef(TEST_ACTUAL_NODE_REF_1)));
 
         parameters1 = Arrays.asList(templatePath1,
-                                    new ResourceParameter(actual1));
+                new ResourceParameter(actual1));
         r1 = new Reference(Encodings.PLAIN.encoding,
-                           Protocols.VIRTUAL.protocol,
-                           template1,
-                           parameters1);
+                Protocols.VIRTUAL.protocol,
+                template1,
+                parameters1);
         virtualProtocol = new VirtualProtocol();
     }
 
@@ -73,7 +73,7 @@ public class VirtualProtocolTest extends TestCase
     {
         String tp = virtualProtocol.getTemplatePath(r1);
         assertEquals(templatePath1.getValue(),
-                     tp);
+                tp);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class VirtualProtocolTest extends TestCase
     {
         RepositoryLocation al = virtualProtocol.getActualNodeLocation(r1);
         assertEquals(actual1.getLocation(),
-                     al);
+                al);
     }
 
     @Test
@@ -89,10 +89,10 @@ public class VirtualProtocolTest extends TestCase
     {
         final String newPath = "/root/child/anotherChild";
         Reference r = virtualProtocol.replaceTemplatePath(r1,
-                                                          newPath);
+                newPath);
         String templatePath = virtualProtocol.getTemplatePath(r);
         assertEquals(newPath,
-                     templatePath);
+                templatePath);
     }
 
     @Test
@@ -100,59 +100,58 @@ public class VirtualProtocolTest extends TestCase
     {
         final String repoPath = "/a/repo/path";
         Reference nr1 = virtualProtocol.newReference(VirtualProtocol.NODE_TEMPLATE_PATH_TOKEN + repoPath,
-                                                     "/root/child",
-                                                     new NodeRef(TEST_ACTUAL_NODE_REF_1));
+                "/root/child",
+                new NodeRef(TEST_ACTUAL_NODE_REF_1));
         final Resource repoResource = new RepositoryResource(new RepositoryPath(repoPath));
         assertEquals(repoResource,
-                     nr1.getResource());
+                nr1.getResource());
 
         final String classpath = "/a/class/path";
         Reference nr2 = virtualProtocol.newReference(VirtualProtocol.CLASS_TEMPLATE_PATH_TOKEN + classpath,
-                                                     "/root/child",
-                                                     new NodeRef(TEST_ACTUAL_NODE_REF_1));
+                "/root/child",
+                new NodeRef(TEST_ACTUAL_NODE_REF_1));
         final Resource classpathResource = new ClasspathResource(classpath);
         assertEquals(classpathResource,
-                     nr2.getResource());
+                nr2.getResource());
     }
 
     @Test
     public void testDispatch() throws Exception
     {
-        boolean sccess = virtualProtocol.dispatch(new ProtocolMethod<Boolean>()
-                                                  {
+        boolean sccess = virtualProtocol.dispatch(new ProtocolMethod<Boolean>() {
 
-                                                      @Override
-                                                      public Boolean execute(VanillaProtocol vanillaProtocol,
-                                                                  Reference reference) throws ProtocolMethodException
-                                                      {
-                                                          fail("Invalid dispatch");
-                                                          return false;
-                                                      }
+            @Override
+            public Boolean execute(VanillaProtocol vanillaProtocol,
+                    Reference reference) throws ProtocolMethodException
+            {
+                fail("Invalid dispatch");
+                return false;
+            }
 
-                                                      @Override
-                                                      public Boolean execute(VirtualProtocol virtualProtocol,
-                                                                  Reference reference) throws ProtocolMethodException
-                                                      {
-                                                          return true;
-                                                      }
+            @Override
+            public Boolean execute(VirtualProtocol virtualProtocol,
+                    Reference reference) throws ProtocolMethodException
+            {
+                return true;
+            }
 
-                                                      @Override
-                                                      public Boolean execute(NodeProtocol protocol, Reference reference)
-                                                                  throws ProtocolMethodException
-                                                      {
-                                                          fail("Invalid dispatch");
-                                                          return false;
-                                                      }
+            @Override
+            public Boolean execute(NodeProtocol protocol, Reference reference)
+                    throws ProtocolMethodException
+            {
+                fail("Invalid dispatch");
+                return false;
+            }
 
-                                                      @Override
-                                                      public Boolean execute(Protocol protocol, Reference reference)
-                                                                  throws ProtocolMethodException
-                                                      {
-                                                          fail("Invalid dispatch");
-                                                          return false;
-                                                      }
-                                                  },
-                                                  r1);
+            @Override
+            public Boolean execute(Protocol protocol, Reference reference)
+                    throws ProtocolMethodException
+            {
+                fail("Invalid dispatch");
+                return false;
+            }
+        },
+                r1);
 
         assertTrue(sccess);
     }

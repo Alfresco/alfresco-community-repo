@@ -32,14 +32,7 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Handles a single Variable JSON response
- * Example:
- * {
- *      "scope": "string",
- *      "name": "string",
- *      "value": 0,
- *      "type": "string"
- * }
+ * Handles a single Variable JSON response Example: { "scope": "string", "name": "string", "value": 0, "type": "string" }
  * 
  * @author Cristina Axinte
  */
@@ -54,8 +47,7 @@ public class RestVariableModel extends TestModel implements IRestModel<RestVaria
     RestVariableModel model;
 
     public RestVariableModel()
-    {
-    }
+    {}
 
     public RestVariableModel(String scope, String name, String type, Object value)
     {

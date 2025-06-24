@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,8 +43,9 @@ public class FileUtils
     /**
      * Helper method to convert a stream to a string.
      *
-     * @param is input stream
-     * @return {@link String}   string
+     * @param is
+     *            input stream
+     * @return {@link String} string
      * @throws IOException
      */
     public static String convertStreamToString(InputStream is) throws IOException

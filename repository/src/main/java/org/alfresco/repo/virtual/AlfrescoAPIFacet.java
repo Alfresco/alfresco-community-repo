@@ -36,8 +36,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 
 /**
- * Dependency inversion facade of the Alfresco services. It provides access to
- * the implementations of Alfresco services.
+ * Dependency inversion facade of the Alfresco services. It provides access to the implementations of Alfresco services.
  * 
  * @author Bogdan Horje
  */

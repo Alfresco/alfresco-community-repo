@@ -29,8 +29,6 @@ import java.util.Locale;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 
-
-
 /**
  * Result of a comparison between two database objects.
  * 
@@ -39,12 +37,15 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public final class Difference extends Result
 {
     /** Specifies the type of differences */
-    public enum Where { ONLY_IN_REFERENCE, ONLY_IN_TARGET, IN_BOTH_NO_DIFFERENCE, IN_BOTH_BUT_DIFFERENCE };
+    public enum Where
+    {
+        ONLY_IN_REFERENCE, ONLY_IN_TARGET, IN_BOTH_NO_DIFFERENCE, IN_BOTH_BUT_DIFFERENCE
+    };
+
     private final Where where;
     private final DbProperty left;
     private final DbProperty right;
-    
-    
+
     public Difference(Where where, DbProperty left, DbProperty right)
     {
         // Sanity check parameters
@@ -52,7 +53,7 @@ public final class Difference extends Result
         {
             throw new IllegalArgumentException("DbProperty parameters cannot BOTH be null.");
         }
-        
+
         this.where = where;
         this.left = left;
         this.right = right;
@@ -82,7 +83,6 @@ public final class Difference extends Result
         return this.right;
     }
 
-    
     @Override
     public String describe()
     {
@@ -100,30 +100,30 @@ public final class Difference extends Result
         if (getLeft() == null)
         {
             return I18NUtil.getMessage(
-                        "system.schema_comp.diff.target_only",
-                        locale,
-                        getRight().getDbObject().getTypeName(),
-                        getRight().getPath(),
-                        getRight().getPropertyValue());
+                    "system.schema_comp.diff.target_only",
+                    locale,
+                    getRight().getDbObject().getTypeName(),
+                    getRight().getPath(),
+                    getRight().getPropertyValue());
         }
         if (getRight() == null)
         {
             return I18NUtil.getMessage(
-                        "system.schema_comp.diff.ref_only",
-                        locale,
-                        getLeft().getDbObject().getTypeName(),
-                        getLeft().getPath(),
-                        getLeft().getPropertyValue());
-        }
-        
-        return I18NUtil.getMessage(
-                    "system.schema_comp.diff",
+                    "system.schema_comp.diff.ref_only",
                     locale,
                     getLeft().getDbObject().getTypeName(),
                     getLeft().getPath(),
-                    getLeft().getPropertyValue(),
-                    getRight().getPath(),
-                    getRight().getPropertyValue());
+                    getLeft().getPropertyValue());
+        }
+
+        return I18NUtil.getMessage(
+                "system.schema_comp.diff",
+                locale,
+                getLeft().getDbObject().getTypeName(),
+                getLeft().getPath(),
+                getLeft().getPropertyValue(),
+                getRight().getPath(),
+                getRight().getPropertyValue());
     }
 
     @Override

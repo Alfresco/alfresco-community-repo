@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,9 +32,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Date parameter processor.
@@ -55,20 +56,20 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
     private static final String SEP = ".";
 
     private static final String[] ALL_FIELDS_FOR_SUBSTITUTION_QUERY = {
-        DAY + SEP + SHORT,
-        DAY,
-        DAY + SEP + LONG,
-        DAY + SEP + NUMBER,
-        DAY + SEP + MONTH,
-        DAY + SEP + YEAR,
-        MONTH + SEP + SHORT,
-        MONTH,
-        MONTH + SEP + LONG,
-        MONTH + SEP + NUMBER,
-        YEAR + SEP + SHORT,
-        YEAR,
-        YEAR + SEP + LONG,
-        YEAR + SEP + WEEK
+            DAY + SEP + SHORT,
+            DAY,
+            DAY + SEP + LONG,
+            DAY + SEP + NUMBER,
+            DAY + SEP + MONTH,
+            DAY + SEP + YEAR,
+            MONTH + SEP + SHORT,
+            MONTH,
+            MONTH + SEP + LONG,
+            MONTH + SEP + NUMBER,
+            YEAR + SEP + SHORT,
+            YEAR,
+            YEAR + SEP + LONG,
+            YEAR + SEP + WEEK
     };
 
     private int maximumNumberSuggestions = DEFAULT_MAXIMUM_NUMBER_SUGGESTIONS;
@@ -211,29 +212,29 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
     }
 
     /**
-     * Set the maxmimum number of suggestions returned  from the global property
+     * Set the maxmimum number of suggestions returned from the global property
      *
      * @param maximumNumberSuggestions
      */
     public void setMaximumNumberSuggestions(int maximumNumberSuggestions)
     {
-        this.maximumNumberSuggestions = (maximumNumberSuggestions <= 0 ? DEFAULT_MAXIMUM_NUMBER_SUGGESTIONS: maximumNumberSuggestions);
+        this.maximumNumberSuggestions = (maximumNumberSuggestions <= 0 ? DEFAULT_MAXIMUM_NUMBER_SUGGESTIONS : maximumNumberSuggestions);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.action.parameter.ParameterSubstitutionSuggester#getSubstitutionSuggestions(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.action.parameter.ParameterSubstitutionSuggester#getSubstitutionSuggestions(java.lang.String) */
     @Override
     public List<String> getSubstitutionSuggestions(String substitutionFragment)
     {
         List<String> suggestions = new ArrayList<>();
         String namePrefix = this.getName() + ".";
-        if(StringUtils.isBlank(substitutionFragment)  || this.getName().toLowerCase().contains(substitutionFragment.toLowerCase()))
+        if (StringUtils.isBlank(substitutionFragment) || this.getName().toLowerCase().contains(substitutionFragment.toLowerCase()))
         {
-            for(String field: ALL_FIELDS_FOR_SUBSTITUTION_QUERY) 
+            for (String field : ALL_FIELDS_FOR_SUBSTITUTION_QUERY)
             {
                 suggestions.add(namePrefix + field);
-                if(suggestions.size() >= maximumNumberSuggestions)
+                if (suggestions.size() >= maximumNumberSuggestions)
                 {
                     break;
                 }
@@ -241,13 +242,13 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
         }
         else
         {
-            for(String field: ALL_FIELDS_FOR_SUBSTITUTION_QUERY) 
+            for (String field : ALL_FIELDS_FOR_SUBSTITUTION_QUERY)
             {
                 String prefixFieldName = namePrefix + field;
-                if(prefixFieldName.toLowerCase().contains(substitutionFragment.toLowerCase()))
+                if (prefixFieldName.toLowerCase().contains(substitutionFragment.toLowerCase()))
                 {
                     suggestions.add(namePrefix + field);
-                    if(suggestions.size() >= maximumNumberSuggestions)
+                    if (suggestions.size() >= maximumNumberSuggestions)
                     {
                         break;
                     }

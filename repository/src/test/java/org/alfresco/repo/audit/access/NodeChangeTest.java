@@ -39,6 +39,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -50,9 +54,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Unit test for NodeChange which is the main class behind AccessAuditor.
@@ -62,13 +63,13 @@ import org.junit.Test;
 public class NodeChangeTest
 {
     private static final StoreRef STORE = new StoreRef("protocol", "store");
-    
+
     private NodeChange nodeChange;
-    
+
     private NodeInfoFactory nodeInfoFactory;
     private NamespaceService namespaceService;
     private NodeService nodeService;
-    
+
     private NodeRef folder1;
     private NodeRef folder2;
     private NodeRef content1;
@@ -83,9 +84,9 @@ public class NodeChangeTest
         cmAlways.add("cm");
         when(namespaceService.getPrefixes(anyString())).thenReturn(cmAlways);
         when(namespaceService.getNamespaceURI(anyString())).thenReturn("cm");
-        
+
         nodeService = mock(NodeService.class);
-        
+
         Path rootPath = newPath(null, "/");
         Path homeFolderPath = newPath(rootPath, "cm:homeFolder");
         folderPath1 = newPath(homeFolderPath, "cm:folder1");
@@ -93,23 +94,23 @@ public class NodeChangeTest
         folder1 = newFolder(folderPath1);
         folder2 = newFolder(folderPath2);
         content1 = newContent(folderPath1, "cm:content1");
-        
+
         nodeInfoFactory = new NodeInfoFactory(nodeService, namespaceService);
         nodeChange = new NodeChange(nodeInfoFactory, namespaceService, content1);
     }
-    
+
     private NodeRef newFolder(Path path)
     {
-        String name = path.get(path.size()-1).getElementString();
+        String name = path.get(path.size() - 1).getElementString();
         return newNodeRef(path, name, "folder");
     }
-    
+
     private NodeRef newContent(Path parentPath, String name)
     {
         Path path = newPath(parentPath, name);
         return newNodeRef(path, name, "content");
     }
-    
+
     private NodeRef newNodeRef(Path path, String name, String type)
     {
         NodeRef nodeRef = new NodeRef(STORE, name);
@@ -125,13 +126,12 @@ public class NodeChangeTest
         Path path = new Path();
         if (parent != null)
         {
-            for(Path.Element element: parent)
+            for (Path.Element element : parent)
             {
                 path.append(element);
             }
         }
-        path.append(new Path.Element()
-        {
+        path.append(new Path.Element() {
             @Override
             public String getElementString()
             {
@@ -141,12 +141,12 @@ public class NodeChangeTest
             @Override
             public Element getBaseNameElement(TenantService tenantService)
             {
-               return this;
+                return this;
             }
         });
         return path;
     }
-    
+
     private void assertStandardData(Map<String, Serializable> auditMap,
             String expectedAction, String expectedSubActions)
     {
@@ -164,22 +164,21 @@ public class NodeChangeTest
         when(childAssocRef.getChildRef()).thenReturn(content1);
         nodeChange.onCreateNode(childAssocRef);
     }
-    
+
     private void callDeleteNode()
     {
         nodeChange.beforeDeleteNode(content1);
     }
-    
+
     @After
     public void tearDown() throws Exception
-    {
-    }
+    {}
 
     @Test
     public final void testGetAuditDataTrueSubAction()
     {
         callCreateNode();
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(true);
 
         assertEquals("Should NOT be derived", "createNode", auditMap.get("action"));
@@ -194,7 +193,7 @@ public class NodeChangeTest
     public final void testGetAuditDataFalseTopLevelAction()
     {
         callCreateNode();
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertEquals("Should be derived", "CREATE", auditMap.get("action"));
@@ -235,7 +234,7 @@ public class NodeChangeTest
     public final void testOnCreateNode()
     {
         callCreateNode();
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertStandardData(auditMap, "CREATE", "createNode");
@@ -245,7 +244,7 @@ public class NodeChangeTest
     public final void testBeforeDeleteNode()
     {
         callDeleteNode();
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertStandardData(auditMap, "DELETE", "deleteNode");
@@ -256,7 +255,7 @@ public class NodeChangeTest
     {
         callCreateNode();
         nodeChange.beforeDeleteNode(content1);
-        
+
         assertTrue("A node was created and deleted so should have been temporary.",
                 nodeChange.isTemporaryNode());
     }
@@ -268,14 +267,14 @@ public class NodeChangeTest
         when(fromChildAssocRef.getChildRef()).thenReturn(content1); // correct as the move has taken place
         when(fromChildAssocRef.getParentRef()).thenReturn(folder2);
         when(fromChildAssocRef.getQName()).thenReturn(QName.createQName("URI", "content1"));
-        
+
         ChildAssociationRef toChildAssocRef = mock(ChildAssociationRef.class);
         when(toChildAssocRef.getChildRef()).thenReturn(content1);
         when(toChildAssocRef.getParentRef()).thenReturn(folder1);
         when(toChildAssocRef.getQName()).thenReturn(QName.createQName("URI", "content1"));
-        
+
         nodeChange.onMoveNode(fromChildAssocRef, toChildAssocRef);
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertStandardData(auditMap, "MOVE", "moveNode");
@@ -289,7 +288,7 @@ public class NodeChangeTest
     {
         NodeRef content2 = newContent(folderPath2, "cm:content2");
         nodeChange.onCopyComplete(null, content2, content1, true, null);
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertStandardData(auditMap, "COPY", "copyNode");
@@ -309,7 +308,7 @@ public class NodeChangeTest
         fromProperties.put(ContentModel.PROP_MOBILE, "mobile");
         fromProperties.put(ContentModel.PROP_HITS, "hits");
         fromProperties.put(ContentModel.PROP_TITLE, "title");
-        
+
         Map<QName, Serializable> toProperties = new HashMap<QName, Serializable>(fromProperties);
         toProperties.put(ContentModel.PROP_AUTHOR, "AUTHOR");
         toProperties.put(ContentModel.PROP_ADDRESSEE, "ADDRESSEE");
@@ -317,35 +316,36 @@ public class NodeChangeTest
         toProperties.remove(ContentModel.PROP_CREATOR);
         toProperties.remove(ContentModel.PROP_CONTENT);
         toProperties.put(ContentModel.PROP_LOCATION, "LOCATION");
-        
+
         nodeChange.onUpdateProperties(content1, fromProperties, toProperties);
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertStandardData(auditMap, "updateNodeProperties", "updateNodeProperties");
-        
-        assertEquals(1, ((Map<?,?>)auditMap.get("properties/from")).size());
-        assertEquals("location", ((Map<?,?>)auditMap.get("properties/from")).get(ContentModel.PROP_LOCATION));
+
+        assertEquals(1, ((Map<?, ?>) auditMap.get("properties/from")).size());
+        assertEquals("location", ((Map<?, ?>) auditMap.get("properties/from")).get(ContentModel.PROP_LOCATION));
         assertEquals("location", auditMap.get("properties/from/cm:location"));
 
-        assertEquals(1, ((Map<?,?>)auditMap.get("properties/to")).size());
-        assertEquals("LOCATION", ((Map<?,?>)auditMap.get("properties/to")).get(ContentModel.PROP_LOCATION));
+        assertEquals(1, ((Map<?, ?>) auditMap.get("properties/to")).size());
+        assertEquals("LOCATION", ((Map<?, ?>) auditMap.get("properties/to")).get(ContentModel.PROP_LOCATION));
         assertEquals("LOCATION", auditMap.get("properties/to/cm:location"));
 
-        assertEquals(2, ((Map<?,?>)auditMap.get("properties/add")).size());
-        assertEquals("AUTHOR", ((Map<?,?>)auditMap.get("properties/add")).get(ContentModel.PROP_AUTHOR));
-        assertEquals("ADDRESSEE", ((Map<?,?>)auditMap.get("properties/add")).get(ContentModel.PROP_ADDRESSEE));
+        assertEquals(2, ((Map<?, ?>) auditMap.get("properties/add")).size());
+        assertEquals("AUTHOR", ((Map<?, ?>) auditMap.get("properties/add")).get(ContentModel.PROP_AUTHOR));
+        assertEquals("ADDRESSEE", ((Map<?, ?>) auditMap.get("properties/add")).get(ContentModel.PROP_ADDRESSEE));
         assertEquals("AUTHOR", auditMap.get("properties/add/cm:author"));
         assertEquals("ADDRESSEE", auditMap.get("properties/add/cm:addressee"));
 
-        assertEquals(3, ((Map<?,?>)auditMap.get("properties/delete")).size());
-        assertEquals("created", ((Map<?,?>)auditMap.get("properties/delete")).get(ContentModel.PROP_CREATED));
-        assertEquals("creator", ((Map<?,?>)auditMap.get("properties/delete")).get(ContentModel.PROP_CREATOR));
-        assertEquals("content", ((Map<?,?>)auditMap.get("properties/delete")).get(ContentModel.PROP_CONTENT));
+        assertEquals(3, ((Map<?, ?>) auditMap.get("properties/delete")).size());
+        assertEquals("created", ((Map<?, ?>) auditMap.get("properties/delete")).get(ContentModel.PROP_CREATED));
+        assertEquals("creator", ((Map<?, ?>) auditMap.get("properties/delete")).get(ContentModel.PROP_CREATOR));
+        assertEquals("content", ((Map<?, ?>) auditMap.get("properties/delete")).get(ContentModel.PROP_CONTENT));
         assertEquals("created", auditMap.get("properties/delete/cm:created"));
         assertEquals("creator", auditMap.get("properties/delete/cm:creator"));
         assertEquals("content", auditMap.get("properties/delete/cm:content"));
     }
+
     @Test
     public final void testReplaceInvalidPathChars()
     {
@@ -353,23 +353,23 @@ public class NodeChangeTest
         Map<QName, Serializable> toProperties = new HashMap<QName, Serializable>();
         QName qName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "valid/&\u3001");
         fromProperties.put(qName, "/&\u3001");
-        
+
         nodeChange.onUpdateProperties(content1, fromProperties, toProperties);
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
-        assertEquals("/&\u3001", ((Map<?,?>)auditMap.get("properties/delete")).get(qName));
+        assertEquals("/&\u3001", ((Map<?, ?>) auditMap.get("properties/delete")).get(qName));
         assertEquals("/&\u3001", auditMap.get("properties/delete/cm:valid---"));
     }
-    
+
     @Test
     public final void testOnAddAspect()
     {
-        //   add           = add
-        //   del add       = ---
-        //   add del add   = add
-        //   add add       = add
-        
+        // add = add
+        // del add = ---
+        // add del add = add
+        // add add = add
+
         nodeChange.onAddAspect(content1, ContentModel.ASPECT_ARCHIVED);
 
         nodeChange.onRemoveAspect(content1, ContentModel.ASPECT_COPIEDFROM);
@@ -383,13 +383,13 @@ public class NodeChangeTest
         nodeChange.onAddAspect(content1, ContentModel.ASPECT_GEOGRAPHIC);
 
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
-    
+
         assertStandardData(auditMap, "addNodeAspect", "addNodeAspect deleteNodeAspect");
 
-        assertEquals(3, ((Set<?>)auditMap.get("aspects/add")).size());
-        assertTrue("Grouped cm:archived aspect missing", ((Set<?>)auditMap.get("aspects/add")).contains(ContentModel.ASPECT_ARCHIVED));
-        assertTrue("Grouped cm:emailed aspect missing", ((Set<?>)auditMap.get("aspects/add")).contains(ContentModel.ASPECT_EMAILED));
-        assertTrue("Grouped cm:geographic aspect missing", ((Set<?>)auditMap.get("aspects/add")).contains(ContentModel.ASPECT_GEOGRAPHIC));
+        assertEquals(3, ((Set<?>) auditMap.get("aspects/add")).size());
+        assertTrue("Grouped cm:archived aspect missing", ((Set<?>) auditMap.get("aspects/add")).contains(ContentModel.ASPECT_ARCHIVED));
+        assertTrue("Grouped cm:emailed aspect missing", ((Set<?>) auditMap.get("aspects/add")).contains(ContentModel.ASPECT_EMAILED));
+        assertTrue("Grouped cm:geographic aspect missing", ((Set<?>) auditMap.get("aspects/add")).contains(ContentModel.ASPECT_GEOGRAPHIC));
         assertTrue("Individual cm:archived aspect missing", auditMap.containsKey("aspects/add/cm:archived"));
         assertTrue("Individual cm:emailed aspect missing", auditMap.containsKey("aspects/add/cm:emailed"));
         assertTrue("Individual cm:geographic aspect missing", auditMap.containsKey("aspects/add/cm:geographic"));
@@ -398,10 +398,10 @@ public class NodeChangeTest
     @Test
     public final void testOnRemoveAspect()
     {
-        //   del           = del
-        //   add del       = ---
-        //   del add del   = del
-        //   del del       = del
+        // del = del
+        // add del = ---
+        // del add del = del
+        // del del = del
 
         nodeChange.onRemoveAspect(content1, ContentModel.ASPECT_ARCHIVED);
 
@@ -416,13 +416,13 @@ public class NodeChangeTest
         nodeChange.onRemoveAspect(content1, ContentModel.ASPECT_GEOGRAPHIC);
 
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
-    
+
         assertStandardData(auditMap, "deleteNodeAspect", "deleteNodeAspect addNodeAspect");
 
-        assertEquals(3, ((Set<?>)auditMap.get("aspects/delete")).size());
-        assertTrue("Grouped cm:archived aspect missing", ((Set<?>)auditMap.get("aspects/delete")).contains(ContentModel.ASPECT_ARCHIVED));
-        assertTrue("Grouped cm:emailed aspect missing", ((Set<?>)auditMap.get("aspects/delete")).contains(ContentModel.ASPECT_EMAILED));
-        assertTrue("Grouped cm:geographic aspect missing", ((Set<?>)auditMap.get("aspects/delete")).contains(ContentModel.ASPECT_GEOGRAPHIC));
+        assertEquals(3, ((Set<?>) auditMap.get("aspects/delete")).size());
+        assertTrue("Grouped cm:archived aspect missing", ((Set<?>) auditMap.get("aspects/delete")).contains(ContentModel.ASPECT_ARCHIVED));
+        assertTrue("Grouped cm:emailed aspect missing", ((Set<?>) auditMap.get("aspects/delete")).contains(ContentModel.ASPECT_EMAILED));
+        assertTrue("Grouped cm:geographic aspect missing", ((Set<?>) auditMap.get("aspects/delete")).contains(ContentModel.ASPECT_GEOGRAPHIC));
         assertTrue("Individual cm:archived aspect missing", auditMap.containsKey("aspects/delete/cm:archived"));
         assertTrue("Individual cm:emailed aspect missing", auditMap.containsKey("aspects/delete/cm:emailed"));
         assertTrue("Individual cm:geographic aspect missing", auditMap.containsKey("aspects/delete/cm:geographic"));
@@ -432,7 +432,7 @@ public class NodeChangeTest
     public final void testOnContentUpdateTrue()
     {
         nodeChange.onContentUpdate(content1, true);
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertStandardData(auditMap, "createContent", "createContent");
@@ -442,7 +442,7 @@ public class NodeChangeTest
     public final void testOnContentUpdateFalse()
     {
         nodeChange.onContentUpdate(content1, false);
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertStandardData(auditMap, "UPDATE CONTENT", "updateContent");
@@ -452,7 +452,7 @@ public class NodeChangeTest
     public final void testOnContentRead()
     {
         nodeChange.onContentRead(content1);
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertStandardData(auditMap, "READ", "readContent");
@@ -464,13 +464,13 @@ public class NodeChangeTest
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(Version.PROP_DESCRIPTION, "This is a test");
         nodeChange.onCreateVersion(null, content1, versionProperties, null);
-        
+
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertStandardData(auditMap, "CREATE VERSION", "createVersion");
- 
-        assertEquals(1, ((Map<?,?>)auditMap.get("version-properties")).size());
-        assertEquals("Grouped description version-properties missing", "This is a test", ((Map<?,?>)auditMap.get("version-properties")).get(Version.PROP_DESCRIPTION));
+
+        assertEquals(1, ((Map<?, ?>) auditMap.get("version-properties")).size());
+        assertEquals("Grouped description version-properties missing", "This is a test", ((Map<?, ?>) auditMap.get("version-properties")).get(Version.PROP_DESCRIPTION));
         assertEquals("Individual description version-properties missing", "This is a test", auditMap.get("version-properties/description"));
     }
 

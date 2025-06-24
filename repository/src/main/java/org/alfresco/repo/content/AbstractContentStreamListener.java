@@ -36,22 +36,21 @@ import org.alfresco.service.cmr.repository.ContentStreamListener;
  */
 public abstract class AbstractContentStreamListener implements ContentStreamListener
 {
-    
+
     /** when set, ensures that listeners are executed within a transaction */
     private RetryingTransactionHelper transactionHelper;
-    
+
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
     {
         this.transactionHelper = helper;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.repository.ContentStreamListener#contentStreamClosed()
-     */
+     * 
+     * @see org.alfresco.service.cmr.repository.ContentStreamListener#contentStreamClosed() */
     public final void contentStreamClosed() throws ContentIOException
     {
-        RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>() {
             public Object execute()
             {
                 contentStreamClosedImpl();
@@ -67,7 +66,7 @@ public abstract class AbstractContentStreamListener implements ContentStreamList
         {
             try
             {
-                cb.execute();       
+                cb.execute();
             }
             catch (Throwable e)
             {
@@ -76,16 +75,14 @@ public abstract class AbstractContentStreamListener implements ContentStreamList
         }
 
     }
-    
+
     /**
-     * ContentStreamListeners must implement this method.
-     * The implementation must be idempotent.
+     * ContentStreamListeners must implement this method. The implementation must be idempotent.
      * 
-     * The method will be executed inside a retrying transaction helper if one is set.
-     * Listeners will not generally require this unless they write to the database.
+     * The method will be executed inside a retrying transaction helper if one is set. Listeners will not generally require this unless they write to the database.
      * 
      * @throws ContentIOException
      */
-    public abstract void  contentStreamClosedImpl() throws ContentIOException;
+    public abstract void contentStreamClosedImpl() throws ContentIOException;
 
 }

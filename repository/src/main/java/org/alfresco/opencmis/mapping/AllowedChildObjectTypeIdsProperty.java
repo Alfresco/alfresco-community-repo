@@ -29,12 +29,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Get the CMIS allowedChildObjectTypeIds property.
@@ -48,9 +49,12 @@ public class AllowedChildObjectTypeIdsProperty extends AbstractProperty
     /**
      * Construct
      *
-     * @param serviceRegistry ServiceRegistry
-     * @param connector CMISConnector
-     * @param cmisMapping CMISMapping
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param connector
+     *            CMISConnector
+     * @param cmisMapping
+     *            CMISMapping
      */
     public AllowedChildObjectTypeIdsProperty(ServiceRegistry serviceRegistry, CMISConnector connector,
             CMISMapping cmisMapping)
@@ -62,10 +66,10 @@ public class AllowedChildObjectTypeIdsProperty extends AbstractProperty
     @Override
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        if(nodeInfo.getType() == null)
+        if (nodeInfo.getType() == null)
         {
-        	//If the type is null, we can't handle it so return an empty list	
-        	return (Serializable) Collections.emptyList();
+            // If the type is null, we can't handle it so return an empty list
+            return (Serializable) Collections.emptyList();
         }
 
         TypeDefinition type = getServiceRegistry().getDictionaryService()

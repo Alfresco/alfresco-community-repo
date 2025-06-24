@@ -28,12 +28,11 @@ package org.alfresco.repo.dictionary;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
-
 
 /**
  * Access to model items.
@@ -41,70 +40,78 @@ import org.alfresco.service.namespace.QName;
  * @author David Caruana
  *
  */
-/*package*/ interface ModelQuery
+/* package */ interface ModelQuery
 {
     /**
      * Gets the specified data type
      * 
-     * @param name  name of the data type
-     * @return  data type definition
+     * @param name
+     *            name of the data type
+     * @return data type definition
      */
     public DataTypeDefinition getDataType(QName name);
 
     /**
      * Gets the data type for the specified Java Class
      * 
-     * @param javaClass   the java class
-     * @return  the data type definition (or null, if mapping is not available)
+     * @param javaClass
+     *            the java class
+     * @return the data type definition (or null, if mapping is not available)
      */
     public DataTypeDefinition getDataType(Class javaClass);
-    
+
     /**
      * Gets the specified type
      * 
-     * @param name  name of the type
-     * @return  type definition
+     * @param name
+     *            name of the type
+     * @return type definition
      */
     public TypeDefinition getType(QName name);
-    
+
     /**
      * Gets the specified aspect
      * 
-     * @param name  name of the aspect
-     * @return  aspect definition
+     * @param name
+     *            name of the aspect
+     * @return aspect definition
      */
     public AspectDefinition getAspect(QName name);
-    
+
     /**
      * Gets the specified class
      * 
-     * @param name  name of the class
-     * @return  class definition
+     * @param name
+     *            name of the class
+     * @return class definition
      */
     public ClassDefinition getClass(QName name);
-    
+
     /**
      * Gets the specified property
      * 
-     * @param name  name of the property
-     * @return  property definition
+     * @param name
+     *            name of the property
+     * @return property definition
      */
     public PropertyDefinition getProperty(QName name);
-    
+
     /**
      * Gets the specified property constraint
      * 
-     * @param name the qualified name of the property constraint
+     * @param name
+     *            the qualified name of the property constraint
      * @return ConstraintDefinition
      */
     public ConstraintDefinition getConstraint(QName name);
-    
+
     /**
      * Gets the specified association
      * 
-     * @param name  name of the association
-     * @return  association definition
+     * @param name
+     *            name of the association
+     * @return association definition
      */
     public AssociationDefinition getAssociation(QName name);
-    
+
 }

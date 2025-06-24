@@ -28,8 +28,8 @@ package org.alfresco.repo.rendition2;
 import org.alfresco.repo.rendition.RenditionPreventionRegistry;
 
 /**
- * This exception is thrown if an attempt is made to render a node which has a {@link RenditionPreventionRegistry content class}
- * registered to prevent rendition.<p/>
+ * This exception is thrown if an attempt is made to render a node which has a {@link RenditionPreventionRegistry content class} registered to prevent rendition.
+ * <p/>
  *
  * Based on the deprecated RenditionPreventedException which contained the deprecated RenditionDefinition.
  */

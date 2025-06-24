@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.admin.PatchException;
@@ -37,12 +38,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
- * Generic patch that uses existing {@link org.alfresco.repo.importer.ImporterBootstrap importers}
- * to import snippets into the system.  These snippets would otherwise have been bootstrapped by
- * a clean install.
+ * Generic patch that uses existing {@link org.alfresco.repo.importer.ImporterBootstrap importers} to import snippets into the system. These snippets would otherwise have been bootstrapped by a clean install.
  * <p>
- * By providing this class with a bootstrap view and an importer, it can check whether the path
- * exists and perform the import if it doesn't.
+ * By providing this class with a bootstrap view and an importer, it can check whether the path exists and perform the import if it doesn't.
  * 
  * @author Derek Hulley
  */
@@ -52,13 +50,14 @@ public class GenericBootstrapPatch extends AbstractPatch
     protected static final String MSG_CREATED = "patch.genericBootstrap.result.created";
     protected static final String MSG_DEFERRED = "patch.genericBootstrap.result.deferred";
     protected static final String ERR_MULTIPLE_FOUND = "patch.genericBootstrap.err.multiple_found";
-    
+
     protected ImporterBootstrap importerBootstrap;
     protected String checkPath;
     protected Properties bootstrapView;
 
     /**
-     * @param importerBootstrap the bootstrap bean that performs the user store bootstrap
+     * @param importerBootstrap
+     *            the bootstrap bean that performs the user store bootstrap
      */
     public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
     {
@@ -66,10 +65,10 @@ public class GenericBootstrapPatch extends AbstractPatch
     }
 
     /**
-     * Set the XPath statement that must be executed to check whether the import data is
-     * already present or not.
+     * Set the XPath statement that must be executed to check whether the import data is already present or not.
      * 
-     * @param checkPath an XPath statement
+     * @param checkPath
+     *            an XPath statement
      */
     public void setCheckPath(String checkPath)
     {
@@ -79,7 +78,8 @@ public class GenericBootstrapPatch extends AbstractPatch
     /**
      * @see ImporterBootstrap#setBootstrapViews(List)
      * 
-     * @param bootstrapView the bootstrap location
+     * @param bootstrapView
+     *            the bootstrap location
      */
     public void setBootstrapView(Properties bootstrapView)
     {
@@ -94,7 +94,6 @@ public class GenericBootstrapPatch extends AbstractPatch
         // fulfil contract of override
         super.checkProperties();
     }
-
 
     @Override
     protected String applyInternal() throws Exception
@@ -117,7 +116,7 @@ public class GenericBootstrapPatch extends AbstractPatch
             {
                 // nothing to do - it exists
                 return I18NUtil.getMessage(MSG_EXISTS, checkPath);
-                
+
             }
         }
         String path = bootstrapView.getProperty("path");
@@ -125,12 +124,11 @@ public class GenericBootstrapPatch extends AbstractPatch
         bootstrapViews.add(bootstrapView);
         // modify the bootstrapper
         importerBootstrap.setBootstrapViews(bootstrapViews);
-        importerBootstrap.setUseExistingStore(true);              // allow import into existing store
+        importerBootstrap.setUseExistingStore(true); // allow import into existing store
 
         importerBootstrap.bootstrap();
         // done
         return I18NUtil.getMessage(MSG_CREATED, path, rootNodeRef);
     }
-
 
 }

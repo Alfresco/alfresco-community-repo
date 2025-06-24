@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,6 +28,20 @@ package org.alfresco.rest.rm.community.fileplans;
 
 import static java.util.Arrays.asList;
 
+import static com.google.common.collect.Sets.newHashSet;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+import static org.testng.AssertJUnit.assertEquals;
+
 import static org.alfresco.rest.rm.community.base.AllowableOperations.CREATE;
 import static org.alfresco.rest.rm.community.base.AllowableOperations.DELETE;
 import static org.alfresco.rest.rm.community.base.AllowableOperations.UPDATE;
@@ -43,28 +57,27 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.IN_PLACE_READERS;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.IN_PLACE_WRITERS;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_ADMIN;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_SECURITY_OFFICER;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
-import static org.testng.AssertJUnit.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
+
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.DataProviderClass;
+import org.alfresco.rest.rm.community.model.CapabilityModel;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlanProperties;
 import org.alfresco.rest.rm.community.model.hold.Hold;
@@ -72,12 +85,13 @@ import org.alfresco.rest.rm.community.model.hold.HoldCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryProperties;
+import org.alfresco.rest.rm.community.model.role.Role;
+import org.alfresco.rest.rm.community.model.role.RoleCollection;
+import org.alfresco.rest.rm.community.model.user.UserCapabilities;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.utility.constants.ContainerName;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 /**
  * This class contains the tests for the File Plan CRUD API
@@ -85,29 +99,29 @@ import org.testng.annotations.Test;
  * @author Rodica Sutu
  * @since 2.6
  */
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 public class FilePlanTests extends BaseRMRestTest
 {
-    //** Number of children (for children creation test) */
+    // ** Number of children (for children creation test) */
     private static final int NUMBER_OF_CHILDREN = 10;
 
     /**
-     * Data Provider with:
-     * with the object types not allowed as children for a record category
+     * Data Provider with: with the object types not allowed as children for a record category
      *
      * @return file plan component alias
      */
     @DataProvider
     public static Object[][] childrenNotAllowedForFilePlan()
     {
-        return new String[][] {
-                { FILE_PLAN_TYPE },
-                { TRANSFER_CONTAINER_TYPE },
-                { UNFILED_CONTAINER_TYPE },
-                { UNFILED_RECORD_FOLDER_TYPE },
-                { TRANSFER_TYPE },
-                { CONTENT_TYPE },
-                { NON_ELECTRONIC_RECORD_TYPE},
-                { RECORD_FOLDER_TYPE}
+        return new String[][]{
+                {FILE_PLAN_TYPE},
+                {TRANSFER_CONTAINER_TYPE},
+                {UNFILED_CONTAINER_TYPE},
+                {UNFILED_RECORD_FOLDER_TYPE},
+                {TRANSFER_TYPE},
+                {CONTENT_TYPE},
+                {NON_ELECTRONIC_RECORD_TYPE},
+                {RECORD_FOLDER_TYPE}
         };
     }
 
@@ -118,7 +132,7 @@ public class FilePlanTests extends BaseRMRestTest
      * Then I get the 404 response code
      * </pre>
      */
-    @Test (priority = 1)
+    @Test(priority = 1)
     // Set priority to 1 in order for this test to run last one in this class. The rm site is created only once at the
     // beginning of the class and because this test deletes the rm site, the other tests might be affected
     public void getFilePlanWhenRMIsNotCreated()
@@ -131,7 +145,7 @@ public class FilePlanTests extends BaseRMRestTest
             // Delete RM Site
             rmSiteAPI.deleteRMSite();
         }
-        //get file plan
+        // get file plan
         getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS);
 
         // Check the response code is NOT_FOUND
@@ -155,7 +169,7 @@ public class FilePlanTests extends BaseRMRestTest
 
         // Check the response code
         assertStatusCode(OK);
-        //check file plan details
+        // check file plan details
         assertEquals(FILE_PLAN_TYPE, filePlan.getNodeType());
         assertEquals(ContainerName.documentLibrary.toString(), filePlan.getName());
     }
@@ -202,13 +216,10 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     /**
-     * Given that a file plan exists
-     * When I ask the API to modify the details of the file plan
-     * Then the details of the file are modified
-     * Note: the details of the file plan are limited to title and description.
+     * Given that a file plan exists When I ask the API to modify the details of the file plan Then the details of the file are modified Note: the details of the file plan are limited to title and description.
      */
     @Test
-    @Bug (id = "RM-4295")
+    @Bug(id = "RM-4295")
     public void updateFilePlan()
     {
         String FILE_PLAN_DESCRIPTION = "Description updated " + getRandomAlphanumeric();
@@ -216,18 +227,18 @@ public class FilePlanTests extends BaseRMRestTest
 
         // Build object for updating the filePlan
         FilePlan filePlanComponent = FilePlan.builder()
-                                             .properties(FilePlanProperties.builder()
-                                                                           .title(FILE_PLAN_TITLE)
-                                                                           .description(FILE_PLAN_DESCRIPTION)
-                                                                           .build())
-                                             .build();
+                .properties(FilePlanProperties.builder()
+                        .title(FILE_PLAN_TITLE)
+                        .description(FILE_PLAN_DESCRIPTION)
+                        .build())
+                .build();
         // Create a random user
         UserModel nonRMuser = getDataUser().createRandomTestUser("testUser");
 
         // Update the file plan
-         getRestAPIFactory().getFilePlansAPI(nonRMuser).updateFilePlan(filePlanComponent, FILE_PLAN_ALIAS);
+        getRestAPIFactory().getFilePlansAPI(nonRMuser).updateFilePlan(filePlanComponent, FILE_PLAN_ALIAS);
 
-        //Check the response status code is FORBIDDEN
+        // Check the response status code is FORBIDDEN
         assertStatusCode(FORBIDDEN);
 
         // Update the file plan
@@ -244,18 +255,16 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     /**
-     * Given that a file plan exists
-     * When I ask the API to modify the name of the file plan
-     * Then a error is returned (422 response code)
+     * Given that a file plan exists When I ask the API to modify the name of the file plan Then a error is returned (422 response code)
      */
     @Test
-    @Bug (id = "RM-4295")
+    @Bug(id = "RM-4295")
     public void updateFilePlanName()
     {
         // Build object for updating the filePlan
         FilePlan filePlanComponent = FilePlan.builder()
-                                             .name(getRandomName("File Plan name updated "))
-                                             .build();
+                .name(getRandomName("File Plan name updated "))
+                .build();
 
         // Update the file plan
         getRestAPIFactory().getFilePlansAPI().updateFilePlan(filePlanComponent, FILE_PLAN_ALIAS);
@@ -270,6 +279,7 @@ public class FilePlanTests extends BaseRMRestTest
      * When I ask the API to create a root record category
      * Then it is created as a root record category
      * </pre>
+     *
      * <pre>
      * Given that a file plan exists
      * When I use the API to create a folder (cm:folder type) into the fileplan
@@ -277,12 +287,10 @@ public class FilePlanTests extends BaseRMRestTest
      * (see RM-4572 comments)
      * </pre>
      */
-    @Test
-    (
-        description = "Create root category",
-        dataProviderClass = DataProviderClass.class,
-        dataProvider = "categoryTypes"
-    )
+    @Test(
+            description = "Create root category",
+            dataProviderClass = DataProviderClass.class,
+            dataProvider = "categoryTypes")
     public void createFilePlanChildren(String nodeType)
     {
         String categoryName = "Category name " + getRandomAlphanumeric();
@@ -290,14 +298,14 @@ public class FilePlanTests extends BaseRMRestTest
 
         // Create the root record category
         RecordCategory recordCategory = RecordCategory.builder()
-                                                      .name(categoryName)
-                                                      .properties(RecordCategoryProperties.builder()
-                                                                           .title(categoryTitle)
-                                                                           .build())
-                                                      .nodeType(nodeType)
-                                                      .build();
+                .name(categoryName)
+                .properties(RecordCategoryProperties.builder()
+                        .title(categoryTitle)
+                        .build())
+                .nodeType(nodeType)
+                .build();
         RecordCategory rootRecordCategory = getRestAPIFactory().getFilePlansAPI()
-                                                               .createRootRecordCategory(recordCategory,FILE_PLAN_ALIAS);
+                .createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS);
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -318,7 +326,8 @@ public class FilePlanTests extends BaseRMRestTest
      * Given a root category
      * When I ask the API to create a root category having the same name
      * Then  the response code received is 409 - name clashes with an existing node
-     *</pre>
+     * </pre>
+     *
      * <pre>
      * Given a root category
      * When I ask the API to create a root category having the same name  with autoRename parameter on true
@@ -332,16 +341,15 @@ public class FilePlanTests extends BaseRMRestTest
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
 
-
         // Create the root record category
         RecordCategory recordCategory = RecordCategory.builder()
-                                                      .name(categoryName)
-                                                      .properties(RecordCategoryProperties.builder()
-                                                                           .title(categoryTitle)
-                                                                           .build())
-                                                      .build();
+                .name(categoryName)
+                .properties(RecordCategoryProperties.builder()
+                        .title(categoryTitle)
+                        .build())
+                .build();
         // Create the root record category
-        RecordCategory rootRecordCategory = getRestAPIFactory().getFilePlansAPI().createRootRecordCategory(recordCategory,FILE_PLAN_ALIAS);
+        RecordCategory rootRecordCategory = getRestAPIFactory().getFilePlansAPI().createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS);
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -353,9 +361,9 @@ public class FilePlanTests extends BaseRMRestTest
         // Verify the status code
         assertStatusCode(CONFLICT);
 
-        //create the same category with autoRename parameter on true
+        // create the same category with autoRename parameter on true
         RecordCategory rootRecordCategoryAutoRename = getRestAPIFactory().getFilePlansAPI()
-                                                                         .createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS,"autoRename=true");
+                .createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS, "autoRename=true");
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -366,9 +374,8 @@ public class FilePlanTests extends BaseRMRestTest
     @Test
     public void listFilePlanChildren()
     {
-        //delete all the root categories
-        getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getEntries().forEach(recordCategoryEntry ->
-                deleteRecordCategory(recordCategoryEntry.getEntry().getId()));
+        // delete all the root categories
+        getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getEntries().forEach(recordCategoryEntry -> deleteRecordCategory(recordCategoryEntry.getEntry().getId()));
         // Add child folders
         ArrayList<RecordCategory> children = new ArrayList<>();
         for (int i = 0; i < NUMBER_OF_CHILDREN; i++)
@@ -383,40 +390,38 @@ public class FilePlanTests extends BaseRMRestTest
 
         // Get record category children from API
         RecordCategoryCollection recordCategoryChildren = getRestAPIFactory().getFilePlansAPI()
-                                                                             .getRootRecordCategories(FILE_PLAN_ALIAS, "include=aspects,properties");
+                .getRootRecordCategories(FILE_PLAN_ALIAS, "include=aspects,properties");
 
         // Check status code
         assertStatusCode(OK);
 
         // Check children against created list
-        recordCategoryChildren.getEntries().forEach(c ->
-                {
-                    RecordCategory recordCategoryChild = c.getEntry();
-                    String recordCategoryChildId = recordCategoryChild.getId();
-                    assertNotNull(recordCategoryChildId);
-                    logger.info("Checking child " + recordCategoryChildId);
+        recordCategoryChildren.getEntries().forEach(c -> {
+            RecordCategory recordCategoryChild = c.getEntry();
+            String recordCategoryChildId = recordCategoryChild.getId();
+            assertNotNull(recordCategoryChildId);
+            logger.info("Checking child " + recordCategoryChildId);
 
-                    try
-                    {
-                        // Find this child in created children list
-                        RecordCategory createdComponent = children.stream()
-                                                                       .filter(child -> child.getId().equals(recordCategoryChildId))
-                                                                       .findFirst()
-                                                                       .orElseThrow();
+            try
+            {
+                // Find this child in created children list
+                RecordCategory createdComponent = children.stream()
+                        .filter(child -> child.getId().equals(recordCategoryChildId))
+                        .findFirst()
+                        .orElseThrow();
 
-                        // Created by
-                        assertEquals(recordCategoryChild.getCreatedByUser().getId(), getAdminUser().getUsername());
+                // Created by
+                assertEquals(recordCategoryChild.getCreatedByUser().getId(), getAdminUser().getUsername());
 
-                        assertEquals(createdComponent.getName(), recordCategoryChild.getName());
-                        assertEquals(createdComponent.getNodeType(), recordCategoryChild.getNodeType());
+                assertEquals(createdComponent.getName(), recordCategoryChild.getName());
+                assertEquals(createdComponent.getNodeType(), recordCategoryChild.getNodeType());
 
-                    }
-                    catch (NoSuchElementException e)
-                    {
-                        fail("No child element for " + recordCategoryChildId);
-                    }
-                }
-                );
+            }
+            catch (NoSuchElementException e)
+            {
+                fail("No child element for " + recordCategoryChildId);
+            }
+        });
     }
 
     /**
@@ -426,24 +431,22 @@ public class FilePlanTests extends BaseRMRestTest
      * Then the node type provided is converted to a record category
      * </pre>
      */
-    @Test
-    (
-        description = "Create a record folder/unfiled container/unfiled folder/record/file plan container",
-        dataProvider = "childrenNotAllowedForFilePlan"
-    )
+    @Test(
+            description = "Create a record folder/unfiled container/unfiled folder/record/file plan container",
+            dataProvider = "childrenNotAllowedForFilePlan")
     public void createChildrenNotAllowedInFilePlan(String nodeType)
     {
         String componentName = "Component" + getRandomAlphanumeric();
 
         // Create the root record category
         RecordCategory component = RecordCategory.builder()
-                                                      .name(componentName)
-                                                      .nodeType(nodeType)
-                                                 .build();
+                .name(componentName)
+                .nodeType(nodeType)
+                .build();
         // Create the invalid node type
         RecordCategory rootRecordCategory = getRestAPIFactory().getFilePlansAPI()
-                                                               .createRootRecordCategory(component, FILE_PLAN_ALIAS);
-        //check the response status code
+                .createRootRecordCategory(component, FILE_PLAN_ALIAS);
+        // check the response status code
         assertStatusCode(CREATED);
         assertEquals(rootRecordCategory.getName(), componentName);
         assertEquals(rootRecordCategory.getNodeType(), RECORD_CATEGORY_TYPE);
@@ -455,14 +458,14 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     @Test
-    public  void listChildrenUserPermission()
+    public void listChildrenUserPermission()
     {
         // Create a random user
         UserModel managerUser = getDataUser().createRandomTestUser("managerUser");
 
         // Add child folders
         ArrayList<RecordCategory> children = new ArrayList<>();
-        for (int i = 0; i < NUMBER_OF_CHILDREN/2; i++)
+        for (int i = 0; i < NUMBER_OF_CHILDREN / 2; i++)
         {
             String categoryName = "Category name " + getRandomAlphanumeric();
             String categoryTitle = "Category title " + getRandomAlphanumeric();
@@ -475,7 +478,7 @@ public class FilePlanTests extends BaseRMRestTest
         getRestAPIFactory().getRMUserAPI().assignRoleToUser(managerUser.getUsername(), ROLE_RM_MANAGER.roleId);
         // Get record category children from API
         getRestAPIFactory().getFilePlansAPI(managerUser).getRootRecordCategories(FILE_PLAN_ALIAS)
-                           .assertThat().entriesListIsEmpty().assertThat().paginationExist();
+                .assertThat().entriesListIsEmpty().assertThat().paginationExist();
 
         ArrayList<RecordCategory> childrenManager = new ArrayList<>();
         for (int i = 0; i < NUMBER_OF_CHILDREN / 2; i++)
@@ -491,9 +494,8 @@ public class FilePlanTests extends BaseRMRestTest
         // Get record category children from API
         RecordCategoryCollection recordCategoryChildren = getRestAPIFactory().getFilePlansAPI(managerUser).getRootRecordCategories(FILE_PLAN_ALIAS);
 
-        //Check children against created list
-        recordCategoryChildren.getEntries().forEach(c ->
-        {
+        // Check children against created list
+        recordCategoryChildren.getEntries().forEach(c -> {
             RecordCategory recordCategoryChild = c.getEntry();
             String recordCategoryChildId = recordCategoryChild.getId();
             assertNotNull(recordCategoryChildId);
@@ -503,18 +505,17 @@ public class FilePlanTests extends BaseRMRestTest
             {
                 // Find this child in created children list
                 assertTrue(childrenManager.stream()
-                                          .anyMatch(child -> child.getId().equals(recordCategoryChildId))
-                             );
+                        .anyMatch(child -> child.getId().equals(recordCategoryChildId)));
                 assertFalse(children.stream()
-                                    .anyMatch(child -> child.getId().equals(recordCategoryChildId))
+                        .anyMatch(child -> child.getId().equals(recordCategoryChildId))
 
-                             );
-            } catch (NoSuchElementException e)
+                );
+            }
+            catch (NoSuchElementException e)
             {
                 fail("No child element for " + recordCategoryChildId);
             }
-        }
-        );
+        });
     }
 
     /**
@@ -533,12 +534,12 @@ public class FilePlanTests extends BaseRMRestTest
 
         // Create the hold
         Hold hold = Hold.builder()
-            .name(holdName)
-            .description(holdDescription)
-            .reason(holdReason)
-            .build();
+                .name(holdName)
+                .description(holdDescription)
+                .reason(holdReason)
+                .build();
         Hold createdHold = getRestAPIFactory().getFilePlansAPI()
-            .createHold(hold, FILE_PLAN_ALIAS);
+                .createHold(hold, FILE_PLAN_ALIAS);
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -549,13 +550,11 @@ public class FilePlanTests extends BaseRMRestTest
         assertNotNull(createdHold.getId());
     }
 
-
     @Test
     public void listHolds()
     {
         // Delete all holds
-        getRestAPIFactory().getFilePlansAPI().getHolds(FILE_PLAN_ALIAS).getEntries().forEach(holdEntry ->
-            getRestAPIFactory().getHoldsAPI().deleteHold(holdEntry.getEntry().getId()));
+        getRestAPIFactory().getFilePlansAPI().getHolds(FILE_PLAN_ALIAS).getEntries().forEach(holdEntry -> getRestAPIFactory().getHoldsAPI().deleteHold(holdEntry.getEntry().getId()));
 
         // Add holds
         List<Hold> filePlanHolds = new ArrayList<>();
@@ -566,48 +565,213 @@ public class FilePlanTests extends BaseRMRestTest
             String holdReason = "Reason " + getRandomAlphanumeric();
             // Create a hold
             Hold hold = Hold.builder()
-                .name(holdName)
-                .description(holdDescription)
-                .reason(holdReason)
-                .build();
+                    .name(holdName)
+                    .description(holdDescription)
+                    .reason(holdReason)
+                    .build();
             Hold createdHold = getRestAPIFactory().getFilePlansAPI()
-                .createHold(hold, FILE_PLAN_ALIAS);
+                    .createHold(hold, FILE_PLAN_ALIAS);
             assertNotNull(createdHold.getId());
             filePlanHolds.add(createdHold);
         }
 
         // Get holds of a file plan
         HoldCollection holdCollection = getRestAPIFactory().getFilePlansAPI()
-            .getHolds(FILE_PLAN_ALIAS);
+                .getHolds(FILE_PLAN_ALIAS);
 
         // Check status code
         assertStatusCode(OK);
 
         // Check holds against created list
-        holdCollection.getEntries().forEach(c ->
-            {
-                Hold hold = c.getEntry();
-                String holdId = hold.getId();
-                assertNotNull(holdId);
-                logger.info("Checking hold " + holdId);
+        holdCollection.getEntries().forEach(c -> {
+            Hold hold = c.getEntry();
+            String holdId = hold.getId();
+            assertNotNull(holdId);
+            logger.info("Checking hold " + holdId);
 
-                try
-                {
-                    // Find this hold in created holds list
-                    Hold createdHold = filePlanHolds.stream()
+            try
+            {
+                // Find this hold in created holds list
+                Hold createdHold = filePlanHolds.stream()
                         .filter(child -> child.getId().equals(holdId))
                         .findFirst()
                         .orElseThrow();
 
-                    assertEquals(createdHold.getName(), hold.getName());
-                    assertEquals(createdHold.getDescription(), hold.getDescription());
-                    assertEquals(createdHold.getReason(), hold.getReason());
-                }
-                catch (NoSuchElementException e)
-                {
-                    fail("No child element for " + hold);
-                }
+                assertEquals(createdHold.getName(), hold.getName());
+                assertEquals(createdHold.getDescription(), hold.getDescription());
+                assertEquals(createdHold.getReason(), hold.getReason());
             }
-                                                   );
+            catch (NoSuchElementException e)
+            {
+                fail("No child element for " + hold);
+            }
+        });
     }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When rmAdmin user ask the API for roles
+     * It provides list of all default roles
+     * </pre>
+     */
+    @Test
+    public void listFilePlanAllDefaultRoles()
+    {
+        List<String> defaultRolesDisplayNames = asList(IN_PLACE_READERS.displayName, ROLE_RM_ADMIN.displayName, ROLE_RM_MANAGER.displayName, ROLE_RM_POWER_USER.displayName, ROLE_RM_USER.displayName, IN_PLACE_WRITERS.displayName, ROLE_RM_SECURITY_OFFICER.displayName);
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI().getFilePlanRoles(FILE_PLAN_ALIAS);
+        assertStatusCode(OK);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertTrue(defaultRolesDisplayNames.contains(role.getDisplayLabel()));
+            assertNotNull(role.getCapabilities());
+        });
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When rmAdmin user ask the API for roles with SystemRoles as false
+     * It provides list of all roles excluding SystemRoles
+     * </pre>
+     */
+    @Test
+    public void listFilePlanAllRolesExcludeSystemRoles()
+    {
+        String parameters = "where=(systemRoles=false)";
+        List<String> systemRolesDisplayNames = asList(IN_PLACE_WRITERS.displayName, IN_PLACE_READERS.displayName);
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI().getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
+        assertStatusCode(OK);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertFalse(systemRolesDisplayNames.contains(role.getDisplayLabel()));
+            assertNotNull(role.getCapabilities());
+        });
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When a non-RM user asks the API for the roles
+     * Then the status code 403 (Permission denied) is return
+     * </pre>
+     */
+    @Test
+    public void nonRmUserFilePlanRoles()
+    {
+        // Create a random user
+        UserModel nonRMuser = getDataUser().createRandomTestUser("testUser");
+        // Call to new API to get the roles and capabilities
+        getRestAPIFactory().getFilePlansAPI(nonRMuser).getFilePlanRoles(FILE_PLAN_ALIAS);
+        assertStatusCode(FORBIDDEN);
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When a RM_Manager user asks the API for the roles
+     * returns the RM_Manager role and capabilities
+     * </pre>
+     */
+    @Test
+    public void rmManagerFilePlanRolesAndCapabilities()
+    {
+        // Create a random user
+        UserModel managerUser = getDataUser().createRandomTestUser("managerUser");
+        // Assign RecordsManager role to user
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(managerUser.getUsername(), ROLE_RM_MANAGER.roleId);
+        String parameters = "where=(personId='" + managerUser.getUsername() + "')";
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI(managerUser).getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertEquals(ROLE_RM_MANAGER.displayName, role.getDisplayLabel());
+            assertNotNull(role.getCapabilities());
+        });
+
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When a User with more than one role asks the API for the roles and relation
+     * returns the roles and capabilities
+     * </pre>
+     */
+    @Test
+    public void multipleRoleUserFilePlanRolesAndCapabilities()
+    {
+        // Create a random user
+        UserModel rmUser = getDataUser().createRandomTestUser("rmUser");
+        // Assign rmUser role to user
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), ROLE_RM_USER.roleId);
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), ROLE_RM_POWER_USER.roleId);
+        String parameters = "where=(personId='" + rmUser.getUsername() + "')";
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI(rmUser).getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
+        assertStatusCode(OK);
+        assertEquals(roleCollection.getEntries().size(), 2);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertTrue(role.getDisplayLabel().equals(ROLE_RM_USER.displayName) || role.getDisplayLabel().equals(ROLE_RM_POWER_USER.displayName));
+            assertNotNull(role.getCapabilities());
+        });
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When a new user with a new role asks the API for the roles and relation
+     * returns the new role and new capabilities
+     * </pre>
+     */
+    @Test
+    public void newRoleUserFilePlanRolesAndCapabilities()
+    {
+        /** A list of capabilities. */
+        Set<String> newCapabilities = newHashSet(UserCapabilities.VIEW_RECORDS_CAP, UserCapabilities.DECLARE_RECORDS_CAP);
+        // Create a new role using old API
+        getRmRolesAndActionsV0API().createRole(getAdminUser().getUsername(), getAdminUser().getPassword(), "NewTestRole",
+                "New Role Label", newCapabilities);
+        // Create a random user
+        UserModel rmNewUser = getDataUser().createRandomTestUser("rmPowerUser");
+        // Assign New role to user
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmNewUser.getUsername(), "NewTestRole");
+        String parameters = "where=(personId='" + rmNewUser.getUsername() + "')";
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI(rmNewUser).getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
+        assertStatusCode(OK);
+        assertEquals(roleCollection.getEntries().size(), 1);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            List<CapabilityModel> capabilities = roleModelEntry.getEntry().getCapabilities();
+            capabilities.forEach(capabilityModel -> {
+                assertTrue(newCapabilities.contains(capabilityModel.name()));
+            });
+        });
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When API call happens with Capability filter
+     * returns roles associated with the capability
+     * </pre>
+     */
+    @Test
+    public void filePlanRolesAndCapabilitiesFilter()
+    {
+        String parameters = "where=(systemRoles=true and capabilityName in ('ManageRules'))";
+        // Call to new API to get the roles and capabilities, filter by capability, include assigned users
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI().getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
+        assertStatusCode(OK);
+        assertEquals(roleCollection.getEntries().size(), 1);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertEquals(ROLE_RM_ADMIN.displayName, role.getDisplayLabel());
+            assertNotNull(role.getCapabilities());
+        });
+    }
+
 }

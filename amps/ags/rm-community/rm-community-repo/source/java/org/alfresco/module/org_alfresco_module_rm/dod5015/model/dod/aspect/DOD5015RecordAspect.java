@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,15 +45,16 @@ import org.alfresco.service.namespace.QName;
  * @since 2.2
  */
 @BehaviourBean
-public class DOD5015RecordAspect extends    BaseBehaviourBean
-                                 implements NodeServicePolicies.OnAddAspectPolicy,
-                                            DOD5015Model
+public class DOD5015RecordAspect extends BaseBehaviourBean
+        implements NodeServicePolicies.OnAddAspectPolicy,
+        DOD5015Model
 {
     /** file plan service */
     private FilePlanService filePlanService;
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -65,18 +66,16 @@ public class DOD5015RecordAspect extends    BaseBehaviourBean
      *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
-    @Behaviour
-    (
-            kind=BehaviourKind.CLASS,
-            type="rma:record",
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            type = "rma:record",
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     @Override
     public void onAddAspect(NodeRef nodeRef, QName aspect)
     {
         if (nodeService.exists(nodeRef) &&
-            !nodeService.hasAspect(nodeRef, ASPECT_DOD_5015_RECORD) &&
-            isDODFilePlan(nodeRef))
+                !nodeService.hasAspect(nodeRef, ASPECT_DOD_5015_RECORD) &&
+                isDODFilePlan(nodeRef))
         {
             nodeService.addAspect(nodeRef, ASPECT_DOD_5015_RECORD, null);
         }
@@ -85,8 +84,9 @@ public class DOD5015RecordAspect extends    BaseBehaviourBean
     /**
      * Helper method to indicate whether the records file plan is a DOD one or not.
      *
-     * @param record    record node reference
-     * @return boolean  true if in DOD file plan, false otherwise
+     * @param record
+     *            record node reference
+     * @return boolean true if in DOD file plan, false otherwise
      */
     private boolean isDODFilePlan(NodeRef record)
     {

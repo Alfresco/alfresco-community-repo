@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,6 +31,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -39,9 +43,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Base declarative web script for role API.
@@ -61,7 +62,8 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     protected AuthorityService authorityService;
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -69,7 +71,8 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     }
 
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -77,7 +80,8 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     }
 
     /**
-     * @param authorityService  authority service
+     * @param authorityService
+     *            authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -108,8 +112,8 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
             String id = templateVars.get("id");
 
             if (!StringUtils.isEmpty(storeType) &&
-                !StringUtils.isEmpty(storeId) &&
-                !StringUtils.isEmpty(id))
+                    !StringUtils.isEmpty(storeId) &&
+                    !StringUtils.isEmpty(id))
             {
                 StoreRef storeRef = new StoreRef(storeType, storeId);
                 NodeRef nodeRef = new NodeRef(storeRef, id);
@@ -158,8 +162,8 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
             if (showAuths)
             {
                 item = new RoleItem(role,
-                                    createAuthorityItems(filePlanRoleService.getUsersAssignedToRole(filePlan, role.getName())),
-                                    createAuthorityItems(filePlanRoleService.getGroupsAssignedToRole(filePlan, role.getName())));
+                        createAuthorityItems(filePlanRoleService.getUsersAssignedToRole(filePlan, role.getName())),
+                        createAuthorityItems(filePlanRoleService.getGroupsAssignedToRole(filePlan, role.getName())));
             }
             else
             {

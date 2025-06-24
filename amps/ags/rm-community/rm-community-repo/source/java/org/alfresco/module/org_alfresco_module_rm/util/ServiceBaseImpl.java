@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,6 +30,8 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -44,8 +46,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Helper base class for service implementations.
@@ -92,7 +92,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -100,7 +101,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     }
 
     /**
-     * @param service   service
+     * @param service
+     *            service
      */
     public void setRenditionService(RenditionService service)
     {
@@ -108,7 +110,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -116,7 +119,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     }
 
     /**
-     * @param authenticationUtil    authentication util helper
+     * @param authenticationUtil
+     *            authentication util helper
      */
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
@@ -124,7 +128,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     }
 
     /**
-     * @param nodeTypeUtility node type utility
+     * @param nodeTypeUtility
+     *            node type utility
      */
     public void setNodeTypeUtility(NodeTypeUtility nodeTypeUtility)
     {
@@ -132,7 +137,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     }
 
     /**
-     * @param transactionalResourceHelper   transactional resource helper
+     * @param transactionalResourceHelper
+     *            transactional resource helper
      */
     public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
     {
@@ -142,7 +148,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /**
      * Set the content service
      *
-     * @param contentService content service
+     * @param contentService
+     *            content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -158,7 +165,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         if (internalNodeService == null)
         {
-            internalNodeService = (NodeService)applicationContext.getBean("dbNodeService");
+            internalNodeService = (NodeService) applicationContext.getBean("dbNodeService");
         }
 
         return internalNodeService;
@@ -277,7 +284,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
             result = FilePlanComponentKind.TRANSFER;
         }
         else if (instanceOf(type, TYPE_DISPOSITION_SCHEDULE) ||
-                 instanceOf(type, TYPE_DISPOSITION_ACTION_DEFINITION))
+                instanceOf(type, TYPE_DISPOSITION_ACTION_DEFINITION))
         {
             result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
         }
@@ -296,7 +303,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         boolean result = false;
         if (getInternalNodeService().exists(nodeRef) &&
-            getInternalNodeService().hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
+                getInternalNodeService().hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
         {
             result = true;
         }
@@ -340,8 +347,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
      * <p>
      * Exposed in the RecordFolder service.
      *
-     * @param   nodeRef node reference
-     * @return  boolean true if record folder, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @return boolean true if record folder, false otherwise
      */
     public boolean isRecordFolder(NodeRef nodeRef)
     {
@@ -352,8 +360,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /**
      * Indicates whether the given node reference is a record or not.
      *
-     * @param nodeRef   node reference
-     * @return boolean  true if node reference is a record, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @return boolean true if node reference is a record, false otherwise
      */
     public boolean isRecord(NodeRef nodeRef)
     {
@@ -367,8 +376,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
      * <p>
      * Exposed publicly in the {@link HoldService}
      *
-     * @param nodeRef   node reference
-     * @return boolean  true if rma:hold or sub-type, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @return boolean true if rma:hold or sub-type, false otherwise
      */
     public boolean isHold(NodeRef nodeRef)
     {
@@ -376,7 +386,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
         boolean isHold = false;
         if (getInternalNodeService().exists(nodeRef) &&
-            instanceOf(nodeRef, TYPE_HOLD))
+                instanceOf(nodeRef, TYPE_HOLD))
         {
             isHold = true;
         }
@@ -398,7 +408,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /**
      * Indicates whether the given node reference is an unfiled records container or not.
      *
-     * @param nodeRef node reference
+     * @param nodeRef
+     *            node reference
      * @return boolean true if rma:unfiledRecordContainer or sub-type, false otherwise
      */
     public boolean isUnfiledRecordsContainer(NodeRef nodeRef)
@@ -423,8 +434,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /**
      * Gets the file plan that a given file plan component resides within.
      *
-     * @param nodeRef           node reference
-     * @return {@link NodeRef}  file plan, null if none
+     * @param nodeRef
+     *            node reference
+     * @return {@link NodeRef} file plan, null if none
      */
     public NodeRef getFilePlan(final NodeRef nodeRef)
     {
@@ -438,7 +450,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
             }
             else
             {
-                result = (NodeRef)getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
+                result = (NodeRef) getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
                 if (result == null || !instanceOf(result, TYPE_FILE_PLAN))
                 {
                     if (instanceOf(nodeRef, TYPE_FILE_PLAN))
@@ -469,8 +481,10 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /**
      * Utility method to safely and quickly determine if a node is a type (or sub-type) of the one specified.
      *
-     * @param nodeRef       node reference
-     * @param ofClassName   class name to check
+     * @param nodeRef
+     *            node reference
+     * @param ofClassName
+     *            class name to check
      */
     protected boolean instanceOf(NodeRef nodeRef, QName ofClassName)
     {
@@ -483,9 +497,11 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /**
      * Utility method to quickly determine whether one class is equal to or sub of another.
      *
-     * @param className     class name
-     * @param ofClassName   class name to check against
-     * @return boolean      true if equal to or sub, false otherwise
+     * @param className
+     *            class name
+     * @param ofClassName
+     *            class name to check against
+     * @return boolean true if equal to or sub, false otherwise
      */
     protected boolean instanceOf(QName className, QName ofClassName)
     {
@@ -497,8 +513,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
      * <p>
      * If the node is not already countable, then rma:countable is added and 0 returned.
      *
-     * @param nodeRef   node reference
-     * @return int      next counter value
+     * @param nodeRef
+     *            node reference
+     * @return int next counter value
      */
     protected int getNextCount(NodeRef nodeRef)
     {
@@ -512,7 +529,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         }
         else
         {
-            Integer value = (Integer)this.nodeService.getProperty(nodeRef, PROP_COUNT);
+            Integer value = (Integer) this.nodeService.getProperty(nodeRef, PROP_COUNT);
             if (value != null)
             {
                 counter = value.intValue() + 1;
@@ -530,8 +547,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /**
      * Helper method to get a set containing the node's type and all it's aspects
      *
-     * @param nodeRef       nodeRef
-     * @return Set<QName>   set of qname's
+     * @param nodeRef
+     *            nodeRef
+     * @return Set<QName> set of qname's
      */
     protected Set<QName> getTypeAndApsects(NodeRef nodeRef)
     {

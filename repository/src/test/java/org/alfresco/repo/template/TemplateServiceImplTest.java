@@ -31,6 +31,11 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
@@ -48,10 +53,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author Kevin Roast
@@ -70,15 +71,15 @@ public class TemplateServiceImplTest extends BaseSpringTest
     @Before
     public void setUp() throws Exception
     {
-        transactionService = (TransactionService)applicationContext.getBean("transactionComponent");
-        nodeService = (NodeService)applicationContext.getBean("nodeService");
-        templateService = (TemplateService)applicationContext.getBean("templateService");
-        serviceRegistry = (ServiceRegistry)applicationContext.getBean("ServiceRegistry");
+        transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
+        nodeService = (NodeService) applicationContext.getBean("nodeService");
+        templateService = (TemplateService) applicationContext.getBean("templateService");
+        serviceRegistry = (ServiceRegistry) applicationContext.getBean("ServiceRegistry");
 
-        this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+        this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
-        DictionaryDAO dictionaryDao = (DictionaryDAO)applicationContext.getBean("dictionaryDAO");
+        DictionaryDAO dictionaryDao = (DictionaryDAO) applicationContext.getBean("dictionaryDAO");
 
         // load the system model
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
@@ -98,8 +99,7 @@ public class TemplateServiceImplTest extends BaseSpringTest
         BaseNodeServiceTest.loadModel(applicationContext);
 
         transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<Object>()
-                {
+                new RetryingTransactionCallback<Object>() {
                     @SuppressWarnings("unchecked")
                     public Object execute() throws Exception
                     {
@@ -110,21 +110,21 @@ public class TemplateServiceImplTest extends BaseSpringTest
                         NodeRef subFolderRef = nodeService.createNode(
                                 root_node,
                                 ContentModel.ASSOC_CHILDREN,
-                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,QName.createValidLocalName("subFolder")),
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("subFolder")),
                                 ContentModel.TYPE_FOLDER,
                                 properties).getChildRef();
                         properties.put(ContentModel.PROP_NAME, (Serializable) "subSubFolder");
-                        NodeRef subSubFolderRef =nodeService.createNode(
+                        NodeRef subSubFolderRef = nodeService.createNode(
                                 subFolderRef,
                                 ContentModel.ASSOC_CONTAINS,
-                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,QName.createValidLocalName("subSubFolder")),
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("subSubFolder")),
                                 ContentModel.TYPE_FOLDER,
                                 properties).getChildRef();
                         properties.put(ContentModel.PROP_NAME, (Serializable) "subSubSubFolder");
                         nodeService.createNode(
                                 subSubFolderRef,
                                 ContentModel.ASSOC_CONTAINS,
-                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,QName.createValidLocalName("subSubSubFolder")),
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("subSubSubFolder")),
                                 ContentModel.TYPE_FOLDER,
                                 properties);
                         BaseNodeServiceTest.buildNodeGraph(nodeService, root_node);
@@ -144,8 +144,7 @@ public class TemplateServiceImplTest extends BaseSpringTest
     public void testTemplates()
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<Object>()
-                {
+                new RetryingTransactionCallback<Object>() {
                     @SuppressWarnings("unchecked")
                     public Object execute() throws Exception
                     {
@@ -158,11 +157,11 @@ public class TemplateServiceImplTest extends BaseSpringTest
                         String output = templateService.processTemplate("freemarker", TEMPLATE_1, model);
 
                         // check template contains the expected output
-                        assertTrue("Cannot find root-node-id", (output.indexOf(root_node.getId()) != -1) );
-                        assertTrue("Cannot resolve subFolder properly", (output.indexOf("root.childByNamePath[\"subFolder\"].name=subFolder") != -1) );
-                        assertTrue("Cannot resolve subSubFolder properly", (output.indexOf("root.childByNamePath[\"subFolder/subSubFolder\"].name=subSubFolder") != -1) );
-                        assertTrue("Cannot resolve subSubSubFolder properly", (output.indexOf("root.childByNamePath[\"subFolder/subSubFolder/subSubSubFolder\"].name=subSubSubFolder") != -1) );
-                        assertTrue("Cannot resolve subSubSubFolder with enhancement properly", (output.indexOf("root.childByNamePath[\"subFolder\"].childByNamePath[\"subSubFolder/subSubSubFolder\"].name=subSubSubFolder") != -1) );
+                        assertTrue("Cannot find root-node-id", (output.indexOf(root_node.getId()) != -1));
+                        assertTrue("Cannot resolve subFolder properly", (output.indexOf("root.childByNamePath[\"subFolder\"].name=subFolder") != -1));
+                        assertTrue("Cannot resolve subSubFolder properly", (output.indexOf("root.childByNamePath[\"subFolder/subSubFolder\"].name=subSubFolder") != -1));
+                        assertTrue("Cannot resolve subSubSubFolder properly", (output.indexOf("root.childByNamePath[\"subFolder/subSubFolder/subSubSubFolder\"].name=subSubSubFolder") != -1));
+                        assertTrue("Cannot resolve subSubSubFolder with enhancement properly", (output.indexOf("root.childByNamePath[\"subFolder\"].childByNamePath[\"subSubFolder/subSubSubFolder\"].name=subSubSubFolder") != -1));
 
                         return null;
                     }
@@ -189,13 +188,14 @@ public class TemplateServiceImplTest extends BaseSpringTest
         Map model = createTemplateModel(root_node);
         StringWriter writer = new StringWriter();
         templateService.processTemplate(TEMPLATE_1, model, writer);
-        assertTrue( (writer.toString().indexOf(root_node.getId()) != -1) );
+        assertTrue((writer.toString().indexOf(root_node.getId()) != -1));
 
         try
         {
             templateService.processTemplate("NOT_REAL", TEMPLATE_1, model, new StringWriter());
             fail("The engine name is nonsense");
-        } catch (TemplateException expected)
+        }
+        catch (TemplateException expected)
         {
             //
         }
@@ -204,7 +204,8 @@ public class TemplateServiceImplTest extends BaseSpringTest
         {
             templateService.processTemplate("NOT_REAL", TEMPLATE_1, model, I18NUtil.getLocale());
             fail("The engine name is nonsense");
-        } catch (TemplateException expected)
+        }
+        catch (TemplateException expected)
         {
             //
         }
@@ -213,7 +214,8 @@ public class TemplateServiceImplTest extends BaseSpringTest
         {
             templateService.processTemplateString("NOT_REAL", TEMPLATE_1, model, new StringWriter());
             fail("The engine name is nonsense");
-        } catch (TemplateException expected)
+        }
+        catch (TemplateException expected)
         {
             //
         }

@@ -51,17 +51,16 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  *
  * @author janv
  */
-@RelationshipResource(name = "parents",  entityResource = NodesEntityResource.class, title = "Node Parents")
+@RelationshipResource(name = "parents", entityResource = NodesEntityResource.class, title = "Node Parents")
 public class NodeParentsRelation extends AbstractNodeRelation implements RelationshipResourceAction.Read<Node>
 {
-    private final static Set<String> WHERE_PARAMS_PARENTS =
-            new HashSet<>(Arrays.asList(new String[] {Nodes.PARAM_ASSOC_TYPE, Nodes.PARAM_ISPRIMARY}));
+    private final static Set<String> WHERE_PARAMS_PARENTS = new HashSet<>(Arrays.asList(new String[]{Nodes.PARAM_ASSOC_TYPE, Nodes.PARAM_ISPRIMARY}));
 
     /**
-     * List child node's parent(s) based on (parent ->) child associations.
-     * Returns primary parent & also secondary parents, if any.
+     * List child node's parent(s) based on (parent ->) child associations. Returns primary parent & also secondary parents, if any.
      *
-     * @param childNodeId String id of child node
+     * @param childNodeId
+     *            String id of child node
      */
     @Override
     @WebApiDescription(title = "Return a list of parent nodes based on child assocs")

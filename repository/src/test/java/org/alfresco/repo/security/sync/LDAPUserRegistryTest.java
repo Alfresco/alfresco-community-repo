@@ -25,15 +25,16 @@
  */
 package org.alfresco.repo.security.sync;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.security.authentication.ldap.LDAPInitialDirContextFactory;
-import org.alfresco.repo.security.sync.ldap.LDAPUserRegistry;
-import org.alfresco.service.namespace.NamespaceService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import javax.naming.CommunicationException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -42,32 +43,41 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchResult;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.ldap.LDAPInitialDirContextFactory;
+import org.alfresco.repo.security.sync.ldap.LDAPUserRegistry;
+import org.alfresco.service.namespace.NamespaceService;
 
 /**
  * Tests for {@link org.alfresco.repo.security.sync.ldap.LDAPUserRegistry}
+ * 
  * @author amukha
  */
 @RunWith(MockitoJUnitRunner.class)
 public class LDAPUserRegistryTest
 {
-    @Mock private LDAPInitialDirContextFactory contextFactory;
-    @Mock private InitialDirContext initialDirContext;
-    @Mock private NamespaceService namespaceService;
-    @Mock private SearchResult searchResult;
-    @Mock private NamingEnumeration<SearchResult> searchResults;
-    @Mock private Attributes attributes;
-    @Mock private Attribute groupAttribute;
-    @Mock private Attribute rangeRestrictedAttribute;
+    @Mock
+    private LDAPInitialDirContextFactory contextFactory;
+    @Mock
+    private InitialDirContext initialDirContext;
+    @Mock
+    private NamespaceService namespaceService;
+    @Mock
+    private SearchResult searchResult;
+    @Mock
+    private NamingEnumeration<SearchResult> searchResults;
+    @Mock
+    private Attributes attributes;
+    @Mock
+    private Attribute groupAttribute;
+    @Mock
+    private Attribute rangeRestrictedAttribute;
 
     private static final String GROUP_SEARCH_BASE = "ou=groups,DC=example,DC=foo";
     private static final String USER_SEARCH_BASE = "cn=Users,DC=example,DC=foo";
@@ -114,7 +124,6 @@ public class LDAPUserRegistryTest
         when(attributes.get(MEMBER_ATTRIBUTE_NAME)).thenReturn(rangeRestrictedAttribute);
         when(rangeRestrictedAttribute.size()).thenReturn(1);
         when(rangeRestrictedAttribute.get(0)).thenReturn(MEMBER_ATTRIBUTE_VALUE);
-
 
         registry.afterPropertiesSet();
         return registry;

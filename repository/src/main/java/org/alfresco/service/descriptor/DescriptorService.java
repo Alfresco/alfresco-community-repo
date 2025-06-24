@@ -30,7 +30,6 @@ import java.io.InputStream;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.license.LicenseDescriptor;
 
-
 /**
  * Service for retrieving meta-data about Alfresco stack.
  * 
@@ -63,16 +62,15 @@ public interface DescriptorService
      * <li>name - unknown</li>
      * </ul>
      * 
-     * @return  server descriptor
+     * @return server descriptor
      */
     @NotAuditable
     public Descriptor getServerDescriptor();
-    
+
     /**
      * Get current descriptor for the repository.
      * <p>
-     * The information in this descriptor is read from a node in the system store.    After the patch process runs successfully, the version Major/Minor/Revision should 
-     * be equal to the server descriptor.
+     * The information in this descriptor is read from a node in the system store. After the patch process runs successfully, the version Major/Minor/Revision should be equal to the server descriptor.
      * <p>
      * The "repository id" that uniquely identifies each alfresco repository is available in the "id" property.
      * <p>
@@ -94,44 +92,47 @@ public interface DescriptorService
      * <li>Edition</li>
      * </ul>
      * 
-     * @return  repository descriptor
+     * @return repository descriptor
      */
     @NotAuditable
     public Descriptor getCurrentRepositoryDescriptor();
-    
+
     /**
      * Get descriptor for the repository as it was when first installed.
      * <p>
      * The information in this descriptor is read from a node in the system store.
      * 
-     * @return  repository descriptor
+     * @return repository descriptor
      */
     @NotAuditable
     public Descriptor getInstalledRepositoryDescriptor();
-    
+
     /**
      * Gets the License Descriptor
      * 
-     * @return  the license descriptor
+     * @return the license descriptor
      */
     @NotAuditable
     public LicenseDescriptor getLicenseDescriptor();
-    
+
     /**
      * Attempts to load the license.
-     * @return          Returns a message telling the user what happened
+     * 
+     * @return Returns a message telling the user what happened
      */
     public String loadLicense();
- 
+
     /**
      * Attempts to load the license from the input stream.
-     * @return          Returns a message telling the user what happened
+     * 
+     * @return Returns a message telling the user what happened
      */
     public String loadLicense(InputStream licenseStream);
-    
+
     /**
      * Is this service bootstrapped?
-     * @return	true,  the service is bootstrapped and available
+     * 
+     * @return true, the service is bootstrapped and available
      */
     boolean isBootstrapped();
 

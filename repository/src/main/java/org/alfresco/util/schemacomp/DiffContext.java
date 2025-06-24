@@ -29,9 +29,7 @@ import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.util.schemacomp.model.Schema;
 
 /**
- * A context made available to schema differencing and validation operations. It supplies information
- * about the {@link Dialect database dialect} that should be used when validating database properties
- * and the {@link Results} object that should be populated with schema differences and validation errors.
+ * A context made available to schema differencing and validation operations. It supplies information about the {@link Dialect database dialect} that should be used when validating database properties and the {@link Results} object that should be populated with schema differences and validation errors.
  * 
  * @author Matt Ward
  */
@@ -41,14 +39,18 @@ public class DiffContext
     private final Results results;
     private final Schema referenceSchema;
     private final Schema targetSchema;
-    
+
     /**
      * Constructor.
      * 
-     * @param dialect Dialect
-     * @param results Results
-     * @param referenceSchema Schema
-     * @param targetSchema Schema
+     * @param dialect
+     *            Dialect
+     * @param results
+     *            Results
+     * @param referenceSchema
+     *            Schema
+     * @param targetSchema
+     *            Schema
      */
     public DiffContext(Dialect dialect, Results results, Schema referenceSchema, Schema targetSchema)
     {
@@ -61,16 +63,18 @@ public class DiffContext
     /**
      * Constructor.
      * 
-     * @param dialect Dialect
-     * @param referenceSchema Schema
-     * @param targetSchema Schema
+     * @param dialect
+     *            Dialect
+     * @param referenceSchema
+     *            Schema
+     * @param targetSchema
+     *            Schema
      */
     public DiffContext(Dialect dialect, Schema referenceSchema, Schema targetSchema)
     {
         this(dialect, new Results(), referenceSchema, targetSchema);
     }
-    
-    
+
     /**
      * @return the dialect
      */

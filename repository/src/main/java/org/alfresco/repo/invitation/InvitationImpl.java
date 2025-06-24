@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.Invitation.InvitationType;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 
-/* package scope */ abstract class InvitationImpl 
+/* package scope */ abstract class InvitationImpl
 {
     public static final String ID_KEY = "id";
     public static final String INVITEE_KEY = "invitee";
@@ -43,17 +43,17 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
     public static final String CREATED_AT = "createdAt";
     public static final String MODIFIED_AT = "modifiedAt";
     public static final String CLIENT_NAME = "clientName";
-    
+
     /**
      * Unique reference for this invitation
      */
     private final String inviteId;
-     
+
     /**
      * Which resource is this invitation for ?
      */
     private final String resourceName;
-     
+
     /**
      * What sort of invitation is this invitation for e.g. WEB_SITE or WEB_PROJECT
      */
@@ -68,28 +68,29 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
      * Who is this invitation for
      */
     private final String inviteeUserName;
-    
+
     private final Date createdAt;
-    
+
     private final Date modifiedAt;
-     
+
     private final String clientName;
 
     public InvitationImpl(Map<String, Serializable> props)
     {
-        this.inviteId = (String)props.get(ID_KEY);
-        this.inviteeUserName = (String)props.get(INVITEE_KEY);
-        this.resourceName = (String)props.get(RESOURCE_NAME_KEY);
-        this.roleName = (String)props.get(ROLE_KEY);
-        String type = (String)props.get(RESOURCE_TYPE_KEY);
-        this.resourceType = type==null ? ResourceType.WEB_SITE : ResourceType.valueOf(type);
-        this.createdAt = (Date)props.get(CREATED_AT);
-        this.modifiedAt = (Date)props.get(MODIFIED_AT);
-        this.clientName = (String)props.get(CLIENT_NAME);
+        this.inviteId = (String) props.get(ID_KEY);
+        this.inviteeUserName = (String) props.get(INVITEE_KEY);
+        this.resourceName = (String) props.get(RESOURCE_NAME_KEY);
+        this.roleName = (String) props.get(ROLE_KEY);
+        String type = (String) props.get(RESOURCE_TYPE_KEY);
+        this.resourceType = type == null ? ResourceType.WEB_SITE : ResourceType.valueOf(type);
+        this.createdAt = (Date) props.get(CREATED_AT);
+        this.modifiedAt = (Date) props.get(MODIFIED_AT);
+        this.clientName = (String) props.get(CLIENT_NAME);
     }
 
     /**
      * What sort of resource is it
+     * 
      * @return the resource type
      */
     public ResourceType getResourceType()
@@ -99,15 +100,15 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 
     public Date getCreatedAt()
     {
-		return createdAt;
-	}
+        return createdAt;
+    }
 
-	public Date getModifiedAt()
-	{
-		return modifiedAt;
-	}
+    public Date getModifiedAt()
+    {
+        return modifiedAt;
+    }
 
-	public String getInviteId()
+    public String getInviteId()
     {
         return inviteId;
     }
@@ -131,6 +132,6 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
     {
         return clientName;
     }
-    
+
     public abstract InvitationType getInvitationType();
 }

@@ -51,7 +51,7 @@ public class GetAllSetPermissionsMethod extends AbstractProtocolMethod<Set<Acces
     private VirtualFolderDefinitionResolver resolver;
 
     public GetAllSetPermissionsMethod(VirtualFolderDefinitionResolver resolver, VirtualUserPermissions userPermissions,
-                String authority)
+            String authority)
     {
         super();
         this.userPermissions = userPermissions;
@@ -61,7 +61,7 @@ public class GetAllSetPermissionsMethod extends AbstractProtocolMethod<Set<Acces
 
     @Override
     public Set<AccessPermission> execute(VirtualProtocol virtualProtocol, Reference reference)
-                throws ProtocolMethodException
+            throws ProtocolMethodException
     {
         Set<String> toAllow = userPermissions.getAllowSmartNodes();
         Set<String> toDeny = userPermissions.getDenySmartNodes();
@@ -69,7 +69,7 @@ public class GetAllSetPermissionsMethod extends AbstractProtocolMethod<Set<Acces
         VirtualFolderDefinition definition = resolver.resolveVirtualFolderDefinition(reference);
         FilingRule filingRule = definition.getFilingRule();
         boolean readonly = filingRule.isNullFilingRule()
-                    || filingRule.filingNodeRefFor(new FilingParameters(reference)) == null;
+                || filingRule.filingNodeRefFor(new FilingParameters(reference)) == null;
         if (readonly)
         {
             Set<String> deniedPermissions = userPermissions.getDenyReadonlySmartNodes();
@@ -77,11 +77,10 @@ public class GetAllSetPermissionsMethod extends AbstractProtocolMethod<Set<Acces
             toDeny.addAll(deniedPermissions);
             toAllow.add(PermissionService.READ);
         }
-        
 
         return execute(reference,
-                       toAllow,
-                       toDeny);
+                toAllow,
+                toDeny);
     }
 
     private Set<AccessPermission> execute(Reference reference, Set<String> toAllow, Set<String> toDeny)
@@ -91,18 +90,18 @@ public class GetAllSetPermissionsMethod extends AbstractProtocolMethod<Set<Acces
         for (String permission : toAllow)
         {
             permissions.add(new AccessPermissionImpl(permission,
-                                                     AccessStatus.ALLOWED,
-                                                     authority,
-                                                     0));
+                    AccessStatus.ALLOWED,
+                    authority,
+                    0));
         }
 
         for (String permission : toDeny)
         {
 
             permissions.add(new AccessPermissionImpl(permission,
-                                                     AccessStatus.DENIED,
-                                                     authority,
-                                                     0));
+                    AccessStatus.DENIED,
+                    authority,
+                    0));
         }
 
         return permissions;
@@ -115,7 +114,7 @@ public class GetAllSetPermissionsMethod extends AbstractProtocolMethod<Set<Acces
         Set<String> toDeny = userPermissions.getDenyQueryNodes();
 
         return execute(reference,
-                       toAllow,
-                       toDeny);
+                toAllow,
+                toDeny);
     }
 }

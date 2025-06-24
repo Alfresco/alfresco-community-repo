@@ -30,6 +30,12 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.SecondaryTypeDefinitionImpl;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.CMISUtils;
 import org.alfresco.opencmis.mapping.CMISMapping;
@@ -38,11 +44,6 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
-import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.SecondaryTypeDefinitionImpl;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class SecondaryTypeDefinitionWrapper extends AbstractTypeDefinitionWrapper
 {
@@ -54,7 +55,7 @@ public class SecondaryTypeDefinitionWrapper extends AbstractTypeDefinitionWrappe
     private SecondaryTypeDefinitionImpl typeDefInclProperties;
     private DictionaryService dictionaryService;
 
-    public SecondaryTypeDefinitionWrapper(CMISMapping cmisMapping, PropertyAccessorMapping propertyAccessorMapping, 
+    public SecondaryTypeDefinitionWrapper(CMISMapping cmisMapping, PropertyAccessorMapping propertyAccessorMapping,
             PropertyLuceneBuilderMapping luceneBuilderMapping, String typeId, DictionaryService dictionaryService, ClassDefinition cmisClassDef)
     {
         this.dictionaryService = dictionaryService;
@@ -80,10 +81,12 @@ public class SecondaryTypeDefinitionWrapper extends AbstractTypeDefinitionWrappe
             if (parentQName == null)
             {
                 typeDef.setParentTypeId(cmisMapping.getCmisTypeId(CMISMapping.SECONDARY_TYPES_QNAME));
-            } else if (cmisMapping.isValidCmisSecondaryType(parentQName))
+            }
+            else if (cmisMapping.isValidCmisSecondaryType(parentQName))
             {
                 typeDef.setParentTypeId(cmisMapping.getCmisTypeId(BaseTypeId.CMIS_SECONDARY, parentQName));
-            } else
+            }
+            else
             {
                 throw new IllegalStateException("The CMIS type model should ignore aspects that inherit from excluded aspects");
             }
@@ -111,16 +114,16 @@ public class SecondaryTypeDefinitionWrapper extends AbstractTypeDefinitionWrappe
     public List<TypeDefinitionWrapper> connectParentAndSubTypes(CMISMapping cmisMapping, CMISDictionaryRegistry registry,
             DictionaryService dictionaryService)
     {
-    	String parentTypeId = typeDef.getParentTypeId();
+        String parentTypeId = typeDef.getParentTypeId();
 
         // find parent
         if (parentTypeId != null)
         {
             parent = registry.getTypeDefByTypeId(parentTypeId);
-            if(registry.getTenant() != null && parent != null && registry.getTypeDefByTypeId(parentTypeId, false) == null)
+            if (registry.getTenant() != null && parent != null && registry.getTypeDefByTypeId(parentTypeId, false) == null)
             {
-            	// this is a tenant registry and the parent is not defined locally so add this type as a child of it
-            	registry.addChild(parent.getTypeId(), this);
+                // this is a tenant registry and the parent is not defined locally so add this type as a child of it
+                registry.addChild(parent.getTypeId(), this);
             }
         }
         else
@@ -134,16 +137,16 @@ public class SecondaryTypeDefinitionWrapper extends AbstractTypeDefinitionWrappe
         }
 
         // find children
-//        children = new ArrayList<TypeDefinitionWrapper>();
+        // children = new ArrayList<TypeDefinitionWrapper>();
         Collection<QName> childrenNames = null;
 
         if (isBaseType())
         {
-//            // add the "Aspects" type to the CMIS secondary type
-//            childrenNames = new ArrayList<QName>();
-//            childrenNames.add(CMISMapping.SECONDARY_TYPES_QNAME);
-//        } else if (getAlfrescoName().equals(CMISMapping.SECONDARY_TYPES_QNAME))
-//        {
+            // // add the "Aspects" type to the CMIS secondary type
+            // childrenNames = new ArrayList<QName>();
+            // childrenNames.add(CMISMapping.SECONDARY_TYPES_QNAME);
+            // } else if (getAlfrescoName().equals(CMISMapping.SECONDARY_TYPES_QNAME))
+            // {
             // add all root aspects to the "Aspects" type
             childrenNames = new ArrayList<QName>();
 
@@ -156,7 +159,8 @@ public class SecondaryTypeDefinitionWrapper extends AbstractTypeDefinitionWrappe
                     childrenNames.add(tdw.getAlfrescoName());
                 }
             }
-        } else
+        }
+        else
         {
             // add all non-root aspects to their parent
             childrenNames = dictionaryService.getSubAspects(cmisMapping.getAlfrescoClass(getAlfrescoName()), false);
@@ -183,7 +187,7 @@ public class SecondaryTypeDefinitionWrapper extends AbstractTypeDefinitionWrappe
         }
 
         return children;
-//        registry.setChildren(typeDef.getId(), children);
+        // registry.setChildren(typeDef.getId(), children);
     }
 
     public void resolveInheritance(CMISMapping cmisMapping,
@@ -224,7 +228,7 @@ public class SecondaryTypeDefinitionWrapper extends AbstractTypeDefinitionWrappe
             }
         }
     }
-    
+
     @Override
     public void updateDefinition(DictionaryService dictionaryService)
     {
@@ -239,10 +243,10 @@ public class SecondaryTypeDefinitionWrapper extends AbstractTypeDefinitionWrappe
         {
             super.updateDefinition(dictionaryService);
         }
-        
+
         updateTypeDefInclProperties();
     }
-    
+
     @Override
     public PropertyDefinitionWrapper getPropertyById(String propertyId)
     {
@@ -256,7 +260,7 @@ public class SecondaryTypeDefinitionWrapper extends AbstractTypeDefinitionWrappe
         updateProperties(dictionaryService);
         return propertiesById.values();
     }
-    
+
     @Override
     public Collection<PropertyDefinitionWrapper> getProperties(boolean update)
     {

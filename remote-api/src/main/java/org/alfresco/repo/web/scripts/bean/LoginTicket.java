@@ -27,17 +27,16 @@ package org.alfresco.repo.web.scripts.bean;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.TicketComponent;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.TicketComponent;
 
 /**
  * Login Ticket
@@ -48,19 +47,19 @@ public class LoginTicket extends DeclarativeWebScript
 {
     // dependencies
     private TicketComponent ticketComponent;
-    
+
     /**
-     * @param ticketComponent TicketComponent
+     * @param ticketComponent
+     *            TicketComponent
      */
     public void setTicketComponent(TicketComponent ticketComponent)
     {
         this.ticketComponent = ticketComponent;
     }
-    
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * 
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
@@ -70,18 +69,18 @@ public class LoginTicket extends DeclarativeWebScript
         {
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Ticket not specified");
         }
-        
+
         // construct model for ticket
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
-        model.put("ticket",  ticket);
-        
+        model.put("ticket", ticket);
+
         try
         {
             String ticketUser = ticketComponent.validateTicket(ticket);
-            
+
             String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
 
-            // do not go any further if tickets are different 
+            // do not go any further if tickets are different
             // or the user is not fully authenticated
             if (currentUser == null || !currentUser.equals(ticketUser))
             {
@@ -96,7 +95,7 @@ public class LoginTicket extends DeclarativeWebScript
             status.setCode(HttpServletResponse.SC_NOT_FOUND);
             status.setMessage("Ticket not found");
         }
-        
+
         return model;
     }
 

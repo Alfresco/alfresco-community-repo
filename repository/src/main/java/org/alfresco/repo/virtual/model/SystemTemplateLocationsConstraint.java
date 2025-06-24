@@ -36,6 +36,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.virtual.config.NodeRefExpression;
@@ -47,16 +52,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * A system paths string values constraint to be used in conjunction with
- * {@link SystemVirtualizationMethod}s to provide available system paths by
- * exploring a predefined location in the java classpath ad a predefined
- * repository location.
+ * A system paths string values constraint to be used in conjunction with {@link SystemVirtualizationMethod}s to provide available system paths by exploring a predefined location in the java classpath ad a predefined repository location.
  *
  * @author Silviu Dinuta
  */
@@ -123,12 +121,12 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
         try
         {
             result = loadClasspathTemplates(templatesParentClasspath,
-                                            "json");
+                    "json");
         }
         catch (IOException e)
         {
             throw new ConstraintException("ListTemplateTypesConstraints",
-                                          e);
+                    e);
         }
         List<String> repositoryTemplates = loadRepositoryTemplates(templatesParentRepositoryPath);
         result.addAll(repositoryTemplates);
@@ -148,7 +146,7 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
             List<String> rawValues = getRawAllowedValues();
             List<String> values = new ArrayList<String>(rawValues);
             Collections.sort(values,
-                             new LabelComparator());
+                    new LabelComparator());
             return values;
         }
         else
@@ -163,13 +161,13 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
         if (constraintAllowableValue.startsWith("N"))
         {
             Serializable nameProperty = nodeService.getProperty(new NodeRef(constraintAllowableValue.substring(1)),
-                                                                ContentModel.PROP_NAME);
+                    ContentModel.PROP_NAME);
             return nameProperty.toString();
         }
         else if (constraintAllowableValue.equals(SystemTemplateLocationsConstraint.NULL_SYSTEM_TEMPLATE))
         {
             String message = messageLookup.getMessage(SystemTemplateLocationsConstraint.NULL_SYSTEM_TEMPLATE_MESSAGE,
-                                                      I18NUtil.getLocale());
+                    I18NUtil.getLocale());
             return message == null ? constraintAllowableValue : message;
         }
         else
@@ -186,7 +184,7 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
     }
 
     private List<String> loadClasspathTemplates(String templatesParentClasspath, String... extensions)
-                throws IOException
+            throws IOException
     {
         List<String> result = new ArrayList<String>(5);
         List<String> files = new ArrayList<String>(5);
@@ -235,12 +233,12 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
         if (findNodeRef != null)
         {
             final QName repositoryTemplateTypeQName = QName.createQName(repositoryTemplateTypeName,
-                                                                        namespacePrefixResolver);
+                    namespacePrefixResolver);
             Set<QName> searchTypeQNames = new HashSet<QName>();
             searchTypeQNames.add(repositoryTemplateTypeQName);
 
             List<ChildAssociationRef> children = nodeService.getChildAssocs(findNodeRef,
-                                                                            searchTypeQNames);
+                    searchTypeQNames);
             for (ChildAssociationRef childAssociationRef : children)
             {
                 NodeRef childNodeRef = childAssociationRef.getChildRef();
@@ -261,8 +259,9 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
         public int compare(String o1, String o2)
         {
             return getDisplayLabel(o1,
-                                   null).compareTo(getDisplayLabel(o2,
-                                                                   null));
+                    null).compareTo(
+                            getDisplayLabel(o2,
+                                    null));
         }
     }
 }

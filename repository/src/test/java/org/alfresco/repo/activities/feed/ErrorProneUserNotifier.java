@@ -37,51 +37,51 @@ import org.alfresco.service.namespace.QName;
 public class ErrorProneUserNotifier extends AbstractUserNotifier
 {
 
-	private NodeRef failingPersonNodeRef;
-	private ActionService actionService;
+    private NodeRef failingPersonNodeRef;
+    private ActionService actionService;
 
-	public ErrorProneUserNotifier(NodeRef failingPersonNodeRef)
-	{
-		this.failingPersonNodeRef = failingPersonNodeRef;
-	}
-	
-	public void setActionService(ActionService actionService)
-	{
-		this.actionService = actionService;
-	}
+    public ErrorProneUserNotifier(NodeRef failingPersonNodeRef)
+    {
+        this.failingPersonNodeRef = failingPersonNodeRef;
+    }
 
-	@Override
-	protected boolean skipUser(NodeRef personNodeRef)
-	{
-		return false;
-	}
+    public void setActionService(ActionService actionService)
+    {
+        this.actionService = actionService;
+    }
 
-	@Override
-	protected Long getFeedId(NodeRef personNodeRef)
-	{
-		Map<QName, Serializable> personProps = nodeService.getProperties(personNodeRef);
+    @Override
+    protected boolean skipUser(NodeRef personNodeRef)
+    {
+        return false;
+    }
 
-		// where did we get up to ?
-		Long emailFeedDBID = (Long)personProps.get(ContentModel.PROP_EMAIL_FEED_ID);
-		if (emailFeedDBID != null)
-		{
-			// increment min feed id
-			emailFeedDBID++;
-		}
-		else
-		{
-			emailFeedDBID = -1L;
-		}
-		
-		return emailFeedDBID;
-	}
+    @Override
+    protected Long getFeedId(NodeRef personNodeRef)
+    {
+        Map<QName, Serializable> personProps = nodeService.getProperties(personNodeRef);
 
-	@Override
-	protected void notifyUser(NodeRef personNodeRef, String subjectText, Object[] subjectParams,
-			Map<String, Object> model, String templateNodeRef)
-	{
+        // where did we get up to ?
+        Long emailFeedDBID = (Long) personProps.get(ContentModel.PROP_EMAIL_FEED_ID);
+        if (emailFeedDBID != null)
+        {
+            // increment min feed id
+            emailFeedDBID++;
+        }
+        else
+        {
+            emailFeedDBID = -1L;
+        }
 
-		String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+        return emailFeedDBID;
+    }
+
+    @Override
+    protected void notifyUser(NodeRef personNodeRef, String subjectText, Object[] subjectParams,
+            Map<String, Object> model, String templateNodeRef)
+    {
+
+        String userName = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
 
         Action action = actionService.createAction(ErrorProneActionExecutor.NAME);
 
@@ -90,5 +90,5 @@ public class ErrorProneUserNotifier extends AbstractUserNotifier
         action.setParameterValue(ErrorProneActionExecutor.PARAM_USERNAME, userName);
 
         actionService.executeAction(action, null);
-	}
+    }
 }

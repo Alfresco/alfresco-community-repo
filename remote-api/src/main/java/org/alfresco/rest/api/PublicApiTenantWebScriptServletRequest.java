@@ -27,11 +27,12 @@ package org.alfresco.rest.api;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.web.scripts.TenantWebScriptServletRequest;
 import org.springframework.extensions.config.ServerProperties;
 import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.Runtime;
+
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.web.scripts.TenantWebScriptServletRequest;
 
 public class PublicApiTenantWebScriptServletRequest extends TenantWebScriptServletRequest
 {
@@ -48,7 +49,7 @@ public class PublicApiTenantWebScriptServletRequest extends TenantWebScriptServl
     {
         String realPathInfo = getRealPathInfo();
 
-        if(realPathInfo.equals("") || realPathInfo.equals("/"))
+        if (realPathInfo.equals("") || realPathInfo.equals("/"))
         {
             // no tenant - "index" request
             tenant = TenantUtil.DEFAULT_TENANT;
@@ -64,7 +65,7 @@ public class PublicApiTenantWebScriptServletRequest extends TenantWebScriptServl
         else
         {
             // optimisation - don't need to lowercase the whole path
-            if(realPathInfo.substring(0, 5).toLowerCase().equals("/cmis"))
+            if (realPathInfo.substring(0, 5).toLowerCase().equals("/cmis"))
             {
                 // cmis service document, pass through as is and set tenant to "-default-".
                 tenant = TenantUtil.DEFAULT_TENANT;

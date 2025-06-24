@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,20 +31,7 @@ package org.alfresco.rm.rest.api.model;
  */
 public enum RetentionPeriod
 {
-    DAY("day"),
-    END_OF_FINANCIAL_MONTH("fmend"),
-    END_OF_FINANCIAL_QUARTER("fqend"),
-    END_OF_FINANCIAL_YEAR("fyend"),
-    IMMEDIATELY("immediately"),
-    END_OF_MONTH("monthend"),
-    END_OF_QUARTER("quarterend"),
-    END_OF_YEAR("yearend"),
-    MONTH("month"),
-    NONE("none"),
-    QUARTER("quarter"),
-    WEEK("week"),
-    XML_DURATION("duration"),
-    YEAR("year");
+    DAY("day"), END_OF_FINANCIAL_MONTH("fmend"), END_OF_FINANCIAL_QUARTER("fqend"), END_OF_FINANCIAL_YEAR("fyend"), IMMEDIATELY("immediately"), END_OF_MONTH("monthend"), END_OF_QUARTER("quarterend"), END_OF_YEAR("yearend"), MONTH("month"), NONE("none"), QUARTER("quarter"), WEEK("week"), XML_DURATION("duration"), YEAR("year");
 
     public final String periodName;
 

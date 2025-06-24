@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeAddToHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnAddToHoldPolicy;
@@ -39,7 +41,6 @@ import org.alfresco.repo.policy.BehaviourDefinition;
 import org.alfresco.repo.policy.ClassBehaviourBinding;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Add To Hold Integration Tests
@@ -57,8 +58,7 @@ public class AddToHoldTest extends BaseRMTestCase implements BeforeAddToHoldPoli
 
     public void testAddRecordToHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
@@ -117,8 +117,7 @@ public class AddToHoldTest extends BaseRMTestCase implements BeforeAddToHoldPoli
 
     public void testAddRecordsToHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
@@ -188,8 +187,7 @@ public class AddToHoldTest extends BaseRMTestCase implements BeforeAddToHoldPoli
 
     public void testAddRecordFolderToHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
@@ -255,8 +253,7 @@ public class AddToHoldTest extends BaseRMTestCase implements BeforeAddToHoldPoli
 
     public void testPolicyNotificationForAddToHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;

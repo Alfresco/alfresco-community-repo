@@ -161,5 +161,4 @@
             <ref bean="ServiceRegistry"/>
         </property>
     </bean>
-    
 </beans>

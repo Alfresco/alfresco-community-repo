@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -40,46 +40,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
-import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
-import org.alfresco.rest.api.model.ActionDefinition;
-import org.alfresco.rest.api.model.SiteUpdate;
-import org.alfresco.rest.api.tests.TestPeople;
-import org.alfresco.rest.api.tests.TestSites;
-import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
-import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
-import org.alfresco.rest.api.tests.client.data.Action;
-import org.alfresco.rest.api.tests.client.data.Aspect;
-import org.alfresco.rest.api.tests.client.data.Activities;
-import org.alfresco.rest.api.tests.client.data.Activity;
-import org.alfresco.rest.api.tests.client.data.AuditApp;
-import org.alfresco.rest.api.tests.client.data.AuditEntry;
-import org.alfresco.rest.api.tests.client.data.CMISNode;
-import org.alfresco.rest.api.tests.client.data.Comment;
-import org.alfresco.rest.api.tests.client.data.ContentData;
-import org.alfresco.rest.api.tests.client.data.Favourite;
-import org.alfresco.rest.api.tests.client.data.FavouriteSite;
-import org.alfresco.rest.api.tests.client.data.FolderNode;
-import org.alfresco.rest.api.tests.client.data.Group;
-import org.alfresco.rest.api.tests.client.data.GroupMember;
-import org.alfresco.rest.api.tests.client.data.JSONAble;
-import org.alfresco.rest.api.tests.client.data.MemberOfSite;
-import org.alfresco.rest.api.tests.client.data.NodeRating;
-import org.alfresco.rest.api.tests.client.data.Person;
-import org.alfresco.rest.api.tests.client.data.PersonNetwork;
-import org.alfresco.rest.api.tests.client.data.Preference;
-import org.alfresco.rest.api.tests.client.data.Site;
-import org.alfresco.rest.api.tests.client.data.SiteContainer;
-import org.alfresco.rest.api.tests.client.data.SiteImpl;
-import org.alfresco.rest.api.tests.client.data.SiteMember;
-import org.alfresco.rest.api.tests.client.data.SiteGroup;
-import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
-import org.alfresco.rest.api.tests.client.data.Tag;
-import org.alfresco.rest.api.tests.client.data.Type;
-import org.alfresco.rest.api.tests.util.RestApiUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -109,7 +72,43 @@ import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
+import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.rest.api.model.ActionDefinition;
+import org.alfresco.rest.api.model.SiteUpdate;
+import org.alfresco.rest.api.tests.TestPeople;
+import org.alfresco.rest.api.tests.TestSites;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
+import org.alfresco.rest.api.tests.client.data.Action;
+import org.alfresco.rest.api.tests.client.data.Activities;
+import org.alfresco.rest.api.tests.client.data.Activity;
+import org.alfresco.rest.api.tests.client.data.Aspect;
+import org.alfresco.rest.api.tests.client.data.AuditApp;
+import org.alfresco.rest.api.tests.client.data.AuditEntry;
+import org.alfresco.rest.api.tests.client.data.CMISNode;
+import org.alfresco.rest.api.tests.client.data.Comment;
+import org.alfresco.rest.api.tests.client.data.ContentData;
+import org.alfresco.rest.api.tests.client.data.Favourite;
+import org.alfresco.rest.api.tests.client.data.FavouriteSite;
+import org.alfresco.rest.api.tests.client.data.FolderNode;
+import org.alfresco.rest.api.tests.client.data.Group;
+import org.alfresco.rest.api.tests.client.data.GroupMember;
+import org.alfresco.rest.api.tests.client.data.JSONAble;
+import org.alfresco.rest.api.tests.client.data.MemberOfSite;
+import org.alfresco.rest.api.tests.client.data.NodeRating;
+import org.alfresco.rest.api.tests.client.data.Person;
+import org.alfresco.rest.api.tests.client.data.PersonNetwork;
+import org.alfresco.rest.api.tests.client.data.Preference;
+import org.alfresco.rest.api.tests.client.data.Site;
+import org.alfresco.rest.api.tests.client.data.SiteContainer;
+import org.alfresco.rest.api.tests.client.data.SiteGroup;
+import org.alfresco.rest.api.tests.client.data.SiteImpl;
+import org.alfresco.rest.api.tests.client.data.SiteMember;
+import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
+import org.alfresco.rest.api.tests.client.data.Tag;
+import org.alfresco.rest.api.tests.client.data.Type;
+import org.alfresco.rest.api.tests.util.RestApiUtil;
 
 /**
  * A client for interacting with the public api and returning Java objects.
@@ -174,7 +173,7 @@ public class PublicApiClient
     public RequestContext getRequestContext()
     {
         RequestContext context = rc.get();
-        if(context == null)
+        if (context == null)
         {
             throw new RuntimeException("Must set a request context");
         }
@@ -230,8 +229,9 @@ public class PublicApiClient
     {
         return groups;
     }
-    
-    public AuditApps auditApps(){
+
+    public AuditApps auditApps()
+    {
         return auditApps;
     }
 
@@ -252,7 +252,7 @@ public class PublicApiClient
 
     public CmisSession createPublicApiCMISSession(Binding binding, String version)
     {
-       return createPublicApiCMISSession(binding, version, null);
+        return createPublicApiCMISSession(binding, version, null);
     }
 
     public CmisSession createPublicApiCMISSession(Binding binding, String version, String objectFactoryName)
@@ -260,7 +260,7 @@ public class PublicApiClient
         CmisSession cmisSession = null;
 
         RequestContext rc = getRequestContext();
-        if(rc == null)
+        if (rc == null)
         {
             throw new RuntimeException("Must set a request context");
         }
@@ -268,7 +268,7 @@ public class PublicApiClient
         String networkId = rc.getNetworkId();
         String username = rc.getRunAsUser();
         UserData userData = findUser(rc.getRunAsUser());
-        if(userData != null)
+        if (userData != null)
         {
             String password = userData.getPassword();
 
@@ -281,21 +281,21 @@ public class PublicApiClient
             parameters.put(SessionParameter.PASSWORD, password);
 
             // connection settings
-            if(binding == Binding.atom)
+            if (binding == Binding.atom)
             {
                 parameters.put(SessionParameter.ATOMPUB_URL, client.getPublicApiCmisUrl(networkId, binding, version, null));
                 parameters.put(SessionParameter.BINDING_TYPE, binding.getOpenCmisBinding().value());
             }
-            else if(binding == Binding.browser)
+            else if (binding == Binding.browser)
             {
                 parameters.put(SessionParameter.BROWSER_URL, client.getPublicApiCmisUrl(networkId, binding, version, null));
                 parameters.put(SessionParameter.BINDING_TYPE, binding.getOpenCmisBinding().value());
             }
-            if(networkId != null)
+            if (networkId != null)
             {
                 parameters.put(SessionParameter.REPOSITORY_ID, networkId);
             }
-            if(objectFactoryName != null)
+            if (objectFactoryName != null)
             {
                 parameters.put(SessionParameter.OBJECT_FACTORY_CLASS, objectFactoryName);
             }
@@ -314,7 +314,7 @@ public class PublicApiClient
         CmisSession session = null;
 
         UserData userData = findUser(rc.getRunAsUser());
-        if(userData != null)
+        if (userData != null)
         {
             session = createCMISSession(repositoryId, rc.getRunAsUser(), userData.getPassword());
         }
@@ -332,13 +332,13 @@ public class PublicApiClient
         List<Repository> repositories = null;
 
         RequestContext rc = getRequestContext();
-        if(rc == null)
+        if (rc == null)
         {
             throw new RuntimeException("Must set a request context");
         }
 
         UserData userData = findUser(rc.getRunAsUser());
-        if(userData != null)
+        if (userData != null)
         {
             // default factory implementation
             SessionFactory factory = SessionFactoryImpl.newInstance();
@@ -361,9 +361,12 @@ public class PublicApiClient
     /**
      * Create a CMIS session using Enterprise AtomPub binding.
      *
-     * @param repositoryId String
-     * @param username String
-     * @param password String
+     * @param repositoryId
+     *            String
+     * @param username
+     *            String
+     * @param password
+     *            String
      * @return CmisSession
      */
     public CmisSession createCMISSession(String repositoryId, String username, String password)
@@ -379,7 +382,7 @@ public class PublicApiClient
         // connection settings
         parameters.put(SessionParameter.ATOMPUB_URL, client.getCmisUrl(repositoryId, null));
         parameters.put(SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
-        if(repositoryId != null)
+        if (repositoryId != null)
         {
             parameters.put(SessionParameter.REPOSITORY_ID, repositoryId);
         }
@@ -395,7 +398,7 @@ public class PublicApiClient
     public CmisSession getCMISSession(Repository respository)
     {
         RequestContext rc = getRequestContext();
-        if(rc == null)
+        if (rc == null)
         {
             throw new RuntimeException("Must set a request context");
         }
@@ -414,7 +417,7 @@ public class PublicApiClient
 
             return response;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new PublicApiException(e);
         }
@@ -430,7 +433,7 @@ public class PublicApiClient
 
             return response;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new PublicApiException(e);
         }
@@ -446,7 +449,7 @@ public class PublicApiClient
 
             return response;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new PublicApiException(e);
         }
@@ -462,7 +465,7 @@ public class PublicApiClient
 
             return response;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new PublicApiException(e);
         }
@@ -478,7 +481,7 @@ public class PublicApiClient
 
             return response;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new PublicApiException(e);
         }
@@ -494,7 +497,7 @@ public class PublicApiClient
 
             return response;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new PublicApiException(e);
         }
@@ -510,7 +513,7 @@ public class PublicApiClient
 
             return response;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new PublicApiException(e);
         }
@@ -537,19 +540,18 @@ public class PublicApiClient
     }
 
     public HttpResponse post(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId,
-                String body, String contentType) throws IOException
+            String body, String contentType) throws IOException
     {
         HttpResponse response = client.post(getRequestContext(), scope, entityCollectionName, entityId, relationCollectionName,
-                    relationshipEntityId != null ? relationshipEntityId.toString() : null, body, contentType);
+                relationshipEntityId != null ? relationshipEntityId.toString() : null, body, contentType);
 
         logger.debug(response.toString());
 
         return response;
     }
 
-
     public HttpResponse post(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId,
-                             byte[] body, String contentType) throws IOException
+            byte[] body, String contentType) throws IOException
     {
         HttpResponse response = client.post(getRequestContext(), scope, entityCollectionName, entityId, relationCollectionName,
                 relationshipEntityId != null ? relationshipEntityId.toString() : null, body, contentType);
@@ -638,10 +640,10 @@ public class PublicApiClient
     }
 
     public HttpResponse putBinary(String scope, int version, String entityCollectionName, Object entityId, String relationCollectionName,
-                Object relationshipEntityId, BinaryPayload payload, Map<String, String> params) throws IOException
+            Object relationshipEntityId, BinaryPayload payload, Map<String, String> params) throws IOException
     {
         HttpResponse response = client.putBinary(getRequestContext(), scope, version, entityCollectionName, entityId, relationCollectionName, relationshipEntityId,
-                                payload, params);
+                payload, params);
 
         logger.debug(response.toString());
 
@@ -695,7 +697,7 @@ public class PublicApiClient
         RequestContext rc = getRequestContext();
 
         UserData userData = findUser(rc.getRunAsUser());
-        if(userData == null)
+        if (userData == null)
         {
             throw new RuntimeException("Must provide a valid username");
         }
@@ -714,7 +716,7 @@ public class PublicApiClient
         List<Repository> repositories = factory.getRepositories(parameters);
 
         List<String> repositoryIds = new ArrayList<String>(repositories.size());
-        for(Repository repository : repositories)
+        for (Repository repository : repositories)
         {
             repositoryIds.add(repository.getId());
         }
@@ -758,14 +760,14 @@ public class PublicApiClient
                 checkStatus(errorMessage, expectedStatus, response);
                 return response;
             }
-            catch(IOException e)
+            catch (IOException e)
             {
                 throw new PublicApiException(e);
             }
         }
 
         public HttpResponse getSingle(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String, String> params,
-                                      Map<String, String> headers, String errorMessage, int expectedStatus) throws PublicApiException
+                Map<String, String> headers, String errorMessage, int expectedStatus) throws PublicApiException
         {
             try
             {
@@ -807,7 +809,7 @@ public class PublicApiClient
                 checkStatus(errorMessage, expectedStatus, response);
                 return response;
             }
-            catch(IOException e)
+            catch (IOException e)
             {
                 throw new PublicApiException(e);
             }
@@ -844,7 +846,7 @@ public class PublicApiClient
             return remove(entityCollectionName, entityId, relationCollectionName, relationId, null, errorMessage, HttpServletResponse.SC_NO_CONTENT);
         }
 
-        public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String,String> params, String errorMessage, int expectedStatus) throws PublicApiException
+        public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String, String> params, String errorMessage, int expectedStatus) throws PublicApiException
         {
             try
             {
@@ -852,7 +854,7 @@ public class PublicApiClient
                 checkStatus(errorMessage, expectedStatus, response);
                 return response;
             }
-            catch(IOException e)
+            catch (IOException e)
             {
                 throw new PublicApiException(e);
             }
@@ -860,14 +862,14 @@ public class PublicApiClient
 
         public JSONObject parseListSource(JSONObject jsonResponse)
         {
-            JSONObject jsonList = (JSONObject)jsonResponse.get("list");
+            JSONObject jsonList = (JSONObject) jsonResponse.get("list");
             assertNotNull(jsonList);
 
-            JSONObject source = (JSONObject)jsonList.get("source");
+            JSONObject source = (JSONObject) jsonList.get("source");
             assertNotNull(source);
             return source;
         }
-        
+
         /**
          * Used for validation of status code on rest response
          */
@@ -976,7 +978,7 @@ public class PublicApiClient
             HttpResponse response = getSingle("sites", siteId, null, null, "Failed to get site " + siteId, expectedStatus);
             if ((response != null) && (response.getJsonResponse() != null))
             {
-                return SiteImpl.parseSite((JSONObject)response.getJsonResponse().get("entry"));
+                return SiteImpl.parseSite((JSONObject) response.getJsonResponse().get("entry"));
             }
             else
             {
@@ -991,8 +993,8 @@ public class PublicApiClient
 
         public Site createSite(Site site, int expectedStatus) throws PublicApiException
         {
-            HttpResponse response = create("sites", null, null, null, site.toJSON().toString(), "Failed to create site "+site.getTitle(), expectedStatus);
-            return SiteImpl.parseSite((JSONObject)response.getJsonResponse().get("entry"));
+            HttpResponse response = create("sites", null, null, null, site.toJSON().toString(), "Failed to create site " + site.getTitle(), expectedStatus);
+            return SiteImpl.parseSite((JSONObject) response.getJsonResponse().get("entry"));
         }
 
         public void removeSite(String siteId) throws PublicApiException
@@ -1031,21 +1033,21 @@ public class PublicApiClient
         public SiteContainer getSingleSiteContainer(String siteId, String containerId) throws PublicApiException
         {
             HttpResponse response = getSingle("sites", siteId, "containers", containerId, "Failed to get site container");
-            SiteContainer siteContainer = SiteContainer.parseSiteContainer(siteId, (JSONObject)response.getJsonResponse().get("entry"));
+            SiteContainer siteContainer = SiteContainer.parseSiteContainer(siteId, (JSONObject) response.getJsonResponse().get("entry"));
             return siteContainer;
         }
 
         public SiteContainer updateSiteContainer(SiteContainer siteContainer) throws PublicApiException
         {
             HttpResponse response = update("sites", siteContainer.getSiteId(), "containers", siteContainer.getId(), siteContainer.toJSON().toString(), "Failed to update site container");
-            SiteContainer retSiteContainer = SiteContainer.parseSiteContainer(siteContainer.getSiteId(), (JSONObject)response.getJsonResponse().get("entry"));
+            SiteContainer retSiteContainer = SiteContainer.parseSiteContainer(siteContainer.getSiteId(), (JSONObject) response.getJsonResponse().get("entry"));
             return retSiteContainer;
         }
 
         public SiteContainer createSiteContainer(SiteContainer siteContainer) throws PublicApiException
         {
             HttpResponse response = create("sites", siteContainer.getSiteId(), "containers", null, siteContainer.toJSON().toString(), "Failed to create site container");
-            SiteContainer retSiteContainer = SiteContainer.parseSiteContainer(siteContainer.getSiteId(), (JSONObject)response.getJsonResponse().get("entry"));
+            SiteContainer retSiteContainer = SiteContainer.parseSiteContainer(siteContainer.getSiteId(), (JSONObject) response.getJsonResponse().get("entry"));
             return retSiteContainer;
         }
 
@@ -1063,21 +1065,21 @@ public class PublicApiClient
         public SiteMember getSingleSiteMember(String siteId, String personId) throws PublicApiException
         {
             HttpResponse response = getSingle("sites", siteId, "members", personId, "Failed to get site member");
-            SiteMember retSiteMember = SiteMember.parseSiteMember(siteId, (JSONObject)response.getJsonResponse().get("entry"));
+            SiteMember retSiteMember = SiteMember.parseSiteMember(siteId, (JSONObject) response.getJsonResponse().get("entry"));
             return retSiteMember;
         }
 
         public SiteMember updateSiteMember(String siteId, SiteMember siteMember) throws PublicApiException
         {
             HttpResponse response = update("sites", siteId, "members", siteMember.getMemberId(), siteMember.toJSON().toString(), "Failed to update site member");
-            SiteMember retSiteMember = SiteMember.parseSiteMember(siteMember.getSiteId(), (JSONObject)response.getJsonResponse().get("entry"));
+            SiteMember retSiteMember = SiteMember.parseSiteMember(siteMember.getSiteId(), (JSONObject) response.getJsonResponse().get("entry"));
             return retSiteMember;
         }
 
         public SiteMember createSiteMember(String siteId, SiteMember siteMember) throws PublicApiException
         {
             HttpResponse response = create("sites", siteId, "members", null, siteMember.toJSON().toString(), "Failed to create site member");
-            SiteMember retSiteMember = SiteMember.parseSiteMember(siteMember.getSiteId(), (JSONObject)response.getJsonResponse().get("entry"));
+            SiteMember retSiteMember = SiteMember.parseSiteMember(siteMember.getSiteId(), (JSONObject) response.getJsonResponse().get("entry"));
             return retSiteMember;
         }
 
@@ -1095,20 +1097,20 @@ public class PublicApiClient
         public MemberOfSite getPersonSite(String personId, String siteId) throws PublicApiException
         {
             HttpResponse response = getSingle("people", personId, "sites", siteId, "Failed to get person site" + siteId);
-            return MemberOfSite.parseMemberOfSite((JSONObject)response.getJsonResponse().get("entry"));
+            return MemberOfSite.parseMemberOfSite((JSONObject) response.getJsonResponse().get("entry"));
         }
 
         public MemberOfSite updatePersonSite(String personId, SiteMember siteMember) throws PublicApiException
         {
             HttpResponse response = update("people", personId, "sites", siteMember.getSiteId(), siteMember.toJSON().toString(), "Failed to update person site");
-            MemberOfSite retSiteMember = MemberOfSite.parseMemberOfSite((JSONObject)response.getJsonResponse().get("entry"));
+            MemberOfSite retSiteMember = MemberOfSite.parseMemberOfSite((JSONObject) response.getJsonResponse().get("entry"));
             return retSiteMember;
         }
 
         public MemberOfSite createPersonSite(String personId, SiteMember siteMember) throws PublicApiException
         {
             HttpResponse response = create("people", personId, "sites", null, siteMember.toJSON().toString(), "Failed to create person site");
-            MemberOfSite retSiteMember = MemberOfSite.parseMemberOfSite((JSONObject)response.getJsonResponse().get("entry"));
+            MemberOfSite retSiteMember = MemberOfSite.parseMemberOfSite((JSONObject) response.getJsonResponse().get("entry"));
             return retSiteMember;
         }
 
@@ -1126,21 +1128,21 @@ public class PublicApiClient
         public FavouriteSite getSingleFavouriteSite(String personId, String siteId) throws PublicApiException
         {
             HttpResponse response = getSingle("people", personId, "favorite-sites", siteId, "Failed to get favourite site");
-            FavouriteSite favouriteSite = FavouriteSite.parseFavouriteSite((JSONObject)response.getJsonResponse().get("entry"));
+            FavouriteSite favouriteSite = FavouriteSite.parseFavouriteSite((JSONObject) response.getJsonResponse().get("entry"));
             return favouriteSite;
         }
 
         public FavouriteSite updateFavouriteSite(String personId, FavouriteSite site) throws PublicApiException
         {
             HttpResponse response = update("people", personId, "favorite-sites", site.getSiteId(), site.toJSON().toString(), "Failed to update favourite site");
-            FavouriteSite favouriteSite = FavouriteSite.parseFavouriteSite((JSONObject)response.getJsonResponse().get("entry"));
+            FavouriteSite favouriteSite = FavouriteSite.parseFavouriteSite((JSONObject) response.getJsonResponse().get("entry"));
             return favouriteSite;
         }
 
         public FavouriteSite createFavouriteSite(String personId, FavouriteSite site) throws PublicApiException
         {
             HttpResponse response = create("people", personId, "favorite-sites", null, site.toJSON().toString(), "Failed to create favourite site");
-            FavouriteSite favouriteSite = FavouriteSite.parseFavouriteSite((JSONObject)response.getJsonResponse().get("entry"));
+            FavouriteSite favouriteSite = FavouriteSite.parseFavouriteSite((JSONObject) response.getJsonResponse().get("entry"));
             return favouriteSite;
         }
 
@@ -1151,8 +1153,8 @@ public class PublicApiClient
 
         public SiteGroup addGroup(String siteId, SiteGroup group) throws PublicApiException
         {
-            HttpResponse response = create("sites", siteId, "group-members", null, group.toJSON().toString() , "Failed to add site groups");
-            return SiteGroup.parseSiteGroup(siteId, (JSONObject)response.getJsonResponse().get("entry"));
+            HttpResponse response = create("sites", siteId, "group-members", null, group.toJSON().toString(), "Failed to add site groups");
+            return SiteGroup.parseSiteGroup(siteId, (JSONObject) response.getJsonResponse().get("entry"));
         }
 
         public ListResponse<SiteGroup> getGroups(String siteId, Map<String, String> params) throws PublicApiException
@@ -1163,19 +1165,19 @@ public class PublicApiClient
 
         public SiteGroup getGroup(String siteId, String groupId) throws PublicApiException
         {
-            HttpResponse response = getSingle("sites", siteId, "group-members", groupId.toString() , "Failed to get a site group");
-            return SiteGroup.parseSiteGroup(siteId, (JSONObject)response.getJsonResponse().get("entry"));
+            HttpResponse response = getSingle("sites", siteId, "group-members", groupId.toString(), "Failed to get a site group");
+            return SiteGroup.parseSiteGroup(siteId, (JSONObject) response.getJsonResponse().get("entry"));
         }
 
         public SiteGroup updateGroup(String siteId, SiteGroup group) throws PublicApiException
         {
-            HttpResponse response = update("sites", siteId, "group-members", group.getId(), group.toJSON().toString() , "Failed to update a site group");
-            return SiteGroup.parseSiteGroup(siteId, (JSONObject)response.getJsonResponse().get("entry"));
+            HttpResponse response = update("sites", siteId, "group-members", group.getId(), group.toJSON().toString(), "Failed to update a site group");
+            return SiteGroup.parseSiteGroup(siteId, (JSONObject) response.getJsonResponse().get("entry"));
         }
 
         public void deleteGroup(String siteId, String groupId) throws PublicApiException
         {
-            remove("sites", siteId, "group-members", groupId , "Failed to delete site group");
+            remove("sites", siteId, "group-members", groupId, "Failed to delete site group");
         }
     }
 
@@ -1229,8 +1231,7 @@ public class PublicApiClient
     }
 
     public class RawProxy extends AbstractProxy
-    {
-    }
+    {}
 
     public class Favourites extends AbstractProxy
     {
@@ -1243,7 +1244,7 @@ public class PublicApiClient
         public Favourite getFavourite(String personId, String favouriteId) throws PublicApiException, ParseException
         {
             HttpResponse response = getSingle("people", personId, "favorites", favouriteId, "Failed to get favourite " + favouriteId);
-            return Favourite.parseFavourite((JSONObject)response.getJsonResponse().get("entry"));
+            return Favourite.parseFavourite((JSONObject) response.getJsonResponse().get("entry"));
         }
 
         public Favourite getFavourite(String personId, String favouriteId, Map<String, String> params) throws PublicApiException, ParseException
@@ -1255,14 +1256,14 @@ public class PublicApiClient
         public Favourite createFavourite(String personId, Favourite favourite) throws PublicApiException, ParseException
         {
             HttpResponse response = create("people", personId, "favorites", null, favourite.toJSON().toString(), "Failed to create favourite");
-            Favourite ret = Favourite.parseFavourite((JSONObject)response.getJsonResponse().get("entry"));
+            Favourite ret = Favourite.parseFavourite((JSONObject) response.getJsonResponse().get("entry"));
             return ret;
         }
 
         public Favourite createFavourite(String personId, Favourite favourite, Map<String, String> params) throws PublicApiException, ParseException
         {
             HttpResponse response = create("people", personId, "favorites", null, favourite.toJSON().toString(), "Failed to create favourite", 201, params);
-            Favourite ret = Favourite.parseFavourite((JSONObject)response.getJsonResponse().get("entry"));
+            Favourite ret = Favourite.parseFavourite((JSONObject) response.getJsonResponse().get("entry"));
             return ret;
         }
 
@@ -1289,7 +1290,7 @@ public class PublicApiClient
         {
             HttpResponse response = getSingle("people", personId, null, null, "Failed to get person", expectedStatus);
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug(response);
             }
@@ -1321,7 +1322,7 @@ public class PublicApiClient
             return update(personId, json, null, expectedStatus);
         }
 
-        public Person update(String personId, String json, Map<String,String> params, int expectedStatus) throws PublicApiException
+        public Person update(String personId, String json, Map<String, String> params, int expectedStatus) throws PublicApiException
         {
             HttpResponse response = update("people", personId, null, null, json, params, "Failed to update person", expectedStatus);
             if (response != null && response.getJsonResponse() != null)
@@ -1342,7 +1343,7 @@ public class PublicApiClient
 
         public Person create(Person person, int expectedStatus) throws PublicApiException
         {
-            TestPeople.PersonJSONSerializer jsonizer = new TestPeople.PersonJSONSerializer(person) ;
+            TestPeople.PersonJSONSerializer jsonizer = new TestPeople.PersonJSONSerializer(person);
             HttpResponse response = create("people", null, null, null, jsonizer.toJSON().toString(), "Failed to create person", expectedStatus);
             if ((response != null) && (response.getJsonResponse() != null))
             {
@@ -1369,21 +1370,21 @@ public class PublicApiClient
         public Preference getPreference(String personId, String preferenceId) throws PublicApiException
         {
             HttpResponse response = getSingle("people", personId, "preferences", preferenceId, "Failed to get person preference");
-            Preference pref = Preference.parsePreference((JSONObject)response.getJsonResponse().get("entry"));
+            Preference pref = Preference.parsePreference((JSONObject) response.getJsonResponse().get("entry"));
             return pref;
         }
 
-        public Person updatePreference(String personId, Preference preference) throws PublicApiException
+        public Preference updatePreference(String personId, Preference preference) throws PublicApiException
         {
             HttpResponse response = update("people", personId, "preferences", preference.getId(), preference.toJSON().toString(), "Failed to update person preference");
-            Person retSite = Person.parsePerson((JSONObject)response.getJsonResponse().get("entry"));
-            return retSite;
+            Preference pref = Preference.parsePreference((JSONObject) response.getJsonResponse().get("entry"));
+            return pref;
         }
 
         public Person createPreference(String personId, Preference preference) throws PublicApiException
         {
             HttpResponse response = create("people", personId, "preferences", null, preference.toJSON().toString(), "Failed to create person preference");
-            Person retSite = Person.parsePerson((JSONObject)response.getJsonResponse().get("entry"));
+            Person retSite = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
             return retSite;
         }
 
@@ -1401,21 +1402,21 @@ public class PublicApiClient
         public PersonNetwork getNetworkMembership(String personId, String networkId) throws PublicApiException
         {
             HttpResponse response = getSingle("people", personId, "networks", networkId, "Failed to get network member");
-            PersonNetwork networkMember = PersonNetwork.parseNetworkMember((JSONObject)response.getJsonResponse().get("entry"));
+            PersonNetwork networkMember = PersonNetwork.parseNetworkMember((JSONObject) response.getJsonResponse().get("entry"));
             return networkMember;
         }
 
         public PersonNetwork updateNetworkMembership(String personId, PersonNetwork networkMember) throws PublicApiException
         {
             HttpResponse response = update("people", personId, "networks", networkMember.getId(), networkMember.toJSON().toString(), "Failed to update network member");
-            PersonNetwork retNetwork = PersonNetwork.parseNetworkMember((JSONObject)response.getJsonResponse().get("entry"));
+            PersonNetwork retNetwork = PersonNetwork.parseNetworkMember((JSONObject) response.getJsonResponse().get("entry"));
             return retNetwork;
         }
 
         public PersonNetwork createNetworkMembership(String personId, PersonNetwork network) throws PublicApiException
         {
             HttpResponse response = create("people", personId, "networks", null, network.toJSON().toString(), "Failed to create network member");
-            PersonNetwork retNetwork = PersonNetwork.parseNetworkMember((JSONObject)response.getJsonResponse().get("entry"));
+            PersonNetwork retNetwork = PersonNetwork.parseNetworkMember((JSONObject) response.getJsonResponse().get("entry"));
             return retNetwork;
         }
 
@@ -1433,21 +1434,21 @@ public class PublicApiClient
         public Activity getSingleActivity(String personId, String activityId) throws PublicApiException
         {
             HttpResponse response = getSingle("people", personId, "activities", activityId, "Failed to get activities");
-            Activity activity = Activity.parseActivity((JSONObject)response.getJsonResponse().get("entry"));
+            Activity activity = Activity.parseActivity((JSONObject) response.getJsonResponse().get("entry"));
             return activity;
         }
 
         public Activity update(String personId, Activity activity) throws PublicApiException
         {
             HttpResponse response = update("people", personId, "activities", String.valueOf(activity.getId()), activity.toJSON().toString(), "Failed to update activity");
-            Activity retActivity = Activity.parseActivity((JSONObject)response.getJsonResponse().get("entry"));
+            Activity retActivity = Activity.parseActivity((JSONObject) response.getJsonResponse().get("entry"));
             return retActivity;
         }
 
         public Activity create(String personId, Activity activity) throws PublicApiException
         {
             HttpResponse response = create("people", personId, "activities", String.valueOf(activity.getId()), activity.toJSON().toString(), "Failed to create activity");
-            Activity retActivity = Activity.parseActivity((JSONObject)response.getJsonResponse().get("entry"));
+            Activity retActivity = Activity.parseActivity((JSONObject) response.getJsonResponse().get("entry"));
             return retActivity;
         }
 
@@ -1492,7 +1493,7 @@ public class PublicApiClient
         }
 
         private HttpResponse getSingleWithDelayRetry(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String, String> params,
-                                      Map<String, String> headers, String errorMessage, int repeat, long pauseInMillisecond, int expectedStatus) throws PublicApiException, InterruptedException
+                Map<String, String> headers, String errorMessage, int repeat, long pauseInMillisecond, int expectedStatus) throws PublicApiException, InterruptedException
         {
             int retryCount = 0;
             while (retryCount < repeat)
@@ -1520,13 +1521,14 @@ public class PublicApiClient
                 checkStatus("Unexpected status", expectedStatus, response);
                 return response;
             }
-            catch(IOException e)
+            catch (IOException e)
             {
                 throw new PublicApiException(e);
             }
         }
 
-        public void deleteAvatarImage(String personId, int expectedStatus) throws PublicApiException{
+        public void deleteAvatarImage(String personId, int expectedStatus) throws PublicApiException
+        {
             remove("people", personId, "avatar", null, null, "Failed to remove avatar image", expectedStatus);
         }
     }
@@ -1542,21 +1544,21 @@ public class PublicApiClient
         public Comment getTenantComment(String commentId) throws PublicApiException
         {
             HttpResponse response = getSingle("comments", commentId, null, null, "Failed to get comment");
-            Comment comment = Comment.parseComment(null, (JSONObject)response.getJsonResponse().get("entry"));
+            Comment comment = Comment.parseComment(null, (JSONObject) response.getJsonResponse().get("entry"));
             return comment;
         }
 
         public Comment updateTenantComment(Comment comment) throws PublicApiException
         {
             HttpResponse response = update("comments", comment.getId(), null, null, comment.toJSON(true).toString(), "Failed to update comment");
-            Comment retComment = Comment.parseComment(null, (JSONObject)response.getJsonResponse().get("entry"));
+            Comment retComment = Comment.parseComment(null, (JSONObject) response.getJsonResponse().get("entry"));
             return retComment;
         }
 
         public Comment createTenantComment(Comment comment) throws PublicApiException
         {
             HttpResponse response = create("comments", null, null, null, comment.toJSON(true).toString(), "Failed to create comment");
-            Comment retComment = Comment.parseComment(null, (JSONObject)response.getJsonResponse().get("entry"));
+            Comment retComment = Comment.parseComment(null, (JSONObject) response.getJsonResponse().get("entry"));
             return retComment;
         }
 
@@ -1574,21 +1576,21 @@ public class PublicApiClient
         public Comment getNodeComment(String nodeId) throws PublicApiException
         {
             HttpResponse response = getSingle("nodes", nodeId, null, null, "Failed to get comment");
-            Comment comment = Comment.parseComment(nodeId, (JSONObject)response.getJsonResponse().get("entry"));
+            Comment comment = Comment.parseComment(nodeId, (JSONObject) response.getJsonResponse().get("entry"));
             return comment;
         }
 
         public Comment updateNodeComment(String nodeId, String commentId, Comment comment) throws PublicApiException
         {
             HttpResponse response = update("nodes", nodeId, "comments", commentId, comment.toJSON(true).toString(), "Failed to update comment");
-            Comment retComment = Comment.parseComment(nodeId, (JSONObject)response.getJsonResponse().get("entry"));
+            Comment retComment = Comment.parseComment(nodeId, (JSONObject) response.getJsonResponse().get("entry"));
             return retComment;
         }
 
         public Comment createNodeComment(String nodeId, Comment comment) throws PublicApiException
         {
             HttpResponse response = create("nodes", nodeId, "comments", null, comment.toJSON(true).toString(), "Failed to create comment");
-            Comment retComment = Comment.parseComment(nodeId, (JSONObject)response.getJsonResponse().get("entry"));
+            Comment retComment = Comment.parseComment(nodeId, (JSONObject) response.getJsonResponse().get("entry"));
             return retComment;
         }
 
@@ -1609,23 +1611,23 @@ public class PublicApiClient
         public Tag getSingle(String tagId) throws PublicApiException
         {
             HttpResponse response = getSingle("tags", tagId, null, null, "Failed to get tag");
-            Tag tag = Tag.parseTag(null, (JSONObject)response.getJsonResponse().get("entry"));
+            Tag tag = Tag.parseTag(null, (JSONObject) response.getJsonResponse().get("entry"));
             return tag;
         }
 
         public Tag update(Tag tag) throws PublicApiException
         {
             HttpResponse response = update("tags", tag.getId(), null, null, tag.toJSON().toString(), "Failed to update tag");
-            Tag retTag = Tag.parseTag(null, (JSONObject)response.getJsonResponse().get("entry"));
+            Tag retTag = Tag.parseTag(null, (JSONObject) response.getJsonResponse().get("entry"));
             return retTag;
         }
 
-//		public Tag create(Tag tag) throws PublicApiException
-//		{
-//			HttpResponse response = create("tags", tag.getTagId(), null, null, tag.toJSON().toString(), "Failed to create tag");
-//			Tag retTag = Tag.parseTag(null, (JSONObject)response.getJsonResponse().get("entry"));
-//			return retTag;
-//		}
+        // public Tag create(Tag tag) throws PublicApiException
+        // {
+        // HttpResponse response = create("tags", tag.getTagId(), null, null, tag.toJSON().toString(), "Failed to create tag");
+        // Tag retTag = Tag.parseTag(null, (JSONObject)response.getJsonResponse().get("entry"));
+        // return retTag;
+        // }
 
         public void remove(Tag tag) throws PublicApiException
         {
@@ -1649,14 +1651,14 @@ public class PublicApiClient
         public Tag createNodeTag(String nodeId, Tag tag) throws PublicApiException
         {
             HttpResponse response = create("nodes", nodeId, "tags", null, tag.toJSON().toString(), "Failed to create node tag");
-            Tag tagRet = Tag.parseTag(nodeId, (JSONObject)response.getJsonResponse().get("entry"));
+            Tag tagRet = Tag.parseTag(nodeId, (JSONObject) response.getJsonResponse().get("entry"));
             return tagRet;
         }
 
         public NodeRating getNodeRating(String nodeId, String ratingId) throws PublicApiException
         {
             HttpResponse response = getSingle("nodes", nodeId, "ratings", ratingId, "Failed to get node ratings");
-            return NodeRating.parseNodeRating(nodeId, (JSONObject)response.getJsonResponse().get("entry"));
+            return NodeRating.parseNodeRating(nodeId, (JSONObject) response.getJsonResponse().get("entry"));
         }
 
         public ListResponse<NodeRating> getNodeRatings(String nodeId, Map<String, String> params) throws PublicApiException
@@ -1668,14 +1670,14 @@ public class PublicApiClient
         public NodeRating updateNodeRating(String nodeId, NodeRating nodeRating) throws PublicApiException
         {
             HttpResponse response = update("nodes", nodeId, "ratings", nodeRating.getId(), nodeRating.toJSON().toString(), "Failed to update node rating");
-            NodeRating nodeRatingRet = NodeRating.parseNodeRating(nodeId, (JSONObject)response.getJsonResponse().get("entry"));
+            NodeRating nodeRatingRet = NodeRating.parseNodeRating(nodeId, (JSONObject) response.getJsonResponse().get("entry"));
             return nodeRatingRet;
         }
 
         public NodeRating createNodeRating(String nodeId, NodeRating nodeRating) throws PublicApiException
         {
             HttpResponse response = create("nodes", nodeId, "ratings", null, nodeRating.toJSON().toString(), "Failed to create node rating");
-            NodeRating nodeRatingRet = NodeRating.parseNodeRating(nodeId, (JSONObject)response.getJsonResponse().get("entry"));
+            NodeRating nodeRatingRet = NodeRating.parseNodeRating(nodeId, (JSONObject) response.getJsonResponse().get("entry"));
             return nodeRatingRet;
         }
 
@@ -1696,7 +1698,7 @@ public class PublicApiClient
         public Aspect getAspect(String aspectId) throws PublicApiException
         {
             HttpResponse response = getAll("aspects", aspectId, null, null, null, "Failed to get aspect");
-            return Aspect.parseAspect((JSONObject)response.getJsonResponse().get("entry"));
+            return Aspect.parseAspect((JSONObject) response.getJsonResponse().get("entry"));
         }
     }
 
@@ -1711,7 +1713,7 @@ public class PublicApiClient
         public Type getType(String typeId) throws PublicApiException
         {
             HttpResponse response = getAll("types", typeId, null, null, null, "Failed to get type");
-            return Type.parseType((JSONObject)response.getJsonResponse().get("entry"));
+            return Type.parseType((JSONObject) response.getJsonResponse().get("entry"));
         }
     }
 
@@ -1724,8 +1726,7 @@ public class PublicApiClient
         private int count;
 
         public ExpectedPaging()
-        {
-        }
+        {}
 
         public ExpectedPaging(int skipCount, int maxItems, Integer totalItems, boolean hasMoreItems, int count)
         {
@@ -1819,10 +1820,12 @@ public class PublicApiClient
                 return false;
             if (skipCount != other.skipCount)
                 return false;
-            if (totalItems == null) {
+            if (totalItems == null)
+            {
                 if (other.totalItems != null)
                     return false;
-            } else if (!totalItems.equals(other.totalItems))
+            }
+            else if (!totalItems.equals(other.totalItems))
                 return false;
             return true;
         }
@@ -1836,32 +1839,33 @@ public class PublicApiClient
                     + maxItems
                     + ", "
                     + (totalItems != null ? "totalItems=" + totalItems + ", "
-                            : "") + "hasMoreItems=" + hasMoreItems + ", count="
+                            : "")
+                    + "hasMoreItems=" + hasMoreItems + ", count="
                     + count + "]";
         }
 
         public static ExpectedPaging parsePagination(JSONObject jsonList)
         {
             ExpectedPaging paging = new ExpectedPaging();
-            JSONObject jsonPagination = (JSONObject)jsonList.get("pagination");
-            if(jsonPagination != null)
+            JSONObject jsonPagination = (JSONObject) jsonList.get("pagination");
+            if (jsonPagination != null)
             {
-                Long count = (Long)jsonPagination.get("count");
+                Long count = (Long) jsonPagination.get("count");
                 paging.setCount(count.intValue());
 
-                Boolean hasMoreItems = (Boolean)jsonPagination.get("hasMoreItems");
+                Boolean hasMoreItems = (Boolean) jsonPagination.get("hasMoreItems");
                 paging.setHasMoreItems(hasMoreItems);
 
-                Long totalItems = (Long)jsonPagination.get("totalItems");
-                if(totalItems != null)
+                Long totalItems = (Long) jsonPagination.get("totalItems");
+                if (totalItems != null)
                 {
                     paging.setTotalItems(totalItems.intValue());
                 }
 
-                Long maxItems = (Long)jsonPagination.get("maxItems");
+                Long maxItems = (Long) jsonPagination.get("maxItems");
                 paging.setMaxItems(maxItems.intValue());
 
-                Long skipCount = (Long)jsonPagination.get("skipCount");
+                Long skipCount = (Long) jsonPagination.get("skipCount");
                 paging.setSkipCount(skipCount.intValue());
             }
             return paging;
@@ -1873,7 +1877,7 @@ public class PublicApiClient
             int max = maxItems != null ? maxItems : org.alfresco.rest.framework.resource.parameters.Paging.DEFAULT_MAX_ITEMS;
             int expectedCount = -1;
             int end = skip + max;
-            if(end < 0 || end > total)
+            if (end < 0 || end > total)
             {
                 // overflow or greater than the total
                 expectedCount = total - skip;
@@ -1883,7 +1887,7 @@ public class PublicApiClient
             {
                 expectedCount = max;
             }
-            if(expectedCount < 0)
+            if (expectedCount < 0)
             {
                 expectedCount = 0;
             }
@@ -1911,9 +1915,9 @@ public class PublicApiClient
         {
             RequestContext rc = getRequestContext();
             OperationContext ctx = rc.getCmisOperationCtxOverride();
-            if(ctx == null)
+            if (ctx == null)
             {
-                 ctx = new OperationContextImpl();
+                ctx = new OperationContextImpl();
             }
 
             CmisObject res = session.getObject(objectId, ctx);
@@ -1930,9 +1934,9 @@ public class PublicApiClient
         public List<Folder> getObjectParents(String objectId)
         {
             CmisObject o = session.getObject(objectId);
-            if(o instanceof FileableCmisObject)
+            if (o instanceof FileableCmisObject)
             {
-                FileableCmisObject f = (FileableCmisObject)o;
+                FileableCmisObject f = (FileableCmisObject) o;
 
                 OperationContextImpl ctx = new OperationContextImpl();
                 List<Folder> res = f.getParents(ctx);
@@ -1948,9 +1952,9 @@ public class PublicApiClient
         {
             CmisObject o = getObject(objectId);
 
-            if(o instanceof Document)
+            if (o instanceof Document)
             {
-                Document d = (Document)o;
+                Document d = (Document) o;
                 d.deleteContentStream(refresh);
             }
             else
@@ -1962,9 +1966,9 @@ public class PublicApiClient
         public ContentData getContent(String objectId) throws IOException
         {
             CmisObject o = getObject(objectId);
-            if(o instanceof Document)
+            if (o instanceof Document)
             {
-                Document d = (Document)o;
+                Document d = (Document) o;
                 ContentStream res = d.getContentStream();
                 ContentData c = new ContentData(res);
                 return c;
@@ -1978,9 +1982,9 @@ public class PublicApiClient
         public void putContent(String objectId, String filename, BigInteger length, String mimetype, InputStream content, boolean overwrite)
         {
             CmisObject o = getObject(objectId);
-            if(o instanceof Document)
+            if (o instanceof Document)
             {
-                Document d = (Document)o;
+                Document d = (Document) o;
                 ContentStream contentStream = new ContentStreamImpl(filename, length, mimetype, content);
                 try
                 {
@@ -1993,8 +1997,7 @@ public class PublicApiClient
                         contentStream.getStream().close();
                     }
                     catch (Exception e)
-                    {
-                    }
+                    {}
                 }
             }
             else
@@ -2008,12 +2011,12 @@ public class PublicApiClient
             FileableCmisObject fco = t.getItem();
             CMISNode child = CMISNode.createNode(fco);
 
-            if(child instanceof FolderNode)
+            if (child instanceof FolderNode)
             {
-                f.addFolder((FolderNode)child);
-                for(Tree<FileableCmisObject> c : t.getChildren())
+                f.addFolder((FolderNode) child);
+                for (Tree<FileableCmisObject> c : t.getChildren())
                 {
-                    addChildren((FolderNode)child, c);
+                    addChildren((FolderNode) child, c);
                 }
             }
             else
@@ -2025,14 +2028,14 @@ public class PublicApiClient
         public boolean objectExists(String objectId)
         {
             CmisObject o = getObject(objectId);
-            return(o != null);
+            return (o != null);
         }
 
         public FolderNode getRootFolder()
         {
             Folder rootFolder = session.getRootFolder();
 
-            FolderNode ret = (FolderNode)CMISNode.createNode(rootFolder);
+            FolderNode ret = (FolderNode) CMISNode.createNode(rootFolder);
             return ret;
         }
 
@@ -2041,14 +2044,14 @@ public class PublicApiClient
             Session session = getCMISSession();
 
             CmisObject o = session.getObject(folderId);
-            if(o instanceof Folder)
+            if (o instanceof Folder)
             {
-                Folder f = (Folder)o;
+                Folder f = (Folder) o;
 
                 OperationContextImpl ctx = new OperationContextImpl();
                 List<Tree<FileableCmisObject>> res = f.getDescendants(depth, ctx);
-                FolderNode ret = (FolderNode)CMISNode.createNode(f);
-                for(Tree<FileableCmisObject> t : res)
+                FolderNode ret = (FolderNode) CMISNode.createNode(f);
+                for (Tree<FileableCmisObject> t : res)
                 {
                     addChildren(ret, t);
                 }
@@ -2082,9 +2085,9 @@ public class PublicApiClient
         public void removeAllVersions(String objectId)
         {
             CmisObject o = getObject(objectId);
-            if(o instanceof Document)
+            if (o instanceof Document)
             {
-                Document d = (Document)o;
+                Document d = (Document) o;
                 d.deleteAllVersions();
             }
             else
@@ -2100,9 +2103,9 @@ public class PublicApiClient
             res = res.skipTo(skipCount);
             res = res.getPage(maxItems);
 
-            List<CMISNode> results = new ArrayList<CMISNode>((int)res.getPageNumItems());
+            List<CMISNode> results = new ArrayList<CMISNode>((int) res.getPageNumItems());
 
-            for(QueryResult r : res)
+            for (QueryResult r : res)
             {
                 CMISNode n = CMISNode.createNode(r);
                 results.add(n);
@@ -2114,7 +2117,7 @@ public class PublicApiClient
         public void removeObject(String objectId, boolean allVersions)
         {
             CmisObject o = getObject(objectId);
-            if(o != null)
+            if (o != null)
             {
                 o.delete(allVersions);
             }
@@ -2127,9 +2130,9 @@ public class PublicApiClient
         public List<String> removeTree(String objectId, boolean allVersions, UnfileObject unfile, boolean continueOnFailure)
         {
             CmisObject o = getObject(objectId);
-            if(o instanceof Folder)
+            if (o instanceof Folder)
             {
-                Folder f = (Folder)o;
+                Folder f = (Folder) o;
                 List<String> res = f.deleteTree(allVersions, unfile, continueOnFailure);
                 return res;
             }
@@ -2142,7 +2145,7 @@ public class PublicApiClient
         public void updateProperties(String objectId, Map<String, ?> properties, boolean refresh)
         {
             CmisObject o = getObject(objectId);
-            if(o != null)
+            if (o != null)
             {
                 o.updateProperties(properties, refresh);
             }
@@ -2155,9 +2158,9 @@ public class PublicApiClient
         public List<Tree<FileableCmisObject>> getFolderTree(String folderId, int depth)
         {
             CmisObject o = session.getObject(folderId);
-            if(o instanceof Folder)
+            if (o instanceof Folder)
             {
-                Folder f = (Folder)o;
+                Folder f = (Folder) o;
 
                 OperationContextImpl ctx = new OperationContextImpl();
                 List<Tree<FileableCmisObject>> res = f.getFolderTree(depth, ctx);
@@ -2172,22 +2175,22 @@ public class PublicApiClient
         public FolderNode getChildren(String folderId, int skipCount, int maxItems)
         {
             CmisObject o = session.getObject(folderId);
-            if(o instanceof Folder)
+            if (o instanceof Folder)
             {
-                Folder f = (Folder)o;
-                FolderNode ret = (FolderNode)CMISNode.createNode(f);
+                Folder f = (Folder) o;
+                FolderNode ret = (FolderNode) CMISNode.createNode(f);
 
                 OperationContextImpl ctx = new OperationContextImpl();
                 ItemIterable<CmisObject> res = f.getChildren(ctx);
                 res.skipTo(skipCount);
                 ItemIterable<CmisObject> l = res.getPage(maxItems);
-                for(CmisObject c : l)
+                for (CmisObject c : l)
                 {
                     CMISNode child = null;
-                    if(c.getBaseType() instanceof FolderTypeDefinition)
+                    if (c.getBaseType() instanceof FolderTypeDefinition)
                     {
-                        child = (FolderNode)CMISNode.createNode(c);
-                        ret.addFolder((FolderNode)child);
+                        child = (FolderNode) CMISNode.createNode(c);
+                        ret.addFolder((FolderNode) child);
                     }
                     else
                     {
@@ -2214,9 +2217,9 @@ public class PublicApiClient
         public List<Document> getAllVersions(String objectId)
         {
             CmisObject o = getObject(objectId);
-            if(o instanceof Document)
+            if (o instanceof Document)
             {
-                Document d = (Document)o;
+                Document d = (Document) o;
                 OperationContext ctx = new OperationContextImpl();
                 List<Document> res = d.getAllVersions(ctx);
                 return res;
@@ -2238,24 +2241,24 @@ public class PublicApiClient
         {
             CmisObject o = getObject(parentId);
 
-            if(o instanceof Folder)
+            if (o instanceof Folder)
             {
-                Folder f = (Folder)o;
+                Folder f = (Folder) o;
 
-                if(properties == null)
+                if (properties == null)
                 {
                     properties = new HashMap<String, Serializable>();
                 }
-                String objectTypeId = (String)properties.get(PropertyIds.OBJECT_TYPE_ID);
+                String objectTypeId = (String) properties.get(PropertyIds.OBJECT_TYPE_ID);
                 String type = "cmis:document";
-                if(objectTypeId == null)
+                if (objectTypeId == null)
                 {
                     objectTypeId = type;
                 }
-                if(objectTypeId.indexOf(type) == -1)
+                if (objectTypeId.indexOf(type) == -1)
                 {
                     StringBuilder sb = new StringBuilder(objectTypeId);
-                    if(sb.length() > 0)
+                    if (sb.length() > 0)
                     {
                         sb.append(",");
                     }
@@ -2279,24 +2282,24 @@ public class PublicApiClient
         {
             CmisObject o = getObject(folderId);
 
-            if(o instanceof Folder)
+            if (o instanceof Folder)
             {
-                Folder f = (Folder)o;
+                Folder f = (Folder) o;
 
-                if(properties == null)
+                if (properties == null)
                 {
                     properties = new HashMap<String, Serializable>();
                 }
-                String objectTypeId = (String)properties.get(PropertyIds.OBJECT_TYPE_ID);
+                String objectTypeId = (String) properties.get(PropertyIds.OBJECT_TYPE_ID);
                 String type = "cmis:folder";
-                if(objectTypeId == null)
+                if (objectTypeId == null)
                 {
                     objectTypeId = type;
                 }
-                if(objectTypeId.indexOf(type) == -1)
+                if (objectTypeId.indexOf(type) == -1)
                 {
                     StringBuilder sb = new StringBuilder(objectTypeId);
-                    if(sb.length() > 0)
+                    if (sb.length() > 0)
                     {
                         sb.append(",");
                     }
@@ -2329,9 +2332,9 @@ public class PublicApiClient
         public ObjectId checkoutObject(String objectId)
         {
             CmisObject o = getObject(objectId);
-            if(o instanceof Document)
+            if (o instanceof Document)
             {
-                Document d = (Document)o;
+                Document d = (Document) o;
                 ObjectId res = d.checkOut();
                 return res;
             }
@@ -2349,8 +2352,7 @@ public class PublicApiClient
         private ExpectedPaging expectedPaging;
 
         public Paging()
-        {
-        }
+        {}
 
         public Paging(Integer skipCount, Integer maxItems, ExpectedPaging expectedPaging)
         {
@@ -2412,15 +2414,19 @@ public class PublicApiClient
             if (getClass() != obj.getClass())
                 return false;
             Paging other = (Paging) obj;
-            if (maxItems == null) {
+            if (maxItems == null)
+            {
                 if (other.maxItems != null)
                     return false;
-            } else if (!maxItems.equals(other.maxItems))
+            }
+            else if (!maxItems.equals(other.maxItems))
                 return false;
-            if (skipCount == null) {
+            if (skipCount == null)
+            {
                 if (other.skipCount != null)
                     return false;
-            } else if (!skipCount.equals(other.skipCount))
+            }
+            else if (!skipCount.equals(other.skipCount))
                 return false;
             return true;
         }
@@ -2450,11 +2456,10 @@ public class PublicApiClient
         private String logId;
 
         public ExpectedErrorResponse()
-        {
-        }
+        {}
 
         public ExpectedErrorResponse(String errorKey, int statusCode, String briefSummary, StackTraceElement[] stackTrace,
-                    Map<String, Object> additionalState, String logId)
+                Map<String, Object> additionalState, String logId)
         {
             super();
             this.errorKey = errorKey;
@@ -2498,11 +2503,13 @@ public class PublicApiClient
             return this;
         }
 
-        public String getLogId() {
+        public String getLogId()
+        {
             return logId;
         }
 
-        public void setLogId(String logId) {
+        public void setLogId(String logId)
+        {
             this.logId = logId;
         }
 
@@ -2544,13 +2551,13 @@ public class PublicApiClient
         {
             final StringBuilder sb = new StringBuilder(250);
             sb.append("ExpectedErrorResponse [errorKey='").append(errorKey)
-                        .append(", statusCode=").append(statusCode)
-                        .append(", briefSummary='").append(briefSummary)
-                        .append(", logId='").append(logId)
-                        .append(", stackTrace='").append(stackTrace)
-                        .append(", additionalState=").append(additionalState)
-                        .append(", descriptionURL='").append(descriptionURL)
-                        .append(']');
+                    .append(", statusCode=").append(statusCode)
+                    .append(", briefSummary='").append(briefSummary)
+                    .append(", logId='").append(logId)
+                    .append(", stackTrace='").append(stackTrace)
+                    .append(", additionalState=").append(additionalState)
+                    .append(", descriptionURL='").append(descriptionURL)
+                    .append(']');
             return sb.toString();
         }
     }
@@ -2732,9 +2739,9 @@ public class PublicApiClient
             return null;
         }
 
-        public AuditApp updateAuditApp(String applicationId, AuditApp auditApp, Map<String, String> params,  int expectedStatus) throws PublicApiException
+        public AuditApp updateAuditApp(String applicationId, AuditApp auditApp, Map<String, String> params, int expectedStatus) throws PublicApiException
         {
-            HttpResponse response = update("audit-applications", applicationId,null,null, auditApp.toJSON().toString(), params, "Failed to update Audit Application", expectedStatus);
+            HttpResponse response = update("audit-applications", applicationId, null, null, auditApp.toJSON().toString(), params, "Failed to update Audit Application", expectedStatus);
 
             if (response != null && response.getJsonResponse() != null)
             {
@@ -2767,7 +2774,7 @@ public class PublicApiClient
         public AuditEntry getAuditEntry(String applicationId, String entryId, Map<String, String> param, int expectedStatus)
                 throws PublicApiException, ParseException
         {
-            HttpResponse response = getSingle("audit-applications", applicationId, "audit-entries",entryId,
+            HttpResponse response = getSingle("audit-applications", applicationId, "audit-entries", entryId,
                     param, "Failed to get Audit Application " + applicationId, expectedStatus);
 
             if (response != null && response.getJsonResponse() != null)
@@ -2784,15 +2791,15 @@ public class PublicApiClient
         public void deleteAuditEntry(String applicationId, String entryId, Map<String, String> param, int expectedStatus)
                 throws PublicApiException
         {
-            remove("audit-applications", applicationId, "audit-entries", entryId, param,"Failed to delete entry " + entryId, expectedStatus);
+            remove("audit-applications", applicationId, "audit-entries", entryId, param, "Failed to delete entry " + entryId, expectedStatus);
         }
 
         public void deleteAuditEntries(String applicationId, Map<String, String> param, int expectedStatus)
                 throws PublicApiException
         {
-            remove("audit-applications", applicationId, "audit-entries", null, param,"Failed to delete entries for audit application " + applicationId, expectedStatus);
+            remove("audit-applications", applicationId, "audit-entries", null, param, "Failed to delete entries for audit application " + applicationId, expectedStatus);
         }
-        
+
         public ListResponse<AuditEntry> getAuditAppEntriesByNodeRefId(String nodeId, Map<String, String> params, int expectedStatus)
                 throws PublicApiException, ParseException
         {
@@ -2811,12 +2818,12 @@ public class PublicApiClient
         }
 
     }
-    
+
     public class Actions extends AbstractProxy
     {
         public ListResponse<ActionDefinition> getActionDefinitionsForNode(String nodeId,
-                                                                          Map<String, String> params,
-                                                                          int expectedStatus)
+                Map<String, String> params,
+                int expectedStatus)
                 throws PublicApiException
         {
             HttpResponse response = getAll("nodes", nodeId, "action-definitions",
@@ -2834,7 +2841,7 @@ public class PublicApiClient
         }
 
         public ListResponse<ActionDefinition> getActionDefinitions(Map<String, String> params,
-                                                                   int expectedStatus)
+                int expectedStatus)
                 throws PublicApiException
         {
             HttpResponse response = getAll("action-definitions", null, null,
@@ -2856,11 +2863,10 @@ public class PublicApiClient
             HttpResponse response = create("action-executions", null, null, null, action.toJSON().toString(), "Failed to create action for action def " + action.getActionDefinitionId(), expectedStatus, params);
             return parseActionEntity(response);
         }
-        
+
         private ListResponse<ActionDefinition> parseActionDefinitions(JSONObject jsonResponse)
         {
             List<ActionDefinition> actionDefinitions = new ArrayList<>();
-
 
             JSONObject jsonList = (JSONObject) jsonResponse.get("list");
             assertNotNull(jsonList);
@@ -2890,7 +2896,7 @@ public class PublicApiClient
             {
                 throw new RuntimeException("Unable to parse ActionDefinition JSON", e);
             }
-            
+
             return def;
         }
 
@@ -2907,7 +2913,7 @@ public class PublicApiClient
 
             return null;
         }
-        
+
         public ActionDefinition getActionDefinition(String actionDefinitionId, int expectedStatus) throws PublicApiException
         {
             HttpResponse response = getSingle("action-definitions", actionDefinitionId, null,
@@ -2919,9 +2925,9 @@ public class PublicApiClient
                 if (jsonEntity != null)
                 {
                     return parseActionDefinition(jsonEntity);
-                }                
+                }
             }
-            
+
             return null;
         }
     }

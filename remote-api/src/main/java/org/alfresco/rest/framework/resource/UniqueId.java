@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * 
  * The method must have zero arguments.
  * 
- * The "name" argument allows you to specify an alternative name for this "id" property.  The preferred/default value is "id"
+ * The "name" argument allows you to specify an alternative name for this "id" property. The preferred/default value is "id"
  *
  * @author Gethin James
  */
@@ -46,5 +46,6 @@ import java.lang.annotation.Target;
 public @interface UniqueId
 {
     String UNIQUE_NAME = "id";
+
     String name() default UNIQUE_NAME;
 }

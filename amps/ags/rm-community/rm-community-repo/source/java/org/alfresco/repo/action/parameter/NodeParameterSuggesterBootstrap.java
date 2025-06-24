@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,8 +34,7 @@ import org.alfresco.util.ParameterCheck;
 /**
  * Record metadata bootstrap bean.
  * <p>
- * This method of bootstrapping record metadata aspects into the RecordService deprecates the
- * previous practice of extending rma:recordMetaData.
+ * This method of bootstrapping record metadata aspects into the RecordService deprecates the previous practice of extending rma:recordMetaData.
  *
  * @author Mark Hibbins
  * @since 2.2
@@ -52,7 +51,8 @@ public class NodeParameterSuggesterBootstrap
     private NodeParameterProcessor nodeParameterProcessor;
 
     /**
-     * @param nodeParameterProcessorAspectsNames map of record metadata aspects against file plan types
+     * @param nodeParameterProcessorAspectsNames
+     *            map of record metadata aspects against file plan types
      */
     public void setNodeParameterProcessorAspects(String nodeParameterProcessorAspectsNames)
     {
@@ -60,7 +60,8 @@ public class NodeParameterSuggesterBootstrap
     }
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -68,7 +69,8 @@ public class NodeParameterSuggesterBootstrap
     }
 
     /**
-     * @param nodeParameterProcessor  Node parameter processor
+     * @param nodeParameterProcessor
+     *            Node parameter processor
      */
     public void setNodeParameterProcessor(NodeParameterProcessor nodeParameterProcessor)
     {
@@ -87,7 +89,7 @@ public class NodeParameterSuggesterBootstrap
             String[] aspectsNames = this.nodeParameterProcessorAspectsNames.split(",");
             for (String name : aspectsNames)
             {
-                if((name != null) && !"".equals(name.trim()))
+                if ((name != null) && !"".equals(name.trim()))
                 {
                     // convert to qname and save it
                     QName aspect = QName.createQName(name.trim(), namespaceService);

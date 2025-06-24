@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,6 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.forms.Field;
@@ -44,20 +48,14 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Implementation of a form processor Filter.
  * <p>
- * The filter implements the <code>afterGenerate</code> method to ensure a
- * default unique identifier is provided for the <code>rma:identifier</code>
- * property.
+ * The filter implements the <code>afterGenerate</code> method to ensure a default unique identifier is provided for the <code>rma:identifier</code> property.
  * </p>
  * <p>
- * The filter also ensures that any custom properties defined for the records
- * management type are provided as part of the Form.
+ * The filter also ensures that any custom properties defined for the records management type are provided as part of the Form.
  * </p>
  *
  * @author Gavin Cornwell
@@ -81,30 +79,26 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     protected IdentifierService identifierService;
 
     /**
-     * @param identifierService identifier service
+     * @param identifierService
+     *            identifier service
      */
     public void setIdentifierService(IdentifierService identifierService)
     {
         this.identifierService = identifierService;
     }
 
-    /*
-     * @see
-     * org.alfresco.repo.forms.processor.Filter#afterGenerate(java.lang.Object,
-     * java.util.List, java.util.List, org.alfresco.repo.forms.Form,
-     * java.util.Map)
-     */
+    /* @see org.alfresco.repo.forms.processor.Filter#afterGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form, java.util.Map) */
     public void afterGenerate(
-                    TypeDefinition type,
-                    List<String> fields,
-                    List<String> forcedFields,
-                    Form form,
-                    Map<String, Object> context)
+            TypeDefinition type,
+            List<String> fields,
+            List<String> forcedFields,
+            Form form,
+            Map<String, Object> context)
     {
         QName typeName = type.getName();
         if (rmAdminService.isCustomisable(typeName))
         {
-        	addCustomRMProperties(typeName, form);
+            addCustomRMProperties(typeName, form);
         }
 
         // What about any mandatory aspects?
@@ -140,12 +134,12 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     }
 
     /**
-     * Adds a property definition for each of the custom properties for the
-     * given RM type to the given form.
+     * Adds a property definition for each of the custom properties for the given RM type to the given form.
      *
-     * @param customisableType Enum representing the RM type to add custom
-     *            properties for
-     * @param form The form to add the properties to
+     * @param customisableType
+     *            Enum representing the RM type to add custom properties for
+     * @param form
+     *            The form to add the properties to
      */
     protected void addCustomRMProperties(QName customisableType, Form form)
     {
@@ -156,26 +150,26 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
 
         if (customProps != null && !customProps.isEmpty())
         {
-	        if (logger.isDebugEnabled())
-	        {
-	            logger.debug("Found " + customProps.size() + " custom properties for customisable type " + customisableType);
-	        }
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Found " + customProps.size() + " custom properties for customisable type " + customisableType);
+            }
 
-	        // setup field definition for each custom property
-	        Collection<PropertyDefinition> properties = customProps.values();
-	        FieldGroup group = new FieldGroup(CUSTOM_RM_FIELD_GROUP_ID, null, false, false, null);
-	        List<Field> fields = FieldUtils.makePropertyFields(properties, group, namespaceService, dictionaryService);
-	        form.addFields(fields);
+            // setup field definition for each custom property
+            Collection<PropertyDefinition> properties = customProps.values();
+            FieldGroup group = new FieldGroup(CUSTOM_RM_FIELD_GROUP_ID, null, false, false, null);
+            List<Field> fields = FieldUtils.makePropertyFields(properties, group, namespaceService, dictionaryService);
+            form.addFields(fields);
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementFormFilter#beforePersist(java.lang.Object, org.alfresco.repo.forms.FormData)
      */
     @Override
     public void beforePersist(TypeDefinition item, FormData data)
     {
-        recordService.disablePropertyEditableCheck();        
+        recordService.disablePropertyEditableCheck();
         super.beforePersist(item, data);
     }
 

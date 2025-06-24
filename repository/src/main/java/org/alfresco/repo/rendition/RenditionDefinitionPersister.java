@@ -34,8 +34,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * This class provides the implementation of {@link RenditionDefinition} persistence.
  * <p/>
- * Note that rendition definitions are saved underneath the Data Dictionary and therefore any code
- * which loads or saves rendition definitions must have the appropriate authorisation.
+ * Note that rendition definitions are saved underneath the Data Dictionary and therefore any code which loads or saves rendition definitions must have the appropriate authorisation.
  * 
  * @author Nick Smith
  * @author Neil McErlean
@@ -47,49 +46,41 @@ import org.alfresco.service.namespace.QName;
 public interface RenditionDefinitionPersister
 {
     /**
-     * This method serializes the {@link RenditionDefinition} and stores it in
-     * the repository. {@link RenditionDefinition}s saved in this way may be
-     * retrieved using the <code>load()</code> method.
+     * This method serializes the {@link RenditionDefinition} and stores it in the repository. {@link RenditionDefinition}s saved in this way may be retrieved using the <code>load()</code> method.
      * 
-     * @param renditionDefinition The {@link RenditionDefinition} to be
-     *            persisted.
+     * @param renditionDefinition
+     *            The {@link RenditionDefinition} to be persisted.
      */
     void saveRenditionDefinition(RenditionDefinition renditionDefinition);
 
     /**
-     * This method retrieves a {@link RenditionDefinition} that has been stored
-     * in the repository using the <code>save()</code> method. If no
-     * {@link RenditionDefinition} exists in the repository with the specified
-     * rendition name then this method returns null.
+     * This method retrieves a {@link RenditionDefinition} that has been stored in the repository using the <code>save()</code> method. If no {@link RenditionDefinition} exists in the repository with the specified rendition name then this method returns null.
      * 
-     * @param renditionName The unique identifier used to specify the
-     *            {@link RenditionDefinition} to retrieve.
+     * @param renditionName
+     *            The unique identifier used to specify the {@link RenditionDefinition} to retrieve.
      * @return The specified {@link RenditionDefinition} or null.
      */
     RenditionDefinition loadRenditionDefinition(QName renditionName);
 
     /**
-     * This method retrieves the {@link RenditionDefinition}s that have been
-     * stored in the repository using the <code>save()</code> method.
+     * This method retrieves the {@link RenditionDefinition}s that have been stored in the repository using the <code>save()</code> method.
      * <P/>
-     * If there are no such {@link RenditionDefinition}s, an empty list is
-     * returned.
+     * If there are no such {@link RenditionDefinition}s, an empty list is returned.
      * 
      * @return The {@link RenditionDefinition}s.
      */
     List<RenditionDefinition> loadRenditionDefinitions();
 
     /**
-     * This method retrieves the stored {@link RenditionDefinition}s that have
-     * been registered for the specified rendering engine name.
+     * This method retrieves the stored {@link RenditionDefinition}s that have been registered for the specified rendering engine name.
      * <P/>
-     * If there are no such rendering {@link RenditionDefinition}s, an empty
-     * list is returned.
+     * If there are no such rendering {@link RenditionDefinition}s, an empty list is returned.
      * 
-     * @param renderingEngineName the name of a rendering engine. This is
-     *            usually the spring bean name.
+     * @param renderingEngineName
+     *            the name of a rendering engine. This is usually the spring bean name.
      * @return The {@link RenditionDefinition}s.
-     * @throws NullPointerException if the renderingEngineName is null.
+     * @throws NullPointerException
+     *             if the renderingEngineName is null.
      * @see #saveRenditionDefinition(RenditionDefinition)
      */
     List<RenditionDefinition> loadRenditionDefinitions(String renderingEngineName);

@@ -27,6 +27,13 @@ package org.alfresco.repo.rawevents;
 
 import java.util.Locale;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.component.mock.MockEndpoint;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
@@ -50,12 +57,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.apache.camel.CamelContext;
-import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Provides a base set of tests for {@link EventBehaviour}
@@ -141,8 +142,7 @@ public class EventBehaviourTest extends BaseSpringTest
     }
 
     /**
-     * Tests that the content update policy is triggered correctly for the first
-     * event.
+     * Tests that the content update policy is triggered correctly for the first event.
      */
     @Test
     public void onContentUpdatePolicyFirstEventNF() throws Exception
@@ -300,8 +300,7 @@ public class EventBehaviourTest extends BaseSpringTest
     }
 
     /**
-     * Tests that the content update policy is triggered correctly for transaction
-     * commit (the default notification frequency).
+     * Tests that the content update policy is triggered correctly for transaction commit (the default notification frequency).
      */
     @Test
     public void onContentUpdatePolicyTxnCommitNF() throws Exception

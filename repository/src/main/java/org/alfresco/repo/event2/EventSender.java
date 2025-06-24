@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -37,17 +37,26 @@ public interface EventSender
 {
     /**
      * Accepts a callback function creating an event and sends this event to specified destination.
-     * @param eventProducer - callback function that creates an event
+     * 
+     * @param eventProducer
+     *            - callback function that creates an event
      */
     void accept(Callable<Optional<RepoEvent<?>>> eventProducer);
 
     /**
-     * It's called right after event sender instantiation (see {@link org.alfresco.repo.event2.EventSenderFactoryBean}).
-     * It might be used to initialize the sender implementation.
+     * It's called right after event sender instantiation (see {@link org.alfresco.repo.event2.EventSenderFactoryBean}). It might be used to initialize the sender implementation.
      */
     default void initialize()
     {
-        //no initialization by default
+        // no initialization by default
+    }
+
+    /**
+     * It's called when the bean instance is destroyed, allowing to perform cleanup operations.
+     */
+    default void destroy()
+    {
+        // no destruction by default
     }
 
     default boolean shouldParticipateInTransaction()

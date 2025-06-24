@@ -82,6 +82,7 @@
         <property name="contentService" ref="contentService" />
         <property name="renditionService2" ref="renditionService2" />
         <property name="directAccessUrlEnabled" value="${local.transform.directAccessUrl.enabled}"/>
+        <property name="threadPoolSize" value="${local.transform.threadPoolSize}" />
     </bean>
 
     <bean id="synchronousTransformClient" parent="localSynchronousTransformClient" />
@@ -127,6 +128,7 @@
         <property name="retryTransformOnDifferentMimeType" value="${content.transformer.retryOn.different.mimetype}"/>
         <property name="shutdownIndicator" ref="shutdownIndicator" />
         <property name="httpClientConfig" ref="httpClientConfigTransform" />
+        <property name="nodeService" ref="NodeService" />
     </bean>
 
     <bean id="localTransformServiceRegistryJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />

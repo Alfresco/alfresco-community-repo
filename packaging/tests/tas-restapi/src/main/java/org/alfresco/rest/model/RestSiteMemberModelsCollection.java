@@ -32,52 +32,7 @@ import java.util.List;
 import org.alfresco.rest.core.RestModels;
 
 /**
- * Handle collection of <RestSiteMemberModel>
- * Example:
- * {
- * {
- * "list": {
- * "pagination": {
- * "count": 2,
- * "hasMoreItems": false,
- * "skipCount": 0,
- * "maxItems": 100
- * },
- * "entries": [
- * {
- * "entry": {
- * "role": "SiteManager",
- * "isMemberOfGroup": false,
- * "person": {
- * "firstName": "Administrator",
- * "emailNotificationsEnabled": true,
- * "company": {},
- * "id": "admin",
- * "enabled": true,
- * "email": "admin@alfresco.com"
- * },
- * "id": "admin"
- * }
- * },
- * {
- * "entry": {
- * "role": "SiteConsumer",
- * "isMemberOfGroup": false,
- * "person": {
- * "firstName": "CqeKxvPHBd FirstName",
- * "lastName": "LN-CqeKxvPHBd",
- * "emailNotificationsEnabled": true,
- * "company": {},
- * "id": "CqeKxvPHBd",
- * "enabled": true,
- * "email": "CqeKxvPHBd"
- * },
- * "id": "CqeKxvPHBd"
- * }
- * }
- * ]
- * }
- * }
+ * Handle collection of <RestSiteMemberModel> Example: { { "list": { "pagination": { "count": 2, "hasMoreItems": false, "skipCount": 0, "maxItems": 100 }, "entries": [ { "entry": { "role": "SiteManager", "isMemberOfGroup": false, "person": { "firstName": "Administrator", "emailNotificationsEnabled": true, "company": {}, "id": "admin", "enabled": true, "email": "admin@alfresco.com" }, "id": "admin" } }, { "entry": { "role": "SiteConsumer", "isMemberOfGroup": false, "person": { "firstName": "CqeKxvPHBd FirstName", "lastName": "LN-CqeKxvPHBd", "emailNotificationsEnabled": true, "company": {}, "id": "CqeKxvPHBd", "enabled": true, "email": "CqeKxvPHBd" }, "id": "CqeKxvPHBd" } } ] } }
  */
 public class RestSiteMemberModelsCollection extends RestModels<RestSiteMemberModel, RestSiteMemberModelsCollection>
 {
@@ -105,4 +60,4 @@ public class RestSiteMemberModelsCollection extends RestModels<RestSiteMemberMod
         return siteMemberEntry;
     }
 
-}    
+}

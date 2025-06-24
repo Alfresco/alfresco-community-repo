@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -67,7 +67,8 @@ public class PropertyModificationAllowedCheck
     /**
      * Setter for list of model URI's
      *
-     * @param editableURIs List<String>
+     * @param editableURIs
+     *            List<String>
      */
     public void setEditableURIs(List<String> editableURIs)
     {
@@ -77,7 +78,8 @@ public class PropertyModificationAllowedCheck
     /**
      * Setter for list of qnames
      *
-     * @param whiteList List<QName>
+     * @param whiteList
+     *            List<QName>
      */
     public void setWhiteList(List<QName> whiteList)
     {
@@ -88,10 +90,11 @@ public class PropertyModificationAllowedCheck
     /**
      * Compares the node properties with the requested update to make sure all potential updates are permitted
      *
-     * @param before current node properties
-     * @param after  updated properties for the node
-     * @return true -  if all modified property keys are in the whitelist or
-     *                    in the list of model URI's for which the properties can be modified
+     * @param before
+     *            current node properties
+     * @param after
+     *            updated properties for the node
+     * @return true - if all modified property keys are in the whitelist or in the list of model URI's for which the properties can be modified
      */
     public boolean check(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
@@ -101,13 +104,13 @@ public class PropertyModificationAllowedCheck
         {
             final QName key = entry.getKey();
             final Serializable beforeValue = entry.getValue();
-            //check if property has been updated
+            // check if property has been updated
             final boolean modified = after.containsKey(key) && after.get(key) != null
                     && !after.get(key).equals(beforeValue);
 
-            //check if the property has been emptied or removed
+            // check if the property has been emptied or removed
             final boolean propertyRemovedEmptied = (after.get(key) == null && beforeValue != null)
-                                            || !after.containsKey(key);
+                    || !after.containsKey(key);
             if (modified || propertyRemovedEmptied)
             {
                 proceed = allowPropertyUpdate(key);
@@ -135,7 +138,8 @@ public class PropertyModificationAllowedCheck
     /**
      * Determines whether the property should be allowed to be updated or not.
      *
-     * @param key property
+     * @param key
+     *            property
      * @return true if property update is allowed
      */
     private boolean allowPropertyUpdate(QName key)

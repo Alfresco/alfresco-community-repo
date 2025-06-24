@@ -25,10 +25,11 @@
  */
 package org.alfresco.rest.api;
 
+import org.apache.commons.lang3.BooleanUtils;
+
 import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
-import org.apache.commons.lang3.BooleanUtils;
 
 /**
  * Helper class for retrieving direct access URLs options.
@@ -46,7 +47,7 @@ public class DirectAccessUrlHelper
 
     public Long getDefaultExpiryTimeInSec()
     {
-        if (restApiDirectUrlConfig ==null || !restApiDirectUrlConfig.isEnabled())
+        if (restApiDirectUrlConfig == null || !restApiDirectUrlConfig.isEnabled())
         {
             throw new DisabledServiceException("Direct access url isn't available.");
         }
@@ -57,14 +58,13 @@ public class DirectAccessUrlHelper
     public boolean getAttachment(DirectAccessUrlRequest directAccessUrlRequest)
     {
         boolean attachment = true;
-        if (directAccessUrlRequest != null )
+        if (directAccessUrlRequest != null)
         {
             attachment = BooleanUtils.toBooleanDefaultIfNull(directAccessUrlRequest.isAttachment(), true);
         }
         return attachment;
     }
 
-    
     public String getFileName(DirectAccessUrlRequest directAccessUrlRequest)
     {
         return directAccessUrlRequest != null ? directAccessUrlRequest.getFileName() : null;

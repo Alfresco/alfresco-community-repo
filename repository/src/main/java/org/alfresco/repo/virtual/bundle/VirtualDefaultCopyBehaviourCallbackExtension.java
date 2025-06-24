@@ -35,8 +35,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.traitextender.SpringBeanExtension;
 
 public class VirtualDefaultCopyBehaviourCallbackExtension extends
-SpringBeanExtension<DefaultCopyBehaviourCallbackExtension, DefaultCopyBehaviourCallbackTrait> implements
-DefaultCopyBehaviourCallbackExtension
+        SpringBeanExtension<DefaultCopyBehaviourCallbackExtension, DefaultCopyBehaviourCallbackTrait> implements
+        DefaultCopyBehaviourCallbackExtension
 {
     private ActualEnvironment environment;
 
@@ -53,13 +53,15 @@ DefaultCopyBehaviourCallbackExtension
     @Override
     public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
     {
-        if(environment.isSubClass(classQName, ContentModel.TYPE_FOLDER)){
-            if(copyDetails.getSourceNodeAspectQNames().contains(VirtualContentModel.ASPECT_VIRTUAL)){
+        if (environment.isSubClass(classQName, ContentModel.TYPE_FOLDER))
+        {
+            if (copyDetails.getSourceNodeAspectQNames().contains(VirtualContentModel.ASPECT_VIRTUAL))
+            {
                 return false;
             }
         }
         return getTrait().getMustCopy(classQName,
-                                      copyDetails);
+                copyDetails);
     }
 
 }

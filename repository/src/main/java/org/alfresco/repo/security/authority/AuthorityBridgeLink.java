@@ -32,7 +32,7 @@ package org.alfresco.repo.security.authority;
 public class AuthorityBridgeLink
 {
     private String childName;
-    
+
     private String parentName;
 
     /**
@@ -44,7 +44,8 @@ public class AuthorityBridgeLink
     }
 
     /**
-     * @param childName the childName to set
+     * @param childName
+     *            the childName to set
      */
     public void setChildName(String childName)
     {
@@ -60,13 +61,12 @@ public class AuthorityBridgeLink
     }
 
     /**
-     * @param parentName the parentName to set
+     * @param parentName
+     *            the parentName to set
      */
     public void setParentName(String parentName)
     {
         this.parentName = parentName;
     }
-    
-    
-    
+
 }

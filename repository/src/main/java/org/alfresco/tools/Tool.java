@@ -28,11 +28,11 @@ package org.alfresco.tools;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
-
 
 /**
  * Abstract Tool Implementation
@@ -47,21 +47,21 @@ public abstract class Tool
     private ApplicationContext appContext;
     /** Repository Service Registry */
     private ServiceRegistry serviceRegistry;
-    
-    
+
     /**
      * Process Tool Arguments
      * 
-     * @param args  the arguments
-     * @return  the tool context
+     * @param args
+     *            the arguments
+     * @return the tool context
      * @throws ToolException
      */
     protected ToolContext processArgs(String[] args)
-        throws ToolArgumentException
+            throws ToolArgumentException
     {
         return new ToolContext();
     }
-    
+
     /**
      * Display Tool Help
      */
@@ -76,7 +76,7 @@ public abstract class Tool
      * @throws ToolException
      */
     protected abstract int execute()
-        throws ToolException;
+            throws ToolException;
 
     /**
      * Get the tool name
@@ -86,9 +86,10 @@ public abstract class Tool
     protected abstract String getToolName();
 
     /**
-     * Log  message
+     * Log message
      * 
-     * @param msg  message to log
+     * @param msg
+     *            message to log
      */
     protected void logInfo(String msg)
     {
@@ -101,7 +102,8 @@ public abstract class Tool
     /**
      * Log Verbose message
      * 
-     * @param msg  message to log
+     * @param msg
+     *            message to log
      */
     protected void logVerbose(String msg)
     {
@@ -110,21 +112,23 @@ public abstract class Tool
             logInfo(msg);
         }
     }
-    
+
     /**
      * Log Error message
      * 
-     * @param msg  message to log
+     * @param msg
+     *            message to log
      */
     protected void logError(String msg)
     {
-    	System.out.println(msg);
+        System.out.println(msg);
     }
-    
+
     /**
      * Handle Error Message
      * 
-     * @param e exception
+     * @param e
+     *            exception
      */
     protected int handleError(Throwable e)
     {
@@ -170,53 +174,55 @@ public abstract class Tool
         // return generic error code
         return -1;
     }
-    
+
     /**
      * Exit Tool
      * 
-     * @param status  status code
+     * @param status
+     *            status code
      */
     protected void exit(int status)
     {
-    	System.exit(status);
+        System.exit(status);
     }
 
     /**
      * Get the Application Context
      * 
-     * @return  the application context
+     * @return the application context
      */
     protected final ApplicationContext getApplicationContext()
     {
         return appContext;
     }
-    
+
     /**
      * Get the Repository Service Registry
      * 
      * @return the service registry
-     */    
+     */
     protected final ServiceRegistry getServiceRegistry()
     {
         return serviceRegistry;
     }
-    
+
     /**
      * Tool entry point
      * 
-     * @param args  the tool arguments
+     * @param args
+     *            the tool arguments
      */
     public final void start(String[] args)
     {
         long startTime = System.nanoTime();
-    	int status = -1;
-    	
+        int status = -1;
+
         try
         {
             // Process tool arguments
             toolContext = processArgs(args);
             toolContext.validate();
-    
+
             if (toolContext.isHelp())
             {
                 // Display help, if requested
@@ -234,19 +240,19 @@ public abstract class Tool
                 long loginTime = System.nanoTime();
                 if (toolContext.isLogin())
                 {
-                    logInfo("Time to login "+((loginTime - startTime)/1000000000f)+" seconds");
+                    logInfo("Time to login " + ((loginTime - startTime) / 1000000000f) + " seconds");
                 }
                 status = execute();
                 long executeTime = System.nanoTime();
-                logInfo("Time to execute "+((executeTime - loginTime)/1000000000f)+" seconds");
+                logInfo("Time to execute " + ((executeTime - loginTime) / 1000000000f) + " seconds");
                 logInfo(getToolName() + " successfully completed.");
             }
         }
         catch (Throwable e)
         {
-        	status = handleError(e);
+            status = handleError(e);
         }
-        
+
         exit(status);
     }
 
@@ -260,7 +266,7 @@ public abstract class Tool
         auth.authenticate(toolContext.getUsername(), toolContext.getPassword().toCharArray());
         logInfo("Connected as " + toolContext.getUsername());
     }
-    
+
     /**
      * Initialise the Repository
      */
@@ -269,5 +275,5 @@ public abstract class Tool
         appContext = ApplicationContextHelper.getApplicationContext();
         serviceRegistry = (ServiceRegistry) appContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
     }
-    
+
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,10 +31,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
-import org.alfresco.util.GUID;
-import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +39,11 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
+import org.alfresco.util.GUID;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * Records management event POST web script
@@ -65,9 +66,7 @@ public class RmEventsPost extends RMEventBase
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -108,7 +107,7 @@ public class RmEventsPost extends RMEventBase
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+                    "Could not parse JSON from req.", je);
         }
 
         return model;
@@ -117,9 +116,11 @@ public class RmEventsPost extends RMEventBase
     /**
      * Helper method for getting the event name
      *
-     * @param json The request content as JSON object
+     * @param json
+     *            The request content as JSON object
      * @return String The event name. A generated GUID if it doesn't exist
-     * @throws JSONException If there is no string value for the key
+     * @throws JSONException
+     *             If there is no string value for the key
      */
     private String getEventName(JSONObject json) throws JSONException
     {
@@ -135,11 +136,12 @@ public class RmEventsPost extends RMEventBase
     }
 
     /**
-     * Helper method for checking if an event can be created or not. Throws an
-     * error if the event already exists.
+     * Helper method for checking if an event can be created or not. Throws an error if the event already exists.
      *
-     * @param eventDisplayLabel The display label of the event
-     * @param eventName The name of the event
+     * @param eventDisplayLabel
+     *            The display label of the event
+     * @param eventName
+     *            The name of the event
      */
     private boolean canCreateEvent(String eventDisplayLabel, String eventName)
     {
@@ -149,7 +151,7 @@ public class RmEventsPost extends RMEventBase
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                     "Cannot create event. An event with the display label '"
-                          + eventDisplayLabel + "' already exists.");
+                            + eventDisplayLabel + "' already exists.");
         }
 
         return canCreateEvent;

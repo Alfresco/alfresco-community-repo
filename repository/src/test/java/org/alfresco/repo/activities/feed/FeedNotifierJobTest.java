@@ -30,6 +30,21 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.quartz.JobBuilder;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
@@ -49,20 +64,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.*;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Tests for the {@link FeedNotifierJob} class.
@@ -73,7 +74,7 @@ import org.springframework.context.ApplicationContext;
 public class FeedNotifierJobTest
 {
     private static ApplicationContext ctx = null;
-    
+
     private FeedNotifierJob feedNotifierJob;
     private @Mock JobExecutionContext jobCtx;
     private TenantAdminService tenantAdminService;
@@ -92,12 +93,12 @@ public class FeedNotifierJobTest
     private RepoAdminService repoAdminService;
     private ActionService actionService;
     private AuthenticationContext authenticationContext;
-    
+
     private NodeRef failingPersonNodeRef;
     private NodeRef personNodeRef;
     private String userName1 = "user1." + GUID.generate();
     private String userName2 = "user2." + GUID.generate();
-    
+
     @BeforeClass
     public static void init()
     {
@@ -106,7 +107,7 @@ public class FeedNotifierJobTest
 
         ctx = ApplicationContextHelper.getApplicationContext();
     }
-    
+
     @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception
@@ -119,7 +120,7 @@ public class FeedNotifierJobTest
         postLookup = (PostLookup) activitiesFeedCtx.getBean("postLookup");
         ObjectFactory<ActivitiesFeedModelBuilder> feedModelBuilderFactory = (ObjectFactory<ActivitiesFeedModelBuilder>) activitiesFeedCtx.getBean("feedModelBuilderFactory");
         EmailUserNotifier emailUserNotifier = (EmailUserNotifier) activitiesFeedCtx.getBean("emailUserNotifier");
-        
+
         tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
         transactionService = (TransactionService) ctx.getBean("transactionService");
         personService = (PersonService) ctx.getBean("personService");
@@ -131,11 +132,10 @@ public class FeedNotifierJobTest
         actionService = (ActionService) ctx.getBean("ActionService");
         authenticationContext = (AuthenticationContext) ctx.getBean("authenticationContext");
         EmailHelper emailHelper = (EmailHelper) ctx.getBean("emailHelper");
-        
+
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         // create some users
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void execute() throws Throwable
             {
@@ -144,7 +144,7 @@ public class FeedNotifierJobTest
                 return null;
             }
         }, false, true);
-        
+
         // use our own user notifier for testing purposes
         userNotifier = new RegisterErrorUserFeedNotifier();
         userNotifier.setNodeService(nodeService);
@@ -194,13 +194,12 @@ public class FeedNotifierJobTest
             maxSequence = postDAO.getMaxActivitySeq();
         }
     }
-    
+
     @After
     public void cleanUp()
     {
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void execute() throws Throwable
             {
@@ -211,10 +210,11 @@ public class FeedNotifierJobTest
         }, false, true);
         AuthenticationUtil.clearCurrentSecurityContext();
     }
-    
+
     /**
      * Test for MNT-12398
-     * @throws JobExecutionException 
+     * 
+     * @throws JobExecutionException
      */
     @Test
     public void testAuthentication() throws Exception
@@ -224,10 +224,9 @@ public class FeedNotifierJobTest
         final String appTool = "profile";
         // Status update
         final String jsonActivityData = "{\"status\":\"test\"}";
-        
+
         // and activity for userName2
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void execute() throws Throwable
             {
@@ -241,25 +240,25 @@ public class FeedNotifierJobTest
                 return null;
             }
         }, false, true);
-        
+
         generateActivities();
         // Start feed notifier as user2 (the generation should be run as system internally)
         // We should not get the "Unable to get user feed entries for 'user1' - currently logged in as 'user2'"
         AuthenticationUtil.setFullyAuthenticatedUser(userName2);
         feedNotifierJob.execute(jobCtx);
-        
+
         assertNull("The notification failed with error " + userNotifier.getError(), userNotifier.getError());
     }
 
     private class RegisterErrorUserFeedNotifier extends EmailUserNotifier
     {
         private Exception error = null;
-        
+
         public Exception getError()
         {
             return error;
         }
-        
+
         @Override
         public Pair<Integer, Long> notifyUser(final NodeRef personNodeRef, String subject, Object[] subjectParams, Map<String, String> siteNames,
                 String shareUrl, int repeatIntervalMins, String templateNodeRef)
@@ -274,7 +273,7 @@ public class FeedNotifierJobTest
                 throw e;
             }
         }
-        
+
     }
-    
+
 }

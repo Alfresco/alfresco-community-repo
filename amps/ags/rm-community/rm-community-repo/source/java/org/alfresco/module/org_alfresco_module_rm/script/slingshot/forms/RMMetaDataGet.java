@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,16 +36,17 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * RM metadata used by form extension
@@ -75,7 +76,8 @@ public class RMMetaDataGet extends DeclarativeWebScript
     private FilePlanService filePlanService;
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -83,24 +85,24 @@ public class RMMetaDataGet extends DeclarativeWebScript
     }
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -117,16 +119,16 @@ public class RMMetaDataGet extends DeclarativeWebScript
             String type = req.getParameter(PARAM_TYPE);
             if (type != null && type.length() != 0 && type.indexOf(':') != -1)
             {
-            	Matcher m = QNAME_PATTERN.matcher(type);
-            	if (m.matches())
-            	{
-	                QName qname = QName.createQName(type, namespaceService);
-	                FilePlanComponentKind kind = filePlanService.getFilePlanComponentKindFromType(qname);
-	                if (kind != null)
-	                {
-	                    result = kind.toString();
-	                }
-            	}
+                Matcher m = QNAME_PATTERN.matcher(type);
+                if (m.matches())
+                {
+                    QName qname = QName.createQName(type, namespaceService);
+                    FilePlanComponentKind kind = filePlanService.getFilePlanComponentKindFromType(qname);
+                    if (kind != null)
+                    {
+                        result = kind.toString();
+                    }
+                }
             }
         }
         else

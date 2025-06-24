@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,10 +43,7 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.PermissionService;
 
 /**
- * An extractor that extracts the <b>cm:name</b> path from the RM root down to
- * - and including - the node's own name.  This will only extract data if the
- * node is a {@link RecordsManagementModel#ASPECT_FILE_PLAN_COMPONENT fileplan component}
- * or is a subtype of content.
+ * An extractor that extracts the <b>cm:name</b> path from the RM root down to - and including - the node's own name. This will only extract data if the node is a {@link RecordsManagementModel#ASPECT_FILE_PLAN_COMPONENT fileplan component} or is a subtype of content.
  *
  * @see FilePlanService#getNodeRefPath(NodeRef)
  *
@@ -72,7 +69,8 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
     }
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -80,7 +78,8 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
     }
 
     /**
-     * @param ruleService the ruleService to set
+     * @param ruleService
+     *            the ruleService to set
      */
     public void setRuleService(RuleService ruleService)
     {
@@ -88,7 +87,8 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
     }
 
     /**
-     * @param permissionService	permission service
+     * @param permissionService
+     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -96,7 +96,8 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
     }
 
     /**
-     * @param dictionaryService	dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -104,8 +105,7 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
     }
 
     /**
-     * @return  Returns <tt>true</tt> if the data is a NodeRef and it either represents
-     *          a fileplan component or is frozen
+     * @return Returns <tt>true</tt> if the data is a NodeRef and it either represents a fileplan component or is frozen
      */
     public boolean isSupported(Serializable data)
     {
@@ -190,4 +190,3 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
         return Objects.hash(nodeService, filePlanService, ruleService);
     }
 }
-

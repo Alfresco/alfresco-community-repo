@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
  * Child assoc result set
+ * 
  * @author andyh
  *
  */
@@ -56,10 +57,12 @@ public class ChildAssocRefResultSet extends AbstractResultSet
 {
     private List<ChildAssociationRef> cars;
     NodeService nodeService;
-    
+
     /**
      * Normal constructor
-     * @param nodeService NodeService
+     * 
+     * @param nodeService
+     *            NodeService
      */
     public ChildAssocRefResultSet(NodeService nodeService, List<ChildAssociationRef> cars)
     {
@@ -67,20 +70,23 @@ public class ChildAssocRefResultSet extends AbstractResultSet
         this.nodeService = nodeService;
         this.cars = cars;
     }
-    
+
     /**
      * Constructor that may expand all child assoc parents provided
-     * @param nodeService NodeService
-     * @param resolveAllParents boolean
+     * 
+     * @param nodeService
+     *            NodeService
+     * @param resolveAllParents
+     *            boolean
      */
     public ChildAssocRefResultSet(NodeService nodeService, List<NodeRef> nodeRefs, boolean resolveAllParents)
     {
         super();
         this.nodeService = nodeService;
         List<ChildAssociationRef> cars = new ArrayList<ChildAssociationRef>(nodeRefs.size());
-        for(NodeRef nodeRef : nodeRefs)
+        for (NodeRef nodeRef : nodeRefs)
         {
-            if(resolveAllParents)
+            if (resolveAllParents)
             {
                 cars.addAll(nodeService.getParentAssocs(nodeRef));
             }
@@ -101,7 +107,7 @@ public class ChildAssocRefResultSet extends AbstractResultSet
     {
         return cars.get(n).getChildRef();
     }
-    
+
     public ChildAssociationRef getChildAssocRef(int n)
     {
         return cars.get(n);
@@ -116,8 +122,7 @@ public class ChildAssocRefResultSet extends AbstractResultSet
     {
         return new ChildAssocRefResultSetRowIterator(this);
     }
-    
-    
+
     /* package */ NodeService getNodeService()
     {
         return nodeService;
@@ -130,7 +135,7 @@ public class ChildAssocRefResultSet extends AbstractResultSet
 
     public int getStart()
     {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     public boolean hasMore()
@@ -139,8 +144,8 @@ public class ChildAssocRefResultSet extends AbstractResultSet
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound() */
     @Override
     public long getNumberFound()
     {

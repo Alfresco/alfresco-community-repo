@@ -25,6 +25,21 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+import java.util.*;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAOImpl;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
@@ -43,21 +58,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.GUID;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.util.*;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 /**
  * V1 REST API tests for managing Groups
@@ -356,8 +356,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // check results
             assertEquals(maxItems, resp.getList().size());
 
-            resp.getList().forEach(group ->
-            {
+            resp.getList().forEach(group -> {
                 assertNotNull(group);
 
                 assertNotNull(group.getParentIds());
@@ -374,8 +373,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // check results
             assertEquals(maxItems, resp.getList().size());
 
-            resp.getList().forEach(group ->
-            {
+            resp.getList().forEach(group -> {
                 assertNotNull(group);
 
                 assertNotNull(group.getZones());
@@ -689,7 +687,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
     }
 
     private ListResponse<Group> getGroupsByPersonId(String userId, final PublicApiClient.Paging paging,
-                                                    Map<String, String> otherParams) throws Exception
+            Map<String, String> otherParams) throws Exception
     {
         return getGroupsByPersonId(
                 userId,
@@ -1000,18 +998,18 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             assertEquals(4, resp.getList().size());
             Iterator<Group> it = resp.getList().iterator();
             assertEquals(groupEveryone, it.next()); // GROUP_EVERYONE
-            assertEquals(rootGroup, it.next());     // GROUP_Group_ROOT<UUID>
-            assertEquals(groupA, it.next());        // GROUP_Test_GroupA<UUID>
-            assertEquals(groupB, it.next());        // GROUP_Test_GroupB<UUID>
+            assertEquals(rootGroup, it.next()); // GROUP_Group_ROOT<UUID>
+            assertEquals(groupA, it.next()); // GROUP_Test_GroupA<UUID>
+            assertEquals(groupB, it.next()); // GROUP_Test_GroupB<UUID>
 
             // Sort by ID descending
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, false);
             resp = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
             assertEquals(4, resp.getList().size());
             it = resp.getList().iterator();
-            assertEquals(groupB, it.next());        // GROUP_Test_GroupB<UUID>
-            assertEquals(groupA, it.next());        // GROUP_Test_GroupA<UUID>
-            assertEquals(rootGroup, it.next());     // GROUP_Group_ROOT<UUID>
+            assertEquals(groupB, it.next()); // GROUP_Test_GroupB<UUID>
+            assertEquals(groupA, it.next()); // GROUP_Test_GroupA<UUID>
+            assertEquals(rootGroup, it.next()); // GROUP_Group_ROOT<UUID>
             assertEquals(groupEveryone, it.next()); // GROUP_EVERYONE
         }
 
@@ -1064,8 +1062,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             params.put("where", "(zones in ('APP.DEFAULT'))");
 
             // Use the -me- alias
-            ListResponse<Group> response = groupsProxy.
-                    getGroupsByPersonId("-me-", params, "Couldn't get user's groups", 200);
+            ListResponse<Group> response = groupsProxy.getGroupsByPersonId("-me-", params, "Couldn't get user's groups", 200);
             List<Group> groups = response.getList();
 
             assertFalse(groups.isEmpty());
@@ -1081,8 +1078,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             params.put("where", "(zones in ('APITEST.MYZONE'))");
 
             // Use the -me- alias
-            ListResponse<Group> response = groupsProxy.
-                    getGroupsByPersonId("-me-", params, "Couldn't get user's groups", 200);
+            ListResponse<Group> response = groupsProxy.getGroupsByPersonId("-me-", params, "Couldn't get user's groups", 200);
             List<Group> groups = response.getList();
 
             assertEquals(3, groups.size());
@@ -1095,8 +1091,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             Map<String, String> params = new HashMap<>();
             params.put("where", "(zones in ('APITEST.ANOTHER'))");
 
-            ListResponse<Group> response = groupsProxy.
-                    getGroupsByPersonId(personAlice.getId(), params, "Couldn't get user's groups", 200);
+            ListResponse<Group> response = groupsProxy.getGroupsByPersonId(personAlice.getId(), params, "Couldn't get user's groups", 200);
             List<Group> groups = response.getList();
 
             assertEquals(1, groups.size());
@@ -1114,8 +1109,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             otherParams.put("where", "(isRoot=true AND zones in ('APITEST.MYZONE'))");
 
-            ListResponse<Group> response = groupsProxy.
-                    getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
+            ListResponse<Group> response = groupsProxy.getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
             List<Group> groups = response.getList();
 
             assertEquals(1, groups.size());
@@ -1124,8 +1118,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             // Zone that doesn't exist.
             otherParams.put("where", "(isRoot=true AND zones in ('I.DO.NOT.EXIST'))");
-            response = groupsProxy.
-                    getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
+            response = groupsProxy.getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
             groups = response.getList();
             assertTrue(groups.isEmpty());
         }
@@ -1138,8 +1131,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             otherParams.put("where", "(isRoot=false AND zones in ('APITEST.MYZONE'))");
 
-            ListResponse<Group> response = groupsProxy.
-                    getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
+            ListResponse<Group> response = groupsProxy.getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
             List<Group> groups = response.getList();
 
             assertEquals(2, groups.size());
@@ -1150,8 +1142,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             // Zone that doesn't exist.
             otherParams.put("where", "(isRoot=false AND zones in ('I.DO.NOT.EXIST'))");
-            response = groupsProxy.
-                    getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
+            response = groupsProxy.getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
             groups = response.getList();
             assertTrue(groups.isEmpty());
         }
@@ -1204,7 +1195,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // Default order.
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, null);
 
-            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.hasNext()).thenReturn(true, true, false);
             when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
             List<GroupMember> groupMembers = resp.getList();
@@ -1213,7 +1204,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // Ascending order
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
 
-            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.hasNext()).thenReturn(true, true, false);
             when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             ListResponse<GroupMember> respOrderAsc = getGroupMembers(rootGroupName, paging, otherParams);
 
@@ -1230,7 +1221,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // Default order.
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
 
-            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.hasNext()).thenReturn(true, true, false);
             when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
             List<GroupMember> groupMembers = resp.getList();
@@ -1245,7 +1236,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             Map<String, String> otherParams = new HashMap<>();
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, false);
 
-            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.hasNext()).thenReturn(true, true, false);
             when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             // list sites
             ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
@@ -1261,7 +1252,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             Map<String, String> otherParams = new HashMap<>();
             otherParams.put("orderBy", org.alfresco.rest.api.Groups.PARAM_ID + " ASC," + org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME + " ASC");
 
-            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.hasNext()).thenReturn(true, true, false);
             when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             getGroupMembers(rootGroupName, paging, otherParams, "", HttpServletResponse.SC_BAD_REQUEST);
         }
@@ -1281,7 +1272,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             int maxItems = 2;
             Paging paging = getPaging(skipCount, maxItems);
 
-            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.hasNext()).thenReturn(true, true, false);
             when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
 
@@ -1291,7 +1282,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             maxItems = 1;
             paging = getPaging(skipCount, maxItems);
 
-            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.hasNext()).thenReturn(true, true, false);
             when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             ListResponse<GroupMember> sublistResponse = getGroupMembers(rootGroupName, paging, otherParams);
 
@@ -1448,7 +1439,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             assertEquals(subGroup01Parents, createdSubGroup01.getParentIds());
             assertFalse(createdSubGroup01.getHasSubgroups());
 
-            //validate if parent group now has any subgroup
+            // validate if parent group now has any subgroup
             Group group01 = groupsProxy.getGroup(createdGroup01.getId(), otherParams, HttpServletResponse.SC_OK);
             assertTrue(group01.getHasSubgroups());
         }
@@ -1539,7 +1530,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // -ve tests
             // Id clashes with an existing group member
             {
-                //Add a group member that has been already added
+                // Add a group member that has been already added
                 groupsProxy.createGroupMember(groupB.getId(), groupMemberA, HttpServletResponse.SC_CONFLICT);
             }
 
@@ -1604,7 +1595,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
                 setRequestContext(user1);
                 groupsProxy.createGroupMember(groupB.getId(), groupMemberB, HttpServletResponse.SC_FORBIDDEN);
             }
-            //Authentication failed
+            // Authentication failed
             {
                 setRequestContext(networkOne.getId(), GUID.generate(), "password");
                 groupsProxy.createGroupMember(groupB.getId(), groupMemberB, HttpServletResponse.SC_UNAUTHORIZED);
@@ -1652,7 +1643,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         // Update group and subgroup.
         {
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
-
 
             String displayName = "newDisplayName";
 
@@ -1868,8 +1858,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         return subGroup;
     }
 
-    private void testGetGroupsWithDisplayNameFilter() throws Exception 
-    { 
+    private void testGetGroupsWithDisplayNameFilter() throws Exception
+    {
         shouldFilterGroupByDisplayName();
         shouldFilterGroupByDisplayNameWhenNameNotExist();
         shouldFilterGroupByDisplayNameAndZone();
@@ -1881,7 +1871,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         shouldNotAllowWildcards();
     }
 
-    private void shouldFilterGroupByDisplayName() throws Exception 
+    private void shouldFilterGroupByDisplayName() throws Exception
     {
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         Map<String, String> otherParams = new HashMap<>();
@@ -1901,7 +1891,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         assertEquals("A Group", groups.get(0).getDisplayName());
     }
 
-    private void shouldFilterGroupByDisplayNameWhenNameNotExist() throws Exception 
+    private void shouldFilterGroupByDisplayNameWhenNameNotExist() throws Exception
     {
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         Map<String, String> otherParams = new HashMap<>();
@@ -1913,7 +1903,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         assertTrue(groups.isEmpty());
     }
 
-    private void shouldFilterGroupByDisplayNameAndZone() throws Exception 
+    private void shouldFilterGroupByDisplayNameAndZone() throws Exception
     {
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         Map<String, String> otherParams = new HashMap<>();
@@ -1929,7 +1919,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         assertEquals("A Group", groups.get(0).getDisplayName());
     }
 
-    private void shouldFilterGroupByDisplayNameWhenGroupIsRoot() throws Exception 
+    private void shouldFilterGroupByDisplayNameWhenGroupIsRoot() throws Exception
     {
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         Map<String, String> otherParams = new HashMap<>();
@@ -1955,7 +1945,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         assertEquals("A Group", groups.get(0).getDisplayName());
     }
 
-    private void shouldFilterGroupByDisplayNameAndZoneWhenGroupIsRoot() throws Exception 
+    private void shouldFilterGroupByDisplayNameAndZoneWhenGroupIsRoot() throws Exception
     {
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         Map<String, String> otherParams = new HashMap<>();
@@ -1979,29 +1969,29 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         getGroups(paging, otherParams, "Incorrect response", 400);
     }
 
-    private void shouldReturnBadRequestErrorWhenDisplayNameIsEmpty() throws Exception 
+    private void shouldReturnBadRequestErrorWhenDisplayNameIsEmpty() throws Exception
     {
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         Map<String, String> otherParams = new HashMap<>();
-        otherParams.put("where","(displayName in ())");
-    
-        getGroups(paging, otherParams, "Incorrect response",400);
-    
-        otherParams.put("where","(displayName in (''))");
-        getGroups(paging, otherParams, "Incorrect response",400); 
+        otherParams.put("where", "(displayName in ())");
+
+        getGroups(paging, otherParams, "Incorrect response", 400);
+
+        otherParams.put("where", "(displayName in (''))");
+        getGroups(paging, otherParams, "Incorrect response", 400);
     }
-    
+
     private void shouldNotAllowWildcards() throws Exception
     {
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         Map<String, String> otherParams = new HashMap<>();
-        
+
         otherParams.put("where", "(displayName in ('*'))");
         ListResponse<Group> response = getGroups(paging, otherParams);
         List<Group> groups = response.getList();
 
         assertEquals(0, groups.size());
-        
+
         otherParams.put("where", "(isRoot=true AND displayName in ('*'))");
         response = getGroups(paging, otherParams);
         groups = response.getList();
@@ -2023,7 +2013,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         otherParams.put("where", "(displayName in ('*roup'))");
         response = getGroups(paging, otherParams);
         groups = response.getList();
-        
+
         assertEquals(0, groups.size());
 
         otherParams.put("where", "(isRoot=true AND displayName in ('*roup'))");
@@ -2031,29 +2021,29 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         groups = response.getList();
 
         assertEquals(0, groups.size());
-        
+
         otherParams.put("where", "(displayName in ('Root ?ROUP'))");
         response = getGroups(paging, otherParams);
         groups = response.getList();
-        
+
         assertEquals(0, groups.size());
 
         otherParams.put("where", "(isRoot=true AND displayName in ('Root ?ROUP'))");
         response = getGroups(paging, otherParams);
         groups = response.getList();
-        
+
         assertEquals(0, groups.size());
 
         otherParams.put("where", "(displayName in ('Group'))");
         response = getGroups(paging, otherParams);
         groups = response.getList();
-        
+
         assertEquals(0, groups.size());
 
         otherParams.put("where", "(isRoot=true AND displayName in ('Group'))");
         response = getGroups(paging, otherParams);
         groups = response.getList();
-        
+
         assertEquals(0, groups.size());
     }
 }

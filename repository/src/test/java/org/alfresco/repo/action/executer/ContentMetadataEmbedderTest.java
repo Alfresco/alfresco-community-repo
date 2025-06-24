@@ -25,6 +25,20 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.content.MimetypeMap;
@@ -43,19 +57,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Test of the ActionExecuter for embedding metadata
@@ -88,9 +89,9 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
         this.dictionaryService = (DictionaryService) this.applicationContext.getBean("dictionaryService");
         this.mimetypeService = (MimetypeService) this.applicationContext.getBean("mimetypeService");
-        this.metadataExtracterRegistry  = (MetadataExtracterRegistry) this.applicationContext.getBean("metadataExtracterRegistry");
+        this.metadataExtracterRegistry = (MetadataExtracterRegistry) this.applicationContext.getBean("metadataExtracterRegistry");
 
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
 
         // Create the store and get the root node
@@ -115,7 +116,7 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
         this.executer.setNodeService(nodeService);
         this.executer.setContentService(contentService);
         this.executer.setMetadataExtracterRegistry(metadataExtracterRegistry);
-        this.executer.setApplicableTypes(new String[] { ContentModel.TYPE_CONTENT.toString() });
+        this.executer.setApplicableTypes(new String[]{ContentModel.TYPE_CONTENT.toString()});
     }
 
     /**
@@ -204,7 +205,7 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
         {
             return null;
         }
-        
+
         @Override
         protected Map<String, Set<QName>> getDefaultMapping()
         {

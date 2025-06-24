@@ -38,16 +38,15 @@ import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 
 /**
- * Called by the NonTransactionalContentDiskDriver to advise of operations completed 
- * by the ContentDiskInterface.
+ * Called by the NonTransactionalContentDiskDriver to advise of operations completed by the ContentDiskInterface.
  */
 public interface ContentDiskCallback
 {
     public void getFileInformation(SrvSession sess, TreeConnection tree,
             String path, FileInfo info);
-    
+
     public void fileExists(SrvSession sess, TreeConnection tree, String path, int fileExists);
-  
+
     public void treeOpened(SrvSession sess, TreeConnection tree);
 
     public void treeClosed(SrvSession sess, TreeConnection tree);
@@ -57,10 +56,9 @@ public interface ContentDiskCallback
 
     public void createDirectory(SrvSession sess, TreeConnection tree,
             FileOpenParams params);
- 
+
     public void createFile(SrvSession sess, TreeConnection tree,
             FileOpenParams params, NetworkFile newFile);
-
 
     public void deleteDirectory(SrvSession sess, TreeConnection tree, String dir);
 
@@ -72,7 +70,7 @@ public interface ContentDiskCallback
 
     public void openFile(SrvSession sess, TreeConnection tree,
             FileOpenParams param, NetworkFile openFile);
-  
+
     public void readFile(SrvSession sess, TreeConnection tree, NetworkFile file,
             byte[] buf, int bufPos, int siz, long filePos, int readSize);
 
@@ -91,11 +89,10 @@ public interface ContentDiskCallback
     public void truncateFile(SrvSession sess, TreeConnection tree,
             NetworkFile file, long siz);
 
-
     public void writeFile(SrvSession sess, TreeConnection tree,
             NetworkFile file, byte[] buf, int bufoff, int siz, long fileoff, int writeSize);
 
     public void registerContext(DeviceContext ctx, ServerConfigurationBean serverConfig)
             throws DeviceContextException;
-   
+
 }

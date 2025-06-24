@@ -40,9 +40,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class SelfNodeLocator extends AbstractNodeLocator
 {
     public static final String NAME = "self";
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public NodeRef getNode(NodeRef source, Map<String, Serializable> params)
     {
@@ -50,8 +51,8 @@ public class SelfNodeLocator extends AbstractNodeLocator
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public String getName()
     {

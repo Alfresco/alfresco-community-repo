@@ -201,8 +201,7 @@ public class TestRemovePermissions extends EnterpriseTestApi
     }
 
     /**
-     * cmisws?wsdl is not available using jetty in automated test suite should
-     * be runned using an external alfresco server
+     * cmisws?wsdl is not available using jetty in automated test suite should be runned using an external alfresco server
      * 
      */
     // @Test
@@ -381,8 +380,10 @@ public class TestRemovePermissions extends EnterpriseTestApi
 
     /**
      * 
-     * @param session Session
-     * @param name String
+     * @param session
+     *            Session
+     * @param name
+     *            String
      * @return Folder
      */
     private Folder createFolder(Session session, String name)
@@ -400,7 +401,8 @@ public class TestRemovePermissions extends EnterpriseTestApi
 
     /**
      * 
-     * @param session Session
+     * @param session
+     *            Session
      * @return List<Ace>
      */
     private List<Ace> create2TestACLs(Session session)

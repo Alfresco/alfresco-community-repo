@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,13 +28,11 @@ package org.alfresco.repo.security.permissions;
 import java.util.Collection;
 
 import org.springframework.aop.IntroductionAdvisor;
-import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.DefaultIntroductionAdvisor;
 import org.springframework.aop.support.DelegatingIntroductionInterceptor;
 
 /**
- * Interface for collection-based results that describe permission filtering
- * behaviour around cut-off limits.
+ * Interface for collection-based results that describe permission filtering behaviour around cut-off limits.
  * 
  * @author Derek Hulley
  * @since 4.0
@@ -42,44 +40,43 @@ import org.springframework.aop.support.DelegatingIntroductionInterceptor;
 public interface PermissionCheckCollection<T>
 {
     /**
-     * Get the desired number of results.  Permission checks can stop once the number of
-     * return objects reaches this number.
+     * Get the desired number of results. Permission checks can stop once the number of return objects reaches this number.
      * 
-     * @return                          the number of results desired
+     * @return the number of results desired
      */
     int getTargetResultCount();
 
     /**
-     * Get the maximum time for permission checks to execute before cutting the results off.
-     * <br/>Zero: Ignore this value.
+     * Get the maximum time for permission checks to execute before cutting the results off. <br/>
+     * Zero: Ignore this value.
      * 
-     * @return                          the time allowed for permission checks before cutoff
+     * @return the time allowed for permission checks before cutoff
      */
     long getCutOffAfterTimeMs();
 
     /**
      * Get the maximum number of permission checks to perform before cutting the results off
      * 
-     * @return                          the maximum number of permission checks before cutoff
+     * @return the maximum number of permission checks before cutoff
      */
     int getCutOffAfterCount();
 
     /**
-     * Helper 'introduction' to allow simple addition of the {@link PermissionCheckCollection} interface to
-     * existing collections.
+     * Helper 'introduction' to allow simple addition of the {@link PermissionCheckCollection} interface to existing collections.
      *
-     * @param <T>       the type of the <code>Collection</code> in use
+     * @param <T>
+     *            the type of the <code>Collection</code> in use
      * 
      * @author Derek Hulley
      * @since 4.0
      */
     @SuppressWarnings("serial")
-    public static class PermissionCheckCollectionMixin<T> extends DelegatingIntroductionInterceptor implements PermissionCheckCollection<T>
+    class PermissionCheckCollectionMixin<T> extends DelegatingIntroductionInterceptor implements PermissionCheckCollection<T>
     {
         private final int targetResultCount;
         private final long cutOffAfterTimeMs;
         private final int cutOffAfterCount;
-        
+
         private PermissionCheckCollectionMixin(int targetResultCount, long cutOffAfterTimeMs, int cutOffAfterCount)
         {
             super();
@@ -117,18 +114,20 @@ public interface PermissionCheckCollection<T>
         /**
          * Helper method to create a {@link PermissionCheckCollection} from an existing <code>Collection</code>
          * 
-         * @param <TT>              the type of the <code>Collection</code>
-         * @param collection        the <code>Collection</code> to proxy
-         * @param targetResultCount the desired number of results or default to the collection size
-         * @param cutOffAfterTimeMs the number of milliseconds to wait before cut-off or zero to use the system default
-         *                          time-based cut-off.
-         * @param cutOffAfterCount  the number of permission checks to process before cut-off or zero to use the system default
-         *                          count-based cut-off.
-         * @return                  a <code>Collection</code> of the same type but including the
-         *                          {@link PermissionCheckCollection} interface
+         * @param <TT>
+         *            the type of the <code>Collection</code>
+         * @param collection
+         *            the <code>Collection</code> to proxy
+         * @param targetResultCount
+         *            the desired number of results or default to the collection size
+         * @param cutOffAfterTimeMs
+         *            the number of milliseconds to wait before cut-off or zero to use the system default time-based cut-off.
+         * @param cutOffAfterCount
+         *            the number of permission checks to process before cut-off or zero to use the system default count-based cut-off.
+         * @return a <code>Collection</code> of the same type but including the {@link PermissionCheckCollection} interface
          */
         @SuppressWarnings("unchecked")
-        public static final <TT> Collection<TT> create(
+        public static <TT> Collection<TT> create(
                 Collection<TT> collection,
                 int targetResultCount, long cutOffAfterTimeMs, int cutOffAfterCount)
         {
@@ -137,19 +136,14 @@ public interface PermissionCheckCollection<T>
                 targetResultCount = collection.size();
             }
             // Create the mixin
-            DelegatingIntroductionInterceptor mixin = new PermissionCheckCollectionMixin<Integer>(
+            DelegatingIntroductionInterceptor mixin = new PermissionCheckCollectionMixin<>(
                     targetResultCount,
                     cutOffAfterTimeMs,
                     cutOffAfterCount);
             // Create the advisor
             IntroductionAdvisor advisor = new DefaultIntroductionAdvisor(mixin, PermissionCheckCollection.class);
-            // Proxy
-            ProxyFactory pf = new ProxyFactory(collection);
-            pf.addAdvisor(advisor);
-            Object proxiedObject = pf.getProxy();
-            
-            // Done
-            return (Collection<TT>) proxiedObject;
+            // Create Proxy
+            return (Collection<TT>) ProxyFactoryUtils.createProxy(collection, advisor);
         }
     }
 }

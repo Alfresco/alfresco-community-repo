@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,6 +31,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
@@ -43,9 +46,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.GUID;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Move record folder tests.
@@ -62,22 +62,19 @@ public class MoveRecordFolderTest extends BaseRMTestCase
     }
 
     /**
-     * Given two categories, both with cut off immediately schedules, when the record is move then all the parts of the
-     * record should be correct based on the new schedule.
+     * Given two categories, both with cut off immediately schedules, when the record is move then all the parts of the record should be correct based on the new schedule.
      *
      * @see https://issues.alfresco.com/jira/browse/RM-1345
      */
     public void testMoveRecordFolderBeforeCutOffFolderLevelDisposition() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false) {
             NodeRef recordFolder;
             NodeRef destinationRecordCategory;
 
             public void given()
             {
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         NodeRef rcOne = createRecordCategory(false);
@@ -96,14 +93,13 @@ public class MoveRecordFolderTest extends BaseRMTestCase
                     }
                 });
 
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         // check the search aspect properties
                         assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
                         assertEquals(CutOffAction.NAME,
-                                    nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_NAME));
+                                nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_NAME));
                         assertNotNull(nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_AS_OF));
                     }
                 });
@@ -111,8 +107,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
 
             public void when() throws Exception
             {
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         // move record folder
@@ -123,8 +118,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
 
             public void then()
             {
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         // check for the lifecycle aspect
@@ -140,7 +134,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
                         // check the search aspect properties
                         assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
                         assertEquals(CutOffAction.NAME,
-                                    nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_NAME));
+                                nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_NAME));
                         assertNotNull(nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_AS_OF));
                     }
                 });
@@ -153,15 +147,13 @@ public class MoveRecordFolderTest extends BaseRMTestCase
      */
     public void testMoveRecordFolderBeforeCutOffIntoAFolderWithNoDisposition() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false) {
             NodeRef recordFolder;
             NodeRef destinationRecordCategory;
 
             public void given()
             {
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         NodeRef rcOne = createRecordCategory(false);
@@ -180,14 +172,13 @@ public class MoveRecordFolderTest extends BaseRMTestCase
                     }
                 });
 
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         // check the search aspect properties
                         assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
                         assertEquals(CutOffAction.NAME,
-                                    nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_NAME));
+                                nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_NAME));
                         assertNotNull(nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_AS_OF));
                     }
                 });
@@ -195,8 +186,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
 
             public void when() throws Exception
             {
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         // move record folder
@@ -207,8 +197,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
 
             public void then()
             {
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         // check for the lifecycle aspect
@@ -230,16 +219,14 @@ public class MoveRecordFolderTest extends BaseRMTestCase
      */
     public void testMoveRecordFolderWithRecordsBeforeCutOffRecordLevelDisposition() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false) {
             NodeRef record;
             NodeRef recordFolder;
             NodeRef destinationRecordCategory;
 
             public void given()
             {
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         NodeRef rcOne = createRecordCategory(true);
@@ -261,14 +248,13 @@ public class MoveRecordFolderTest extends BaseRMTestCase
                     }
                 });
 
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         // check the search aspect properties
                         assertTrue(nodeService.hasAspect(record, ASPECT_RM_SEARCH));
                         assertEquals(CutOffAction.NAME,
-                                    nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_NAME));
+                                nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_NAME));
                         assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_AS_OF));
                     }
                 });
@@ -276,8 +262,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
 
             public void when() throws Exception
             {
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         // move record folder
@@ -288,8 +273,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
 
             public void then()
             {
-                doTestInTransaction(new VoidTest()
-                {
+                doTestInTransaction(new VoidTest() {
                     public void runImpl() throws Exception
                     {
                         // check for the lifecycle aspect
@@ -307,7 +291,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
                         // check the search aspect properties
                         assertTrue(nodeService.hasAspect(record, ASPECT_RM_SEARCH));
                         assertEquals(CutOffAction.NAME,
-                                    nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_NAME));
+                                nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_NAME));
                         assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_AS_OF));
                     }
                 });
@@ -322,8 +306,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
      */
     public void testMoveRecordFolderFromNoDisToDis() throws Exception
     {
-        final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -344,8 +327,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
             }
         });
 
-        final NodeRef record = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef record = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -363,8 +345,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {
@@ -399,7 +380,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
             }
         });
     }
-    
+
     /**
      * Try and move a cutoff folder
      * 
@@ -407,8 +388,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
      */
     public void testMoveCutoffRecordFolder() throws Exception
     {
-        final NodeRef destination = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef destination = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -417,8 +397,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
             }
         });
 
-        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -445,8 +424,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run() throws Exception
             {
@@ -458,8 +436,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
     // try and move a destroyed folder
     public void testMoveDestroyedRecordFolder() throws Exception
     {
-        final NodeRef destination = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef destination = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -468,8 +445,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
             }
         });
 
-        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -490,8 +466,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
 
         });
 
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {
@@ -511,14 +486,11 @@ public class MoveRecordFolderTest extends BaseRMTestCase
     }
 
     /**
-     * Given a closed folder
-     * When we evaluate the move capability on it
-     * The access is denied
+     * Given a closed folder When we evaluate the move capability on it The access is denied
      */
     public void testMoveClosedFolder()
     {
-        final NodeRef destination = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef destination = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -527,8 +499,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
             }
         });
 
-        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -554,7 +525,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
     {
         NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
         DispositionSchedule dis = utils.createBasicDispositionSchedule(rc, GUID.generate(), GUID.generate(),
-                    recordLevel, false);
+                recordLevel, false);
         Map<QName, Serializable> adParams = new HashMap<>(3);
         adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
         adParams.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());

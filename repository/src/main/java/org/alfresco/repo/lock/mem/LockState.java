@@ -32,9 +32,7 @@ import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Value class describing the lock state of a node. Lock specific properties may
- * be added using the {@link #additionalInfo} field - <strong>objects</strong> assigned
- * to this field <strong>MUST</strong> implement hashCode and equals methods properly.
+ * Value class describing the lock state of a node. Lock specific properties may be added using the {@link #additionalInfo} field - <strong>objects</strong> assigned to this field <strong>MUST</strong> implement hashCode and equals methods properly.
  * 
  * @author Matt Ward
  */
@@ -51,15 +49,21 @@ public final class LockState implements Serializable
     /**
      * Constructor.
      * 
-     * @param nodeRef NodeRef
-     * @param lockType LockType
-     * @param owner String
-     * @param expires Date
-     * @param lifetime Lifetime
-     * @param additionalInfo String
+     * @param nodeRef
+     *            NodeRef
+     * @param lockType
+     *            LockType
+     * @param owner
+     *            String
+     * @param expires
+     *            Date
+     * @param lifetime
+     *            Lifetime
+     * @param additionalInfo
+     *            String
      */
     private LockState(NodeRef nodeRef, LockType lockType, String owner, Date expires,
-                Lifetime lifetime, String additionalInfo)
+            Lifetime lifetime, String additionalInfo)
     {
         this.nodeRef = nodeRef;
         this.lockType = lockType;
@@ -70,75 +74,73 @@ public final class LockState implements Serializable
     }
 
     public static LockState createLock(NodeRef nodeRef, LockType lockType, String owner, Date expires,
-                Lifetime lifetime, String additionalInfo)
+            Lifetime lifetime, String additionalInfo)
     {
         return new LockState(nodeRef, lockType, owner, expires, lifetime, additionalInfo);
     }
-    
+
     public static LockState createWithLockType(LockState lockState, LockType lockType)
     {
         return new LockState(lockState.getNodeRef(),
-                             lockType,
-                             lockState.getOwner(),
-                             lockState.getExpires(),
-                             lockState.getLifetime(),
-                             lockState.getAdditionalInfo());
+                lockType,
+                lockState.getOwner(),
+                lockState.getExpires(),
+                lockState.getLifetime(),
+                lockState.getAdditionalInfo());
     }
-    
+
     public static LockState createWithOwner(LockState lockState, String owner)
     {
         return new LockState(lockState.getNodeRef(),
-                    lockState.getLockType(),
-                    owner,
-                    lockState.getExpires(),
-                    lockState.getLifetime(),
-                    lockState.getAdditionalInfo());
+                lockState.getLockType(),
+                owner,
+                lockState.getExpires(),
+                lockState.getLifetime(),
+                lockState.getAdditionalInfo());
     }
-    
+
     public static LockState createWithExpires(LockState lockState, Date expires)
     {
         return new LockState(lockState.getNodeRef(),
-                    lockState.getLockType(),
-                    lockState.getOwner(),
-                    expires,
-                    lockState.getLifetime(),
-                    lockState.getAdditionalInfo());
+                lockState.getLockType(),
+                lockState.getOwner(),
+                expires,
+                lockState.getLifetime(),
+                lockState.getAdditionalInfo());
     }
-    
+
     public static LockState createWithLifetime(LockState lockState, Lifetime lifetime)
     {
         return new LockState(lockState.getNodeRef(),
-                    lockState.getLockType(),
-                    lockState.getOwner(),
-                    lockState.getExpires(),
-                    lifetime,
-                    lockState.getAdditionalInfo());
+                lockState.getLockType(),
+                lockState.getOwner(),
+                lockState.getExpires(),
+                lifetime,
+                lockState.getAdditionalInfo());
     }
-    
+
     public static LockState createWithAdditionalInfo(LockState lockState, String additionalInfo)
     {
         return new LockState(lockState.getNodeRef(),
-                    lockState.getLockType(),
-                    lockState.getOwner(),
-                    lockState.getExpires(),
-                    lockState.getLifetime(),
-                    additionalInfo);
+                lockState.getLockType(),
+                lockState.getOwner(),
+                lockState.getExpires(),
+                lockState.getLifetime(),
+                additionalInfo);
     }
-    
+
     public static LockState createUnlocked(NodeRef nodeRef, String additionalInfo)
     {
         return new LockState(nodeRef, null, null, null, null, additionalInfo);
     }
-    
+
     public static LockState createUnlocked(NodeRef nodeRef)
     {
         return new LockState(nodeRef, null, null, null, null, null);
     }
-    
+
     /**
-     * Returns whether this {@link LockState} is for a lock or whether there is no
-     * lock defined for the node. If a lock is defined for a node, that does not mean that
-     * the node <em>is</em> locked - the {@link org.alfresco.service.cmr.lock.LockService} must be used to determine that.
+     * Returns whether this {@link LockState} is for a lock or whether there is no lock defined for the node. If a lock is defined for a node, that does not mean that the node <em>is</em> locked - the {@link org.alfresco.service.cmr.lock.LockService} must be used to determine that.
      * 
      * @return true if there is a lock defined for the node.
      */
@@ -146,7 +148,7 @@ public final class LockState implements Serializable
     {
         return (lockType != null);
     }
-    
+
     public NodeRef getNodeRef()
     {
         return this.nodeRef;
@@ -183,7 +185,7 @@ public final class LockState implements Serializable
         final int prime = 31;
         int result = 1;
         result = prime * result
-                    + ((this.additionalInfo == null) ? 0 : this.additionalInfo.hashCode());
+                + ((this.additionalInfo == null) ? 0 : this.additionalInfo.hashCode());
         result = prime * result + ((this.expires == null) ? 0 : this.expires.hashCode());
         result = prime * result + ((this.lifetime == null) ? 0 : this.lifetime.hashCode());
         result = prime * result + ((this.lockType == null) ? 0 : this.lockType.hashCode());
@@ -195,32 +197,45 @@ public final class LockState implements Serializable
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         LockState other = (LockState) obj;
         if (this.additionalInfo == null)
         {
-            if (other.additionalInfo != null) return false;
+            if (other.additionalInfo != null)
+                return false;
         }
-        else if (!this.additionalInfo.equals(other.additionalInfo)) return false;
+        else if (!this.additionalInfo.equals(other.additionalInfo))
+            return false;
         if (this.expires == null)
         {
-            if (other.expires != null) return false;
+            if (other.expires != null)
+                return false;
         }
-        else if (!this.expires.equals(other.expires)) return false;
-        if (this.lifetime != other.lifetime) return false;
-        if (this.lockType != other.lockType) return false;
+        else if (!this.expires.equals(other.expires))
+            return false;
+        if (this.lifetime != other.lifetime)
+            return false;
+        if (this.lockType != other.lockType)
+            return false;
         if (this.nodeRef == null)
         {
-            if (other.nodeRef != null) return false;
+            if (other.nodeRef != null)
+                return false;
         }
-        else if (!this.nodeRef.equals(other.nodeRef)) return false;
+        else if (!this.nodeRef.equals(other.nodeRef))
+            return false;
         if (this.owner == null)
         {
-            if (other.owner != null) return false;
+            if (other.owner != null)
+                return false;
         }
-        else if (!this.owner.equals(other.owner)) return false;
+        else if (!this.owner.equals(other.owner))
+            return false;
         return true;
     }
 
@@ -228,7 +243,7 @@ public final class LockState implements Serializable
     public String toString()
     {
         return "LockState [nodeRef=" + this.nodeRef + ", lockType=" + this.lockType + ", owner="
-                    + this.owner + ", expires=" + this.expires + ", lifetime=" + this.lifetime
-                    + ", additionalInfo=" + this.additionalInfo + "]";
+                + this.owner + ", expires=" + this.expires + ", lifetime=" + this.lifetime
+                + ", additionalInfo=" + this.additionalInfo + "]";
     }
 }

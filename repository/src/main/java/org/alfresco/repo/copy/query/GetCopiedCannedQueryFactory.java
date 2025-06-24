@@ -46,14 +46,14 @@ public class GetCopiedCannedQueryFactory extends AbstractCopyCannedQueryFactory<
     {
         throw new UnsupportedOperationException();
     }
-    
+
     private class GetCopiedCannedQuery extends AbstractCannedQuery<CopyInfo>
     {
         private GetCopiedCannedQuery(CannedQueryParameters parameters)
         {
             super(parameters);
         }
-        
+
         @Override
         protected List<CopyInfo> queryAndFilter(CannedQueryParameters parameters)
         {

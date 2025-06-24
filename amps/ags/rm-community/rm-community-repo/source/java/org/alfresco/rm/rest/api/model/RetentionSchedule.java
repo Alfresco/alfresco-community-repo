@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,9 +26,9 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-import lombok.Data;
-
 import java.util.List;
+
+import lombok.Data;
 
 /**
  * retention schedule
@@ -36,7 +36,7 @@ import java.util.List;
 @Data
 public class RetentionSchedule
 {
-    private String id ;
+    private String id;
     private String parentId;
     private String authority;
     private String instructions;

@@ -27,6 +27,11 @@ package org.alfresco.util.schemacomp;
 
 import java.util.List;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.ForeignKey;
@@ -35,10 +40,6 @@ import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
 import org.alfresco.util.schemacomp.validator.DbValidator;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Converts DbObject instances into an XML output stream.
@@ -49,13 +50,12 @@ public class DbObjectXMLTransformer
 {
     private static final Attributes EMPTY_ATTRIBUTES = new AttributesImpl();
     private ContentHandler xmlOut;
-    
-    
+
     public DbObjectXMLTransformer(ContentHandler contentHandler)
     {
         this.xmlOut = contentHandler;
     }
-    
+
     public void output(DbObject dbObject)
     {
         try
@@ -67,7 +67,7 @@ public class DbObjectXMLTransformer
             throw new RuntimeException("Unable to output " + dbObject, e);
         }
     }
-    
+
     private void attemptOutput(DbObject dbObject) throws SAXException
     {
         // All DbObjects result in an XML element with the DbObject's class name as the tag
@@ -84,24 +84,23 @@ public class DbObjectXMLTransformer
         attribs.addAttribute("", "", XML.ATTR_NAME, "CDATA", dbObject.getName());
         // Add class-specific attributes (after common DbObject attributes).
         addAttributes(dbObject, attribs);
-        String tagName = dbObject.getClass().getSimpleName().toLowerCase();   
+        String tagName = dbObject.getClass().getSimpleName().toLowerCase();
         xmlOut.startElement("", "", tagName, attribs);
-        
+
         // All DbObjects potentially have validator configuration present in the XML.
         transformValidators(dbObject.getValidators());
-        
+
         // The element's contents can optionally be populated with class-specific content.
         transformDbObject(dbObject);
-        
-        
+
         // Provide the end tag, or close an empty element.
         xmlOut.endElement("", "", tagName);
     }
-    
-    
+
     /**
-     * @param validators List<DbValidator>
-     * @throws SAXException 
+     * @param validators
+     *            List<DbValidator>
+     * @throws SAXException
      */
     private void transformValidators(List<DbValidator> validators) throws SAXException
     {
@@ -113,7 +112,7 @@ public class DbObjectXMLTransformer
                 final AttributesImpl attribs = new AttributesImpl();
                 attribs.addAttribute("", "", XML.ATTR_CLASS, "CDATA", dbv.getClass().getName());
                 xmlOut.startElement("", "", XML.EL_VALIDATOR, attribs);
-                
+
                 if (dbv.getPropertyNames().size() > 0)
                 {
                     simpleStartTag(XML.EL_PROPERTIES);
@@ -129,7 +128,7 @@ public class DbObjectXMLTransformer
                     }
                     simpleEndTag(XML.EL_PROPERTIES);
                 }
-                
+
                 simpleEndTag(XML.EL_VALIDATOR);
             }
             simpleEndTag(XML.EL_VALIDATORS);
@@ -139,8 +138,10 @@ public class DbObjectXMLTransformer
     /**
      * Add class-specific attributes.
      * 
-     * @param dbObject DbObject
-     * @param attribs AttributesImpl
+     * @param dbObject
+     *            DbObject
+     * @param attribs
+     *            AttributesImpl
      */
     private void addAttributes(DbObject dbObject, AttributesImpl attribs)
     {
@@ -190,8 +191,6 @@ public class DbObjectXMLTransformer
             transformPrimaryKey((PrimaryKey) dbObject);
         }
     }
-    
-    
 
     private void transformSchema(Schema schema) throws SAXException
     {
@@ -202,7 +201,7 @@ public class DbObjectXMLTransformer
         }
         simpleEndTag(XML.EL_OBJECTS);
     }
-    
+
     private void transformTable(Table table) throws SAXException
     {
         // Output columns
@@ -212,13 +211,13 @@ public class DbObjectXMLTransformer
             output(column);
         }
         simpleEndTag(XML.EL_COLUMNS);
-        
+
         // Output primary key
         if (table.hasPrimaryKey())
         {
             output(table.getPrimaryKey());
         }
-        
+
         // Output foreign keys
         simpleStartTag(XML.EL_FOREIGN_KEYS);
         for (ForeignKey fk : table.getForeignKeys())
@@ -235,7 +234,7 @@ public class DbObjectXMLTransformer
         }
         simpleEndTag(XML.EL_INDEXES);
     }
-    
+
     private void transformColumn(Column column) throws SAXException
     {
         simpleElement(XML.EL_TYPE, column.getType());
@@ -247,28 +246,30 @@ public class DbObjectXMLTransformer
     {
         simpleElement(XML.EL_LOCAL_COLUMN, fk.getLocalColumn());
         simpleElement(XML.EL_TARGET_TABLE, fk.getTargetTable());
-        simpleElement(XML.EL_TARGET_COLUMN, fk.getTargetColumn()); 
+        simpleElement(XML.EL_TARGET_COLUMN, fk.getTargetColumn());
     }
 
     private void transformIndex(Index index) throws SAXException
     {
         columnNameList(index.getColumnNames(), null);
     }
-    
+
     private void transformPrimaryKey(PrimaryKey pk) throws SAXException
     {
         columnNameList(pk.getColumnNames(), pk.getColumnOrders());
     }
-    
-    
+
     /**
      * Create a simple element of the form:
+     * 
      * <pre>
      *    &lt;tag&gt;content&lt;/tag&gt;
      * </pre>
      * 
-     * @param tag String
-     * @param content String
+     * @param tag
+     *            String
+     * @param content
+     *            String
      * @throws SAXException
      */
     private void simpleElement(String tag, String content) throws SAXException
@@ -278,49 +279,49 @@ public class DbObjectXMLTransformer
         xmlOut.characters(chars, 0, chars.length);
         simpleEndTag(tag);
     }
-    
+
     private void simpleStartTag(String tag) throws SAXException
     {
         xmlOut.startElement("", "", tag, DbObjectXMLTransformer.EMPTY_ATTRIBUTES);
     }
-    
+
     private void simpleEndTag(String tag) throws SAXException
     {
-        xmlOut.endElement("", "", tag);        
+        xmlOut.endElement("", "", tag);
     }
-    
+
     /**
      * Outputs a list of columnname elements sandwiched within a columnnames element.
      * <p>
-     * The columnOrders parameter will provide a corresponding list of integers that will be
-     * provided in each columnname element's order attribute. This parameter may be null
-     * in which case order attributes will be ommitted.
-     *  
-     * @param columnNames List<String>
-     * @param columnOrders List<Integer>
+     * The columnOrders parameter will provide a corresponding list of integers that will be provided in each columnname element's order attribute. This parameter may be null in which case order attributes will be ommitted.
+     * 
+     * @param columnNames
+     *            List<String>
+     * @param columnOrders
+     *            List<Integer>
      * @throws SAXException
      */
     private void columnNameList(List<String> columnNames,
-                                List<Integer> columnOrders) throws SAXException
+            List<Integer> columnOrders) throws SAXException
     {
         simpleStartTag(XML.EL_COLUMN_NAMES);
         for (int i = 0; i < columnNames.size(); i++)
         {
             String columnName = columnNames.get(i);
-            
+
             final AttributesImpl attribs = new AttributesImpl();
             if (columnOrders != null)
             {
-                int columnOrder = columnOrders.get(i);   
+                int columnOrder = columnOrders.get(i);
                 attribs.addAttribute("", "", XML.ATTR_ORDER, "CDATA", Integer.toString(columnOrder));
             }
             // Create a <columnname> or <columnname order="n"> start tag
             xmlOut.startElement("", "", XML.EL_COLUMN_NAME, attribs);
-            
+
             // Provide the elements content
             char[] chars = columnName.toCharArray();
             xmlOut.characters(chars, 0, chars.length);
-            
+
             // Provide the closing tag
             simpleEndTag(XML.EL_COLUMN_NAME);
         }

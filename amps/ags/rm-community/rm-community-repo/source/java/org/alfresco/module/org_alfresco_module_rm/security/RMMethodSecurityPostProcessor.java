@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,9 +33,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.PropertyValue;
@@ -44,11 +41,12 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.TypedStringValue;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
  * Records management method security post processor.
  * <p>
- * Combines RM method security configuration with that of the core server before the security
- * bean is instantiated.
+ * Combines RM method security configuration with that of the core server before the security bean is instantiated.
  *
  * @author Roy Wetherall
  */
@@ -72,7 +70,8 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
      * <p>
      * Used in the case where the security bean does not follow the standard naming convention.
      *
-     * @param securityBeanNames security bean names
+     * @param securityBeanNames
+     *            security bean names
      */
     public void setSecurityBeanNames(Set<String> securityBeanNames)
     {
@@ -80,7 +79,8 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
     }
 
     /**
-     * @param properties    configuration properties
+     * @param properties
+     *            configuration properties
      */
     public void setProperties(Properties properties)
     {
@@ -103,7 +103,7 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
                 PropertyValue beanValue = beanDef.getPropertyValues().getPropertyValue(PROP_OBJECT_DEFINITION_SOURCE);
                 if (beanValue != null)
                 {
-                    String beanStringValue = (String)((TypedStringValue)beanValue.getValue()).getValue();
+                    String beanStringValue = (String) ((TypedStringValue) beanValue.getValue()).getValue();
                     String mergedStringValue = merge(beanStringValue);
                     beanDef.getPropertyValues().addPropertyValue(PROP_OBJECT_DEFINITION_SOURCE, new TypedStringValue(mergedStringValue));
                 }
@@ -129,7 +129,7 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
 
             for (Object key : properties.keySet())
             {
-                String[] split = ((String)key).split("\\.");
+                String[] split = ((String) key).split("\\.");
                 int index = split.length - 2;
                 String securityBeanName = split[index] + SECURITY_BEAN_POSTFIX;
                 if (!securityBeanNameCache.contains(securityBeanName) && beanFactory.containsBean(securityBeanName))
@@ -173,9 +173,11 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
     /**
      * Convert the lines of a string to a map, separating keys from values by the first "=" sign.
      *
-     * @param stringValue The multi-line string.
+     * @param stringValue
+     *            The multi-line string.
      * @return The resulting map.
-     * @throws AlfrescoRuntimeException If a non-blank line does not contain an "=" sign.
+     * @throws AlfrescoRuntimeException
+     *             If a non-blank line does not contain an "=" sign.
      */
     protected Map<String, String> convertToMap(String stringValue)
     {

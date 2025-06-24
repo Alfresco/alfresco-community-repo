@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,6 +30,8 @@ package org.alfresco.rm.rest.api.transfercontainers;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -45,7 +47,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Transfer Container entity resource
@@ -53,7 +54,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Silviu Dinuta
  * @since 2.6
  */
-@EntityResource(name="transfer-containers", title = "Transfer Containers")
+@EntityResource(name = "transfer-containers", title = "Transfer Containers")
 public class TransferContainerEntityResource implements
         EntityResourceAction.ReadById<TransferContainer>,
         EntityResourceAction.Update<TransferContainer>,
@@ -108,7 +109,7 @@ public class TransferContainerEntityResource implements
     }
 
     @Override
-    @WebApiDescription(title="Update transfer container", description = "Updates a transfer container with id 'transferContainerId'")
+    @WebApiDescription(title = "Update transfer container", description = "Updates a transfer container with id 'transferContainerId'")
     public TransferContainer update(String transferContainerId, TransferContainer transferContainerInfo, Parameters parameters)
     {
         checkNotBlank("transferContainerId", transferContainerId);
@@ -118,8 +119,7 @@ public class TransferContainerEntityResource implements
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(transferContainerId, RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
 
         // update info
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 apiUtils.updateTransferContainer(nodeRef, transferContainerInfo, parameters);
@@ -128,8 +128,7 @@ public class TransferContainerEntityResource implements
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>() {
             public FileInfo execute()
             {
                 return fileFolderService.getFileInfo(nodeRef);

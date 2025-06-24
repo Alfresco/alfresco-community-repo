@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,15 +32,15 @@ import static org.alfresco.util.WebScriptUtils.getTemplateVars;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Implementation for Java backed webscript to delete a relationship from a node.
@@ -72,7 +72,8 @@ public class RelationshipDelete extends AbstractRmWebScript
     /**
      * Sets the relationship service
      *
-     * @param relationshipService The relationship service
+     * @param relationshipService
+     *            The relationship service
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -80,9 +81,7 @@ public class RelationshipDelete extends AbstractRmWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -102,7 +101,8 @@ public class RelationshipDelete extends AbstractRmWebScript
     /**
      * Gets the node reference of target
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The node reference of the target
      */
     private NodeRef parseRequestForTargetNodeRef(WebScriptRequest req)
@@ -117,7 +117,7 @@ public class RelationshipDelete extends AbstractRmWebScript
         if (!getNodeService().exists(nodeRef))
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find node: '" +
-                        nodeRef.toString() + "'.");
+                    nodeRef.toString() + "'.");
         }
 
         return nodeRef;

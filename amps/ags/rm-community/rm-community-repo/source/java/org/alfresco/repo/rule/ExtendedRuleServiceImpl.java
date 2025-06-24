@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,6 +33,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -45,7 +47,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Extended rule service implementation.
@@ -60,7 +61,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     private static final String POSITIVE_INTEGERS_PATTERN = "^\\+?([1-9]\\d*)$";
     private static final String WORM_LOCK_ACTION = "wormLock";
 
-	/** indicates whether the rules should be run as admin or not */
+    /** indicates whether the rules should be run as admin or not */
     private boolean runAsAdmin = true;
 
     /** ignore types */
@@ -76,7 +77,8 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     protected RecordService recordService;
 
     /**
-     * @param nodeService	node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService2(NodeService nodeService)
     {
@@ -84,7 +86,8 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -92,7 +95,8 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     }
 
     /**
-     * @param recordService   record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -100,7 +104,8 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     }
 
     /**
-     * @param runAsAdmin  true if run rules as admin, false otherwise
+     * @param runAsAdmin
+     *            true if run rules as admin, false otherwise
      */
     public void setRunAsAdmin(boolean runAsAdmin)
     {
@@ -143,12 +148,14 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
                     }
                 }
             }
-        } catch (PatternSyntaxException ex)
+        }
+        catch (PatternSyntaxException ex)
         {
-            throw new IntegrityException (I18NUtil.getMessage(MSG_RETENTION_PERIOD_NOT_VALID), null);
-        } catch (ClassCastException ex1)
+            throw new IntegrityException(I18NUtil.getMessage(MSG_RETENTION_PERIOD_NOT_VALID), null);
+        }
+        catch (ClassCastException ex1)
         {
-            //do nothing, not a composite action for validation
+            // do nothing, not a composite action for validation
         }
     }
 
@@ -161,8 +168,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
         validateWormLockRuleAction(rule);
         if (filePlanService.isFilePlanComponent(nodeRef))
         {
-            return AuthenticationUtil.runAsSystem(new RunAsWork<Rule>()
-            {
+            return AuthenticationUtil.runAsSystem(new RunAsWork<Rule>() {
                 @Override
                 public Rule doWork()
                 {
@@ -185,8 +191,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     {
         if (filePlanService.isFilePlanComponent(nodeRef))
         {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
@@ -214,15 +219,14 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
 
             // check if this is a rm rule on a rm artifact
             if (filePlanService.isFilePlanComponent(nodeRef) &&
-            	isFilePlanComponentRule(rule))
+                    isFilePlanComponentRule(rule))
             {
-            	// ignore and
+                // ignore and
                 if (!isIgnoredType(typeQName))
-    	        {
-    	        	if (runAsAdmin)
-    	            {
-    	            	AuthenticationUtil.runAs(new RunAsWork<Void>()
-                        {
+                {
+                    if (runAsAdmin)
+                    {
+                        AuthenticationUtil.runAs(new RunAsWork<Void>() {
                             @Override
                             public Void doWork()
                             {
@@ -230,13 +234,13 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
                                 return null;
                             }
                         }, AuthenticationUtil.getAdminUserName());
-                	}
-                	else
-                	{
-                		// run as current user
-                		super.executeRule(rule, nodeRef, executedRules);
-                	}
-    	        }
+                    }
+                    else
+                    {
+                        // run as current user
+                        super.executeRule(rule, nodeRef, executedRules);
+                    }
+                }
             }
             else
             {
@@ -249,8 +253,9 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     /**
      * Indicates whether the rule is a file plan component
      *
-     * @param rule		rule
-     * @return boolean	true if rule is set on a file plan component, false otherwise
+     * @param rule
+     *            rule
+     * @return boolean true if rule is set on a file plan component, false otherwise
      */
     private boolean isFilePlanComponentRule(Rule rule)
     {
@@ -259,8 +264,9 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     }
 
     /**
-     * @param  typeQName	type qname
-     * @return boolean		true if ignore type, false otherwise
+     * @param typeQName
+     *            type qname
+     * @return boolean true if ignore type, false otherwise
      */
     private boolean isIgnoredType(QName typeQName)
     {

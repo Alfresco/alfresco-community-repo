@@ -26,7 +26,6 @@
 package org.alfresco.repo.web.scripts.bean;
 
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.extensions.webscripts.Status;
@@ -39,10 +38,10 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author davidc
  */
 public class Login extends AbstractLoginBean
-{   
+{
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * 
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
         // extract username and password
@@ -61,7 +60,7 @@ public class Login extends AbstractLoginBean
         {
             return login(username, password);
         }
-        catch(WebScriptException e)
+        catch (WebScriptException e)
         {
             status.setCode(e.getStatus());
             status.setMessage(e.getMessage());

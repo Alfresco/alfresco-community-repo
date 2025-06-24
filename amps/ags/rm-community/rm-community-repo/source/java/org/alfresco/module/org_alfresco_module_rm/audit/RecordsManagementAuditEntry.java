@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,12 +32,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Class to represent a Records Management audit entry.
@@ -65,11 +66,11 @@ public final class RecordsManagementAuditEntry
      * Default constructor
      */
     public RecordsManagementAuditEntry(Date timestamp,
-                String userName, String fullName, String userRole,
-                NodeRef nodeRef, String nodeName, String nodeType,
-                String event, String identifier, String path,
-                Map<QName, Serializable> beforeProperties,
-                Map<QName, Serializable> afterProperties)
+            String userName, String fullName, String userRole,
+            NodeRef nodeRef, String nodeName, String nodeType,
+            String event, String identifier, String path,
+            Map<QName, Serializable> beforeProperties,
+            Map<QName, Serializable> afterProperties)
     {
         ParameterCheck.mandatory("timestamp", timestamp);
         ParameterCheck.mandatory("userName", userName);
@@ -93,19 +94,19 @@ public final class RecordsManagementAuditEntry
     {
         StringBuilder sb = new StringBuilder();
         sb.append("(")
-          .append("timestamp=").append(timestamp)
-          .append(", userName=").append(userName)
-          .append(", userRole=").append(userRole)
-          .append(", fullName=").append(fullName)
-          .append(", nodeRef=").append(nodeRef)
-          .append(", nodeName=").append(nodeName)
-          .append(", event=").append(event)
-          .append(", identifier=").append(identifier)
-          .append(", path=").append(path)
-          .append(", beforeProperties=").append(beforeProperties)
-          .append(", afterProperties=").append(afterProperties)
-          .append(", changedProperties=").append(changedProperties)
-          .append(")");
+                .append("timestamp=").append(timestamp)
+                .append(", userName=").append(userName)
+                .append(", userRole=").append(userRole)
+                .append(", fullName=").append(fullName)
+                .append(", nodeRef=").append(nodeRef)
+                .append(", nodeName=").append(nodeName)
+                .append(", event=").append(event)
+                .append(", identifier=").append(identifier)
+                .append(", path=").append(path)
+                .append(", beforeProperties=").append(beforeProperties)
+                .append(", afterProperties=").append(afterProperties)
+                .append(", changedProperties=").append(changedProperties)
+                .append(")");
         return sb.toString();
     }
 
@@ -183,8 +184,7 @@ public final class RecordsManagementAuditEntry
 
     /**
      *
-     * @return The human readable description of the reason for the audit log
-     *         entry i.e. metadata updated, record declared
+     * @return The human readable description of the reason for the audit log entry i.e. metadata updated, record declared
      */
     public String getEvent()
     {
@@ -192,9 +192,7 @@ public final class RecordsManagementAuditEntry
     }
 
     /**
-     * An identifier for the item being audited, for example for a record
-     * it will be the unique record identifier, for a user it would be the
-     * username etc.
+     * An identifier for the item being audited, for example for a record it will be the unique record identifier, for a user it would be the username etc.
      *
      * @return Ad identifier for the thing being audited
      */

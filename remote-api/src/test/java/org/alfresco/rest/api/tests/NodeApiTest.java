@@ -25,16 +25,18 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +49,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.collections.map.MultiValueMap;
+import org.json.simple.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
@@ -62,6 +70,7 @@ import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.rest.api.model.ConstraintDefinition;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.NodePermissions;
+import org.alfresco.rest.api.model.NodePermissions.NodePermission;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.api.model.Site;
@@ -104,24 +113,16 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.collections.map.MultiValueMap;
-import org.json.simple.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * V1 REST API tests for Nodes (files, folders and custom node types)
  * 
  * <ul>
- * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>} </li>
- * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children} </li>
+ * <li>{@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>}</li>
+ * <li>{@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children}</li>
  * </ul>
  *
- * TODO
- * - improve test 'fwk' to enable api tests to be run against remote repo (rather than embedded jetty)
- * - requires replacement of remaining non-remote calls with remote (preferably public) apis
- *   - eg. createUser (or any other usage of repoService), permissionService, AuthenticationUtil, ...
+ * TODO - improve test 'fwk' to enable api tests to be run against remote repo (rather than embedded jetty) - requires replacement of remaining non-remote calls with remote (preferably public) apis - eg. createUser (or any other usage of repoService), permissionService, AuthenticationUtil, ...
  *
  * @author Jamal Kaabi-Mofrad
  * @author janv
@@ -152,20 +153,22 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
-        namespaceService= (NamespaceService) applicationContext.getBean("NamespaceService");
+        namespaceService = (NamespaceService) applicationContext.getBean("NamespaceService");
         ruleService = (RuleService) applicationContext.getBean("RuleService", RuleService.class);
         actionService = (ActionService) applicationContext.getBean("ActionService", ActionService.class);
     }
-    
+
     @After
     public void tearDown() throws Exception
     {
         super.tearDown();
     }
-    
+
     /**
      * Tests get document library children.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children}
      */
     @Test
@@ -174,9 +177,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
 
         // create folder f0
-        String folder0Name = "f0-testListChildrenWithinSiteDocLib-"+RUNID;
+        String folder0Name = "f0-testListChildrenWithinSiteDocLib-" + RUNID;
         String f0Id = createFolder(tDocLibNodeId, folder0Name).getId();
-        
+
         String folder1 = "folder" + RUNID + "_1";
         createFolder(f0Id, folder1, null).getId();
 
@@ -283,7 +286,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(4, expectedPaging.getMaxItems().intValue());
         assertFalse(expectedPaging.getHasMoreItems().booleanValue());
 
-
         // SkipCount=2,MaxItems=null
         paging = getPaging(2, null);
         response = getAll(getNodeChildrenUrl(f0Id), paging, orderBy, 200);
@@ -309,7 +311,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         paging = getPaging(-1, 4);
         getAll(getNodeChildrenUrl(f0Id), paging, orderBy, 400);
 
-
         // -ve test - paging (via list children) cannot have maxItems < 1
         paging = getPaging(0, 0);
         getAll(getNodeChildrenUrl(f0Id), paging, orderBy, 400);
@@ -317,16 +318,18 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests list children.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      */
     @Test
     public void testListChildrenWithinMyFiles() throws Exception
     {
         setRequestContext(user1);
-        
+
         String myNodeId = getMyNodeId();
-        
+
         String rootChildrenUrl = getNodeChildrenUrl(Nodes.PATH_ROOT);
 
         String folder0Name = "folder " + RUNID + " 0";
@@ -363,7 +366,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         List<String> folderIds = Arrays.asList(folder1_Id, folder2_Id);
         List<String> contentIds = Arrays.asList(content1_Id);
-        
+
         Paging paging = getPaging(0, 100);
         HttpResponse response = getAll(childrenUrl, paging, 200);
         List<Document> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
@@ -442,10 +445,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals("cm:lastThumbnailModification", entry.getKey());
         assertEquals("doclib:1444660852296", ((List<?>) entry.getValue()).get(0));
 
-
         // filtering, via where clause - folders only
         params = new HashMap<>();
-        params.put("where", "("+Nodes.PARAM_ISFOLDER+"=true)");
+        params.put("where", "(" + Nodes.PARAM_ISFOLDER + "=true)");
         response = getAll(childrenUrl, paging, params, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(2, nodes.size());
@@ -460,7 +462,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // filtering, via where clause - content only
         params = new HashMap<>();
-        params.put("where", "("+Nodes.PARAM_ISFILE+"=true)");
+        params.put("where", "(" + Nodes.PARAM_ISFILE + "=true)");
         response = getAll(childrenUrl, paging, params, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
@@ -477,9 +479,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(1, nodes.size());
         assertEquals(contentF1_Id, nodes.get(0).getId());
 
-        JSONObject jsonList = (JSONObject)jsonResponse.get("list");
+        JSONObject jsonList = (JSONObject) jsonResponse.get("list");
         assertNotNull(jsonList);
-        JSONObject jsonSrcObj = (JSONObject)jsonResponse.get("source");
+        JSONObject jsonSrcObj = (JSONObject) jsonResponse.get("source");
         assertNull(jsonSrcObj);
 
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user1 + "/" + folder0Name + "/" + folder2);
@@ -489,9 +491,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(1, nodes.size());
         assertEquals(contentF2_Id, nodes.get(0).getId());
 
-        jsonList = (JSONObject)jsonResponse.get("list");
+        jsonList = (JSONObject) jsonResponse.get("list");
         assertNotNull(jsonList);
-        jsonSrcObj = (JSONObject)jsonResponse.get("source");
+        jsonSrcObj = (JSONObject) jsonResponse.get("source");
         assertNull(jsonSrcObj);
 
         // list children via relativePath and also return the source entity
@@ -511,7 +513,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(Boolean.FALSE, doc.getIsLink());
         assertNull(doc.getName());
 
-        jsonList = (JSONObject)jsonResponse.get("list");
+        jsonList = (JSONObject) jsonResponse.get("list");
         assertNotNull(jsonList);
 
         // source is not affected by include (or fields for that matter) - returns the default node response
@@ -524,7 +526,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(src.getProperties());
 
         // -ve test - Invalid QName (Namespace prefix cm... is not mapped to a namespace URI) for the orderBy parameter.
-        params = Collections.singletonMap("orderBy", Nodes.PARAM_ISFOLDER+" DESC,cm" + System.currentTimeMillis() + ":modified DESC");
+        params = Collections.singletonMap("orderBy", Nodes.PARAM_ISFOLDER + " DESC,cm" + System.currentTimeMillis() + ":modified DESC");
         getAll(childrenUrl, paging, params, 400);
 
         paging = getPaging(0, 10);
@@ -549,17 +551,19 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // -ve test - list folder children with relative path to unknown node should return 400
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/unknown");
         getAll(getNodeChildrenUrl(content1_Id), paging, params, 400);
-        
+
         // filtering, via where clause - negated comparison
         params = new HashMap<>();
-        params.put("where", "(NOT "+Nodes.PARAM_ISFILE+"=true)");
+        params.put("where", "(NOT " + Nodes.PARAM_ISFILE + "=true)");
         getAll(childrenUrl, paging, params, 400);
-        
+
     }
 
     /**
      * Tests get node with path information.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>?include=path}
      */
     @Test
@@ -571,9 +575,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String site1Title = "site-testGetPathElements_DocLib-" + RUNID;
         String site1Id = createSite(site1Title, SiteVisibility.PRIVATE).getId();
         addSiteMember(site1Id, user2, SiteRole.SiteConsumer);
-        
+
         String site1DocLibNodeId = getSiteContainerNodeId(site1Id, "documentLibrary");
-        
+
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A
         String folderA = "folder" + RUNID + "_A";
         String folderA_Id = createFolder(site1DocLibNodeId, folderA).getId();
@@ -591,17 +595,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/folder<timestamp>_B/folder<timestamp>_C/content<timestamp>
         String content = "content" + RUNID;
         String content1_Id = createTextFile(folderC_Id, content, "The quick brown fox jumps over the lazy dog.").getId();
-        
-        
+
         // TODO refactor with remote permission api calls (maybe use v0 until we have v1 ?)
         final String tenantDomain = (networkOne != null ? networkOne.getId() : TenantService.DEFAULT_DOMAIN);
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
-                return TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<Void>()
-                {
+                return TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // Revoke folderB inherited permissions
@@ -613,9 +614,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
                 }, tenantDomain);
             }
         }, user1);
-        
 
-        //...nodes/nodeId?include=path
+        // ...nodes/nodeId?include=path
         Map<String, String> params = Collections.singletonMap("include", "path");
         HttpResponse response = getSingle(NodesEntityResource.class, content1_Id, params, 200);
         Document node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
@@ -628,14 +628,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertTrue(path.getName().startsWith("/Company Home"));
         List<ElementInfo> pathElements = path.getElements();
         assertEquals(7, pathElements.size());
-        
+
         // Check path element names and types, and one or two random aspects.
         assertEquals("Company Home", pathElements.get(0).getName());
         assertEquals("cm:folder", pathElements.get(0).getNodeType());
-        
+
         assertEquals("Sites", pathElements.get(1).getName());
         assertEquals("st:sites", pathElements.get(1).getNodeType());
-        
+
         assertEquals(site1Id, pathElements.get(2).getName());
         assertEquals("st:site", pathElements.get(2).getNodeType());
         assertTrue(pathElements.get(2).getAspectNames().contains("cm:titled"));
@@ -647,10 +647,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals("documentLibrary", pathElements.get(3).getName());
         assertEquals("cm:folder", pathElements.get(3).getNodeType());
         assertTrue(pathElements.get(3).getAspectNames().contains("st:siteContainer"));
-        
+
         assertEquals(folderA, pathElements.get(4).getName());
         assertEquals("cm:folder", pathElements.get(4).getNodeType());
-        
+
         assertEquals(folderB, pathElements.get(5).getName());
         assertEquals("cm:folder", pathElements.get(5).getNodeType());
 
@@ -659,7 +659,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Try the above tests with user2 (site consumer)
         setRequestContext(user2);
-        
+
         response = getSingle(NodesEntityResource.class, content1_Id, params, 200);
         node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         path = node.getPath();
@@ -682,7 +682,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests get node information.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
      */
     @Test
@@ -714,7 +716,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A/folder<timestamp>_B/content<timestamp>
         String title = "test title";
-        Map<String,String> docProps = new HashMap<>();
+        Map<String, String> docProps = new HashMap<>();
         docProps.put("cm:title", title);
         docProps.put("cm:owner", user2);
         String contentName = "content " + RUNID + ".txt";
@@ -753,13 +755,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         props.put("cm:owner", new UserInfo(user2).toJSON());
 
         d1.setProperties(props);
-        d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable","cm:author","cm:ownable"));
+        d1.setAspectNames(Arrays.asList("cm:auditable", "cm:titled", "cm:versionable", "cm:author", "cm:ownable"));
 
         // Note: Path is not part of the default info
         d1.expected(documentResp);
 
         // get node info + path
-        //...nodes/nodeId?include=path
+        // ...nodes/nodeId?include=path
         Map<String, String> params = Collections.singletonMap("include", "path");
         response = getSingle(NodesEntityResource.class, content1Id, params, 200);
         documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
@@ -772,19 +774,19 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         elements.add(new ElementInfo(myFilesNodeId, user1));
         elements.add(new ElementInfo(folderA_Id, folderA));
         elements.add(new ElementInfo(folderB_Id, folderB));
-        PathInfo expectedPath = new PathInfo("/Company Home/User Homes/"+user1+"/"+folderA+"/"+folderB, true, elements);
+        PathInfo expectedPath = new PathInfo("/Company Home/User Homes/" + user1 + "/" + folderA + "/" + folderB, true, elements);
         d1.setPath(expectedPath);
 
         d1.expected(documentResp);
 
         // get node info via relativePath
 
-        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/"+folderA+"/"+folderB);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/" + folderA + "/" + folderB);
         response = getSingle(NodesEntityResource.class, Nodes.PATH_MY, params, 200);
         Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         assertEquals(folderB_Id, folderResp.getId());
 
-        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folderA+"/"+folderB+"/"+contentName);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folderA + "/" + folderB + "/" + contentName);
         response = getSingle(NodesEntityResource.class, Nodes.PATH_MY, params, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals(content_Id, documentResp.getId());
@@ -793,7 +795,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String folderC = "folder" + RUNID + " ¢";
         String folderC_Id = createFolder(folderB_Id, folderC).getId();
 
-        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/"+folderA+"/"+folderB+"/"+folderC);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/" + folderA + "/" + folderB + "/" + folderC);
         response = getSingle(NodesEntityResource.class, Nodes.PATH_MY, params, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         assertEquals(folderC_Id, folderResp.getId());
@@ -808,11 +810,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
 
         // -ve test - try to get node info using relative path to unknown node
-        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folderA+"/unknown");
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folderA + "/unknown");
         getSingle(NodesEntityResource.class, Nodes.PATH_MY, params, 404);
 
         // -ve test - try to get node info using relative path to node for which user does not have read permission (expect 404 instead of 403)
-        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/"+user2);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user2);
         getSingle(NodesEntityResource.class, Nodes.PATH_ROOT, params, 404);
 
         // -ve test - attempt to get node info for non-folder node with relative path should return 400
@@ -822,18 +824,20 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests well-known aliases.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * <ul>
-     * <li> {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-root-}</li>
-     * <li> {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-my-} </li>
-     * <li> {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-shared-} </li>
+     * <li>{@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-root-}</li>
+     * <li>{@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-my-}</li>
+     * <li>{@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-shared-}</li>
      * </ul>
      */
     @Test
     public void testGetNodeWithKnownAlias() throws Exception
     {
         setRequestContext(user1);
-        
+
         HttpResponse response = getSingle(NodesEntityResource.class, Nodes.PATH_ROOT, null, 200);
         Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertEquals("Company Home", node.getName());
@@ -861,27 +865,31 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertFalse(node.getIsFile());
         assertNull(node.getPath());
 
-        //Delete user1's home
+        // Delete user1's home
         setRequestContext(networkAdmin);
         deleteNode(myFilesNodeId);
-        
+
         setRequestContext(user1);
         getSingle(NodesEntityResource.class, Nodes.PATH_MY, null, 404); // Not found
     }
 
     /**
      * Tests guess mimetype & guess encoding when uploading file/content (create or update) - also empty file/content
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
-     * <p>PUT:</p>
+     * <p>
+     * PUT:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
      */
     @Test
     public void testGuessMimeTypeAndEncoding() throws Exception
     {
         setRequestContext(user1);
-        
-        String fId = createFolder(getMyNodeId(), "test-folder-guess-"+RUNID).getId();
+
+        String fId = createFolder(getMyNodeId(), "test-folder-guess-" + RUNID).getId();
 
         // create empty files
 
@@ -894,7 +902,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(MimetypeMap.MIMETYPE_BINARY, documentResp.getContent().getMimeType());
         assertEquals("Binary File (Octet Stream)", documentResp.getContent().getMimeTypeName());
         assertEquals(0L, documentResp.getContent().getSizeInBytes().longValue());
-        assertEquals("UTF-8",  documentResp.getContent().getEncoding());
+        assertEquals("UTF-8", documentResp.getContent().getEncoding());
 
         d = new Document();
         d.setName("my doc.txt");
@@ -905,7 +913,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, documentResp.getContent().getMimeType());
         assertEquals("Plain Text", documentResp.getContent().getMimeTypeName());
         assertEquals(0L, documentResp.getContent().getSizeInBytes().longValue());
-        assertEquals("UTF-8",  documentResp.getContent().getEncoding());
+        assertEquals("UTF-8", documentResp.getContent().getEncoding());
 
         d = new Document();
         d.setName("my doc.pdf");
@@ -916,7 +924,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(MimetypeMap.MIMETYPE_PDF, documentResp.getContent().getMimeType());
         assertEquals("Adobe PDF Document", documentResp.getContent().getMimeTypeName());
         assertEquals(0L, documentResp.getContent().getSizeInBytes().longValue());
-        assertEquals("UTF-8",  documentResp.getContent().getEncoding());
+        assertEquals("UTF-8", documentResp.getContent().getEncoding());
 
         // upload files
 
@@ -1046,13 +1054,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         contentInfo = document.getContent();
         assertEquals(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, contentInfo.getMimeType());
         assertEquals("UTF-8", contentInfo.getEncoding());
-        
+
         // additional test
         fileName = "CMIS-Delete.json";
         file = getResourceFile(fileName);
 
         multiPartBuilder = MultiPartBuilder.create()
-                .setFileData(new FileData("special-"+GUID.generate(), file));
+                .setFileData(new FileData("special-" + GUID.generate(), file));
         reqBody = multiPartBuilder.build();
 
         response = post(getNodeChildrenUrl(fId), reqBody.getBody(), null, reqBody.getContentType(), 201);
@@ -1067,7 +1075,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests Multipart upload to user's home (a.k.a My Files).
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      */
     @Test
@@ -1076,10 +1086,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
 
         // create folder f0
-        String folder0Name = "f0-testUploadToMyFiles-"+RUNID;
+        String folder0Name = "f0-testUploadToMyFiles-" + RUNID;
         Folder folderResp = createFolder(Nodes.PATH_MY, folder0Name);
         String f0Id = folderResp.getId();
-        
+
         final String fileName = "quick.pdf";
         final File file = getResourceFile(fileName);
 
@@ -1090,7 +1100,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         final int numOfNodes = pagingResult.getCount();
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName, file));
+                .setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Try to upload into a non-existent folder
@@ -1134,8 +1144,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Set autoRename=true and upload the same file again
         reqBody = MultiPartBuilder.copy(multiPartBuilder)
-                          .setAutoRename(true)
-                          .build();
+                .setAutoRename(true)
+                .build();
 
         response = post(getNodeChildrenUrl(f0Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -1179,20 +1189,19 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(fileName2b, document.getName());
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, document.getContent().getMimeType());
 
-        
         response = getSingle(NodesEntityResource.class, Nodes.PATH_MY, null, 200);
         Folder user1Home = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
 
         // User2 tries to upload a new file into the user1's home folder.
-        
+
         setRequestContext(user2);
-        
+
         final File file3 = getResourceFile(fileName2);
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file3))
-                    .build();
+                .setFileData(new FileData(fileName2, file3))
+                .build();
         post(getNodeChildrenUrl(user1Home.getId()), reqBody.getBody(), null, reqBody.getContentType(), 403);
-        
+
         post(getNodeChildrenUrl(f0Id), reqBody.getBody(), null, reqBody.getContentType(), 403);
 
         setRequestContext(user1);
@@ -1211,16 +1220,16 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Test unsupported node type
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2))
-                    .setAutoRename(true)
-                    .setNodeType("cm:link")
-                    .build();
+                .setFileData(new FileData(fileName2, file2))
+                .setAutoRename(true)
+                .setNodeType("cm:link")
+                .build();
         post(getNodeChildrenUrl(f0Id), reqBody.getBody(), null, reqBody.getContentType(), 400);
 
         // User1 uploads a new file
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2))
-                    .build();
+                .setFileData(new FileData(fileName2, file2))
+                .build();
         response = post(getNodeChildrenUrl(f0Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
@@ -1233,15 +1242,15 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Test content size limit
         final SimpleFixedLimitProvider limitProvider = applicationContext.getBean("defaultContentLimitProvider", SimpleFixedLimitProvider.class);
         final long defaultSizeLimit = limitProvider.getSizeLimit();
-        limitProvider.setSizeLimitString("20000"); //20 KB
+        limitProvider.setSizeLimitString("20000"); // 20 KB
 
         try
         {
             // quick.pdf size is about 23 KB
             reqBody = MultiPartBuilder.create()
-                        .setFileData(new FileData(fileName, file))
-                        .setAutoRename(true)
-                        .build();
+                    .setFileData(new FileData(fileName, file))
+                    .setAutoRename(true)
+                    .build();
 
             // Try to upload a file larger than the configured size limit
             post(getNodeChildrenUrl(f0Id), reqBody.getBody(), null, reqBody.getContentType(), 413);
@@ -1254,17 +1263,19 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests Multipart upload to a Site.
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children}
      */
     @Test
     public void testUploadToSite() throws Exception
     {
         setRequestContext(user1);
-        
+
         final String fileName = "quick-1.txt";
         final File file = getResourceFile(fileName);
-        
+
         String folderA = "folder" + RUNID + "_A";
         String folderA_id = createFolder(tDocLibNodeId, folderA).getId();
 
@@ -1275,7 +1286,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         final int numOfNodes = pagingResult.getCount();
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName, file));
+                .setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
         // Try to upload
         response = post(getNodeChildrenUrl(folderA_id), reqBody.getBody(), null, reqBody.getContentType(), 201);
@@ -1310,17 +1321,17 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(numOfNodes + 1, pagingResult.getCount().intValue());
 
         setRequestContext(user2);
-        
+
         final String fileName2 = "quick-2.txt";
         final File file2 = getResourceFile(fileName2);
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2))
-                    .build();
+                .setFileData(new FileData(fileName2, file2))
+                .build();
         // user2 tries to upload a new file into the folderA of user1
         post(getNodeChildrenUrl(folderA_id), reqBody.getBody(), null, reqBody.getContentType(), 403);
 
         setRequestContext(user1);
-        
+
         // Test upload with properties
         response = post(getNodeChildrenUrl(folderA_id), reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -1338,10 +1349,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         props.put("cm:title", "test title");
         props.put("cm:description", "test description");
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2))
-                    .setAutoRename(true)
-                    .setProperties(props)
-                    .build();
+                .setFileData(new FileData(fileName2, file2))
+                .setAutoRename(true)
+                .setProperties(props)
+                .build();
 
         response = post(getNodeChildrenUrl(folderA_id), reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -1359,18 +1370,18 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         props = new HashMap<>(1);
         props.put("unknownPrefix" + System.currentTimeMillis() + ":description", "test description");
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2))
-                    .setAutoRename(true)
-                    .setProperties(props)
-                    .build();
+                .setFileData(new FileData(fileName2, file2))
+                .setAutoRename(true)
+                .setProperties(props)
+                .build();
         // Prop prefix is unknown
         post(getNodeChildrenUrl(folderA_id), reqBody.getBody(), null, reqBody.getContentType(), 400);
 
         // Test relativePath multi-part field.
         // Any folders in the relativePath that do not exist, are created before the content is created.
         multiPartBuilder = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName, file))
-                    .setRelativePath("X/Y/Z");
+                .setFileData(new FileData(fileName, file))
+                .setRelativePath("X/Y/Z");
         reqBody = multiPartBuilder.build();
 
         response = post(getNodeChildrenUrl(folderA_id), reqBody.getBody(), "?include=path", reqBody.getContentType(), 201);
@@ -1395,16 +1406,16 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Try to create a folder with the same name as the document within the 'Z' folder.
         reqBody = MultiPartBuilder.copy(multiPartBuilder)
-                    .setRelativePath("X/Y/Z/" + document.getName())
-                    .build();
+                .setRelativePath("X/Y/Z/" + document.getName())
+                .build();
         post(getNodeChildrenUrl(folderA_id), reqBody.getBody(), null, reqBody.getContentType(), 409);
 
         // Test the same functionality as "mkdir -p x/y/z" which the folders should be created
         // as needed but no errors thrown if the path or any part of the path already exists.
         // NOTE: white spaces, leading and trailing "/" are ignored.
         reqBody = MultiPartBuilder.copy(multiPartBuilder)
-                    .setRelativePath("/X/ Y/Z /CoolFolder/")
-                    .build();
+                .setRelativePath("/X/ Y/Z /CoolFolder/")
+                .build();
         response = post(getNodeChildrenUrl(folderA_id), reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
@@ -1421,8 +1432,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Try to upload quick-1.txt within coolFolder and set the relativePath to a blank string.
         reqBody = MultiPartBuilder.copy(multiPartBuilder)
-                    .setRelativePath("  ")// blank
-                    .build();
+                .setRelativePath("  ")// blank
+                .build();
         // 409 -> as the blank string is ignored and quick-1.txt already exists in the coolFolder
         post(getNodeChildrenUrl(coolFolder.getId()), reqBody.getBody(), null, reqBody.getContentType(), 409);
 
@@ -1430,8 +1441,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // user2 tries to upload the same file by creating sub-folders in the folderA of user1
         reqBody = MultiPartBuilder.copy(multiPartBuilder)
-                    .setRelativePath("userTwoFolder1/userTwoFolder2")
-                    .build();
+                .setRelativePath("userTwoFolder1/userTwoFolder2")
+                .build();
         post(getNodeChildrenUrl(folderA_id), reqBody.getBody(), null, reqBody.getContentType(), 403);
 
         // -ve test: integrity error
@@ -1445,16 +1456,18 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests delete (file or folder)
-     * <p>DELETE:</p>
+     * <p>
+     * DELETE:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
      */
     @Test
     public void testDelete() throws Exception
     {
         setRequestContext(user1);
-        
+
         // create folder f0
-        String folder0Name = "f0-testDelete-"+RUNID;
+        String folder0Name = "f0-testDelete-" + RUNID;
         String f0Id = createFolder(Nodes.PATH_MY, folder0Name).getId();
 
         String content1Id = createTextFile(f0Id, "content" + RUNID + "_1", "The quick brown fox jumps over the lazy dog.").getId();
@@ -1493,13 +1506,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         String folder3Id = createFolder(f0Id, "folder " + RUNID + "_3").getId();
         String folder4Id = createFolder(folder3Id, "folder " + RUNID + "_4").getId();
-        
+
         deleteNode(folder3Id, true, 204);
 
         assertFalse(existsArchiveNode(folder3Id));
         assertFalse(existsArchiveNode(folder4Id));
 
-        
         String sharedNodeId = getSharedNodeId();
         final String folder5Id = createFolder(sharedNodeId, "folder " + RUNID + "_5").getId();
 
@@ -1516,24 +1528,22 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         HttpResponse response = put(URL_NODES, folder5Id, toJsonAsStringNonNull(nUpdate), null, 200);
         Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-        assertEquals(user2, ((Map)nodeResp.getProperties().get(PROP_OWNER)).get("id"));
+        assertEquals(user2, ((Map) nodeResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // TODO see REPO-907. Apparently returns 204 here in tenant context ?? (eg. if useDefaultNetwork=false)
         if (useDefaultNetwork)
         {
             // -ve test - user1 can no longer delete
-            deleteNode(folder5Id, 403); 
+            deleteNode(folder5Id, 403);
         }
 
         // TODO refactor with remote permission api calls (maybe use v0 until we have v1 ?)
         final String tenantDomain = (networkOne != null ? networkOne.getId() : TenantService.DEFAULT_DOMAIN);
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
-                return TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<Void>()
-                {
+                return TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder5Id), user1, PermissionService.DELETE, true);
@@ -1543,7 +1553,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             }
         }, user1);
 
-
         // -ve test - non-owner cannot bypass trashcan
         deleteNode(folder5Id, true, 403);
 
@@ -1552,9 +1561,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // admin can permanently delete
         String folder6Id = createFolder(sharedNodeId, "folder " + RUNID + "_6").getId();
-        
+
         setRequestContext(networkAdmin);
-        
+
         deleteNode(folder6Id, true, 204);
 
         // -ve - cannot delete Company Home root node
@@ -1582,20 +1591,22 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     private boolean existsArchiveNode(String nodeId) throws Exception
     {
         boolean result = false;
-        
+
         HttpResponse response = publicApiClient.get(getScope(), URL_DELETED_NODES, nodeId, null, null, null);
         if ((response != null) && (response.getStatusCode() == 200))
         {
             Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
             result = ((node != null) && (node.getId() != null));
         }
-        
+
         return result;
     }
 
     /**
      * Tests move (file or folder)
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/move}
      */
     @Test
@@ -1604,9 +1615,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
 
         // create folder f0
-        String folder0Name = "f0-testMove-"+RUNID;
+        String folder0Name = "f0-testMove-" + RUNID;
         String f0Id = createFolder(Nodes.PATH_MY, folder0Name).getId();
-        
+
         // create folder f1
         Folder folderResp = createFolder(f0Id, "f1");
         String f1Id = folderResp.getId();
@@ -1628,7 +1639,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(f2Id);
 
-        HttpResponse response = post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 200);
+        HttpResponse response = post("nodes/" + d1Id + "/move", toJsonAsStringNonNull(tgt), null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1Name, documentResp.getName());
@@ -1636,13 +1647,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // move file (with rename)
 
-        String d1NewName = d1Name+" updated !!";
+        String d1NewName = d1Name + " updated !!";
 
         tgt = new NodeTarget();
         tgt.setName(d1NewName);
         tgt.setTargetParentId(f1Id);
 
-        response = post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 200);
+        response = post("nodes/" + d1Id + "/move", toJsonAsStringNonNull(tgt), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1NewName, documentResp.getName());
@@ -1653,28 +1664,28 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // missing target
         tgt = new NodeTarget();
         tgt.setName("new name");
-        post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 400);
+        post("nodes/" + d1Id + "/move", toJsonAsStringNonNull(tgt), null, 400);
 
         // name already exists
         tgt = new NodeTarget();
         tgt.setName(d2Name);
         tgt.setTargetParentId(f2Id);
-        post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 409);
+        post("nodes/" + d1Id + "/move", toJsonAsStringNonNull(tgt), null, 409);
 
         // unknown source nodeId
         tgt = new NodeTarget();
         tgt.setTargetParentId(f2Id);
-        post("nodes/"+UUID.randomUUID().toString()+"/move", toJsonAsStringNonNull(tgt), null, 404);
+        post("nodes/" + UUID.randomUUID().toString() + "/move", toJsonAsStringNonNull(tgt), null, 404);
 
         // unknown target nodeId
         tgt = new NodeTarget();
         tgt.setTargetParentId(UUID.randomUUID().toString());
-        post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 404);
+        post("nodes/" + d1Id + "/move", toJsonAsStringNonNull(tgt), null, 404);
 
         // target is not a folder
         tgt = new NodeTarget();
         tgt.setTargetParentId(d2Id);
-        post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 400);
+        post("nodes/" + d1Id + "/move", toJsonAsStringNonNull(tgt), null, 400);
 
         String rootNodeId = getRootNodeId();
 
@@ -1685,12 +1696,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // can't create cycle (move into own subtree)
         tgt = new NodeTarget();
         tgt.setTargetParentId(f3Id);
-        post("nodes/"+f2Id+"/move", toJsonAsStringNonNull(tgt), null, 400);
+        post("nodes/" + f2Id + "/move", toJsonAsStringNonNull(tgt), null, 400);
 
         // no (write/create) permissions to move to target
         tgt = new NodeTarget();
         tgt.setTargetParentId(rootNodeId);
-        post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 403);
+        post("nodes/" + d1Id + "/move", toJsonAsStringNonNull(tgt), null, 403);
 
         setRequestContext(user2);
 
@@ -1699,14 +1710,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // no (write/delete) permissions to move source
         tgt = new NodeTarget();
         tgt.setTargetParentId(my2NodeId);
-        post("nodes/"+f1Id+"/move", toJsonAsStringNonNull(tgt), null, 403);
-        
+        post("nodes/" + f1Id + "/move", toJsonAsStringNonNull(tgt), null, 403);
+
         // -ve - cannot move (delete) Company Home root node
         setRequestContext(networkAdmin);
-        post("nodes/"+rootNodeId+"/move", toJsonAsStringNonNull(tgt), null, 403);
-        
-        setRequestContext(user1);                                
-        
+        post("nodes/" + rootNodeId + "/move", toJsonAsStringNonNull(tgt), null, 403);
+
+        setRequestContext(user1);
+
         Map params = new HashMap<>();
         params.put(Nodes.PARAM_RELATIVE_PATH, "/Sites");
         response = getSingle(NodesEntityResource.class, rootNodeId, params, 200);
@@ -1715,10 +1726,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // -ve - cannot move (delete) Sites node
         setRequestContext(networkAdmin);
-        post("nodes/"+sitesNodeId+"/move", toJsonAsStringNonNull(tgt), null, 403);
+        post("nodes/" + sitesNodeId + "/move", toJsonAsStringNonNull(tgt), null, 403);
 
         setRequestContext(user1);
-        
+
         params = new HashMap<>();
         params.put(Nodes.PARAM_RELATIVE_PATH, "/Data Dictionary");
         response = getSingle(NodesEntityResource.class, rootNodeId, params, 200);
@@ -1727,7 +1738,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // -ve - cannot move (delete) Data Dictionary node
         setRequestContext(networkAdmin);
-        post("nodes/"+ddNodeId+"/move", toJsonAsStringNonNull(tgt), null, 403);
+        post("nodes/" + ddNodeId + "/move", toJsonAsStringNonNull(tgt), null, 403);
 
         // -ve test - cannot move to multiple destinations in single POST call (unsupported)
         List<NodeTarget> nodeDestinations = new ArrayList<>(2);
@@ -1738,19 +1749,21 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         nodeTarget.setTargetParentId(f2Id);
         nodeDestinations.add(nodeTarget);
 
-        post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(nodeDestinations), null, 405);
+        post("nodes/" + d1Id + "/move", toJsonAsStringNonNull(nodeDestinations), null, 405);
     }
 
     /**
      * Tests copy (file or folder)
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/copy}
      */
     @Test
     public void testCopy() throws Exception
     {
         setRequestContext(user1);
-        
+
         // create folder
         Folder folderResp = createFolder(Nodes.PATH_MY, "fsource");
         String sourceId = folderResp.getId();
@@ -1794,40 +1807,40 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // missing target
         NodeTarget tgt = new NodeTarget();
         tgt.setName("new name");
-        post("nodes/"+d1Id+"/copy", toJsonAsStringNonNull(tgt), null, 400);
+        post("nodes/" + d1Id + "/copy", toJsonAsStringNonNull(tgt), null, 400);
 
         // name already exists - different parent
         tgt = new NodeTarget();
         tgt.setName(newD2Name);
         tgt.setTargetParentId(targetId);
-        post("nodes/"+d1Id+"/copy", toJsonAsStringNonNull(tgt), null, 409);
+        post("nodes/" + d1Id + "/copy", toJsonAsStringNonNull(tgt), null, 409);
 
         // name already exists - same parent
         tgt = new NodeTarget();
         tgt.setTargetParentId(sourceId);
-        post("nodes/"+d1Id+"/copy", toJsonAsStringNonNull(tgt), null, 409);
+        post("nodes/" + d1Id + "/copy", toJsonAsStringNonNull(tgt), null, 409);
 
         // unknown source nodeId
         tgt = new NodeTarget();
         tgt.setTargetParentId(targetId);
-        post("nodes/"+UUID.randomUUID().toString()+"/copy", toJsonAsStringNonNull(tgt), null, 404);
+        post("nodes/" + UUID.randomUUID().toString() + "/copy", toJsonAsStringNonNull(tgt), null, 404);
 
         // unknown target nodeId
         tgt = new NodeTarget();
         tgt.setTargetParentId(UUID.randomUUID().toString());
-        post("nodes/"+d1Id+"/copy", toJsonAsStringNonNull(tgt), null, 404);
+        post("nodes/" + d1Id + "/copy", toJsonAsStringNonNull(tgt), null, 404);
 
         // target is not a folder
         tgt = new NodeTarget();
         tgt.setTargetParentId(d2Id);
-        post("nodes/"+d1Id+"/copy", toJsonAsStringNonNull(tgt), null, 400);
+        post("nodes/" + d1Id + "/copy", toJsonAsStringNonNull(tgt), null, 400);
 
         String rootNodeId = getRootNodeId();
 
         // no (write/create) permissions to copy to target
         tgt = new NodeTarget();
         tgt.setTargetParentId(rootNodeId);
-        post("nodes/"+d1Id+"/copy", toJsonAsStringNonNull(tgt), null, 403);
+        post("nodes/" + d1Id + "/copy", toJsonAsStringNonNull(tgt), null, 403);
 
         // -ve test - cannot copy to multiple destinations in single POST call (unsupported)
         List<NodeTarget> nodeDestinations = new ArrayList<>(2);
@@ -1838,14 +1851,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         nodeTarget.setTargetParentId(targetId);
         nodeDestinations.add(nodeTarget);
 
-        post("nodes/"+d1Id+"/copy", toJsonAsStringNonNull(nodeDestinations), null, 405);
+        post("nodes/" + d1Id + "/copy", toJsonAsStringNonNull(nodeDestinations), null, 405);
     }
 
     @Test
     public void testCopySite() throws Exception
     {
         setRequestContext(user1);
-        
+
         // create folder
         Folder folderResp = createFolder(Nodes.PATH_MY, "siteCopytarget");
         String targetId = folderResp.getId();
@@ -1853,35 +1866,37 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Map<String, String> body = new HashMap<>();
         body.put("targetParentId", targetId);
 
-        //test that you can't copy a site
+        // test that you can't copy a site
         HttpResponse response = getSingle("sites", tSiteId, null, null, 200);
         Site siteResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Site.class);
         String siteNodeId = siteResp.getGuid();
-        post("nodes/"+siteNodeId+"/copy", toJsonAsStringNonNull(body), null, 422);
-        
-        //test that you can't copy a site doclib
-        post("nodes/"+tDocLibNodeId+"/copy", toJsonAsStringNonNull(body), null, 422);
+        post("nodes/" + siteNodeId + "/copy", toJsonAsStringNonNull(body), null, 422);
+
+        // test that you can't copy a site doclib
+        post("nodes/" + tDocLibNodeId + "/copy", toJsonAsStringNonNull(body), null, 422);
 
     }
 
     /**
      * Tests move and copy folder between sites.
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/move}
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/copy}
      */
     @Test
     public void testMoveCopyBetweenSites() throws Exception
     {
         setRequestContext(user1);
-        
-        /*
-         * Precondition - create two sites, invite users, create folders
-         */
-        
+
+        /* Precondition - create two sites, invite users, create folders */
+
         // user1 creates a public site and adds user2 as a site collaborator
         String site1Title = "site-testMoveCopyBetweenSites1-" + RUNID;
         final String site1Id = createSite(site1Title, SiteVisibility.PUBLIC).getId();
@@ -1893,14 +1908,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // user1 creates a folder in the docLib of his site (user1Site)
         String user1Folder = "folder" + RUNID + "_user1";
         String user1FolderNodeId = createFolder(user1SitetDocLibNodeId, user1Folder, null).getId();
-        
+
         setRequestContext(user2);
-        
+
         // user2 creates a public site and adds user1 as a site collaborator
         String site2Title = "site-testMoveCopyBetweenSites2--" + RUNID;
         final String site2Id = createSite(site2Title, SiteVisibility.PUBLIC).getId();
         addSiteMember(site2Id, user1, SiteRole.SiteCollaborator);
-        
+
         // Get user2Site's docLib node id
         final String user2SitetDocLibNodeId = getSiteContainerNodeId(site2Id, "documentLibrary");
 
@@ -1911,13 +1926,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String user2Folder2 = "folder2" + RUNID + "_user2";
         String user2Folder2NodeId = createFolder(user1SitetDocLibNodeId, user2Folder2, null).getId();
 
-        /*
-         * Test move between sites
-         */
+        /* Test move between sites */
         // user1 moves the folder created by user2 to the user2Site's docLib
 
         setRequestContext(user1);
-        
+
         NodeTarget target = new NodeTarget();
         target.setTargetParentId(user2SitetDocLibNodeId);
         HttpResponse response = post("nodes/" + user2FolderNodeId + "/move", toJsonAsStringNonNull(target), null, 200);
@@ -1945,10 +1958,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         moveFolderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         assertEquals(user1SitetDocLibNodeId, moveFolderResp.getParentId());
 
-
-        /*
-         * Test copy between sites
-         */
+        /* Test copy between sites */
         // user1 copies the folder created by user2 to the user2Site's docLib
         target = new NodeTarget();
         target.setTargetParentId(user2SitetDocLibNodeId);
@@ -1957,31 +1967,32 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(user2SitetDocLibNodeId, copyFolderResp.getParentId());
 
         // user1 tries to undo the copy (hard deletes the created copy)
-        deleteNode( copyFolderResp.getId(), true, 204);
-        
+        deleteNode(copyFolderResp.getId(), true, 204);
+
         // Check it's deleted
         getSingle("nodes", copyFolderResp.getId(), 404);
-        
-        
+
         // cleanup
-        
+
         setRequestContext(user1);
         deleteSite(site1Id, true, 204);
-        
+
         setRequestContext(user2);
         deleteSite(site2Id, true, 204);
     }
 
     /**
      * Tests create folder.
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      */
     @Test
     public void testCreateFolder() throws Exception
     {
         setRequestContext(user1);
-        
+
         String myNodeId = getMyNodeId();
 
         UserInfo expectedUser = new UserInfo(user1);
@@ -2006,9 +2017,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         f1.expected(folderResp);
 
         // create sub-folder with properties
-        Map<String,Object> props = new HashMap<>();
-        props.put("cm:title","my folder title");
-        props.put("cm:description","my folder description");
+        Map<String, Object> props = new HashMap<>();
+        props.put("cm:title", "my folder title");
+        props.put("cm:description", "my folder description");
 
         folderResp = createFolder(f1Id, "f2", props);
         String f2Id = folderResp.getId();
@@ -2020,7 +2031,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         f2.setIsFolder(true);
         f2.setParentId(f1Id);
-        f2.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
+        f2.setAspectNames(Arrays.asList("cm:auditable", "cm:titled"));
 
         f2.setCreatedByUser(expectedUser);
         f2.setModifiedByUser(expectedUser);
@@ -2040,19 +2051,19 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // check parent hierarchy ...
         response = getSingle(NodesEntityResource.class, folderResp.getId(), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        assertEquals(folderResp.getName(),"fZ");
+        assertEquals(folderResp.getName(), "fZ");
 
         response = getSingle(NodesEntityResource.class, folderResp.getParentId(), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        assertEquals(folderResp.getName(),"f4");
+        assertEquals(folderResp.getName(), "f4");
 
         response = getSingle(NodesEntityResource.class, folderResp.getParentId(), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        assertEquals(folderResp.getName(),"f3");
+        assertEquals(folderResp.getName(), "f3");
 
         response = getSingle(NodesEntityResource.class, folderResp.getParentId(), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        assertEquals(folderResp.getName(),"f2");
+        assertEquals(folderResp.getName(), "f2");
         assertEquals(folderResp.getId(), f2Id);
 
         // -ve test - name is mandatory
@@ -2099,35 +2110,35 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         post(postUrl, toJsonAsStringNonNull(f1), 409);
 
         // Create a folder with a duplicate name (f1), but set the autoRename to true
-        response = post(postUrl, toJsonAsStringNonNull(f1), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
+        response = post(postUrl, toJsonAsStringNonNull(f1), "?" + Nodes.PARAM_AUTO_RENAME + "=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("f1-1", documentResp.getName());
 
         // Create a folder with a duplicate name (f1) again, but set the autoRename to true
-        response = post(postUrl, toJsonAsStringNonNull(f1), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
+        response = post(postUrl, toJsonAsStringNonNull(f1), "?" + Nodes.PARAM_AUTO_RENAME + "=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("f1-2", documentResp.getName());
 
         // -ve test - create a folder with a duplicate name (f1), but set the autoRename to false
-        post(postUrl, toJsonAsStringNonNull(f1), "?"+Nodes.PARAM_AUTO_RENAME+"=false", 409);
-        
+        post(postUrl, toJsonAsStringNonNull(f1), "?" + Nodes.PARAM_AUTO_RENAME + "=false", 409);
+
         // Create folder using relative path
         n = new Node();
         n.setName("fX");
         n.setNodeType(TYPE_CM_FOLDER);
         n.setRelativePath("/f1/f2");
-        
-        response = post(postUrl, toJsonAsStringNonNull(n), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
+
+        response = post(postUrl, toJsonAsStringNonNull(n), "?" + Nodes.PARAM_AUTO_RENAME + "=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("fX", documentResp.getName());
 
         // Create a folder using relative path, with a duplicate name (fX) but set the autoRename to true
-        response = post(postUrl, toJsonAsStringNonNull(n), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
+        response = post(postUrl, toJsonAsStringNonNull(n), "?" + Nodes.PARAM_AUTO_RENAME + "=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("fX-1", documentResp.getName());
 
         // -ve test - create a folder with a duplicate name (fX), but set the autoRename to false
-        post(postUrl, toJsonAsStringNonNull(n), "?"+Nodes.PARAM_AUTO_RENAME+"=false", 409);
+        post(postUrl, toJsonAsStringNonNull(n), "?" + Nodes.PARAM_AUTO_RENAME + "=false", 409);
 
         // -ve test - invalid relative path
         n = new Node();
@@ -2156,17 +2167,21 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     /**
      * Tests creation and listing of children using assoc type other than "cm:contains".
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      */
     @Test
     public void testChildrenAssocType() throws Exception
     {
         setRequestContext(user1);
-        
+
         String myNodeId = getMyNodeId();
 
         String fId = null;
@@ -2216,7 +2231,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(2, nodes.size());
 
             Map<String, String> params = new HashMap<>();
-            params.put("where", "(assocType='"+ASSOC_TYPE_CM_CONTAINS+"')");
+            params.put("where", "(assocType='" + ASSOC_TYPE_CM_CONTAINS + "')");
             params.put("include", "association");
             response = getAll(getNodeChildrenUrl(fId), null, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -2225,7 +2240,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             assertTrue(nodes.get(0).getAssociation().getIsPrimary());
 
             params = new HashMap<>();
-            params.put("where", "(assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
+            params.put("where", "(assocType='" + ASSOC_TYPE_CM_PREFERENCE_IMAGE + "')");
             params.put("include", "association");
             response = getAll(getNodeChildrenUrl(fId), null, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -2286,13 +2301,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     public void testListChildrenIsFileIsFolderFilter() throws Exception
     {
         setRequestContext(user1);
-        
+
         String myNodeId = getMyNodeId();
-        
-        String fId = createFolder(myNodeId, "f1-testUpdateOwner-"+RUNID).getId();
-        
+
+        String fId = createFolder(myNodeId, "f1-testUpdateOwner-" + RUNID).getId();
+
         String childrenUrl = getNodeChildrenUrl(fId);
-        
+
         int folderCnt = 2;
         int fileCnt = 3;
         int objCnt = 4;
@@ -2302,14 +2317,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         for (int i = 1; i <= folderCnt; i++)
         {
-            folderIds.add(createFolder(fId, "folder "+i+" "+RUNID).getId());
+            folderIds.add(createFolder(fId, "folder " + i + " " + RUNID).getId());
         }
 
         // create some files
         List<String> fileIds = new ArrayList<>(fileCnt);
         for (int i = 1; i <= fileCnt; i++)
         {
-            fileIds.add(createTextFile(fId, "file "+i+" "+RUNID, "The quick brown fox jumps over the lazy dog "+i).getId());
+            fileIds.add(createTextFile(fId, "file " + i + " " + RUNID, "The quick brown fox jumps over the lazy dog " + i).getId());
         }
 
         // create some nodes (cmobject)
@@ -2317,7 +2332,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         for (int i = 1; i <= objCnt; i++)
         {
             Node obj = new Node();
-            obj.setName("obj "+i+" "+RUNID);
+            obj.setName("obj " + i + " " + RUNID);
             obj.setNodeType(TYPE_CM_OBJECT);
 
             // create node/object
@@ -2326,20 +2341,20 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             objIds.add(nodeResp.getId());
         }
 
-        List<String> allIds = new ArrayList<>(objCnt+folderCnt+fileCnt);
+        List<String> allIds = new ArrayList<>(objCnt + folderCnt + fileCnt);
         allIds.addAll(folderIds);
         allIds.addAll(fileIds);
         allIds.addAll(objIds);
 
-        List<String> folderAndFileIds = new ArrayList<>(folderCnt+fileCnt);
+        List<String> folderAndFileIds = new ArrayList<>(folderCnt + fileCnt);
         folderAndFileIds.addAll(folderIds);
         folderAndFileIds.addAll(fileIds);
 
-        List<String> notFileIds = new ArrayList<>(folderCnt+objCnt);
+        List<String> notFileIds = new ArrayList<>(folderCnt + objCnt);
         notFileIds.addAll(folderIds);
         notFileIds.addAll(objIds);
 
-        List<String> notFolderIds = new ArrayList<>(fileCnt+objCnt);
+        List<String> notFolderIds = new ArrayList<>(fileCnt + objCnt);
         notFolderIds.addAll(fileIds);
         notFolderIds.addAll(objIds);
 
@@ -2354,7 +2369,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // filtering, via where clause - folders
 
         Map<String, String> params = new HashMap<>();
-        params.put("where", "(nodeType='"+TYPE_CM_FOLDER+"')");
+        params.put("where", "(nodeType='" + TYPE_CM_FOLDER + "')");
 
         response = getAll(childrenUrl, paging, params, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -2377,7 +2392,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // filtering, via where clause - files
 
         params = new HashMap<>();
-        params.put("where", "(nodeType='"+TYPE_CM_CONTENT+"')");
+        params.put("where", "(nodeType='" + TYPE_CM_CONTENT + "')");
 
         response = getAll(childrenUrl, paging, params, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -2400,7 +2415,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // filtering, via where clause - non-folders / non-files
 
         params = new HashMap<>();
-        params.put("where", "(nodeType='"+TYPE_CM_OBJECT+"')");
+        params.put("where", "(nodeType='" + TYPE_CM_OBJECT + "')");
 
         response = getAll(childrenUrl, paging, params, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -2461,7 +2476,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     // note: app:folderlink & app:filelink both extend cm:link (which in turn extends cm:cmobject)
-    //       (see applicationModel.xml / contentModel.xml)
+    // (see applicationModel.xml / contentModel.xml)
     @Test
     public void testLinkCRUD() throws Exception
     {
@@ -2470,9 +2485,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String myNodeId = getMyNodeId();
         UserInfo expectedUser = new UserInfo(user1);
         String myChildrenUrl = getNodeChildrenUrl(myNodeId);
-        
+
         // create folder f1
-        Folder folderResp = createFolder(myNodeId, "f1 "+RUNID);
+        Folder folderResp = createFolder(myNodeId, "f1 " + RUNID);
         String f1Id = folderResp.getId();
 
         // create empty file d1 in f1
@@ -2485,14 +2500,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String d1Id = documentResp.getId();
 
         // create folder f2
-        folderResp = createFolder(myNodeId, "f2 "+RUNID);
+        folderResp = createFolder(myNodeId, "f2 " + RUNID);
         String f2Id = folderResp.getId();
 
         // create folder link node in f2 (pointing to f1)
         String nodeName = "f1 link";
         String nodeType = "app:folderlink";
 
-        Map<String,Object> props = new HashMap<>();
+        Map<String, Object> props = new HashMap<>();
         props.put("cm:destination", f1Id);
 
         Node nodeResp = createNode(f2Id, nodeName, nodeType, props);
@@ -2544,7 +2559,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         n2.expected(nodeResp);
 
-
         // update node - rename
 
         String updatedName = "f1 link renamed";
@@ -2557,7 +2571,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         n1.setName(updatedName);
         n1.expected(nodeResp);
-
 
         // filtering, via where clause (nodeType + optionally including sub-types)
 
@@ -2595,7 +2608,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(linkIds.size(), nodes.size());
         assertTrue(linkIds.contains(nodes.get(0).getId()));
         assertTrue(linkIds.contains(nodes.get(1).getId()));
-
 
         // delete link
         deleteNode(n1Id);
@@ -2638,9 +2650,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     * REPO-24
-     * Tests upload fails with empty or invalid multipart/form-data.
-     * <p>POST:</p>
+     * REPO-24 Tests upload fails with empty or invalid multipart/form-data.
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      */
     @Test
@@ -2662,19 +2675,20 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, "multipart/form-data", 415);
     }
 
-
     /**
      * Tests create empty file.
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      */
     @Test
     public void testCreateEmptyFile() throws Exception
     {
         setRequestContext(user1);
-        
+
         // create folder f0
-        String folder0Name = "f0-testCreateEmptyFile-"+RUNID;
+        String folder0Name = "f0-testCreateEmptyFile-" + RUNID;
         String f0Id = createFolder(Nodes.PATH_MY, folder0Name).getId();
 
         UserInfo expectedUser = new UserInfo(user1);
@@ -2707,9 +2721,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         d1.expected(documentResp);
 
         // create empty file with properties
-        Map<String,Object> props = new HashMap<>();
-        props.put("cm:title","my file title");
-        props.put("cm:description","my file description");
+        Map<String, Object> props = new HashMap<>();
+        props.put("cm:title", "my file title");
+        props.put("cm:description", "my file description");
 
         Document d2 = new Document();
         d2.setName("d2.txt");
@@ -2722,7 +2736,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         d2.setIsFolder(false);
         d2.setParentId(f0Id);
-        d2.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
+        d2.setAspectNames(Arrays.asList("cm:auditable", "cm:titled"));
 
         d2.setCreatedByUser(expectedUser);
         d2.setModifiedByUser(expectedUser);
@@ -2749,15 +2763,15 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // check parent hierarchy ...
         response = getSingle(NodesEntityResource.class, documentResp.getId(), null, 200);
         Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        assertEquals(folderResp.getName(),"d3.txt");
+        assertEquals(folderResp.getName(), "d3.txt");
 
         response = getSingle(NodesEntityResource.class, folderResp.getParentId(), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        assertEquals(folderResp.getName(),"f2");
+        assertEquals(folderResp.getName(), "f2");
 
         response = getSingle(NodesEntityResource.class, folderResp.getParentId(), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        assertEquals(folderResp.getName(),"f1");
+        assertEquals(folderResp.getName(), "f1");
 
         response = getSingle(NodesEntityResource.class, folderResp.getParentId(), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
@@ -2786,23 +2800,23 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         post(postUrl, toJsonAsStringNonNull(d1), 409);
 
         // Create a file with a duplicate name (d1.txt), but set the autoRename to true
-        response = post(postUrl, toJsonAsStringNonNull(d1), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
+        response = post(postUrl, toJsonAsStringNonNull(d1), "?" + Nodes.PARAM_AUTO_RENAME + "=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("d1-1.txt", documentResp.getName());
 
         // Create a file with a duplicate name (d1.txt) again, but set the autoRename to true
-        response = post(postUrl, toJsonAsStringNonNull(d1), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
+        response = post(postUrl, toJsonAsStringNonNull(d1), "?" + Nodes.PARAM_AUTO_RENAME + "=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("d1-2.txt", documentResp.getName());
 
         // Create a file with a duplicate name (d1-2.txt) again, but set the autoRename to true
         d1.setName("d1-2.txt");
-        response = post(postUrl, toJsonAsStringNonNull(d1), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
+        response = post(postUrl, toJsonAsStringNonNull(d1), "?" + Nodes.PARAM_AUTO_RENAME + "=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("d1-2-1.txt", documentResp.getName());
 
         // -ve test - create a file with a duplicate name (d1-2.txt), but set the autoRename to false
-        post(postUrl, toJsonAsStringNonNull(d1), "?"+Nodes.PARAM_AUTO_RENAME+"=false", 409);
+        post(postUrl, toJsonAsStringNonNull(d1), "?" + Nodes.PARAM_AUTO_RENAME + "=false", 409);
     }
 
     @Test
@@ -2938,16 +2952,18 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests update node info (file or folder)
-     * <p>PUT:</p>
+     * <p>
+     * PUT:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
      */
     @Test
     public void testUpdateNodeInfo() throws Exception
     {
         setRequestContext(user1);
-        
+
         // create folder f0
-        String folder0Name = "f0-testUpdateNodeInfo-"+RUNID;
+        String folder0Name = "f0-testUpdateNodeInfo-" + RUNID;
         String f0Id = createFolder(Nodes.PATH_MY, folder0Name).getId();
 
         UserInfo expectedUser = new UserInfo(user1);
@@ -3014,9 +3030,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // update file - add some properties
 
-        Map<String,Object> props = new HashMap<>();
-        props.put("cm:title","my file title");
-        props.put("cm:description","my file description");
+        Map<String, Object> props = new HashMap<>();
+        props.put("cm:title", "my file title");
+        props.put("cm:description", "my file description");
 
         dUpdate = new Document();
         dUpdate.setProperties(props);
@@ -3025,20 +3041,20 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         d1.setProperties(props);
-        d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
+        d1.setAspectNames(Arrays.asList("cm:auditable", "cm:titled"));
         d1.expected(documentResp);
 
         // update file - add versionable aspect
 
         dUpdate = new Document();
-        dUpdate.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable"));
+        dUpdate.setAspectNames(Arrays.asList("cm:auditable", "cm:titled", "cm:versionable"));
 
         response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        d1.getProperties().put("cm:versionLabel","1.0");
-        d1.getProperties().put("cm:versionType","MAJOR");
-        d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable"));
+        d1.getProperties().put("cm:versionLabel", "1.0");
+        d1.getProperties().put("cm:versionType", "MAJOR");
+        d1.setAspectNames(Arrays.asList("cm:auditable", "cm:titled", "cm:versionable"));
         d1.expected(documentResp);
 
         response = getSingle(URL_NODES, dId, 200);
@@ -3051,21 +3067,21 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // update file - remove titled aspect (and it's related aspect properties)
 
         dUpdate = new Document();
-        dUpdate.setAspectNames(Arrays.asList("cm:auditable","cm:versionable"));
+        dUpdate.setAspectNames(Arrays.asList("cm:auditable", "cm:versionable"));
 
         response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         d1.getProperties().remove("cm:title");
         d1.getProperties().remove("cm:description");
-        d1.setAspectNames(Arrays.asList("cm:auditable","cm:versionable"));
+        d1.setAspectNames(Arrays.asList("cm:auditable", "cm:versionable"));
         d1.expected(documentResp);
 
         // update folder - rename and add some properties
 
         props = new HashMap<>();
-        props.put("cm:title","my folder title");
-        props.put("cm:description","my folder description");
+        props.put("cm:title", "my folder title");
+        props.put("cm:description", "my folder description");
 
         folderName = "My Updated Folder";
         Folder fUpdate = new Folder();
@@ -3076,14 +3092,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
 
         f1.setName(folderName);
-        f1.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
+        f1.setAspectNames(Arrays.asList("cm:auditable", "cm:titled"));
         f1.setProperties(props);
         f1.expected(folderResp);
 
         // update folder - unset a property
 
         props = new HashMap<>();
-        props.put("cm:title",null);
+        props.put("cm:title", null);
 
         fUpdate = new Folder();
         fUpdate.setProperties(props);
@@ -3104,10 +3120,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         f1.setNodeType("app:glossary");
         f1.expected(folderResp);
-        
+
         {
             // test versioning for metadata-only updates
-            
+
             Map params = new HashMap<>();
             params.put("majorVersion", "true");
             params.put("comment", "Initial empty file :-)");
@@ -3130,22 +3146,22 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             props.put("cm:autoVersionOnUpdateProps", true);
             dUpdate = new Document();
             dUpdate.setProperties(props);
-            
+
             response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals("1.1", nodeResp.getProperties().get("cm:versionLabel"));
-            
+
             props = new HashMap<>();
-            props.put("cm:title","my file title 2");
+            props.put("cm:title", "my file title 2");
             dUpdate = new Document();
             dUpdate.setProperties(props);
-            
+
             response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
 
             props = new HashMap<>();
-            props.put("cm:title","my file title 3");
+            props.put("cm:title", "my file title 3");
             dUpdate = new Document();
             dUpdate.setProperties(props);
 
@@ -3164,7 +3180,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
 
             props = new HashMap<>();
-            props.put("cm:title","my file title 4");
+            props.put("cm:title", "my file title 4");
             dUpdate = new Document();
             dUpdate.setProperties(props);
 
@@ -3180,7 +3196,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Folder user1MyFolder = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         String user1MyFolderId = user1MyFolder.getId();
 
-        String description = "my folder description "+RUNID;
+        String description = "my folder description " + RUNID;
         props = new HashMap<>();
         props.put("cm:description", description);
 
@@ -3213,12 +3229,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         assertEquals(description, folderResp.getProperties().get("cm:description"));
 
-
         setRequestContext(user1);
 
         // -ve test - fail on unknown property
         props = new HashMap<>();
-        props.put("cm:xyz","my unknown property");
+        props.put("cm:xyz", "my unknown property");
         dUpdate = new Document();
         dUpdate.setProperties(props);
         put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
@@ -3272,7 +3287,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         fUpdate = new Folder();
         fUpdate.setProperties(props);
         put(URL_NODES, f2Id, toJsonAsStringNonNull(fUpdate), null, 400);
-        
+
         // +ve test - try again with valid formats (REPO-473, REPO-1635)
         props = new HashMap<>();
         props.put("exif:pixelYDimension", "123");
@@ -3280,8 +3295,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         fUpdate = new Folder();
         fUpdate.setProperties(props);
         put(URL_NODES, f2Id, toJsonAsStringNonNull(fUpdate), null, 200);
-        
-        
+
         // -ve test - non-admin cannot modify root (Company Home) folder
         props = new HashMap<>();
         props.put("cm:description", "my folder description");
@@ -3309,16 +3323,18 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests update owner (file or folder)
-     * <p>PUT:</p>
+     * <p>
+     * PUT:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
      */
     @Test
     public void testUpdateOwner() throws Exception
     {
         setRequestContext(user1);
-        
+
         // create folder f0
-        String folderName = "f0-testUpdateOwner-"+RUNID;
+        String folderName = "f0-testUpdateOwner-" + RUNID;
         Folder folderResp = createFolder(Nodes.PATH_SHARED, folderName);
         String f0Id = folderResp.getId();
 
@@ -3333,7 +3349,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         HttpResponse response = put(URL_NODES, f0Id, toJsonAsStringNonNull(fUpdate), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
 
-        assertEquals(user1, ((Map)folderResp.getProperties().get(PROP_OWNER)).get("id"));
+        assertEquals(user1, ((Map) folderResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // create doc d1
         String d1Name = "content1 " + RUNID;
@@ -3356,7 +3372,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = put(URL_NODES, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        assertEquals(user1, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
+        assertEquals(user1, ((Map) documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // -ve test - cannot set owner to a nonexistent user
 
@@ -3372,7 +3388,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = getSingle(URL_NODES, d1Id, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        assertEquals(user1, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
+        assertEquals(user1, ((Map) documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // -ve test - cannot take/change ownership
 
@@ -3400,26 +3416,28 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = put(URL_NODES, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        assertEquals(user2, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
+        assertEquals(user2, ((Map) documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
         setRequestContext(user2);
 
         response = getSingle(URL_NODES, d1Id, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        assertEquals(user2, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
+        assertEquals(user2, ((Map) documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // -ve test - user2 cannot delete the test folder/file - TODO is that expected ?
         setRequestContext(user2);
         deleteNode(f0Id, 403);
-        
+
         setRequestContext(user1);
         deleteNode(f0Id);
     }
 
     /**
      * Tests update type
-     * <p>PUT:</p>
+     * <p>
+     * PUT:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
      */
     @Test
@@ -3428,7 +3446,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
 
         // create folder f0
-        String folderName = "f0-testUpdateOwner-"+RUNID;
+        String folderName = "f0-testUpdateOwner-" + RUNID;
         Folder folderResp = createFolder(Nodes.PATH_SHARED, folderName);
         String f0Id = folderResp.getId();
 
@@ -3465,20 +3483,22 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests update file content
-     * <p>PUT:</p>
+     * <p>
+     * PUT:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
      */
     @Test
     public void testUpdateFileWithBinaryUpload() throws Exception
     {
         setRequestContext(user1);
-        
+
         String myNodeId = getMyNodeId();
 
-        String folderName = "f1-testUpdateFileWithBinaryUpload-"+RUNID;
+        String folderName = "f1-testUpdateFileWithBinaryUpload-" + RUNID;
         Folder folderResp = createFolder(myNodeId, folderName);
         String f1_nodeId = folderResp.getId();
-        
+
         String anoNodeName = "another";
         createFolder(f1_nodeId, anoNodeName);
 
@@ -3486,7 +3506,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         final String docName = "testdoc.txt";
         doc.setName(docName);
         doc.setNodeType(TYPE_CM_CONTENT);
-        doc.setProperties(Collections.singletonMap("cm:title", (Object)"test title"));
+        doc.setProperties(Collections.singletonMap("cm:title", (Object) "test title"));
         ContentInfo contentInfo = new ContentInfo();
         doc.setContent(contentInfo);
 
@@ -3571,7 +3591,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Download the file
         response = getSingle(url, user1, null, 200);
         assertEquals(content, response.getResponse());
-        
+
         // Update the node's content again. Also rename the file !
         content = "The quick brown fox jumps over the lazy dog updated again !";
         inputStream = new ByteArrayInputStream(content.getBytes());
@@ -3584,7 +3604,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = putBinary(url, payload, null, params, 200);
         docResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertEquals(docName2, docResp.getName());
-        
+
         // Download the file
         response = getSingle(url, user1, null, 200);
         assertEquals(content, response.getResponse());
@@ -3594,14 +3614,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         params.put(Nodes.PARAM_NAME, "hello/world.txt");
         payload = new BinaryPayload(txtFile);
         putBinary(url, payload, null, params, 422);
-        
+
         // -ve - optional "name" already exists ...
         params = new HashMap<>();
         params.put(Nodes.PARAM_NAME, anoNodeName);
         payload = new BinaryPayload(txtFile);
         putBinary(url, payload, null, params, 409);
 
-        // -ve - try to  update content using multi-part form data
+        // -ve - try to update content using multi-part form data
         payload = new BinaryPayload(txtFile, "multipart/form-data", null);
         putBinary(url, payload, null, null, 415);
 
@@ -3612,7 +3632,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests download of file/content name.
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
      */
     @Test
@@ -3628,7 +3650,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         File file = getResourceFile(fileName);
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                                                            .setFileData(new FileData(fileName, file));
+                .setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload text content
@@ -3707,7 +3729,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests download of file/content - basic read permission
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
      */
     @Test
@@ -3728,19 +3752,19 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String contentNodeId = document.getId();
 
         // Download text content
-        response = getSingle(NodesEntityResource.class, contentNodeId+"/content", null, 200);
+        response = getSingle(NodesEntityResource.class, contentNodeId + "/content", null, 200);
         String textContent = response.getResponse();
         assertEquals("The quick brown fox jumps over the lazy dog", textContent);
 
         // Also test versions endpoint (1.0 in this case)
-        response = getSingle(NodesEntityResource.class, contentNodeId+"/versions/1.0/content", null, 200);
+        response = getSingle(NodesEntityResource.class, contentNodeId + "/versions/1.0/content", null, 200);
         textContent = response.getResponse();
         assertEquals("The quick brown fox jumps over the lazy dog", textContent);
 
         // -ve test: user2 does not have read permission
         setRequestContext(user2);
-        getSingle(NodesEntityResource.class, contentNodeId+"/content", null, 403);
-        getSingle(NodesEntityResource.class, contentNodeId+"/versions/1.0/content", null, 403);
+        getSingle(NodesEntityResource.class, contentNodeId + "/content", null, 403);
+        getSingle(NodesEntityResource.class, contentNodeId + "/versions/1.0/content", null, 403);
 
         // add Consumer (~ Read) permission
         setRequestContext(user1);
@@ -3758,12 +3782,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user2);
 
         // Download text content
-        response = getSingle(NodesEntityResource.class, contentNodeId+"/content", null, 200);
+        response = getSingle(NodesEntityResource.class, contentNodeId + "/content", null, 200);
         textContent = response.getResponse();
         assertEquals("The quick brown fox jumps over the lazy dog", textContent);
 
         // Also test versions endpoint (1.0 in this case)
-        response = getSingle(NodesEntityResource.class, contentNodeId+"/versions/1.0/content", null, 200);
+        response = getSingle(NodesEntityResource.class, contentNodeId + "/versions/1.0/content", null, 200);
         textContent = response.getResponse();
         assertEquals("The quick brown fox jumps over the lazy dog", textContent);
     }
@@ -3814,9 +3838,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     /**
      * Tests optional lookup of Allowable Operations (eg. when getting node info, listing node children, ...)
      *
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children?include=allowableOperations}
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>?include=allowableOperations}
+     * <p>
+     * GET:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children?include=allowableOperations} {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>?include=allowableOperations}
      */
     @Test
     public void testAllowableOps() throws Exception
@@ -3838,7 +3863,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = getSingle(NodesEntityResource.class, rootNodeId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         String ddNodeId = nodeResp.getId();
-
 
         params = new HashMap<>();
         params.put("include", "allowableOperations");
@@ -3866,7 +3890,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         // create folder
-        nodeResp = createFolder(sharedNodeId, "folder 1 - "+RUNID);
+        nodeResp = createFolder(sharedNodeId, "folder 1 - " + RUNID);
         String folderId = nodeResp.getId();
         assertNull(nodeResp.getAllowableOperations());
 
@@ -3884,7 +3908,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         // create file
-        nodeResp = createTextFile(folderId, "my file - "+RUNID+".txt", "The quick brown fox jumps over the lazy dog");
+        nodeResp = createTextFile(folderId, "my file - " + RUNID + ".txt", "The quick brown fox jumps over the lazy dog");
         String fileId = nodeResp.getId();
         assertNull(nodeResp.getAllowableOperations());
 
@@ -3900,7 +3924,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
-
 
         // as user2 ...
         setRequestContext(user2);
@@ -4031,10 +4054,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests lock of a node
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/lock}
      */
-   @Test
+    @Test
     public void testLock() throws Exception
     {
         setRequestContext(user1);
@@ -4042,19 +4067,19 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // create folder
         Folder folderResp = createFolder(Nodes.PATH_MY, "folder" + RUNID);
         String folderId = folderResp.getId();
-        
+
         // try to lock the folder and check that is not allowed
         LockInfo lockInfo = new LockInfo();
         lockInfo.setTimeToExpire(60);
         lockInfo.setType("FULL");
         lockInfo.setLifetime("PERSISTENT");
         HttpResponse response = post(getNodeOperationUrl(folderId, "lock"), toJsonAsStringNonNull(lockInfo), null, 400);
-        
+
         // create document d1
         String d1Name = "content" + RUNID + "_1l";
         Document d1 = createTextFile(folderId, d1Name, "The quick brown fox jumps over the lazy dog 1.");
         String d1Id = d1.getId();
-        
+
         // lock d1 document
         lockInfo = new LockInfo();
         lockInfo.setTimeToExpire(30);
@@ -4068,14 +4093,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(LockType.READ_ONLY_LOCK.toString(), documentResp.getProperties().get("cm:lockType"));
         assertNotNull(documentResp.getProperties().get("cm:lockOwner"));
         assertNull(documentResp.getIsLocked());
-        
+
         // invalid test - delete a locked node
         deleteNode(d1Id, true, 409);
-        
+
         // wait for expiration time set to pass and delete node
-		TimeUnit.SECONDS.sleep(30);
-		deleteNode(d1Id, true, 204);
-       
+        TimeUnit.SECONDS.sleep(30);
+        deleteNode(d1Id, true, 204);
+
         // create doc d2
         String d2Name = "content" + RUNID + "_2l";
         Document d2 = createTextFile(folderId, d2Name, "The quick brown fox jumps over the lazy dog 2.");
@@ -4222,7 +4247,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         body = new HashMap<>();
         body.put("includeChildren", "true");
         post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
-        
+
         body = new HashMap<>();
         body.put("timeToExpire", "NaN");
         post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
@@ -4234,7 +4259,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Invalid lock of a folder
         post(getNodeOperationUrl(folderId, "lock"), toJsonAsStringNonNull(lockInfo), null, 400);
 
-        //cleanup
+        // cleanup
         setRequestContext(user1); // all locks were made by user1
         unlock(dB1Id);
         deleteNode(dB1Id);
@@ -4245,10 +4270,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         deleteNode(folder2Id);
     }
 
-
     /**
      * Tests unlock of a node
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/unlock}
      */
     @Test
@@ -4291,7 +4317,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         setRequestContext(user1);
 
-        //Unlock on a not locked node
+        // Unlock on a not locked node
         post(getNodeOperationUrl(folderId, "unlock"), null, null, 422);
 
         // clean up
@@ -4374,11 +4400,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     {
         // Create temp user
         String user = createUser("userTstMove-" + RUNID, "userRNDPassword", networkOne);
-        
+
         setRequestContext(user);
 
         // create folder f0
-        String folder0Name = "f0-testMove-"+RUNID;
+        String folder0Name = "f0-testMove-" + RUNID;
         String f0Id = createFolder(Nodes.PATH_MY, folder0Name).getId();
 
         // create folder f1
@@ -4399,13 +4425,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             deleteUser(user, networkOne);
             return null;
         });
-        
+
         // move file (without rename)
 
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(f2Id);
 
-        HttpResponse response = post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 200);
+        HttpResponse response = post("nodes/" + d1Id + "/move", toJsonAsStringNonNull(tgt), null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1Name, documentResp.getName());
@@ -4418,13 +4444,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // move file (with rename)
 
-        String d1NewName = d1Name+" updated !!";
+        String d1NewName = d1Name + " updated !!";
 
         tgt = new NodeTarget();
         tgt.setName(d1NewName);
         tgt.setTargetParentId(f1Id);
 
-        response = post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 200);
+        response = post("nodes/" + d1Id + "/move", toJsonAsStringNonNull(tgt), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1NewName, documentResp.getName());
@@ -4438,7 +4464,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests update of content after owner of the document is deleted
-     * <p>PUT:</p>
+     * <p>
+     * PUT:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
      */
     @Test
@@ -4563,8 +4591,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     * Test retrieve node permissions for special nodes like:
-     * 'Company Home', 'Data Dictionary', 'Shared', 'Sites', 'User Home'
+     * Test retrieve node permissions for special nodes like: 'Company Home', 'Data Dictionary', 'Shared', 'Sites', 'User Home'
      *
      * @throws Exception
      */
@@ -4737,7 +4764,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
             // required permission properties missing
             testCreatePermissionMissingFields();
-            
+
             // 'Permission Denied' tests
             testCreatePermissionsPermissionDeniedUser();
 
@@ -4775,7 +4802,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
             // required permission properties missing
             testUpdatePermissionMissingFields();
-            
+
             // 'Permission Denied' tests
             testUpdatePermissionsPermissionDeniedUser();
             testUpdatePermissionsOnSpecialNodes();
@@ -4789,7 +4816,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             clearAuthorityContext();
         }
     }
-    
+
     /**
      * Test upload using relativePath
      */
@@ -4884,7 +4911,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         d1.setName("testDoc" + GUID.generate());
         d1.setNodeType(TYPE_CM_CONTENT);
         d1.setPermissions(nodePermissions);
-        
+
         // "Cannot set permissions on this node - unknown authority:
         // NonExistingAuthority"
         post(postUrl, toJsonAsStringNonNull(d1), null, 400);
@@ -4974,8 +5001,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     * Tests creating permissions on a new node without providing mandatory
-     * properties
+     * Tests creating permissions on a new node without providing mandatory properties
      * 
      * @throws Exception
      */
@@ -5008,7 +5034,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "", AccessStatus.ALLOWED.toString()));
         post(postUrl, toJsonAsStringNonNull(d1), null, 400);
     }
-    
+
     /**
      * Tests creating permissions on a new node that user doesn't have permission for
      *
@@ -5233,8 +5259,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     * Tests updating permissions on a node without providing mandatory
-     * properties
+     * Tests updating permissions on a node without providing mandatory properties
      * 
      * @throws Exception
      */
@@ -5267,7 +5292,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "", AccessStatus.ALLOWED.toString()));
         put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
     }
-    
+
     /**
      * Tests updating permissions on a node that user doesn't have permission for
      *
@@ -5293,8 +5318,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     * Test update permissions on special nodes like
-     * 'Company Home', 'Sites', 'Shared', 'User Home', 'Data Dictionary'
+     * Test update permissions on special nodes like 'Company Home', 'Sites', 'Shared', 'User Home', 'Data Dictionary'
      *
      * @throws Exception
      */
@@ -5401,7 +5425,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNull("Permissions were inherited from parent!", nodeResp.getPermissions().getInherited());
 
     }
-    
+
     @Test
     public void createContentWithAllParametersAccepted() throws Exception
     {
@@ -5432,11 +5456,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(TYPE_CM_CONTENT, documentResponse.getNodeType());
 
         // multipart/form-data upload with known parameters
-        /*
-         * case "name": case "filedata": case "autorename": case "nodetype":
-         * case "overwrite": case "majorversion": case "comment": case
-         * "relativepath": case "renditions":
-         */
+        /* case "name": case "filedata": case "autorename": case "nodetype": case "overwrite": case "majorversion": case "comment": case "relativepath": case "renditions": */
         fileName = "quick-2.pdf";
         File file = getResourceFile(fileName);
 
@@ -5457,10 +5477,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals("UTF-8", contentInfo.getEncoding());
 
         // multipart/form-data upload with unknown parameters
-        /*
-         * 
-         * setPropeties custom
-         */
+        /* setPropeties custom */
 
         document.setNodeType("custom:destination");
         multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
@@ -5482,12 +5499,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals("UTF-8", contentInfo.getEncoding());
 
     }
-    
+
     @Test
     public void updatePropertiesMultivalueTest() throws Exception
     {
         setRequestContext(user1);
-        
+
         String myNodeId = getMyNodeId();
         // create a multiple-value field from multipart\formdata
         String fileName = "myfile" + GUID.generate() + ".txt";
@@ -5510,21 +5527,21 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        //build the multiple-value as json array       
+        // build the multiple-value as json array
         String jsonUpdate = "{" +
-         	         "\"name\":\"My Other Folder\","+
-         	         "\"nodeType\":\"custom:destination\"," +
-           	          "\"properties\":"+
-           	          "{" +
-           	          		"\"cm:title\":\"Folder title\","+
-           	          		"\"cm:description\":\"This is an important folder\"," +
-           	          		"\"custom:locations\":["+
-       	                                 "\"location X\","+
-       	                                 "\"location Y\""+
-       	                                 "]" +
-           	          "}" +
-         	      "}";
-         
+                "\"name\":\"My Other Folder\"," +
+                "\"nodeType\":\"custom:destination\"," +
+                "\"properties\":" +
+                "{" +
+                "\"cm:title\":\"Folder title\"," +
+                "\"cm:description\":\"This is an important folder\"," +
+                "\"custom:locations\":[" +
+                "\"location X\"," +
+                "\"location Y\"" +
+                "]" +
+                "}" +
+                "}";
+
         response = put(URL_NODES, documentResponse.getId(), jsonUpdate, null, 200);
 
         Node nodeUpdateResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
@@ -5554,15 +5571,15 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
         String myNodeId = getMyNodeId();
         // Test Scenarios:
-        // 1:  majorVersion not set -  versioningEnabled not set  Expect: MAJOR version
-        // 2:  majorVersion not set -  versioningEnabled false    Expect: versioning disabled
-        // 3:  majorVersion true    -  versioningEnabled false    Expect: versioning disabled
-        // 4:  majorVersion false   -  versioningEnabled false    Expect: versioning disabled
-        // 5:  majorVersion not set -  versioningEnabled true     Expect: MAJOR version
-        // 6:  majorVersion true    -  versioningEnabled true     Expect: MAJOR version
-        // 7:  majorVersion false   -  versioningEnabled true     Expect: Minor version
-        // 8:  majorVersion not set -  versioningEnabled False    Expect: versioning disabled
-        // 9:  majorVersion not set -  versioningEnabled invalid   Expect: MAJOR version
+        // 1: majorVersion not set - versioningEnabled not set Expect: MAJOR version
+        // 2: majorVersion not set - versioningEnabled false Expect: versioning disabled
+        // 3: majorVersion true - versioningEnabled false Expect: versioning disabled
+        // 4: majorVersion false - versioningEnabled false Expect: versioning disabled
+        // 5: majorVersion not set - versioningEnabled true Expect: MAJOR version
+        // 6: majorVersion true - versioningEnabled true Expect: MAJOR version
+        // 7: majorVersion false - versioningEnabled true Expect: Minor version
+        // 8: majorVersion not set - versioningEnabled False Expect: versioning disabled
+        // 9: majorVersion not set - versioningEnabled invalid Expect: MAJOR version
 
         // Scenario 1:
         String fileName = "myfile" + UUID.randomUUID() + ".txt";
@@ -5694,138 +5711,139 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String myNodeId = getMyNodeId();
 
         // Test Scenarios:
-        // 1: majorVersion not set -  versioningEnabled not set  Expect: versioning disabled
-        // 2: majorVersion not set -  versioningEnabled false    Expect: versioning disabled
-        // 3: majorVersion true    -  versioningEnabled false    Expect: versioning disabled
-        // 4: majorVersion false   -  versioningEnabled false    Expect: versioning disabled
-        // 5: majorVersion not set -  versioningEnabled true     Expect: MAJOR version
-        // 6: majorVersion true    -  versioningEnabled true     Expect: MAJOR version
-        // 7: majorVersion false   -  versioningEnabled true     Expect: Minor version
-        // 8: majorVersion not set -  versioningEnabled False    Expect: versioning disabled
-        // 9: majorVersion not set -  versioningEnabled invalid   Expect: versioning disabled
-        // 10 majorVersion not set -  versioningenabled true     Expect: versioning disabled
+        // 1: majorVersion not set - versioningEnabled not set Expect: versioning disabled
+        // 2: majorVersion not set - versioningEnabled false Expect: versioning disabled
+        // 3: majorVersion true - versioningEnabled false Expect: versioning disabled
+        // 4: majorVersion false - versioningEnabled false Expect: versioning disabled
+        // 5: majorVersion not set - versioningEnabled true Expect: MAJOR version
+        // 6: majorVersion true - versioningEnabled true Expect: MAJOR version
+        // 7: majorVersion false - versioningEnabled true Expect: Minor version
+        // 8: majorVersion not set - versioningEnabled False Expect: versioning disabled
+        // 9: majorVersion not set - versioningEnabled invalid Expect: versioning disabled
+        // 10 majorVersion not set - versioningenabled true Expect: versioning disabled
 
         Document d1 = new Document();
         Map<String, String> requestHeaders = new HashMap<>();
 
-        //Scenario 1:
+        // Scenario 1:
         d1.setName("testDoc" + UUID.randomUUID());
         d1.setNodeType(TYPE_CM_CONTENT);
 
-        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), requestHeaders, null, null, 201);
         Document documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         Map<String, Object> documentProperties = documentResponse.getProperties();
         assertNull(documentProperties);
 
-        //Scenario 2:
+        // Scenario 2:
         d1.setName("testDoc" + UUID.randomUUID());
         requestHeaders = new HashMap<>();
-        requestHeaders.put("versioningEnabled","false");
+        requestHeaders.put("versioningEnabled", "false");
 
-        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), requestHeaders, null, null, 201);
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
         assertNull(documentProperties);
 
-        //Scenario 3:
+        // Scenario 3:
         d1.setName("testDoc" + UUID.randomUUID());
         requestHeaders = new HashMap<>();
-        requestHeaders.put("versioningEnabled","false");
-        requestHeaders.put("majorVersion","true");
+        requestHeaders.put("versioningEnabled", "false");
+        requestHeaders.put("majorVersion", "true");
 
-        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), requestHeaders, null, null, 201);
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
         assertNull(documentProperties);
 
-        //Scenario 4:
+        // Scenario 4:
         d1.setName("testDoc" + UUID.randomUUID());
         requestHeaders = new HashMap<>();
-        requestHeaders.put("versioningEnabled","false");
-        requestHeaders.put("majorVersion","false");
+        requestHeaders.put("versioningEnabled", "false");
+        requestHeaders.put("majorVersion", "false");
 
-        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), requestHeaders, null, null, 201);
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
         assertNull(documentProperties);
 
-        //Scenario 5:
+        // Scenario 5:
         d1.setName("testDoc" + UUID.randomUUID());
         requestHeaders = new HashMap<>();
-        requestHeaders.put("versioningEnabled","true");
+        requestHeaders.put("versioningEnabled", "true");
 
-        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), requestHeaders, null, null, 201);
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
         assertEquals("MAJOR", documentProperties.get("cm:versionType"));
         assertEquals("1.0", documentProperties.get("cm:versionLabel"));
 
-        //Scenario 6:
+        // Scenario 6:
         d1.setName("testDoc" + UUID.randomUUID());
         requestHeaders = new HashMap<>();
-        requestHeaders.put("versioningEnabled","true");
-        requestHeaders.put("majorVersion","true");
+        requestHeaders.put("versioningEnabled", "true");
+        requestHeaders.put("majorVersion", "true");
 
-        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), requestHeaders, null, null, 201);
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
         assertEquals("MAJOR", documentProperties.get("cm:versionType"));
         assertEquals("1.0", documentProperties.get("cm:versionLabel"));
 
-        //Scenario 7:
+        // Scenario 7:
         d1.setName("testDoc" + UUID.randomUUID());
         requestHeaders = new HashMap<>();
-        requestHeaders.put("versioningEnabled","true");
-        requestHeaders.put("majorVersion","false");
+        requestHeaders.put("versioningEnabled", "true");
+        requestHeaders.put("majorVersion", "false");
 
-        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), requestHeaders, null, null, 201);
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
         assertEquals("MINOR", documentProperties.get("cm:versionType"));
         assertEquals("0.1", documentProperties.get("cm:versionLabel"));
 
-        //Scenario 8:
+        // Scenario 8:
         d1.setName("testDoc" + UUID.randomUUID());
         requestHeaders = new HashMap<>();
-        requestHeaders.put("versioningEnabled","False");
+        requestHeaders.put("versioningEnabled", "False");
 
-        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), requestHeaders, null, null, 201);
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
         assertNull(documentProperties);
 
-        //Scenario 9:
+        // Scenario 9:
         d1.setName("testDoc" + UUID.randomUUID());
         requestHeaders = new HashMap<>();
-        requestHeaders.put("versioningEnabled","invalid");
+        requestHeaders.put("versioningEnabled", "invalid");
 
-        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), requestHeaders, null, null, 201);
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
         assertNull(documentProperties);
 
-        //Scenario 10:
+        // Scenario 10:
         d1.setName("testDoc" + UUID.randomUUID());
         requestHeaders = new HashMap<>();
-        requestHeaders.put("versioningenabled","true");
+        requestHeaders.put("versioningenabled", "true");
 
-        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1),requestHeaders, null, null, 201);
+        response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), requestHeaders, null, null, 201);
         documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         documentProperties = documentResponse.getProperties();
         assertNull(documentProperties);
     }
 
-    @Test public void testAuditableProperties() throws Exception
+    @Test
+    public void testAuditableProperties() throws Exception
     {
         setRequestContext(user1);
         String myNodeId = getMyNodeId();
@@ -5848,7 +5866,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Map<String, Object> systemProperties = new HashMap<>();
         systemProperties.put("sys:node:uuid", "someRandomID");
 
-        //create folder node
+        // create folder node
         Node node = new Node();
         node.setName("folderName");
         node.setNodeType(TYPE_CM_FOLDER);
@@ -5860,11 +5878,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         node.setProperties(new HashMap<>());
         response = post(getNodeChildrenUrl(myNodeId), RestApiUtil.toJsonAsStringNonNull(node), 201);
-        Node createdFolder =  RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        Node createdFolder = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertEquals(createdFolder.getCreatedByUser().getId(), expectedUser.getId());
         validateAuditableProperties(auditableProperties, createdFolder);
 
-        //update folder node
+        // update folder node
         createdFolder.setProperties(auditableProperties);
         put(URL_NODES, createdFolder.getId(), toJsonAsStringNonNull(createdFolder), null, 400);
 
@@ -5884,7 +5902,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertFalse(givenProperties.get("cm:modified").equals(node.getModifiedByUser().getDisplayName()));
     }
 
-    @Test public void testPrimaryPath() throws Exception
+    @Test
+    public void testPrimaryPath() throws Exception
     {
         setRequestContext(user1);
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
@@ -6033,7 +6052,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         d1.setName("testDoc" + GUID.generate());
         d1.setNodeType(TYPE_CM_CONTENT);
         d1.setPermissions(perms);
-        
+
         HttpResponse response = post(url, toJsonAsStringNonNull(d1), 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         return documentResp.getId();
@@ -6087,19 +6106,19 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         return "public";
     }
 
-    @Test 
+    @Test
     public void testRetrieveNodeDefinition() throws Exception
     {
         setRequestContext(networkOne.getId(), user1, null);
-        
+
         String node1 = "nodeSample" + RUNID + "_1";
         String node1Type = TYPE_CM_CONTENT;
-        Map<String,Object> props = new HashMap<>();
+        Map<String, Object> props = new HashMap<>();
         props.put("cm:title", "add aspect property");
         Node node = createNode(Nodes.PATH_MY, node1, node1Type, props);
         String nodeId = node.getId();
-        
-        HttpResponse  response = getSingle(NodesEntityResource.class, nodeId, null, 200);
+
+        HttpResponse response = getSingle(NodesEntityResource.class, nodeId, null, 200);
         Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNull("Definition should not be retrieved unless included!", nodeResp.getDefinition());
 
@@ -6111,7 +6130,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(classDefinition);
         checkDefinitionProperties(classDefinition.getProperties());
     }
-    
+
     private void checkDefinitionProperties(List<PropertyDefinition> properties)
     {
         assertNotNull(properties);
@@ -6119,9 +6138,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         shouldContainParentProperties(properties);
         shouldContainAspectProperties(properties);
 
-        PropertyDefinition testProperty = properties.stream().
-                filter(property ->
-                        property.getId().equals("cm:name"))
+        PropertyDefinition testProperty = properties.stream().filter(property -> property.getId().equals("cm:name"))
                 .findFirst()
                 .get();
         assertNotNull(testProperty);
@@ -6135,20 +6152,18 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         checkPropertyConstraints(testProperty.getConstraints());
 
     }
-    
+
     private void shouldNotContainSystemProperties(List<PropertyDefinition> properties)
     {
         assertTrue(properties.stream()
-                .noneMatch(property -> 
-                        property.getId().startsWith(NamespaceService.SYSTEM_MODEL_PREFIX) ||
-                                property.getId().equals(ContentModel.PROP_CONTENT.toPrefixString(namespaceService))));
+                .noneMatch(property -> property.getId().startsWith(NamespaceService.SYSTEM_MODEL_PREFIX) ||
+                        property.getId().equals(ContentModel.PROP_CONTENT.toPrefixString(namespaceService))));
     }
-    
+
     private void shouldContainParentProperties(List<PropertyDefinition> properties)
     {
         assertTrue(properties.stream()
-                .anyMatch(property -> 
-                        property.getId().equals("cm:name")));
+                .anyMatch(property -> property.getId().equals("cm:name")));
     }
 
     private void shouldContainAspectProperties(List<PropertyDefinition> properties)
@@ -6216,12 +6231,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     {
         enableRestDirectAccessUrls();
 
-        //Node does not exist
+        // Node does not exist
         setRequestContext(user1);
 
         HttpResponse nodeDoesNotExistResponse = post(getRequestContentDirectUrl("non-existing-node-id"), null, 404);
 
-        //Node is not a file
+        // Node is not a file
         String folderId = createFolder(tDocLibNodeId, "some-folder-name").getId();
         HttpResponse nodeIsNotAFileReponse = post(getRequestContentDirectUrl(folderId), null, 400);
 
@@ -6290,11 +6305,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String fileName = "quick-1.txt";
         File file = getResourceFile(fileName);
         MultiPartRequest reqBody = MultiPartBuilder.create()
-                                                   .setFileData(new FileData(fileName, file))
-                                                   .setRenditions(Collections.singletonList(renditionName))
-                                                   .build();
+                .setFileData(new FileData(fileName, file))
+                .setRenditions(Collections.singletonList(renditionName))
+                .build();
 
-        //Upload file to user home node
+        // Upload file to user home node
         HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
@@ -6304,13 +6319,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(rendition);
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
 
-        //clean rendition
+        // clean rendition
         delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 204);
-        //retry to double-check deletion
+        // retry to double-check deletion
         delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
 
-        //check if rendition was cleaned
-        HttpResponse getResponse = getSingle(getNodeRenditionIdUrl(contentNodeId, renditionName), null,  200);
+        // check if rendition was cleaned
+        HttpResponse getResponse = getSingle(getNodeRenditionIdUrl(contentNodeId, renditionName), null, 200);
         Rendition renditionDeleted = RestApiUtil.parseRestApiEntry(getResponse.getJsonResponse(), Rendition.class);
         assertNotNull(renditionDeleted);
         assertEquals(Rendition.RenditionStatus.NOT_CREATED, renditionDeleted.getStatus());
@@ -6328,16 +6343,16 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String fileName = "quick-1.txt";
         File file = getResourceFile(fileName);
         MultiPartRequest reqBody = MultiPartBuilder.create()
-                                                   .setFileData(new FileData(fileName, file))
-                                                   .setRenditions(Collections.singletonList(renditionName))
-                                                   .build();
+                .setFileData(new FileData(fileName, file))
+                .setRenditions(Collections.singletonList(renditionName))
+                .build();
 
-        //Upload file to user home node
+        // Upload file to user home node
         HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
-        //Update file to newer version
+        // Update file to newer version
         String content = "The quick brown fox jumps over the lazy dog\n the lazy dog jumps over the quick brown fox";
         Map<String, String> params = new HashMap<>();
         params.put("comment", "my version ");
@@ -6352,13 +6367,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(renditionUpdated);
         assertEquals(Rendition.RenditionStatus.CREATED, renditionUpdated.getStatus());
 
-        //clean rendition
+        // clean rendition
         delete(getNodeVersionRenditionIdUrl(contentNodeId, "1.0", renditionName), null, null, null, null, 204);
-        //retry to double-check deletion
+        // retry to double-check deletion
         delete(getNodeVersionRenditionIdUrl(contentNodeId, "1.0", renditionName), null, null, null, null, 404);
 
-        //check if rendition was cleaned
-        HttpResponse getResponse = getSingle(getNodeVersionRenditionIdUrl(contentNodeId, "1.0", renditionName), null,  200);
+        // check if rendition was cleaned
+        HttpResponse getResponse = getSingle(getNodeVersionRenditionIdUrl(contentNodeId, "1.0", renditionName), null, 200);
         Rendition renditionDeleted = RestApiUtil.parseRestApiEntry(getResponse.getJsonResponse(), Rendition.class);
         assertNotNull(renditionDeleted);
         assertEquals(Rendition.RenditionStatus.NOT_CREATED, renditionDeleted.getStatus());
@@ -6368,7 +6383,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
      * Tests if site manager permissions are kept after inheritance flag is disabled
      */
     @Test
-    public void testSiteManagerPermission() throws Exception
+    public void testSiteManagerPermission_MNT23379() throws Exception
     {
         // Change to User1 context
         setRequestContext(user1);
@@ -6394,6 +6409,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Node nodeUpdate = new Node();
         NodePermissions nodePerms = new NodePermissions();
         nodePerms.setIsInheritanceEnabled(false);
+        NodePermission permission = new NodePermission("GROUP_site_" + site1Id + "_SiteConsumer", SiteRole.SiteConsumer.toString(), AccessStatus.ALLOWED.toString());
+        List<NodePermission> locallySet = new ArrayList<>();
+        locallySet.add(permission);
+        nodePerms.setLocallySet(locallySet);
         nodeUpdate.setPermissions(nodePerms);
         put(URL_NODES, content1_Id, toJsonAsStringNonNull(nodeUpdate), null, 200);
 
@@ -6403,6 +6422,76 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Document node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertNotNull(node);
         assertEquals(node.getId(), content1_Id);
+
+        // cleanup
+        setRequestContext(user1);
+        deleteSite(site1Id, true, 204);
+    }
+
+    /**
+     * Test if inheritance flag is correctly set on a node placed inside a site
+     */
+    @Test
+    public void testSiteNodeInheritance_MNT24282() throws Exception
+    {
+        // Change to User1 context
+        setRequestContext(user1);
+
+        // user1 creates a site
+        String site1Title = "site-testSiteInheritanceFlag_DocLib-" + RUNID;
+        String site1Id = createSite(site1Title, SiteVisibility.PUBLIC).getId();
+        String site1DocLibNodeId = getSiteContainerNodeId(site1Id, "documentLibrary");
+
+        // user1 adds user2 as a site consumer to the created site
+        addSiteMember(site1Id, user2, SiteRole.SiteConsumer);
+
+        // user1 creates folder hierarchy: folderA/folderB/folderC
+        Folder folderA = createFolder(site1DocLibNodeId, "folderA");
+        Folder folderB = createFolder(folderA.getId(), "folderB");
+        Folder folderC = createFolder(folderB.getId(), "folderC");
+
+        // user1 disables inheritance flag on folder B
+        disableSiteNodeInheritanceAsShare(site1Id, folderB.getId());
+
+        // user1 disables inheritance flag on folder C
+        disableSiteNodeInheritanceAsShare(site1Id, folderC.getId());
+
+        // user1 gives SiteManager permissions to user2 in folderC
+        Node nodeC = new Node();
+        NodePermissions permsC = new NodePermissions();
+        List<NodePermission> locallySet = new ArrayList<>();
+        locallySet.add(new NodePermission(user2, SiteRole.SiteManager.toString(), AccessStatus.ALLOWED.toString()));
+        permsC.setLocallySet(locallySet);
+        nodeC.setPermissions(permsC);
+        put(URL_NODES, folderC.getId(), toJsonAsStringNonNull(nodeC), null, 200);
+
+        // Change to User2 context
+        setRequestContext(user2);
+
+        // user2 creates folderD inside folderC
+        Folder folderD = createFolder(folderC.getId(), "folderD");
+
+        // user2 disables inheritance flag on folder D
+        disableSiteNodeInheritanceAsShare(site1Id, folderD.getId());
+
+        // user2 enables inheritance flag on folder D
+        setSiteNodeInheritance(site1Id, folderD.getId(), true, false);
+
+        // user2 disables inheritance flag on folder D
+        disableSiteNodeInheritanceAsShare(site1Id, folderD.getId());
+
+        // user2 should be able to re-enable and disable the inheritance flag without causing a permission denied error
+        setSiteNodeInheritance(site1Id, folderD.getId(), true, false);
+        setSiteNodeInheritance(site1Id, folderD.getId(), false, false);
+
+        // user2 checks if has access to the folder
+        Map<String, String> params = new HashMap<>();
+        params.put("include", "permissions");
+        HttpResponse response = getSingle(NodesEntityResource.class, folderD.getId(), params, 200);
+        Document node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        assertNotNull(node);
+        assertEquals(node.getId(), folderD.getId());
+        assertFalse("Folder D inheritance flag should be false", node.getPermissions().getIsInheritanceEnabled());
 
         // cleanup
         setRequestContext(user1);
@@ -6445,5 +6534,31 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Cleanup
         delete(URL_NODES, folderId, 204);
     }
-}
 
+    private void disableSiteNodeInheritanceAsShare(String siteId, String nodeId) throws IOException
+    {
+        setSiteNodeInheritance(siteId, nodeId, false, true);
+    }
+
+    private void setSiteNodeInheritance(String siteId, String nodeId, boolean inheritanceFlag, boolean addSiteManager) throws IOException
+    {
+        Node node = new Node();
+        NodePermissions perms = new NodePermissions();
+        perms.setIsInheritanceEnabled(inheritanceFlag);
+        if (!inheritanceFlag && addSiteManager)
+        {
+            List<NodePermission> locallySet = new ArrayList<>();
+            locallySet.add(new NodePermission("GROUP_site_" + siteId + "_SiteManager", SiteRole.SiteManager.toString(), AccessStatus.ALLOWED.toString()));
+            perms.setLocallySet(locallySet);
+        }
+        node.setPermissions(perms);
+        try
+        {
+            put(URL_NODES, nodeId, toJsonAsStringNonNull(node), null, 200);
+        }
+        catch (Exception e)
+        {
+            throw new IOException("Failed to update permissions: " + e.getMessage(), e);
+        }
+    }
+}

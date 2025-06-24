@@ -64,8 +64,8 @@ public abstract class AbstractNodePermissionEntry implements NodePermissionEntry
         AbstractNodePermissionEntry other = (AbstractNodePermissionEntry) o;
 
         return EqualsHelper.nullSafeEquals(this.getNodeRef(), other.getNodeRef()) &&
-               EqualsHelper.nullSafeEquals(this.inheritPermissions(), other.inheritPermissions()) && 
-               EqualsHelper.nullSafeEquals(this.getPermissionEntries(), other.getPermissionEntries());
+                EqualsHelper.nullSafeEquals(this.inheritPermissions(), other.inheritPermissions()) &&
+                EqualsHelper.nullSafeEquals(this.getPermissionEntries(), other.getPermissionEntries());
     }
 
     @Override

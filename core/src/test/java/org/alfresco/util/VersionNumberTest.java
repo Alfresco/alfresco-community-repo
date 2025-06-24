@@ -55,7 +55,8 @@ public class VersionNumberTest extends TestCase
         {
             new VersionNumber("xxx");
             fail("Should not have created an invalid version");
-        } catch (Exception exception)
+        }
+        catch (Exception exception)
         {
             // OK
         }
@@ -63,7 +64,8 @@ public class VersionNumberTest extends TestCase
         {
             new VersionNumber("1-1-2");
             fail("Should not have created an invalid version");
-        } catch (Exception exception)
+        }
+        catch (Exception exception)
         {
             // OK
         }
@@ -71,7 +73,8 @@ public class VersionNumberTest extends TestCase
         {
             new VersionNumber("1.2.3a");
             fail("Should not have created an invalid version");
-        } catch (Exception exception)
+        }
+        catch (Exception exception)
         {
             // OK
         }
@@ -79,7 +82,8 @@ public class VersionNumberTest extends TestCase
         {
             new VersionNumber("1.2.3-M4");
             fail("Should not have created an invalid version");
-        } catch (Exception exception)
+        }
+        catch (Exception exception)
         {
             // OK
         }
@@ -87,7 +91,8 @@ public class VersionNumberTest extends TestCase
         {
             new VersionNumber("1.2.3-A4");
             fail("Should not have created an invalid version");
-        } catch (Exception exception)
+        }
+        catch (Exception exception)
         {
             // OK
         }
@@ -124,7 +129,7 @@ public class VersionNumberTest extends TestCase
         VersionNumber version8 = new VersionNumber("10.0");
         VersionNumber version9 = new VersionNumber("10.3");
         VersionNumber version10 = new VersionNumber("11.1");
-        
+
         assertEquals(-1, version0.compareTo(version1));
         assertEquals(1, version1.compareTo(version0));
         assertEquals(0, version1.compareTo(version2));
@@ -138,7 +143,8 @@ public class VersionNumberTest extends TestCase
         assertEquals(-1, version9.compareTo(version10));
     }
 
-    public void testCompareNewSchema() {
+    public void testCompareNewSchema()
+    {
         // module min/max repo version is 23, actual ACS version is 23.1.0 which is greater than module
         VersionNumber repoVersionMin = new VersionNumber("23");
         VersionNumber repoVerisionActual = new VersionNumber("23.1.0");

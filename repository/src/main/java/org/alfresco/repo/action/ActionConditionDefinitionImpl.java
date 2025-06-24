@@ -32,8 +32,8 @@ import org.alfresco.service.cmr.action.ActionConditionDefinition;
  * 
  * @author Roy Wetherall
  */
-public class ActionConditionDefinitionImpl extends ParameterizedItemDefinitionImpl 
-                               implements ActionConditionDefinition
+public class ActionConditionDefinitionImpl extends ParameterizedItemDefinitionImpl
+        implements ActionConditionDefinition
 {
     private static final long serialVersionUID = 3688505493618177331L;
 
@@ -41,11 +41,12 @@ public class ActionConditionDefinitionImpl extends ParameterizedItemDefinitionIm
      * ActionCondition evaluator
      */
     private String conditionEvaluator;
-    
+
     /**
      * Constructor
      * 
-     * @param name                  the name
+     * @param name
+     *            the name
      */
     public ActionConditionDefinitionImpl(String name)
     {
@@ -55,17 +56,18 @@ public class ActionConditionDefinitionImpl extends ParameterizedItemDefinitionIm
     /**
      * Set the condition evaluator
      * 
-     * @param conditionEvaluator  the condition evaluator
+     * @param conditionEvaluator
+     *            the condition evaluator
      */
     public void setConditionEvaluator(String conditionEvaluator)
     {
         this.conditionEvaluator = conditionEvaluator;
     }
-    
+
     /**
      * Get the condition evaluator
      * 
-     * @return  the condition evaluator
+     * @return the condition evaluator
      */
     public String getConditionEvaluator()
     {

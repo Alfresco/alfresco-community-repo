@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,6 +31,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -39,8 +42,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Roy Wetherall
@@ -62,7 +63,8 @@ public class IdentifierServiceImpl implements IdentifierService
     /**
      * Set the node service
      *
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -72,7 +74,8 @@ public class IdentifierServiceImpl implements IdentifierService
     /**
      * Set the dictionary service
      *
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -131,9 +134,11 @@ public class IdentifierServiceImpl implements IdentifierService
     /**
      * Generate an identifier for a given type of object with the accompanying context.
      *
-     * @param type      content type
-     * @param context   context
-     * @return String   identifier
+     * @param type
+     *            content type
+     * @param context
+     *            context
+     * @return String identifier
      */
     private String generateIdentifier(QName type, Map<String, Serializable> context)
     {
@@ -165,7 +170,8 @@ public class IdentifierServiceImpl implements IdentifierService
 
     /**
      *
-     * @param type content type (could be aspect or type)
+     * @param type
+     *            content type (could be aspect or type)
      * @return
      */
     private IdentifierGenerator lookupGenerator(QName type)

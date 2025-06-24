@@ -27,14 +27,18 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
+
+import static org.alfresco.utility.report.log.Step.STEP;
 
 import java.util.List;
 import java.util.stream.IntStream;
 
 import com.google.common.collect.Lists;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleSetModel;
 import org.alfresco.utility.constants.UserRole;
@@ -42,16 +46,14 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
-@Test (groups = { TestGroup.RULES })
+@Test(groups = {TestGroup.RULES})
 public class ReorderRulesTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;
 
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
         STEP("Create a user and site.");
@@ -60,7 +62,7 @@ public class ReorderRulesTests extends RulesRestTest
     }
 
     /** Check we can get the ordered list of rules in a rule set. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getOrderedRuleIds()
     {
         STEP("Create a folder containing three rules in the existing site");
@@ -69,7 +71,7 @@ public class ReorderRulesTests extends RulesRestTest
 
         STEP("Get the default rule set for the folder including the ordered rule ids");
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder)
-                                             .include("ruleIds").getDefaultRuleSet();
+                .include("ruleIds").getDefaultRuleSet();
 
         List<String> expectedRuleIds = rules.stream().map(RestRuleModel::getId).collect(toList());
         restClient.assertStatusCodeIs(OK);
@@ -91,7 +93,7 @@ public class ReorderRulesTests extends RulesRestTest
 
         STEP("Get the rule set with the ordered list of rules");
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
-                                             .include("ruleIds").getDefaultRuleSet();
+                .include("ruleIds").getDefaultRuleSet();
 
         restClient.assertStatusCodeIs(OK);
         List<String> ruleIds = rules.stream().map(RestRuleModel::getId).collect(toList());
@@ -99,7 +101,7 @@ public class ReorderRulesTests extends RulesRestTest
     }
 
     /** Check we can reorder the rules in a rule set. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void reorderRules()
     {
         STEP("Create a folder containing three rules in the existing site");
@@ -112,14 +114,14 @@ public class ReorderRulesTests extends RulesRestTest
         ruleSetBody.setId("-default-");
         ruleSetBody.setRuleIds(reversedRuleIds);
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder)
-                                             .include("ruleIds").updateRuleSet(ruleSetBody);
+                .include("ruleIds").updateRuleSet(ruleSetBody);
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("ruleIds").is(reversedRuleIds);
     }
 
     /** Check we can reorder the rules in a rule set by editing the response from the GET. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void reorderRulesUsingResponseFromGET()
     {
         STEP("Create a folder containing three rules in the existing site");
@@ -128,12 +130,12 @@ public class ReorderRulesTests extends RulesRestTest
 
         STEP("Get the rule set with its id.");
         RestRuleSetModel ruleSetResponse = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder)
-                                                     .include("ruleIds").getDefaultRuleSet();
+                .include("ruleIds").getDefaultRuleSet();
 
         STEP("Reverse the order of the rules within the rule set");
         ruleSetResponse.setRuleIds(Lists.reverse(ruleSetResponse.getRuleIds()));
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder)
-                                             .include("ruleIds").updateRuleSet(ruleSetResponse);
+                .include("ruleIds").updateRuleSet(ruleSetResponse);
 
         restClient.assertStatusCodeIs(OK);
         List<String> reversedRuleIds = Lists.reverse(rules.stream().map(RestRuleModel::getId).collect(toList()));
@@ -159,7 +161,7 @@ public class ReorderRulesTests extends RulesRestTest
         ruleSetBody.setId("-default-");
         ruleSetBody.setRuleIds(reversedRuleIds);
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
-                  .include("ruleIds").updateRuleSet(ruleSetBody);
+                .include("ruleIds").updateRuleSet(ruleSetBody);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
     }
@@ -183,7 +185,7 @@ public class ReorderRulesTests extends RulesRestTest
         ruleSetBody.setId("-default-");
         ruleSetBody.setRuleIds(reversedRuleIds);
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
-                                             .include("ruleIds").updateRuleSet(ruleSetBody);
+                .include("ruleIds").updateRuleSet(ruleSetBody);
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("ruleIds").is(reversedRuleIds);
@@ -192,8 +194,7 @@ public class ReorderRulesTests extends RulesRestTest
     /** Create three rules in the given folder. */
     private List<RestRuleModel> createRulesInFolder(FolderModel folder, UserModel user)
     {
-        return IntStream.range(0, 3).mapToObj(index ->
-        {
+        return IntStream.range(0, 3).mapToObj(index -> {
             RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
             return restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
         }).collect(toList());

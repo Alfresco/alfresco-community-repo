@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -40,8 +42,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see LockDAO
@@ -53,7 +53,7 @@ import org.springframework.context.ApplicationContext;
 public class LockDAOTest extends TestCase
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/LockDAOTest";
-    
+
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private TransactionService transactionService;
@@ -69,7 +69,7 @@ public class LockDAOTest extends TestCase
     private QName lockABA;
     private QName lockABB;
     private QName lockABC;
-    
+
     @Override
     public void setUp() throws Exception
     {
@@ -79,7 +79,7 @@ public class LockDAOTest extends TestCase
         txnHelper.setMinRetryWaitMs(10);
         txnHelper.setRetryWaitIncrementMs(10);
         txnHelper.setMaxRetryWaitMs(50);
-        
+
         lockDAO = (LockDAO) ctx.getBean("lockDAO");
         // Get the test name
         String testName = getName();
@@ -94,7 +94,7 @@ public class LockDAOTest extends TestCase
         lockABB = QName.createQName(NAMESPACE, "a-" + testName + ".b-" + testName + ".b-" + testName);
         lockABC = QName.createQName(NAMESPACE, "a-" + testName + ".b-" + testName + ".c-" + testName);
     }
-    
+
     private String lock(final QName lockName, final long timeToLive, boolean expectSuccess)
     {
         try
@@ -119,15 +119,17 @@ public class LockDAOTest extends TestCase
             }
         }
     }
+
     /**
      * Do the lock in a new transaction
-     * @return              Returns the lock token or <tt>null</tt> if it didn't work
-     * @throws  LockAcquisitionException on failure
+     * 
+     * @return Returns the lock token or <tt>null</tt> if it didn't work
+     * @throws LockAcquisitionException
+     *             on failure
      */
     private String lock(final QName lockName, final long timeToLive)
     {
-        RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
-        {
+        RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>() {
             public String execute() throws Throwable
             {
                 String txnId = AlfrescoTransactionSupport.getTransactionId();
@@ -137,11 +139,10 @@ public class LockDAOTest extends TestCase
         };
         return txnHelper.doInTransaction(callback);
     }
-    
+
     private void refresh(final QName lockName, final String lockToken, final long timeToLive, boolean expectSuccess)
     {
-        RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>()
-        {
+        RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>() {
             public Boolean execute() throws Throwable
             {
                 lockDAO.refreshLock(lockName, lockToken, timeToLive);
@@ -164,11 +165,10 @@ public class LockDAOTest extends TestCase
             }
         }
     }
-    
+
     private void release(final QName lockName, final String lockToken, boolean expectSuccess)
     {
-        RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>()
-        {
+        RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>() {
             public Boolean execute() throws Throwable
             {
                 lockDAO.releaseLock(lockName, lockToken, false);
@@ -191,12 +191,12 @@ public class LockDAOTest extends TestCase
             }
         }
     }
-    
+
     public void testGetLockBasic() throws Exception
     {
         lock(lockAAA, 500L, true);
     }
-    
+
     /**
      * Ensure that the lock tables and queries scale
      */
@@ -211,17 +211,17 @@ public class LockDAOTest extends TestCase
             if (i % 100 == 0)
             {
                 long after = System.currentTimeMillis();
-                System.out.println("Creation of " + i + " locks took " + (after-before)/1000 + "s");
+                System.out.println("Creation of " + i + " locks took " + (after - before) / 1000 + "s");
             }
         }
     }
-    
+
     public void testGetLockFailureBasic() throws Exception
     {
         lock(lockAAA, 500L, true);
         lock(lockAAA, 0L, false);
     }
-    
+
     public void testSharedLocks() throws Exception
     {
         lock(lockAAA, 500L, true);
@@ -231,7 +231,7 @@ public class LockDAOTest extends TestCase
         lock(lockABB, 500L, true);
         lock(lockABC, 500L, true);
     }
-    
+
     public void testExclusiveLockBlockedByShared() throws Exception
     {
         lock(lockAAA, 5000L, true);
@@ -240,20 +240,20 @@ public class LockDAOTest extends TestCase
         lock(lockA, 5000L, false);
         lock(lockABA, 5000L, false);
     }
-    
+
     public void testReleaseLockBasic() throws Exception
     {
         String token = lock(lockAAA, 500000L, true);
         release(lockAAA, token, true);
         token = lock(lockAAA, 0L, true);
-        
+
         // Check that the lock cannot be release when not held
         release(lockAAA, "Invalid-Token", false);
         assertFalse(lockDAO.releaseLock(lockAAA, "invalidToken", true));
         assertTrue(lockDAO.releaseLock(lockAAA, token, true));
         assertFalse(lockDAO.releaseLock(lockAAA, token, true));
     }
-    
+
     public void testReleaseLockRepeated() throws Exception
     {
         final String token = lock(lockAAA, 500000L, true);
@@ -261,8 +261,7 @@ public class LockDAOTest extends TestCase
         release(lockAAA, token, false);
         try
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -278,8 +277,7 @@ public class LockDAOTest extends TestCase
         }
         try
         {
-            boolean released = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
-            {
+            boolean released = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>() {
                 @Override
                 public Boolean execute() throws Throwable
                 {
@@ -294,7 +292,7 @@ public class LockDAOTest extends TestCase
             fail("Optimistic lock release should have succeeded.");
         }
     }
-    
+
     public void testSharedLockAndRelease() throws Exception
     {
         String tokenAAA = lock(lockAAA, 5000L, true);
@@ -319,7 +317,7 @@ public class LockDAOTest extends TestCase
         lock(lockA, 0L, false);
         // Release a lock and check again
         release(lockAAC, tokenAAC, true);
-        String tokenAA = lock(lockAA, 5000L, true);                 // This should be open now
+        String tokenAA = lock(lockAA, 5000L, true); // This should be open now
         lock(lockAB, 0L, false);
         lock(lockA, 0L, false);
         // Release a lock and check again
@@ -353,20 +351,21 @@ public class LockDAOTest extends TestCase
 
     /**
      * Check that locks grabbed away due to expiry cannot be released
+     * 
      * @throws Exception
      */
     public synchronized void testLockExpiryAndRelease() throws Exception
     {
         String tokenAAA = lock(lockAAA, 500L, true);
         release(lockAAA, tokenAAA, true);
-        tokenAAA = lock(lockAAA, 50L, true);        // Make sure we can re-acquire the lock
-        this.wait(100L);                            // Wait for expiry
+        tokenAAA = lock(lockAAA, 50L, true); // Make sure we can re-acquire the lock
+        this.wait(100L); // Wait for expiry
         String grabbedTokenAAAA = lock(lockAAA, 50L, true); // Grabbed lock over the expiry
-        release(lockAAA, tokenAAA, false);          // Can't release any more
-        this.wait(100L);                            // Wait for expiry
-        release(lockAAA, grabbedTokenAAAA, true);   // Proof that expiry, on it's own, doesn't prevent release
+        release(lockAAA, tokenAAA, false); // Can't release any more
+        this.wait(100L); // Wait for expiry
+        release(lockAAA, grabbedTokenAAAA, true); // Proof that expiry, on it's own, doesn't prevent release
     }
-    
+
     public synchronized void testLockRefresh() throws Exception
     {
         String tokenAAA = lock(lockAAA, 1000L, true);
@@ -380,7 +379,7 @@ public class LockDAOTest extends TestCase
             lock(lockAAA, 0L, false);
         }
     }
-    
+
     /**
      * Uses a thread lock to ensure that the lock DAO only allows locks through one at a time.
      */
@@ -395,8 +394,7 @@ public class LockDAOTest extends TestCase
         }
         // Wait a bit and see if any encountered errors
         boolean allDone = false;
-        waitLoop:
-        for (int waitLoop = 0; waitLoop < 500; waitLoop++)
+        waitLoop: for (int waitLoop = 0; waitLoop < 500; waitLoop++)
         {
             wait(1000L);
             for (int i = 0; i < threads.length; i++)
@@ -421,7 +419,7 @@ public class LockDAOTest extends TestCase
         {
             if (threads[i].error != null)
             {
-                errors.append("\nThread ").append(i).append(" error: ").append(threads[i].error); 
+                errors.append("\nThread ").append(i).append(" error: ").append(threads[i].error);
             }
         }
         if (errors.toString().length() > 0)
@@ -438,6 +436,7 @@ public class LockDAOTest extends TestCase
         private final ReentrantLock threadLock;
         private boolean done;
         private String error;
+
         private GetLockThread(ReentrantLock threadLock)
         {
             this.threadLock = threadLock;
@@ -445,6 +444,7 @@ public class LockDAOTest extends TestCase
             this.error = null;
             setDaemon(true);
         }
+
         @Override
         public synchronized void run()
         {
@@ -456,15 +456,20 @@ public class LockDAOTest extends TestCase
                 {
                     try
                     {
-                        tokenAAA = lock(lockAAA, 100000L);      // Lock for a long time
+                        tokenAAA = lock(lockAAA, 100000L); // Lock for a long time
                         // Success
                         break;
                     }
                     catch (LockAcquisitionException e)
                     {
-                        // OK.  Keep trying.
+                        // OK. Keep trying.
                     }
-                    try { wait(20L); } catch (InterruptedException e) {}
+                    try
+                    {
+                        wait(20L);
+                    }
+                    catch (InterruptedException e)
+                    {}
                 }
                 gotLock = threadLock.tryLock(0, TimeUnit.MILLISECONDS);
                 if (!gotLock)
@@ -487,6 +492,7 @@ public class LockDAOTest extends TestCase
                 }
             }
         }
+
         public synchronized boolean isDone()
         {
             return done;

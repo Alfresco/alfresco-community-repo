@@ -30,8 +30,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.experimental.categories.Category;
+
+import org.alfresco.test_category.OwnJVMTestsCategory;
 
 /**
  * Content filter language service test cases
@@ -42,9 +43,9 @@ import org.junit.experimental.categories.Category;
  * @author Yannick Pignot
  */
 @Category(OwnJVMTestsCategory.class)
-public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases 
+public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases
 {
-    
+
     public void testGetFilterLanguages()
     {
         // get the list of content filter languages
@@ -52,67 +53,67 @@ public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases
 
         // Ensure that the list is not null
         assertNotNull("Language list is null", lggs);
-        
+
         // Ensure that the list is read-only
-        try 
+        try
         {
             lggs.add("NEW LOCALE");
             fail("Add a value to the content filter language list is not permit, this list would be read only");
-        } 
-        catch (Exception e) 
+        }
+        catch (Exception e)
         {
             // test case ok
         }
-        
-        try 
+
+        try
         {
             lggs.remove(0);
             fail("Remove a value to the content filter language list is not permit, this list would be read only");
-        } 
-        catch (Exception e) 
+        }
+        catch (Exception e)
         {
-            // test case ok                        
-        }        
+            // test case ok
+        }
     }
 
     @SuppressWarnings("unchecked")
     public void testGetMissingLanguages()
     {
         List<String> lggs = contentFilterLanguagesService.getFilterLanguages();
-        
+
         // get missing languages with null parameter
         List<String> missingLggsNull = contentFilterLanguagesService.getMissingLanguages(null);
-        
+
         // Ensure that the returned list is not null
         assertNotNull("Language list returned with the null parameter is null", missingLggsNull);
         // Ensure that the returned list is entire
         assertEquals("Language list returned with the null parameter  corrupted", missingLggsNull.size(), lggs.size());
-        
+
         // get missing languages with empty collection parameter
         List<String> missingLggsEmpty = contentFilterLanguagesService.getMissingLanguages(Collections.EMPTY_LIST);
-        
+
         // Ensure that the returned list is not null
         assertNotNull("Language list returned with the empty parameter is null", missingLggsEmpty);
         // Ensure that the returned list is entire
         assertEquals("Language list returned with the empty parameter  corrupted", missingLggsEmpty.size(), lggs.size());
-        
-        // get missing languages with a two locale list 
+
+        // get missing languages with a two locale list
         List<String> param = new ArrayList<>();
         param.add(0, lggs.get(0));
         param.add(1, lggs.get(1));
         List<String> missingLggsOk = contentFilterLanguagesService.getMissingLanguages(param);
-        
+
         // Ensure that the returned list is not null
         assertNotNull("Language list returned with the correct parameter is null", missingLggsOk);
         // Ensure that the returned list size is correct
         assertEquals("Language list size returned with the correct parameter is not correct", missingLggsOk.size(), (lggs.size() - 2));
-        // Ensure that the returned list don't content the preceding locales 
+        // Ensure that the returned list don't content the preceding locales
         assertFalse("Language found : " + param.get(0), missingLggsOk.contains(param.get(0)));
         assertFalse("Language found : " + param.get(1), missingLggsOk.contains(param.get(1)));
-        //    get missing languages with a not found locale
+        // get missing languages with a not found locale
         param.add(2, "WRONG LOCALE CODE");
         List<String> missingLggsWrong = contentFilterLanguagesService.getMissingLanguages(param);
-        
+
         // Ensure that the returned list is not null
         assertNotNull("Language list returned with the wrong parameter is null", missingLggsWrong);
         // Ensure that the returned list size is correct
@@ -122,7 +123,7 @@ public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases
         assertFalse("Language found : " + param.get(1), missingLggsWrong.contains(param.get(1)));
         assertFalse("Language found : " + param.get(2), missingLggsWrong.contains(param.get(2)));
     }
-    
+
     public void testISOCodeConversions()
     {
         // New ISO code list
@@ -132,7 +133,7 @@ public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases
         Locale loc0 = new Locale(oldCode[0]);
         Locale loc1 = new Locale(oldCode[1]);
         Locale loc2 = new Locale(oldCode[2]);
-        
+
         // Ensure that java.util.Locale has converted the old ISO code into new ISO code
         // This conversion can be avoided by setting the java.locale.useOldISOCodes=true system property
         assertEquals("java.util.Locale Conversion not correct for " + oldCode[0], newCode[0], loc0.getLanguage());
@@ -147,5 +148,5 @@ public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases
         assertEquals("Conversion of old ISO codes not correct for " + oldCode[0], newCode[0], contentFilterLanguagesService.convertToNewISOCode(oldCode[0]));
         assertEquals("Conversion of old ISO codes not correct for " + oldCode[1], newCode[1], contentFilterLanguagesService.convertToNewISOCode(oldCode[1]));
         assertEquals("Conversion of old ISO codes not correct for " + oldCode[2], newCode[2], contentFilterLanguagesService.convertToNewISOCode(oldCode[2]));
-    }    
+    }
 }

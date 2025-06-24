@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,8 +33,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkService;
@@ -58,12 +60,11 @@ import org.alfresco.rm.rest.api.model.HoldBulkStatusEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 @RelationshipResource(name = "bulk-statuses", entityResource = HoldsEntityResource.class, title = "Bulk statuses of a hold")
 public class HoldsBulkStatusesRelation
-    implements RelationshipResourceAction.Read<HoldBulkStatusEntry>,
-    RelationshipResourceAction.ReadById<HoldBulkStatusEntry>
+        implements RelationshipResourceAction.Read<HoldBulkStatusEntry>,
+        RelationshipResourceAction.ReadById<HoldBulkStatusEntry>
 {
     private HoldBulkMonitor holdBulkMonitor;
     private HoldBulkService holdBulkService;
@@ -83,10 +84,10 @@ public class HoldsBulkStatusesRelation
 
         List<HoldBulkStatusAndProcessDetails> statuses = holdBulkMonitor.getBulkStatusesWithProcessDetails(holdId);
         List<HoldBulkStatusEntry> page = statuses.stream()
-            .map(HoldBulkUtils::toHoldBulkStatusEntry)
-            .skip(parameters.getPaging().getSkipCount())
-            .limit(parameters.getPaging().getMaxItems())
-            .collect(Collectors.toCollection(LinkedList::new));
+                .map(HoldBulkUtils::toHoldBulkStatusEntry)
+                .skip(parameters.getPaging().getSkipCount())
+                .limit(parameters.getPaging().getMaxItems())
+                .collect(Collectors.toCollection(LinkedList::new));
 
         int totalItems = statuses.size();
         boolean hasMore = parameters.getPaging().getSkipCount() + parameters.getPaging().getMaxItems() < totalItems;
@@ -95,7 +96,7 @@ public class HoldsBulkStatusesRelation
 
     @Override
     public HoldBulkStatusEntry readById(String holdId, String bulkStatusId, Parameters parameters)
-        throws RelationshipResourceNotFoundException
+            throws RelationshipResourceNotFoundException
     {
         checkNotBlank("holdId", holdId);
         checkNotBlank("bulkStatusId", bulkStatusId);
@@ -106,16 +107,16 @@ public class HoldsBulkStatusesRelation
         checkReadPermissions(holdRef);
 
         return Optional.ofNullable(holdBulkMonitor.getBulkStatusWithProcessDetails(holdId, bulkStatusId))
-            .map(HoldBulkUtils::toHoldBulkStatusEntry)
-            .orElseThrow(() -> new EntityNotFoundException(bulkStatusId));
+                .map(HoldBulkUtils::toHoldBulkStatusEntry)
+                .orElseThrow(() -> new EntityNotFoundException(bulkStatusId));
     }
 
     @Operation("cancel")
     @WebApiDescription(title = "Cancel a bulk operation",
-        successStatus = HttpServletResponse.SC_OK)
+            successStatus = HttpServletResponse.SC_OK)
     public void cancelBulkOperation(String holdId, String bulkStatusId, BulkCancellationEntry bulkCancellationEntry,
-        Parameters parameters,
-        WithResponse withResponse)
+            Parameters parameters,
+            WithResponse withResponse)
     {
         checkNotBlank("holdId", holdId);
         checkNotBlank("bulkStatusId", bulkStatusId);

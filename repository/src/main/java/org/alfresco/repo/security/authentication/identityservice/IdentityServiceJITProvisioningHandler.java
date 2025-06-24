@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -30,59 +30,38 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
-import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+import org.apache.commons.lang3.StringUtils;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.DecodedAccessToken;
+import org.alfresco.repo.security.authentication.identityservice.user.AccessTokenToDecodedTokenUserMapper;
+import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
+import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
+import org.alfresco.repo.security.authentication.identityservice.user.TokenUserToOIDCUserMapper;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.lang3.StringUtils;
 
 /**
- * This class handles Just in Time user provisioning. It extracts {@link OIDCUserInfo}
- * from {@link IdentityServiceFacade.DecodedAccessToken} or {@link UserInfo}
- * and creates a new user if it does not exist in the repository.
+ * This class handles Just in Time user provisioning. It extracts {@link OIDCUserInfo} from the given bearer token and creates a new user if it does not exist in the repository.
  */
 public class IdentityServiceJITProvisioningHandler
 {
-    private final IdentityServiceConfig identityServiceConfig;
     private final IdentityServiceFacade identityServiceFacade;
     private final PersonService personService;
     private final TransactionService transactionService;
-
-    private final BiFunction<DecodedAccessToken, String, Optional<? extends OIDCUserInfo>> mapTokenToUserInfoResponse = (token, usernameMappingClaim) -> {
-        Optional<String> firstName = Optional.ofNullable(token)
-            .map(jwtToken -> jwtToken.getClaim(PersonClaims.GIVEN_NAME_CLAIM_NAME))
-            .filter(String.class::isInstance)
-            .map(String.class::cast);
-        Optional<String> lastName = Optional.ofNullable(token)
-            .map(jwtToken -> jwtToken.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME))
-            .filter(String.class::isInstance)
-            .map(String.class::cast);
-        Optional<String> email = Optional.ofNullable(token)
-            .map(jwtToken -> jwtToken.getClaim(PersonClaims.EMAIL_CLAIM_NAME))
-            .filter(String.class::isInstance)
-            .map(String.class::cast);
-
-        return Optional.ofNullable(token.getClaim(Optional.ofNullable(usernameMappingClaim)
-                .filter(StringUtils::isNotBlank)
-                .orElse(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)))
-            .filter(String.class::isInstance)
-            .map(String.class::cast)
-            .map(this::normalizeUserId)
-            .map(username -> new OIDCUserInfo(username, firstName.orElse(""), lastName.orElse(""), email.orElse("")));
-    };
+    private final IdentityServiceConfig identityServiceConfig;
+    private UserInfoAttrMapping userInfoAttrMapping;
+    private TokenUserToOIDCUserMapper tokenUserToOIDCUserMapper;
+    private AccessTokenToDecodedTokenUserMapper tokenToDecodedTokenUserMapper;
 
     public IdentityServiceJITProvisioningHandler(IdentityServiceFacade identityServiceFacade,
-        PersonService personService,
-        TransactionService transactionService,
-        IdentityServiceConfig identityServiceConfig)
+            PersonService personService,
+            TransactionService transactionService,
+            IdentityServiceConfig identityServiceConfig)
     {
         this.identityServiceFacade = identityServiceFacade;
         this.personService = personService;
@@ -90,94 +69,95 @@ public class IdentityServiceJITProvisioningHandler
         this.identityServiceConfig = identityServiceConfig;
     }
 
+    /**
+     * Extracts {@link OIDCUserInfo} from the given bearer token and creates a new user if it does not exist in the repository. Call to the UserInfo endpoint is made only if the token does not contain a username claim or if user needs to be created and some of the {@link OIDCUserInfo} fields are empty.
+     */
     public Optional<OIDCUserInfo> extractUserInfoAndCreateUserIfNeeded(String bearerToken)
     {
-        Optional<OIDCUserInfo> userInfoResponse = Optional.ofNullable(bearerToken)
-            .filter(Predicate.not(String::isEmpty))
-            .flatMap(token -> extractUserInfoResponseFromAccessToken(token)
-                .filter(userInfo -> StringUtils.isNotEmpty(userInfo.username()))
-                .or(() -> extractUserInfoResponseFromEndpoint(token)));
-
-        if (transactionService.isReadOnly() || userInfoResponse.isEmpty())
+        if (userInfoAttrMapping == null)
         {
-            return userInfoResponse;
+            initMappers(identityServiceConfig);
         }
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Optional<OIDCUserInfo>>()
+
+        Optional<OIDCUserInfo> oidcUserInfo = Optional.ofNullable(bearerToken)
+                .filter(Predicate.not(String::isEmpty))
+                .flatMap(token -> extractUserInfoResponseFromAccessToken(token).filter(decodedTokenUser -> StringUtils.isNotEmpty(decodedTokenUser.username()))
+                        .or(() -> extractUserInfoResponseFromEndpoint(token, userInfoAttrMapping)))
+                .map(tokenUserToOIDCUserMapper::toOIDCUser);
+
+        if (transactionService.isReadOnly() || oidcUserInfo.isEmpty())
         {
+            return oidcUserInfo;
+        }
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<>() {
             @Override
             public Optional<OIDCUserInfo> doWork() throws Exception
             {
-                return userInfoResponse.map(userInfo -> {
-                    if (userInfo.username() != null && personService.createMissingPeople()
-                        && !personService.personExists(userInfo.username()))
+                return oidcUserInfo.map(oidcUser -> {
+                    if (userDoesNotExistsAndCanBeCreated(oidcUser))
                     {
 
-                        if (!userInfo.allFieldsNotEmpty())
+                        if (!oidcUser.allFieldsNotEmpty())
                         {
-                            userInfo = extractUserInfoResponseFromEndpoint(bearerToken).orElse(userInfo);
+                            oidcUser = extractUserInfoResponseFromEndpoint(bearerToken, userInfoAttrMapping)
+                                    .map(tokenUserToOIDCUserMapper::toOIDCUser)
+                                    .orElse(oidcUser);
                         }
-                        Map<QName, Serializable> properties = new HashMap<>();
-                        properties.put(ContentModel.PROP_USERNAME, userInfo.username());
-                        properties.put(ContentModel.PROP_FIRSTNAME, userInfo.firstName());
-                        properties.put(ContentModel.PROP_LASTNAME, userInfo.lastName());
-                        properties.put(ContentModel.PROP_EMAIL, userInfo.email());
-                        properties.put(ContentModel.PROP_ORGID, "");
-                        properties.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, null);
-
-                        properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
-                        properties.put(ContentModel.PROP_SIZE_QUOTA, -1L); // no quota
-
-                        personService.createPerson(properties);
+                        createPerson(oidcUser);
                     }
-                    return userInfo;
+                    return oidcUser;
                 });
             }
+
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    private Optional<OIDCUserInfo> extractUserInfoResponseFromAccessToken(String bearerToken)
+    private void initMappers(IdentityServiceConfig identityServiceConfig)
+    {
+        this.userInfoAttrMapping = initUserInfoAttrMapping(identityServiceConfig);
+        this.tokenUserToOIDCUserMapper = new TokenUserToOIDCUserMapper(personService);
+        this.tokenToDecodedTokenUserMapper = new AccessTokenToDecodedTokenUserMapper(userInfoAttrMapping);
+    }
+
+    private boolean userDoesNotExistsAndCanBeCreated(OIDCUserInfo userInfo)
+    {
+        return userInfo.username() != null && personService.createMissingPeople()
+                && !personService.personExists(userInfo.username());
+    }
+
+    private Optional<DecodedTokenUser> extractUserInfoResponseFromAccessToken(String bearerToken)
     {
         return Optional.ofNullable(bearerToken)
-            .map(identityServiceFacade::decodeToken)
-            .flatMap(decodedToken -> mapTokenToUserInfoResponse.apply(decodedToken,
-                identityServiceConfig.getPrincipalAttribute()));
+                .map(identityServiceFacade::decodeToken)
+                .flatMap(tokenToDecodedTokenUserMapper::toDecodedTokenUser);
     }
 
-    private Optional<OIDCUserInfo> extractUserInfoResponseFromEndpoint(String bearerToken)
+    private Optional<DecodedTokenUser> extractUserInfoResponseFromEndpoint(String bearerToken, UserInfoAttrMapping userInfoAttrMapping)
     {
-        return identityServiceFacade.getUserInfo(bearerToken,
-                StringUtils.isNotBlank(identityServiceConfig.getPrincipalAttribute()) ?
-                    identityServiceConfig.getPrincipalAttribute() : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)
-            .filter(userInfo -> userInfo.username() != null && !userInfo.username().isEmpty())
-            .map(userInfo -> new OIDCUserInfo(normalizeUserId(userInfo.username()),
-                Optional.ofNullable(userInfo.firstName()).orElse(""),
-                Optional.ofNullable(userInfo.lastName()).orElse(""),
-                Optional.ofNullable(userInfo.email()).orElse("")));
+        return identityServiceFacade.getUserInfo(bearerToken, userInfoAttrMapping)
+                .filter(userInfo -> userInfo.username() != null && !userInfo.username().isEmpty());
     }
 
-    /**
-     * Normalizes a user id, taking into account existing user accounts and case sensitivity settings.
-     *
-     * @param userId the user id
-     * @return the string
-     */
-    private String normalizeUserId(final String userId)
+    private void createPerson(OIDCUserInfo userInfo)
     {
-        if (userId == null)
-        {
-            return null;
-        }
+        Map<QName, Serializable> properties = new HashMap<>();
+        properties.put(ContentModel.PROP_USERNAME, userInfo.username());
+        properties.put(ContentModel.PROP_FIRSTNAME, userInfo.firstName());
+        properties.put(ContentModel.PROP_LASTNAME, userInfo.lastName());
+        properties.put(ContentModel.PROP_EMAIL, userInfo.email());
+        properties.put(ContentModel.PROP_ORGID, "");
+        properties.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, null);
+        properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
+        properties.put(ContentModel.PROP_SIZE_QUOTA, -1L); // no quota
 
-        String normalized = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
-        {
-            @Override
-            public String doWork() throws Exception
-            {
-                return personService.getUserIdentifier(userId);
-            }
-        }, AuthenticationUtil.getSystemUserName());
-
-        return normalized == null ? userId : normalized;
+        personService.createPerson(properties);
     }
 
+    private UserInfoAttrMapping initUserInfoAttrMapping(IdentityServiceConfig identityServiceConfig)
+    {
+        return new UserInfoAttrMapping(identityServiceFacade.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName(),
+                identityServiceConfig.getFirstNameAttribute(),
+                identityServiceConfig.getLastNameAttribute(),
+                identityServiceConfig.getEmailAttribute());
+    }
 }

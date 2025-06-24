@@ -53,6 +53,8 @@ import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.image.impl.DefaultProcessDiagramGenerator;
+import org.apache.commons.io.IOUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
@@ -101,7 +103,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.collections.CollectionUtils;
-import org.apache.commons.io.IOUtils;
 
 public class ProcessesImpl extends WorkflowRestImpl implements Processes
 {
@@ -109,27 +110,22 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     protected static String PROCESS_STATUS_ACTIVE = "active";
     protected static String PROCESS_STATUS_COMPLETED = "completed";
     protected static String PROCESS_STATUS_DELETED = "deleted";
-    
+
     protected static final Set<String> PROCESS_STATUS_LIST = new HashSet<String>(Arrays.asList(
-            PROCESS_STATUS_ANY, PROCESS_STATUS_ACTIVE, PROCESS_STATUS_COMPLETED, PROCESS_STATUS_DELETED
-    ));
-    
+            PROCESS_STATUS_ANY, PROCESS_STATUS_ACTIVE, PROCESS_STATUS_COMPLETED, PROCESS_STATUS_DELETED));
+
     protected static final Set<String> PROCESS_COLLECTION_EQUALS_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "processDefinitionId", "businessKey", "processDefinitionKey", "startUserId", "status", "includeVariables"
-    ));
-    
+            "processDefinitionId", "businessKey", "processDefinitionKey", "startUserId", "status", "includeVariables"));
+
     protected static final Set<String> PROCESS_COLLECTION_GREATERTHAN_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "startedAt", "endedAt"
-    ));
-    
+            "startedAt", "endedAt"));
+
     protected static final Set<String> PROCESS_COLLECTION_LESSTHAN_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "startedAt", "endedAt"
-    ));
-    
+            "startedAt", "endedAt"));
+
     protected static final Set<String> PROCESS_COLLECTION_SORT_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "processDefinitionId", "businessKey", "id", "startedAt", "endedAt", "durationInMillis"
-    ));
-    
+            "processDefinitionId", "businessKey", "id", "startedAt", "endedAt", "durationInMillis"));
+
     protected WorkflowPackageImpl workflowPackageComponent;
     protected ServiceRegistry serviceRegistry;
     protected AuthorityDAO authorityDAO;
@@ -138,7 +134,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     protected String engineId;
     protected Repository repositoryHelper;
     protected RestVariableHelper restVariableHelper;
-    
+
     protected ActivitiNodeConverter nodeConverter;
     protected ActivitiUtil activitiUtil;
     protected DefaultWorkflowPropertyHandler defaultPropertyHandler;
@@ -148,7 +144,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     protected WorkflowPropertyHandlerRegistry handlerRegistry;
     protected WorkflowAuthorityManager authorityManager;
     protected ActivitiPropertyConverter propertyConverter;
-    
+
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
     {
         this.authorityDAO = authorityDAO;
@@ -178,12 +174,12 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     {
         this.messageService = messageService;
     }
-    
+
     public void setEngineId(String engineId)
     {
         this.engineId = engineId;
     }
-    
+
     public void setRestVariableHelper(RestVariableHelper restVariableHelper)
     {
         this.restVariableHelper = restVariableHelper;
@@ -197,7 +193,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         return nodeConverter;
     }
-    
+
     protected DefaultWorkflowPropertyHandler getDefaultPropertyHandler()
     {
         if (defaultPropertyHandler == null)
@@ -208,7 +204,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         return defaultPropertyHandler;
     }
-        
+
     protected ActivitiUtil getActivitiUtil()
     {
         if (activitiUtil == null)
@@ -217,7 +213,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         return activitiUtil;
     }
-    
+
     protected WorkflowQNameConverter getQNameConverter()
     {
         if (qNameConverter == null)
@@ -226,16 +222,16 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         return qNameConverter;
     }
-    
+
     protected WorkflowObjectFactory getWorkflowFactory()
     {
-        if (workflowFactory == null) 
+        if (workflowFactory == null)
         {
             workflowFactory = new WorkflowObjectFactory(getQNameConverter(), tenantService, messageService, dictionaryService, engineId, defaultStartTaskType);
         }
         return workflowFactory;
     }
-    
+
     protected WorkflowPropertyHandlerRegistry getHandlerRegistry()
     {
         if (handlerRegistry == null)
@@ -244,7 +240,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         return handlerRegistry;
     }
-    
+
     protected WorkflowAuthorityManager getAuthorityManager()
     {
         if (authorityManager == null)
@@ -253,7 +249,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         return authorityManager;
     }
-    
+
     protected ActivitiPropertyConverter getPropertyConverter()
     {
         if (propertyConverter == null)
@@ -267,18 +263,18 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     public CollectionWithPagingInfo<ProcessInfo> getProcesses(Parameters parameters)
     {
         Paging paging = parameters.getPaging();
-        
+
         MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(PROCESS_COLLECTION_EQUALS_QUERY_PROPERTIES, null);
-        
+
         propertyWalker.setSupportedGreaterThanParameters(PROCESS_COLLECTION_GREATERTHAN_QUERY_PROPERTIES);
         propertyWalker.setSupportedLessThanParameters(PROCESS_COLLECTION_LESSTHAN_QUERY_PROPERTIES);
         propertyWalker.enableVariablesSupport(namespaceService, dictionaryService);
-        
-        if(parameters.getQuery() != null)
+
+        if (parameters.getQuery() != null)
         {
             QueryHelper.walk(parameters.getQuery(), propertyWalker);
         }
-        
+
         String status = propertyWalker.getProperty("status", WhereClauseParser.EQUALS);
         String processDefinitionId = propertyWalker.getProperty("processDefinitionId", WhereClauseParser.EQUALS);
         String businessKey = propertyWalker.getProperty("businessKey", WhereClauseParser.EQUALS);
@@ -289,12 +285,12 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         Date endedAtGreaterThan = propertyWalker.getProperty("endedAt", WhereClauseParser.GREATERTHAN, Date.class);
         Date endedAtLessThan = propertyWalker.getProperty("endedAt", WhereClauseParser.LESSTHAN, Date.class);
         Boolean includeVariables = propertyWalker.getProperty("includeVariables", WhereClauseParser.EQUALS, Boolean.class);
-        
+
         if (status != null && PROCESS_STATUS_LIST.contains(status) == false)
         {
             throw new InvalidArgumentException("Invalid status parameter: " + status);
         }
-        
+
         List<SortColumn> sortList = parameters.getSorting();
         SortColumn sortColumn = null;
         if (sortList != null && sortList.size() > 0)
@@ -305,16 +301,18 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             }
             sortColumn = sortList.get(0);
         }
-        
+
         final HistoricProcessInstanceQuery query = activitiProcessEngine
                 .getHistoryService()
                 .createHistoricProcessInstanceQuery();
 
-        if (processDefinitionId != null) query.processDefinitionId(processDefinitionId);
-        if (businessKey != null) query.processInstanceBusinessKey(businessKey);
+        if (processDefinitionId != null)
+            query.processDefinitionId(processDefinitionId);
+        if (businessKey != null)
+            query.processInstanceBusinessKey(businessKey);
         if (processDefinitionKey != null)
         {
-            if (tenantService.isEnabled() && deployWorkflowsInTenant) 
+            if (tenantService.isEnabled() && deployWorkflowsInTenant)
             {
                 if (processDefinitionKey.startsWith("@" + TenantUtil.getCurrentDomain() + "@"))
                 {
@@ -330,12 +328,17 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                 query.processDefinitionKey(processDefinitionKey);
             }
         }
-        if (startUserId != null) query.startedBy(startUserId);
-        if (startedAtGreaterThan != null) query.startedAfter(startedAtGreaterThan);
-        if (startedAtLessThan != null) query.startedBefore(startedAtLessThan);
-        if (endedAtGreaterThan != null) query.finishedAfter(endedAtGreaterThan);
-        if (endedAtLessThan != null) query.finishedBefore(endedAtLessThan);
-        
+        if (startUserId != null)
+            query.startedBy(startUserId);
+        if (startedAtGreaterThan != null)
+            query.startedAfter(startedAtGreaterThan);
+        if (startedAtLessThan != null)
+            query.startedBefore(startedAtLessThan);
+        if (endedAtGreaterThan != null)
+            query.finishedAfter(endedAtGreaterThan);
+        if (endedAtLessThan != null)
+            query.finishedBefore(endedAtLessThan);
+
         if (status == null || PROCESS_STATUS_ACTIVE.equals(status))
         {
             query.unfinished();
@@ -349,18 +352,19 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         {
             query.deleted();
         }
-        
-        if (includeVariables != null && includeVariables) {
+
+        if (includeVariables != null && includeVariables)
+        {
             query.includeProcessVariables();
         }
-        
+
         List<QueryVariableHolder> variableProperties = propertyWalker.getVariableProperties();
         if (variableProperties != null)
         {
             for (QueryVariableHolder queryVariableHolder : variableProperties)
             {
                 if (queryVariableHolder.getOperator() == WhereClauseParser.EQUALS)
-                {    
+                {
                     query.variableValueEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
                 }
                 else if (queryVariableHolder.getOperator() == WhereClauseParser.GREATERTHAN)
@@ -385,7 +389,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                     {
                         throw new InvalidArgumentException("the matches operator can only be used with a String value for property " + queryVariableHolder.getPropertyName());
                     }
-                    
+
                     if (((String) queryVariableHolder.getPropertyValue()).startsWith("(?i)"))
                     {
                         query.variableValueLikeIgnoreCase(queryVariableHolder.getPropertyName(), ((String) queryVariableHolder.getPropertyValue()).substring("(?i)".length()).toLowerCase());
@@ -401,16 +405,16 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                 }
                 else
                 {
-                    throw new InvalidArgumentException("variable " + queryVariableHolder.getPropertyName() + 
+                    throw new InvalidArgumentException("variable " + queryVariableHolder.getPropertyName() +
                             " can only be used with an =, >, >=, <=, <, not, matches comparison type");
                 }
             }
         }
-        
-        if (authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
+
+        if (authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()))
         {
             // Admin is allowed to read all processes in the current tenant
-            if (tenantService.isEnabled()) 
+            if (tenantService.isEnabled())
             {
                 query.variableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
@@ -420,7 +424,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             // If non-admin user, involvement in the process is required (either owner, assignee or externally involved).
             query.involvedUser(AuthenticationUtil.getRunAsUser());
         }
-        
+
         if (sortColumn != null)
         {
             if (PROCESS_COLLECTION_SORT_PROPERTIES.contains(sortColumn.column))
@@ -452,10 +456,10 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             }
             else
             {
-                throw new InvalidArgumentException("sort " + sortColumn.column + 
+                throw new InvalidArgumentException("sort " + sortColumn.column +
                         " is not supported, supported items are " + Arrays.toString(PROCESS_COLLECTION_SORT_PROPERTIES.toArray()));
             }
-            
+
             if (sortColumn.asc)
             {
                 query.asc();
@@ -469,16 +473,16 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         {
             query.orderByProcessInstanceStartTime().desc();
         }
-        
+
         List<HistoricProcessInstance> processInstances = query.listPage(paging.getSkipCount(), paging.getMaxItems());
         int totalCount = (int) query.count();
 
         List<ProcessInfo> page = new ArrayList<ProcessInfo>(processInstances.size());
         Map<String, TypeDefinition> definitionTypeMap = new HashMap<String, TypeDefinition>();
-        for (HistoricProcessInstance processInstance: processInstances) 
+        for (HistoricProcessInstance processInstance : processInstances)
         {
             ProcessInfo processInfo = createProcessInfo(processInstance);
-            if (includeVariables != null && includeVariables) 
+            if (includeVariables != null && includeVariables)
             {
                 if (definitionTypeMap.containsKey(processInfo.getProcessDefinitionId()) == false)
                 {
@@ -489,7 +493,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                         definitionTypeMap.put(processInfo.getProcessDefinitionId(), getWorkflowFactory().getTaskFullTypeDefinition(formKey, true));
                     }
                 }
-                
+
                 if (definitionTypeMap.containsKey(processInfo.getProcessDefinitionId()))
                 {
                     // Convert raw variables to Variable objects
@@ -500,14 +504,14 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             }
             page.add(processInfo);
         }
-        
+
         return CollectionWithPagingInfo.asPaged(paging, page, (page.size() + paging.getSkipCount()) < totalCount, totalCount);
     }
 
     @Override
     public ProcessInfo getProcess(String processId)
     {
-        if (processId == null) 
+        if (processId == null)
         {
             throw new InvalidArgumentException("processId is required to get the process info");
         }
@@ -519,8 +523,8 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                 .createHistoricProcessInstanceQuery()
                 .processInstanceId(processId)
                 .singleResult();
-        
-        if (processInstance == null) 
+
+        if (processInstance == null)
         {
             throw new EntityNotFoundException(processId);
         }
@@ -531,19 +535,19 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     @Override
     public ProcessInfo create(ProcessInfo process)
     {
-        if (process == null) 
+        if (process == null)
         {
             throw new InvalidArgumentException("post body expected when starting a new process instance");
         }
-        
+
         boolean definitionExistingChecked = false;
         RuntimeService runtimeService = activitiProcessEngine.getRuntimeService();
         String processDefinitionId = null;
-        if (process.getProcessDefinitionId() != null) 
+        if (process.getProcessDefinitionId() != null)
         {
             processDefinitionId = process.getProcessDefinitionId();
-        } 
-        else if (process.getProcessDefinitionKey() != null) 
+        }
+        else if (process.getProcessDefinitionKey() != null)
         {
             ProcessDefinition definition = activitiProcessEngine
                     .getRepositoryService()
@@ -551,20 +555,20 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                     .processDefinitionKey(getProcessDefinitionKey(process.getProcessDefinitionKey()))
                     .latestVersion()
                     .singleResult();
-            
+
             if (definition == null)
             {
-                throw new InvalidArgumentException("No workflow definition could be found with key '" + process.getProcessDefinitionKey() +"'.");
+                throw new InvalidArgumentException("No workflow definition could be found with key '" + process.getProcessDefinitionKey() + "'.");
             }
-            
+
             processDefinitionId = definition.getId();
             definitionExistingChecked = true;
-        } 
-        else 
+        }
+        else
         {
             throw new InvalidArgumentException("Either processDefinitionId or processDefinitionKey is required");
         }
-        
+
         if (definitionExistingChecked == false)
         {
             // Check if the required definition actually exists
@@ -572,27 +576,27 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                     .getRepositoryService()
                     .createProcessDefinitionQuery()
                     .processDefinitionId(processDefinitionId);
-            
-            if (tenantService.isEnabled() && deployWorkflowsInTenant) 
+
+            if (tenantService.isEnabled() && deployWorkflowsInTenant)
             {
                 query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "@%");
             }
-            
-            if(query.count() == 0)
+
+            if (query.count() == 0)
             {
-                throw new InvalidArgumentException("No workflow definition could be found with id '" + processDefinitionId +"'.");
+                throw new InvalidArgumentException("No workflow definition could be found with id '" + processDefinitionId + "'.");
             }
         }
-        
+
         Map<QName, Serializable> startParams = new HashMap<QName, Serializable>();
-        
+
         StartFormData startFormData = activitiProcessEngine.getFormService().getStartFormData(processDefinitionId);
         if (startFormData != null)
         {
             if (CollectionUtils.isEmpty(process.getVariables()) == false)
             {
                 TypeDefinition startTaskType = getWorkflowFactory().getTaskFullTypeDefinition(startFormData.getFormKey(), true);
-                
+
                 // Lookup type definition for the startTask
                 Map<QName, PropertyDefinition> taskProperties = startTaskType.getProperties();
                 Map<String, QName> propNameMap = new HashMap<String, QName>();
@@ -600,13 +604,13 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                 {
                     propNameMap.put(key.getPrefixString().replace(':', '_'), key);
                 }
-                
+
                 Map<QName, AssociationDefinition> taskAssociations = startTaskType.getAssociations();
                 for (QName key : taskAssociations.keySet())
                 {
                     propNameMap.put(key.getPrefixString().replace(':', '_'), key);
                 }
-                
+
                 for (String variableName : process.getVariables().keySet())
                 {
                     if (propNameMap.containsKey(variableName))
@@ -627,55 +631,55 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                                 variableValue = ISO8601DateFormat.parse((String) variableValue);
                             }
                         }
-                        
+
                         if (variableValue instanceof Serializable)
                         {
                             startParams.put(propNameMap.get(variableName), (Serializable) variableValue);
                         }
-                    } 
+                    }
                 }
             }
         }
-        
+
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         Authentication.setAuthenticatedUserId(currentUserName);
-        
+
         NodeRef workflowPackageNodeRef = null;
-        try 
+        try
         {
             workflowPackageNodeRef = workflowPackageComponent.createPackage(null);
             startParams.put(WorkflowModel.ASSOC_PACKAGE, workflowPackageNodeRef);
-        } 
-        catch (Exception e) 
+        }
+        catch (Exception e)
         {
             throw new ApiException("couldn't create workflow package: " + e.getMessage(), e);
         }
-        
-        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(process.getItems())) 
+
+        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(process.getItems()))
         {
-            try 
+            try
             {
-                for (String item: process.getItems()) 
+                for (String item : process.getItems())
                 {
                     NodeRef itemNodeRef = getNodeRef(item);
                     QName workflowPackageItemId = QName.createQName("wpi", itemNodeRef.toString());
                     nodeService.addChild(workflowPackageNodeRef, itemNodeRef, WorkflowModel.ASSOC_PACKAGE_CONTAINS, workflowPackageItemId);
                 }
-            } 
-            catch (Exception e) 
+            }
+            catch (Exception e)
             {
                 throw new ApiException("Error while adding items to package: " + e.getMessage(), e);
             }
         }
-        
+
         // Set start task properties. This should be done before instance is started, since it's id will be used
         Map<String, Object> variables = getPropertyConverter().getStartVariables(processDefinitionId, startParams);
         variables.put(WorkflowConstants.PROP_CANCELLED, Boolean.FALSE);
-        
+
         // Add company home
         Object companyHome = getNodeConverter().convertNode(repositoryHelper.getCompanyHome());
         variables.put(WorkflowConstants.PROP_COMPANY_HOME, companyHome);
-         
+
         // Add the initiator
         NodeRef initiator = getPersonNodeRef(currentUserName);
         if (initiator != null)
@@ -688,73 +692,73 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                 variables.put(WorkflowConstants.PROP_INITIATOR_HOME, nodeConverter.convertNode(initiatorHome));
             }
         }
-        
-        if (tenantService.isEnabled()) 
+
+        if (tenantService.isEnabled())
         {
             // Specify which tenant domain the workflow was started in.
             variables.put(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
         }
-        
+
         // Start the process-instance
         ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinitionId, process.getBusinessKey(), variables);
-        
+
         if (processInstance.isEnded() == false)
         {
             runtimeService.setVariable(processInstance.getProcessInstanceId(), ActivitiConstants.PROP_START_TASK_END_DATE, new Date());
         }
-        
+
         HistoricProcessInstance historicProcessInstance = activitiProcessEngine
-            .getHistoryService()
-            .createHistoricProcessInstanceQuery()
-            .processInstanceId(processInstance.getId())
-            .singleResult();
-        
+                .getHistoryService()
+                .createHistoricProcessInstanceQuery()
+                .processInstanceId(processInstance.getId())
+                .singleResult();
+
         return createProcessInfo(historicProcessInstance);
     }
-    
+
     @Override
     public void deleteProcess(String id)
     {
         validateIfUserAllowedToWorkWithProcess(id);
-        
+
         ProcessInstance processInstance = activitiProcessEngine.getRuntimeService()
                 .createProcessInstanceQuery()
                 .processInstanceId(id)
                 .singleResult();
-        
+
         if (processInstance == null)
         {
             throw new EntityNotFoundException(id);
         }
-        
+
         activitiProcessEngine.getRuntimeService().deleteProcessInstance(id, "deleted through REST API call");
     }
-    
+
     @Override
     public CollectionWithPagingInfo<Item> getItems(String processId, Paging paging)
     {
-        if (processId == null) 
+        if (processId == null)
         {
             throw new InvalidArgumentException("processId is required to get the attached items of a process instance");
         }
-        
+
         validateIfUserAllowedToWorkWithProcess(processId);
         return getItemsFromProcess(processId, paging);
     }
-    
+
     @Override
     public Item getItem(String processId, String itemId)
     {
-        if (processId == null) 
+        if (processId == null)
         {
             throw new InvalidArgumentException("processId is required to get the attached item of a process instance");
         }
-        
-        if (itemId == null) 
+
+        if (itemId == null)
         {
             throw new InvalidArgumentException("itemId is required to get an attached item");
         }
-        
+
         validateIfUserAllowedToWorkWithProcess(processId);
         return getItemFromProcess(itemId, processId);
     }
@@ -762,16 +766,16 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     @Override
     public Item createItem(String processId, Item item)
     {
-        if (processId == null) 
+        if (processId == null)
         {
             throw new InvalidArgumentException("processId is required to add an attached item to a process instance");
         }
-        
-        if (item == null || item.getId() == null) 
+
+        if (item == null || item.getId() == null)
         {
             throw new InvalidArgumentException("itemId is required to add an attached item");
         }
-        
+
         validateIfUserAllowedToWorkWithProcess(processId);
         return createItemInProcess(item.getId(), processId);
     }
@@ -779,25 +783,25 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     @Override
     public void deleteItem(String processId, String itemId)
     {
-        if (processId == null) 
+        if (processId == null)
         {
             throw new InvalidArgumentException("processId is required to delete an attached item to a process instance");
         }
-        
-        if (itemId == null) 
+
+        if (itemId == null)
         {
             throw new InvalidArgumentException("itemId is required to delete an attached item");
         }
-        
+
         validateIfUserAllowedToWorkWithProcess(processId);
         deleteItemFromProcess(itemId, processId);
     }
-    
+
     @Override
     public CollectionWithPagingInfo<Variable> getVariables(String processId, Paging paging)
     {
         CollectionWithPagingInfo<Variable> result = null;
-        
+
         // Check if user is allowed to get variables
         List<HistoricVariableInstance> variableInstances = validateIfUserAllowedToWorkWithProcess(processId);
         Map<String, Object> variables = new HashMap<String, Object>();
@@ -805,14 +809,14 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         {
             variables.put(variable.getVariableName(), variable.getValue());
         }
-        
+
         ProcessInstance processInstance = activitiProcessEngine.getRuntimeService()
                 .createProcessInstanceQuery()
                 .processInstanceId(processId)
                 .singleResult();
-        
+
         String processDefinitionId = null;
-        
+
         if (processInstance != null)
         {
             processDefinitionId = processInstance.getProcessDefinitionId();
@@ -821,13 +825,13 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         {
             // Completed process instance
             HistoricProcessInstance historicInstance = activitiProcessEngine.getHistoryService().createHistoricProcessInstanceQuery()
-                .processInstanceId(processId).singleResult();
-            
+                    .processInstanceId(processId).singleResult();
+
             if (historicInstance == null)
             {
                 throw new EntityNotFoundException(processId);
             }
-            
+
             processDefinitionId = historicInstance.getProcessDefinitionId();
         }
 
@@ -838,48 +842,48 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         {
             formKey = startFormData.getFormKey();
         }
-        
+
         TypeDefinition startTaskTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, true);
-        
+
         // Convert raw variables to Variable objects
         List<Variable> resultingVariables = restVariableHelper.getVariables(variables, startTaskTypeDefinition);
         result = CollectionWithPagingInfo.asPaged(paging, resultingVariables);
         return result;
     }
-    
+
     @Override
     public Variable updateVariable(String processId, Variable variable)
     {
         validateIfUserAllowedToWorkWithProcess(processId);
-        
+
         ProcessInstance processInstance = activitiProcessEngine.getRuntimeService()
                 .createProcessInstanceQuery()
                 .processInstanceId(processId)
                 .singleResult();
-        
+
         if (processInstance == null)
         {
             throw new EntityNotFoundException(processId);
         }
-        
+
         return updateVariableInProcess(processId, processInstance.getProcessDefinitionId(), variable);
     }
-    
+
     @Override
-    public List<Variable> updateVariables(String processId, List<Variable> variables) 
+    public List<Variable> updateVariables(String processId, List<Variable> variables)
     {
         validateIfUserAllowedToWorkWithProcess(processId);
-        
+
         ProcessInstance processInstance = activitiProcessEngine.getRuntimeService()
                 .createProcessInstanceQuery()
                 .processInstanceId(processId)
                 .singleResult();
-        
+
         if (processInstance == null)
         {
             throw new EntityNotFoundException(processId);
         }
-        
+
         List<Variable> updatedVariables = new ArrayList<Variable>();
         if (variables != null)
         {
@@ -890,14 +894,14 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         return updatedVariables;
     }
-    
+
     protected Variable updateVariableInProcess(String processId, String processDefinitionId, Variable variable)
     {
         if (variable.getName() == null)
         {
             throw new InvalidArgumentException("Variable name is required.");
         }
-        
+
         // Get start-task definition for explicit typing of variables submitted at the start
         String formKey = null;
         StartFormData startFormData = activitiProcessEngine.getFormService().getStartFormData(processDefinitionId);
@@ -905,24 +909,25 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         {
             formKey = startFormData.getFormKey();
         }
-        
+
         DataTypeDefinition dataTypeDefinition = null;
-        
+
         TypeDefinition startTaskTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, true);
         TypeDefinitionContext context = new TypeDefinitionContext(startTaskTypeDefinition, getQNameConverter());
-        if (context.getPropertyDefinition(variable.getName()) != null) 
+        if (context.getPropertyDefinition(variable.getName()) != null)
         {
             dataTypeDefinition = context.getPropertyDefinition(variable.getName()).getDataType();
-            if (variable.getType() != null && dataTypeDefinition.getName().toPrefixString(namespaceService).equals(variable.getType()) == false) {
-                throw new InvalidArgumentException("type of variable " + variable.getName() + " should be " + 
+            if (variable.getType() != null && dataTypeDefinition.getName().toPrefixString(namespaceService).equals(variable.getType()) == false)
+            {
+                throw new InvalidArgumentException("type of variable " + variable.getName() + " should be " +
                         dataTypeDefinition.getName().toPrefixString(namespaceService));
             }
         }
-        else if (context.getAssociationDefinition(variable.getName()) != null) 
+        else if (context.getAssociationDefinition(variable.getName()) != null)
         {
             dataTypeDefinition = dictionaryService.getDataType(DataTypeDefinition.NODE_REF);
         }
-        
+
         if (dataTypeDefinition == null && variable.getType() != null)
         {
             try
@@ -930,20 +935,20 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                 QName dataType = QName.createQName(variable.getType(), namespaceService);
                 dataTypeDefinition = dictionaryService.getDataType(dataType);
             }
-            catch(InvalidQNameException iqne)
+            catch (InvalidQNameException iqne)
             {
-                throw new InvalidArgumentException("Unsupported type of variable: '" + variable.getType() +"'.");
+                throw new InvalidArgumentException("Unsupported type of variable: '" + variable.getType() + "'.");
             }
-        } 
+        }
         else if (dataTypeDefinition == null)
         {
             // Fallback to raw value when no type has been passed and not present in model
             dataTypeDefinition = dictionaryService.getDataType(restVariableHelper.extractTypeFromValue(variable.getValue()));
         }
-        
+
         if (dataTypeDefinition == null)
         {
-            throw new InvalidArgumentException("Unsupported type of variable: '" + variable.getType() +"'.");
+            throw new InvalidArgumentException("Unsupported type of variable: '" + variable.getType() + "'.");
         }
 
         Object actualValue = null;
@@ -981,7 +986,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         {
             if (context.getAssociationDefinition(variable.getName()) != null)
             {
-                actualValue = convertAssociationDefinitionValue(context.getAssociationDefinition(variable.getName()), 
+                actualValue = convertAssociationDefinitionValue(context.getAssociationDefinition(variable.getName()),
                         variable.getName(), variable.getValue());
             }
             else
@@ -1007,13 +1012,13 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         variable.setType(dataTypeDefinition.getName().toPrefixString(namespaceService));
         return variable;
     }
-    
+
     @Override
     public void deleteVariable(String processId, String variableName)
     {
         validateIfUserAllowedToWorkWithProcess(processId);
-        
-        if(variableName == null)
+
+        if (variableName == null)
         {
             throw new InvalidArgumentException("Variable name is required.");
         }
@@ -1026,42 +1031,42 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             }
             activitiProcessEngine.getRuntimeService().removeVariable(processId, variableName);
         }
-        catch(ActivitiObjectNotFoundException aonfe)
+        catch (ActivitiObjectNotFoundException aonfe)
         {
             throw new EntityNotFoundException(processId);
         }
     }
-    
+
     @Override
     public BinaryResource getProcessImage(String processId)
     {
         validateIfUserAllowedToWorkWithProcess(processId);
-        
+
         ProcessInstance processInstance = activitiProcessEngine.getRuntimeService()
                 .createProcessInstanceQuery()
                 .processInstanceId(processId)
                 .singleResult();
-        
+
         if (processInstance == null)
         {
             throw new EntityNotFoundException(processId);
         }
-        
+
         try
         {
-        	BpmnModel model = activitiProcessEngine.getRepositoryService().getBpmnModel(processInstance.getProcessDefinitionId());
-            
-            if(model != null && model.getLocationMap().size() > 0)
+            BpmnModel model = activitiProcessEngine.getRepositoryService().getBpmnModel(processInstance.getProcessDefinitionId());
+
+            if (model != null && model.getLocationMap().size() > 0)
             {
                 List<String> activeActivities = activitiProcessEngine.getRuntimeService().getActiveActivityIds(processId);
                 ProcessDiagramGenerator generator = new DefaultProcessDiagramGenerator();
                 InputStream generateDiagram = generator.generateDiagram(model, "png", activeActivities);
-                
+
                 File file = TempFileProvider.createTempFile(processId + UUID.randomUUID(), ".png");
                 FileOutputStream fos = new FileOutputStream(file);
                 IOUtils.copy(generateDiagram, fos);
                 fos.close();
-                
+
                 return new FileBinaryResource(file);
             }
             else
@@ -1074,8 +1079,8 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             throw new ApiException("Error while getting process image.");
         }
     }
-    
-    protected Object convertAssociationDefinitionValue(AssociationDefinition associationDef, String variableName, Object variableValue) 
+
+    protected Object convertAssociationDefinitionValue(AssociationDefinition associationDef, String variableName, Object variableValue)
     {
         if (variableValue != null && ContentModel.TYPE_PERSON.equals(associationDef.getTargetClass().getName()))
         {
@@ -1147,11 +1152,11 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         return variableValue;
     }
-    
+
     protected String getProcessDefinitionKey(String paramProcessDefinitionKey)
     {
         String processDefinitionKey = null;
-        if (tenantService.isEnabled() && deployWorkflowsInTenant) 
+        if (tenantService.isEnabled() && deployWorkflowsInTenant)
         {
             processDefinitionKey = "@" + TenantUtil.getCurrentDomain() + "@" + paramProcessDefinitionKey;
         }
@@ -1161,7 +1166,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         return processDefinitionKey;
     }
-    
+
     protected String getLocalProcessDefinitionKey(String key)
     {
         String processDefKey = null;
@@ -1188,7 +1193,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         return authority;
     }
-    
+
     protected ProcessInfo createProcessInfo(HistoricProcessInstance processInstance)
     {
         ProcessInfo processInfo = new ProcessInfo(processInstance);

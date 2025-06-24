@@ -31,10 +31,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.ISO9075;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * A simple handler to get the site title from the site short name.

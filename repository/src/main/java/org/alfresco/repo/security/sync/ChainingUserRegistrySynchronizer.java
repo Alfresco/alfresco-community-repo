@@ -25,6 +25,27 @@
  */
 package org.alfresco.repo.security.sync;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import javax.management.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.batch.BatchProcessor;
@@ -55,59 +76,21 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TraceableThreadFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import javax.management.*;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.text.DateFormat;
-import java.util.*;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
- * A <code>ChainingUserRegistrySynchronizer</code> is responsible for synchronizing Alfresco's local user (person) and
- * group (authority) information with the external subsystems in the authentication chain (most typically LDAP
- * directories). When the {@link #synchronize(boolean, boolean)} method is called, it visits each {@link UserRegistry} bean in
- * the 'chain' of application contexts, managed by a {@link ChildApplicationContextManager}, and compares its
- * timestamped user and group information with the local users and groups last retrieved from the same source. Any
- * updates and additions made to those users and groups are applied to the local copies. The ordering of each
- * {@link UserRegistry} in the chain determines its precedence when it comes to user and group name collisions. The
- * {@link JobLockService} is used to ensure that in a cluster, no two nodes actually run a synchronize at the same time.
+ * A <code>ChainingUserRegistrySynchronizer</code> is responsible for synchronizing Alfresco's local user (person) and group (authority) information with the external subsystems in the authentication chain (most typically LDAP directories). When the {@link #synchronize(boolean, boolean)} method is called, it visits each {@link UserRegistry} bean in the 'chain' of application contexts, managed by a {@link ChildApplicationContextManager}, and compares its timestamped user and group information with the local users and groups last retrieved from the same source. Any updates and additions made to those users and groups are applied to the local copies. The ordering of each {@link UserRegistry} in the chain determines its precedence when it comes to user and group name collisions. The {@link JobLockService} is used to ensure that in a cluster, no two nodes actually run a synchronize at the same time.
  * <p>
- * The <code>force</code> argument determines whether a complete or partial set of information is queried from the
- * {@link UserRegistry}. When <code>true</code> then <i>all</i> users and groups are queried. With this complete set of
- * information, the synchronizer is able to identify which users and groups have been deleted, so it will delete users
- * and groups as well as update and create them. Since processing all users and groups may be fairly time consuming, it
- * is recommended this mode is only used by a background scheduled synchronization job. When the argument is
- * <code>false</code> then only those users and groups modified since the most recent modification date of all the
- * objects last queried from the same {@link UserRegistry} are retrieved. In this mode, local users and groups are
- * created and updated, but not deleted (except where a name collision with a lower priority {@link UserRegistry} is
- * detected). This 'differential' mode is much faster, and by default is triggered on subsystem startup and also by
- * {@link #createMissingPerson(String)} when a user is successfully authenticated who doesn't yet have a local person
- * object in Alfresco. This should mean that new users and their group information are pulled over from LDAP servers as
- * and when required.
+ * The <code>force</code> argument determines whether a complete or partial set of information is queried from the {@link UserRegistry}. When <code>true</code> then <i>all</i> users and groups are queried. With this complete set of information, the synchronizer is able to identify which users and groups have been deleted, so it will delete users and groups as well as update and create them. Since processing all users and groups may be fairly time consuming, it is recommended this mode is only used by a background scheduled synchronization job. When the argument is <code>false</code> then only those users and groups modified since the most recent modification date of all the objects last queried from the same {@link UserRegistry} are retrieved. In this mode, local users and groups are created and updated, but not deleted (except where a name collision with a lower priority {@link UserRegistry} is detected). This 'differential' mode is much faster, and by default is triggered on
+ * subsystem startup and also by {@link #createMissingPerson(String)} when a user is successfully authenticated who doesn't yet have a local person object in Alfresco. This should mean that new users and their group information are pulled over from LDAP servers as and when required.
  * 
  * @author dward
  */
-public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean 
-    implements UserRegistrySynchronizer,
+public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
+        implements UserRegistrySynchronizer,
         ChainingUserRegistrySynchronizerStatus,
         TestableChainingUserRegistrySynchronizer,
         ApplicationEventPublisherAware
-        
+
 {
     /** The logger. */
     private static final Log logger = LogFactory.getLog(ChainingUserRegistrySynchronizer.class);
@@ -127,25 +110,25 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
     /** The label under which the last user modification timestamp is stored for each zone. */
     private static final String PERSON_LAST_MODIFIED_ATTRIBUTE = "PERSON";
-    
+
     /** The label under which the status is stored for each zone. */
     private static final String STATUS_ATTRIBUTE = "STATUS";
-    
+
     /** The label under which the status is stored for each zone. */
     private static final String LAST_ERROR_ATTRIBUTE = "LAST_ERROR";
 
     /** The label under which the status is stored for each zone. */
     private static final String START_TIME_ATTRIBUTE = "START_TIME";
-    
+
     /** The label under which the status is stored for each zone. */
     private static final String END_TIME_ATTRIBUTE = "END_TIME";
-    
+
     /** The label under which the status is stored for each zone. */
     private static final String SERVER_ATTRIBUTE = "LAST_RUN_HOST";
-        
+
     /** The label under which the status is stored for each zone. */
     private static final String SUMMARY_ATTRIBUTE = "SUMMARY";
-    
+
     /** The manager for the autentication chain to be traversed. */
     private ChildApplicationContextManager applicationContextManager;
 
@@ -184,12 +167,12 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
     /** The number of worker threads. */
     private int workerThreads = 2;
-    
+
     private MBeanServerConnection mbeanServer;
 
     /** Allow a full sync to perform deletions? */
     private boolean allowDeletions = true;
-    
+
     /** Controls whether to query for users and groups that have been deleted in LDAP */
     private boolean syncDelete = true;
 
@@ -201,7 +184,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     private String externalUserControl = "";
 
     private String externalUserControlSubsystemName = "";
-    
+
     public void init()
     {
         PropertyCheck.mandatory(this, "attributeService", attributeService);
@@ -309,12 +292,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         this.jobLockService = jobLockService;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context
-     * .ApplicationEventPublisher)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context .ApplicationEventPublisher) */
     public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
     {
         this.applicationEventPublisher = applicationEventPublisher;
@@ -374,14 +354,12 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     {
         this.workerThreads = workerThreads;
     }
-    
+
     /**
-     * Controls how deleted users and groups are handled.
-     * By default is set to true.
+     * Controls how deleted users and groups are handled. By default is set to true.
      * 
      * @param allowDeletions
-     *            If <b>true</b> the entries are deleted from alfresco.
-     *            If <b>false</b> then they are unlinked from their LDAP authentication zone but remain within alfresco.
+     *            If <b>true</b> the entries are deleted from alfresco. If <b>false</b> then they are unlinked from their LDAP authentication zone but remain within alfresco.
      */
     public void setAllowDeletions(boolean allowDeletions)
     {
@@ -389,78 +367,77 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     }
 
     /**
-     * Controls whether to query for users and groups that have been deleted in LDAP.
-     * For large LDAP directories the delete query is expensive and time consuming, needing to read the entire LDAP directory.
-     * By default is set to true.
+     * Controls whether to query for users and groups that have been deleted in LDAP. For large LDAP directories the delete query is expensive and time consuming, needing to read the entire LDAP directory. By default is set to true.
      * 
      * @param syncDelete
-     *            If <b>false</b> then LDAP sync does not even attempt to search for deleted users. 
+     *            If <b>false</b> then LDAP sync does not even attempt to search for deleted users.
      */
     public void setSyncDelete(boolean syncDelete)
     {
         this.syncDelete = syncDelete;
     }
-    
+
     @Override
     public SynchronizeDiagnostic testSynchronize(String authenticatorName)
     {
         SynchronizeDiagnosticImpl ret = new SynchronizeDiagnosticImpl();
-        
+
         Collection<String> instanceIds = this.applicationContextManager.getInstanceIds();
-        
-        if(instanceIds.contains(authenticatorName))
+
+        if (instanceIds.contains(authenticatorName))
         {
             UserRegistry plugin;
-            
+
             ApplicationContext context = this.applicationContextManager.getApplicationContext(authenticatorName);
             plugin = (UserRegistry) context.getBean(this.sourceBeanName);
-            
+
             // If the bean is ActivateableBean check whether it is active
             if (plugin instanceof ActivateableBean)
             {
-                if(!((ActivateableBean) plugin).isActive())
+                if (!((ActivateableBean) plugin).isActive())
                 {
                     ret.setActive(false);
                 }
             }
-            
+
             long groupLastModifiedMillis = getMostRecentUpdateTime(
-                    ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, 
+                    ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE,
                     authenticatorName, false);
-            
+
             long personLastModifiedMillis = getMostRecentUpdateTime(
-                    ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, 
+                    ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE,
                     authenticatorName, false);
-            
+
             Date groupLastModified = groupLastModifiedMillis == -1 ? null : new Date(groupLastModifiedMillis);
             Date personLastModified = personLastModifiedMillis == -1 ? null : new Date(personLastModifiedMillis);
 
+            plugin.initSync(groupLastModified, syncDelete);
             ret.setGroups(plugin.getGroupNames());
 
             ret.setUsers(plugin.getPersonNames());
-            if(groupLastModified != null)
+            if (groupLastModified != null)
             {
                 ret.setGroupLastSynced(groupLastModified);
             }
             else
-            {   // fake a date to test the group query
-                groupLastModified= new Date();
+            { // fake a date to test the group query
+                groupLastModified = new Date();
             }
             plugin.getGroups(groupLastModified);
-            if(personLastModified != null)
+            if (personLastModified != null)
             {
                 ret.setPersonLastSynced(personLastModified);
             }
             else
             {
                 // fake a date to test the person query
-                personLastModified= new Date();
+                personLastModified = new Date();
             }
             plugin.getPersons(personLastModified);
 
             return ret;
         }
-        
+
         Object params[] = {authenticatorName};
         throw new AuthenticationException("authentication.err.validation.authenticator.notfound", params);
     }
@@ -475,7 +452,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     {
         if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
         {
-            
+
             if (forceUpdate)
             {
                 ChainingUserRegistrySynchronizer.logger.debug("Running a full sync.");
@@ -529,8 +506,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                     // If this is an automated sync on startup or scheduled sync, don't even wait around for the lock.
                     // Assume the sync will be completed on another node.
                     lockToken = this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<String>()
-                            {
+                            new RetryingTransactionCallback<String>() {
                                 public String execute() throws Throwable
                                 {
                                     return ChainingUserRegistrySynchronizer.this.jobLockService.getLock(
@@ -556,13 +532,11 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
             // Schedule the lock refresh to run at regular intervals
             final String token = lockToken;
-            lockRefresher.scheduleAtFixedRate(new Runnable()
-            {
+            lockRefresher.scheduleAtFixedRate(new Runnable() {
                 public void run()
                 {
                     ChainingUserRegistrySynchronizer.this.transactionService.getRetryingTransactionHelper()
-                            .doInTransaction(new RetryingTransactionCallback<Object>()
-                            {
+                            .doInTransaction(new RetryingTransactionCallback<Object>() {
                                 public Object execute() throws Throwable
                                 {
                                     ChainingUserRegistrySynchronizer.this.jobLockService.refreshLock(token,
@@ -577,7 +551,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
             Set<String> visitedZoneIds = new TreeSet<String>();
             Collection<String> instanceIds = this.applicationContextManager.getInstanceIds();
-            
+
             // Work out the set of all zone IDs in the authentication chain so that we can decide which users / groups
             // need 're-zoning'
             Set<String> allZoneIds = new TreeSet<String>();
@@ -585,12 +559,12 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             {
                 allZoneIds.add(AuthorityService.ZONE_AUTH_EXT_PREFIX + id);
             }
-            
+
             // Collect the plugins that we can sync : zoneId, plugin
             Map<String, UserRegistry> plugins = new HashMap<String, UserRegistry>();
-            
+
             for (String id : instanceIds)
-            {   
+            {
                 UserRegistry plugin;
                 try
                 {
@@ -602,23 +576,23 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                     // The bean doesn't exist or this subsystem won't start. The reason would have been logged. Ignore and continue.
                     continue;
                 }
-                
+
                 if (!(plugin instanceof ActivateableBean) || ((ActivateableBean) plugin).isActive())
                 {
                     // yes this plugin needs to be synced
                     plugins.put(id, plugin);
                 }
             }
-            
+
             /**
-             *  Sync starts here
+             * Sync starts here
              */
             notifySyncStart(plugins.keySet());
 
             for (String id : instanceIds)
-            {    
+            {
                 UserRegistry plugin = plugins.get(id);
-                
+
                 if (plugin != null)
                 {
                     // If debug is enabled then dump out the contents of the authentication JMX bean
@@ -642,12 +616,12 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                                 }
                             }
                         }
-                        catch(UnsupportedEncodingException e)
+                        catch (UnsupportedEncodingException e)
                         {
                             if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                             {
                                 ChainingUserRegistrySynchronizer.logger
-                                .warn("Exception during logging", e);
+                                        .warn("Exception during logging", e);
                             }
                         }
                         catch (MalformedObjectNameException e)
@@ -655,7 +629,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                             {
                                 ChainingUserRegistrySynchronizer.logger
-                                .warn("Exception during logging", e);
+                                        .warn("Exception during logging", e);
                             }
                         }
                         catch (InstanceNotFoundException e)
@@ -663,7 +637,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                             {
                                 ChainingUserRegistrySynchronizer.logger
-                                .warn("Exception during logging", e);
+                                        .warn("Exception during logging", e);
                             }
                         }
                         catch (IntrospectionException e)
@@ -671,7 +645,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                             {
                                 ChainingUserRegistrySynchronizer.logger
-                                .warn("Exception during logging", e);
+                                        .warn("Exception during logging", e);
                             }
                         }
                         catch (AttributeNotFoundException e)
@@ -679,7 +653,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                             {
                                 ChainingUserRegistrySynchronizer.logger
-                                .warn("Exception during logging", e);
+                                        .warn("Exception during logging", e);
                             }
                         }
                         catch (ReflectionException e)
@@ -687,7 +661,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                             {
                                 ChainingUserRegistrySynchronizer.logger
-                                .warn("Exception during logging", e);
+                                        .warn("Exception during logging", e);
                             }
                         }
                         catch (MBeanException e)
@@ -695,7 +669,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                             {
                                 ChainingUserRegistrySynchronizer.logger
-                                .warn("Exception during logging", e);
+                                        .warn("Exception during logging", e);
                             }
                         }
                         catch (IOException e)
@@ -703,7 +677,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                             {
                                 ChainingUserRegistrySynchronizer.logger
-                                .warn("Exception during logging", e);
+                                        .warn("Exception during logging", e);
                             }
                         }
                     } // end of debug dump of active JMX bean
@@ -731,14 +705,14 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                     boolean requiresNew = splitTxns
                             || AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
 
-                    try 
-                    {    
-                       /**
-                        * Do the sync with the specified plugin
-                        */
-                       syncWithPlugin(id, plugin, forceUpdate, isFullSync, requiresNew, visitedZoneIds, allZoneIds);
+                    try
+                    {
+                        /**
+                         * Do the sync with the specified plugin
+                         */
+                        syncWithPlugin(id, plugin, forceUpdate, isFullSync, requiresNew, visitedZoneIds, allZoneIds);
 
-                       this.applicationEventPublisher.publishEvent(new SynchronizeDirectoryEndEvent(this, id));                       
+                        this.applicationEventPublisher.publishEvent(new SynchronizeDirectoryEndEvent(this, id));
                     }
                     catch (final RuntimeException e)
                     {
@@ -747,9 +721,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                     }
                 } // if plugin exists
             } // for each instanceId
-            
-            //End of successful synchronization here
-            notifySyncEnd();            
+
+            // End of successful synchronization here
+            notifySyncEnd();
         }
         catch (final RuntimeException e)
         {
@@ -758,7 +732,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             throw e;
         }
         finally
-        {            
+        {
             // Release the lock if necessary
             if (lockToken != null)
             {
@@ -774,10 +748,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         lockRefresher.awaitTermination(ChainingUserRegistrySynchronizer.LOCK_TTL, TimeUnit.MILLISECONDS);
                     }
                     catch (InterruptedException e)
-                    {
-                    }
-                }
-                while (!lockRefresher.isTerminated() && trys++ < 3);
+                    {}
+                } while (!lockRefresher.isTerminated() && trys++ < 3);
                 if (!lockRefresher.isTerminated())
                 {
                     lockRefresher.shutdownNow();
@@ -786,8 +758,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
                 final String token = lockToken;
                 this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                        new RetryingTransactionCallback<Object>()
-                        {
+                        new RetryingTransactionCallback<Object>() {
                             public Object execute() throws Throwable
                             {
                                 ChainingUserRegistrySynchronizer.this.jobLockService.releaseLock(token,
@@ -799,10 +770,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#getPersonMappedProperties(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#getPersonMappedProperties(java.lang.String) */
     public Set<QName> getPersonMappedProperties(String username)
     {
         Set<String> authorityZones = this.authorityService.getAuthorityZones(username);
@@ -880,98 +850,76 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
      */
     private enum SyncProcess
     {
-        GROUP_ANALYSIS("1 Group Analysis"),      
-        MISSING_AUTHORITY("2 Missing Authority Scanning"),
-        GROUP_CREATION_AND_ASSOCIATION_DELETION("3 Group Creation and Association Deletion"),
-        GROUP_ASSOCIATION_CREATION("4 Group Association Creation"),
-        PERSON_ASSOCIATION("5 User Association"),
-        USER_CREATION("6 User Creation and Association"),
-        AUTHORITY_DELETION("7 Authority Deletion");
+        GROUP_ANALYSIS("1 Group Analysis"), MISSING_AUTHORITY("2 Missing Authority Scanning"), GROUP_CREATION_AND_ASSOCIATION_DELETION("3 Group Creation and Association Deletion"), GROUP_ASSOCIATION_CREATION("4 Group Association Creation"), PERSON_ASSOCIATION("5 User Association"), USER_CREATION("6 User Creation and Association"), AUTHORITY_DELETION("7 Authority Deletion");
 
-        SyncProcess(String title) 
+        SyncProcess(String title)
         {
             this.title = title;
         }
-    
+
         public String getTitle(String zone)
         {
-            return "Synchronization,Category=directory,id1=" +zone+ ",id2=" + title;
+            return "Synchronization,Category=directory,id1=" + zone + ",id2=" + title;
         }
-        
+
         private String title;
     }
 
-
     /**
-     * Synchronizes local groups and users with a {@link UserRegistry} for a particular zone, optionally handling
-     * deletions.
+     * Synchronizes local groups and users with a {@link UserRegistry} for a particular zone, optionally handling deletions.
      * 
      * @param zone
-     *            the zone id. This identifier is used to tag all created groups and users, so that in the future we can
-     *            tell those that have been deleted from the registry.
+     *            the zone id. This identifier is used to tag all created groups and users, so that in the future we can tell those that have been deleted from the registry.
      * @param userRegistry
      *            the user registry for the zone.
      * @param forceUpdate
-     *            Should the complete set of users and groups be updated / created locally or just those known to have
-     *            changed since the last sync? When <code>true</code> then <i>all</i> users and groups are queried from
-     *            the user registry and updated locally. When <code>false</code> then each source is only queried for
-     *            those users and groups modified since the most recent modification date of all the objects last
-     *            queried from that same source.
+     *            Should the complete set of users and groups be updated / created locally or just those known to have changed since the last sync? When <code>true</code> then <i>all</i> users and groups are queried from the user registry and updated locally. When <code>false</code> then each source is only queried for those users and groups modified since the most recent modification date of all the objects last queried from that same source.
      * @param isFullSync
-     *            Should a complete set of user and group IDs be queried from the user registries in order to determine
-     *            deletions? This parameter is independent of <code>force</code> as a separate query is run to process
-     *            updates.
+     *            Should a complete set of user and group IDs be queried from the user registries in order to determine deletions? This parameter is independent of <code>force</code> as a separate query is run to process updates.
      * @param splitTxns
-     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
-     *            <code>true</code>, users and groups are created/updated in batches for increased performance. If
-     *            <code>false</code>, all users and groups are processed in the current transaction. This is required if
-     *            calling synchronously (e.g. in response to an authentication event in the same transaction).
+     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If <code>true</code>, users and groups are created/updated in batches for increased performance. If <code>false</code>, all users and groups are processed in the current transaction. This is required if calling synchronously (e.g. in response to an authentication event in the same transaction).
      * @param visitedZoneIds
-     *            the set of zone ids already processed. These zones have precedence over the current zone when it comes
-     *            to group name 'collisions'. If a user or group is queried that already exists locally but is tagged
-     *            with one of the zones in this set, then it will be ignored as this zone has lower priority.
+     *            the set of zone ids already processed. These zones have precedence over the current zone when it comes to group name 'collisions'. If a user or group is queried that already exists locally but is tagged with one of the zones in this set, then it will be ignored as this zone has lower priority.
      * @param allZoneIds
-     *            the set of all zone ids in the authentication chain. Helps us work out whether the zone information
-     *            recorded against a user or group is invalid for the current authentication chain and whether the user
-     *            or group needs to be 're-zoned'.
+     *            the set of all zone ids in the authentication chain. Helps us work out whether the zone information recorded against a user or group is invalid for the current authentication chain and whether the user or group needs to be 're-zoned'.
      */
     private void syncWithPlugin(final String zone, UserRegistry userRegistry, boolean forceUpdate,
             boolean isFullSync, boolean splitTxns, final Set<String> visitedZoneIds, final Set<String> allZoneIds)
     {
         // Create a prefixed zone ID for use with the authority service
         final String zoneId = AuthorityService.ZONE_AUTH_EXT_PREFIX + zone;
-        
+
         // Batch Process Names
         final String reservedBatchProcessNames[] = {
-             SyncProcess.GROUP_ANALYSIS.getTitle(zone),
-             SyncProcess.USER_CREATION.getTitle(zone),
-             SyncProcess.MISSING_AUTHORITY.getTitle(zone),
-             SyncProcess.GROUP_CREATION_AND_ASSOCIATION_DELETION.getTitle(zone),
-             SyncProcess.GROUP_ASSOCIATION_CREATION.getTitle(zone),
-             SyncProcess.PERSON_ASSOCIATION.getTitle(zone),
-             SyncProcess.AUTHORITY_DELETION.getTitle(zone)          
+                SyncProcess.GROUP_ANALYSIS.getTitle(zone),
+                SyncProcess.USER_CREATION.getTitle(zone),
+                SyncProcess.MISSING_AUTHORITY.getTitle(zone),
+                SyncProcess.GROUP_CREATION_AND_ASSOCIATION_DELETION.getTitle(zone),
+                SyncProcess.GROUP_ASSOCIATION_CREATION.getTitle(zone),
+                SyncProcess.PERSON_ASSOCIATION.getTitle(zone),
+                SyncProcess.AUTHORITY_DELETION.getTitle(zone)
         };
-        
+
         notifySyncDirectoryStart(zone, reservedBatchProcessNames);
 
-    	// Ensure that the zoneId exists before multiple threads start using it
-    	this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-		{
-			@Override
-			public Void execute() throws Throwable
-			{
-				authorityService.getOrCreateZone(zoneId);
-				return null;
-			}
-		}, false, splitTxns);
-        
+        // Ensure that the zoneId exists before multiple threads start using it
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+            {
+                authorityService.getOrCreateZone(zoneId);
+                return null;
+            }
+        }, false, splitTxns);
+
         // The set of zones we associate with new objects (default plus registry specific)
         final Set<String> zoneSet = getZones(zoneId);
 
-        long lastModifiedMillis = forceUpdate ? -1 : getMostRecentUpdateTime(
-                ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId, splitTxns);
+        long lastModifiedMillis = forceUpdate ? -1
+                : getMostRecentUpdateTime(
+                        ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId, splitTxns);
         Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
-
+        userRegistry.initSync(lastModified, syncDelete);
         if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
         {
             if (lastModified == null)
@@ -989,15 +937,16 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         // and delete. Also deal with 'overlaps' with other zones in the authentication chain.
         final BatchProcessor<NodeDescription> groupProcessor = new BatchProcessor<NodeDescription>(
                 SyncProcess.GROUP_ANALYSIS.getTitle(zone),
-                this.transactionService.getRetryingTransactionHelper(), 
-                userRegistry.getGroups(lastModified), 
-                this.workerThreads, 
-                20, 
+                this.transactionService.getRetryingTransactionHelper(),
+                userRegistry.getGroups(lastModified),
+                this.workerThreads,
+                20,
                 this.applicationEventPublisher,
-                ChainingUserRegistrySynchronizer.logger, 
+                ChainingUserRegistrySynchronizer.logger,
                 this.loggingInterval);
         class Analyzer extends BaseBatchProcessWorker<NodeDescription>
         {
+            private final Map<String, NodeDescription> nodeDescriptions = new HashMap<>();
             private final Map<String, String> groupsToCreate = new TreeMap<String, String>();
             private final Map<String, Set<String>> personParentAssocsToCreate = newPersonMap();
             private final Map<String, Set<String>> personParentAssocsToDelete = newPersonMap();
@@ -1156,6 +1105,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             {
                 PropertyMap groupProperties = group.getProperties();
                 String groupName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_NAME);
+                nodeDescriptions.put(groupName, group);
                 String groupDisplayName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
                 if (groupDisplayName == null)
                 {
@@ -1232,7 +1182,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 Map<String, Set<String>> parentAssocs;
                 if (AuthorityType.getAuthorityType(child) == AuthorityType.USER)
                 {
-                    parentAssocs = this.personParentAssocsToDelete;                    
+                    parentAssocs = this.personParentAssocsToDelete;
                 }
                 else
                 {
@@ -1327,7 +1277,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         i.remove();
                     }
                 }
-                
+
                 // Sort the group associations in parent-first order (root groups first) to minimize reindexing overhead
                 Map<String, Set<String>> sortedGroupAssociations = new LinkedHashMap<String, Set<String>>(
                         this.groupParentAssocsToCreate.size() * 2);
@@ -1336,7 +1286,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 {
                     visitGroupParentAssocs(visited, authority, this.groupParentAssocsToCreate, sortedGroupAssociations);
                 }
-                
+
                 this.groupParentAssocsToCreate = sortedGroupAssociations;
             }
 
@@ -1373,13 +1323,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             }
 
             /**
-             * Visits the given authority by recursively visiting its parents in associationsOld and then adding the
-             * authority to associationsNew. Used to sort associationsOld into 'parent-first' order to minimize
-             * reindexing overhead.
+             * Visits the given authority by recursively visiting its parents in associationsOld and then adding the authority to associationsNew. Used to sort associationsOld into 'parent-first' order to minimize reindexing overhead.
              * 
              * @param visited
-             *            The ancestors that form the path to the authority to visit. Allows detection of cyclic child
-             *            associations.
+             *            The ancestors that form the path to the authority to visit. Allows detection of cyclic child associations.
              * @param authority
              *            the authority to visit
              * @param associationsOld
@@ -1404,8 +1351,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         if (oldParents != null)
                         {
                             Set<String> newParents = new TreeSet<String>();
-    
-                            for (String parent: oldParents)
+
+                            for (String parent : oldParents)
                             {
                                 if (visitGroupParentAssocs(visited, parent, associationsOld, associationsNew))
                                 {
@@ -1474,7 +1421,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             }
                             i.remove();
                         }
-                        else {
+                        else
+                        {
                             recordParentAssociationAuthoritiesToRezone(child);
                         }
                     }
@@ -1496,16 +1444,15 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
             private void processGroups(UserRegistry userRegistry, boolean isFullSync, boolean splitTxns)
             {
-               // MNT-12454 fix. If syncDelete is false, there is no need to pull all users and all groups from LDAP during the full synchronization.
-               if ((syncDelete || !groupsToCreate.isEmpty()) && (isFullSync || !this.groupParentAssocsToDelete.isEmpty()))
-               {
+                // MNT-12454 fix. If syncDelete is false, there is no need to pull all users and all groups from LDAP during the full synchronization.
+                if ((syncDelete || !groupsToCreate.isEmpty()) && (isFullSync || !this.groupParentAssocsToDelete.isEmpty()))
+                {
                     final Set<String> allZonePersons = newPersonSet();
                     final Set<String> allZoneGroups = new TreeSet<String>();
 
                     // Add in current set of known authorities
                     ChainingUserRegistrySynchronizer.this.transactionService.getRetryingTransactionHelper()
-                            .doInTransaction(new RetryingTransactionCallback<Void>()
-                            {
+                            .doInTransaction(new RetryingTransactionCallback<Void>() {
                                 public Void execute() throws Throwable
                                 {
                                     allZonePersons.addAll(ChainingUserRegistrySynchronizer.this.authorityService
@@ -1559,8 +1506,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                                     ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
                                     ChainingUserRegistrySynchronizer.logger,
                                     ChainingUserRegistrySynchronizer.this.loggingInterval);
-                            groupScanner.process(new BaseBatchProcessWorker<String>()
-                            {
+                            groupScanner.process(new BaseBatchProcessWorker<String>() {
 
                                 @Override
                                 public String getIdentifier(String entry)
@@ -1571,9 +1517,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                                 @Override
                                 public void process(String authority) throws Throwable
                                 {
-                                    //MNT-12454 fix. Modifies an authority's zone. Move authority from AUTH.EXT.LDAP1 to AUTH.ALF.
+                                    // MNT-12454 fix. Modifies an authority's zone. Move authority from AUTH.EXT.LDAP1 to AUTH.ALF.
                                     updateAuthorityZones(authority, Collections.singleton(zoneId),
-                                          Collections.singleton(AuthorityService.ZONE_AUTH_ALFRESCO));
+                                            Collections.singleton(AuthorityService.ZONE_AUTH_ALFRESCO));
                                 }
                             }, splitTxns);
                         }
@@ -1601,8 +1547,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                                 ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
                                 ChainingUserRegistrySynchronizer.logger,
                                 ChainingUserRegistrySynchronizer.this.loggingInterval);
-                        groupCreator.process(new BaseBatchProcessWorker<Map.Entry<String, Set<String>>>()
-                        {
+                        groupCreator.process(new BaseBatchProcessWorker<Map.Entry<String, Set<String>>>() {
                             public String getIdentifier(Map.Entry<String, Set<String>> entry)
                             {
                                 return entry.getKey() + " " + entry.getValue();
@@ -1623,9 +1568,11 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                                                 + groupShortName + "'");
                                     }
                                     // create the group
+                                    Map<QName, Serializable> groupProperties = Optional.ofNullable(Analyzer.this.nodeDescriptions.get(child))
+                                            .map(NodeDescription::getProperties)
+                                            .orElse(new PropertyMap());
                                     ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(
-                                            AuthorityType.getAuthorityType(child), groupShortName, groupDisplayName,
-                                            zoneSet);
+                                            AuthorityType.getAuthorityType(child), groupShortName, groupDisplayName, zoneSet, groupProperties);
                                 }
                                 else
                                 {
@@ -1643,7 +1590,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             {
                 // First validate the group associations to be created for potential cycles. Remove any offending association
                 validateGroupParentAssocsToCreate();
-                
+
                 // Now go ahead and create the group associations
                 if (!this.groupParentAssocsToCreate.isEmpty())
                 {
@@ -1656,8 +1603,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
                             ChainingUserRegistrySynchronizer.logger,
                             ChainingUserRegistrySynchronizer.this.loggingInterval);
-                    groupCreator.process(new BaseBatchProcessWorker<Map.Entry<String, Set<String>>>()
-                    {
+                    groupCreator.process(new BaseBatchProcessWorker<Map.Entry<String, Set<String>>>() {
                         public String getIdentifier(Map.Entry<String, Set<String>> entry)
                         {
                             return entry.getKey() + " " + entry.getValue();
@@ -1689,8 +1635,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
                             ChainingUserRegistrySynchronizer.logger,
                             ChainingUserRegistrySynchronizer.this.loggingInterval);
-                    groupCreator.process(new BaseBatchProcessWorker<Map.Entry<String, Set<String>>>()
-                    {
+                    groupCreator.process(new BaseBatchProcessWorker<Map.Entry<String, Set<String>>>() {
                         public String getIdentifier(Map.Entry<String, Set<String>> entry)
                         {
                             return entry.getKey() + " " + entry.getValue();
@@ -1723,15 +1668,15 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                                                     .getShortName(authorityName)
                                             + "' from group '"
                                             + ChainingUserRegistrySynchronizer.this.authorityService
-                                                    .getShortName(parent) + "'");
+                                                    .getShortName(parent)
+                                            + "'");
                         }
                         ChainingUserRegistrySynchronizer.this.authorityService.removeAuthority(parent, authorityName);
                     }
                 }
-                
-                
+
             }
-        
+
             private void maintainAssociationCreations(String authorityName)
             {
                 boolean isPerson = AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER;
@@ -1745,7 +1690,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         {
                             ChainingUserRegistrySynchronizer.logger.debug("Adding '"
                                     + ChainingUserRegistrySynchronizer.this.authorityService
-                                            .getShortName(authorityName) + "' to group '"
+                                            .getShortName(authorityName)
+                                    + "' to group '"
                                     + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName)
                                     + "'");
                         }
@@ -1805,8 +1751,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
         // Process persons and their parent associations
 
-        lastModifiedMillis = forceUpdate ? -1 : getMostRecentUpdateTime(
-                ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, zoneId, splitTxns);
+        lastModifiedMillis = forceUpdate ? -1
+                : getMostRecentUpdateTime(
+                        ChainingUserRegistrySynchronizer.PERSON_LAST_MODIFIED_ATTRIBUTE, zoneId, splitTxns);
         lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
         if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
         {
@@ -1820,7 +1767,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         + DateFormat.getDateTimeInstance().format(lastModified) + " from user registry '" + zone + "'");
             }
         }
-        
+
         // User Creation and Association
         final BatchProcessor<NodeDescription> personProcessor = new BatchProcessor<NodeDescription>(
                 SyncProcess.USER_CREATION.getTitle(zone),
@@ -1871,12 +1818,12 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         if (ldapUserRegistry.getUserAccountStatusInterpreter() != null)
                         {
                             QName propertyNameToCheck = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "userAccountStatusProperty");
-    
+
                             if (personProperties.get(propertyNameToCheck) != null || ldapUserRegistry.getUserAccountStatusInterpreter().acceptsNullArgument())
                             {
                                 boolean isUserAccountDisabled = ldapUserRegistry.getUserAccountStatusInterpreter().isUserAccountDisabled(
                                         personProperties.get(propertyNameToCheck));
-    
+
                                 personProperties.put(ContentModel.PROP_ENABLED, !isUserAccountDisabled);
                             }
                         }
@@ -1999,7 +1946,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         {
             // Batch 7 Authority Deletion
             BatchProcessor<String> authorityDeletionProcessor = new BatchProcessor<String>(
-                    SyncProcess.AUTHORITY_DELETION.getTitle(zone), 
+                    SyncProcess.AUTHORITY_DELETION.getTitle(zone),
                     this.transactionService.getRetryingTransactionHelper(),
                     deletionCandidates,
                     this.workerThreads,
@@ -2065,20 +2012,19 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
         // Remember we have visited this zone
         visitedZoneIds.add(zoneId);
-        
-        
+
         Object statusParams[] = {personProcessedCount, groupProcessedCount};
         final String statusMessage = I18NUtil.getMessage("synchronization.summary.status", statusParams);
-        
+
         if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
         {
             ChainingUserRegistrySynchronizer.logger.info("Finished synchronizing users and groups with user registry '"
                     + zone + "'");
             ChainingUserRegistrySynchronizer.logger.info(statusMessage);
         }
-        
+
         notifySyncDirectoryEnd(zone, statusMessage);
-               
+
     } // syncWithPlugin
 
     /**
@@ -2089,14 +2035,13 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
      * @param zoneId
      *            the zone id
      * @param splitTxns
-     *            split transactions, if true run this in a separate transaction           
+     *            split transactions, if true run this in a separate transaction
      * @return the most recent update time in milliseconds
      */
     private long getMostRecentUpdateTime(final String label, final String zoneId, boolean splitTxns)
     {
         return this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<Long>()
-                {
+                new RetryingTransactionCallback<Long>() {
                     public Long execute() throws Throwable
                     {
                         Long updateTime = (Long) ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
@@ -2116,16 +2061,13 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
      * @param lastModifiedMillis
      *            the update time in milliseconds
      * @param splitTxns
-     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
-     *            <code>true</code>, the attribute is persisted in a new transaction for increased performance and
-     *            reliability.
+     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If <code>true</code>, the attribute is persisted in a new transaction for increased performance and reliability.
      */
     private void setMostRecentUpdateTime(final String label, final String zoneId, final long lastModifiedMillis,
             boolean splitTxns)
     {
         this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-                {
+                new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
                     public Object execute() throws Throwable
                     {
                         ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(Long
@@ -2137,9 +2079,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     }
 
     /**
-     * Gets the default set of zones to set on a person or group belonging to the user registry with the given zone ID.
-     * We add the default zone as well as the zone corresponding to the user registry so that the users and groups are
-     * visible in the UI.
+     * Gets the default set of zones to set on a person or group belonging to the user registry with the given zone ID. We add the default zone as well as the zone corresponding to the user registry so that the users and groups are visible in the UI.
      * 
      * @param zoneId
      *            the zone id
@@ -2154,8 +2094,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     }
 
     /**
-     * Modifies an authority's zone set from oldZones to newZones in the most efficient manner (avoiding unnecessary
-     * reindexing cost).
+     * Modifies an authority's zone set from oldZones to newZones in the most efficient manner (avoiding unnecessary reindexing cost).
      */
     private void updateAuthorityZones(String authorityName, Set<String> oldZones, final Set<String> newZones)
     {
@@ -2205,8 +2144,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         // first startup, we don't have to wait for a very long login operation to trigger the first sync!
         if (this.syncOnStartup)
         {
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Object>() {
                 public Object doWork() throws Exception
                 {
                     try
@@ -2224,17 +2162,14 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @seeorg.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.
-     * ApplicationEvent)
-     */
+    /* (non-Javadoc)
+     * 
+     * @seeorg.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context. ApplicationEvent) */
     @Override
     protected void onShutdown(ApplicationEvent event)
-    {
-    }
-    
-    protected abstract class BaseBatchProcessWorker <T> implements BatchProcessWorker<T>
+    {}
+
+    protected abstract class BaseBatchProcessWorker<T> implements BatchProcessWorker<T>
     {
         public final void beforeProcess() throws Throwable
         {
@@ -2249,223 +2184,215 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         }
     }
 
-    private void notifySyncStart(final Set<String>toSync)
+    private void notifySyncStart(final Set<String> toSync)
     {
         final String serverId = sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort();
         this.applicationEventPublisher.publishEvent(new SynchronizeStartEvent(this));
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
-                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                            new Date().getTime(),
-                            ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                            ChainingUserRegistrySynchronizer.START_TIME_ATTRIBUTE);
-                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                                -1L,
-                                ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                                ChainingUserRegistrySynchronizer.END_TIME_ATTRIBUTE);
-                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                                serverId,
-                                ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                                ChainingUserRegistrySynchronizer.SERVER_ATTRIBUTE);
-                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                                SyncStatus.IN_PROGRESS.toString(),
-                                ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                                ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE);
-                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                                null,
-                                ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                                ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE);
-                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                                "",
-                                ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                                ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE);
-                        
-                        for(String zoneId : toSync)
-                        {
-                            ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                                SyncStatus.WAITING.toString(),
-                                ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                                ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE, 
-                                zoneId);
-                        }
-                        
-                        return null;
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        new Date().getTime(),
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.START_TIME_ATTRIBUTE);
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        -1L,
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.END_TIME_ATTRIBUTE);
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        serverId,
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.SERVER_ATTRIBUTE);
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        SyncStatus.IN_PROGRESS.toString(),
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE);
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        null,
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE);
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        "",
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE);
+
+                for (String zoneId : toSync)
+                {
+                    ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                            SyncStatus.WAITING.toString(),
+                            ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                            ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE,
+                            zoneId);
+                }
+
+                return null;
             }
-        }, false, true); 
+        }, false, true);
     }
+
     private void notifySyncEnd()
     {
         this.applicationEventPublisher.publishEvent(new SynchronizeEndEvent(this));
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
                         SyncStatus.COMPLETE.toString(),
-                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
                         ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE);
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
                         new Date().getTime(),
-                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
                         ChainingUserRegistrySynchronizer.END_TIME_ATTRIBUTE);
                 return null;
             }
-        }, false, true); 
-
+        }, false, true);
 
     }
-    
+
     private void notifySyncEnd(final Exception e)
     {
         this.applicationEventPublisher.publishEvent(new SynchronizeEndEvent(this, e));
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-                    @Override
-                    public Void execute() throws Throwable
-                    {
-                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+            {
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
                         e.getMessage(),
-                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
                         ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE);
-                        
-                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                                SyncStatus.COMPLETE_ERROR.toString(),
-                                ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                                ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE);
 
-                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                                new Date().getTime(),
-                                ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                                ChainingUserRegistrySynchronizer.END_TIME_ATTRIBUTE);
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        SyncStatus.COMPLETE_ERROR.toString(),
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE);
 
-                        return null;
-                    }
-        }, false, true);      
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        new Date().getTime(),
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.END_TIME_ATTRIBUTE);
+
+                return null;
+            }
+        }, false, true);
     }
-    
+
     private void notifyZoneDeleted(final String zoneId)
     {
-//        this.applicationEventPublisher.publishEvent(new SynchronizeDirectoryDeleteZoneEvent(this, zoneId, batchProcessNames));
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        // this.applicationEventPublisher.publishEvent(new SynchronizeDirectoryDeleteZoneEvent(this, zoneId, batchProcessNames));
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
                         "",
-                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                        ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE, 
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE,
                         zoneId);
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
                         "",
-                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE, 
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE,
                         zoneId);
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
                         null,
-                        ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE, 
-                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE, 
+                        ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE,
+                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE,
                         zoneId);
-          
+
                 return null;
             }
-        }, false, true);    
+        }, false, true);
     }
-       
+
     private void notifySyncDirectoryStart(final String zoneId, final String[] batchProcessNames)
     {
         this.applicationEventPublisher.publishEvent(new SynchronizeDirectoryStartEvent(this, zoneId, batchProcessNames));
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
                         SyncStatus.IN_PROGRESS.toString(),
-                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                        ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE, 
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE,
                         zoneId);
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
                         "",
-                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE, 
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE,
                         zoneId);
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
                         null,
-                        ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE, 
-                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE, 
+                        ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE,
+                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE,
                         zoneId);
                 return null;
             }
-        }, false, true);        
-        
+        }, false, true);
 
     }
-    
+
     private void notifySyncDirectoryEnd(final String zoneId, final String statusMessage)
     {
         this.applicationEventPublisher.publishEvent(new SynchronizeDirectoryEndEvent(this, zoneId));
 
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                    SyncStatus.COMPLETE.toString(),
-                    ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                    ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE, 
-                    zoneId);
+                        SyncStatus.COMPLETE.toString(),
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE,
+                        zoneId);
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                    "",
-                    ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                    ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE,
-                    zoneId);
+                        "",
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE,
+                        zoneId);
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                    statusMessage,
-                    ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                    ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE,
-                    zoneId);
+                        statusMessage,
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE,
+                        zoneId);
                 return null;
             }
-        }, false, true); 
+        }, false, true);
 
     }
-    
+
     private void notifySyncDirectoryEnd(final String zoneId, final Exception e)
     {
         this.applicationEventPublisher.publishEvent(new SynchronizeDirectoryEndEvent(this, zoneId, e));
         ChainingUserRegistrySynchronizer.logger.error("Synchronization aborted due to error", e);
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                    SyncStatus.COMPLETE_ERROR.toString(),
-                    ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                    ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE, 
-                    zoneId);
+                        SyncStatus.COMPLETE_ERROR.toString(),
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE,
+                        zoneId);
                 ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                    e.getMessage(),
-                    ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
-                    ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE,
-                    zoneId);
-                 return null;
-           }
-        }, false, true); 
+                        e.getMessage(),
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                        ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE,
+                        zoneId);
+                return null;
+            }
+        }, false, true);
     }
-    
+
     @Override
     public Date getSyncStartTime()
     {
-        Long start =  (Long)ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
+        Long start = (Long) ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
                 ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, ChainingUserRegistrySynchronizer.START_TIME_ATTRIBUTE);
-   
+
         Date lastUserUpdate = start.longValue() == -1 ? null : new Date(start.longValue());
         return lastUserUpdate;
     }
@@ -2473,9 +2400,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     @Override
     public Date getSyncEndTime()
     {
-        Long start =  (Long)ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
+        Long start = (Long) ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
                 ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, ChainingUserRegistrySynchronizer.END_TIME_ATTRIBUTE);
-   
+
         Date lastUserUpdate = start.longValue() == -1 ? null : new Date(start.longValue());
         return lastUserUpdate;
     }
@@ -2483,7 +2410,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     @Override
     public String getLastErrorMessage()
     {
-        String status =  (String)ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
+        String status = (String) ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
                 ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE);
         return status;
     }
@@ -2491,7 +2418,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     @Override
     public String getLastRunOnServer()
     {
-        String status =  (String)ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
+        String status = (String) ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
                 ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, ChainingUserRegistrySynchronizer.SERVER_ATTRIBUTE);
         return status;
     }
@@ -2499,7 +2426,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     @Override
     public String getSynchronizationStatus()
     {
-        String status =  (String)ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
+        String status = (String) ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
                 ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE);
         return status;
 
@@ -2508,7 +2435,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     @Override
     public String getSynchronizationStatus(String zoneId)
     {
-        String status =  (String)ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
+        String status = (String) ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
                 ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE, zoneId);
         return status;
     }
@@ -2534,7 +2461,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     @Override
     public String getSynchronizationLastError(String zoneId)
     {
-        String status =  (String)ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
+        String status = (String) ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
                 ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE, zoneId);
         return status;
     }
@@ -2542,7 +2469,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     @Override
     public String getSynchronizationSummary(String zoneId)
     {
-        String status =  (String)ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
+        String status = (String) ChainingUserRegistrySynchronizer.this.attributeService.getAttribute(
                 ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE, zoneId);
         return status;
     }
@@ -2556,19 +2483,19 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     {
         return sysAdminParams;
     }
-    
+
     @Override
     public void onApplicationEvent(ApplicationEvent event)
     {
-    	 if (event instanceof AuthenticatorDeletedEvent)
-         {
-    		 AuthenticatorDeletedEvent deleteEvent = (AuthenticatorDeletedEvent)event;
-    		 notifyZoneDeleted((String)deleteEvent.getSource());
-         }
-    	 else
-    	 {
-    		 // pass to the superclass
-    		 super.onApplicationEvent(event);
-    	 }
+        if (event instanceof AuthenticatorDeletedEvent)
+        {
+            AuthenticatorDeletedEvent deleteEvent = (AuthenticatorDeletedEvent) event;
+            notifyZoneDeleted((String) deleteEvent.getSource());
+        }
+        else
+        {
+            // pass to the superclass
+            super.onApplicationEvent(event);
+        }
     }
 }

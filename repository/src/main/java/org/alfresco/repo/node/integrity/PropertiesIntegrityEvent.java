@@ -30,8 +30,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.crypto.SealedObject;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -45,8 +47,6 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Event raised to check nodes
@@ -56,7 +56,7 @@ import org.apache.commons.logging.LogFactory;
 public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
 {
     private static Log logger = LogFactory.getLog(PropertiesIntegrityEvent.class);
-    
+
     protected PropertiesIntegrityEvent(
             NodeService nodeService,
             DictionaryService dictionaryService,
@@ -64,7 +64,7 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
     {
         super(nodeService, dictionaryService, nodeRef, null, null);
     }
-    
+
     public void checkIntegrity(List<IntegrityRecord> eventResults)
     {
         NodeRef nodeRef = getNodeRef();
@@ -91,7 +91,7 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
     {
         // get all properties for the node
         Map<QName, Serializable> nodeProperties = nodeService.getProperties(nodeRef);
-        
+
         // get the node type
         QName nodeTypeQName = nodeService.getType(nodeRef);
         // get property definitions for the node type
@@ -104,7 +104,7 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
         Collection<PropertyDefinition> propertyDefs = typeDef.getProperties().values();
         // check them
         checkAllProperties(nodeRef, nodeTypeQName, propertyDefs, nodeProperties, eventResults);
-        
+
         // get the node aspects
         Set<QName> aspectTypeQNames = nodeService.getAspects(nodeRef);
         for (QName aspectTypeQName : aspectTypeQNames)
@@ -119,7 +119,7 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
             {
                 continue;
             }
-            
+
             // get property definitions for the aspect
             AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
             if (aspectDef == null)
@@ -137,10 +137,14 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
     /**
      * Checks the specific map of properties against the required property definitions
      * 
-     * @param nodeRef the node to which this applies
-     * @param typeQName the qualified name of the aspect or type to which the properties belong
-     * @param propertyDefs the definitions to check against - may be null or empty
-     * @param nodeProperties the properties to check
+     * @param nodeRef
+     *            the node to which this applies
+     * @param typeQName
+     *            the qualified name of the aspect or type to which the properties belong
+     * @param propertyDefs
+     *            the definitions to check against - may be null or empty
+     * @param nodeProperties
+     *            the properties to check
      */
     private void checkAllProperties(
             NodeRef nodeRef,
@@ -163,10 +167,10 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
                 String nameProp = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 IntegrityRecord result = new IntegrityRecord(
                         "Mandatory property not set: \n" +
-                        "   Node: " + nodeRef + "\n" +
-                        (nameProp != null ? "   Name: " + nameProp + "\n" : "") +
-                        "   Type: " + typeQName + "\n" +
-                        "   Property: " + propertyQName);
+                                "   Node: " + nodeRef + "\n" +
+                                (nameProp != null ? "   Name: " + nameProp + "\n" : "") +
+                                "   Type: " + typeQName + "\n" +
+                                "   Property: " + propertyQName);
                 eventResults.add(result);
                 // next one
                 continue;
@@ -180,10 +184,10 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
                     String nameProp = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                     IntegrityRecord result = new IntegrityRecord(
                             "Property must be encrypted: \n" +
-                            "   Node: " + nodeRef + "\n" +
-                            (nameProp != null ? "   Name: " + nameProp + "\n" : "") +
-                            "   Type: " + typeQName + "\n" +
-                            "   Property: " + propertyQName);
+                                    "   Node: " + nodeRef + "\n" +
+                                    (nameProp != null ? "   Name: " + nameProp + "\n" : "") +
+                                    "   Type: " + typeQName + "\n" +
+                                    "   Property: " + propertyQName);
                     eventResults.add(result);
                 }
             }
@@ -202,11 +206,11 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
                     String nameProp = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                     IntegrityRecord result = new IntegrityRecord(
                             "Invalid property value: \n" +
-                            "   Node: " + nodeRef + "\n" +
-                            (nameProp != null ? "   Name: " + nameProp + "\n" : "") +
-                            "   Type: " + typeQName + "\n" +
-                            "   Property: " + propertyQName + "\n" +
-                            "   Constraint: " + e.getMessage());
+                                    "   Node: " + nodeRef + "\n" +
+                                    (nameProp != null ? "   Name: " + nameProp + "\n" : "") +
+                                    "   Type: " + typeQName + "\n" +
+                                    "   Property: " + propertyQName + "\n" +
+                                    "   Constraint: " + e.getMessage());
                     eventResults.add(result);
                     // next one
                     continue;

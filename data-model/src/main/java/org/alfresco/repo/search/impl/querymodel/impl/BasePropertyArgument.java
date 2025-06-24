@@ -41,11 +41,16 @@ public class BasePropertyArgument extends BaseDynamicArgument implements Propert
     private String selector;
 
     /**
-     * @param name String
-     * @param queryable boolean
-     * @param orderable boolean
-     * @param selector String
-     * @param propertyName String
+     * @param name
+     *            String
+     * @param queryable
+     *            boolean
+     * @param orderable
+     *            boolean
+     * @param selector
+     *            String
+     * @param propertyName
+     *            String
      */
     public BasePropertyArgument(String name, boolean queryable, boolean orderable, String selector, String propertyName)
     {
@@ -55,31 +60,25 @@ public class BasePropertyArgument extends BaseDynamicArgument implements Propert
 
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.PropertyArgument#getSelector()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.PropertyArgument#getSelector() */
     public String getSelector()
     {
         return selector;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.PropertyArgument#getPropertyName()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.PropertyArgument#getPropertyName() */
     public String getPropertyName()
     {
         return propertyName;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue() */
     public Serializable getValue(FunctionEvaluationContext context)
     {
         NodeRef nodeRef = context.getNodeRefs().get(getSelector());
@@ -96,5 +95,5 @@ public class BasePropertyArgument extends BaseDynamicArgument implements Propert
         builder.append("]");
         return builder.toString();
     }
-    
+
 }

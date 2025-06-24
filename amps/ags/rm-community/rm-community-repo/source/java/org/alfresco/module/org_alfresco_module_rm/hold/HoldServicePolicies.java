@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,11 +45,14 @@ public interface HoldServicePolicies
     interface BeforeCreateHoldPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateHold");
+
         /**
          * Called before a hold is created.
          *
-         * @param name   name of the hold to be created
-         * @param reason reason for the hold to be created
+         * @param name
+         *            name of the hold to be created
+         * @param reason
+         *            reason for the hold to be created
          */
         void beforeCreateHold(String name, String reason);
     }
@@ -57,10 +60,12 @@ public interface HoldServicePolicies
     interface OnCreateHoldPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateHold");
+
         /**
          * Called when a hold is created.
          *
-         * @param hold node reference
+         * @param hold
+         *            node reference
          */
         void onCreateHold(NodeRef hold);
     }
@@ -68,10 +73,12 @@ public interface HoldServicePolicies
     interface BeforeDeleteHoldPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteHold");
+
         /**
          * Called before a hold is deleted.
          *
-         * @param hold node reference
+         * @param hold
+         *            node reference
          */
         void beforeDeleteHold(NodeRef hold);
     }
@@ -83,7 +90,8 @@ public interface HoldServicePolicies
         /**
          * Called when a hold is deleted.
          *
-         * @param holdname name of the deleted hold
+         * @param holdname
+         *            name of the deleted hold
          */
         void onDeleteHold(String holdname);
     }
@@ -95,8 +103,10 @@ public interface HoldServicePolicies
         /**
          * Called before adding content to hold.
          *
-         * @param hold           the hold to be added into
-         * @param contentNodeRef the item to be added to hold
+         * @param hold
+         *            the hold to be added into
+         * @param contentNodeRef
+         *            the item to be added to hold
          */
         void beforeAddToHold(NodeRef hold, NodeRef contentNodeRef);
     }
@@ -108,8 +118,10 @@ public interface HoldServicePolicies
         /**
          * Called when content is added to hold.
          *
-         * @param hold           the hold to be added into
-         * @param contentNodeRef the item to be added to hold
+         * @param hold
+         *            the hold to be added into
+         * @param contentNodeRef
+         *            the item to be added to hold
          */
         void onAddToHold(NodeRef hold, NodeRef contentNodeRef);
     }
@@ -121,8 +133,10 @@ public interface HoldServicePolicies
         /**
          * Called before removing content from hold.
          *
-         * @param hold           the hold to be removed from
-         * @param contentNodeRef the item to be removed from hold
+         * @param hold
+         *            the hold to be removed from
+         * @param contentNodeRef
+         *            the item to be removed from hold
          */
         void beforeRemoveFromHold(NodeRef hold, NodeRef contentNodeRef);
     }
@@ -134,8 +148,10 @@ public interface HoldServicePolicies
         /**
          * Called when removing content from hold.
          *
-         * @param hold           the hold to be removed from
-         * @param contentNodeRef the item to be removed from hold
+         * @param hold
+         *            the hold to be removed from
+         * @param contentNodeRef
+         *            the item to be removed from hold
          */
         void onRemoveFromHold(NodeRef hold, NodeRef contentNodeRef);
     }

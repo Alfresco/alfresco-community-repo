@@ -39,7 +39,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -53,21 +52,13 @@ import org.springframework.core.OrderComparator;
 import org.springframework.core.ResolvableType;
 
 /**
- * Abstract implementation of the {@link ApplicationEventMulticaster} interface,
- * providing the basic listener registration facility.
+ * Abstract implementation of the {@link ApplicationEventMulticaster} interface, providing the basic listener registration facility.
  * 
  * <p>
- * Doesn't permit multiple instances of the same listener by default, as it
- * keeps listeners in a linked Set. The collection class used to hold
- * ApplicationListener objects can be overridden through the "collectionClass"
- * bean property.
+ * Doesn't permit multiple instances of the same listener by default, as it keeps listeners in a linked Set. The collection class used to hold ApplicationListener objects can be overridden through the "collectionClass" bean property.
  * 
  * <p>
- * Implementing ApplicationEventMulticaster's actual {@link #multicastEvent}
- * method is left to subclasses. {@link org.springframework.context.event.SimpleApplicationEventMulticaster}
- * simply multicasts all events to all registered listeners, invoking them in
- * the calling thread. Alternative implementations could be more sophisticated
- * in those respects.
+ * Implementing ApplicationEventMulticaster's actual {@link #multicastEvent} method is left to subclasses. {@link org.springframework.context.event.SimpleApplicationEventMulticaster} simply multicasts all events to all registered listeners, invoking them in the calling thread. Alternative implementations could be more sophisticated in those respects.
  * 
  * @author Juergen Hoeller
  * @since 1.2.3
@@ -90,18 +81,12 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
     /** The queued events that can't be broadcast until the application is started. */
     private List<ApplicationEvent> queuedEvents = new LinkedList<ApplicationEvent>();
 
-
     /**
      * Set the TaskExecutor to execute application listeners with.
      * <p>
-     * Default is a SyncTaskExecutor, executing the listeners synchronously in
-     * the calling thread.
+     * Default is a SyncTaskExecutor, executing the listeners synchronously in the calling thread.
      * <p>
-     * Consider specifying an asynchronous TaskExecutor here to not block the
-     * caller until all listeners have been executed. However, note that
-     * asynchronous execution will not participate in the caller's thread
-     * context (class loader, transaction association) unless the TaskExecutor
-     * explicitly supports this.
+     * Consider specifying an asynchronous TaskExecutor here to not block the caller until all listeners have been executed. However, note that asynchronous execution will not participate in the caller's thread context (class loader, transaction association) unless the TaskExecutor explicitly supports this.
      * 
      */
     public void setTaskExecutor(Executor taskExecutor)
@@ -155,13 +140,11 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
 
     @Override
     public void removeApplicationListeners(Predicate<ApplicationListener<?>> predicate)
-    {
-    }
+    {}
 
     @Override
     public void removeApplicationListenerBeans(Predicate<String> predicate)
-    {
-    }
+    {}
 
     public void removeAllListeners()
     {
@@ -218,17 +201,22 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
     }
 
     @SuppressWarnings("unchecked")
-    protected void multicastEventInternal(final ApplicationEvent event) {
-        for (final ApplicationListener listener : getApplicationListeners(event)) {
+    protected void multicastEventInternal(final ApplicationEvent event)
+    {
+        for (final ApplicationListener listener : getApplicationListeners(event))
+        {
             Executor executor = getTaskExecutor();
-            if (executor != null) {
+            if (executor != null)
+            {
                 executor.execute(new Runnable() {
-                    public void run() {
+                    public void run()
+                    {
                         listener.onApplicationEvent(event);
                     }
                 });
             }
-            else {
+            else
+            {
                 listener.onApplicationEvent(event);
             }
         }
@@ -246,12 +234,10 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
     }
 
     /**
-     * Return a Collection of ApplicationListeners matching the given event
-     * type. Non-matching listeners get excluded early.
+     * Return a Collection of ApplicationListeners matching the given event type. Non-matching listeners get excluded early.
      * 
      * @param event
-     *            the event to be propagated. Allows for excluding non-matching
-     *            listeners early, based on cached matching information.
+     *            the event to be propagated. Allows for excluding non-matching listeners early, based on cached matching information.
      * @return a Collection of ApplicationListeners
      * @see org.springframework.context.ApplicationListener
      */
@@ -306,10 +292,7 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
     /**
      * Determine whether the given listener supports the given event.
      * <p>
-     * The default implementation detects the {@link SmartApplicationListener}
-     * interface. In case of a standard {@link ApplicationListener}, a
-     * {@link GenericApplicationListenerAdapter} will be used to introspect the
-     * generically declared type of the target listener.
+     * The default implementation detects the {@link SmartApplicationListener} interface. In case of a standard {@link ApplicationListener}, a {@link GenericApplicationListenerAdapter} will be used to introspect the generically declared type of the target listener.
      * 
      * @param listener
      *            the target listener to check
@@ -317,8 +300,7 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
      *            the event type to check against
      * @param sourceType
      *            the source type to check against
-     * @return whether the given listener should be included in the candidates
-     *         for the given event type
+     * @return whether the given listener should be included in the candidates for the given event type
      */
     protected boolean supportsEvent(ApplicationListener listener, Class<? extends ApplicationEvent> eventType,
             Class sourceType)
@@ -366,8 +348,7 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
     }
 
     /**
-     * Helper class that encapsulates a specific set of target listeners,
-     * allowing for efficient retrieval of pre-filtered listeners.
+     * Helper class that encapsulates a specific set of target listeners, allowing for efficient retrieval of pre-filtered listeners.
      * <p>
      * An instance of this helper gets cached per event type and source type.
      */

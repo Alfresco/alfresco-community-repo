@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,12 +29,13 @@ package org.alfresco.module.org_alfresco_module_rm.vital;
 
 import java.util.Date;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.dictionary.types.period.Immediately;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Reviewed action.
@@ -47,8 +48,7 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
 
     /**
      *
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
@@ -86,7 +86,7 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
             {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Removing reviewAsOf property from")
-                   .append(nodeRef);
+                        .append(nodeRef);
                 logger.debug(msg.toString());
             }
 
@@ -102,12 +102,12 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
                 {
                     StringBuilder msg = new StringBuilder();
                     msg.append("Setting new reviewAsOf property [")
-                       .append(reviewAsOf)
-                       .append("] on ")
-                       .append(nodeRef);
+                            .append(reviewAsOf)
+                            .append("] on ")
+                            .append(nodeRef);
                     logger.debug(msg.toString());
                 }
-    
+
                 this.getNodeService().setProperty(nodeRef, PROP_REVIEW_AS_OF, reviewAsOf);
                 // TODO And record previous review date, time, user
             }

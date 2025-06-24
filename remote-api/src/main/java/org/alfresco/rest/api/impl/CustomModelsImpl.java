@@ -36,6 +36,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -52,8 +55,8 @@ import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.dictionary.ValueDataTypeValidator;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.CustomModels;
-import org.alfresco.rest.api.model.AbstractCustomClass;
 import org.alfresco.rest.api.model.AbstractCommonDetails;
+import org.alfresco.rest.api.model.AbstractCustomClass;
 import org.alfresco.rest.api.model.CustomAspect;
 import org.alfresco.rest.api.model.CustomModel;
 import org.alfresco.rest.api.model.CustomModel.ModelStatus;
@@ -75,6 +78,11 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.CustomModelDefinition;
 import org.alfresco.service.cmr.dictionary.CustomModelException;
+import org.alfresco.service.cmr.dictionary.CustomModelException.ActiveModelConstraintException;
+import org.alfresco.service.cmr.dictionary.CustomModelException.CustomModelConstraintException;
+import org.alfresco.service.cmr.dictionary.CustomModelException.InvalidCustomModelException;
+import org.alfresco.service.cmr.dictionary.CustomModelException.ModelDoesNotExistException;
+import org.alfresco.service.cmr.dictionary.CustomModelException.ModelExistsException;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -82,11 +90,6 @@ import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.dictionary.CustomModelException.ActiveModelConstraintException;
-import org.alfresco.service.cmr.dictionary.CustomModelException.CustomModelConstraintException;
-import org.alfresco.service.cmr.dictionary.CustomModelException.InvalidCustomModelException;
-import org.alfresco.service.cmr.dictionary.CustomModelException.ModelDoesNotExistException;
-import org.alfresco.service.cmr.dictionary.CustomModelException.ModelExistsException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -95,9 +98,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
-
 
 /**
  * @author Jamal Kaabi-Mofrad
@@ -168,10 +168,10 @@ public class CustomModelsImpl implements CustomModels
 
         if (hasSelectProperty(parameters, SELECT_ALL))
         {
-            return new CustomModel(modelDef, 
-                        convertToCustomTypes(modelDef.getTypeDefinitions(), false),
-                        convertToCustomAspects(modelDef.getAspectDefinitions(), false),
-                        convertToCustomModelConstraints(modelDef.getModelDefinedConstraints()));
+            return new CustomModel(modelDef,
+                    convertToCustomTypes(modelDef.getTypeDefinitions(), false),
+                    convertToCustomAspects(modelDef.getAspectDefinitions(), false),
+                    convertToCustomModelConstraints(modelDef.getModelDefinedConstraints()));
         }
 
         return new CustomModel(modelDef);
@@ -179,7 +179,7 @@ public class CustomModelsImpl implements CustomModels
 
     private CustomModelDefinition getCustomModelImpl(String modelName)
     {
-        if(modelName == null)
+        if (modelName == null)
         {
             throw new InvalidArgumentException(MODEL_NAME_NULL_ERR);
         }
@@ -316,7 +316,7 @@ public class CustomModelsImpl implements CustomModels
 
             existingModel.setNamespaceUri(model.getNamespaceUri());
             final boolean isNamespacePrefixChanged = !(existingModel.getNamespacePrefix().equals(model.getNamespacePrefix()));
-            if(isNamespacePrefixChanged)
+            if (isNamespacePrefixChanged)
             {
                 // Change types' and aspects' parents as well as the property constraint's Ref namespace prefix
                 replacePrefix(existingModelDetails.getTypes(), existingModel.getNamespacePrefix(), model.getNamespacePrefix());
@@ -333,16 +333,16 @@ public class CustomModelsImpl implements CustomModels
 
     private void replacePrefix(List<? extends AbstractCustomClass> existingTypesOrAspects, String modelOldNamespacePrefix, String modelNewNamespacePrefix)
     {
-        for(AbstractCustomClass classModel : existingTypesOrAspects)
+        for (AbstractCustomClass classModel : existingTypesOrAspects)
         {
             // Type/Aspect's parent name
             String parentName = classModel.getParentName();
-            if(parentName != null)
+            if (parentName != null)
             {
                 Pair<String, String> prefixLocalNamePair = splitPrefixedQName(parentName);
                 // Check to see if the parent name prefix, is the namespace prefix of the model being edited.
                 // As we don't want to modify the parent name of the imported models.
-                if(modelOldNamespacePrefix.equals(prefixLocalNamePair.getFirst()))
+                if (modelOldNamespacePrefix.equals(prefixLocalNamePair.getFirst()))
                 {
                     // Change the parent name prefix, to a new model namespace prefix.
                     String newParentName = constructName(prefixLocalNamePair.getSecond(), modelNewNamespacePrefix);
@@ -352,13 +352,13 @@ public class CustomModelsImpl implements CustomModels
 
             // Change the property constraint ref
             List<CustomModelProperty> properties = classModel.getProperties();
-            for(CustomModelProperty prop : properties)
+            for (CustomModelProperty prop : properties)
             {
                 List<String> constraintRefs = prop.getConstraintRefs();
-                if(constraintRefs.size() > 0)
+                if (constraintRefs.size() > 0)
                 {
                     List<String> modifiedRefs = new ArrayList<>(constraintRefs.size());
-                    for(String ref : constraintRefs)
+                    for (String ref : constraintRefs)
                     {
                         // We don't need to check if the prefix is equal to the model prefix here, as it was
                         // done upon adding the constraint refs in the setM2Properties method.
@@ -379,7 +379,7 @@ public class CustomModelsImpl implements CustomModels
         // Check the current user is authorised to delete the custom model
         validateCurrentUser();
 
-        if(modelName == null)
+        if (modelName == null)
         {
             throw new InvalidArgumentException(MODEL_NAME_NULL_ERR);
         }
@@ -405,7 +405,7 @@ public class CustomModelsImpl implements CustomModels
     @Override
     public CustomType getCustomType(String modelName, String typeName, Parameters parameters)
     {
-        if(typeName == null)
+        if (typeName == null)
         {
             throw new InvalidArgumentException(TYPE_NAME_NULL_ERR);
         }
@@ -418,7 +418,7 @@ public class CustomModelsImpl implements CustomModels
         {
             throw new EntityNotFoundException(typeName);
         }
-        
+
         // Check if inherited properties have been requested
         boolean includeInheritedProps = hasSelectProperty(parameters, SELECT_ALL_PROPS);
         return convertToCustomType(customTypeDef, includeInheritedProps);
@@ -468,7 +468,7 @@ public class CustomModelsImpl implements CustomModels
         final boolean isAspect = classDef instanceof CustomAspect;
 
         String name = classDef.getName();
-        if(name == null)
+        if (name == null)
         {
             String msgId = isAspect ? ASPECT_NAME_NULL_ERR : TYPE_NAME_NULL_ERR;
             throw new InvalidArgumentException(msgId);
@@ -495,7 +495,7 @@ public class CustomModelsImpl implements CustomModels
                 // Add/Update properties
                 mergeProperties(existingClassDef, classDef, parameters, existingModelDetails.isActive());
             }
-            else //Delete property request
+            else // Delete property request
             {
                 errorMsg = "cmm.rest_api.property_delete_failure";
                 deleteProperty(existingClassDef, propName);
@@ -529,13 +529,13 @@ public class CustomModelsImpl implements CustomModels
         // Check the current user is authorised to delete the custom model's type
         validateCurrentUser();
 
-        if(typeName == null)
+        if (typeName == null)
         {
             throw new InvalidArgumentException(TYPE_NAME_NULL_ERR);
         }
 
         ModelDetails existingModelDetails = new ModelDetails(getCustomModelImpl(modelName));
-        if(existingModelDetails.isActive())
+        if (existingModelDetails.isActive())
         {
             throw new ConstraintViolatedException("cmm.rest_api.type_cannot_delete");
         }
@@ -543,7 +543,7 @@ public class CustomModelsImpl implements CustomModels
         Map<String, CustomType> allTypes = transformToMap(existingModelDetails.getTypes(), toNameFunction());
         CustomType typeToBeDeleted = allTypes.get(typeName);
 
-        if(typeToBeDeleted == null)
+        if (typeToBeDeleted == null)
         {
             throw new EntityNotFoundException(typeName);
         }
@@ -561,7 +561,7 @@ public class CustomModelsImpl implements CustomModels
     @Override
     public CustomAspect getCustomAspect(String modelName, String aspectName, Parameters parameters)
     {
-        if(aspectName == null)
+        if (aspectName == null)
         {
             throw new InvalidArgumentException(ASPECT_NAME_NULL_ERR);
         }
@@ -574,7 +574,7 @@ public class CustomModelsImpl implements CustomModels
         {
             throw new EntityNotFoundException(aspectName);
         }
-        
+
         // Check if inherited properties have been requested
         boolean includeInheritedProps = hasSelectProperty(parameters, SELECT_ALL_PROPS);
         return convertToCustomAspect(customAspectDef, includeInheritedProps);
@@ -621,13 +621,13 @@ public class CustomModelsImpl implements CustomModels
         // Check the current user is authorised to delete the custom model's aspect
         validateCurrentUser();
 
-        if(aspectName == null)
+        if (aspectName == null)
         {
             throw new InvalidArgumentException(ASPECT_NAME_NULL_ERR);
         }
 
         ModelDetails existingModelDetails = new ModelDetails(getCustomModelImpl(modelName));
-        if(existingModelDetails.isActive())
+        if (existingModelDetails.isActive())
         {
             throw new ConstraintViolatedException("cmm.rest_api.aspect_cannot_delete");
         }
@@ -635,7 +635,7 @@ public class CustomModelsImpl implements CustomModels
         Map<String, CustomAspect> allAspects = transformToMap(existingModelDetails.getAspects(), toNameFunction());
         CustomAspect aspectToBeDeleted = allAspects.get(aspectName);
 
-        if(aspectToBeDeleted == null)
+        if (aspectToBeDeleted == null)
         {
             throw new EntityNotFoundException(aspectName);
         }
@@ -712,8 +712,7 @@ public class CustomModelsImpl implements CustomModels
         boolean withForm = Boolean.valueOf(propName);
         try
         {
-            NodeRef nodeRef = customModelService.createDownloadNode(modelName, withForm);
-            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, modelName + DownloadsImpl.DEFAULT_ARCHIVE_EXTENSION);
+            NodeRef nodeRef = customModelService.createDownloadNode(modelName, withForm, modelName + DownloadsImpl.DEFAULT_ARCHIVE_EXTENSION);
             return new CustomModelDownload(nodeRef);
         }
         catch (Exception ex)
@@ -799,7 +798,8 @@ public class CustomModelsImpl implements CustomModels
     /**
      * Converts the given {@code ModelDetails} object into a {@link M2Model} object
      * 
-     * @param modelDetails the custom model details
+     * @param modelDetails
+     *            the custom model details
      * @return {@link M2Model} object
      */
     private M2Model convertToM2Model(ModelDetails modelDetails)
@@ -808,16 +808,16 @@ public class CustomModelsImpl implements CustomModels
     }
 
     /**
-     * Converts the given {@code org.alfresco.rest.api.model.CustomModel}
-     * object, a collection of {@code org.alfresco.rest.api.model.CustomType}
-     * objects, a collection of
-     * {@code org.alfresco.rest.api.model.CustomAspect} objects, and a collection of
-     * {@code org.alfresco.rest.api.model.CustomModelConstraint} objects into a {@link M2Model} object
+     * Converts the given {@code org.alfresco.rest.api.model.CustomModel} object, a collection of {@code org.alfresco.rest.api.model.CustomType} objects, a collection of {@code org.alfresco.rest.api.model.CustomAspect} objects, and a collection of {@code org.alfresco.rest.api.model.CustomModelConstraint} objects into a {@link M2Model} object
      * 
-     * @param customModel the custom model
-     * @param types the custom types
-     * @param aspects the custom aspects
-     * @param constraints the custom constraints
+     * @param customModel
+     *            the custom model
+     * @param types
+     *            the custom types
+     * @param aspects
+     *            the custom aspects
+     * @param constraints
+     *            the custom constraints
      * @return {@link M2Model} object
      */
     private M2Model convertToM2Model(CustomModel customModel, Collection<CustomType> types, Collection<CustomAspect> aspects, Collection<CustomModelConstraint> constraints)
@@ -842,23 +842,23 @@ public class CustomModelsImpl implements CustomModels
         model.setAuthor(author);
 
         // Types
-        if(types != null)
+        if (types != null)
         {
-            for(CustomType type : types)
+            for (CustomType type : types)
             {
-               validateName(type.getName(), TYPE_NAME_NULL_ERR);
-               M2Type m2Type = model.createType(constructName(type.getName(), namespacePrefix));
-               m2Type.setDescription(type.getDescription());
-               m2Type.setTitle(type.getTitle());
-               setParentName(m2Type, type.getParentName(), namespacesToImport, namespacePrefix);
-               setM2Properties(m2Type, type.getProperties(), namespacePrefix, namespacesToImport);
+                validateName(type.getName(), TYPE_NAME_NULL_ERR);
+                M2Type m2Type = model.createType(constructName(type.getName(), namespacePrefix));
+                m2Type.setDescription(type.getDescription());
+                m2Type.setTitle(type.getTitle());
+                setParentName(m2Type, type.getParentName(), namespacesToImport, namespacePrefix);
+                setM2Properties(m2Type, type.getProperties(), namespacePrefix, namespacesToImport);
             }
         }
 
         // Aspects
-        if(aspects != null)
+        if (aspects != null)
         {
-            for(CustomAspect aspect : aspects)
+            for (CustomAspect aspect : aspects)
             {
                 validateName(aspect.getName(), ASPECT_NAME_NULL_ERR);
                 M2Aspect m2Aspect = model.createAspect(constructName(aspect.getName(), namespacePrefix));
@@ -870,7 +870,7 @@ public class CustomModelsImpl implements CustomModels
         }
 
         // Constraints
-        if(constraints != null)
+        if (constraints != null)
         {
             for (CustomModelConstraint constraint : constraints)
             {
@@ -930,9 +930,7 @@ public class CustomModelsImpl implements CustomModels
         }
     }
 
-    /*
-     * List constraint is a special case, so can't use the ConstraintValidator.
-     */
+    /* List constraint is a special case, so can't use the ConstraintValidator. */
     private void validateListConstraint(List<String> listValue, String propDataType)
     {
         for (String value : listValue)
@@ -950,7 +948,7 @@ public class CustomModelsImpl implements CustomModels
     }
 
     private void setM2Properties(M2Class m2Class, List<CustomModelProperty> properties, String namespacePrefix,
-                Set<Pair<String, String>> namespacesToImport)
+            Set<Pair<String, String>> namespacesToImport)
     {
         if (properties != null)
         {
@@ -974,7 +972,7 @@ public class CustomModelsImpl implements CustomModels
                 {
                     if (!dataType.contains(":"))
                     {
-                        throw new InvalidArgumentException("cmm.rest_api.property_datatype_invalid", new Object[] { dataType });
+                        throw new InvalidArgumentException("cmm.rest_api.property_datatype_invalid", new Object[]{dataType});
                     }
                 }
                 namespacesToImport.add(resolveToUriAndPrefix(dataType));
@@ -989,7 +987,7 @@ public class CustomModelsImpl implements CustomModels
                 }
                 m2Property.setType(dataType);
                 m2Property.setDefaultValue(prop.getDefaultValue());
- 
+
                 // Set indexing options
                 m2Property.setIndexed(prop.isIndexed());
                 // SHA-1234
@@ -1023,7 +1021,7 @@ public class CustomModelsImpl implements CustomModels
                         m2Property.addConstraintRef(ref);
                     }
                 }
-                if(constraints.size() > 0)
+                if (constraints.size() > 0)
                 {
                     for (CustomModelConstraint modelConstraint : constraints)
                     {
@@ -1080,15 +1078,13 @@ public class CustomModelsImpl implements CustomModels
             Matcher matcher = NAME_PATTERN.matcher(name);
             if (!matcher.find())
             {
-                throw new InvalidArgumentException("cmm.rest_api.input_validation_err", new Object [] {name});
+                throw new InvalidArgumentException("cmm.rest_api.input_validation_err", new Object[]{name});
             }
         }
     }
 
     /**
-     * Checks the current user access rights and throws
-     * {@link PermissionDeniedException} if the user is not a member of the
-     * ALFRESCO_MODEL_ADMINISTRATORS group
+     * Checks the current user access rights and throws {@link PermissionDeniedException} if the user is not a member of the ALFRESCO_MODEL_ADMINISTRATORS group
      */
     private void validateCurrentUser()
     {
@@ -1108,7 +1104,7 @@ public class CustomModelsImpl implements CustomModels
     {
         String userName = AuthenticationUtil.getFullyAuthenticatedUser();
         NodeRef personRef = personService.getPerson(userName, false);
- 
+
         String firstName = (String) nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
         String lastName = (String) nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
 
@@ -1123,11 +1119,10 @@ public class CustomModelsImpl implements CustomModels
     }
 
     /**
-     * Gets the namespace URI and prefix from the parent's name, provided that the
-     * given name is of a valid format. The valid format consist of a
-     * <i>namespace prefix</i>, a <i>colon</i> and a <i>name</i>. <b>E.g. sys:localized</b>
+     * Gets the namespace URI and prefix from the parent's name, provided that the given name is of a valid format. The valid format consist of a <i>namespace prefix</i>, a <i>colon</i> and a <i>name</i>. <b>E.g. sys:localized</b>
      * 
-     * @param parentName the parent name
+     * @param parentName
+     *            the parent name
      * @return a pair of namespace URI and prefix object
      */
     protected Pair<String, String> resolveToUriAndPrefix(String parentName)
@@ -1136,7 +1131,7 @@ public class CustomModelsImpl implements CustomModels
         Collection<String> prefixes = namespaceService.getPrefixes(qName.getNamespaceURI());
         if (prefixes.size() == 0)
         {
-            throw new InvalidArgumentException("cmm.rest_api.prefix_not_registered", new Object[] { qName.getNamespaceURI() });
+            throw new InvalidArgumentException("cmm.rest_api.prefix_not_registered", new Object[]{qName.getNamespaceURI()});
         }
         String prefix = prefixes.iterator().next();
         return new Pair<String, String>(qName.getNamespaceURI(), prefix);
@@ -1158,17 +1153,21 @@ public class CustomModelsImpl implements CustomModels
             {
                 msg = "";
             }
-            throw new InvalidArgumentException("cmm.rest_api.prefixed_qname_invalid", new Object[] { prefixedQName, msg });
+            throw new InvalidArgumentException("cmm.rest_api.prefixed_qname_invalid", new Object[]{prefixedQName, msg});
         }
     }
 
     /**
      * Validates and sets the type's or aspect's parent name
      * 
-     * @param m2Class the {@link M2Type} or {@link M2Aspect} object
-     * @param parentPrefixedName the parent prefixed name. E.g. <code>prefix:localName</code>
-     * @param namespacesToImport the {@link Set} of namespace pairs to import
-     * @param modelNamespacePrefix the model namespace prefix
+     * @param m2Class
+     *            the {@link M2Type} or {@link M2Aspect} object
+     * @param parentPrefixedName
+     *            the parent prefixed name. E.g. <code>prefix:localName</code>
+     * @param namespacesToImport
+     *            the {@link Set} of namespace pairs to import
+     * @param modelNamespacePrefix
+     *            the model namespace prefix
      */
     private void setParentName(M2Class m2Class, String parentPrefixedName, Set<Pair<String, String>> namespacesToImport, String modelNamespacePrefix)
     {
@@ -1235,13 +1234,18 @@ public class CustomModelsImpl implements CustomModels
 
     /**
      * Validates models circular dependencies
-     * <p>E.g. if {@literal B -> A} denotes  model B depends on model A, then {@link ConstraintViolatedException} must be thrown for following:
-     * <li> if {@literal B -> A}, then {@literal A -> B} must throw exception </li>
-     * <li> if {@literal B -> A} and {@literal C -> B}, then {@literal A -> C} must throw exception </li>
-     * <li> if {@literal B -> A} and {@literal C -> B} and {@literal D -> C}, then {@literal A -> D} must throw exception </li>
-     * @param modelDefinition the model which has a reference to the model containing the {@code parentPrefixedName}
-     * @param existingModel the model being updated
-     * @param parentPrefixedName the type/aspect parent name
+     * <p>
+     * E.g. if {@literal B -> A} denotes model B depends on model A, then {@link ConstraintViolatedException} must be thrown for following:
+     * <li>if {@literal B -> A}, then {@literal A -> B} must throw exception</li>
+     * <li>if {@literal B -> A} and {@literal C -> B}, then {@literal A -> C} must throw exception</li>
+     * <li>if {@literal B -> A} and {@literal C -> B} and {@literal D -> C}, then {@literal A -> D} must throw exception</li>
+     * 
+     * @param modelDefinition
+     *            the model which has a reference to the model containing the {@code parentPrefixedName}
+     * @param existingModel
+     *            the model being updated
+     * @param parentPrefixedName
+     *            the type/aspect parent name
      */
     private void checkCircularDependency(ModelDefinition modelDefinition, CustomModel existingModel, String parentPrefixedName)
     {
@@ -1261,10 +1265,10 @@ public class CustomModelsImpl implements CustomModels
     }
 
     /**
-     * Returns the qualified name of the following format
-     * <code>prefix:localName</code>, as a pair of (prefix, localName)
+     * Returns the qualified name of the following format <code>prefix:localName</code>, as a pair of (prefix, localName)
      * 
-     * @param prefixedQName the prefixed name. E.g. <code>prefix:localName</code>
+     * @param prefixedQName
+     *            the prefixed name. E.g. <code>prefix:localName</code>
      * @return {@link Pair} of (prefix, localName)
      */
     private Pair<String, String> splitPrefixedQName(String prefixedQName)
@@ -1274,7 +1278,7 @@ public class CustomModelsImpl implements CustomModels
 
         if (NamespaceService.DEFAULT_PREFIX.equals(prefixLocalName[0]))
         {
-            throw new InvalidArgumentException("cmm.rest_api.prefixed_qname_invalid_format", new Object[] { prefixedQName });
+            throw new InvalidArgumentException("cmm.rest_api.prefixed_qname_invalid_format", new Object[]{prefixedQName});
         }
 
         return new Pair<String, String>(prefixLocalName[0], prefixLocalName[1]);
@@ -1340,7 +1344,7 @@ public class CustomModelsImpl implements CustomModels
             CustomModelProperty modifiedProp = newProperties.get(propName);
             if (modifiedProp == null)
             {
-                throw new InvalidArgumentException("cmm.rest_api.property_update_prop_not_found", new Object[] { propName });
+                throw new InvalidArgumentException("cmm.rest_api.property_update_prop_not_found", new Object[]{propName});
             }
 
             existingProp.setTitle(modifiedProp.getTitle());
@@ -1363,9 +1367,7 @@ public class CustomModelsImpl implements CustomModels
     }
 
     /**
-     * A helper method to throw a more informative exception (for an active model) rather than depending on the
-     * {@link org.alfresco.repo.dictionary.ModelValidatorImpl#validateModel}
-     * generic exception.
+     * A helper method to throw a more informative exception (for an active model) rather than depending on the {@link org.alfresco.repo.dictionary.ModelValidatorImpl#validateModel} generic exception.
      */
     private void validateActivePropertyUpdate(CustomModelProperty existingProp, CustomModelProperty newProp)
     {
@@ -1430,9 +1432,9 @@ public class CustomModelsImpl implements CustomModels
 
     private void validateTypeAspectDelete(Collection<? extends AbstractCustomClass> list, String classPrefixedName)
     {
-        for(AbstractCustomClass acm : list)
+        for (AbstractCustomClass acm : list)
         {
-            if(classPrefixedName.equals(acm.getParentName()))
+            if (classPrefixedName.equals(acm.getParentName()))
             {
                 throw new ConstraintViolatedException(I18NUtil.getMessage("cmm.rest_api.aspect_type_cannot_delete", classPrefixedName, acm.getPrefixedName()));
             }
@@ -1446,8 +1448,7 @@ public class CustomModelsImpl implements CustomModels
 
     private static Function<AbstractCommonDetails, String> toNameFunction()
     {
-        return new Function<AbstractCommonDetails, String>()
-        {
+        return new Function<AbstractCommonDetails, String>() {
             @Override
             public String apply(AbstractCommonDetails details)
             {
@@ -1551,7 +1552,7 @@ public class CustomModelsImpl implements CustomModels
                     }
                     catch (Exception ex)
                     {
-                        throw new InvalidArgumentException("cmm.rest_api.regex_constraint_invalid_expression", new Object[] { value });
+                        throw new InvalidArgumentException("cmm.rest_api.regex_constraint_invalid_expression", new Object[]{value});
                     }
                 }
             }
@@ -1568,10 +1569,10 @@ public class CustomModelsImpl implements CustomModels
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidArgumentException("cmm.rest_api.minmax_constraint_invalid_parameter", new Object[] { value, parameterName });
+                    throw new InvalidArgumentException("cmm.rest_api.minmax_constraint_invalid_parameter", new Object[]{value, parameterName});
                 }
                 // SHA-1126. We check for the Double.MIN_VALUE to be consistent with NumericRangeConstraint.minValue
-                if("maxValue".equalsIgnoreCase(parameterName) && parsedValue < Double.MIN_VALUE)
+                if ("maxValue".equalsIgnoreCase(parameterName) && parsedValue < Double.MIN_VALUE)
                 {
                     throw new InvalidArgumentException("cmm.rest_api.minmax_constraint_invalid_max_value");
                 }
@@ -1581,9 +1582,9 @@ public class CustomModelsImpl implements CustomModels
             public void validateUsage(QName propDataType)
             {
                 if (propDataType != null && !(DataTypeDefinition.INT.equals(propDataType)
-                            || DataTypeDefinition.LONG.equals(propDataType)
-                            || DataTypeDefinition.FLOAT.equals(propDataType)
-                            || DataTypeDefinition.DOUBLE.equals(propDataType)))
+                        || DataTypeDefinition.LONG.equals(propDataType)
+                        || DataTypeDefinition.FLOAT.equals(propDataType)
+                        || DataTypeDefinition.DOUBLE.equals(propDataType)))
                 {
                     throw new InvalidArgumentException("cmm.rest_api.minmax_constraint_invalid_use");
                 }
@@ -1600,7 +1601,7 @@ public class CustomModelsImpl implements CustomModels
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidArgumentException("cmm.rest_api.length_constraint_invalid_parameter", new Object[] { value, parameterName });
+                    throw new InvalidArgumentException("cmm.rest_api.length_constraint_invalid_parameter", new Object[]{value, parameterName});
                 }
             }
 
@@ -1608,8 +1609,8 @@ public class CustomModelsImpl implements CustomModels
             public void validateUsage(QName propDataType)
             {
                 if (propDataType != null && !(DataTypeDefinition.TEXT.equals(propDataType)
-                            || DataTypeDefinition.MLTEXT.equals(propDataType)
-                            || DataTypeDefinition.CONTENT.equals(propDataType)))
+                        || DataTypeDefinition.MLTEXT.equals(propDataType)
+                        || DataTypeDefinition.CONTENT.equals(propDataType)))
                 {
                     throw new InvalidArgumentException("cmm.rest_api.length_constraint_invalid_use");
                 }
@@ -1721,11 +1722,11 @@ public class CustomModelsImpl implements CustomModels
             {
                 throw new ConstraintViolatedException("cmm.rest_api.model.import_mandatory_aspects_unsupported");
             }
-            if(cls.getArchive() != null)
+            if (cls.getArchive() != null)
             {
                 throw new ConstraintViolatedException("cmm.rest_api.model.import_archive_unsupported");
             }
-            if(cls.getIncludedInSuperTypeQuery() != null)
+            if (cls.getIncludedInSuperTypeQuery() != null)
             {
                 throw new ConstraintViolatedException("cmm.rest_api.model.import_includedInSuperTQ_unsupported");
             }

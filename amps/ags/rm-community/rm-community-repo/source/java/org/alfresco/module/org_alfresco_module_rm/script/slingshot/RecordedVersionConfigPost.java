@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,13 +33,14 @@ import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService;
-import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService;
+import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * REST API to set the recorded version config for a document
@@ -68,7 +69,8 @@ public class RecordedVersionConfigPost extends AbstractRmWebScript
     /**
      * Sets the recordable version config service
      *
-     * @param recordableVersionConfigService The recordable version config service
+     * @param recordableVersionConfigService
+     *            The recordable version config service
      */
     public void setRecordableVersionConfigService(RecordableVersionConfigService recordableVersionConfigService)
     {
@@ -76,9 +78,7 @@ public class RecordedVersionConfigPost extends AbstractRmWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *          org.springframework.extensions.webscripts.Status,
-     *          org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -92,7 +92,8 @@ public class RecordedVersionConfigPost extends AbstractRmWebScript
     /**
      * Gets the recordable version policy from the request
      *
-     * @param req  The webscript request
+     * @param req
+     *            The webscript request
      * @return The recordable version policy
      */
     private String getRecordableVersionPolicy(WebScriptRequest req)

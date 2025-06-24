@@ -30,14 +30,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+
 /**
- * Webscript impelementation to return the latest version of all deployed
- * workflow definitions.
+ * Webscript impelementation to return the latest version of all deployed workflow definitions.
  * 
  * @author Gavin Cornwell
  * @author Nick Smith
@@ -54,13 +54,13 @@ public class WorkflowDefinitionsGet extends AbstractWorkflowWebscript
         {
             excludeFilter = new ExcludeFilter(excludeParam);
         }
-        
+
         // list all workflow's definitions simple representation
-        List<WorkflowDefinition> workflowDefinitions = workflowService.getDefinitions();            
-            
+        List<WorkflowDefinition> workflowDefinitions = workflowService.getDefinitions();
+
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-        
-        for (WorkflowDefinition workflowDefinition : workflowDefinitions)            
+
+        for (WorkflowDefinition workflowDefinition : workflowDefinitions)
         {
             // if present, filter out excluded definitions
             if (excludeFilter == null || !excludeFilter.isMatch(workflowDefinition.getName()))
@@ -68,7 +68,7 @@ public class WorkflowDefinitionsGet extends AbstractWorkflowWebscript
                 results.add(modelBuilder.buildSimple(workflowDefinition));
             }
         }
-        
+
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("workflowDefinitions", results);
         return model;

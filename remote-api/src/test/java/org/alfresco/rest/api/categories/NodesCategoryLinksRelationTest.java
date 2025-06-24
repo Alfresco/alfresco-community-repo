@@ -33,15 +33,16 @@ import static org.mockito.BDDMockito.then;
 
 import java.util.List;
 
-import org.alfresco.rest.api.Categories;
-import org.alfresco.rest.api.model.Category;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.rest.api.Categories;
+import org.alfresco.rest.api.model.Category;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NodesCategoryLinksRelationTest
@@ -70,9 +71,9 @@ public class NodesCategoryLinksRelationTest
         then(categoriesMock).should().listCategoriesForNode(CONTENT_ID, parametersMock);
         then(categoriesMock).shouldHaveNoMoreInteractions();
         assertThat(actualCategoriesPage)
-            .isNotNull()
-            .extracting(CollectionWithPagingInfo::getCollection)
-            .isEqualTo(List.of(categoryMock));
+                .isNotNull()
+                .extracting(CollectionWithPagingInfo::getCollection)
+                .isEqualTo(List.of(categoryMock));
     }
 
     @Test
@@ -86,8 +87,8 @@ public class NodesCategoryLinksRelationTest
         then(categoriesMock).should().linkNodeToCategories(CONTENT_ID, List.of(categoryMock), parametersMock);
         then(categoriesMock).shouldHaveNoMoreInteractions();
         assertThat(actualCategories)
-            .isNotNull()
-            .isEqualTo(List.of(categoryMock));
+                .isNotNull()
+                .isEqualTo(List.of(categoryMock));
     }
 
     @Test

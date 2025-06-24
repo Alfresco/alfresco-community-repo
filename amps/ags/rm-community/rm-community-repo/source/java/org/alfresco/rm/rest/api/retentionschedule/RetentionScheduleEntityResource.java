@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,7 +31,7 @@ import org.alfresco.rest.framework.resource.EntityResource;
 /**
  * Retention schedule entity resource
  */
-@EntityResource(name="retention-schedules", title = "Retention Schedule")
+@EntityResource(name = "retention-schedules", title = "Retention Schedule")
 public class RetentionScheduleEntityResource
 {
 

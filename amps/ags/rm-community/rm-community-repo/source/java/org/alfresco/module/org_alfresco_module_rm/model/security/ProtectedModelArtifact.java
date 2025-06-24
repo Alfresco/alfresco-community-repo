@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -60,7 +60,8 @@ public abstract class ProtectedModelArtifact
     private Set<String> capabilityNames;
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -68,7 +69,8 @@ public abstract class ProtectedModelArtifact
     }
 
     /**
-     * @param modelSecurityService  model security service
+     * @param modelSecurityService
+     *            model security service
      */
     public void setModelSecurityService(ModelSecurityService modelSecurityService)
     {
@@ -84,7 +86,8 @@ public abstract class ProtectedModelArtifact
     }
 
     /**
-     * @param name  artifact name (in cm:content form)
+     * @param name
+     *            artifact name (in cm:content form)
      */
     public void setName(String name)
     {
@@ -92,7 +95,7 @@ public abstract class ProtectedModelArtifact
     }
 
     /**
-     * @return  artifact QName
+     * @return artifact QName
      */
     public QName getQName()
     {
@@ -100,7 +103,8 @@ public abstract class ProtectedModelArtifact
     }
 
     /**
-     * @param capabilities  capabilities
+     * @param capabilities
+     *            capabilities
      */
     public void setCapabilities(Set<Capability> capabilities)
     {
@@ -108,7 +112,7 @@ public abstract class ProtectedModelArtifact
     }
 
     /**
-     * @return  capabilities
+     * @return capabilities
      */
     public Set<Capability> getCapabilities()
     {
@@ -116,7 +120,7 @@ public abstract class ProtectedModelArtifact
     }
 
     /**
-     * @return  capability names
+     * @return capability names
      */
     public Set<String> getCapilityNames()
     {

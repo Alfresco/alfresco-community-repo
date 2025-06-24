@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,13 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
+
+import org.alfresco.service.cmr.repository.NodeRef;
 
 public class UpdatePropertiesPolicy extends AbstractBasePolicy
 {
     @SuppressWarnings("rawtypes")
-	public int evaluate(
+    public int evaluate(
             MethodInvocation invocation,
             Class[] params,
             ConfigAttributeDefinition cad)

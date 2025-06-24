@@ -92,11 +92,13 @@ public class Category
         this.count = count;
     }
 
-    public String getPath() {
+    public String getPath()
+    {
         return path;
     }
 
-    public void setPath(String path) {
+    public void setPath(String path)
+    {
         this.path = path;
     }
 
@@ -109,7 +111,7 @@ public class Category
             return false;
         Category category = (Category) o;
         return hasChildren == category.hasChildren && Objects.equals(id, category.id) && Objects.equals(name, category.name) && Objects.equals(parentId, category.parentId)
-            && Objects.equals(count, category.count) && Objects.equals(path, category.path);
+                && Objects.equals(count, category.count) && Objects.equals(path, category.path);
     }
 
     @Override

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,51 +36,53 @@ import java.util.List;
  * @author Roy Wetherall
  * @since 2.4.a
  */
-public class PermissionProcessorRegistry 
+public class PermissionProcessorRegistry
 {
-	/** permission pre-processors */
-	private List<PermissionPreProcessor> permissionPreProcessors = new ArrayList<>();
-	
-	/** permission post-processors */
-	private List<PermissionPostProcessor> permissionPostProcessors = new ArrayList<>();
-	
-	/**
-	 * Add a permission pre-processor.
-	 * 
-	 * @param permissionPreProcessor permission pre-processor
-	 */
-	public void addPermissionPreProcessor(PermissionPreProcessor permissionPreProcessor)
-	{
-		permissionPreProcessors.add(permissionPreProcessor);
-	}
-	
-	/**
-	 * Add a permission post-processor.
-	 * 
-	 * @param permissionPostProcessor	permission post-processor
-	 */
-	public void addPermissionPostProcessor(PermissionPostProcessor permissionPostProcessor)
-	{
-		permissionPostProcessors.add(permissionPostProcessor);
-	}
-	
-	/**
-	 * Get a list of the registered permission pre-processors.
-	 * 
-	 * @return {@link List}&lt;{@link PermissionPreProcessor}&gt;	list of permission pre-processors
-	 */
-	public List<PermissionPreProcessor> getPermissionPreProcessors()
-	{
-		return permissionPreProcessors;
-	}	
-	
-	/**
-	 * Get a list of the registered permission post-processors.
-	 * 
-	 * @return &lt;{@link List}&gt;{@link PermissionPreProcessor} list of permission post-processors
-	 */
-	public List<PermissionPostProcessor> getPermissionPostProcessors() 
-	{
-		return permissionPostProcessors;
-	}
+    /** permission pre-processors */
+    private List<PermissionPreProcessor> permissionPreProcessors = new ArrayList<>();
+
+    /** permission post-processors */
+    private List<PermissionPostProcessor> permissionPostProcessors = new ArrayList<>();
+
+    /**
+     * Add a permission pre-processor.
+     * 
+     * @param permissionPreProcessor
+     *            permission pre-processor
+     */
+    public void addPermissionPreProcessor(PermissionPreProcessor permissionPreProcessor)
+    {
+        permissionPreProcessors.add(permissionPreProcessor);
+    }
+
+    /**
+     * Add a permission post-processor.
+     * 
+     * @param permissionPostProcessor
+     *            permission post-processor
+     */
+    public void addPermissionPostProcessor(PermissionPostProcessor permissionPostProcessor)
+    {
+        permissionPostProcessors.add(permissionPostProcessor);
+    }
+
+    /**
+     * Get a list of the registered permission pre-processors.
+     * 
+     * @return {@link List}&lt;{@link PermissionPreProcessor}&gt; list of permission pre-processors
+     */
+    public List<PermissionPreProcessor> getPermissionPreProcessors()
+    {
+        return permissionPreProcessors;
+    }
+
+    /**
+     * Get a list of the registered permission post-processors.
+     * 
+     * @return &lt;{@link List}&gt;{@link PermissionPreProcessor} list of permission post-processors
+     */
+    public List<PermissionPostProcessor> getPermissionPostProcessors()
+    {
+        return permissionPostProcessors;
+    }
 }

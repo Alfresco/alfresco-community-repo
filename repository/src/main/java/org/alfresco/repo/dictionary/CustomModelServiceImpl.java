@@ -39,11 +39,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -66,11 +70,11 @@ import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.CustomModelDefinition;
 import org.alfresco.service.cmr.dictionary.CustomModelException;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
+import org.alfresco.service.cmr.dictionary.DictionaryException.DuplicateDefinitionException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryException.DuplicateDefinitionException;
 import org.alfresco.service.cmr.download.DownloadService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -87,10 +91,6 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.XMLUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 /**
  * Custom Model Service Implementation
@@ -107,7 +107,7 @@ public class CustomModelServiceImpl implements CustomModelService
 
     public static final String ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY = "ALFRESCO_MODEL_ADMINISTRATORS";
     public static final String GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX
-                + ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY;
+            + ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY;
 
     public static final String SHARE_EXT_MODULE_SUFFIX = "_module.xml";
 
@@ -148,7 +148,6 @@ public class CustomModelServiceImpl implements CustomModelService
     private DownloadStorage downloadStorage;
 
     private String shareExtModulePath;
-
 
     public void setNodeService(NodeService nodeService)
     {
@@ -254,7 +253,7 @@ public class CustomModelServiceImpl implements CustomModelService
 
         StringBuilder builder = new StringBuilder(120);
         builder.append(repoModelsLocation.getPath()).append("//.[@cm:name='").append(modelName).append("' and ")
-                    .append(RepoAdminServiceImpl.defaultSubtypeOfDictionaryModel).append(']');
+                .append(RepoAdminServiceImpl.defaultSubtypeOfDictionaryModel).append(']');
 
         List<NodeRef> nodeRefs = searchService.selectNodes(getRootNode(), builder.toString(), null, namespaceDAO, false);
 
@@ -265,7 +264,7 @@ public class CustomModelServiceImpl implements CustomModelService
         else if (nodeRefs.size() > 1)
         {
             // unexpected: should not find multiple nodes with same name
-            throw new CustomModelException(MSG_MULTIPLE_MODELS, new Object[] { modelName });
+            throw new CustomModelException(MSG_MULTIPLE_MODELS, new Object[]{modelName});
         }
 
         return nodeRefs.get(0);
@@ -306,8 +305,9 @@ public class CustomModelServiceImpl implements CustomModelService
         ParameterCheck.mandatoryString("modelName", modelName);
 
         Pair<CompiledModel, Boolean> compiledModelPair = getCustomCompiledModel(modelName);
-        CustomModelDefinition result = (compiledModelPair == null) ? null : new CustomModelDefinitionImpl(
-                    compiledModelPair.getFirst(), compiledModelPair.getSecond(), dictionaryService);
+        CustomModelDefinition result = (compiledModelPair == null) ? null
+                : new CustomModelDefinitionImpl(
+                        compiledModelPair.getFirst(), compiledModelPair.getSecond(), dictionaryService);
 
         return result;
     }
@@ -340,7 +340,8 @@ public class CustomModelServiceImpl implements CustomModelService
     /**
      * Returns compiled custom model and whether the model is active or not as a {@code Pair} object
      *
-     * @param modelName the name of the custom model to retrieve
+     * @param modelName
+     *            the name of the custom model to retrieve
      * @return the {@code Pair<CompiledModel, Boolean>} (or null, if it doesn't exist)
      */
     protected Pair<CompiledModel, Boolean> getCustomCompiledModel(String modelName)
@@ -370,7 +371,7 @@ public class CustomModelServiceImpl implements CustomModelService
             }
             catch (Exception e)
             {
-                throw new CustomModelException(MSG_RETRIEVE_MODEL, new Object[] { modelName }, e);
+                throw new CustomModelException(MSG_RETRIEVE_MODEL, new Object[]{modelName}, e);
             }
         }
         else
@@ -428,7 +429,7 @@ public class CustomModelServiceImpl implements CustomModelService
 
         StringBuilder builder = new StringBuilder(160);
         builder.append(repoModelsLocation.getPath()).append(RepoAdminServiceImpl.CRITERIA_ALL).append("[(")
-                    .append(RepoAdminServiceImpl.defaultSubtypeOfDictionaryModel).append(" and ").append(DEFAULT_CUSTOM_MODEL_ASPECT);
+                .append(RepoAdminServiceImpl.defaultSubtypeOfDictionaryModel).append(" and ").append(DEFAULT_CUSTOM_MODEL_ASPECT);
         if (onlyInactiveModels)
         {
             builder.append(" and @cm:modelActive='false'");
@@ -436,7 +437,7 @@ public class CustomModelServiceImpl implements CustomModelService
         builder.append(")]");
 
         List<NodeRef> nodeRefs = searchService.selectNodes(getRootNode(), builder.toString(), null, namespaceDAO, false,
-                    SearchService.LANGUAGE_XPATH);
+                SearchService.LANGUAGE_XPATH);
 
         if (nodeRefs.size() > 0)
         {
@@ -543,7 +544,7 @@ public class CustomModelServiceImpl implements CustomModelService
 
         if (isModelExists(modelFileName))
         {
-            throw new CustomModelException.ModelExistsException(MSG_NAME_ALREADY_IN_USE, new Object[] { modelFileName });
+            throw new CustomModelException.ModelExistsException(MSG_NAME_ALREADY_IN_USE, new Object[]{modelFileName});
         }
 
         // Validate the model namespace URI
@@ -570,7 +571,7 @@ public class CustomModelServiceImpl implements CustomModelService
         final NodeRef existingModelNodeRef = getModelNodeRef(modelFileName);
         if (existingModelNodeRef == null)
         {
-            throw new CustomModelException.ModelDoesNotExistException(MSG_MODEL_NOT_EXISTS, new Object[] { modelFileName });
+            throw new CustomModelException.ModelDoesNotExistException(MSG_MODEL_NOT_EXISTS, new Object[]{modelFileName});
         }
         // Existing model property and namespace uri-prefix pair
         final boolean isActive = Boolean.TRUE.equals(nodeService.getProperty(existingModelNodeRef, ContentModel.PROP_MODEL_ACTIVE));
@@ -596,14 +597,7 @@ public class CustomModelServiceImpl implements CustomModelService
             validateModelNamespaceUri(newNamespacePair.getFirst());
         }
 
-        /*
-         * We set the requiresNewTx = true, in order to catch any exception
-         * thrown within the low level content model management.
-         * For example, deleting a property of an active model, where the
-         * property has been applied to a node will cause the
-         * ModelValidatorImpl to throw an exception.
-         * Without starting a new TX, we can't catch that exception.
-         */
+        /* We set the requiresNewTx = true, in order to catch any exception thrown within the low level content model management. For example, deleting a property of an active model, where the property has been applied to a node will cause the ModelValidatorImpl to throw an exception. Without starting a new TX, we can't catch that exception. */
         CompiledModel compiledModel = createUpdateModel(modelFileName, m2Model, activate, MSG_UPDATE_MODEL_ERR, true);
         CustomModelDefinition modelDef = new CustomModelDefinitionImpl(compiledModel, activate, dictionaryService);
 
@@ -627,8 +621,7 @@ public class CustomModelServiceImpl implements CustomModelService
         final InputStream modelStream = new ByteArrayInputStream(xml.toByteArray());
 
         // Create the model node
-        NodeRef nodeRef = doInTransaction(errMsgId, requiresNewTx, new RetryingTransactionCallback<NodeRef>()
-        {
+        NodeRef nodeRef = doInTransaction(errMsgId, requiresNewTx, new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Exception
             {
                 return repoAdminService.deployModel(modelStream, modelFileName, activate);
@@ -653,9 +646,10 @@ public class CustomModelServiceImpl implements CustomModelService
     /**
      * Validates the properties' non-null default values against the defined property constraints.
      *
-     * @param compiledModel the compiled model
-     * @throws CustomModelException.CustomModelConstraintException if there is constraint evaluation
-     *                                                             exception
+     * @param compiledModel
+     *            the compiled model
+     * @throws CustomModelException.CustomModelConstraintException
+     *             if there is constraint evaluation exception
      */
     private void validatePropsDefaultValues(CompiledModel compiledModel)
     {
@@ -711,7 +705,7 @@ public class CustomModelServiceImpl implements CustomModelService
             else
             {
                 message = getRootCauseMsg(cause, true, null);
-                throw new CustomModelException.InvalidCustomModelException(MSG_INVALID_MODEL, new Object[] { message }, ex);
+                throw new CustomModelException.InvalidCustomModelException(MSG_INVALID_MODEL, new Object[]{message}, ex);
             }
         }
     }
@@ -737,8 +731,7 @@ public class CustomModelServiceImpl implements CustomModelService
             page.add(element);
         }
 
-        return new PagingResults<T>()
-        {
+        return new PagingResults<T>() {
             @Override
             public List<T> getPage()
             {
@@ -774,7 +767,7 @@ public class CustomModelServiceImpl implements CustomModelService
             return false;
         }
         return this.authorityService.isAdminAuthority(userName)
-                    || this.authorityService.getAuthoritiesForUser(userName).contains(GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY);
+                || this.authorityService.getAuthoritiesForUser(userName).contains(GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY);
     }
 
     @Override
@@ -786,7 +779,7 @@ public class CustomModelServiceImpl implements CustomModelService
         }
         catch (Exception ex)
         {
-            throw new CustomModelException(MSG_UNABLE_MODEL_ACTIVATE, new Object[] { modelName }, ex);
+            throw new CustomModelException(MSG_UNABLE_MODEL_ACTIVATE, new Object[]{modelName}, ex);
         }
     }
 
@@ -796,7 +789,7 @@ public class CustomModelServiceImpl implements CustomModelService
         CustomModelDefinition customModelDefinition = getCustomModel(modelName);
         if (customModelDefinition == null)
         {
-            throw new CustomModelException.ModelDoesNotExistException(MSG_MODEL_NOT_EXISTS, new Object[] { modelName });
+            throw new CustomModelException.ModelDoesNotExistException(MSG_MODEL_NOT_EXISTS, new Object[]{modelName});
         }
 
         Collection<TypeDefinition> modelTypes = customModelDefinition.getTypeDefinitions();
@@ -817,8 +810,7 @@ public class CustomModelServiceImpl implements CustomModelService
 
         // requiresNewTx = true, in order to catch any exception thrown within
         // "DictionaryModelType$DictionaryModelTypeTransactionListener" model validation.
-        doInTransaction(MSG_UNABLE_MODEL_DEACTIVATE, true, new RetryingTransactionCallback<Void>()
-        {
+        doInTransaction(MSG_UNABLE_MODEL_DEACTIVATE, true, new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 repoAdminService.deactivateModel(modelName);
@@ -835,9 +827,9 @@ public class CustomModelServiceImpl implements CustomModelService
             {
                 if (parentClassDef.getName().equals(childClassDef.getParentName()))
                 {
-                    Object[] msgParams = new Object[] { parentClassDef.getName().toPrefixString(),
-                                childClassDef.getName().toPrefixString(),
-                                childClassDef.getModel().getName().getLocalName() };
+                    Object[] msgParams = new Object[]{parentClassDef.getName().toPrefixString(),
+                            childClassDef.getName().toPrefixString(),
+                            childClassDef.getModel().getName().getLocalName()};
 
                     if (parentClassDef instanceof TypeDefinition)
                     {
@@ -858,7 +850,7 @@ public class CustomModelServiceImpl implements CustomModelService
         NodeRef nodeRef = getModelNodeRef(modelName);
         if (nodeRef == null)
         {
-            throw new CustomModelException.ModelDoesNotExistException(MSG_MODEL_NOT_EXISTS, new Object[] { modelName });
+            throw new CustomModelException.ModelDoesNotExistException(MSG_MODEL_NOT_EXISTS, new Object[]{modelName});
         }
 
         final boolean isActive = Boolean.TRUE.equals(nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE));
@@ -872,7 +864,7 @@ public class CustomModelServiceImpl implements CustomModelService
         }
         catch (Exception ex)
         {
-            throw new CustomModelException(MSG_UNABLE_MODEL_DELETE, new Object[] { modelName }, ex);
+            throw new CustomModelException(MSG_UNABLE_MODEL_DELETE, new Object[]{modelName}, ex);
         }
     }
 
@@ -983,11 +975,11 @@ public class CustomModelServiceImpl implements CustomModelService
         List<M2Namespace> namespaces = model.getNamespaces();
         if (namespaces.isEmpty())
         {
-            throw new CustomModelException.InvalidNamespaceException(MSG_NAMESPACE_NOT_EXISTS, new Object[] { model.getName() });
+            throw new CustomModelException.InvalidNamespaceException(MSG_NAMESPACE_NOT_EXISTS, new Object[]{model.getName()});
         }
         if (namespaces.size() > 1)
         {
-            throw new CustomModelException.InvalidNamespaceException(MSG_NAMESPACE_MANY_EXIST, new Object[] { model.getName() });
+            throw new CustomModelException.InvalidNamespaceException(MSG_NAMESPACE_MANY_EXIST, new Object[]{model.getName()});
         }
         M2Namespace ns = namespaces.iterator().next();
 
@@ -998,7 +990,7 @@ public class CustomModelServiceImpl implements CustomModelService
     {
         if (isNamespaceUriExists(uri))
         {
-            throw new CustomModelException.NamespaceConstraintException(MSG_NAMESPACE_URI_ALREADY_IN_USE, new Object[] { uri });
+            throw new CustomModelException.NamespaceConstraintException(MSG_NAMESPACE_URI_ALREADY_IN_USE, new Object[]{uri});
         }
     }
 
@@ -1007,7 +999,7 @@ public class CustomModelServiceImpl implements CustomModelService
     {
         if (isNamespacePrefixExists(prefix))
         {
-            throw new CustomModelException.NamespaceConstraintException(MSG_NAMESPACE_PREFIX_ALREADY_IN_USE, new Object[] { prefix });
+            throw new CustomModelException.NamespaceConstraintException(MSG_NAMESPACE_PREFIX_ALREADY_IN_USE, new Object[]{prefix});
         }
     }
 
@@ -1018,18 +1010,19 @@ public class CustomModelServiceImpl implements CustomModelService
         {
             M2Model m2Model = getM2Model(modelNodeRef);
             String prefix = getModelNamespaceUriPrefix(m2Model).getSecond();
-            throw new CustomModelException.NamespaceConstraintException(MSG_NAMESPACE_PREFIX_ALREADY_IN_USE, new Object[] { prefix });
+            throw new CustomModelException.NamespaceConstraintException(MSG_NAMESPACE_PREFIX_ALREADY_IN_USE, new Object[]{prefix});
         }
     }
 
     /**
      * A helper method to run a unit of work in a transaction.
      *
-     * @param errMsgId message id for the new wrapper exception ({@link CustomModelException})
-     *            when an exception occurs
-     * @param requiresNewTx <tt>true</tt> to force a new transaction or
-     *            <tt>false</tt> to partake in any existing transaction
-     * @param cb The callback containing the unit of work
+     * @param errMsgId
+     *            message id for the new wrapper exception ({@link CustomModelException}) when an exception occurs
+     * @param requiresNewTx
+     *            <tt>true</tt> to force a new transaction or <tt>false</tt> to partake in any existing transaction
+     * @param cb
+     *            The callback containing the unit of work
      * @return Returns the result of the unit of work
      */
     private <R> R doInTransaction(String errMsgId, boolean requiresNewTx, RetryingTransactionCallback<R> cb)
@@ -1053,7 +1046,7 @@ public class CustomModelServiceImpl implements CustomModelService
             Throwable cause = alf.getRootCause();
             String message = getRootCauseMsg(cause, true, null);
 
-            throw new CustomModelException(errMsgId, new Object[] { message }, ex);
+            throw new CustomModelException(errMsgId, new Object[]{message}, ex);
         }
     }
 
@@ -1065,7 +1058,7 @@ public class CustomModelServiceImpl implements CustomModelService
         }
 
         String message = cause.getMessage();
-        if(message == null)
+        if (message == null)
         {
             return defaultMsg;
         }
@@ -1078,12 +1071,18 @@ public class CustomModelServiceImpl implements CustomModelService
     @Override
     public NodeRef createDownloadNode(final String modelFileName, boolean withAssociatedForm)
     {
+        return createDownloadNode(modelFileName, withAssociatedForm, null);
+    }
+
+    @Override
+    public NodeRef createDownloadNode(final String modelFileName, boolean withAssociatedForm, String downloadNodeName)
+    {
         List<NodeRef> nodesToBeDownloaded = new ArrayList<>(2);
 
         NodeRef customModelNodeRef = getModelNodeRef(modelFileName);
-        if(customModelNodeRef == null)
+        if (customModelNodeRef == null)
         {
-            throw new CustomModelException.ModelDoesNotExistException(MSG_MODEL_NOT_EXISTS, new Object[] { modelFileName });
+            throw new CustomModelException.ModelDoesNotExistException(MSG_MODEL_NOT_EXISTS, new Object[]{modelFileName});
         }
         // We create a copy of the model, so we can rename it, change its
         // content type and move it to the download container in order to be
@@ -1103,9 +1102,9 @@ public class CustomModelServiceImpl implements CustomModelService
                 {
                     StringBuilder msg = new StringBuilder();
                     msg.append("Temp nodes created for download: Custom model nodeRef [")
-                                .append(customModelNodeRef)
-                                .append("] and its associated Share form nodeRef [")
-                                .append(shareExtModuleNodeRef).append(']');
+                            .append(customModelNodeRef)
+                            .append("] and its associated Share form nodeRef [")
+                            .append(shareExtModuleNodeRef).append(']');
                     logger.debug(msg.toString());
                 }
             }
@@ -1116,9 +1115,9 @@ public class CustomModelServiceImpl implements CustomModelService
                 // So in this case we just construct the zip containing only the model.
                 StringBuilder msg = new StringBuilder();
                 msg.append("Constructing CMM zip file containing only the model [")
-                            .append(modelFileName)
-                            .append(".xml] without its associated share extension module, because: ")
-                            .append(ex.getMessage());
+                        .append(modelFileName)
+                        .append(".xml] without its associated share extension module, because: ")
+                        .append(ex.getMessage());
 
                 logger.warn(msg.toString());
             }
@@ -1130,14 +1129,14 @@ public class CustomModelServiceImpl implements CustomModelService
             {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Temp node created for download: Custom model nodeRef [")
-                            .append(customModelNodeRef).append(']');
+                        .append(customModelNodeRef).append(']');
                 logger.debug(msg.toString());
             }
         }
 
         try
         {
-            NodeRef archiveNodeRef = downloadService.createDownload(nodesToBeDownloaded.toArray(new NodeRef[nodesToBeDownloaded.size()]), false);
+            NodeRef archiveNodeRef = downloadService.createDownload(nodesToBeDownloaded.toArray(new NodeRef[0]), false, downloadNodeName);
 
             if (logger.isDebugEnabled())
             {
@@ -1155,10 +1154,10 @@ public class CustomModelServiceImpl implements CustomModelService
     }
 
     /**
-     * Finds the {@code module} element within the Share persisted-extension
-     * XML file and then writes the XML fragment as the content of a newly created node.
+     * Finds the {@code module} element within the Share persisted-extension XML file and then writes the XML fragment as the content of a newly created node.
      *
-     * @param modelName the model name
+     * @param modelName
+     *            the model name
      * @return the created nodeRef
      */
     protected NodeRef createCustomModelShareExtModuleRef(final String modelName)
@@ -1193,7 +1192,7 @@ public class CustomModelServiceImpl implements CustomModelService
 
         if (moduleIdXmlNode == null)
         {
-            throw new CustomModelException("cmm.service.download.share_ext_module_not_found", new Object[] { moduleId });
+            throw new CustomModelException("cmm.service.download.share_ext_module_not_found", new Object[]{moduleId});
         }
 
         final File moduleFile = TempFileProvider.createTempFile(moduleId, ".xml");
@@ -1203,11 +1202,10 @@ public class CustomModelServiceImpl implements CustomModelService
         }
         catch (IOException error)
         {
-            throw new CustomModelException("cmm.service.download.share_ext_write_err", new Object[] { moduleId }, error);
+            throw new CustomModelException("cmm.service.download.share_ext_write_err", new Object[]{moduleId}, error);
         }
 
-        return doInTransaction(MSG_DOWNLOAD_CREATE_SHARE_EXT_ERR, true, new RetryingTransactionCallback<NodeRef>()
-        {
+        return doInTransaction(MSG_DOWNLOAD_CREATE_SHARE_EXT_ERR, true, new RetryingTransactionCallback<NodeRef>() {
             @Override
             public NodeRef execute() throws Exception
             {
@@ -1228,7 +1226,7 @@ public class CustomModelServiceImpl implements CustomModelService
     protected NodeRef getShareExtModule()
     {
         List<NodeRef> results = searchService.selectNodes(getRootNode(), this.shareExtModulePath, null, this.namespaceDAO, false,
-                    SearchService.LANGUAGE_XPATH);
+                SearchService.LANGUAGE_XPATH);
 
         if (results.isEmpty())
         {
@@ -1239,17 +1237,17 @@ public class CustomModelServiceImpl implements CustomModelService
     }
 
     /**
-     * Creates a copy of the custom model where the created node will be a child
-     * of download container.
+     * Creates a copy of the custom model where the created node will be a child of download container.
      *
-     * @param newName the model new name
-     * @param modelNodeRef existing model nodeRef
+     * @param newName
+     *            the model new name
+     * @param modelNodeRef
+     *            existing model nodeRef
      * @return the created nodeRef
      */
     protected NodeRef createCustomModelCopy(final String newName, final NodeRef modelNodeRef)
     {
-        return doInTransaction(MSG_DOWNLOAD_COPY_MODEL_ERR, true, new RetryingTransactionCallback<NodeRef>()
-        {
+        return doInTransaction(MSG_DOWNLOAD_COPY_MODEL_ERR, true, new RetryingTransactionCallback<NodeRef>() {
             @Override
             public NodeRef execute() throws Exception
             {
@@ -1257,29 +1255,28 @@ public class CustomModelServiceImpl implements CustomModelService
                 Serializable content = nodeService.getProperty(modelNodeRef, ContentModel.PROP_CONTENT);
                 nodeService.setProperty(newNodeRef, ContentModel.PROP_CONTENT, content);
 
-               return newNodeRef;
+                return newNodeRef;
             }
         });
     }
 
     /**
-     * Creates node with a type {@link DownloadModel#TYPE_DOWNLOAD} within the
-     * download container (see
-     * {@link DownloadStorage#getOrCreateDowloadContainer()} )
+     * Creates node with a type {@link DownloadModel#TYPE_DOWNLOAD} within the download container (see {@link DownloadStorage#getOrCreateDowloadContainer()} )
      * <p>
      * Also, the {@code IndexControlAspect} is applied to the created node.
      *
-     * @param name the node name
+     * @param name
+     *            the node name
      * @return the created nodeRef
      */
     private NodeRef createDownloadTypeNode(final String name)
     {
         final NodeRef newNodeRef = nodeService.createNode(
-                    downloadStorage.getOrCreateDowloadContainer(),
-                    ContentModel.ASSOC_CHILDREN,
-                    ContentModel.ASSOC_CHILDREN,
-                    DownloadModel.TYPE_DOWNLOAD,
-                    Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, name)).getChildRef();
+                downloadStorage.getOrCreateDowloadContainer(),
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                DownloadModel.TYPE_DOWNLOAD,
+                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, name)).getChildRef();
 
         Map<QName, Serializable> aspectProperties = new HashMap<>(2);
         aspectProperties.put(ContentModel.PROP_IS_INDEXED, Boolean.FALSE);

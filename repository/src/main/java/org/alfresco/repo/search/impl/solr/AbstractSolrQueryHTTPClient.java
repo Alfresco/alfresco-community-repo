@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -30,10 +30,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.search.QueryParserException;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -47,13 +45,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import org.alfresco.httpclient.HttpClientException;
+import org.alfresco.repo.search.QueryParserException;
+
 public abstract class AbstractSolrQueryHTTPClient
 {
     /** Logger for the class. */
     private static final Log LOGGER = LogFactory.getLog(AbstractSolrQueryHTTPClient.class);
 
     public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
-    
+
     // Constants copied from org.apache.solr.common.params.HighlightParams (solr-solrj:1.4.1)
     // These values have been moved to this Alfresco class to avoid using solr-solrj library as dependency
     public static final String HIGHLIGHT_PARAMS_HIGHLIGHT = "hl";
@@ -85,7 +86,7 @@ public abstract class AbstractSolrQueryHTTPClient
 
     /** List of SOLR Exceptions that should be returning HTTP 501 status code in Remote API. */
     private static final List<String> STATUS_CODE_501_EXCEPTIONS = List.of("java.lang.UnsupportedOperationException");
-    
+
     protected JSONObject postQuery(HttpClient httpClient, String url, JSONObject body) throws IOException, JSONException
     {
         PostMethod post = createNewPostMethod(url);
@@ -98,7 +99,7 @@ public abstract class AbstractSolrQueryHTTPClient
         try
         {
             httpClient.executeMethod(post);
-            if(post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
+            if (post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
             {
                 Header locationHeader = post.getResponseHeader("location");
                 if (locationHeader != null)
@@ -139,8 +140,11 @@ public abstract class AbstractSolrQueryHTTPClient
 
             Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));
             // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
-            JSONObject json = new JSONObject(new JSONTokener(reader));
-            return json;
+            return new JSONObject(new JSONTokener(reader));
+        }
+        catch (IOException e)
+        {
+            throw new HttpClientException("[%s] %s".formatted(this.getClass().getSimpleName(), e.getMessage()), e);
         }
         finally
         {

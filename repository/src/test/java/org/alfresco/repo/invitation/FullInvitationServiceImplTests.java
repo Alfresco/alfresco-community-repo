@@ -26,8 +26,9 @@
 
 package org.alfresco.repo.invitation;
 
-import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.experimental.categories.Category;
+
+import org.alfresco.util.testing.category.NeverRunsTests;
 
 /**
  * Test InvitationService with both engines enabled.

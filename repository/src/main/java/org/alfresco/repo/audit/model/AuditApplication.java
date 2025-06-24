@@ -34,19 +34,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.audit.extractor.DataExtractor;
 import org.alfresco.repo.audit.generator.DataGenerator;
 import org.alfresco.repo.audit.model._3.Application;
 import org.alfresco.repo.audit.model._3.AuditPath;
 import org.alfresco.repo.audit.model._3.GenerateValue;
 import org.alfresco.repo.audit.model._3.RecordValue;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Helper class that wraps the {@link Application audit application}.
- * Once wrapped, client code doesn't need access to any of the generated
- * model-driven classes.
+ * Helper class that wraps the {@link Application audit application}. Once wrapped, client code doesn't need access to any of the generated model-driven classes.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -58,12 +57,12 @@ public class AuditApplication
     public static final Pattern AUDIT_KEY_PATTERN = Pattern.compile("[a-zA-Z0-9\\-\\_\\.]+");
     public static final Pattern AUDIT_PATH_PATTERN = Pattern.compile("(/[a-zA-Z0-9:\\-\\_\\.]+)+");
     public static final Pattern AUDIT_INVALID_PATH_COMP_CHAR_PATTERN = Pattern.compile("[^a-zA-Z0-9:\\-\\_\\.]");
-    
+
     private static final Log logger = LogFactory.getLog(AuditApplication.class);
 
     private final String applicationName;
     private final String applicationKey;
-    
+
     private final Map<String, DataExtractor> dataExtractorsByName;
     private final Map<String, DataGenerator> dataGeneratorsByName;
     @SuppressWarnings("unused")
@@ -75,11 +74,14 @@ public class AuditApplication
     private List<DataExtractorDefinition> dataExtractors = new ArrayList<DataExtractorDefinition>();
     /** Derived expaned map for fast lookup */
     private Map<String, Map<String, DataGenerator>> dataGenerators = new HashMap<String, Map<String, DataGenerator>>(11);
-    
+
     /**
-     * @param application           the application that will be wrapped
-     * @param dataExtractorsByName  data extractors to use
-     * @param dataGeneratorsByName  data generators to use
+     * @param application
+     *            the application that will be wrapped
+     * @param dataExtractorsByName
+     *            data extractors to use
+     * @param dataGeneratorsByName
+     *            data generators to use
      */
     /* package */ AuditApplication(
             Map<String, DataExtractor> dataExtractorsByName,
@@ -96,16 +98,16 @@ public class AuditApplication
         this.applicationKey = application.getKey();
         this.applicationId = applicationId;
         this.disabledPathsId = disabledPathsId;
-        
+
         buildAuditPaths(application);
     }
-    
+
     @Override
     public int hashCode()
     {
         return applicationName.hashCode();
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -123,19 +125,19 @@ public class AuditApplication
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(56);
         sb.append("AuditApplication")
-          .append("[ name=").append(applicationName)
-          .append(", id=").append(applicationId)
-          .append(", disabledPathsId=").append(disabledPathsId)
-          .append("]");
+                .append("[ name=").append(applicationName)
+                .append(", id=").append(applicationId)
+                .append(", disabledPathsId=").append(disabledPathsId)
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
      * Get the application name
      */
@@ -151,7 +153,7 @@ public class AuditApplication
     {
         return applicationKey;
     }
-    
+
     /**
      * Get the database ID for this application
      */
@@ -163,7 +165,7 @@ public class AuditApplication
     /**
      * Get the property representing the set of disabled paths for the application
      * 
-     * @return          Returns an ID of disabled paths
+     * @return Returns an ID of disabled paths
      */
     public Long getDisabledPathsId()
     {
@@ -173,8 +175,10 @@ public class AuditApplication
     /**
      * Helper method to check that a path is correct for this application instance
      * 
-     * @param path              the path in format <b>/app-key/x/y/z</b>
-     * @throws AuditModelException      if the path is invalid
+     * @param path
+     *            the path in format <b>/app-key/x/y/z</b>
+     * @throws AuditModelException
+     *             if the path is invalid
      * 
      * @see #AUDIT_PATH_PATTERN
      */
@@ -198,12 +202,14 @@ public class AuditApplication
                     "An audit path's first element must be the application's key i.e. '" + applicationKey + "'.");
         }
     }
-    
+
     /**
      * Helper method to check that a path is correct for this application instance
      * 
-     * @param path              the path in format <b>/app-key/x/y/z</b>
-     * @throws AuditModelException      if the path is invalid
+     * @param path
+     *            the path in format <b>/app-key/x/y/z</b>
+     * @throws AuditModelException
+     *             if the path is invalid
      * 
      * @see #AUDIT_PATH_PATTERN
      */
@@ -216,26 +222,22 @@ public class AuditApplication
         else if (!AUDIT_PATH_PATTERN.matcher(path).matches())
         {
             throw new AuditModelException(
-                        "Audit path '" + path + "' does not match regular expression: " + AUDIT_PATH_PATTERN);
+                    "Audit path '" + path + "' does not match regular expression: " + AUDIT_PATH_PATTERN);
         }
     }
-    
+
     /**
-     * Compile a path or part of a path into a single string which always starts with the
-     * {@link #AUDIT_PATH_SEPARATOR}.  This can be a relative path so need not always start with
-     * the application root key.
+     * Compile a path or part of a path into a single string which always starts with the {@link #AUDIT_PATH_SEPARATOR}. This can be a relative path so need not always start with the application root key.
      * <p>
-     * If the path separator is present at the beginning of a path component, then it is not added,
-     * so <code>"/a", "b", "/c"</code> becomes <code>"/a/b/c"</code> allowing path to be appended
-     * to other paths.
+     * If the path separator is present at the beginning of a path component, then it is not added, so <code>"/a", "b", "/c"</code> becomes <code>"/a/b/c"</code> allowing path to be appended to other paths.
      * <p>
-     * The final result is checked against a {@link #AUDIT_PATH_PATTERN regular expression} to ensure
-     * it is valid.
+     * The final result is checked against a {@link #AUDIT_PATH_PATTERN regular expression} to ensure it is valid.
      * 
-     * @param pathComponents      the elements of the path e.g. <code>"a", "b", "c"</code>.
-     * @return                  Returns the compiled path e.g <code>"/a/b/c"</code>.
+     * @param pathComponents
+     *            the elements of the path e.g. <code>"a", "b", "c"</code>.
+     * @return Returns the compiled path e.g <code>"/a/b/c"</code>.
      */
-    public static String buildPath(String ... pathComponents)
+    public static String buildPath(String... pathComponents)
     {
         StringBuilder sb = new StringBuilder(pathComponents.length * 10);
         for (String pathComponent : pathComponents)
@@ -252,22 +254,23 @@ public class AuditApplication
         {
             StringBuffer msg = new StringBuffer();
             msg.append("The audit path is invalid and must be matched by regular expression: ").append(AUDIT_PATH_PATTERN).append("\n")
-               .append("   Path elements: ");
+                    .append("   Path elements: ");
             for (String pathComponent : pathComponents)
             {
                 msg.append(pathComponent).append(", ");
             }
             msg.append("\n")
-               .append("   Result:        ").append(path);
+                    .append("   Result:        ").append(path);
             throw new AuditModelException(msg.toString());
         }
         // Done
         return path;
     }
-    
+
     /**
-     * @param path              the audit path for form <b>/abc/def</b>
-     * @return                  the root key of form <b>abc</b>
+     * @param path
+     *            the audit path for form <b>/abc/def</b>
+     * @return the root key of form <b>abc</b>
      */
     public static String getRootKey(String path)
     {
@@ -289,7 +292,7 @@ public class AuditApplication
         // Done
         return rootPath;
     }
-    
+
     /**
      * Utility class carrying information around a {@link DataExtractor}.
      * 
@@ -304,10 +307,14 @@ public class AuditApplication
         private final DataExtractor dataExtractor;
 
         /**
-         * @param dataTrigger           the data path that must exist for this extractor to be triggered
-         * @param dataSource            the path to get data from
-         * @param dataTarget            the path to write data to
-         * @param dataExtractor         the implementation to use
+         * @param dataTrigger
+         *            the data path that must exist for this extractor to be triggered
+         * @param dataSource
+         *            the path to get data from
+         * @param dataTarget
+         *            the path to write data to
+         * @param dataExtractor
+         *            the implementation to use
          */
         public DataExtractorDefinition(String dataTrigger, String dataSource, String dataTarget, DataExtractor dataExtractor)
         {
@@ -340,42 +347,44 @@ public class AuditApplication
             return dataExtractor;
         }
     }
-    
+
     /**
      * Get all data extractors applicable to this application.
      * 
-     * @return                  Returns all data extractors contained in the application
+     * @return Returns all data extractors contained in the application
      */
     public List<DataExtractorDefinition> getDataExtractors()
     {
         List<DataExtractorDefinition> extractors = Collections.unmodifiableList(dataExtractors);
-        
+
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Looked up data extractors: \n" +
-                    "   Found: " + extractors);
+                            "   Found: " + extractors);
         }
         return extractors;
     }
-    
+
     /**
      * Get all data generators applicable to a given path and scope.
      * 
-     * @param path              the audit path
-     * @return                  Returns all data generators mapped to their key-path
+     * @param path
+     *            the audit path
+     * @return Returns all data generators mapped to their key-path
      */
     public Map<String, DataGenerator> getDataGenerators(String path)
     {
         return getDataGenerators(Collections.singleton(path));
     }
-    
+
     /**
      * Get all data generators applicable to a given path and scope.
      * 
-     * @param paths             the audit paths
-     * @return                  Returns all data generators mapped to their key-path
+     * @param paths
+     *            the audit paths
+     * @return Returns all data generators mapped to their key-path
      */
     public Map<String, DataGenerator> getDataGenerators(Set<String> paths)
     {
@@ -389,18 +398,18 @@ public class AuditApplication
                 amalgamatedGenerators.putAll(generators);
             }
         }
-        
+
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Looked up data generators: \n" +
-                    "   Paths:  " + paths + "\n" +
-                    "   Found: " + amalgamatedGenerators);
+                            "   Paths:  " + paths + "\n" +
+                            "   Found: " + amalgamatedGenerators);
         }
         return amalgamatedGenerators;
     }
-    
+
     /**
      * Internal helper method to kick off generator and extractor path mappings
      */
@@ -412,6 +421,7 @@ public class AuditApplication
                 new HashSet<String>(37),
                 new HashMap<String, DataGenerator>(13));
     }
+
     /**
      * Recursive method to build generator and extractor mappings
      */
@@ -423,7 +433,7 @@ public class AuditApplication
     {
         // Clone the upper maps to prevent pollution
         upperGeneratorsByPath = new HashMap<String, DataGenerator>(upperGeneratorsByPath);
-        
+
         // Append the current audit path to the current path
         if (currentPath == null)
         {
@@ -438,7 +448,7 @@ public class AuditApplication
         {
             generateException(currentPath, "The audit path already exists.");
         }
-        
+
         // Get the data extractors declared for this key
         for (RecordValue element : auditPath.getRecordValue())
         {
@@ -448,7 +458,7 @@ public class AuditApplication
             {
                 generateException(extractorPath, "The audit path already exists.");
             }
-            
+
             String extractorName = element.getDataExtractor();
             DataExtractor extractor = dataExtractorsByName.get(extractorName);
             if (extractor == null)
@@ -481,7 +491,7 @@ public class AuditApplication
             {
                 generateException(generatorPath, "The audit path already exists.");
             }
-            
+
             String generatorName = element.getDataGenerator();
             DataGenerator generator = dataGeneratorsByName.get(generatorName);
             if (generator == null)
@@ -493,14 +503,14 @@ public class AuditApplication
         }
         // All the generators apply to the current path
         dataGenerators.put(currentPath, upperGeneratorsByPath);
-        
+
         // Find all sub audit paths and recurse
         for (AuditPath element : auditPath.getAuditPath())
         {
             buildAuditPaths(element, currentPath, existingPaths, upperGeneratorsByPath);
         }
     }
-    
+
     private void generateException(String path, String msg) throws AuditModelException
     {
         throw new AuditModelException("" +
@@ -508,15 +518,9 @@ public class AuditApplication
                 "   Application: " + applicationName + "\n" +
                 "   Path:        " + path);
     }
-    
+
     /**
-     * Returns {@code true} if the application name has a prefix of {@code "PreCallData"}
-     * that indicates that the only purpose of the Application is to generate data to be
-     * passed to a post call audit application. In this situation the application's
-     * audit data is not audited. This allows the post audit application to have access to
-     * 'before' values including those created by extractors and generators. Some of which
-     * will not be available (for example the node has been deleted) or will have changed
-     * as a result of the call. 
+     * Returns {@code true} if the application name has a prefix of {@code "PreCallData"} that indicates that the only purpose of the Application is to generate data to be passed to a post call audit application. In this situation the application's audit data is not audited. This allows the post audit application to have access to 'before' values including those created by extractors and generators. Some of which will not be available (for example the node has been deleted) or will have changed as a result of the call.
      */
     public boolean isApplicationJustGeneratingPreCallData()
     {

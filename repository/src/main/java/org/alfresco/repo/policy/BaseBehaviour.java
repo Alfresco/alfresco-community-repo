@@ -29,9 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Base behaviour implementation
@@ -39,85 +40,86 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author Roy Wetherall
  */
 @AlfrescoPublicApi
-public abstract class BaseBehaviour implements Behaviour 
+public abstract class BaseBehaviour implements Behaviour
 {
-	/** The notification frequency */
-	protected NotificationFrequency frequency = NotificationFrequency.EVERY_EVENT;
-	
-	/** Disabled stack **/
-	private StackThreadLocal disabled = new StackThreadLocal();
-	
-	/** Proxies **/
-	protected Map<Class, Object> proxies = new HashMap<Class, Object>();
+    /** The notification frequency */
+    protected NotificationFrequency frequency = NotificationFrequency.EVERY_EVENT;
 
-	/**
-	 * Default constructor
-	 */
-	public BaseBehaviour()
-	{
-		// Default constructor
-	}
-	
-	/**
-	 * Constructor
-	 * 
-	 * @param frequency		the notification frequency
-	 */
-	public BaseBehaviour(NotificationFrequency frequency)
-	{
-		ParameterCheck.mandatory("Frequency", frequency);
-		this.frequency = frequency;
-	}
-	
-	public void setNotificationFrequency(NotificationFrequency frequency)
-	{
-		this.frequency = frequency;
-	}
+    /** Disabled stack **/
+    private StackThreadLocal disabled = new StackThreadLocal();
 
-	/**
-	 * Disable this behaviour for the curent thread
-	 */
-	public void disable() 
-	{
-	    Stack<Integer> stack = disabled.get();
-	    stack.push(hashCode());
-	}
+    /** Proxies **/
+    protected Map<Class, Object> proxies = new HashMap<Class, Object>();
 
-	/**
-	 * Enable this behaviour for the current thread
-	 */
-	public void enable() 
-	{
-	    Stack<Integer> stack = disabled.get();
-	    if (stack.peek().equals(hashCode()) == false)
-	    {
-	        throw new PolicyException("Cannot enable " + this.toString() + " at this time - mismatched with disable calls");
-	    }
-	    stack.pop();
-	}
+    /**
+     * Default constructor
+     */
+    public BaseBehaviour()
+    {
+        // Default constructor
+    }
 
-	/**
-	 * Indicates whether the this behaviour is current enabled or not
-	 * 
-	 * @return	true if the behaviour is enabled, false otherwise
-	 */
-	public boolean isEnabled() 
-	{
-	    Stack<Integer> stack = disabled.get();
-	    return stack.search(hashCode()) == -1;
-	}
+    /**
+     * Constructor
+     * 
+     * @param frequency
+     *            the notification frequency
+     */
+    public BaseBehaviour(NotificationFrequency frequency)
+    {
+        ParameterCheck.mandatory("Frequency", frequency);
+        this.frequency = frequency;
+    }
 
-	/**
-	 * Get the notification frequency
-	 * 
-	 * @return	the notification frequency
-	 */
-	public NotificationFrequency getNotificationFrequency() 
-	{
-	    return frequency;
-	}
-	
-	/**
+    public void setNotificationFrequency(NotificationFrequency frequency)
+    {
+        this.frequency = frequency;
+    }
+
+    /**
+     * Disable this behaviour for the curent thread
+     */
+    public void disable()
+    {
+        Stack<Integer> stack = disabled.get();
+        stack.push(hashCode());
+    }
+
+    /**
+     * Enable this behaviour for the current thread
+     */
+    public void enable()
+    {
+        Stack<Integer> stack = disabled.get();
+        if (stack.peek().equals(hashCode()) == false)
+        {
+            throw new PolicyException("Cannot enable " + this.toString() + " at this time - mismatched with disable calls");
+        }
+        stack.pop();
+    }
+
+    /**
+     * Indicates whether the this behaviour is current enabled or not
+     * 
+     * @return true if the behaviour is enabled, false otherwise
+     */
+    public boolean isEnabled()
+    {
+        Stack<Integer> stack = disabled.get();
+        return stack.search(hashCode()) == -1;
+    }
+
+    /**
+     * Get the notification frequency
+     * 
+     * @return the notification frequency
+     */
+    public NotificationFrequency getNotificationFrequency()
+    {
+        return frequency;
+    }
+
+    /**
      * Stack specific Thread Local
      * 
      * @author David Caruana

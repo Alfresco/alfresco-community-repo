@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,6 +34,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -53,15 +63,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Custom Email Mapping Service
@@ -79,13 +80,12 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     private static final String CONFIG_NAME = "imapConfig.json";
 
     /** Default custom mappings (TODO move to spring config) */
-    private static final CustomMapping[] DEFAULT_MAPPINGS =
-    {
-        new CustomMapping("Date", "dod:dateReceived"),
-        new CustomMapping("messageTo", "dod:address"),
-        new CustomMapping("messageFrom", "dod:originator"),
-        new CustomMapping("messageSent", "dod:publicationDate"),
-        new CustomMapping("messageCc", "dod:otherAddress")
+    private static final CustomMapping[] DEFAULT_MAPPINGS = {
+            new CustomMapping("Date", "dod:dateReceived"),
+            new CustomMapping("messageTo", "dod:address"),
+            new CustomMapping("messageFrom", "dod:originator"),
+            new CustomMapping("messageSent", "dod:publicationDate"),
+            new CustomMapping("messageCc", "dod:otherAddress")
     };
 
     /** Extractor */
@@ -104,7 +104,8 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     private List<String> emailMappingKeys;
 
     /**
-     * @param nspr  namespace service
+     * @param nspr
+     *            namespace service
      */
     public void setNamespacePrefixResolver(NamespacePrefixResolver nspr)
     {
@@ -112,7 +113,8 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * @param extractor extractor component
+     * @param extractor
+     *            extractor component
      */
     public void setExtracter(RFC822MetadataExtracter extractor)
     {
@@ -120,7 +122,8 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -128,7 +131,8 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * @param contentService    content service
+     * @param contentService
+     *            content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -136,7 +140,8 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * @param transactionService    transaction service
+     * @param transactionService
+     *            transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -144,7 +149,8 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * @param emailMappingKeys    email mapping keys
+     * @param emailMappingKeys
+     *            email mapping keys
      */
     public void setEmailMappingKeys(List<String> emailMappingKeys)
     {
@@ -194,7 +200,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
                 }
 
                 // load the hard coded mappings
-                for(CustomMapping mapping : DEFAULT_MAPPINGS)
+                for (CustomMapping mapping : DEFAULT_MAPPINGS)
                 {
                     customMappings.add(mapping);
                 }
@@ -294,11 +300,11 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     {
         // convert the mapping information into the form understood by the extractor
         Map<String, Set<QName>> newMapping = new HashMap<>(17);
-        for(CustomMapping mapping : getCustomMappings())
+        for (CustomMapping mapping : getCustomMappings())
         {
             QName newQName = QName.createQName(mapping.getTo(), nspr);
             Set<QName> values = newMapping.get(mapping.getFrom());
-            if(values == null)
+            if (values == null)
             {
                 values = new HashSet<>();
                 newMapping.put(mapping.getFrom(), values);
@@ -326,7 +332,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
             try
             {
                 JSONArray jsonArray = new JSONArray(new JSONTokener(text));
-                for(int i = 0 ; i < jsonArray.length(); i++)
+                for (int i = 0; i < jsonArray.length(); i++)
                 {
                     JSONObject obj = jsonArray.getJSONObject(i);
                     CustomMapping mapping = new CustomMapping();
@@ -368,7 +374,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
         JSONArray jsonMappings = new JSONArray();
         try
         {
-            for(CustomMapping mapping : customMappingsToSave)
+            for (CustomMapping mapping : customMappingsToSave)
             {
                 JSONObject obj = new JSONObject();
                 obj.put("from", mapping.getFrom());
@@ -395,12 +401,10 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     protected void onBootstrap(ApplicationEvent event)
     {
         // run as System on bootstrap
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork()
             {
-                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-                {
+                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
                     public Void execute()
                     {
                         try
@@ -442,12 +446,11 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * Helper method to get the old configuration node.  This is used during the migration
-     * from 1.0 to 2.0.
+     * Helper method to get the old configuration node. This is used during the migration from 1.0 to 2.0.
      * <p>
      * Returns null if it does not exist.
      *
-     * @return  {@link NodeRef} node reference of the old configuration node, null otherwise
+     * @return {@link NodeRef} node reference of the old configuration node, null otherwise
      */
     private NodeRef getOldConfigNode()
     {
@@ -456,10 +459,11 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * Reads the old configuration node.  This is used during the migration from 1.0 to 2.0.
+     * Reads the old configuration node. This is used during the migration from 1.0 to 2.0.
      *
-     * @param nodeRef   the old configuration node reference
-     * @return {@link Set}<{@link CustomMapping}>   set of the custom mappings stored in the old configuration
+     * @param nodeRef
+     *            the old configuration node reference
+     * @return {@link Set}<{@link CustomMapping}> set of the custom mappings stored in the old configuration
      */
     private Set<CustomMapping> readOldConfig(NodeRef nodeRef)
     {
@@ -473,7 +477,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
             try
             {
                 JSONArray jsonArray = new JSONArray(new JSONTokener(text));
-                for(int i = 0 ; i < jsonArray.length(); i++)
+                for (int i = 0; i < jsonArray.length(); i++)
                 {
                     JSONObject obj = jsonArray.getJSONObject(i);
                     CustomMapping mapping = new CustomMapping();

@@ -26,9 +26,8 @@
 package org.alfresco.rest.framework.tests.api.mocks4;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.framework.resource.UniqueId;
-import org.alfresco.rest.framework.tests.api.mocks.Animal;
-import org.alfresco.rest.framework.tests.api.mocks.Goat;
 
 /**
  * Simple mock pojo for TypeA1
@@ -51,6 +50,7 @@ public class TypeA1
     {
         return this.name;
     }
+
     public void setName(String name)
     {
         this.name = name;

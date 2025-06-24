@@ -37,53 +37,58 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * Link Node In Memory Network File Class
  * 
- * <p>In memory network file implementation that uses a memory buffer for the file data.
+ * <p>
+ * In memory network file implementation that uses a memory buffer for the file data.
  * 
  * @author gkspencer
  */
 public class LinkMemoryNetworkFile extends NodeRefNetworkFile
 {
     // Current file position
-    
+
     private long m_filePos;
 
     // File data
-    
+
     private byte[] m_data;
-    
+
     /**
      * Class constructor.
      * 
-     * @param name String
-     * @param data byte[]
-     * @param finfo FileInfo
-     * @param nodeRef NodeRef
+     * @param name
+     *            String
+     * @param data
+     *            byte[]
+     * @param finfo
+     *            FileInfo
+     * @param nodeRef
+     *            NodeRef
      */
     public LinkMemoryNetworkFile(String name, byte[] data, FileInfo finfo, NodeRef nodeRef)
     {
-        super( name, nodeRef);
+        super(name, nodeRef);
 
         // Set the file data
-        
+
         m_data = data;
-        if ( m_data == null)
+        if (m_data == null)
             m_data = new byte[0];
-        
+
         // Set the file size
 
-        setFileSize( m_data.length);
+        setFileSize(m_data.length);
 
         // Set the creation and modification date/times
 
-        setModifyDate( finfo.getModifyDateTime());
-        setCreationDate( finfo.getCreationDateTime());
+        setModifyDate(finfo.getModifyDateTime());
+        setCreationDate(finfo.getCreationDateTime());
 
         // Set the file id and relative path
 
-        if ( finfo.getPath() != null)
+        if (finfo.getPath() != null)
         {
-            setFileId( finfo.getPath().hashCode());
-            setFullName( finfo.getPath());
+            setFileId(finfo.getPath().hashCode());
+            setFullName(finfo.getPath());
         }
     }
 
@@ -93,8 +98,8 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
     public void closeFile() throws java.io.IOException
     {
         // Clear the file state
-        
-        setFileState( null);
+
+        setFileState(null);
     }
 
     /**
@@ -126,7 +131,7 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
     {
         // Check if we reached end of file
 
-        if ( m_filePos == m_data.length)
+        if (m_filePos == m_data.length)
             return true;
         return false;
     }
@@ -134,7 +139,8 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
     /**
      * Open the file.
      * 
-     * @param createFlag boolean
+     * @param createFlag
+     *            boolean
      * @exception IOException
      */
     public void openFile(boolean createFlag) throws java.io.IOException
@@ -147,10 +153,14 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
     /**
      * Read from the file.
      * 
-     * @param buf byte[]
-     * @param len int
-     * @param pos int
-     * @param fileOff long
+     * @param buf
+     *            byte[]
+     * @param len
+     *            int
+     * @param pos
+     *            int
+     * @param fileOff
+     *            long
      * @return Length of data read.
      * @exception IOException
      */
@@ -159,23 +169,23 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
         // Check if the read is within the file data range
 
         long fileLen = (long) m_data.length;
-        
-        if ( fileOff >= fileLen)
+
+        if (fileOff >= fileLen)
             return 0;
-        
+
         // Calculate the actual read length
 
-        if (( fileOff + len) > fileLen)
-            len = (int) ( fileLen - fileOff);
+        if ((fileOff + len) > fileLen)
+            len = (int) (fileLen - fileOff);
 
         // Copy the data to the user buffer
-        
-        System.arraycopy( m_data, (int) fileOff, buf, pos, len);
+
+        System.arraycopy(m_data, (int) fileOff, buf, pos, len);
 
         // Update the current file position
-        
+
         m_filePos = fileOff + len;
-        
+
         // Return the actual length of data read
 
         return len;
@@ -184,8 +194,10 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
     /**
      * Seek to the specified file position.
      * 
-     * @param pos long
-     * @param typ int
+     * @param pos
+     *            long
+     * @param typ
+     *            int
      * @return long
      * @exception IOException
      */
@@ -212,7 +224,7 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
 
         case SeekType.EndOfFile:
             m_filePos += pos;
-            if ( m_filePos < 0)
+            if (m_filePos < 0)
                 m_filePos = 0L;
             break;
         }
@@ -225,7 +237,8 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
     /**
      * Truncate the file
      * 
-     * @param siz long
+     * @param siz
+     *            long
      * @exception IOException
      */
     public void truncateFile(long siz) throws IOException
@@ -236,8 +249,10 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
     /**
      * Write a block of data to the file.
      * 
-     * @param buf byte[]
-     * @param len int
+     * @param buf
+     *            byte[]
+     * @param len
+     *            int
      * @exception IOException
      */
     public void writeFile(byte[] buf, int len, int pos) throws java.io.IOException
@@ -248,10 +263,14 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
     /**
      * Write a block of data to the file.
      * 
-     * @param buf byte[]
-     * @param len int
-     * @param pos int
-     * @param offset long
+     * @param buf
+     *            byte[]
+     * @param len
+     *            int
+     * @param pos
+     *            int
+     * @param offset
+     *            long
      * @exception IOException
      */
     public void writeFile(byte[] buf, int len, int pos, long offset) throws java.io.IOException
@@ -264,12 +283,13 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
      * 
      * @return FileState
      */
-    public FileState getFileState() {
-          
-      // Create a dummy file state
-          
-      if ( super.getFileState() == null)
-          setFileState(new LocalFileState(getFullName(), false));
-      return super.getFileState();
+    public FileState getFileState()
+    {
+
+        // Create a dummy file state
+
+        if (super.getFileState() == null)
+            setFileState(new LocalFileState(getFullName(), false));
+        return super.getFileState();
     }
 }

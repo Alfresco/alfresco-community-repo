@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,7 +43,7 @@ import org.alfresco.service.cmr.version.VersionType;
 
 /**
  * AdHoc Recordable Versions Integration Test
- *  
+ * 
  * @author Roy Wetherall
  * @since 2.3
  */
@@ -54,10 +54,9 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
      */
     public void testRecordAdHocVersionNoPolicy()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
-            private Map<String, Serializable> versionProperties;    
-            
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
+            private Map<String, Serializable> versionProperties;
+
             public void given() throws Exception
             {
                 // setup version properties
@@ -67,30 +66,29 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_FILE_PLAN, filePlan);
             }
-            
+
             public void when()
-            {                
+            {
                 // create version
                 versionService.createVersion(dmDocument, versionProperties);
-            }            
-            
+            }
+
             public void then()
             {
                 // check that the record has been recorded
                 checkRecordedVersion(dmDocument, DESCRIPTION, "0.1");
             }
-        });        
-    } 
-    
+        });
+    }
+
     /**
      * Adhoc recordable version with recordable set as false
      */
     public void testRecordableVersionFalseNoPolicy()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
-            private Map<String, Serializable> versionProperties;    
-            
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
+            private Map<String, Serializable> versionProperties;
+
             public void given() throws Exception
             {
                 // setup version properties
@@ -100,30 +98,29 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, false);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_FILE_PLAN, filePlan);
             }
-            
+
             public void when()
-            {                
+            {
                 // create version
                 versionService.createVersion(dmDocument, versionProperties);
-            }            
-            
+            }
+
             public void then()
             {
                 // check that the record has been recorded
                 checkNotRecordedAspect(dmDocument, DESCRIPTION, "0.1");
             }
-        });         
+        });
     }
-    
+
     /**
      * Test no file plan specified (and no default available)
      */
     public void testNoFilePlan()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, dmCollaborator)
-        {
-            private Map<String, Serializable> versionProperties;    
-            
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, dmCollaborator) {
+            private Map<String, Serializable> versionProperties;
+
             public void given() throws Exception
             {
                 // setup version properties
@@ -132,32 +129,30 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
             }
-            
+
             public void when()
-            {                
+            {
                 // create version
                 versionService.createVersion(dmDocument, versionProperties);
-            }           
-            
+            }
+
             public void then()
             {
                 // check that the record has been recorded
                 checkRecordedVersion(dmDocument, DESCRIPTION, "0.1");
-            }          
-      
-        });            
+            }
+
+        });
     }
-    
+
     /**
-     * Test recorded version with record metadata aspect (want to ensure additional non-rm URI properties and aspects
-     * don't find their way into the frozen state)
+     * Test recorded version with record metadata aspect (want to ensure additional non-rm URI properties and aspects don't find their way into the frozen state)
      */
     public void testRecordedVersionWithRecordMetadataAspect()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
-            private Map<String, Serializable> versionProperties;    
-            
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
+            private Map<String, Serializable> versionProperties;
+
             public void given() throws Exception
             {
                 // setup version properties
@@ -167,14 +162,13 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_FILE_PLAN, filePlan);
             }
-            
+
             public void when()
-            {                
+            {
                 // create version
                 final Version version = versionService.createVersion(dmDocument, versionProperties);
-                
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // add custom meta-data to record
@@ -182,18 +176,18 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
                         assertNotNull(record);
                         recordService.addRecordType(record, TestModel.ASPECT_RECORD_METADATA);
                         nodeService.setProperty(record, TestModel.PROPERTY_RECORD_METADATA, "Peter Wetherall");
-                        
+
                         return null;
                     }
-                }, AuthenticationUtil.getAdminUserName());                
-            }            
-            
+                }, AuthenticationUtil.getAdminUserName());
+            }
+
             public void then()
             {
                 // check that the record has been recorded
                 checkRecordedVersion(dmDocument, DESCRIPTION, "0.1");
             }
-        });  
+        });
     }
-    
+
 }

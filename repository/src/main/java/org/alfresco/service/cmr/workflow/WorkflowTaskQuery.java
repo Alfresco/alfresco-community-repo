@@ -30,7 +30,6 @@ import java.util.Map;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Workflow Task Query
  * 
@@ -43,55 +42,44 @@ public class WorkflowTaskQuery
 {
     // Engine Id
     private String engineId = null;
-    
+
     // task predicates
     private String taskId;
     private WorkflowTaskState taskState = WorkflowTaskState.IN_PROGRESS;
     private QName taskName;
-    private String actorId;    
-    private Map<QName, Object> taskCustomProps; 
-    
+    private String actorId;
+    private Map<QName, Object> taskCustomProps;
+
     // process predicates
     private String processId;
     private QName processName;
     private String workflowDefinitionName;
     private Boolean active = Boolean.TRUE;
     private Map<QName, Object> processCustomProps;
-    
+
     // order by
     private OrderBy[] orderBy;
-    
+
     // result set size
     private int limit = -1;
-    
+
     /**
      * Order By Columns
      */
     public enum OrderBy
     {
-        TaskId_Asc,
-        TaskId_Desc,
-        TaskCreated_Asc,
-        TaskCreated_Desc,
-        TaskDue_Asc,
-        TaskDue_Desc,
-        TaskName_Asc,
-        TaskName_Desc,
-        TaskActor_Asc,
-        TaskActor_Desc,
-        TaskState_Asc,
-        TaskState_Desc;
+        TaskId_Asc, TaskId_Desc, TaskCreated_Asc, TaskCreated_Desc, TaskDue_Asc, TaskDue_Desc, TaskName_Asc, TaskName_Desc, TaskActor_Asc, TaskActor_Desc, TaskState_Asc, TaskState_Desc;
     }
-    
-    
+
     /**
-     * @param orderBy OrderBy[]
+     * @param orderBy
+     *            OrderBy[]
      */
     public void setOrderBy(OrderBy[] orderBy)
     {
-        this.orderBy = orderBy; 
+        this.orderBy = orderBy;
     }
-    
+
     /**
      * @return OrderBy[]
      */
@@ -99,7 +87,7 @@ public class WorkflowTaskQuery
     {
         return orderBy;
     }
-    
+
     /**
      * @return String
      */
@@ -107,15 +95,16 @@ public class WorkflowTaskQuery
     {
         return taskId;
     }
-    
-    /** 
-     * @param taskId String
+
+    /**
+     * @param taskId
+     *            String
      */
     public void setTaskId(String taskId)
     {
         this.taskId = taskId;
     }
-    
+
     /**
      * @return Map
      */
@@ -138,15 +127,16 @@ public class WorkflowTaskQuery
     {
         return taskState;
     }
-    
+
     /**
-     * @param taskState WorkflowTaskState
+     * @param taskState
+     *            WorkflowTaskState
      */
     public void setTaskState(WorkflowTaskState taskState)
     {
         this.taskState = taskState;
     }
-    
+
     /**
      * @return QName
      */
@@ -154,15 +144,16 @@ public class WorkflowTaskQuery
     {
         return taskName;
     }
-    
+
     /**
-     * @param taskName QName
+     * @param taskName
+     *            QName
      */
     public void setTaskName(QName taskName)
     {
         this.taskName = taskName;
     }
-    
+
     /**
      * @return String
      */
@@ -170,15 +161,16 @@ public class WorkflowTaskQuery
     {
         return actorId;
     }
-    
+
     /**
-     * @param actorId String
+     * @param actorId
+     *            String
      */
     public void setActorId(String actorId)
     {
         this.actorId = actorId;
     }
-    
+
     /**
      * @return String
      */
@@ -189,13 +181,15 @@ public class WorkflowTaskQuery
 
     /**
      * Filters ont he {@link WorkflowInstance} Id.
-     * @param processId String
+     * 
+     * @param processId
+     *            String
      */
     public void setProcessId(String processId)
     {
         this.processId = processId;
     }
-    
+
     /**
      * @return QName
      */
@@ -205,19 +199,17 @@ public class WorkflowTaskQuery
     }
 
     /**
-     * Use {@link WorkflowTaskQuery#setWorkflowDefinitionName(String)} instead.
-     * Filters on the {@link WorkflowDefinition} name. When using Activiti,
-     * the method {@link #setWorkflowDefinitionName(String)} should be used
-     * instead of this method.
+     * Use {@link WorkflowTaskQuery#setWorkflowDefinitionName(String)} instead. Filters on the {@link WorkflowDefinition} name. When using Activiti, the method {@link #setWorkflowDefinitionName(String)} should be used instead of this method.
      * 
-     * @param processName QName
+     * @param processName
+     *            QName
      */
     @Deprecated
     public void setProcessName(QName processName)
     {
         this.processName = processName;
     }
-    
+
     /**
      * @return String
      */
@@ -225,16 +217,18 @@ public class WorkflowTaskQuery
     {
         return workflowDefinitionName;
     }
-    
+
     /**
      * Filters on the {@link WorkflowDefinition} name.
-     * @param workflowDefinitionName String
+     * 
+     * @param workflowDefinitionName
+     *            String
      */
     public void setWorkflowDefinitionName(String workflowDefinitionName)
     {
         this.workflowDefinitionName = workflowDefinitionName;
     }
-    
+
     /**
      * @return Boolean
      */
@@ -242,9 +236,10 @@ public class WorkflowTaskQuery
     {
         return active;
     }
-    
+
     /**
-     * @param active Boolean
+     * @param active
+     *            Boolean
      */
     public void setActive(Boolean active)
     {
@@ -275,15 +270,16 @@ public class WorkflowTaskQuery
     {
         this.limit = limit;
     }
-    
+
     /**
-     * @param engineId the engineId to set
+     * @param engineId
+     *            the engineId to set
      */
     public void setEngineId(String engineId)
     {
         this.engineId = engineId;
     }
-    
+
     /**
      * @return the engineId
      */

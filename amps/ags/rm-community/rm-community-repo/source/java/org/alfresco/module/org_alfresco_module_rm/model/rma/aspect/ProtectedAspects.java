@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,8 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * protected aspects behaviour bean 
- * allow only System user to remove this aspects
+ * protected aspects behaviour bean allow only System user to remove this aspects
  *
  * @author Ramona Popa
  * @since 2.6
@@ -79,7 +78,7 @@ public class ProtectedAspects implements NodeServicePolicies.OnRemoveAspectPolic
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
                 RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID,
                 new JavaBehaviour(this, "onRemoveAspect"));
-        // Watch removal of the aspect  rma:commonRecordDetails
+        // Watch removal of the aspect rma:commonRecordDetails
         this.policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
                 RecordsManagementModel.ASPECT_COMMON_RECORD_DETAILS,

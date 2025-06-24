@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,12 +30,13 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 
 /**
  * Base class for all audit administration webscripts.
@@ -44,30 +45,32 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
  */
 public class BaseAuditAdminWebScript extends DeclarativeWebScript
 {
-	/** Records management audit service */
+    /** Records management audit service */
     protected RecordsManagementAuditService rmAuditService;
-    
+
     /** File plan service */
     protected FilePlanService filePlanService;
-    
+
     /**
      * Sets the RecordsManagementAuditService instance
      * 
-     * @param rmAuditService The RecordsManagementAuditService instance
+     * @param rmAuditService
+     *            The RecordsManagementAuditService instance
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService)
     {
         this.rmAuditService = rmAuditService;
     }
-    
+
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
-    
+        this.filePlanService = filePlanService;
+    }
+
     /**
      * Creates a model to represent the current status of the RM audit log.
      * 
@@ -76,26 +79,26 @@ public class BaseAuditAdminWebScript extends DeclarativeWebScript
     protected Map<String, Object> createAuditStatusModel()
     {
         Map<String, Object> auditStatus = new HashMap<>(3);
-        
+
         auditStatus.put("started", ISO8601DateFormat.format(rmAuditService.getDateAuditLogLastStarted(getDefaultFilePlan())));
         auditStatus.put("stopped", ISO8601DateFormat.format(rmAuditService.getDateAuditLogLastStopped(getDefaultFilePlan())));
         auditStatus.put("enabled", Boolean.valueOf(rmAuditService.isAuditLogEnabled(getDefaultFilePlan())));
-        
+
         return auditStatus;
     }
-    
+
     /**
      * Helper method to get default file plan.
      * 
-     * @return	NodeRef	default file plan
+     * @return NodeRef default file plan
      */
     protected NodeRef getDefaultFilePlan()
     {
-    	NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-    	if (filePlan == null)
-    	{
-    		throw new AlfrescoRuntimeException("Default file plan not found.");
-    	}
-    	return filePlan;
+        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+        if (filePlan == null)
+        {
+            throw new AlfrescoRuntimeException("Default file plan not found.");
+        }
+        return filePlan;
     }
 }

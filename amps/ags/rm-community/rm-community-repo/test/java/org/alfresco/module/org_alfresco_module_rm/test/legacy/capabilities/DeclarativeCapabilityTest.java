@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -45,9 +48,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.springframework.extensions.webscripts.GUID;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Declarative capability unit test
@@ -108,8 +108,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
     {
         super.setupTestData();
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
@@ -157,13 +156,13 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         for (Capability capability : capabilities)
         {
             if (capability instanceof DeclarativeCapability &&
-                !(capability instanceof DeclarativeCompositeCapability) &&
-                !capability.isPrivate() &&
-                !capability.getName().equals("MoveRecords") &&
-                !capability.getName().equals("DeleteLinks") &&
-                !capability.getName().equals("ChangeOrDeleteReferences"))
+                    !(capability instanceof DeclarativeCompositeCapability) &&
+                    !capability.isPrivate() &&
+                    !capability.getName().equals("MoveRecords") &&
+                    !capability.getName().equals("DeleteLinks") &&
+                    !capability.getName().equals("ChangeOrDeleteReferences"))
             {
-                testDeclarativeCapability((DeclarativeCapability)capability);
+                testDeclarativeCapability((DeclarativeCapability) capability);
             }
         }
     }
@@ -181,8 +180,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
 
     private void testDeclarativeCapability(final DeclarativeCapability capability, final String userName, final NodeRef filePlanComponent)
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -192,8 +190,8 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 if (roles.isEmpty())
                 {
                     assertEquals("User " + userName + " has no RM role so we expect access to be denied for capability " + capability.getName(),
-                                 AccessStatus.DENIED,
-                                 accessStatus);
+                            AccessStatus.DENIED,
+                            accessStatus);
                 }
                 else
                 {
@@ -202,7 +200,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                     List<String> kinds = capability.getKinds();
 
                     if (kinds == null ||
-                        kinds.contains(actualKind.toString()))
+                            kinds.contains(actualKind.toString()))
                     {
                         Map<String, Boolean> conditions = capability.getConditions();
                         boolean conditionResult = getConditionResult(filePlanComponent, conditions);
@@ -215,16 +213,16 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                         if (roleCapabilities.contains(capability) && conditionResult)
                         {
                             assertEquals("User " + userName + " has the role " + role.getDisplayLabel() +
-                                         " so we expect access to be allowed for capability " + capability.getName() + " on the object " +
-                                         (String)nodeService.getProperty(filePlanComponent, ContentModel.PROP_NAME),
-                                         AccessStatus.ALLOWED,
-                                         accessStatus);
+                                    " so we expect access to be allowed for capability " + capability.getName() + " on the object " +
+                                    (String) nodeService.getProperty(filePlanComponent, ContentModel.PROP_NAME),
+                                    AccessStatus.ALLOWED,
+                                    accessStatus);
                         }
                         else
                         {
                             assertEquals("User " + userName + " has the role " + role.getDisplayLabel() + " so we expect access to be denied for capability " + capability.getName(),
-                                         AccessStatus.DENIED,
-                                         accessStatus);
+                                    AccessStatus.DENIED,
+                                    accessStatus);
                         }
                     }
                     else
@@ -250,7 +248,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             for (Map.Entry<String, Boolean> entry : conditions.entrySet())
             {
                 // Get the condition bean
-                CapabilityCondition condition = (CapabilityCondition)applicationContext.getBean(entry.getKey());
+                CapabilityCondition condition = (CapabilityCondition) applicationContext.getBean(entry.getKey());
                 assertNotNull("Invalid condition name.", condition);
 
                 boolean actual = condition.evaluate(nodeRef);
@@ -272,8 +270,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         final Capability capability = capabilityService.getCapability("CreateRecords");
         assertNotNull(capability);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -290,8 +287,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             }
         }, recordsManagerName);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -315,8 +311,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         final Capability capability = capabilityService.getCapability("MoveRecords");
         assertNotNull(capability);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -332,8 +327,8 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(undeclaredRecord));
 
                 // now lets take a look when we know what the destination is
-                // NOTE:  should be denied since we do not have file permission on the destination folder
-                //        despite having the capability!
+                // NOTE: should be denied since we do not have file permission on the destination folder
+                // despite having the capability!
                 assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(record, moveToFolder));
                 assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(declaredRecord, moveToFolder));
                 assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(undeclaredRecord, moveToFolder));
@@ -343,8 +338,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             }
         }, recordsManagerName);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -356,8 +350,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -373,7 +366,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(undeclaredRecord));
 
                 // now lets take a look when we know what the destination is
-                // NOTE:  should be allowed now since we have filling permission on the destination folder
+                // NOTE: should be allowed now since we have filling permission on the destination folder
                 assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(record, moveToFolder));
                 assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(declaredRecord, moveToFolder));
                 assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(undeclaredRecord, moveToFolder));
@@ -383,8 +376,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             }
         }, recordsManagerName);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -400,7 +392,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(undeclaredRecord));
 
                 // now lets take a look when we know what the destination is
-                // NOTE:  should be allowed now since we have filling permission on the destination folder
+                // NOTE: should be allowed now since we have filling permission on the destination folder
                 assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(record, moveToFolder));
                 assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(declaredRecord, moveToFolder));
                 assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(undeclaredRecord, moveToFolder));
@@ -417,8 +409,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         final Capability capability = capabilityService.getCapability("MoveRecordFolder");
         assertNotNull(capability);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -439,8 +430,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             }
         }, recordsManagerName);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -452,8 +442,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -473,8 +462,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             }
         }, recordsManagerName);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {

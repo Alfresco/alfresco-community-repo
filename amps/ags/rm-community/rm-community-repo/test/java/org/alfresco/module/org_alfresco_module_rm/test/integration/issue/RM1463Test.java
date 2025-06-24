@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,29 +44,27 @@ public class RM1463Test extends DeleteHoldTest
 {
     public void testAddRecordFolderToHoldWithoutFilingPermissionOnRecordFolder()
     {
-        final NodeRef hold = doTestInTransaction(new Test<NodeRef>()
-        {
-           @Override
-           public NodeRef run()
-           {
-               // Create hold
-               NodeRef hold = createAndCheckHold();
-               
-               // Add the user to the RM Manager role
-               filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
+        final NodeRef hold = doTestInTransaction(new Test<NodeRef>() {
+            @Override
+            public NodeRef run()
+            {
+                // Create hold
+                NodeRef hold = createAndCheckHold();
 
-               // Give the user filing permissions on the hold
-               permissionService.setPermission(hold, userName, RMPermissionModel.FILING, true);
+                // Add the user to the RM Manager role
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
 
-               // Give the user only read permissions on the record folder
-               permissionService.setPermission(rmFolder, userName, RMPermissionModel.READ_RECORDS, true);
+                // Give the user filing permissions on the hold
+                permissionService.setPermission(hold, userName, RMPermissionModel.FILING, true);
 
-               return hold;
-           }
+                // Give the user only read permissions on the record folder
+                permissionService.setPermission(rmFolder, userName, RMPermissionModel.READ_RECORDS, true);
+
+                return hold;
+            }
         });
 
-        doTestInTransaction(new FailureTest(AlfrescoRuntimeException.class)
-        {
+        doTestInTransaction(new FailureTest(AlfrescoRuntimeException.class) {
             @Override
             public void run()
             {

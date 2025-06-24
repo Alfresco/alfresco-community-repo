@@ -34,12 +34,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.rest.api.tests.PublicApiDateFormat;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Properties;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.json.simple.JSONObject;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.rest.api.tests.PublicApiDateFormat;
 
 /**
  * Representation of a document node (as returned by Favourites API)
@@ -57,7 +58,9 @@ public class FavouriteDocument extends FavouriteNode implements ExpectedComparis
 
     /**
      * For POSTs
-     * @param guid String
+     * 
+     * @param guid
+     *            String
      */
     public FavouriteDocument(String guid)
     {
@@ -69,28 +72,28 @@ public class FavouriteDocument extends FavouriteNode implements ExpectedComparis
         super(id, guid);
     }
 
-// public Document(String id, String guid, Map<String, Serializable> properties)
-// {
-//     super(id, guid, properties);
-// }
+    // public Document(String id, String guid, Map<String, Serializable> properties)
+    // {
+    // super(id, guid, properties);
+    // }
 
     public static FavouriteDocument getDocument(String id, String guid, Properties props)
     {
         FavouriteDocument document = new FavouriteDocument(id, guid);
 
         Map<String, PropertyData<?>> properties = props.getProperties();
-        document.setName((String)properties.get(PropertyIds.NAME).getFirstValue());
-        document.setTitle((String)properties.get(ContentModel.PROP_TITLE.toString()).getFirstValue());
-        document.setCreatedBy((String)properties.get(PropertyIds.CREATED_BY).getFirstValue());
-        document.setModifiedBy((String)properties.get(PropertyIds.LAST_MODIFIED_BY).getFirstValue());
-        GregorianCalendar modifiedAt = (GregorianCalendar)properties.get(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
+        document.setName((String) properties.get(PropertyIds.NAME).getFirstValue());
+        document.setTitle((String) properties.get(ContentModel.PROP_TITLE.toString()).getFirstValue());
+        document.setCreatedBy((String) properties.get(PropertyIds.CREATED_BY).getFirstValue());
+        document.setModifiedBy((String) properties.get(PropertyIds.LAST_MODIFIED_BY).getFirstValue());
+        GregorianCalendar modifiedAt = (GregorianCalendar) properties.get(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
         document.setModifiedAt(modifiedAt.getTime());
-        GregorianCalendar createdAt = (GregorianCalendar)properties.get(PropertyIds.CREATION_DATE).getFirstValue();
+        GregorianCalendar createdAt = (GregorianCalendar) properties.get(PropertyIds.CREATION_DATE).getFirstValue();
         document.setCreatedAt(createdAt.getTime());
-        //document.setDescription((String)props.get(PropertyIds.DE).getFirstValue());
-        document.setMimeType((String)properties.get(PropertyIds.CONTENT_STREAM_MIME_TYPE).getFirstValue());
-        document.setSizeInBytes((BigInteger)properties.get(PropertyIds.CONTENT_STREAM_LENGTH).getFirstValue());
-        document.setVersionLabel((String)properties.get(PropertyIds.VERSION_LABEL).getFirstValue());
+        // document.setDescription((String)props.get(PropertyIds.DE).getFirstValue());
+        document.setMimeType((String) properties.get(PropertyIds.CONTENT_STREAM_MIME_TYPE).getFirstValue());
+        document.setSizeInBytes((BigInteger) properties.get(PropertyIds.CONTENT_STREAM_LENGTH).getFirstValue());
+        document.setVersionLabel((String) properties.get(PropertyIds.VERSION_LABEL).getFirstValue());
         return document;
     }
 
@@ -137,7 +140,7 @@ public class FavouriteDocument extends FavouriteNode implements ExpectedComparis
 
         assertTrue(o instanceof FavouriteDocument);
 
-        FavouriteDocument other = (FavouriteDocument)o;
+        FavouriteDocument other = (FavouriteDocument) o;
 
         AssertUtil.assertEquals("mimeType", mimeType, other.getMimeType());
         AssertUtil.assertEquals("sizeInBytes", sizeInBytes, other.getSizeInBytes());
@@ -146,18 +149,18 @@ public class FavouriteDocument extends FavouriteNode implements ExpectedComparis
 
     public static FavouriteDocument parseDocument(JSONObject jsonObject) throws ParseException
     {
-        String id = (String)jsonObject.get("id");
-        String guid = (String)jsonObject.get("guid");
-        String name = (String)jsonObject.get("name");
-        String title = (String)jsonObject.get("title");
-        String description = (String)jsonObject.get("description");
-        Date createdAt = PublicApiDateFormat.getDateFormat().parse((String)jsonObject.get("createdAt"));
-        Date modifiedAt = PublicApiDateFormat.getDateFormat().parse((String)jsonObject.get("modifiedAt"));
-        String createdBy = (String)jsonObject.get("createdBy");
-        String modifiedBy = (String)jsonObject.get("modifiedBy");
-        String mimeType = (String)jsonObject.get("mimeType");
-        Long sizeInBytes = (Long)jsonObject.get("sizeInBytes");
-        String versionLabel = (String)jsonObject.get("versionLabel");
+        String id = (String) jsonObject.get("id");
+        String guid = (String) jsonObject.get("guid");
+        String name = (String) jsonObject.get("name");
+        String title = (String) jsonObject.get("title");
+        String description = (String) jsonObject.get("description");
+        Date createdAt = PublicApiDateFormat.getDateFormat().parse((String) jsonObject.get("createdAt"));
+        Date modifiedAt = PublicApiDateFormat.getDateFormat().parse((String) jsonObject.get("modifiedAt"));
+        String createdBy = (String) jsonObject.get("createdBy");
+        String modifiedBy = (String) jsonObject.get("modifiedBy");
+        String mimeType = (String) jsonObject.get("mimeType");
+        Long sizeInBytes = (Long) jsonObject.get("sizeInBytes");
+        String versionLabel = (String) jsonObject.get("versionLabel");
 
         FavouriteDocument document = new FavouriteDocument(id, guid);
         document.setName(name);
@@ -180,19 +183,19 @@ public class FavouriteDocument extends FavouriteNode implements ExpectedComparis
     {
         final StringBuilder sb = new StringBuilder(250);
         sb.append("FavouriteDocument [nodeId=").append(nodeId)
-                    .append(", guid=").append(guid)
-                    .append(", name=").append(name)
-                    .append(", title=").append(title)
-                    .append(", description=").append(description)
-                    .append(", createdAt=").append(createdAt)
-                    .append(", modifiedAt=").append(modifiedAt)
-                    .append(", createdBy=").append(createdBy)
-                    .append(", modifiedBy=").append(modifiedBy)
-                    .append(", mimeType=").append(mimeType)
-                    .append(", sizeInBytes=").append(sizeInBytes)
-                    .append(", versionLabel=").append(versionLabel)
-                    .append(", path=").append(path)
-                    .append(']');
+                .append(", guid=").append(guid)
+                .append(", name=").append(name)
+                .append(", title=").append(title)
+                .append(", description=").append(description)
+                .append(", createdAt=").append(createdAt)
+                .append(", modifiedAt=").append(modifiedAt)
+                .append(", createdBy=").append(createdBy)
+                .append(", modifiedBy=").append(modifiedBy)
+                .append(", mimeType=").append(mimeType)
+                .append(", sizeInBytes=").append(sizeInBytes)
+                .append(", versionLabel=").append(versionLabel)
+                .append(", path=").append(path)
+                .append(']');
         return sb.toString();
     }
 }

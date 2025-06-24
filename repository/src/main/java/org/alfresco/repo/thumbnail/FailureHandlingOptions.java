@@ -44,27 +44,27 @@ public class FailureHandlingOptions
     public static final int DEFAULT_PERIOD = 0;
     public static final int DEFAULT_RETRY_COUNT = 2;
     public static final boolean DEFAULT_QUIET_PERIOD_RETRIES_ENABLED = true;
-    
+
     /**
      * The minimum amount of time (in seconds) before a 'difficult' piece of content should be reattempted.
      */
     private long quietPeriod = DEFAULT_PERIOD;
-    
+
     /**
      * The minimum amount of time (in seconds) before a {@link ThumbnailDefinition} should be initially reattempted.
      */
     private long retryPeriod = DEFAULT_PERIOD;
-    
+
     /**
      * The maximum number of times to try to thumbnail a normal piece of content.
      */
     private int retryCount = DEFAULT_RETRY_COUNT;
-    
+
     /**
      * Are thumbnail retries enabled for difficult content?
      */
     private boolean quietPeriodRetriesEnabled = DEFAULT_QUIET_PERIOD_RETRIES_ENABLED;
-    
+
     public int getRetryCount()
     {
         return retryCount;
@@ -79,21 +79,23 @@ public class FailureHandlingOptions
     {
         return quietPeriodRetriesEnabled;
     }
-    
+
     public void setQuietPeriodRetriesEnabled(boolean quietPeriodRetriesEnabled)
     {
         this.quietPeriodRetriesEnabled = quietPeriodRetriesEnabled;
     }
-    
+
     /**
      * Sets the initial minimum retry period for thumbnail creation/update.
-     * @param retryPeriod minimum retry period in ms.
+     * 
+     * @param retryPeriod
+     *            minimum retry period in ms.
      */
     public void setRetryPeriod(long retryPeriod)
     {
         this.retryPeriod = retryPeriod;
     }
-    
+
     public long getRetryPeriod()
     {
         return this.retryPeriod;
@@ -101,13 +103,15 @@ public class FailureHandlingOptions
 
     /**
      * Sets the minimum retry period for thumbnail creation/update.
-     * @param quietPeriod minimum retry period in ms.
+     * 
+     * @param quietPeriod
+     *            minimum retry period in ms.
      */
     public void setQuietPeriod(long quietPeriod)
     {
         this.quietPeriod = quietPeriod;
     }
-    
+
     public long getQuietPeriod()
     {
         return this.quietPeriod;

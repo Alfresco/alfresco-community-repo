@@ -31,8 +31,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Generated from 'Alfresco Authentication REST API' swagger file
- * Base Path {@linkplain /alfresco/api/-default-/public/authentication/versions/1}
+ * Generated from 'Alfresco Authentication REST API' swagger file Base Path {@linkplain /alfresco/api/-default-/public/authentication/versions/1}
  */
 public class RestTicketBodyModel extends TestModel implements IRestModel<RestTicketBodyModel>
 {
@@ -45,8 +44,8 @@ public class RestTicketBodyModel extends TestModel implements IRestModel<RestTic
         return model;
     }
 
-    private String userId;	    
-    private String password;	    
+    private String userId;
+    private String password;
 
     public String getUserId()
     {
@@ -56,7 +55,7 @@ public class RestTicketBodyModel extends TestModel implements IRestModel<RestTic
     public void setUserId(String userId)
     {
         this.userId = userId;
-    }				
+    }
 
     public String getPassword()
     {
@@ -66,6 +65,5 @@ public class RestTicketBodyModel extends TestModel implements IRestModel<RestTic
     public void setPassword(String password)
     {
         this.password = password;
-    }				
+    }
 }
- 

@@ -31,13 +31,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Handles single Deployment Entry JSON response
- *  "entry": {
- *  "id": "string",
- *  "name": "string",
- *  "category": "string",
- *  "deployedAt": "2016-10-04T13:15:36.222Z"
- *   }
+ * Handles single Deployment Entry JSON response "entry": { "id": "string", "name": "string", "category": "string", "deployedAt": "2016-10-04T13:15:36.222Z" }
  *
  * Created by Claudia Agache on 10/4/2016.
  */
@@ -45,22 +39,20 @@ public class RestDeploymentModel extends TestModel implements IRestModel<RestDep
 {
     @JsonProperty(value = "entry")
     RestDeploymentModel model;
-    
+
     @Override
     public RestDeploymentModel onModel()
     {
         return model;
     }
-    
+
     public RestDeploymentModel()
-    {
-    }
-    
+    {}
+
     public RestDeploymentModel(String id)
     {
         setId(id);
     }
-    
 
     @JsonProperty(required = true)
     private String id;

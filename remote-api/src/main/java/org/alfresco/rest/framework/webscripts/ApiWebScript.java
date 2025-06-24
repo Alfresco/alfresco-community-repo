@@ -30,6 +30,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import org.alfresco.repo.web.scripts.BufferedRequest;
 import org.alfresco.repo.web.scripts.BufferedResponse;
 import org.alfresco.repo.web.scripts.TempOutputStream;
@@ -37,15 +43,9 @@ import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
- * Entry point for API webscript.  Supports version/scope as well
- * as discovery.
+ * Entry point for API webscript. Supports version/scope as well as discovery.
  *
  * @author Gethin James
  */
@@ -65,7 +65,8 @@ public abstract class ApiWebScript extends AbstractWebScript
         this.transactionService = transactionService;
     }
 
-    public void setAssistant(ApiAssistant assistant) {
+    public void setAssistant(ApiAssistant assistant)
+    {
         this.assistant = assistant;
     }
 
@@ -107,7 +108,7 @@ public abstract class ApiWebScript extends AbstractWebScript
         final Api api = ApiAssistant.determineApi(templateVars);
 
         try (final BufferedRequest bufferedReq = getRequest(req);
-             final BufferedResponse bufferedRes = getResponse(res))
+                final BufferedResponse bufferedRes = getResponse(res))
         {
             execute(api, bufferedReq, bufferedRes);
 

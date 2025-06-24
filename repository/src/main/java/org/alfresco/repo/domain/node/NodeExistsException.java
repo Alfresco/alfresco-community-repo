@@ -38,7 +38,7 @@ import org.alfresco.util.Pair;
 public class NodeExistsException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = -2122408334209855947L;
-    
+
     private final Pair<Long, NodeRef> nodePair;
 
     public NodeExistsException(Pair<Long, NodeRef> nodePair, Throwable e)

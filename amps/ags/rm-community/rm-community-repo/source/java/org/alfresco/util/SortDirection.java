@@ -1,12 +1,8 @@
-package org.alfresco.util;
-
-import org.alfresco.api.AlfrescoPublicApi;
-
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,7 +24,9 @@ import org.alfresco.api.AlfrescoPublicApi;
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.util;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
@@ -40,8 +38,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 @AlfrescoPublicApi
 public enum SortDirection
 {
-    ASC ("asc"),
-    DESC ("desc");
+    ASC("asc"), DESC("desc");
 
     /** A string representation of the sort direction. */
     private final String sortDirection;
@@ -54,7 +51,8 @@ public enum SortDirection
     /**
      * Get the appropriate {@code SortDirection} from a string representation.
      *
-     * @param sortDirectionString A string representation (case will be ignored).
+     * @param sortDirectionString
+     *            A string representation (case will be ignored).
      * @return The {@code SortDirection} value.
      */
     public static SortDirection getSortDirection(String sortDirectionString)

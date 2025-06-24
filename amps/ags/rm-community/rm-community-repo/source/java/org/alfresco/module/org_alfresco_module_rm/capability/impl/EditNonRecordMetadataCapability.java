@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,12 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Edit non record metadata capability
@@ -44,15 +44,16 @@ public class EditNonRecordMetadataCapability extends DeclarativeCapability
 {
     /** transaction resource helper */
     private TransactionalResourceHelper transactionalResourceHelper;
-    
+
     /**
-     * @param transactionalResourceHelper   transaction resource helper
+     * @param transactionalResourceHelper
+     *            transaction resource helper
      */
     public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
     {
         this.transactionalResourceHelper = transactionalResourceHelper;
     }
-    
+
     @Override
     public int evaluate(NodeRef nodeRef)
     {
@@ -64,9 +65,8 @@ public class EditNonRecordMetadataCapability extends DeclarativeCapability
             // @see https://issues.alfresco.com/jira/browse/RM-1956
             return AccessDecisionVoter.ACCESS_GRANTED;
         }
-        
+
         return super.evaluate(nodeRef);
     }
 
-   
 }

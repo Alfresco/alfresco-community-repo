@@ -28,15 +28,14 @@ package org.alfresco.util.json;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
+import org.json.JSONObject;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.json.JSONObject;
-
 
 public class ExceptionJsonSerializerTest extends TestCase
 {
-    
+
     private ExceptionJsonSerializer serializer;
 
     @Override
@@ -61,20 +60,20 @@ public class ExceptionJsonSerializerTest extends TestCase
         JSONObject obj = serializer.serialize(expectedException);
         Throwable actualException = serializer.deserialize(obj);
         assertEquals(expectedException.getClass(), actualException.getClass());
-        assertEquals(expectedException.getMsgId(), ((AlfrescoRuntimeException)actualException).getMsgId());
-        assertTrue(((AlfrescoRuntimeException)actualException).getMsgParams().length == 0);
+        assertEquals(expectedException.getMsgId(), ((AlfrescoRuntimeException) actualException).getMsgId());
+        assertTrue(((AlfrescoRuntimeException) actualException).getMsgParams().length == 0);
     }
 
     public void testAlfrescoRuntimeExceptionWithParams()
     {
-        AlfrescoRuntimeException expectedException = new AlfrescoRuntimeException("message id", 
-                new Object[]{"one","two","three"});
+        AlfrescoRuntimeException expectedException = new AlfrescoRuntimeException("message id",
+                new Object[]{"one", "two", "three"});
         JSONObject obj = serializer.serialize(expectedException);
         Throwable actualException = serializer.deserialize(obj);
         assertEquals(expectedException.getClass(), actualException.getClass());
-        assertEquals(expectedException.getMsgId(), ((AlfrescoRuntimeException)actualException).getMsgId());
-        assertTrue(Arrays.deepEquals(expectedException.getMsgParams(), 
-                ((AlfrescoRuntimeException)actualException).getMsgParams()));
+        assertEquals(expectedException.getMsgId(), ((AlfrescoRuntimeException) actualException).getMsgId());
+        assertTrue(Arrays.deepEquals(expectedException.getMsgParams(),
+                ((AlfrescoRuntimeException) actualException).getMsgParams()));
     }
 
     public void testAccessDeniedException()
@@ -83,7 +82,7 @@ public class ExceptionJsonSerializerTest extends TestCase
         JSONObject obj = serializer.serialize(expectedException);
         Throwable actualException = serializer.deserialize(obj);
         assertEquals(expectedException.getClass(), actualException.getClass());
-        assertEquals(expectedException.getMsgId(), ((AlfrescoRuntimeException)actualException).getMsgId());
+        assertEquals(expectedException.getMsgId(), ((AlfrescoRuntimeException) actualException).getMsgId());
         assertTrue(expectedException.getMsgParams() == null);
     }
 }

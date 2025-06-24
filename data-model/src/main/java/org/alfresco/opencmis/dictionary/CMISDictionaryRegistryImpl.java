@@ -33,6 +33,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.CmisExtensionElementImpl;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.opencmis.dictionary.CMISAbstractDictionaryService.DictionaryInitializer;
 import org.alfresco.opencmis.mapping.CMISMapping;
 import org.alfresco.repo.dictionary.CompiledModel;
@@ -41,10 +46,6 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.CmisExtensionElementImpl;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * CMIS Dictionary registry
@@ -62,12 +63,12 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
     // Logger
     protected static final Log logger = LogFactory.getLog(CMISDictionaryRegistryImpl.class);
 
-	private CMISMapping cmisMapping;
-	private DictionaryService dictionaryService;
-	private String tenant;
+    private CMISMapping cmisMapping;
+    private DictionaryService dictionaryService;
+    private String tenant;
 
-	protected CMISAbstractDictionaryService cmisDictionaryService;
-	private String parentTenant;
+    protected CMISAbstractDictionaryService cmisDictionaryService;
+    private String parentTenant;
 
     private DictionaryInitializer dictionaryInitializer;
 
@@ -82,278 +83,275 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
     private Map<String, PropertyDefinitionWrapper> propDefbyPropId = new HashMap<String, PropertyDefinitionWrapper>();
     private Map<String, PropertyDefinitionWrapper> propDefbyQueryName = new HashMap<String, PropertyDefinitionWrapper>();
 
-	private Map<String, List<TypeDefinitionWrapper>> children = new HashMap<String, List<TypeDefinitionWrapper>>();
+    private Map<String, List<TypeDefinitionWrapper>> children = new HashMap<String, List<TypeDefinitionWrapper>>();
 
     public CMISDictionaryRegistryImpl(CMISAbstractDictionaryService cmisDictionaryService, CMISMapping cmisMapping,
-    		DictionaryService dictionaryService, DictionaryInitializer dictionaryInitializer)
+            DictionaryService dictionaryService, DictionaryInitializer dictionaryInitializer)
     {
-    	this(cmisDictionaryService, "", null, cmisMapping, dictionaryService, dictionaryInitializer);
+        this(cmisDictionaryService, "", null, cmisMapping, dictionaryService, dictionaryInitializer);
     }
 
-    /*
-     * Testing only.
-     */
+    /* Testing only. */
     CMISDictionaryRegistryImpl()
-    {
-    }
+    {}
 
     public CMISDictionaryRegistryImpl(CMISAbstractDictionaryService cmisDictionaryService, String tenant, String parentTenant,
-    		CMISMapping cmisMapping, DictionaryService dictionaryService, DictionaryInitializer dictionaryInitializer)
+            CMISMapping cmisMapping, DictionaryService dictionaryService, DictionaryInitializer dictionaryInitializer)
     {
-    	this.cmisDictionaryService = cmisDictionaryService;
-    	this.tenant = tenant;
-    	this.parentTenant = parentTenant;
-    	this.cmisMapping = cmisMapping;
-    	this.dictionaryService = dictionaryService;
-    	this.dictionaryInitializer = dictionaryInitializer;
+        this.cmisDictionaryService = cmisDictionaryService;
+        this.tenant = tenant;
+        this.parentTenant = parentTenant;
+        this.cmisMapping = cmisMapping;
+        this.dictionaryService = dictionaryService;
+        this.dictionaryInitializer = dictionaryInitializer;
     }
 
     protected CMISDictionaryRegistry getParent()
     {
-    	CMISDictionaryRegistry registry = null;
-    	if(parentTenant != null)
-    	{
-    		return cmisDictionaryService.getRegistry(parentTenant);
-    	}
-    	return registry;
+        CMISDictionaryRegistry registry = null;
+        if (parentTenant != null)
+        {
+            return cmisDictionaryService.getRegistry(parentTenant);
+        }
+        return registry;
     }
 
     @Override
     public String getTenant()
     {
-		return tenant;
-	}
-
-	private List<TypeDefinitionWrapper> getChildrenImpl(String typeId)
-	{
-		return children.get(typeId);
-	}
-
-    @Override
-	public List<TypeDefinitionWrapper> getChildren(String typeId)
-	{
-    	List<TypeDefinitionWrapper> ret = new LinkedList<>();
-
-    	List<TypeDefinitionWrapper> children = getChildrenImpl(typeId);
-    	if(children != null)
-    	{
-    		ret.addAll(children);
-    	}
-
-		if(getParent() != null)
-		{
-			children = getParent().getChildren(typeId);
-	    	if(children != null)
-	    	{
-	    		ret.addAll(children);
-	    	}
-		}
-
-		return ret;
-	}
-
-    @Override
-	public void setChildren(String typeId, List<TypeDefinitionWrapper> children)
-	{
-		this.children.put(typeId, children);
-	}
-
-    @Override
-	public void addChild(String typeId, TypeDefinitionWrapper child)
-	{
-    	List<TypeDefinitionWrapper> children = this.children.get(typeId);
-    	if(children == null)
-    	{
-    		children = new LinkedList<TypeDefinitionWrapper>();
-    		this.children.put(typeId, children);
-    	}
-		children.add(child);
-	}
-
-	@Override
-    public TypeDefinitionWrapper getTypeDefByTypeId(String typeId)
-    {
-		return getTypeDefByTypeId(typeId, true);
+        return tenant;
     }
 
-	@Override
+    private List<TypeDefinitionWrapper> getChildrenImpl(String typeId)
+    {
+        return children.get(typeId);
+    }
+
+    @Override
+    public List<TypeDefinitionWrapper> getChildren(String typeId)
+    {
+        List<TypeDefinitionWrapper> ret = new LinkedList<>();
+
+        List<TypeDefinitionWrapper> children = getChildrenImpl(typeId);
+        if (children != null)
+        {
+            ret.addAll(children);
+        }
+
+        if (getParent() != null)
+        {
+            children = getParent().getChildren(typeId);
+            if (children != null)
+            {
+                ret.addAll(children);
+            }
+        }
+
+        return ret;
+    }
+
+    @Override
+    public void setChildren(String typeId, List<TypeDefinitionWrapper> children)
+    {
+        this.children.put(typeId, children);
+    }
+
+    @Override
+    public void addChild(String typeId, TypeDefinitionWrapper child)
+    {
+        List<TypeDefinitionWrapper> children = this.children.get(typeId);
+        if (children == null)
+        {
+            children = new LinkedList<TypeDefinitionWrapper>();
+            this.children.put(typeId, children);
+        }
+        children.add(child);
+    }
+
+    @Override
+    public TypeDefinitionWrapper getTypeDefByTypeId(String typeId)
+    {
+        return getTypeDefByTypeId(typeId, true);
+    }
+
+    @Override
     public TypeDefinitionWrapper getTypeDefByTypeId(String typeId, boolean includeParent)
     {
-    	TypeDefinitionWrapper typeDef = typeDefsByTypeId.get(typeId);
-    	if(typeDef == null && includeParent && getParent() != null)
-    	{
-    		typeDef = getParent().getTypeDefByTypeId(typeId);
-    	}
+        TypeDefinitionWrapper typeDef = typeDefsByTypeId.get(typeId);
+        if (typeDef == null && includeParent && getParent() != null)
+        {
+            typeDef = getParent().getTypeDefByTypeId(typeId);
+        }
 
-    	return typeDef;
+        return typeDef;
     }
 
     @Override
     public TypeDefinitionWrapper getAssocDefByQName(QName qname)
     {
-    	TypeDefinitionWrapper typeDef = assocDefsByQName.get(qname);
-    	if(typeDef == null && getParent() != null)
-    	{
-    		typeDef = getParent().getAssocDefByQName(qname);
-    	}
+        TypeDefinitionWrapper typeDef = assocDefsByQName.get(qname);
+        if (typeDef == null && getParent() != null)
+        {
+            typeDef = getParent().getAssocDefByQName(qname);
+        }
 
-    	return typeDef;
+        return typeDef;
     }
 
     @Override
     public TypeDefinitionWrapper getTypeDefByQueryName(Object queryName)
     {
-    	TypeDefinitionWrapper typeDef = typeDefsByQueryName.get(queryName);
-    	if(typeDef == null && getParent() != null)
-    	{
-    		typeDef = getParent().getTypeDefByQueryName(queryName);
-    	}
+        TypeDefinitionWrapper typeDef = typeDefsByQueryName.get(queryName);
+        if (typeDef == null && getParent() != null)
+        {
+            typeDef = getParent().getTypeDefByQueryName(queryName);
+        }
 
-    	return typeDef;
+        return typeDef;
     }
 
     @Override
     public TypeDefinitionWrapper getTypeDefByQName(QName qname)
     {
-    	TypeDefinitionWrapper typeDef = typeDefsByQName.get(qname);
-    	if(typeDef == null && getParent() != null)
-    	{
-    		typeDef = getParent().getTypeDefByQName(qname);
-    	}
+        TypeDefinitionWrapper typeDef = typeDefsByQName.get(qname);
+        if (typeDef == null && getParent() != null)
+        {
+            typeDef = getParent().getTypeDefByQName(qname);
+        }
 
-    	return typeDef;
+        return typeDef;
     }
 
     @Override
     public PropertyDefinitionWrapper getPropDefByPropId(String propId)
     {
-    	PropertyDefinitionWrapper propDef = propDefbyPropId.get(propId);
-    	if(propDef == null && getParent() != null)
-    	{
-    		propDef = getParent().getPropDefByPropId(propId);
-    	}
+        PropertyDefinitionWrapper propDef = propDefbyPropId.get(propId);
+        if (propDef == null && getParent() != null)
+        {
+            propDef = getParent().getPropDefByPropId(propId);
+        }
 
-    	return propDef;
+        return propDef;
     }
 
     @Override
     public PropertyDefinitionWrapper getPropDefByQueryName(Object queryName)
     {
-    	PropertyDefinitionWrapper propDef = propDefbyQueryName.get(queryName);
-    	if(propDef == null && getParent() != null)
-    	{
-    		propDef = getParent().getPropDefByQueryName(queryName);
-    	}
+        PropertyDefinitionWrapper propDef = propDefbyQueryName.get(queryName);
+        if (propDef == null && getParent() != null)
+        {
+            propDef = getParent().getPropDefByQueryName(queryName);
+        }
 
-    	return propDef;
+        return propDef;
     }
 
     private Collection<AbstractTypeDefinitionWrapper> getTypeDefsImpl()
     {
-    	return typeDefsByTypeId.values();
+        return typeDefsByTypeId.values();
     }
 
     @Override
     public Collection<AbstractTypeDefinitionWrapper> getTypeDefs()
     {
-    	return getTypeDefs(true);
+        return getTypeDefs(true);
     }
 
     @Override
     public Collection<AbstractTypeDefinitionWrapper> getTypeDefs(boolean includeParent)
     {
-    	Collection<AbstractTypeDefinitionWrapper> ret = new LinkedList<>();
-    	ret.addAll(getTypeDefsImpl());
-    	if(includeParent && getParent() != null)
-    	{
-    		ret.addAll(getParent().getTypeDefs());
-    	}
-    	return Collections.unmodifiableCollection(ret);
+        Collection<AbstractTypeDefinitionWrapper> ret = new LinkedList<>();
+        ret.addAll(getTypeDefsImpl());
+        if (includeParent && getParent() != null)
+        {
+            ret.addAll(getParent().getTypeDefs());
+        }
+        return Collections.unmodifiableCollection(ret);
     }
 
     private Collection<AbstractTypeDefinitionWrapper> getAssocDefsImpl()
     {
-    	return assocDefsByQName.values();
+        return assocDefsByQName.values();
     }
 
     @Override
     public Collection<AbstractTypeDefinitionWrapper> getAssocDefs()
     {
-    	return getAssocDefs(true);
+        return getAssocDefs(true);
     }
 
     @Override
     public Collection<AbstractTypeDefinitionWrapper> getAssocDefs(boolean includeParent)
     {
-    	Collection<AbstractTypeDefinitionWrapper> ret = new LinkedList<>();
-    	ret.addAll(getAssocDefsImpl());
-    	if(includeParent && getParent() != null)
-    	{
-    		ret.addAll(getParent().getAssocDefs());
-    	}
-    	return Collections.unmodifiableCollection(ret);
+        Collection<AbstractTypeDefinitionWrapper> ret = new LinkedList<>();
+        ret.addAll(getAssocDefsImpl());
+        if (includeParent && getParent() != null)
+        {
+            ret.addAll(getParent().getAssocDefs());
+        }
+        return Collections.unmodifiableCollection(ret);
     }
 
     private void addTypeExtensions(TypeDefinitionWrapper td)
     {
         QName classQName = td.getAlfrescoClass();
         ClassDefinition classDef = dictionaryService.getClass(classQName);
-        if(classDef != null)
+        if (classDef != null)
         {
-	        // add mandatory/default aspects
-	        List<AspectDefinition> defaultAspects = classDef.getDefaultAspects(true);
-	        if(defaultAspects != null && defaultAspects.size() > 0)
-	        {
-		        List<CmisExtensionElement> mandatoryAspectsExtensions = new ArrayList<CmisExtensionElement>();
-		        for(AspectDefinition aspectDef : defaultAspects)
-		        {
-		        	QName aspectQName = aspectDef.getName();
-		        	
-		        	TypeDefinitionWrapper aspectType = getTypeDefByQName(cmisMapping.getCmisType(aspectQName));
-		            if (aspectType == null)
-		            {
-		                continue;
-		            }
-	
-		        	mandatoryAspectsExtensions.add(new CmisExtensionElementImpl(ALFRESCO_EXTENSION_NAMESPACE, MANDATORY_ASPECT, null, aspectType.getTypeId()));
-		        }
-	
-	            if(!mandatoryAspectsExtensions.isEmpty())
-	            {
-	                td.getTypeDefinition(true).setExtensions(
-	                        Collections.singletonList((CmisExtensionElement) new CmisExtensionElementImpl(
-	                                ALFRESCO_EXTENSION_NAMESPACE, MANDATORY_ASPECTS, null, mandatoryAspectsExtensions)));
-	            }
-	        }
+            // add mandatory/default aspects
+            List<AspectDefinition> defaultAspects = classDef.getDefaultAspects(true);
+            if (defaultAspects != null && defaultAspects.size() > 0)
+            {
+                List<CmisExtensionElement> mandatoryAspectsExtensions = new ArrayList<CmisExtensionElement>();
+                for (AspectDefinition aspectDef : defaultAspects)
+                {
+                    QName aspectQName = aspectDef.getName();
+
+                    TypeDefinitionWrapper aspectType = getTypeDefByQName(cmisMapping.getCmisType(aspectQName));
+                    if (aspectType == null)
+                    {
+                        continue;
+                    }
+
+                    mandatoryAspectsExtensions.add(new CmisExtensionElementImpl(ALFRESCO_EXTENSION_NAMESPACE, MANDATORY_ASPECT, null, aspectType.getTypeId()));
+                }
+
+                if (!mandatoryAspectsExtensions.isEmpty())
+                {
+                    td.getTypeDefinition(true).setExtensions(
+                            Collections.singletonList((CmisExtensionElement) new CmisExtensionElementImpl(
+                                    ALFRESCO_EXTENSION_NAMESPACE, MANDATORY_ASPECTS, null, mandatoryAspectsExtensions)));
+                }
+            }
         }
     }
 
     @Override
     public void addModel(CompiledModel model)
     {
-    	Collection<AbstractTypeDefinitionWrapper> types = dictionaryInitializer.createDefinitions(this, model);
-    	addTypes(types);
-    	for(AbstractTypeDefinitionWrapper type : types)
-    	{
-    		type.resolveInheritance(cmisMapping, this, dictionaryService);
-    	}
+        Collection<AbstractTypeDefinitionWrapper> types = dictionaryInitializer.createDefinitions(this, model);
+        addTypes(types);
+        for (AbstractTypeDefinitionWrapper type : types)
+        {
+            type.resolveInheritance(cmisMapping, this, dictionaryService);
+        }
     }
 
     @Override
     public void updateModel(CompiledModel model)
     {
-    	// TODO
+        // TODO
     }
 
     @Override
     public void removeModel(CompiledModel model)
     {
-    	// TODO
+        // TODO
     }
 
     private void clear()
     {
-    	typeDefsByQName.clear();
+        typeDefsByQName.clear();
         assocDefsByQName.clear();
         typeDefsByTypeId.clear();
         typeDefsByQueryName.clear();
@@ -362,7 +360,7 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
         propDefbyPropId.clear();
         propDefbyQueryName.clear();
 
-    	children.clear();
+        children.clear();
     }
 
     private void addTypes(Collection<AbstractTypeDefinitionWrapper> types)
@@ -370,7 +368,7 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
         // phase 1: construct type definitions and link them together
         for (AbstractTypeDefinitionWrapper objectTypeDef : types)
         {
-        	List<TypeDefinitionWrapper> children = objectTypeDef.connectParentAndSubTypes(cmisMapping, this, dictionaryService);
+            List<TypeDefinitionWrapper> children = objectTypeDef.connectParentAndSubTypes(cmisMapping, this, dictionaryService);
             setChildren(objectTypeDef.getTypeId(), children);
         }
 
@@ -378,12 +376,12 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
         for (AbstractTypeDefinitionWrapper typeDef : types)
         {
             if (typeDef.getTypeDefinition(false).getParentTypeId() == null ||
-            		!tenant.equals(TenantService.DEFAULT_DOMAIN))
+                    !tenant.equals(TenantService.DEFAULT_DOMAIN))
             {
-            	if(tenant.equals(TenantService.DEFAULT_DOMAIN))
-            	{
-            		baseTypes.add(typeDef);
-            	}
+                if (tenant.equals(TenantService.DEFAULT_DOMAIN))
+                {
+                    baseTypes.add(typeDef);
+                }
                 typeDef.resolveInheritance(cmisMapping, this, dictionaryService);
             }
         }
@@ -405,55 +403,55 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
 
     public void init()
     {
-    	long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
 
         if (logger.isDebugEnabled())
         {
             logger.debug("Creating type definitions...");
         }
 
-    	Collection<AbstractTypeDefinitionWrapper> types = dictionaryInitializer.createDefinitions(this);
-    	addTypes(types);
+        Collection<AbstractTypeDefinitionWrapper> types = dictionaryInitializer.createDefinitions(this);
+        addTypes(types);
 
-    	long end = System.currentTimeMillis();
+        long end = System.currentTimeMillis();
 
         if (logger.isInfoEnabled())
         {
             logger.info("Initialized CMIS Dictionary " + cmisMapping.getCmisVersion() + " tenant " + tenant + " in " + (end - start) + "ms. Types:"
-            		+ typeDefsByTypeId.size() + ", Base Types:" + baseTypes.size());
+                    + typeDefsByTypeId.size() + ", Base Types:" + baseTypes.size());
         }
     }
 
     private List<TypeDefinitionWrapper> getBaseTypesImpl()
     {
-    	return baseTypes;
+        return baseTypes;
     }
 
     @Override
     public List<TypeDefinitionWrapper> getBaseTypes()
     {
-    	return getBaseTypes(true);
+        return getBaseTypes(true);
     }
 
     @Override
     public List<TypeDefinitionWrapper> getBaseTypes(boolean includeParent)
     {
-    	List<TypeDefinitionWrapper> ret = new LinkedList<TypeDefinitionWrapper>();
+        List<TypeDefinitionWrapper> ret = new LinkedList<TypeDefinitionWrapper>();
 
-    	List<TypeDefinitionWrapper> baseTypes = getBaseTypesImpl();
-    	if(baseTypes != null)
-    	{
-    		ret.addAll(baseTypes);
-    	}
+        List<TypeDefinitionWrapper> baseTypes = getBaseTypesImpl();
+        if (baseTypes != null)
+        {
+            ret.addAll(baseTypes);
+        }
 
-    	if(includeParent && getParent() != null)
-    	{
-    		baseTypes = getParent().getBaseTypes();
-        	if(baseTypes != null)
-        	{
-        		ret.addAll(baseTypes);
-        	}
-    	}
+        if (includeParent && getParent() != null)
+        {
+            baseTypes = getParent().getBaseTypes();
+            if (baseTypes != null)
+            {
+                ret.addAll(baseTypes);
+            }
+        }
 
         return Collections.unmodifiableList(ret);
     }
@@ -461,7 +459,8 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
     /**
      * Register type definition.
      * 
-     * @param typeDef AbstractTypeDefinitionWrapper
+     * @param typeDef
+     *            AbstractTypeDefinitionWrapper
      */
     @Override
     public void registerTypeDefinition(AbstractTypeDefinitionWrapper typeDef)
@@ -469,8 +468,8 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
         TypeDefinitionWrapper existingTypeDef = typeDefsByTypeId.get(typeDef.getTypeId());
         if (existingTypeDef != null)
         {
-//            throw new AlfrescoRuntimeException("Type " + typeDef.getTypeId() + " already registered");
-            if(logger.isWarnEnabled())
+            // throw new AlfrescoRuntimeException("Type " + typeDef.getTypeId() + " already registered");
+            if (logger.isWarnEnabled())
             {
                 logger.warn("Type " + typeDef.getTypeId() + " already registered");
             }
@@ -483,7 +482,8 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
             if ((typeDef instanceof RelationshipTypeDefintionWrapper) && !typeDef.isBaseType())
             {
                 assocDefsByQName.put(typeQName, typeDef);
-            } else
+            }
+            else
             {
                 typeDefsByQName.put(typeQName, typeDef);
             }
@@ -503,7 +503,8 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
     /**
      * Register property definitions.
      * 
-     * @param typeDef AbstractTypeDefinitionWrapper
+     * @param typeDef
+     *            AbstractTypeDefinitionWrapper
      */
     public void registerPropertyDefinitions(AbstractTypeDefinitionWrapper typeDef)
     {
@@ -519,11 +520,9 @@ public class CMISDictionaryRegistryImpl implements CMISDictionaryRegistry
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see java.lang.Object#toString()
-     */
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {

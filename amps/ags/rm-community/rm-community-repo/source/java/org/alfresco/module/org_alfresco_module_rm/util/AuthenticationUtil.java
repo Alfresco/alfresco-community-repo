@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -117,8 +117,7 @@ public class AuthenticationUtil
     }
 
     /**
-     * Helper method to get the user that is currently in effect for purposes of authentication. This includes any
-     * overlays introduced by {@link #runAs}.
+     * Helper method to get the user that is currently in effect for purposes of authentication. This includes any overlays introduced by {@link #runAs}.
      *
      * @return Returns the name of the user
      * @throws AuthenticationException

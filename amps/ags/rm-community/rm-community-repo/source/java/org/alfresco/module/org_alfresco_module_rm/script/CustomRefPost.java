@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,15 +33,16 @@ import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.cmr.rule.RuleType;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
 
 /**
  * Implementation for Java backed webscript to add RM custom relationship to a node.
@@ -74,7 +75,8 @@ public class CustomRefPost extends AbstractRmWebScript
     /**
      * Sets the relationship service instance
      *
-     * @param relationshipService The relationship service instance
+     * @param relationshipService
+     *            The relationship service instance
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -94,7 +96,8 @@ public class CustomRefPost extends AbstractRmWebScript
     /**
      * Sets the rule service instance
      *
-     * @param ruleService The rule service instance
+     * @param ruleService
+     *            The rule service instance
      */
     public void setRuleService(RuleService ruleService)
     {
@@ -102,9 +105,7 @@ public class CustomRefPost extends AbstractRmWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -126,7 +127,8 @@ public class CustomRefPost extends AbstractRmWebScript
     /**
      * Adds a custom relationship
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      */
     protected void addCustomRelationship(WebScriptRequest req)
     {
@@ -149,7 +151,8 @@ public class CustomRefPost extends AbstractRmWebScript
     /**
      * Gets the target node
      *
-     * @param json Request content as json object
+     * @param json
+     *            Request content as json object
      * @return The target node
      */
     private NodeRef getTargetNode(JSONObject json)

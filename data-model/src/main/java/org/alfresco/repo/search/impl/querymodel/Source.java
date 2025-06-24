@@ -36,12 +36,12 @@ import java.util.Set;
 public interface Source
 {
     public Map<String, Selector> getSelectors();
-    
+
     public Selector getSelector(String name);
-    
+
     public List<Set<String>> getSelectorGroups(FunctionEvaluationContext functionContext);
 
     public JoinType getJoinType();
-    
+
     public void setJoinType(JoinType joinType);
 }

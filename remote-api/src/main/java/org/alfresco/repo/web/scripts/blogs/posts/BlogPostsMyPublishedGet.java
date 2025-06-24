@@ -44,16 +44,16 @@ public class BlogPostsMyPublishedGet extends AbstractGetBlogWebScript
 {
     @Override
     protected PagingResults<BlogPostInfo> getBlogResultsImpl(
-          SiteInfo site, NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
+            SiteInfo site, NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
     {
         String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        if(site != null)
+        if (site != null)
         {
-           return blogService.getPublished(site.getShortName(), fromDate, toDate, fullyAuthenticatedUser, pagingReq);
+            return blogService.getPublished(site.getShortName(), fromDate, toDate, fullyAuthenticatedUser, pagingReq);
         }
         else
         {
-           return blogService.getPublished(node, fromDate, toDate, fullyAuthenticatedUser, pagingReq);
+            return blogService.getPublished(node, fromDate, toDate, fullyAuthenticatedUser, pagingReq);
         }
     }
 }

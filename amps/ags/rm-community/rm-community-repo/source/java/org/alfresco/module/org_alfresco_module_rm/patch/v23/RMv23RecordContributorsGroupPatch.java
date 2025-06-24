@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -40,15 +40,16 @@ public class RMv23RecordContributorsGroupPatch extends AbstractModulePatch
 {
     /** record contributors group bootstrap component */
     private RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent;
-    
+
     /**
-     * @param recordContributorsGroupBootstrapComponent record contributors group bootstrap component
+     * @param recordContributorsGroupBootstrapComponent
+     *            record contributors group bootstrap component
      */
     public void setRecordContributorsGroupBootstrapComponent(RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent)
     {
         this.recordContributorsGroupBootstrapComponent = recordContributorsGroupBootstrapComponent;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
      */
@@ -58,5 +59,5 @@ public class RMv23RecordContributorsGroupPatch extends AbstractModulePatch
         // create record contributors group
         recordContributorsGroupBootstrapComponent.createRecordContributorsGroup();
     }
-    
+
 }

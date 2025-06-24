@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,23 +36,28 @@ public interface BulkMonitor<T>
     /**
      * Update the bulk status
      *
-     * @param bulkStatus the bulk status
+     * @param bulkStatus
+     *            the bulk status
      */
     void updateBulkStatus(T bulkStatus);
 
     /**
      * Register a process
      *
-     * @param nodeRef       the node reference
-     * @param processId     the process id
-     * @param bulkOperation the bulk operation
+     * @param nodeRef
+     *            the node reference
+     * @param processId
+     *            the process id
+     * @param bulkOperation
+     *            the bulk operation
      */
     void registerProcess(NodeRef nodeRef, String processId, BulkOperation bulkOperation);
 
     /**
      * Get the bulk status
      *
-     * @param bulkStatusId the bulk status id
+     * @param bulkStatusId
+     *            the bulk status id
      * @return the bulk status
      */
     T getBulkStatus(String bulkStatusId);

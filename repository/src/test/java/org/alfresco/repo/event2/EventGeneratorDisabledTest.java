@@ -27,9 +27,10 @@ package org.alfresco.repo.event2;
 
 import java.util.concurrent.TimeUnit;
 
-import org.alfresco.model.ContentModel;
 import org.awaitility.Awaitility;
 import org.junit.Test;
+
+import org.alfresco.model.ContentModel;
 
 public class EventGeneratorDisabledTest extends EventGeneratorTest
 {
@@ -40,17 +41,17 @@ public class EventGeneratorDisabledTest extends EventGeneratorTest
         {
             eventGenerator.disable();
         }
-        
+
         createNode(ContentModel.TYPE_CONTENT);
 
         Awaitility.await().pollDelay(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 0);
-        
+
         assertTrue(EVENT_CONTAINER.getEvents().size() == 0);
         assertTrue(receivedEvents.size() == 0);
 
         eventGenerator.enable();
     }
-    
+
     @Test
     @Override
     public void shouldReceiveEvent2EventsOnNodeCreation()

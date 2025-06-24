@@ -33,12 +33,12 @@ import java.sql.SQLException;
 public interface ActivitiesDAO
 {
     public static final String KEY_ACTIVITY_NULL_VALUE = "@@NULL@@";
-    
+
     public void startTransaction() throws SQLException;
-    
+
     public void commitTransaction() throws SQLException;
-    
+
     public void rollbackTransaction() throws SQLException;
-    
+
     public void endTransaction() throws SQLException;
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -30,12 +30,15 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ EventFilterUnitTest.class,
-                EventConsolidatorUnitTest.class,
-                EventJSONSchemaUnitTest.class,
-                EnqueuingEventSenderUnitTest.class,
-                NodeResourceHelperUnitTest.class
+@SuiteClasses({EventFilterUnitTest.class,
+        EventConsolidatorUnitTest.class,
+        EventJSONSchemaUnitTest.class,
+        EnqueuingEventSenderUnitTest.class,
+        NodeResourceHelperUnitTest.class,
+        PropertyMapperUnitTest.class,
+        QNameMatcherUnitTest.class,
+        CSVStringToListParserUnitTest.class,
+        TypeDefExpanderUnitTest.class
 })
 public class RepoEvent2UnitSuite
-{
-}
+{}

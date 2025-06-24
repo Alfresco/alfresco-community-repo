@@ -26,16 +26,15 @@
 
 package org.alfresco.repo.virtual.ref;
 
+import org.apache.commons.codec.binary.Base64;
+
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * Creates and looks up hashes of '/' paths defining strings.<br>
  * Paths are hashed using {@link HashStore} defined hashes. <br>
- * Store defined hashes are matched for the longest possible sub-path of a given
- * path. The remaining path is encoded using a Base64 encoder. The two resulted
- * strings.
+ * Store defined hashes are matched for the longest possible sub-path of a given path. The remaining path is encoded using a Base64 encoder. The two resulted strings.
  */
 public abstract class HierarchicalPathHasher implements PathHasher
 {
@@ -49,7 +48,7 @@ public abstract class HierarchicalPathHasher implements PathHasher
         if (normalizedClasspath.endsWith("/"))
         {
             normalizedClasspath = normalizedClasspath.substring(0,
-                                                                normalizedClasspath.length() - 1);
+                    normalizedClasspath.length() - 1);
         }
         return normalizedClasspath;
     }
@@ -62,7 +61,7 @@ public abstract class HierarchicalPathHasher implements PathHasher
     public Pair<String, String> hash(String path)
     {
         ParameterCheck.mandatoryString("path",
-                                       path);
+                path);
 
         String normalClasspath = normalizePath(path);
         String searchedClasspath = normalClasspath;
@@ -75,9 +74,9 @@ public abstract class HierarchicalPathHasher implements PathHasher
             if (lastSeparator < 0)
             {
                 String code = new String(Base64.encodeBase64(normalClasspath.getBytes(),
-                                                             false));
+                        false));
                 return new Pair<String, String>(null,
-                                                code);
+                        code);
             }
 
             if (notFoundPath != null)
@@ -92,21 +91,21 @@ public abstract class HierarchicalPathHasher implements PathHasher
             }
 
             searchedClasspath = searchedClasspath.substring(0,
-                                                            lastSeparator);
+                    lastSeparator);
             hash = hashSubpath(searchedClasspath);
 
             if (hash != null)
             {
                 String notFoundClasspathBase64 = new String(Base64.encodeBase64(notFoundPath.getBytes(),
-                                                                                false));
+                        false));
 
                 return new Pair<String, String>(hash,
-                                                notFoundClasspathBase64);
+                        notFoundClasspathBase64);
             }
         }
 
         return new Pair<String, String>(hash,
-                                        null);
+                null);
 
     }
 

@@ -25,7 +25,34 @@
  */
 package org.alfresco.repo.download;
 
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import net.sf.acegisecurity.Authentication;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.RuleChain;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.model.Repository;
@@ -64,32 +91,6 @@ import org.alfresco.util.PropertyMap;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.RuleChain;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Integration test for DownloadServiceImpl
@@ -97,48 +98,50 @@ import static org.junit.Assert.fail;
  * @author Alex Miller
  */
 @Category(OwnJVMTestsCategory.class)
-public class DownloadServiceIntegrationTest 
+public class DownloadServiceIntegrationTest
 {
     public static final long MAX_TIME = 5000;
 
     private static final long PAUSE_TIME = 1000;
-    
+
     // Rule to initialize the default Alfresco spring configuration
     public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
-    
+
     // Rules to create 2 test users.
     public static AlfrescoPerson TEST_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "User");
     public static AlfrescoPerson TEST_USER2 = new AlfrescoPerson(APP_CONTEXT_INIT, "User 2");
 
     public static String TEST_USER_NAME = "some-user";
-    
+
     // A rule to manage test nodes reused across all the test methods
     public static TemporaryNodes STATIC_TEST_NODES = new TemporaryNodes(APP_CONTEXT_INIT);
-    
+
     // Tie them together in a static Rule Chain
-    @ClassRule public static RuleChain ruleChain = RuleChain.outerRule(APP_CONTEXT_INIT)
-                                                            .around(TEST_USER)
-                                                            .around(STATIC_TEST_NODES);
-    
+    @ClassRule
+    public static RuleChain ruleChain = RuleChain.outerRule(APP_CONTEXT_INIT)
+            .around(TEST_USER)
+            .around(STATIC_TEST_NODES);
+
     // A rule to manage test nodes use in each test method
-    @Rule public TemporaryNodes testNodes = new TemporaryNodes(APP_CONTEXT_INIT);
+    @Rule
+    public TemporaryNodes testNodes = new TemporaryNodes(APP_CONTEXT_INIT);
 
     // Service under test
     public static DownloadService DOWNLOAD_SERVICE;
     private static DownloadStorage DOWNLOAD_STORAGE;
-    
+
     // Various supporting services
-    private static CheckOutCheckInService    CHECK_OUT_CHECK_IN_SERVICE;
-    private static ContentService            CONTENT_SERVICE;
-    private static NodeService               NODE_SERVICE;
-    private static PermissionService         PERMISSION_SERVICE;
+    private static CheckOutCheckInService CHECK_OUT_CHECK_IN_SERVICE;
+    private static ContentService CONTENT_SERVICE;
+    private static NodeService NODE_SERVICE;
+    private static PermissionService PERMISSION_SERVICE;
     private static RetryingTransactionHelper TRANSACTION_HELPER;
-    private static IntegrityChecker          INTEGRITY_CHECKER;
-    private static RepoAdminService          REPO_ADMIN_SERVICE;
-    private static RuleService               RULE_SERVICE;
+    private static IntegrityChecker INTEGRITY_CHECKER;
+    private static RepoAdminService REPO_ADMIN_SERVICE;
+    private static RuleService RULE_SERVICE;
     private static ActionService ACTION_SERVICE;
-    
-    // Test Content 
+
+    // Test Content
     private NodeRef rootFolder;
     private NodeRef rootFile;
     private NodeRef secondaryNode;
@@ -153,8 +156,7 @@ public class DownloadServiceIntegrationTest
 
     // MNT-21671 Download as zip does not include custom folders.
     // Define a custom model that is child of cm:folder
-    private static final String CUSTOM_FOLDER_MODEL_XML =
-        "<model name=\"custom:customModel\" xmlns=\"http://www.alfresco.org/model/dictionary/1.0\">" +
+    private static final String CUSTOM_FOLDER_MODEL_XML = "<model name=\"custom:customModel\" xmlns=\"http://www.alfresco.org/model/dictionary/1.0\">" +
             "   <description>Custom Model</description>" +
             "   <author></author>" +
             "   <version>1.0</version>" +
@@ -177,7 +179,7 @@ public class DownloadServiceIntegrationTest
             "               <type>d:text</type>" +
             "            </property>" +
             "         </properties>" +
-            "         <associations>"  +
+            "         <associations>" +
             "         </associations>" +
             "      </type>" +
             "   </types>" +
@@ -185,8 +187,9 @@ public class DownloadServiceIntegrationTest
             "   <aspects>" +
             "   </aspects>" +
             "</model>";
-    
-    @BeforeClass public static void init()
+
+    @BeforeClass
+    public static void init()
     {
         // Resolve required services
         CHECK_OUT_CHECK_IN_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("CheckOutCheckInService", CheckOutCheckInService.class);
@@ -204,19 +207,20 @@ public class DownloadServiceIntegrationTest
         RULE_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("ruleService", RuleService.class);
         ACTION_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("actionService", ActionService.class);
     }
- 
+
     /**
      * Create the test content
      */
-    @Before public void createContent()
+    @Before
+    public void createContent()
     {
         allEntries = new TreeSet<String>();
-        
+
         AuthenticationUtil.setRunAsUserSystem();
-        
+
         Repository repositoryHelper = (Repository) APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
         NodeRef COMPANY_HOME = repositoryHelper.getCompanyHome();
-        
+
         // Create some static test content
         rootFolder = testNodes.createNode(COMPANY_HOME, "rootFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
         allEntries.add("rootFolder/");
@@ -236,47 +240,47 @@ public class DownloadServiceIntegrationTest
             return null;
         }, false, true);
 
-       rootFile = testNodes.createNodeWithTextContent(COMPANY_HOME, "rootFile.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Root file content");
-       allEntries.add("rootFile.txt");
+        rootFile = testNodes.createNodeWithTextContent(COMPANY_HOME, "rootFile.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Root file content");
+        allEntries.add("rootFile.txt");
 
-       NodeRef createdNode = testNodes.createNodeWithTextContent(rootFolder, "level1File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 1 file content");
-       assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
-       allEntries.add("rootFolder/level1File.txt");
-       
-       level1Folder1 = testNodes.createNode(rootFolder, "level1Folder1", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
-       assertTrue(NODE_SERVICE.hasAspect(level1Folder1, ContentModel.ASPECT_CLASSIFIABLE));
-       allEntries.add("rootFolder/level1Folder1/");
-       
-       level1Folder2 = testNodes.createNode(rootFolder, "level1Folder2", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
-       assertTrue(NODE_SERVICE.hasAspect(level1Folder2, ContentModel.ASPECT_CLASSIFIABLE));
-       allEntries.add("rootFolder/level1Folder2/");
-       
-       createdNode = testNodes.createNode(rootFolder, "level1EmptyFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
-       assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
-       allEntries.add("rootFolder/level1EmptyFolder/");
-       
-       createdNode = testNodes.createNodeWithTextContent(level1Folder1, "level2File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
-       assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
-       allEntries.add("rootFolder/level1Folder1/level2File.txt");
+        NodeRef createdNode = testNodes.createNodeWithTextContent(rootFolder, "level1File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 1 file content");
+        assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
+        allEntries.add("rootFolder/level1File.txt");
 
-       createdNode = testNodes.createNodeWithTextContent(level1Folder2, "level2File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
-       assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
-       allEntries.add("rootFolder/level1Folder2/level2File.txt");
-       
-       secondaryNode = testNodes.createNodeWithTextContent(COMPANY_HOME, "secondaryNodeFile.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Secondary node");
-       ChildAssociationRef assoc = NODE_SERVICE.addChild(rootFolder, secondaryNode, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
-       Assert.assertFalse(assoc.isPrimary());
-       allEntries.add("rootFolder/secondaryNodeFile.txt");
-       
-       fileToCheckout = testNodes.createNodeWithTextContent(level1Folder2, "fileToCheckout.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
-       // Add the lock and version aspects to the created node
-       NODE_SERVICE.addAspect(fileToCheckout, ContentModel.ASPECT_VERSIONABLE, null);
-       NODE_SERVICE.addAspect(fileToCheckout, ContentModel.ASPECT_LOCKABLE, null);
-       assertTrue(NODE_SERVICE.hasAspect(fileToCheckout, ContentModel.ASPECT_CLASSIFIABLE));
-       
-       allEntries.add("rootFolder/level1Folder2/fileToCheckout.txt");
-       PERMISSION_SERVICE.setPermission(level1Folder2, TEST_USER.getUsername(), PermissionService.ALL_PERMISSIONS, true);
-       PERMISSION_SERVICE.setPermission(fileToCheckout, TEST_USER.getUsername(), PermissionService.ALL_PERMISSIONS, true);
+        level1Folder1 = testNodes.createNode(rootFolder, "level1Folder1", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
+        assertTrue(NODE_SERVICE.hasAspect(level1Folder1, ContentModel.ASPECT_CLASSIFIABLE));
+        allEntries.add("rootFolder/level1Folder1/");
+
+        level1Folder2 = testNodes.createNode(rootFolder, "level1Folder2", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
+        assertTrue(NODE_SERVICE.hasAspect(level1Folder2, ContentModel.ASPECT_CLASSIFIABLE));
+        allEntries.add("rootFolder/level1Folder2/");
+
+        createdNode = testNodes.createNode(rootFolder, "level1EmptyFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
+        assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
+        allEntries.add("rootFolder/level1EmptyFolder/");
+
+        createdNode = testNodes.createNodeWithTextContent(level1Folder1, "level2File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
+        assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
+        allEntries.add("rootFolder/level1Folder1/level2File.txt");
+
+        createdNode = testNodes.createNodeWithTextContent(level1Folder2, "level2File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
+        assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
+        allEntries.add("rootFolder/level1Folder2/level2File.txt");
+
+        secondaryNode = testNodes.createNodeWithTextContent(COMPANY_HOME, "secondaryNodeFile.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Secondary node");
+        ChildAssociationRef assoc = NODE_SERVICE.addChild(rootFolder, secondaryNode, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
+        Assert.assertFalse(assoc.isPrimary());
+        allEntries.add("rootFolder/secondaryNodeFile.txt");
+
+        fileToCheckout = testNodes.createNodeWithTextContent(level1Folder2, "fileToCheckout.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
+        // Add the lock and version aspects to the created node
+        NODE_SERVICE.addAspect(fileToCheckout, ContentModel.ASPECT_VERSIONABLE, null);
+        NODE_SERVICE.addAspect(fileToCheckout, ContentModel.ASPECT_LOCKABLE, null);
+        assertTrue(NODE_SERVICE.hasAspect(fileToCheckout, ContentModel.ASPECT_CLASSIFIABLE));
+
+        allEntries.add("rootFolder/level1Folder2/fileToCheckout.txt");
+        PERMISSION_SERVICE.setPermission(level1Folder2, TEST_USER.getUsername(), PermissionService.ALL_PERMISSIONS, true);
+        PERMISSION_SERVICE.setPermission(fileToCheckout, TEST_USER.getUsername(), PermissionService.ALL_PERMISSIONS, true);
 
         // MNT-21671 Download as zip does not include custom folders.
         // deploy custom model
@@ -296,68 +300,90 @@ public class DownloadServiceIntegrationTest
         testNodes.createNode(rootFolder, "level1CustomFolder", customFolderType, AuthenticationUtil.getAdminUserName());
         allEntries.add("rootFolder/level1CustomFolder/");
     }
-    
-    @Test public void createDownload() throws IOException, InterruptedException
+
+    @Test
+    public void createDownload() throws IOException, InterruptedException
     {
         // Initiate the download
-        final NodeRef downloadNode = DOWNLOAD_SERVICE.createDownload(new NodeRef[] {rootFile, rootFolder},  true);
+        final NodeRef downloadNode = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{rootFile, rootFolder}, true);
         Assert.assertNotNull(downloadNode);
 
         testNodes.addNodeRef(downloadNode);
-        
-    	// Validate that the download node has been persisted correctly.
-    	TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+
+        // Validate that the download node has been persisted correctly.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Object>() {
 
             @Override
             public Object execute() throws Throwable
             {
                 Map<QName, Serializable> properties = NODE_SERVICE.getProperties(downloadNode);
                 Assert.assertEquals(Boolean.TRUE, properties.get(DownloadModel.PROP_RECURSIVE));
-                
+
                 List<AssociationRef> associations = NODE_SERVICE.getTargetAssocs(downloadNode, DownloadModel.ASSOC_REQUESTED_NODES);
                 for (AssociationRef association : associations)
                 {
                     Assert.assertTrue(association.getTargetRef().equals(rootFile) || association.getTargetRef().equals(rootFolder));
                 }
-                
+
                 Assert.assertTrue(NODE_SERVICE.hasAspect(downloadNode, ContentModel.ASPECT_INDEX_CONTROL));
-                Assert.assertEquals(Boolean.FALSE,properties.get(ContentModel.PROP_IS_INDEXED));
-                Assert.assertEquals(Boolean.FALSE,properties.get(ContentModel.PROP_IS_CONTENT_INDEXED));
-                
+                Assert.assertEquals(Boolean.FALSE, properties.get(ContentModel.PROP_IS_INDEXED));
+                Assert.assertEquals(Boolean.FALSE, properties.get(ContentModel.PROP_IS_CONTENT_INDEXED));
+
                 return null;
             }
         });
-        
+
         DownloadStatus status = getDownloadStatus(downloadNode);
-        while (status.getStatus() == Status.PENDING) 
+        while (status.getStatus() == Status.PENDING)
         {
             Thread.sleep(PAUSE_TIME);
             status = getDownloadStatus(downloadNode);
         }
-        
+
         Assert.assertEquals(6l, status.getTotalFiles());
-        
+
         long elapsedTime = waitForDownload(downloadNode);
-        
+
         Assert.assertTrue("Maximum creation time exceeded!", elapsedTime < MAX_TIME);
 
-        
         // Validate the content.
         final Set<String> entryNames = getEntries(downloadNode);
-        
+
         validateEntries(entryNames, allEntries, true);
+    }
+
+    @Test
+    public void createDownloadWithName() throws IOException, InterruptedException
+    {
+        // Initiate the download
+        final NodeRef downloadNode = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{rootFile}, false, "test.zip");
+        Assert.assertNotNull(downloadNode);
+
+        testNodes.addNodeRef(downloadNode);
+
+        // Validate that the download node has been persisted correctly.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Object>() {
+
+            @Override
+            public Object execute() throws Throwable
+            {
+                Map<QName, Serializable> properties = NODE_SERVICE.getProperties(downloadNode);
+                Assert.assertEquals(Boolean.FALSE, properties.get(DownloadModel.PROP_RECURSIVE));
+                Assert.assertEquals("test.zip", properties.get(ContentModel.PROP_NAME));
+                return null;
+            }
+        });
     }
 
     private void validateEntries(final Set<String> entryNames, final Set<String> expectedEntries, boolean onlyExpected)
     {
         Set<String> copy = new TreeSet<String>(entryNames);
-        for (String expectedEntry : expectedEntries) 
+        for (String expectedEntry : expectedEntries)
         {
             Assert.assertTrue("Missing entry:- " + expectedEntry, copy.contains(expectedEntry));
             copy.remove(expectedEntry);
         }
-        
+
         if (onlyExpected == true)
         {
             Assert.assertTrue("Unexpected entries", copy.isEmpty());
@@ -366,8 +392,7 @@ public class DownloadServiceIntegrationTest
 
     private Set<String> getEntries(final NodeRef downloadNode)
     {
-        return TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Set<String>>()
-        {
+        return TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Set<String>>() {
 
             @Override
             public Set<String> execute() throws Throwable
@@ -375,7 +400,7 @@ public class DownloadServiceIntegrationTest
                 Set<String> entryNames = new TreeSet<String>();
                 ContentReader reader = CONTENT_SERVICE.getReader(downloadNode, ContentModel.PROP_CONTENT);
                 ZipArchiveInputStream zipInputStream = new ZipArchiveInputStream(reader.getContentInputStream());
-                try 
+                try
                 {
                     ZipArchiveEntry zipEntry = zipInputStream.getNextZipEntry();
                     while (zipEntry != null)
@@ -400,23 +425,21 @@ public class DownloadServiceIntegrationTest
         // Wait for the staus to become done.
         DownloadStatus status;
         long elapsedTime;
-        do {
+        do
+        {
             status = getDownloadStatus(downloadNode);
             elapsedTime = System.currentTimeMillis() - startTime;
-            if (status.isComplete() == false) 
+            if (status.isComplete() == false)
             {
                 Thread.sleep(PAUSE_TIME);
             }
         } while (status.isComplete() == false && elapsedTime < MAX_TIME);
         return elapsedTime;
     }
-    
-    
-    
-    private DownloadStatus getDownloadStatus(final NodeRef downloadNode) 
+
+    private DownloadStatus getDownloadStatus(final NodeRef downloadNode)
     {
-        return TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<DownloadStatus>()
-        {
+        return TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<DownloadStatus>() {
 
             @Override
             public DownloadStatus execute() throws Throwable
@@ -425,25 +448,26 @@ public class DownloadServiceIntegrationTest
             }
         });
     }
-    
-    @Test public void deleteBeforeDateAsSystem() throws InterruptedException
+
+    @Test
+    public void deleteBeforeDateAsSystem() throws InterruptedException
     {
         NodeRef beforeNodeRef;
         NodeRef afterNodeRef;
         Date beforeTime;
-        
-        beforeNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[] {level1Folder1}, true);
+
+        beforeNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{level1Folder1}, true);
         testNodes.addNodeRef(beforeNodeRef);
         waitForDownload(beforeNodeRef);
-        
+
         beforeTime = new Date();
-        
-        afterNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[] {level1Folder2}, true);
+
+        afterNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{level1Folder2}, true);
         testNodes.addNodeRef(afterNodeRef);
         waitForDownload(afterNodeRef);
-        
+
         DOWNLOAD_SERVICE.deleteDownloads(beforeTime);
-        
+
         Assert.assertFalse(NODE_SERVICE.exists(beforeNodeRef));
         Assert.assertTrue(NODE_SERVICE.exists(afterNodeRef));
 
@@ -463,13 +487,13 @@ public class DownloadServiceIntegrationTest
 
         try
         {
-            beforeNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[] { level1Folder1 }, true);
+            beforeNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{level1Folder1}, true);
             testNodes.addNodeRef(beforeNodeRef);
             waitForDownload(beforeNodeRef);
 
             beforeTime = new Date();
 
-            afterNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[] { level1Folder2 }, true);
+            afterNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{level1Folder2}, true);
             testNodes.addNodeRef(afterNodeRef);
             waitForDownload(afterNodeRef);
         }
@@ -503,7 +527,7 @@ public class DownloadServiceIntegrationTest
 
         try
         {
-            //add "downloads_container"
+            // add "downloads_container"
             assertNotEquals(problematicDuplicateSystemDownloadNode.getId(), nodeName);
             // downloads_container is taken from the downloadsSpace.xml uuid setting
             assertNotEquals(problematicDuplicateSystemDownloadNode.getId(), "downloads_container");
@@ -517,13 +541,13 @@ public class DownloadServiceIntegrationTest
 
             try
             {
-                beforeNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[] { level1Folder1 }, true);
+                beforeNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{level1Folder1}, true);
                 testNodes.addNodeRef(beforeNodeRef);
                 waitForDownload(beforeNodeRef);
 
                 beforeTime = new Date();
 
-                afterNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[] { level1Folder2 }, true);
+                afterNodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{level1Folder2}, true);
                 testNodes.addNodeRef(afterNodeRef);
                 waitForDownload(afterNodeRef);
             }
@@ -545,8 +569,7 @@ public class DownloadServiceIntegrationTest
 
     private void deleteDownloadsAndCheckParameters(NodeRef beforeNodeRef, NodeRef afterNodeRef, Date beforeTime)
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute()
             {
@@ -574,10 +597,9 @@ public class DownloadServiceIntegrationTest
     }
 
     private void moveDownloadedFileToProblematicFolder(FileFolderService fileFolderService, NodeRef problematicDuplicateSystemDownloadNode,
-        NodeRef beforeNodeRef)
+            NodeRef beforeNodeRef)
     {
-        FileInfo fileInfo = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<FileInfo>()
-        {
+        FileInfo fileInfo = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<FileInfo>() {
             @Override
             public FileInfo execute()
             {
@@ -604,8 +626,7 @@ public class DownloadServiceIntegrationTest
     private String createRandomUser()
     {
         String randomUsername = TEST_USER_NAME + GUID.generate();
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute()
             {
@@ -618,20 +639,18 @@ public class DownloadServiceIntegrationTest
 
     private NodeRef createProblematicDuplicateSystemNode(final QName childName, final NodeService nodeService, final Repository repositoryHelper)
     {
-        return TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
+        return TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
             @Override
             public NodeRef execute()
             {
-                return AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<NodeRef>()
-                {
+                return AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<NodeRef>() {
                     @Override
                     public NodeRef doWork() throws Exception
                     {
                         NodeRef system = SystemNodeUtils.getSystemContainer(nodeService, repositoryHelper);
 
                         NodeRef container = nodeService.createNode(system, ContentModel.ASSOC_CHILDREN, childName, ContentModel.TYPE_CONTAINER)
-                            .getChildRef();
+                                .getChildRef();
                         nodeService.setProperty(container, ContentModel.PROP_NAME, childName.getLocalName());
 
                         return container;
@@ -643,8 +662,7 @@ public class DownloadServiceIntegrationTest
 
     private void cleanProblematicFolder(NodeRef problematicDuplicateSystemDownloadNode)
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute()
             {
@@ -654,16 +672,17 @@ public class DownloadServiceIntegrationTest
         }, false, true);
     }
 
-    @Test public void cancel() throws InterruptedException
+    @Test
+    public void cancel() throws InterruptedException
     {
         // Initiate the download
-        final NodeRef downloadNode = DOWNLOAD_SERVICE.createDownload(new NodeRef[] {rootFile, rootFolder},  true);
+        final NodeRef downloadNode = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{rootFile, rootFolder}, true);
         Assert.assertNotNull(downloadNode);
 
         testNodes.addNodeRef(downloadNode);
 
         DOWNLOAD_SERVICE.cancelDownload(downloadNode);
-        
+
         DownloadStatus status = getDownloadStatus(downloadNode);
         int retryCount = 0;
         while (status.getStatus() != Status.CANCELLED && retryCount < 5)
@@ -672,22 +691,23 @@ public class DownloadServiceIntegrationTest
             Thread.sleep(PAUSE_TIME);
             status = getDownloadStatus(downloadNode);
         }
-        
+
         Assert.assertEquals(Status.CANCELLED, status.getStatus());
     }
-    
+
     /**
-     * This test verifies that a user is given the correct file, when it is checked. The user who checked out
-     * the file should get the working copy, while any other user should get the default version.
-     * @throws InterruptedException 
+     * This test verifies that a user is given the correct file, when it is checked. The user who checked out the file should get the working copy, while any other user should get the default version.
+     * 
+     * @throws InterruptedException
      */
-    @Test public void workingCopies() throws InterruptedException
+    @Test
+    public void workingCopies() throws InterruptedException
     {
         final Set<String> preCheckoutExpectedEntries = new TreeSet<String>();
         preCheckoutExpectedEntries.add("level1Folder2/");
         preCheckoutExpectedEntries.add("level1Folder2/level2File.txt");
         preCheckoutExpectedEntries.add("level1Folder2/fileToCheckout.txt");
-        
+
         validateWorkingCopyFolder(preCheckoutExpectedEntries, level1Folder2, TEST_USER.getUsername());
         validateWorkingCopyFolder(preCheckoutExpectedEntries, level1Folder2, TEST_USER2.getUsername());
 
@@ -700,13 +720,13 @@ public class DownloadServiceIntegrationTest
         }
         finally
         {
-           AuthenticationUtil.setFullAuthentication(previousAuth);
+            AuthenticationUtil.setFullAuthentication(previousAuth);
         }
-        
+
         try
         {
             validateWorkingCopyFolder(preCheckoutExpectedEntries, level1Folder2, TEST_USER2.getUsername());
-            
+
             final Set<String> postCheckoutExpectedEntries = new TreeSet<String>();
             postCheckoutExpectedEntries.add("level1Folder2/");
             postCheckoutExpectedEntries.add("level1Folder2/level2File.txt");
@@ -723,7 +743,7 @@ public class DownloadServiceIntegrationTest
             }
             finally
             {
-               AuthenticationUtil.setFullAuthentication(previousAuth);
+                AuthenticationUtil.setFullAuthentication(previousAuth);
             }
         }
         validateWorkingCopyFolder(preCheckoutExpectedEntries, level1Folder2, TEST_USER.getUsername());
@@ -736,11 +756,11 @@ public class DownloadServiceIntegrationTest
         AuthenticationUtil.setFullyAuthenticatedUser(userID);
         try
         {
-            final NodeRef downloadNode = DOWNLOAD_SERVICE.createDownload(new NodeRef[] {folder},  true);
+            final NodeRef downloadNode = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{folder}, true);
             testNodes.addNodeRef(downloadNode);
-            
+
             waitForDownload(downloadNode);
-            
+
             validateEntries(getEntries(downloadNode), expectedEntries, true);
         }
         finally
@@ -755,12 +775,11 @@ public class DownloadServiceIntegrationTest
     {
         final NodeRef nodeRef;
 
-        nodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[] { level1Folder1 }, true);
+        nodeRef = DOWNLOAD_SERVICE.createDownload(new NodeRef[]{level1Folder1}, true);
         testNodes.addNodeRef(nodeRef);
         waitForDownload(nodeRef);
 
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -771,7 +790,7 @@ public class DownloadServiceIntegrationTest
                     Assert.assertEquals(1, assocsList.size());
 
                     NODE_SERVICE.removeAssociation(assocsList.get(0).getSourceRef(), assocsList
-                                .get(0).getTargetRef(), DownloadModel.ASSOC_REQUESTED_NODES);
+                            .get(0).getTargetRef(), DownloadModel.ASSOC_REQUESTED_NODES);
 
                     INTEGRITY_CHECKER.checkIntegrity();
                 }
@@ -829,7 +848,7 @@ public class DownloadServiceIntegrationTest
         PersonService personService = APP_CONTEXT_INIT.getApplicationContext().getBean("PersonService", PersonService.class);
 
         MutableAuthenticationService mutableAuthenticationService = APP_CONTEXT_INIT.getApplicationContext()
-            .getBean("authenticationService", MutableAuthenticationService.class);
+                .getBean("authenticationService", MutableAuthenticationService.class);
         if (mutableAuthenticationService.authenticationExists(username))
         {
             return;

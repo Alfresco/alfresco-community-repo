@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -69,6 +69,25 @@ public class IdentityServiceConfig
     private boolean clientIdValidationDisabled;
     private String adminConsoleRedirectPath;
     private String signatureAlgorithms;
+    private String adminConsoleScopes;
+    private String passwordGrantScopes;
+    private String issuerAttribute;
+    private String firstNameAttribute;
+    private String lastNameAttribute;
+    private String emailAttribute;
+    private long jwtClockSkewMs;
+    private String webScriptsHomeRedirectPath;
+    private String webScriptsHomeScopes;
+
+    public String getWebScriptsHomeRedirectPath()
+    {
+        return webScriptsHomeRedirectPath;
+    }
+
+    public void setWebScriptsHomeRedirectPath(String webScriptsHomeRedirectPath)
+    {
+        this.webScriptsHomeRedirectPath = webScriptsHomeRedirectPath;
+    }
 
     /**
      *
@@ -81,7 +100,8 @@ public class IdentityServiceConfig
 
     /**
      *
-     * @param clientConnectionTimeout Client connection timeout in milliseconds.
+     * @param clientConnectionTimeout
+     *            Client connection timeout in milliseconds.
      */
     public void setClientConnectionTimeout(int clientConnectionTimeout)
     {
@@ -99,7 +119,8 @@ public class IdentityServiceConfig
 
     /**
      *
-     * @param clientSocketTimeout Client socket timeout in milliseconds.
+     * @param clientSocketTimeout
+     *            Client socket timeout in milliseconds.
      */
     public void setClientSocketTimeout(int clientSocketTimeout)
     {
@@ -139,13 +160,13 @@ public class IdentityServiceConfig
     public String getAuthServerUrl()
     {
         return Optional.ofNullable(realm)
-            .filter(StringUtils::isNotBlank)
-            .filter(realm -> StringUtils.isNotBlank(authServerUrl))
-            .map(realm -> UriComponentsBuilder.fromUriString(authServerUrl)
-                .pathSegment(REALMS, realm)
-                .build()
-                .toString())
-            .orElse(authServerUrl);
+                .filter(StringUtils::isNotBlank)
+                .filter(realm -> StringUtils.isNotBlank(authServerUrl))
+                .map(realm -> UriComponentsBuilder.fromUriString(authServerUrl)
+                        .pathSegment(REALMS, realm)
+                        .build()
+                        .toString())
+                .orElse(authServerUrl);
     }
 
     public void setAuthServerUrl(String authServerUrl)
@@ -181,7 +202,7 @@ public class IdentityServiceConfig
     public String getClientSecret()
     {
         return Optional.ofNullable(clientSecret)
-            .orElse("");
+                .orElse("");
     }
 
     public void setAllowAnyHostname(boolean allowAnyHostname)
@@ -317,14 +338,100 @@ public class IdentityServiceConfig
     public Set<SignatureAlgorithm> getSignatureAlgorithms()
     {
         return Stream.of(signatureAlgorithms.split(","))
-            .map(String::trim)
-            .map(SignatureAlgorithm::from)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toUnmodifiableSet());
+                .map(String::trim)
+                .map(SignatureAlgorithm::from)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     public void setSignatureAlgorithms(String signatureAlgorithms)
     {
         this.signatureAlgorithms = signatureAlgorithms;
+    }
+
+    public String getIssuerAttribute()
+    {
+        return issuerAttribute;
+    }
+
+    public void setIssuerAttribute(String issuerAttribute)
+    {
+        this.issuerAttribute = issuerAttribute;
+    }
+
+    public Set<String> getAdminConsoleScopes()
+    {
+        return Stream.of(adminConsoleScopes.split(","))
+                .map(String::trim)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public void setAdminConsoleScopes(String adminConsoleScopes)
+    {
+        this.adminConsoleScopes = adminConsoleScopes;
+    }
+
+    public Set<String> getWebScriptsHomeScopes()
+    {
+        return Stream.of(webScriptsHomeScopes.split(","))
+                .map(String::trim)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public void setWebScriptsHomeScopes(String webScriptsHomeScopes)
+    {
+        this.webScriptsHomeScopes = webScriptsHomeScopes;
+    }
+
+    public Set<String> getPasswordGrantScopes()
+    {
+        return Stream.of(passwordGrantScopes.split(","))
+                .map(String::trim)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public void setPasswordGrantScopes(String passwordGrantScopes)
+    {
+        this.passwordGrantScopes = passwordGrantScopes;
+    }
+
+    public void setFirstNameAttribute(String firstNameAttribute)
+    {
+        this.firstNameAttribute = firstNameAttribute;
+    }
+
+    public void setLastNameAttribute(String lastNameAttribute)
+    {
+        this.lastNameAttribute = lastNameAttribute;
+    }
+
+    public void setEmailAttribute(String emailAttribute)
+    {
+        this.emailAttribute = emailAttribute;
+    }
+
+    public void setJwtClockSkewMs(long jwtClockSkewMs)
+    {
+        this.jwtClockSkewMs = jwtClockSkewMs;
+    }
+
+    public String getFirstNameAttribute()
+    {
+        return firstNameAttribute;
+    }
+
+    public String getLastNameAttribute()
+    {
+        return lastNameAttribute;
+    }
+
+    public String getEmailAttribute()
+    {
+        return emailAttribute;
+    }
+
+    public long getJwtClockSkewMs()
+    {
+        return jwtClockSkewMs;
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -49,7 +49,7 @@ import org.alfresco.rm.rest.api.model.RMSite;
  */
 @EntityResource(name = "gs-sites", title = "GS Sites")
 public class RMSiteEntityResource implements EntityResourceAction.Delete, EntityResourceAction.Create<RMSite>,
-            EntityResourceAction.Update<RMSite>, EntityResourceAction.ReadById<RMSite>
+        EntityResourceAction.Update<RMSite>, EntityResourceAction.ReadById<RMSite>
 {
     private static final String RM_SITE_ID = "rm";
     private RMSites sites;
@@ -76,7 +76,7 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
             throw new InvalidParameterException("The Deletion is supported only for siteId = rm.");
         }
         String permanentParameter = parameters.getParameter(PARAM_PERMANENT);
-        if(permanentParameter != null)
+        if (permanentParameter != null)
         {
             throw new InvalidArgumentException("DELETE does not support parameter: permanent");
         }

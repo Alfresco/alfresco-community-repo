@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -39,34 +39,36 @@ public abstract class ParameterProcessor
 {
     /** Processor name */
     private String name;
-    
+
     /** Parameter processor component */
     private ParameterProcessorComponent parameterProcessorComponent;
-    
+
     /**
-     * @return  parameter processor name
+     * @return parameter processor name
      */
     public String getName()
     {
         return name;
     }
-    
+
     /**
-     * @param name  parameter processor name
+     * @param name
+     *            parameter processor name
      */
     public void setName(String name)
     {
         this.name = name;
     }
-    
+
     /**
-     * @param parameterProcessorComponent   parameter processor component 
+     * @param parameterProcessorComponent
+     *            parameter processor component
      */
     public void setParameterProcessorComponent(ParameterProcessorComponent parameterProcessorComponent)
     {
         this.parameterProcessorComponent = parameterProcessorComponent;
     }
-    
+
     /**
      * Init method
      */
@@ -74,21 +76,24 @@ public abstract class ParameterProcessor
     {
         parameterProcessorComponent.register(this);
     }
-    
+
     /**
      * Process the parameter value.
      * 
-     * @param value                     substitution value
-     * @param actionedUponNodeRef       actioned upon node reference
-     * @return String                   processed string, original string if subs string invalid
+     * @param value
+     *            substitution value
+     * @param actionedUponNodeRef
+     *            actioned upon node reference
+     * @return String processed string, original string if subs string invalid
      */
     public abstract String process(String value, NodeRef actionedUponNodeRef);
-    
+
     /**
      * Strips the name of the processor from the subs value.
      * 
-     * @param value     subs value
-     * @return String   subs value with the name and '.' delimiter removed
+     * @param value
+     *            subs value
+     * @return String subs value with the name and '.' delimiter removed
      */
     protected String stripName(String value)
     {

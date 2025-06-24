@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -42,34 +42,42 @@ public interface FilePlanPermissionService
     /**
      * Setup permissions for a record category
      *
-     * @param recordCategory   record category node reference
+     * @param recordCategory
+     *            record category node reference
      */
     void setupRecordCategoryPermissions(NodeRef recordCategory);
 
     /**
      * Setup permissions for an object within a given parent.
      *
-     * @param parent    parent node to inherit permissions from
-     * @param nodeRef   node ref to setup permissions on
+     * @param parent
+     *            parent node to inherit permissions from
+     * @param nodeRef
+     *            node ref to setup permissions on
      */
     void setupPermissions(NodeRef parent, NodeRef nodeRef);
 
     /**
-     * Sets a permission on a file plan object.  Assumes allow is true.  Cascades permission down to record folder.
-     * Cascades ReadRecord up to file plan.
+     * Sets a permission on a file plan object. Assumes allow is true. Cascades permission down to record folder. Cascades ReadRecord up to file plan.
      *
-     * @param nodeRef       node reference
-     * @param authority     authority
-     * @param permission    permission
+     * @param nodeRef
+     *            node reference
+     * @param authority
+     *            authority
+     * @param permission
+     *            permission
      */
     void setPermission(NodeRef nodeRef, String authority, String permission);
 
     /**
-     * Deletes a permission from a file plan object.  Cascades removal down to record folder.
+     * Deletes a permission from a file plan object. Cascades removal down to record folder.
      *
-     * @param nodeRef       node reference
-     * @param authority     authority
-     * @param permission    permission
+     * @param nodeRef
+     *            node reference
+     * @param authority
+     *            authority
+     * @param permission
+     *            permission
      */
     void deletePermission(NodeRef nodeRef, String authority, String permission);
 

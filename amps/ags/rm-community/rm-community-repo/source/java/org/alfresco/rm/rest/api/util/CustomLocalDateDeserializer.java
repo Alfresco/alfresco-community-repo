@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,11 +31,9 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-
 
 /**
  * Custom Local Date deserializer converting a string to org.joda.time.LocalDate when the time is optional;
@@ -45,7 +43,7 @@ import org.joda.time.format.ISODateTimeFormat;
  */
 public class CustomLocalDateDeserializer extends StdDeserializer<LocalDate>
 {
-    /** Date time format with time optional  */
+    /** Date time format with time optional */
     private final static DateTimeFormatter LOCAL_DATE_OPTIONAL_TIME_PARSER = ISODateTimeFormat.localDateOptionalTimeParser();
 
     public CustomLocalDateDeserializer()
@@ -56,7 +54,8 @@ public class CustomLocalDateDeserializer extends StdDeserializer<LocalDate>
     /**
      * Custom deserialize method to convert string to the org.joda.time.LocalDate type with LOCAL_DATE_OPTIONAL_TIME_PARSER
      *
-     * @param jp    local date value
+     * @param jp
+     *            local date value
      * @param ctxt
      * @throws IOException
      */
@@ -68,7 +67,6 @@ public class CustomLocalDateDeserializer extends StdDeserializer<LocalDate>
         {
             return null;
         }
-       return  LOCAL_DATE_OPTIONAL_TIME_PARSER.parseLocalDate(str);
+        return LOCAL_DATE_OPTIONAL_TIME_PARSER.parseLocalDate(str);
     }
 }
-

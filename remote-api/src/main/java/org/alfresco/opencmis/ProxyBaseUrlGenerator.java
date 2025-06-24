@@ -28,8 +28,7 @@ package org.alfresco.opencmis;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * Generates an OpenCMIS base url based on the request, repository id and binding. The url scheme, host and port
- * are overridden by any proxy http header parameters, if present.
+ * Generates an OpenCMIS base url based on the request, repository id and binding. The url scheme, host and port are overridden by any proxy http header parameters, if present.
  * 
  * @author steveglover
  *
@@ -41,9 +40,9 @@ public class ProxyBaseUrlGenerator extends AbstractBaseUrlGenerator
     public static final String HTTPS_SCHEME = "https";
     public static final String HTTP_SCHEME = "http";
 
-	@Override
-	protected String getServerPath(HttpServletRequest request)
-	{
+    @Override
+    protected String getServerPath(HttpServletRequest request)
+    {
         String scheme = request.getHeader(FORWARDED_PROTO_HEADER);
         String serverName;
         int serverPort;
@@ -79,14 +78,14 @@ public class ProxyBaseUrlGenerator extends AbstractBaseUrlGenerator
             }
         }
 
-		StringBuilder sb = new StringBuilder();
-		sb.append(scheme);
-		sb.append("://");
-		sb.append(serverName);
-		sb.append(":");
-		sb.append(serverPort);
-		return sb.toString();
-	}
+        StringBuilder sb = new StringBuilder();
+        sb.append(scheme);
+        sb.append("://");
+        sb.append(serverName);
+        sb.append(":");
+        sb.append(serverPort);
+        return sb.toString();
+    }
 
     private int getDefaultPort(String scheme)
     {
@@ -97,5 +96,5 @@ public class ProxyBaseUrlGenerator extends AbstractBaseUrlGenerator
 
         return 80;
     }
-    
+
 }

@@ -42,7 +42,7 @@ public class PropertyUniqueConstraintViolation extends AlfrescoRuntimeException
     private final Serializable value1;
     private final Serializable value2;
     private final Serializable value3;
-    
+
     public PropertyUniqueConstraintViolation(Serializable value1, Serializable value2, Serializable value3, Throwable cause)
     {
         super("Non-unique values for unique constraint: " + value1 + "-" + value2 + "-" + value3, cause);

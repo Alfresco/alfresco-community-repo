@@ -25,7 +25,31 @@
  */
 package org.alfresco.repo.jscript;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
+
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -41,29 +65,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.ScriptPagingDetails;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.context.ApplicationContext;
-
-import jakarta.transaction.HeuristicMixedException;
-import jakarta.transaction.HeuristicRollbackException;
-import jakarta.transaction.NotSupportedException;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.SystemException;
-import jakarta.transaction.UserTransaction;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link org.alfresco.repo.jscript.People}
@@ -82,16 +83,15 @@ public class PeopleTest extends TestCase
 
     // These tests users are only created once, even if the test is rerun.
     private static final List<NodeRef> userNodeRefs = new ArrayList<>();
-    private static final UserInfo[] userInfos =
-    {
-        new UserInfo("PeopleTestUser0", "john junior", "lewis second"),
-        new UserInfo("PeopleTestUser1", "john senior", "lewis second"),
-        new UserInfo("PeopleTestUser2", "john junior", "lewis third"),
-        new UserInfo("PeopleTestUser3", "john", "lewis third"),
-        new UserInfo("PeopleTestUser4", "mike", "doe first"),
-        new UserInfo("PeopleTestUser5", "sam", "doe first"),
-        new UserInfo("PeopleTestUser6", "sara jones", "doe"),
-        new UserInfo("PeopleTestUser7", "sara", "doe"),
+    private static final UserInfo[] userInfos = {
+            new UserInfo("PeopleTestUser0", "john junior", "lewis second"),
+            new UserInfo("PeopleTestUser1", "john senior", "lewis second"),
+            new UserInfo("PeopleTestUser2", "john junior", "lewis third"),
+            new UserInfo("PeopleTestUser3", "john", "lewis third"),
+            new UserInfo("PeopleTestUser4", "mike", "doe first"),
+            new UserInfo("PeopleTestUser5", "sam", "doe first"),
+            new UserInfo("PeopleTestUser6", "sara jones", "doe"),
+            new UserInfo("PeopleTestUser7", "sara", "doe"),
     };
 
     private ApplicationContext ctx;
@@ -109,9 +109,7 @@ public class PeopleTest extends TestCase
     private List<NodeRef> mockResultSetNodeRefs = new ArrayList<>();
     private int callCount = 0;
 
-    /*
-     * @see junit.framework.TestCase#setUp()
-     */
+    /* @see junit.framework.TestCase#setUp() */
     protected void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
@@ -138,7 +136,7 @@ public class PeopleTest extends TestCase
 
     @Override
     protected void tearDown() throws Exception
-    {        
+    {
         try
         {
             txn.rollback();
@@ -157,80 +155,80 @@ public class PeopleTest extends TestCase
     {
         // 1 Get people with multi-part firstNames. Users 0 & 2 both have 'john junior' as their firstName, but the query shouldn't select user 3
         assertPeopleImpl(
-            "john junior",
-            "There are two users who have \"john junior\" as their first name.",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*john*\" \"*junior*\" OR lastName:\"*john*\" \"*junior*\")",
-            0, 2);
+                "john junior",
+                "There are two users who have \"john junior\" as their first name.",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*john*\" \"*junior*\" OR lastName:\"*john*\" \"*junior*\")",
+                0, 2);
 
         // 2 Get user with multi-part firstNames and lastNames
         assertPeopleImpl(
-            "john junior lewis sec*",
-            "There is one user with the name: \"john junior lewis second\".",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*john*\" \"*junior*\"\"*lewis*\"\"*sec*\" OR lastName:\"*john*\" \"*junior*\"\"*lewis*\"\"*sec*\")",
-            0);
+                "john junior lewis sec*",
+                "There is one user with the name: \"john junior lewis second\".",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*john*\" \"*junior*\"\"*lewis*\"\"*sec*\" OR lastName:\"*john*\" \"*junior*\"\"*lewis*\"\"*sec*\")",
+                0);
 
         // 3 Only USER_2's first name is "john senior"
         assertPeopleImpl(
-            "john senior",
-            "There is one user who has \"john senior\" as his first name.",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*john*\" \"*senior*\" OR lastName:\"*john*\" \"*senior*\")",
-            1);
+                "john senior",
+                "There is one user who has \"john senior\" as his first name.",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*john*\" \"*senior*\" OR lastName:\"*john*\" \"*senior*\")",
+                1);
 
         // 4*
         assertPeopleImpl(
-            "john*",
-            "There are four users with \"john\" as their first name.",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (\"*john**\")",
-            0, 1, 2, 3);
+                "john*",
+                "There are four users with \"john\" as their first name.",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (\"*john**\")",
+                0, 1, 2, 3);
 
         // 5 Get people with multi-part lastNames. Users 2 & 3 both have 'lewis third' as their lastName
         assertPeopleImpl(
-            "lewis third",
-            "There are two users who have \"lewis third\" as their last name.",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*lewis*\" \"*third*\" OR lastName:\"*lewis*\" \"*third*\")",
-            2, 3);
+                "lewis third",
+                "There are two users who have \"lewis third\" as their last name.",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*lewis*\" \"*third*\" OR lastName:\"*lewis*\" \"*third*\")",
+                2, 3);
 
         // 6 Only user 4 & 5 have last name "doe first". The query shouldn't select user 6
         assertPeopleImpl(
-            "doe fi*",
-            "There are two users who have \"doe first\" as their last name.",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*doe*\" \"*fi*\" OR lastName:\"*doe*\" \"*fi*\")",
-            4, 5);
+                "doe fi*",
+                "There are two users who have \"doe first\" as their last name.",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*doe*\" \"*fi*\" OR lastName:\"*doe*\" \"*fi*\")",
+                4, 5);
 
         // 7*
         assertPeopleImpl(
-            "lewi*",
-            "There are four users with \"lewis\" as their last name.",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (\"*lewi**\")",
-            0, 1, 2, 3);
+                "lewi*",
+                "There are four users with \"lewis\" as their last name.",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (\"*lewi**\")",
+                0, 1, 2, 3);
 
         // 8*
         assertPeopleImpl(
-            "thir*",
-            "There are two users with \"lewis third\" as their last name.",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (\"*thir**\")",
-            2, 3);
+                "thir*",
+                "There are two users with \"lewis third\" as their last name.",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (\"*thir**\")",
+                2, 3);
 
         // 9 Get people with single firstName and multi-part lastNames
         assertPeopleImpl(
-            "sam doe first",
-            "There is one user with the name: \"sam doe first\".",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*sam*\" \"*doe*\"\"*first*\" OR lastName:\"*sam*\" \"*doe*\"\"*first*\")",
-            5);
+                "sam doe first",
+                "There is one user with the name: \"sam doe first\".",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*sam*\" \"*doe*\"\"*first*\" OR lastName:\"*sam*\" \"*doe*\"\"*first*\")",
+                5);
 
         // 10 Get people with multi-part firstNames and single lastName
         assertPeopleImpl(
-            "sara jones doe",
-            "There is one user with the name: \"sara jones doe\".",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*sara*\" \"*jones*\"\"*doe*\" OR lastName:\"*sara*\" \"*jones*\"\"*doe*\")",
-            6);
+                "sara jones doe",
+                "There is one user with the name: \"sara jones doe\".",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*sara*\" \"*jones*\"\"*doe*\" OR lastName:\"*sara*\" \"*jones*\"\"*doe*\")",
+                6);
 
         // 11 Get people with single firstName and single lastName
         assertPeopleImpl(
-            "sara doe",
-            "There are two users with the name: \"sara doe\".",
-            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*sara*\" \"*doe*\" OR lastName:\"*sara*\" \"*doe*\")",
-            6, 7);
+                "sara doe",
+                "There are two users with the name: \"sara doe\".",
+                "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*sara*\" \"*doe*\" OR lastName:\"*sara*\" \"*doe*\")",
+                6, 7);
     }
 
     private void assertPeopleImpl(String filter, String sizeMessage, String expectedQuery, int... userIds)
@@ -240,7 +238,7 @@ public class PeopleTest extends TestCase
         int expectedSkipCount = 0;
 
         mockResultSetNodeRefs.clear();
-        for (int i: userIds)
+        for (int i : userIds)
         {
             NodeRef nodeRef = userNodeRefs.get(i);
             mockResultSetNodeRefs.add(nodeRef);
@@ -317,7 +315,7 @@ public class PeopleTest extends TestCase
                 nodeRef = personService.createPerson(testUser);
             }
             userNodeRefs.add(nodeRef);
-//            System.out.println((create ? "create" : "existing")+" user " + username + " nodeRef=" + nodeRef);
+            // System.out.println((create ? "create" : "existing")+" user " + username + " nodeRef=" + nodeRef);
         }
         txn.commit();
     }
@@ -354,7 +352,7 @@ public class PeopleTest extends TestCase
         public String toString()
         {
             return "PeopleTestUserInfo [userName=" + this.userName + ", firstName=" + this.firstName
-                        + ", lastName=" + this.lastName + "]";
+                    + ", lastName=" + this.lastName + "]";
         }
     }
 }

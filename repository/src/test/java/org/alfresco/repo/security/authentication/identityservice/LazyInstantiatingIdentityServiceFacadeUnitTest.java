@@ -34,16 +34,18 @@ import static org.mockito.Mockito.when;
 
 import java.util.function.Supplier;
 
+import org.junit.Test;
+
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.LazyInstantiatingIdentityServiceFacade;
-import org.junit.Test;
 
 public class LazyInstantiatingIdentityServiceFacadeUnitTest
 {
     private static final String USER_NAME = "marlon";
     private static final String PASSWORD = "brando";
     private static final String TOKEN = "token";
+
     @Test
     public void shouldRecoverFromInitialAuthorizationServerUnavailability()
     {

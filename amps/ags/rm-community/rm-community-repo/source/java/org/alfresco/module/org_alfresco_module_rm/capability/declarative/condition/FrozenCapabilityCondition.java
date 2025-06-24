@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -42,20 +42,22 @@ public class FrozenCapabilityCondition extends AbstractCapabilityCondition
 {
     /** indicates whether children should be checked */
     private boolean checkChildren = false;
-    
+
     /** hold service */
     private HoldService holdService;
 
     /**
-     * @param checkChildren true to check children, false otherwise
+     * @param checkChildren
+     *            true to check children, false otherwise
      */
     public void setCheckChildren(boolean checkChildren)
     {
         this.checkChildren = checkChildren;
     }
-    
+
     /**
-     * @param holdService   hold service
+     * @param holdService
+     *            hold service
      */
     public void setHoldService(HoldService holdService)
     {
@@ -66,7 +68,7 @@ public class FrozenCapabilityCondition extends AbstractCapabilityCondition
     public boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         // check whether we are working with a hold or not
         if (holdService.isHold(nodeRef))
         {

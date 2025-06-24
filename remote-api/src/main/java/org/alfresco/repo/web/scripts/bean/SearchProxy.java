@@ -35,14 +35,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement;
-import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.EngineConfig;
-import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.ProxyConfig;
-import org.alfresco.web.app.servlet.HTTPProxy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Attribute;
@@ -63,12 +57,16 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime;
 
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement;
+import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.EngineConfig;
+import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.ProxyConfig;
+import org.alfresco.web.app.servlet.HTTPProxy;
 
 /**
  * Alfresco OpenSearch Proxy Service
  * 
- * Provides the ability to submit a request to a registered search engine
- * via the Alfresco server.
+ * Provides the ability to submit a request to a registered search engine via the Alfresco server.
  * 
  * @author davidc
  */
@@ -80,11 +78,12 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
     // dependencies
     protected FormatRegistry formatRegistry;
     protected ConfigService configService;
-    protected OpenSearchConfigElement searchConfig; 
+    protected OpenSearchConfigElement searchConfig;
     protected String proxyPath;
-    
+
     /**
-     * @param formatRegistry FormatRegistry
+     * @param formatRegistry
+     *            FormatRegistry
      */
     public void setFormatRegistry(FormatRegistry formatRegistry)
     {
@@ -92,20 +91,21 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
     }
 
     /**
-     * @param configService ConfigService
+     * @param configService
+     *            ConfigService
      */
     public void setConfigService(ConfigService configService)
     {
         this.configService = configService;
     }
-        
+
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+     * 
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     public void afterPropertiesSet() throws Exception
     {
         Config config = configService.getConfig("OpenSearch");
-        searchConfig = (OpenSearchConfigElement)config.getConfigElement(OpenSearchConfigElement.CONFIG_ELEMENT_ID);
+        searchConfig = (OpenSearchConfigElement) config.getConfigElement(OpenSearchConfigElement.CONFIG_ELEMENT_ID);
         if (searchConfig == null)
         {
             throw new WebScriptException("OpenSearch configuration not found");
@@ -119,10 +119,10 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * 
+     * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     public void execute(WebScriptRequest req, WebScriptResponse res)
-        throws IOException
+            throws IOException
     {
         String extensionPath = req.getExtensionPath();
         String[] extensionPaths = extensionPath.split("/");
@@ -130,7 +130,7 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         {
             throw new WebScriptException("OpenSearch engine has not been specified as /{engine}/{format}");
         }
-        
+
         // retrieve search engine configuration
         String engine = extensionPaths[0];
         EngineConfig engineConfig = searchConfig.getEngine(engine);
@@ -138,7 +138,7 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         {
             throw new WebScriptException("OpenSearch engine '" + engine + "' does not exist");
         }
-        
+
         // retrieve engine url as specified by format
         String format = extensionPaths[1];
         String mimetype = formatRegistry.getMimeType(null, format);
@@ -163,23 +163,23 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         {
             engineUrl += "?" + req.getQueryString();
         }
-        
+
         if (logger.isDebugEnabled())
-            logger.debug("Mapping engine '" + engine + "' (mimetype '" + mimetype + "') to url '" + engineUrl + "'");        
-        
+            logger.debug("Mapping engine '" + engine + "' (mimetype '" + mimetype + "') to url '" + engineUrl + "'");
+
         // issue request against search engine
         // NOTE: This web script must be executed in a HTTP servlet environment
         if (!(res.getRuntime() instanceof WebScriptServletRuntime))
         {
             throw new WebScriptException("Search Proxy must be executed in HTTP Servlet environment");
         }
-        
+
         HttpServletResponse servletRes = WebScriptServletRuntime.getHttpServletResponse(res);
         SearchEngineHttpProxy proxy = new SearchEngineHttpProxy(req.getServerPath() + req.getServiceContextPath(),
                 engine, engineUrl, servletRes, Collections.singletonMap("User-Agent", req.getHeader("User-Agent")));
         proxy.service();
     }
-    
+
     /**
      * OpenSearch HTTPProxy
      * 
@@ -195,35 +195,40 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         private String engine;
         private String rootPath;
         private Map<String, String> headers;
-        
+
         /**
          * Construct
          * 
-         * @param rootPath String
-         * @param engine String
-         * @param engineUrl String
-         * @param response HttpServletResponse
-         * @param headers request headers
+         * @param rootPath
+         *            String
+         * @param engine
+         *            String
+         * @param engineUrl
+         *            String
+         * @param response
+         *            HttpServletResponse
+         * @param headers
+         *            request headers
          * @throws MalformedURLException
          */
         public SearchEngineHttpProxy(String rootPath, String engine, String engineUrl, HttpServletResponse response, Map<String, String> headers)
-            throws MalformedURLException
+                throws MalformedURLException
         {
             super(engineUrl.startsWith("/") ? rootPath + engineUrl : engineUrl, response);
             this.engine = engine;
             this.rootPath = rootPath;
             this.headers = headers;
         }
-        
+
         /* (non-Javadoc)
-         * @see org.alfresco.web.app.servlet.HTTPProxy#setRequestHeaders(java.net.URLConnection)
-         */
+         * 
+         * @see org.alfresco.web.app.servlet.HTTPProxy#setRequestHeaders(java.net.URLConnection) */
         @Override
         protected void setRequestHeaders(URLConnection urlConnection)
         {
             if (headers != null)
             {
-                for (Map.Entry<String, String> entry: headers.entrySet())
+                for (Map.Entry<String, String> entry : headers.entrySet())
                 {
                     urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
                 }
@@ -231,14 +236,14 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.web.app.servlet.HTTPProxy#writeResponse(java.io.InputStream, java.io.OutputStream)
-         */
+         * 
+         * @see org.alfresco.web.app.servlet.HTTPProxy#writeResponse(java.io.InputStream, java.io.OutputStream) */
         @Override
         protected void writeResponse(InputStream input, OutputStream output)
-            throws IOException
+                throws IOException
         {
             if (response.getContentType().startsWith(MimetypeMap.MIMETYPE_ATOM) ||
-                response.getContentType().startsWith(MimetypeMap.MIMETYPE_RSS))
+                    response.getContentType().startsWith(MimetypeMap.MIMETYPE_RSS))
             {
                 // Only post-process ATOM and RSS feeds
                 // Replace all navigation links with "proxied" versions
@@ -247,17 +252,17 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
                 {
                     Document document = reader.read(input);
                     Element rootElement = document.getRootElement();
-        
+
                     XPath xpath = rootElement.createXPath(ATOM_LINK_XPATH);
-                    Map<String,String> uris = new HashMap<String,String>();
+                    Map<String, String> uris = new HashMap<String, String>();
                     uris.put(ATOM_NS_PREFIX, ATOM_NS_URI);
                     xpath.setNamespaceURIs(uris);
-        
+
                     List nodes = xpath.selectNodes(rootElement);
                     Iterator iter = nodes.iterator();
                     while (iter.hasNext())
                     {
-                        Element element = (Element)iter.next();
+                        Element element = (Element) iter.next();
                         Attribute hrefAttr = element.attribute("href");
                         String mimetype = element.attributeValue("type");
                         if (mimetype == null || mimetype.length() == 0)
@@ -271,13 +276,13 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
                         }
                         hrefAttr.setValue(url);
                     }
-                    
+
                     OutputFormat outputFormat = OutputFormat.createPrettyPrint();
                     XMLWriter writer = new XMLWriter(output, outputFormat);
                     writer.write(rootElement);
-                    writer.flush();                
+                    writer.flush();
                 }
-                catch(DocumentException e)
+                catch (DocumentException e)
                 {
                     throw new IOException(e.toString());
                 }
@@ -288,13 +293,15 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
             }
         }
     }
-    
+
     /**
      * Construct a "proxied" search engine url
      * 
-     * @param engine  engine name (as identified by <engine proxy="<name>">)
-     * @param mimetype  url to proxy (as identified by mimetype)
-     * @return  "proxied" url
+     * @param engine
+     *            engine name (as identified by <engine proxy="<name>">)
+     * @param mimetype
+     *            url to proxy (as identified by mimetype)
+     * @return "proxied" url
      */
     public String createUrl(OpenSearchConfigElement.EngineConfig engine, String mimetype)
     {
@@ -310,14 +317,17 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         }
         return url;
     }
- 
+
     /**
      * Construct a "proxied" search engine url
      * 
-     * @param engine  engine name (as identified by <engine proxy="<name>">)
-     * @param url  engine url
-     * @param mimetype  mimetype of url
-     * @return  "proxied" url
+     * @param engine
+     *            engine name (as identified by <engine proxy="<name>">)
+     * @param url
+     *            engine url
+     * @param mimetype
+     *            mimetype of url
+     * @return "proxied" url
      */
     public String createUrl(String engine, String url, String mimetype)
     {
@@ -326,16 +336,16 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         {
             throw new WebScriptException("Mimetype '" + mimetype + "' is not registered.");
         }
-        
+
         String proxyUrl = null;
         int argIdx = url.indexOf("?");
         if (argIdx == -1)
         {
-            proxyUrl = proxyPath + "/" + engine + "/" + format;  
+            proxyUrl = proxyPath + "/" + engine + "/" + format;
         }
         else
         {
-            proxyUrl = proxyPath + "/" + engine + "/" + format + url.substring(argIdx);  
+            proxyUrl = proxyPath + "/" + engine + "/" + format + url.substring(argIdx);
         }
         return proxyUrl;
     }

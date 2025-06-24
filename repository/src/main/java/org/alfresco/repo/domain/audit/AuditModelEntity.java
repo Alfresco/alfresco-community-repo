@@ -38,17 +38,16 @@ public class AuditModelEntity
     private Long id;
     private Long contentDataId;
     private long contentCrc;
-    
+
     public AuditModelEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public int hashCode()
     {
         return (int) contentCrc;
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -66,19 +65,19 @@ public class AuditModelEntity
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditModelEntity")
-          .append("[ ID=").append(id)
-          .append(", contentDataId=").append(contentDataId)
-          .append(", contentCrc=").append(contentCrc)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", contentDataId=").append(contentDataId)
+                .append(", contentCrc=").append(contentCrc)
+                .append("]");
         return sb.toString();
     }
-    
+
     public Long getId()
     {
         return id;

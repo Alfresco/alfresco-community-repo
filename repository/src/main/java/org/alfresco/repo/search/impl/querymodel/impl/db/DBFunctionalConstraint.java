@@ -48,7 +48,8 @@ public class DBFunctionalConstraint extends BaseFunctionalConstraint implements 
 {
 
     /**
-     * @param function Function
+     * @param function
+     *            Function
      */
     public DBFunctionalConstraint(Function function, Map<String, Argument> arguments)
     {
@@ -56,8 +57,8 @@ public class DBFunctionalConstraint extends BaseFunctionalConstraint implements 
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported() */
     @Override
     public boolean isSupported()
     {
@@ -66,18 +67,18 @@ public class DBFunctionalConstraint extends BaseFunctionalConstraint implements 
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO) */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors, Map<String, Argument> functionArgs,  FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors, Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         Function function = getFunction();
-        if(function != null)
+        if (function != null)
         {
-            if(function instanceof DBQueryBuilderComponent)
+            if (function instanceof DBQueryBuilderComponent)
             {
-                DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent)function;
-                dbQueryBuilderComponent.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectors,  getFunctionArguments(), functionContext, supportBooleanFloatAndDouble);
+                DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent) function;
+                dbQueryBuilderComponent.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectors, getFunctionArguments(), functionContext, supportBooleanFloatAndDouble);
             }
             else
             {
@@ -87,17 +88,17 @@ public class DBFunctionalConstraint extends BaseFunctionalConstraint implements 
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List) */
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
         Function function = getFunction();
-        if(function != null)
+        if (function != null)
         {
-            if(function instanceof DBQueryBuilderComponent)
+            if (function instanceof DBQueryBuilderComponent)
             {
-                DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent)function;
+                DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent) function;
                 dbQueryBuilderComponent.buildJoins(singleJoins, multiJoins);
             }
             else
@@ -105,21 +106,21 @@ public class DBFunctionalConstraint extends BaseFunctionalConstraint implements 
                 throw new UnsupportedOperationException();
             }
         }
-        
+
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List) */
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
         Function function = getFunction();
-        if(function != null)
+        if (function != null)
         {
-            if(function instanceof DBQueryBuilderComponent)
+            if (function instanceof DBQueryBuilderComponent)
             {
-                DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent)function;
+                DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent) function;
                 dbQueryBuilderComponent.buildPredicateCommands(predicatePartCommands);
             }
             else

@@ -39,9 +39,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 
 /**
- * Utility class to assist in creating {@link Field Fields} which represent
- * {@link PropertyDefinition PropertyDefinitions} and
- * {@link AssociationDefinition AssociationDefinitions}
+ * Utility class to assist in creating {@link Field Fields} which represent {@link PropertyDefinition PropertyDefinitions} and {@link AssociationDefinition AssociationDefinitions}
  * 
  * @since 3.4
  * @author Nick Smith
@@ -52,72 +50,86 @@ public class FieldUtils
     /**
      * Generates a property field.
      * 
-     * @param propDef The definition of the property to generate
-     * @param value The value of the field
-     * @param group The group the field belongs to
-     * @param namespaceService NamespaceService instance
+     * @param propDef
+     *            The definition of the property to generate
+     * @param value
+     *            The value of the field
+     * @param group
+     *            The group the field belongs to
+     * @param namespaceService
+     *            NamespaceService instance
      * @return The generated Field object
      */
     public static Field makePropertyField(
-                PropertyDefinition propDef,
-                Object value,
-                FieldGroup group,
-                NamespaceService namespaceService,
-                DictionaryService dictionaryService)
+            PropertyDefinition propDef,
+            Object value,
+            FieldGroup group,
+            NamespaceService namespaceService,
+            DictionaryService dictionaryService)
     {
         PropertyFieldProcessor processor = new PropertyFieldProcessor(namespaceService, dictionaryService);
         return processor.makeField(propDef, value, group);
     }
-    
+
     /**
      * Generates a list of property fields without values.
      * 
-     * @param propDefs List of property defintions to create
-     * @param group The group the field belongs to
-     * @param namespaceService NamespaceService instance
+     * @param propDefs
+     *            List of property defintions to create
+     * @param group
+     *            The group the field belongs to
+     * @param namespaceService
+     *            NamespaceService instance
      * @return List of generated Field objects
      */
     public static List<Field> makePropertyFields(
-                Collection<PropertyDefinition> propDefs,
-                FieldGroup group,
-                NamespaceService namespaceService,
-                DictionaryService dictionaryService)
+            Collection<PropertyDefinition> propDefs,
+            FieldGroup group,
+            NamespaceService namespaceService,
+            DictionaryService dictionaryService)
     {
         return makePropertyFields(propDefs, null, group, namespaceService, dictionaryService);
     }
-    
+
     /**
      * Generates a list of property fields with values.
      * 
-     * @param propDefAndValue Map of property definitions and corresponding values
-     * @param group The group the field belongs to
-     * @param namespaceService NamespaceService instance
+     * @param propDefAndValue
+     *            Map of property definitions and corresponding values
+     * @param group
+     *            The group the field belongs to
+     * @param namespaceService
+     *            NamespaceService instance
      * @return List of generated Field objects
      */
     public static List<Field> makePropertyFields(
-                Map<PropertyDefinition, Object> propDefAndValue,
-                FieldGroup group,
-                NamespaceService namespaceService,
-                DictionaryService dictionaryService)
+            Map<PropertyDefinition, Object> propDefAndValue,
+            FieldGroup group,
+            NamespaceService namespaceService,
+            DictionaryService dictionaryService)
     {
         return makePropertyFields(propDefAndValue.keySet(), propDefAndValue, group, namespaceService, dictionaryService);
     }
-    
+
     /**
      * Generates a list of property fields with values.
      * 
-     * @param propDefs List of property definitions to generate
-     * @param values Map containing the values to use for each property
-     * @param group The group the field belongs to
-     * @param namespaceService NamespaceService instance
+     * @param propDefs
+     *            List of property definitions to generate
+     * @param values
+     *            Map containing the values to use for each property
+     * @param group
+     *            The group the field belongs to
+     * @param namespaceService
+     *            NamespaceService instance
      * @return List of generated Field objects
      */
     public static List<Field> makePropertyFields(
-                Collection<PropertyDefinition> propDefs,
-                Map<PropertyDefinition, Object> values,
-                FieldGroup group,
-                NamespaceService namespaceService,
-                DictionaryService dictionaryService)
+            Collection<PropertyDefinition> propDefs,
+            Map<PropertyDefinition, Object> values,
+            FieldGroup group,
+            NamespaceService namespaceService,
+            DictionaryService dictionaryService)
     {
         PropertyFieldProcessor processor = new PropertyFieldProcessor(namespaceService, dictionaryService);
         ArrayList<Field> fields = new ArrayList<Field>(propDefs.size());
@@ -129,76 +141,90 @@ public class FieldUtils
         }
         return fields;
     }
-    
+
     /**
      * Generates an asssociation field.
      * 
-     * @param assocDef The definition of the association to generate
-     * @param value The value of the field
-     * @param group The group the field belongs to
-     * @param namespaceService NamespaceService instance
+     * @param assocDef
+     *            The definition of the association to generate
+     * @param value
+     *            The value of the field
+     * @param group
+     *            The group the field belongs to
+     * @param namespaceService
+     *            NamespaceService instance
      * @return The generated Field object
      */
     public static Field makeAssociationField(
-                AssociationDefinition assocDef,
-                Object value,
-                FieldGroup group,
-                NamespaceService namespaceService,
-                DictionaryService dictionaryService)
+            AssociationDefinition assocDef,
+            Object value,
+            FieldGroup group,
+            NamespaceService namespaceService,
+            DictionaryService dictionaryService)
     {
         AssociationFieldProcessor processor = new AssociationFieldProcessor(namespaceService, dictionaryService);
         return processor.makeField(assocDef, value, group);
     }
-    
+
     /**
      * Generates a list of association fields without values.
      * 
-     * @param assocDefs List of association defintions to create
-     * @param group The group the field belongs to
-     * @param namespaceService NamespaceService instance
+     * @param assocDefs
+     *            List of association defintions to create
+     * @param group
+     *            The group the field belongs to
+     * @param namespaceService
+     *            NamespaceService instance
      * @return List of generated Field objects
      */
     public static List<Field> makeAssociationFields(
-                Collection<AssociationDefinition> assocDefs,
-                FieldGroup group,
-                NamespaceService namespaceService,
-                DictionaryService dictionaryService)
+            Collection<AssociationDefinition> assocDefs,
+            FieldGroup group,
+            NamespaceService namespaceService,
+            DictionaryService dictionaryService)
     {
         return makeAssociationFields(assocDefs, null, group, namespaceService, dictionaryService);
     }
-    
+
     /**
      * Generates a list of association fields with values.
      * 
-     * @param assocDefAndValue Map of association definitions and corresponding values
-     * @param group The group the field belongs to
-     * @param namespaceService NamespaceService instance
+     * @param assocDefAndValue
+     *            Map of association definitions and corresponding values
+     * @param group
+     *            The group the field belongs to
+     * @param namespaceService
+     *            NamespaceService instance
      * @return List of generated Field objects
      */
     public static List<Field> makeAssociationFields(
-                Map<AssociationDefinition, Object> assocDefAndValue,
-                FieldGroup group,
-                NamespaceService namespaceService,
-                DictionaryService dictionaryService)
+            Map<AssociationDefinition, Object> assocDefAndValue,
+            FieldGroup group,
+            NamespaceService namespaceService,
+            DictionaryService dictionaryService)
     {
         return makeAssociationFields(assocDefAndValue.keySet(), assocDefAndValue, group, namespaceService, dictionaryService);
     }
-    
+
     /**
      * Generates a list of association fields with values.
      * 
-     * @param assocDefs List of association definitions to generate
-     * @param values Map containing the values to use for each property
-     * @param group The group the field belongs to
-     * @param namespaceService NamespaceService instance
+     * @param assocDefs
+     *            List of association definitions to generate
+     * @param values
+     *            Map containing the values to use for each property
+     * @param group
+     *            The group the field belongs to
+     * @param namespaceService
+     *            NamespaceService instance
      * @return List of generated Field objects
      */
     public static List<Field> makeAssociationFields(
-                Collection<AssociationDefinition> assocDefs,
-                Map<AssociationDefinition, Object> values,
-                FieldGroup group,
-                NamespaceService namespaceService,
-                DictionaryService dictionaryService)
+            Collection<AssociationDefinition> assocDefs,
+            Map<AssociationDefinition, Object> values,
+            FieldGroup group,
+            NamespaceService namespaceService,
+            DictionaryService dictionaryService)
     {
         AssociationFieldProcessor processor = new AssociationFieldProcessor(namespaceService, dictionaryService);
         ArrayList<Field> fields = new ArrayList<Field>(assocDefs.size());
@@ -210,5 +236,5 @@ public class FieldUtils
         }
         return fields;
     }
-    
+
 }

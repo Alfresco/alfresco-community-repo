@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,18 +25,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.transform.config.SupportedSourceAndTarget;
-import org.alfresco.transform.config.TransformOption;
-import org.alfresco.transform.config.Transformer;
-import org.alfresco.transform.registry.AbstractTransformRegistry;
-import org.alfresco.transform.registry.CombinedConfig;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -47,14 +35,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.transform.config.SupportedSourceAndTarget;
+import org.alfresco.transform.config.TransformOption;
+import org.alfresco.transform.config.Transformer;
+import org.alfresco.transform.registry.AbstractTransformRegistry;
+import org.alfresco.transform.registry.CombinedConfig;
+
 /**
- * Based on the logic of the legacy BinaryPassThrough and String Transformers.
- * Streams the source content to target when the respective mimetypes are identical, or transforms to "text/plain" from
- * any mimetype starting "text/", or "application/x-javascript", or "application/dita+xml". There must be no transform
- * options, but in case of the text transform the source and target encodings may be change.
+ * Based on the logic of the legacy BinaryPassThrough and String Transformers. Streams the source content to target when the respective mimetypes are identical, or transforms to "text/plain" from any mimetype starting "text/", or "application/x-javascript", or "application/dita+xml". There must be no transform options, but in case of the text transform the source and target encodings may be change.
  *
- * Supported transforms are added by {@link CombinedConfig#addPassThroughTransformer(
- * org.alfresco.service.cmr.repository.MimetypeService, AbstractTransformRegistry)}.
+ * Supported transforms are added by {@link CombinedConfig#addPassThroughTransformer( org.alfresco.service.cmr.repository.MimetypeService, AbstractTransformRegistry)}.
  *
  * @author adavis
  */
@@ -63,20 +60,20 @@ public class LocalPassThroughTransform extends AbstractLocalTransform
     public static final String NAME = "PassThrough";
 
     public LocalPassThroughTransform(String name, TransformerDebug transformerDebug,
-                                     MimetypeService mimetypeService, boolean strictMimeTypeCheck,
-                                     Map<String, Set<String>> strictMimetypeExceptions,
-                                     boolean retryTransformOnDifferentMimeType,
-                                     Set<TransformOption> transformsTransformOptions,
-                                     LocalTransformServiceRegistry localTransformServiceRegistry)
+            MimetypeService mimetypeService, boolean strictMimeTypeCheck,
+            Map<String, Set<String>> strictMimetypeExceptions,
+            boolean retryTransformOnDifferentMimeType,
+            Set<TransformOption> transformsTransformOptions,
+            LocalTransformServiceRegistry localTransformServiceRegistry, NodeService nodeService)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
-                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
+                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry, nodeService);
     }
 
     public static Transformer getConfig(List<String> mimetypes)
     {
         Set<SupportedSourceAndTarget> supportedSourceAndTargetList = new HashSet();
-        for (String mimetype: mimetypes)
+        for (String mimetype : mimetypes)
         {
             supportedSourceAndTargetList.add(SupportedSourceAndTarget.builder()
                     .withSourceMediaType(mimetype)
@@ -92,8 +89,7 @@ public class LocalPassThroughTransform extends AbstractLocalTransform
                         .build());
             }
         }
-        return Transformer.builder().withTransformerName(LocalPassThroughTransform.NAME).
-                withSupportedSourceAndTargetList(supportedSourceAndTargetList).build();
+        return Transformer.builder().withTransformerName(LocalPassThroughTransform.NAME).withSupportedSourceAndTargetList(supportedSourceAndTargetList).build();
     }
 
     private static boolean isToText(String sourceMimetype, String targetMimetype)
@@ -112,8 +108,8 @@ public class LocalPassThroughTransform extends AbstractLocalTransform
 
     @Override
     protected void transformImpl(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
-                                 String sourceMimetype, String targetMimetype, String sourceExtension,
-                                 String targetExtension, String renditionName, NodeRef sourceNodeRef)
+            String sourceMimetype, String targetMimetype, String sourceExtension,
+            String targetExtension, String renditionName, NodeRef sourceNodeRef)
             throws UnsupportedTransformationException, ContentIOException
     {
         if (isToText(sourceMimetype, targetMimetype))
@@ -126,8 +122,8 @@ public class LocalPassThroughTransform extends AbstractLocalTransform
             {
                 String targetEncoding = writer.getEncoding();
                 try (Writer charWriter = targetEncoding == null
-                    ? new OutputStreamWriter(writer.getContentOutputStream())
-                    : new OutputStreamWriter(writer.getContentOutputStream(), targetEncoding))
+                        ? new OutputStreamWriter(writer.getContentOutputStream())
+                        : new OutputStreamWriter(writer.getContentOutputStream(), targetEncoding))
                 {
                     char[] buffer = new char[8192];
                     int readCount = 0;

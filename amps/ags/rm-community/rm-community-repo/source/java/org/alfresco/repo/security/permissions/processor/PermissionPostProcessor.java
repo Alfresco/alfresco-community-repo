@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,8 +32,6 @@ import java.util.List;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 
-
-
 /**
  * Permission Post Processor.
  * 
@@ -42,15 +40,18 @@ import org.alfresco.service.cmr.security.AccessStatus;
  */
 public interface PermissionPostProcessor
 {
-	/**
-	 * Process permission.
-	 * 
-	 * @param  accessStatus			current access status
-	 * @param  nodeRef				node reference
-	 * @param  perm					permission
-	 *
-	 * @return {@link AccessStatus}
-	 */
-	AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm,
-						List<String> configuredReadPermissions, List<String> configuredFilePermissions);
+    /**
+     * Process permission.
+     * 
+     * @param accessStatus
+     *            current access status
+     * @param nodeRef
+     *            node reference
+     * @param perm
+     *            permission
+     *
+     * @return {@link AccessStatus}
+     */
+    AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm,
+            List<String> configuredReadPermissions, List<String> configuredFilePermissions);
 }

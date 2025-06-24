@@ -30,6 +30,11 @@ import static org.junit.Assert.fail;
 
 import java.util.UUID;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -39,10 +44,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Integration tests for the {@link WebDAVHelper} class.
@@ -51,93 +52,93 @@ import org.springframework.context.ApplicationContext;
  */
 public class WebDAVHelperIntegrationTest
 {
-   private static ApplicationContext ctx;
-   private WebDAVHelper webDAVHelper;
-   private FileFolderService fileFolderService;
-   private NodeRef rootNodeRef;
-   private NodeRef rootFolder;
-   private NodeService nodeService;
-//   private EventPublisherForTestingOnly eventPublisher;
-   
-   @BeforeClass
-   public static void setUpSpring()
-   {
-       ctx = ApplicationContextHelper.getApplicationContext();
-   }
-   
-   @Before
-   public void setUp()
-   {
-       AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-       
-       webDAVHelper = (WebDAVHelper) ctx.getBean("webDAVHelper");
-       fileFolderService = (FileFolderService) ctx.getBean("FileFolderService");
-       nodeService = (NodeService) ctx.getBean("NodeService");
-       
-       StoreRef storeRef = nodeService.createStore("workspace", "WebDAVHelperTest-"+UUID.randomUUID());
-       rootNodeRef = nodeService.getRootNode(storeRef);
-       
-       rootFolder = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                   ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_FOLDER).getChildRef();
-       
-       //eventPublisher = (EventPublisherForTestingOnly) ctx.getBean("eventPublisher");
-   }
-   
-   @Test
-   public void canGetNodeForPathWithCorrectCase() throws FileNotFoundException
-   {
-       FileInfo folderInfo = fileFolderService.create(rootFolder, "my_folder", ContentModel.TYPE_FOLDER);
-       FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), "my_file.txt", ContentModel.TYPE_CONTENT);
-       
-       FileInfo found = webDAVHelper.getNodeForPath(rootFolder, "my_folder/my_file.txt");
-       // Sanity check, but the main test is that we haven't have a FileNotFoundException thrown.
-       assertEquals(fileInfo, found);
-       
-       found = webDAVHelper.getNodeForPath(rootFolder, "my_folder");
-       assertEquals(folderInfo, found);
-   }
-   
-   @Test
-   public void cannotGetNodeForPathWithIncorrectCase() throws FileNotFoundException
-   {
-       FileInfo folderInfo = fileFolderService.create(rootFolder, "my_folder", ContentModel.TYPE_FOLDER);
-       fileFolderService.create(folderInfo.getNodeRef(), "my_file.txt", ContentModel.TYPE_CONTENT);
-       
-       try
-       {
-           webDAVHelper.getNodeForPath(rootFolder, "My_Folder/My_File.txt");
-           fail("FileNotFoundException should have been thrown.");
-       }
-       catch (FileNotFoundException e)
-       {
-           // Got here, good.
-       }
-   }
-   
-   @Test
-   public void cannotGetNodeForFolderPathWithIncorrectCase() throws FileNotFoundException
-   {
-       FileInfo folderInfo = fileFolderService.create(rootFolder, "my_folder", ContentModel.TYPE_FOLDER);
-       fileFolderService.create(folderInfo.getNodeRef(), "my_file.txt", ContentModel.TYPE_CONTENT);
-       
-       try
-       {
-           webDAVHelper.getNodeForPath(rootFolder, "My_Folder");
-           fail("FileNotFoundException should have been thrown.");
-       }
-       catch (FileNotFoundException e)
-       {
-           // Got here, good.
-       }
-   }
-   
-   @Test
-   public void canGetNodeForRootFolderPath() throws FileNotFoundException
-   {
-       FileInfo folderInfo = fileFolderService.create(rootFolder, "my_folder", ContentModel.TYPE_FOLDER);
-       fileFolderService.create(folderInfo.getNodeRef(), "my_file.txt", ContentModel.TYPE_CONTENT);
-       
-       FileInfo found = webDAVHelper.getNodeForPath(rootFolder, "/");
-       assertEquals(rootFolder, found.getNodeRef());
-   }
+    private static ApplicationContext ctx;
+    private WebDAVHelper webDAVHelper;
+    private FileFolderService fileFolderService;
+    private NodeRef rootNodeRef;
+    private NodeRef rootFolder;
+    private NodeService nodeService;
+    // private EventPublisherForTestingOnly eventPublisher;
+
+    @BeforeClass
+    public static void setUpSpring()
+    {
+        ctx = ApplicationContextHelper.getApplicationContext();
+    }
+
+    @Before
+    public void setUp()
+    {
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+
+        webDAVHelper = (WebDAVHelper) ctx.getBean("webDAVHelper");
+        fileFolderService = (FileFolderService) ctx.getBean("FileFolderService");
+        nodeService = (NodeService) ctx.getBean("NodeService");
+
+        StoreRef storeRef = nodeService.createStore("workspace", "WebDAVHelperTest-" + UUID.randomUUID());
+        rootNodeRef = nodeService.getRootNode(storeRef);
+
+        rootFolder = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_FOLDER).getChildRef();
+
+        // eventPublisher = (EventPublisherForTestingOnly) ctx.getBean("eventPublisher");
+    }
+
+    @Test
+    public void canGetNodeForPathWithCorrectCase() throws FileNotFoundException
+    {
+        FileInfo folderInfo = fileFolderService.create(rootFolder, "my_folder", ContentModel.TYPE_FOLDER);
+        FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), "my_file.txt", ContentModel.TYPE_CONTENT);
+
+        FileInfo found = webDAVHelper.getNodeForPath(rootFolder, "my_folder/my_file.txt");
+        // Sanity check, but the main test is that we haven't have a FileNotFoundException thrown.
+        assertEquals(fileInfo, found);
+
+        found = webDAVHelper.getNodeForPath(rootFolder, "my_folder");
+        assertEquals(folderInfo, found);
+    }
+
+    @Test
+    public void cannotGetNodeForPathWithIncorrectCase() throws FileNotFoundException
+    {
+        FileInfo folderInfo = fileFolderService.create(rootFolder, "my_folder", ContentModel.TYPE_FOLDER);
+        fileFolderService.create(folderInfo.getNodeRef(), "my_file.txt", ContentModel.TYPE_CONTENT);
+
+        try
+        {
+            webDAVHelper.getNodeForPath(rootFolder, "My_Folder/My_File.txt");
+            fail("FileNotFoundException should have been thrown.");
+        }
+        catch (FileNotFoundException e)
+        {
+            // Got here, good.
+        }
+    }
+
+    @Test
+    public void cannotGetNodeForFolderPathWithIncorrectCase() throws FileNotFoundException
+    {
+        FileInfo folderInfo = fileFolderService.create(rootFolder, "my_folder", ContentModel.TYPE_FOLDER);
+        fileFolderService.create(folderInfo.getNodeRef(), "my_file.txt", ContentModel.TYPE_CONTENT);
+
+        try
+        {
+            webDAVHelper.getNodeForPath(rootFolder, "My_Folder");
+            fail("FileNotFoundException should have been thrown.");
+        }
+        catch (FileNotFoundException e)
+        {
+            // Got here, good.
+        }
+    }
+
+    @Test
+    public void canGetNodeForRootFolderPath() throws FileNotFoundException
+    {
+        FileInfo folderInfo = fileFolderService.create(rootFolder, "my_folder", ContentModel.TYPE_FOLDER);
+        fileFolderService.create(folderInfo.getNodeRef(), "my_file.txt", ContentModel.TYPE_CONTENT);
+
+        FileInfo found = webDAVHelper.getNodeForPath(rootFolder, "/");
+        assertEquals(rootFolder, found.getNodeRef());
+    }
 }

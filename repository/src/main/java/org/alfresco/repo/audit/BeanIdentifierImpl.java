@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.alfresco.service.Auditable;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,17 +42,14 @@ import org.springframework.beans.factory.ListableBeanFactory;
 /**
  * Lookup the name of a bean that is being audited by {@link AuditMethodInterceptor}.
  * <p>
- * Originally used to look up public services annotated with {@code @PublicService},
- * but has now been relaxed to be any bean that uses a proxy. For the method to be
- * audited it still needs to be annotated with {@code @Auditable}.
+ * Originally used to look up public services annotated with {@code @PublicService}, but has now been relaxed to be any bean that uses a proxy. For the method to be audited it still needs to be annotated with {@code @Auditable}.
  * 
  * @author Andy Hind, David Ward, Alan Davis
  */
 public class BeanIdentifierImpl implements BeanIdentifier, BeanFactoryAware
 {
     private static Log s_logger = LogFactory.getLog(BeanIdentifierImpl.class);
-    private static ThreadLocal<HashMap<Method, String>> methodToBeanMap =
-        new ThreadLocal<HashMap<Method, String>>();
+    private static ThreadLocal<HashMap<Method, String>> methodToBeanMap = new ThreadLocal<HashMap<Method, String>>();
 
     private ListableBeanFactory beanFactory;
 
@@ -64,12 +60,11 @@ public class BeanIdentifierImpl implements BeanIdentifier, BeanFactoryAware
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException
     {
-        this.beanFactory = (ListableBeanFactory)beanFactory;
+        this.beanFactory = (ListableBeanFactory) beanFactory;
     }
 
     /**
-     * {@inheritDoc}
-     * Cache service name look up.
+     * {@inheritDoc} Cache service name look up.
      */
     public String getBeanName(MethodInvocation mi)
     {
@@ -102,7 +97,7 @@ public class BeanIdentifierImpl implements BeanIdentifier, BeanFactoryAware
     /**
      * Do the look up by interface type.
      * 
-     * @return              Returns the name of the service or <tt>null</tt> if not found
+     * @return Returns the name of the service or <tt>null</tt> if not found
      */
     private String getBeanNameImpl(MethodInvocation mi) throws BeansException
     {

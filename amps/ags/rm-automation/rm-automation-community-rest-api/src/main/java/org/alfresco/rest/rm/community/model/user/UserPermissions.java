@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,15 +28,13 @@ package org.alfresco.rest.rm.community.model.user;
 
 /**
  * Constants for RM user capabilities
- * 
+ *
  * @author Kristijan Conkas
  * @since 2.6
  */
 public enum UserPermissions
 {
-    PERMISSION_FILING("Filing"),
-    PERMISSION_READ_RECORDS("ReadRecords"),
-    PERMISSION_FILE_RECORDS("FileRecords");
+    PERMISSION_FILING("Filing"), PERMISSION_READ_RECORDS("ReadRecords"), PERMISSION_FILE_RECORDS("FileRecords");
 
     public final String permissionId;
 

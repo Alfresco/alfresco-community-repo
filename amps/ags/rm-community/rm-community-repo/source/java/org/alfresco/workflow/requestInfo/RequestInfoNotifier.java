@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,13 +29,12 @@ package org.alfresco.workflow.requestInfo;
 
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
-import org.alfresco.util.ParameterCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import org.alfresco.util.ParameterCheck;
+
 /**
- * Request info workflow notifier.
- * After the pooled task has been finished the initiator of the workflow will
- * get a task to verify the information. The initiator will also receive an email.
+ * Request info workflow notifier. After the pooled task has been finished the initiator of the workflow will get a task to verify the information. The initiator will also receive an email.
  *
  * @author Tuna Aksoy
  * @since 2.1
@@ -66,7 +65,8 @@ public class RequestInfoNotifier implements TaskListener
     /**
      * Helper method for building the workflow description
      *
-     * @param recordName The name of the record
+     * @param recordName
+     *            The name of the record
      * @return Returns the workflow description
      */
     private String getWorkflowDescription(String recordName)
@@ -76,6 +76,6 @@ public class RequestInfoNotifier implements TaskListener
         sb.append(" '");
         sb.append(recordName);
         sb.append("'");
-        return  sb.toString();
+        return sb.toString();
     }
 }

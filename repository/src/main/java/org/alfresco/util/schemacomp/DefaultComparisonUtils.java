@@ -40,25 +40,23 @@ import org.alfresco.util.schemacomp.validator.DbValidator;
  * @author Matt Ward
  */
 public class DefaultComparisonUtils implements ComparisonUtils
-{    
+{
     @Override
     public List<DbObject> findEquivalentObjects(DbObject rootObject, DbObject objToMatch)
     {
         EquivalentObjectSeeker objectSeeker = new EquivalentObjectSeeker(objToMatch);
         rootObject.accept(objectSeeker);
-        
+
         return objectSeeker.getMatches();
     }
-
-
 
     @Override
     public void compareSimpleOrderedLists(DbProperty refProp, DbProperty targetProp, DiffContext ctx)
     {
         checkPropertyContainsList(refProp);
         checkPropertyContainsList(targetProp);
-        
-        // Check whether the leftProperty should be compared to the rightProperty 
+
+        // Check whether the leftProperty should be compared to the rightProperty
         DbObject leftDbObject = refProp.getDbObject();
         if (leftDbObject.hasValidators())
         {
@@ -71,30 +69,30 @@ public class DefaultComparisonUtils implements ComparisonUtils
                 }
             }
         }
-        
+
         @SuppressWarnings("unchecked")
         ArrayList<Object> refList = new ArrayList<Object>((List<Object>) refProp.getPropertyValue());
         @SuppressWarnings("unchecked")
         ArrayList<Object> targetList = new ArrayList<Object>((List<Object>) targetProp.getPropertyValue());
-        
+
         Results differences = ctx.getComparisonResults();
 
         int maxSize = Math.max(refList.size(), targetList.size());
-        
+
         for (int i = 0; i < maxSize; i++)
         {
             if (i < refList.size() && i < targetList.size())
             {
-                DbProperty refIndexedProp = new DbProperty(refProp.getDbObject(), refProp.getPropertyName(), i);   
+                DbProperty refIndexedProp = new DbProperty(refProp.getDbObject(), refProp.getPropertyName(), i);
                 DbProperty targetIndexedProp = new DbProperty(targetProp.getDbObject(), targetProp.getPropertyName(), i);
-                
+
                 if (refList.get(i).equals(targetList.get(i)))
                 {
                     differences.add(Where.IN_BOTH_NO_DIFFERENCE, refIndexedProp, targetIndexedProp);
                 }
                 else
                 {
-                    differences.add(Where.IN_BOTH_BUT_DIFFERENCE, refIndexedProp, targetIndexedProp);                    
+                    differences.add(Where.IN_BOTH_BUT_DIFFERENCE, refIndexedProp, targetIndexedProp);
                 }
             }
             else if (i < refList.size())
@@ -112,10 +110,10 @@ public class DefaultComparisonUtils implements ComparisonUtils
     }
 
     /**
-     * Ensure the property is carrying a list as its payload. A List is required
-     * rather than a Collection as the latter may not be ordered.
+     * Ensure the property is carrying a list as its payload. A List is required rather than a Collection as the latter may not be ordered.
      * 
-     * @param prop DbProperty
+     * @param prop
+     *            DbProperty
      */
     private void checkPropertyContainsList(DbProperty prop)
     {
@@ -124,12 +122,12 @@ public class DefaultComparisonUtils implements ComparisonUtils
             throw new IllegalArgumentException("List required, but was " + prop.getPropertyValue().getClass());
         }
     }
-    
+
     @Override
     public void compareSimpleCollections(DbProperty leftProp,
-                DbProperty rightProp, DiffContext ctx)
+            DbProperty rightProp, DiffContext ctx)
     {
-        // Check whether the leftProperty should be compared to the rightProperty 
+        // Check whether the leftProperty should be compared to the rightProperty
         DbObject leftDbObject = leftProp.getDbObject();
         if (leftDbObject.hasValidators())
         {
@@ -146,17 +144,17 @@ public class DefaultComparisonUtils implements ComparisonUtils
         Collection<? extends Object> leftCollection = (Collection<? extends Object>) leftProp.getPropertyValue();
         @SuppressWarnings("unchecked")
         Collection<? extends Object> rightCollection = (Collection<? extends Object>) rightProp.getPropertyValue();
-        
+
         ArrayList<? extends Object> leftList = new ArrayList<Object>(leftCollection);
         ArrayList<? extends Object> rightList = new ArrayList<Object>(rightCollection);
-        
+
         Results differences = ctx.getComparisonResults();
 
         for (int leftIndex = 0; leftIndex < leftList.size(); leftIndex++)
         {
             Object leftObj = leftList.get(leftIndex);
             DbProperty leftIndexedProp = new DbProperty(leftProp.getDbObject(), leftProp.getPropertyName(), leftIndex);
-            
+
             int rightIndex;
             if ((rightIndex = rightList.indexOf(leftObj)) != -1)
             {
@@ -188,39 +186,38 @@ public class DefaultComparisonUtils implements ComparisonUtils
         }
     }
 
-    
     @Override
     public void compareCollections(Collection<? extends DbObject> leftCollection,
-                Collection<? extends DbObject> rightCollection, DiffContext ctx)
+            Collection<? extends DbObject> rightCollection, DiffContext ctx)
     {
         Results differences = ctx.getComparisonResults();
         for (DbObject leftObj : leftCollection)
-        {    
+        {
             if (leftObj.hasObjectLevelValidator())
             {
                 // Don't report differences regarding this object - there is a validator
                 // that takes sole responsibility for doing so.
                 continue;
             }
-        
+
             boolean foundMatch = false;
-            
+
             for (DbObject rootObject : rightCollection)
-            {                
+            {
                 List<DbObject> matches = findEquivalentObjects(rootObject, leftObj);
-                
+
                 for (DbObject match : matches)
-                {                        
+                {
                     // There is an equivalent object in the right hand collection as in the left.
                     leftObj.diff(match, ctx);
                 }
-                
+
                 if (matches.size() > 0)
                 {
                     foundMatch = true;
                 }
             }
-            
+
             if (!foundMatch)
             {
                 // No equivalent object in the target collection.
@@ -237,9 +234,9 @@ public class DefaultComparisonUtils implements ComparisonUtils
                 // that takes sole responsibility for doing so.
                 continue;
             }
-            
+
             boolean foundMatch = false;
-            
+
             for (DbObject rootObject : leftCollection)
             {
                 List<DbObject> matches = findEquivalentObjects(rootObject, rightObj);
@@ -249,7 +246,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
                     break;
                 }
             }
-            
+
             if (!foundMatch)
             {
                 // No equivalent object in the left hand collection.
@@ -258,11 +255,10 @@ public class DefaultComparisonUtils implements ComparisonUtils
         }
     }
 
-    
     @Override
     public void compareSimple(DbProperty leftProperty, DbProperty rightProperty, DiffContext ctx)
     {
-        // Check whether the leftProperty should be compared to the rightProperty 
+        // Check whether the leftProperty should be compared to the rightProperty
         DbObject leftDbObject = leftProperty.getDbObject();
         if (leftDbObject.hasValidators())
         {
@@ -275,15 +271,14 @@ public class DefaultComparisonUtils implements ComparisonUtils
                 }
             }
         }
-        
-        
+
         Where where = null;
-        
+
         Object left = leftProperty.getPropertyValue();
         checkNotDbObject(left);
         Object right = rightProperty.getPropertyValue();
         checkNotDbObject(right);
-        
+
         if (left == right)
         {
             // Same object, or both nulls
@@ -312,7 +307,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
             {
                 objectsAreEqual = left.equals(right);
             }
-            
+
             if (objectsAreEqual)
             {
                 where = Where.IN_BOTH_NO_DIFFERENCE;
@@ -322,34 +317,33 @@ public class DefaultComparisonUtils implements ComparisonUtils
                 where = Where.IN_BOTH_BUT_DIFFERENCE;
             }
         }
-        
+
         ctx.getComparisonResults().add(where, leftProperty, rightProperty);
     }
 
-
     /**
-     * @param obj Object
+     * @param obj
+     *            Object
      */
     private void checkNotDbObject(Object obj)
     {
         if (obj != null && DbObject.class.isAssignableFrom(obj.getClass()))
         {
             throw new IllegalArgumentException(
-                        "Property value is a DbObject - this method shouldn't be used to compare this type: " + obj);
+                    "Property value is a DbObject - this method shouldn't be used to compare this type: " + obj);
         }
     }
-    
-    
+
     public static class EquivalentObjectSeeker implements DbObjectVisitor
     {
         private final List<DbObject> matches = new ArrayList<DbObject>();
         private final DbObject objToMatch;
-        
+
         public EquivalentObjectSeeker(DbObject objToMatch)
         {
             this.objToMatch = objToMatch;
         }
-        
+
         @Override
         public void visit(DbObject dbObject)
         {

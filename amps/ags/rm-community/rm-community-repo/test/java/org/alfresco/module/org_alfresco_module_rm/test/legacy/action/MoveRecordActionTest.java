@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -57,8 +57,7 @@ public class MoveRecordActionTest extends BaseRMTestCase
 
     public void testMoveRecordAction()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 // Create a new folder in a collaboration site
@@ -107,6 +106,6 @@ public class MoveRecordActionTest extends BaseRMTestCase
                 return null;
             }
         },
-        dmCollaborator);
+                dmCollaborator);
     }
 }

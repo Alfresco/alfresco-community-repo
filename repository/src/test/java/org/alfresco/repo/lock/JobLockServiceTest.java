@@ -33,6 +33,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.domain.locks.LockDAO;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
@@ -45,20 +52,12 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TestHelper;
 import org.alfresco.util.testing.category.DBTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
- * Tests the high-level capabilities provided by the service implementation.  The DAO tests
- * stress the underlying database work, so we only need to deal with deadlock resolution, etc.
+ * Tests the high-level capabilities provided by the service implementation. The DAO tests stress the underlying database work, so we only need to deal with deadlock resolution, etc.
  * 
- * @see JobLockService      the service being tested
- * @see LockDAO             the DAO being indirectly tested
+ * @see JobLockService the service being tested
+ * @see LockDAO the DAO being indirectly tested
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -68,9 +67,9 @@ import org.springframework.context.ApplicationContext;
 public class JobLockServiceTest extends TestCase
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/JobLockServiceTest";
-    
+
     private static final Log logger = LogFactory.getLog(JobLockServiceTest.class);
-    
+
     private ApplicationContext ctx;
 
     private TransactionService transactionService;
@@ -94,9 +93,9 @@ public class JobLockServiceTest extends TestCase
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         jobLockService = (JobLockService) ctx.getBean("jobLockService");
-        
+
         // Get the test name
         String testName = getName();
         // Build lock names for the test
@@ -115,7 +114,7 @@ public class JobLockServiceTest extends TestCase
     {
         assertNotNull(jobLockService);
     }
-    
+
     public void testSimpleLock()
     {
         String lockToken = jobLockService.getLock(lockAAA, 20L);
@@ -130,7 +129,7 @@ public class JobLockServiceTest extends TestCase
         {
             // Expected
         }
-        lockToken = jobLockService.getLock(lockAAA, 20L, 5L, 0);            // No retries
+        lockToken = jobLockService.getLock(lockAAA, 20L, 5L, 0); // No retries
         jobLockService.refreshLock(lockToken, lockAAA, 20L);
         jobLockService.releaseLock(lockToken, lockAAA);
 
@@ -141,12 +140,10 @@ public class JobLockServiceTest extends TestCase
         }
         catch (IllegalArgumentException expected)
         {
-           expected.getMessage().contains("Job lock retry count cannot be negative");
+            expected.getMessage().contains("Job lock retry count cannot be negative");
         }
 
     }
-
-
 
     public void testEnforceTxn()
     {
@@ -160,15 +157,13 @@ public class JobLockServiceTest extends TestCase
             // Expected
         }
     }
-    
+
     /**
-     * Checks that the lock can be aquired by a read-only transaction i.e. that locking is
-     * independent of the outer transaction.
+     * Checks that the lock can be aquired by a read-only transaction i.e. that locking is independent of the outer transaction.
      */
     public void testLockInReadOnly() throws Exception
     {
-        RetryingTransactionCallback<Object> lockCallback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> lockCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 jobLockService.getTransactionalLock(lockAAA, 500);
@@ -177,14 +172,13 @@ public class JobLockServiceTest extends TestCase
         };
         txnHelper.doInTransaction(lockCallback, true, true);
     }
-    
+
     /**
      * Checks that locks are released on commit
      */
     public void testLockReleaseOnCommit() throws Exception
     {
-        RetryingTransactionCallback<Object> lockCallback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> lockCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 jobLockService.getTransactionalLock(lockAAA, 5000);
@@ -193,8 +187,7 @@ public class JobLockServiceTest extends TestCase
         };
         txnHelper.doInTransaction(lockCallback, true, true);
         // The lock should be free now, even though the TTL was high
-        RetryingTransactionCallback<Object> lockCheckCallback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> lockCheckCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 jobLockService.getTransactionalLock(lockAAA, 50);
@@ -203,14 +196,13 @@ public class JobLockServiceTest extends TestCase
         };
         txnHelper.doInTransaction(lockCheckCallback, true, true);
     }
-    
+
     /**
      * Checks that locks are released on rollback
      */
     public void testLockReleaseOnRollback() throws Exception
     {
-        RetryingTransactionCallback<Object> lockCallback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> lockCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 jobLockService.getTransactionalLock(lockAAA, 5000);
@@ -227,8 +219,7 @@ public class JobLockServiceTest extends TestCase
             // Expected
         }
         // The lock should be free now, even though the TTL was high
-        RetryingTransactionCallback<Object> lockCheckCallback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> lockCheckCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 jobLockService.getTransactionalLock(lockAAA, 50);
@@ -237,12 +228,9 @@ public class JobLockServiceTest extends TestCase
         };
         txnHelper.doInTransaction(lockCheckCallback, true, true);
     }
-    
+
     /**
-     * Sets up two threads in a deadlock scenario.  Each of the threads has a long wait timeout
-     * for the required locks.  If there were a deadlock, the shorter of the the wait times would
-     * be how long it would take before one of them is thrown out.  Firstly, we check that one
-     * of the threads <i>is</i> thrown out.  Then we check that the thread is thrown out quickly.
+     * Sets up two threads in a deadlock scenario. Each of the threads has a long wait timeout for the required locks. If there were a deadlock, the shorter of the the wait times would be how long it would take before one of them is thrown out. Firstly, we check that one of the threads <i>is</i> thrown out. Then we check that the thread is thrown out quickly.
      */
     public synchronized void testDeadlockPrevention() throws Throwable
     {
@@ -255,18 +243,33 @@ public class JobLockServiceTest extends TestCase
         t1.incrementNextLock();
         t2.incrementNextLock();
         // Wait for them to do this
-        try { this.wait(2000L); } catch (InterruptedException e) {}
+        try
+        {
+            this.wait(2000L);
+        }
+        catch (InterruptedException e)
+        {}
         // Advance again
         t1.incrementNextLock();
         t2.incrementNextLock();
         // Wait for them to do this
-        try { this.wait(2000L); } catch (InterruptedException e) {}
+        try
+        {
+            this.wait(2000L);
+        }
+        catch (InterruptedException e)
+        {}
         // Advance again, to end threads
         t1.incrementNextLock();
         t2.incrementNextLock();
         // Wait for them to end (commit/rollback)
-        try { this.wait(2000L); } catch (InterruptedException e) {}
-        
+        try
+        {
+            this.wait(2000L);
+        }
+        catch (InterruptedException e)
+        {}
+
         if (t1.otherFailure != null)
         {
             throw t1.otherFailure;
@@ -278,31 +281,30 @@ public class JobLockServiceTest extends TestCase
         assertNull("T1 should have succeeded as the ordered locker: " + t1.lockFailure, t1.lockFailure);
         assertNotNull("T2 should have failed as the unordered locker.", t2.lockFailure);
     }
-    
+
     private class DeadlockingThread extends Thread
     {
         private final QName[] lockQNames;
         private volatile int nextLock = -1;
         private LockAcquisitionException lockFailure;
         private Throwable otherFailure;
-        
-        private DeadlockingThread(QName ... lockQNames)
+
+        private DeadlockingThread(QName... lockQNames)
         {
             super("DeadlockingThread");
             this.lockQNames = lockQNames;
             setDaemon(true);
         }
-        
+
         private void incrementNextLock()
         {
             nextLock++;
         }
-        
+
         @Override
         public void run()
         {
-            RetryingTransactionCallback<Object> runCallback = new RetryingTransactionCallback<Object>()
-            {
+            RetryingTransactionCallback<Object> runCallback = new RetryingTransactionCallback<Object>() {
                 public synchronized Object execute() throws Throwable
                 {
                     int currentLock = -1;
@@ -319,7 +321,12 @@ public class JobLockServiceTest extends TestCase
                         else
                         {
                             // No advance, so wait a bit more
-                            try { this.wait(20L); } catch (InterruptedException e) {}
+                            try
+                            {
+                                this.wait(20L);
+                            }
+                            catch (InterruptedException e)
+                            {}
                         }
                     }
                     return null;
@@ -339,7 +346,7 @@ public class JobLockServiceTest extends TestCase
             }
         }
     }
-    
+
     public synchronized void testLockCallbackReleaseInactive() throws Exception
     {
         final QName lockQName = QName.createQName(NAMESPACE, getName());
@@ -349,15 +356,14 @@ public class JobLockServiceTest extends TestCase
         final int[] checked = new int[1];
         final int[] released = new int[1];
         // Immediately-inactive job
-        JobLockRefreshCallback callback = new JobLockRefreshCallback()
-        {
+        JobLockRefreshCallback callback = new JobLockRefreshCallback() {
             @Override
             public boolean isActive()
             {
                 checked[0]++;
                 return false;
             }
-            
+
             @Override
             public void lockReleased()
             {
@@ -378,7 +384,7 @@ public class JobLockServiceTest extends TestCase
         {
             fail("Lock should have been released by callback infrastructure");
         }
-        
+
         // Check that the timed callback is killed properly
         int checkedCount = checked[0];
         int releasedCount = released[0];
@@ -386,7 +392,7 @@ public class JobLockServiceTest extends TestCase
         assertEquals("Lock callback timer was not terminated", checkedCount, checked[0]);
         assertEquals("Lock callback timer was not terminated", releasedCount, released[0]);
     }
-    
+
     public synchronized void testLockCallbackReleaseSelf() throws Exception
     {
         // ACE-4347 extra debug logging just for this test so we can see what's going on when it next fails
@@ -397,12 +403,11 @@ public class JobLockServiceTest extends TestCase
             final QName lockQName = QName.createQName(NAMESPACE, getName());
             final long lockTTL = 1000L;
             final String lockToken = jobLockService.getLock(lockQName, lockTTL);
-    
+
             final int[] checked = new int[1];
             final int[] released = new int[1];
             // Immediately-inactive job, releasing the lock
-            JobLockRefreshCallback callback = new JobLockRefreshCallback()
-            {
+            JobLockRefreshCallback callback = new JobLockRefreshCallback() {
                 @Override
                 public boolean isActive()
                 {
@@ -410,14 +415,14 @@ public class JobLockServiceTest extends TestCase
                     jobLockService.releaseLock(lockToken, lockQName);
                     return false;
                 }
-                
+
                 @Override
                 public void lockReleased()
                 {
                     released[0]++;
                 }
             };
-    
+
             jobLockService.refreshLock(lockToken, lockQName, lockTTL, callback);
             // The first refresh will occur in 500ms
             wait(1000L);
@@ -431,11 +436,11 @@ public class JobLockServiceTest extends TestCase
             {
                 fail("Lock should have been released by callback infrastructure");
             }
-            
+
             // Check that the timed callback is killed properly
             int checkedCount = checked[0];
             int releasedCount = released[0];
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("checkedCount=" + checkedCount + ",releasedCount=" + releasedCount);
             }
@@ -448,7 +453,7 @@ public class JobLockServiceTest extends TestCase
             Configurator.setLevel(LogManager.getLogger("org.alfresco.repo.lock"), saveLogLevel);
         }
     }
-    
+
     /**
      * Lets job "run" for 3 seconds and checks at 2s and 4s.
      */
@@ -462,8 +467,7 @@ public class JobLockServiceTest extends TestCase
         final int[] checked = new int[1];
         final int[] released = new int[1];
         // Do not release and remain active
-        JobLockRefreshCallback callback = new JobLockRefreshCallback()
-        {
+        JobLockRefreshCallback callback = new JobLockRefreshCallback() {
             @Override
             public boolean isActive()
             {
@@ -477,7 +481,7 @@ public class JobLockServiceTest extends TestCase
                     return true;
                 }
             }
-            
+
             @Override
             public void lockReleased()
             {
@@ -488,7 +492,7 @@ public class JobLockServiceTest extends TestCase
         jobLockService.refreshLock(lockToken, lockQName, lockTTL, callback);
         // The first refresh will occur in 500ms
         wait(2000L);
-        
+
         assertTrue("Expected at least 2 active checks; only got " + checked[0], checked[0] >= 2);
         assertFalse("lockReleased should NOT have been called", released[0] > 0);
         try
@@ -500,7 +504,7 @@ public class JobLockServiceTest extends TestCase
         {
             // Expected
         }
-        
+
         // Wait for another 2s to be sure that the lock is run to completion
         wait(2000L);
 
@@ -511,48 +515,69 @@ public class JobLockServiceTest extends TestCase
         assertEquals("Lock callback timer was not terminated", checkedCount, checked[0]);
         assertEquals("Lock callback timer was not terminated", releasedCount, released[0]);
     }
-    
-    public void testGetLockWithCallbackNullLock()       { runGetLockWithCallback(0); }
-    public void testGetLockWithCallbackNullCallback()   { runGetLockWithCallback(1); }
-    public void testGetLockWithCallbackShortTTL()       { runGetLockWithCallback(2); }
-    public void testGetLockWithCallbackLocked()         { runGetLockWithCallback(3); }
-    public void testGetLockWithCallbackNormal()         { runGetLockWithCallback(4); }
-    
+
+    public void testGetLockWithCallbackNullLock()
+    {
+        runGetLockWithCallback(0);
+    }
+
+    public void testGetLockWithCallbackNullCallback()
+    {
+        runGetLockWithCallback(1);
+    }
+
+    public void testGetLockWithCallbackShortTTL()
+    {
+        runGetLockWithCallback(2);
+    }
+
+    public void testGetLockWithCallbackLocked()
+    {
+        runGetLockWithCallback(3);
+    }
+
+    public void testGetLockWithCallbackNormal()
+    {
+        runGetLockWithCallback(4);
+    }
+
     public void runGetLockWithCallback(int t)
     {
         // ACE-4347 extra debug logging just for this test so we can see what's going on when it next fails
         Level saveLogLevel = LogManager.getLogger("org.alfresco.repo.lock").getLevel();
         Configurator.setLevel(LogManager.getLogger("org.alfresco.repo.lock"), Level.ALL);
 
-        logger.debug("runGetLockWithCallback "+t+
-            "\n----------------------------------------"+
-            "\n"+Thread.currentThread().getStackTrace()[2].getMethodName()+
-            "\n----------------------------------------");
-        
-        String token  = null;
-        String tokenB = null;
-        try 
-        { 
-            QName        lockName   = t==0 ? null : lockA;
-            TestCallback callback   = t==1 ? null : new TestCallback();
-            long         timeToLive = t==2 ? 1    : 500;
+        logger.debug("runGetLockWithCallback " + t +
+                "\n----------------------------------------" +
+                "\n" + Thread.currentThread().getStackTrace()[2].getMethodName() +
+                "\n----------------------------------------");
 
-            if (t==3) 
+        String token = null;
+        String tokenB = null;
+        try
+        {
+            QName lockName = t == 0 ? null : lockA;
+            TestCallback callback = t == 1 ? null : new TestCallback();
+            long timeToLive = t == 2 ? 1 : 500;
+
+            if (t == 3)
             {
                 // default num retries * default retry wait + time to create lock (pessimistic)
-                long ttlLongerThanDefaultRetry = 10*20 + 2000;
+                long ttlLongerThanDefaultRetry = 10 * 20 + 2000;
                 tokenB = jobLockService.getLock(lockA, ttlLongerThanDefaultRetry);
-            }                
+            }
 
             token = jobLockService.getLock(lockName, timeToLive, callback);
 
-            if (t<4) fail("expected getLock to fail");
-            
-            if (callback == null) throw new IllegalStateException();
+            if (t < 4)
+                fail("expected getLock to fail");
+
+            if (callback == null)
+                throw new IllegalStateException();
 
             TestHelper.waitForMethodToFinish(of(100, MILLIS), () -> {
-                assertEquals(false,callback.released);
-                assertEquals(0,callback.getIsActiveCount());
+                assertEquals(false, callback.released);
+                assertEquals(0, callback.getIsActiveCount());
             }, AssertionFailedError.class);
 
             TestHelper.waitForMethodToFinish(of(1, SECONDS), () -> {
@@ -568,30 +593,42 @@ public class JobLockServiceTest extends TestCase
             }, AssertionFailedError.class);
         }
         catch (IllegalArgumentException e)
-        {            
+        {
             switch (t)
             {
-                case 0: logger.debug("null lock      => exception as expected: "+e); break;
-                case 1: logger.debug("null callback  => exception as expected: "+e); break;
-                case 2: logger.debug("short ttl      => exception as expected: "+e); break;
-                default: fail("exception not expected: "+e); break;
+            case 0:
+                logger.debug("null lock      => exception as expected: " + e);
+                break;
+            case 1:
+                logger.debug("null callback  => exception as expected: " + e);
+                break;
+            case 2:
+                logger.debug("short ttl      => exception as expected: " + e);
+                break;
+            default:
+                fail("exception not expected: " + e);
+                break;
             }
         }
         catch (LockAcquisitionException e)
-        {            
+        {
             switch (t)
             {
-                case 3: logger.debug("already locked => exception as expected: "+e); break;
-                default: fail("exception not expected: "+e); break;
+            case 3:
+                logger.debug("already locked => exception as expected: " + e);
+                break;
+            default:
+                fail("exception not expected: " + e);
+                break;
             }
         }
         catch (Exception e)
         {
-            fail("exception not expected: "+e);
+            fail("exception not expected: " + e);
         }
         finally
         {
-            if (token != null) 
+            if (token != null)
             {
                 logger.debug("token should have been released");
                 if (jobLockService.releaseLockVerify(token, lockA))
@@ -599,13 +636,13 @@ public class JobLockServiceTest extends TestCase
                     fail("token not released");
                 }
             }
-            
-            if (tokenB != null) 
+
+            if (tokenB != null)
             {
                 logger.debug("tokenB should be released");
                 jobLockService.releaseLockVerify(tokenB, lockA);
             }
-            
+
             try
             {
                 logger.debug("lock should have been released so check can acquire");
@@ -616,13 +653,13 @@ public class JobLockServiceTest extends TestCase
             {
                 fail("lock not released");
             }
-            
+
             logger.debug("runGetLockWithCallback\n----------------------------------------");
 
             Configurator.setLevel(LogManager.getLogger("org.alfresco.repo.lock"), saveLogLevel);
         }
     }
-    
+
     private class TestCallback implements JobLockRefreshCallback
     {
         public volatile AtomicInteger isActiveCounter = new AtomicInteger();
@@ -633,7 +670,7 @@ public class JobLockServiceTest extends TestCase
         public boolean isActive()
         {
             final int currentIsActiveCount = isActiveCounter.incrementAndGet();
-            logger.debug("TestCallback.isActive => "+isActive+" ("+currentIsActiveCount+")");
+            logger.debug("TestCallback.isActive => " + isActive + " (" + currentIsActiveCount + ")");
             return isActive;
         }
 
@@ -648,5 +685,5 @@ public class JobLockServiceTest extends TestCase
         {
             return isActiveCounter.get();
         }
-    }    
+    }
 }

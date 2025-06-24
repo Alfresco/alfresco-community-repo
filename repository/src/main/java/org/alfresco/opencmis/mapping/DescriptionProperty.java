@@ -27,12 +27,13 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Get the CMIS object description property.
@@ -44,8 +45,10 @@ public class DescriptionProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry ServiceRegistry
-     * @param connector CMISConnector
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param connector
+     *            CMISConnector
      */
     public DescriptionProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
@@ -65,7 +68,7 @@ public class DescriptionProperty extends AbstractProperty
                     nodeInfo.getAssociationRef().getSourceRef(),
                     ContentModel.PROP_DESCRIPTION);
         }
-        
+
         return null;
     }
 

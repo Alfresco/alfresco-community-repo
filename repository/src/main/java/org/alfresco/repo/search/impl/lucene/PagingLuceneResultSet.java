@@ -51,11 +51,11 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     ResultSet wrapped;
 
     SearchParameters searchParameters;
-    
+
     NodeService nodeService;
 
     private boolean trimmedResultSet;
-    
+
     public PagingLuceneResultSet(ResultSet wrapped, SearchParameters searchParameters, NodeService nodeService)
     {
         this.wrapped = wrapped;
@@ -63,31 +63,25 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
         this.nodeService = nodeService;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.opencmis.search.CMISResultSet#close()
-     */
+     * @see org.alfresco.opencmis.search.CMISResultSet#close() */
     public void close()
     {
         wrapped.close();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.opencmis.search.CMISResultSet#getRow(int)
-     */
+     * @see org.alfresco.opencmis.search.CMISResultSet#getRow(int) */
     public ResultSetRow getRow(int i)
     {
         return wrapped.getRow(getStart() + i);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.opencmis.search.CMISResultSet#hasMore()
-     */
+     * @see org.alfresco.opencmis.search.CMISResultSet#hasMore() */
     public boolean hasMore()
     {
 
@@ -109,11 +103,9 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
 
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.opencmis.search.CMISResultSet#length()
-     */
+     * @see org.alfresco.opencmis.search.CMISResultSet#length() */
     public int getLength()
     {
 
@@ -136,11 +128,9 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
         return trimmedResultSet ? wrapped.length() + searchParameters.getSkipCount() : wrapped.length();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.opencmis.search.CMISResultSet#start()
-     */
+     * @see org.alfresco.opencmis.search.CMISResultSet#start() */
     public int getStart()
     {
         if (trimmedResultSet)
@@ -153,11 +143,9 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see java.lang.Iterable#iterator()
-     */
+     * @see java.lang.Iterable#iterator() */
     public Iterator<ResultSetRow> iterator()
     {
         return new PagingLuceneResultSetRowIteratorImpl(this);
@@ -211,6 +199,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
 
     /**
      * Get the underlying result Set
+     * 
      * @return the underlying result set
      */
     public ResultSet getWrapped()
@@ -221,11 +210,12 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     /**
      * Bulk fetch results in the cache
      * 
-     * @param bulkFetch boolean
+     * @param bulkFetch
+     *            boolean
      */
     public boolean setBulkFetch(boolean bulkFetch)
     {
-    	return wrapped.setBulkFetch(bulkFetch);
+        return wrapped.setBulkFetch(bulkFetch);
     }
 
     /**
@@ -241,11 +231,12 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize int
+     * @param bulkFetchSize
+     *            int
      */
     public int setBulkFetchSize(int bulkFetchSize)
     {
-    	return wrapped.setBulkFetchSize(bulkFetchSize);
+        return wrapped.setBulkFetchSize(bulkFetchSize);
     }
 
     /**
@@ -257,7 +248,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     {
         return wrapped.getBulkFetchSize();
     }
-    
+
     @Override
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
@@ -265,8 +256,8 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound() */
     @Override
     public long getNumberFound()
     {

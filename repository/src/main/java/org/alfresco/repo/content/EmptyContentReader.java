@@ -27,9 +27,10 @@ package org.alfresco.repo.content;
 
 import java.nio.channels.ReadableByteChannel;
 
+import org.springframework.dao.ConcurrencyFailureException;
+
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * A blank reader for which <code>exists()</code> always returns false.
@@ -39,15 +40,16 @@ import org.springframework.dao.ConcurrencyFailureException;
 public class EmptyContentReader extends AbstractContentReader
 {
     /**
-     * @param contentUrl    the content URL
+     * @param contentUrl
+     *            the content URL
      */
     public EmptyContentReader(String contentUrl)
     {
         super(contentUrl);
     }
-    
+
     /**
-     * @return  Returns an instance of the this class
+     * @return Returns an instance of the this class
      */
     @Override
     protected ContentReader createReader() throws ContentIOException

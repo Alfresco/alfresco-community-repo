@@ -27,8 +27,9 @@ package org.alfresco.rest.api.downloads;
 
 import java.util.Collections;
 import java.util.List;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.rest.api.Downloads;
 import org.alfresco.rest.api.model.Download;
@@ -40,7 +41,6 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * 
@@ -65,8 +65,8 @@ public class DownloadsEntityResource implements EntityResourceAction.Create<Down
 
     @Override
     @WebApiDescription(title = "Create download", description = "Create a download node whose content will be a zip which is being created asynchronously.", successStatus = HttpServletResponse.SC_ACCEPTED)
-    @WebApiParam(name = "entity", title = "Download request", description = "Download request which contains the node ids for the zip elements.", 
-                 kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple = false)
+    @WebApiParam(name = "entity", title = "Download request", description = "Download request which contains the node ids for the zip elements.",
+            kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple = false)
     public List<Download> create(List<Download> entity, Parameters parameters)
     {
         Download downloadNode = downloads.createDownloadNode(entity.get(0));
@@ -80,7 +80,7 @@ public class DownloadsEntityResource implements EntityResourceAction.Create<Down
     {
         return downloads.getDownloadStatus(nodeId);
     }
-    
+
     @WebApiDescription(title = "Cancel download", description = "Stop the zip creation if still in progress.", successStatus = HttpServletResponse.SC_ACCEPTED)
     @Override
     public void delete(String nodeId, Parameters parameters)

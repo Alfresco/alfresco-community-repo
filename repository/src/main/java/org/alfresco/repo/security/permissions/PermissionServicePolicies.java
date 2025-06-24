@@ -31,43 +31,49 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Policies for PermissionService 
+ * Policies for PermissionService
  * 
  * @author cpopa
  *
  */
 public interface PermissionServicePolicies
-{    
+{
     /**
      * Policy invoked when a permission is granted to an authority for a specific node
      */
     public interface OnGrantLocalPermission extends ClassPolicy
-    {        
+    {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onGrantLocalPermission");
 
         /**
          * A permission was granted to an authority for a specific node
          * 
-         * @param nodeRef the node on which the permission is granted
-         * @param authority the authority being granted the permission
-         * @param permission the permission at question
+         * @param nodeRef
+         *            the node on which the permission is granted
+         * @param authority
+         *            the authority being granted the permission
+         * @param permission
+         *            the permission at question
          */
         public void onGrantLocalPermission(NodeRef nodeRef, String authority, String permission);
     }
-    
+
     /**
      * Policy invoked when a permission is revoked from an authority for a specific node
      */
     public interface OnRevokeLocalPermission extends ClassPolicy
-    {        
+    {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRevokeLocalPermission");
 
         /**
          * A permission was revoked from an authority for a specific node
          * 
-         * @param nodeRef the node from which the permission is revoked
-         * @param authority the authority being revoked the permission
-         * @param permission the permission at question
+         * @param nodeRef
+         *            the node from which the permission is revoked
+         * @param authority
+         *            the authority being revoked the permission
+         * @param permission
+         *            the permission at question
          */
         public void onRevokeLocalPermission(NodeRef nodeRef, String authority, String permission);
     }
@@ -82,12 +88,13 @@ public interface PermissionServicePolicies
         /**
          * Permission inheritance was enabled
          * 
-         * @param nodeRef the node for which the inheritance is enabled
+         * @param nodeRef
+         *            the node for which the inheritance is enabled
          */
         public void onInheritPermissionsEnabled(NodeRef nodeRef);
 
     }
-    
+
     /**
      * Policy invoked when permission inheritance is disabled for a specific node (sync or async mode)
      */
@@ -98,8 +105,10 @@ public interface PermissionServicePolicies
         /**
          * Permission inheritance was disabled
          * 
-         * @param nodeRef the node for which the inheritance is disabled
-         * @param async whether the operation has been done in asynchronous mode, thus it may not be finished yet
+         * @param nodeRef
+         *            the node for which the inheritance is disabled
+         * @param async
+         *            whether the operation has been done in asynchronous mode, thus it may not be finished yet
          */
         public void onInheritPermissionsDisabled(NodeRef nodeRef, boolean async);
     }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,9 +29,10 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import static java.util.Arrays.asList;
 
+import static org.springframework.util.StringUtils.tokenizeToStringArray;
+
 import static org.alfresco.service.cmr.rule.RuleType.INBOUND;
 import static org.alfresco.util.GUID.generate;
-import static org.springframework.util.StringUtils.tokenizeToStringArray;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -88,8 +89,7 @@ public class RM2190Test extends BaseRMTestCase
 
     public void testUploadDocumentsSimultaneouslyWithRules()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -131,22 +131,21 @@ public class RM2190Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws FileNotFoundException, InterruptedException
             {
-                Thread thread1 = new Thread()
-                {
-                    public void run() {
+                Thread thread1 = new Thread() {
+                    public void run()
+                    {
                         List<NodeRef> files = addFilesToFolder(folder1);
                         waitForFilesToBeDeclared(files);
                     }
                 };
 
-                Thread thread2 = new Thread()
-                {
-                    public void run() {
+                Thread thread2 = new Thread() {
+                    public void run()
+                    {
                         List<NodeRef> files = addFilesToFolder(folder2);
                         waitForFilesToBeDeclared(files);
                     }
@@ -177,15 +176,14 @@ public class RM2190Test extends BaseRMTestCase
         for (int i = 0; i < NUMBER_OF_BATCHES; i++)
         {
             final int finali = i;
-            records.addAll(doTestInTransaction(new Test<List<NodeRef>>()
-            {
+            records.addAll(doTestInTransaction(new Test<List<NodeRef>>() {
                 @Override
                 public List<NodeRef> run() throws Exception
                 {
                     List<NodeRef> files = new ArrayList<>(NUMBER_IN_BATCH);
                     for (int j = 0; j < NUMBER_IN_BATCH; j++)
                     {
-                        int count = (finali+1)*(j+1);
+                        int count = (finali + 1) * (j + 1);
                         String name = folder.getId() + " - content" + count + ".txt";
                         System.out.println(name + " - creating");
 
@@ -205,8 +203,7 @@ public class RM2190Test extends BaseRMTestCase
         while (!files.isEmpty())
         {
             final Iterator<NodeRef> temp = files.iterator();
-            doTestInTransaction(new Test<Void>()
-            {
+            doTestInTransaction(new Test<Void>() {
                 @Override
                 public Void run() throws Exception
                 {

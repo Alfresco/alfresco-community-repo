@@ -25,7 +25,6 @@
  */
 package org.alfresco.service.cmr.repository;
 
-
 import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
@@ -43,7 +42,7 @@ import org.junit.Test;
 public class TransformationOptionLimitsTest
 {
     private TransformationOptionLimits limits;
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -103,7 +102,7 @@ public class TransformationOptionLimitsTest
         int actual = limits.getPageLimit();
         assertEquals("Getter did not return set value", value, actual);
     }
-    
+
     @Test
     public void testTimeException() throws Exception
     {
@@ -119,7 +118,7 @@ public class TransformationOptionLimitsTest
         }
         assertEquals("Wrong exception message", TransformationOptionLimits.TIME_MESSAGE, message);
     }
-    
+
     @Test
     public void testKBytesException() throws Exception
     {
@@ -135,7 +134,7 @@ public class TransformationOptionLimitsTest
         }
         assertEquals("Wrong exception message", TransformationOptionLimits.KBYTES_MESSAGE, message);
     }
-    
+
     @Test
     public void testPageException() throws Exception
     {
@@ -158,10 +157,10 @@ public class TransformationOptionLimitsTest
         limits.setTimeoutMs(123);
         limits.setMaxSourceSizeKBytes(456);
         limits.setMaxPages(789);
-        
+
         Map<String, Object> optionsMap = new HashMap<String, Object>();
         limits.toMap(optionsMap);
-        
+
         TransformationOptionLimits actual = new TransformationOptionLimits();
         actual.set(optionsMap);
 
@@ -174,10 +173,10 @@ public class TransformationOptionLimitsTest
         limits.setReadLimitTimeMs(123);
         limits.setReadLimitKBytes(456);
         limits.setPageLimit(789);
-        
+
         Map<String, Object> optionsMap = new HashMap<String, Object>();
         limits.toMap(optionsMap);
-        
+
         TransformationOptionLimits actual = new TransformationOptionLimits();
         actual.set(optionsMap);
 
@@ -189,36 +188,34 @@ public class TransformationOptionLimitsTest
     {
         int value = 1234;
         limits.setTimeoutMs(value);
-        
+
         long actual = limits.getTimePair().getMax();
-        
+
         assertEquals("Returned TransformationOptionPair did not contain set value", value, actual);
     }
-
 
     @Test
     public void testKBytesPair() throws Exception
     {
         int value = 1234;
         limits.setMaxSourceSizeKBytes(value);
-        
+
         long actual = limits.getKBytesPair().getMax();
-        
+
         assertEquals("Returned TransformationOptionPair did not contain set value", value, actual);
     }
-
 
     @Test
     public void testPagePair() throws Exception
     {
         int value = 1234;
         limits.setMaxPages(value);
-        
+
         long actual = limits.getPagesPair().getMax();
-        
+
         assertEquals("Returned TransformationOptionPair did not contain set value", value, actual);
     }
-    
+
     @Test
     public void testCombineOrder() throws Exception
     {
@@ -230,12 +227,12 @@ public class TransformationOptionLimitsTest
         second.setReadLimitTimeMs(12);
         second.setReadLimitKBytes(456);
         second.setMaxPages(789);
-        
+
         TransformationOptionLimits combined = limits.combine(second);
         TransformationOptionLimits combinedOtherWay = second.combine(limits);
         assertEquals("The combine order should not matter", combined, combinedOtherWay);
     }
-    
+
     @Test
     public void testCombine() throws Exception
     {
@@ -247,18 +244,18 @@ public class TransformationOptionLimitsTest
         second.setTimeoutMs(12);
         second.setMaxSourceSizeKBytes(456);
         second.setMaxPages(789);
-        
+
         TransformationOptionLimits combined = limits.combine(second);
 
-        assertEquals("Expected the lower value", 12, combined.getTimeoutMs());       // max <
+        assertEquals("Expected the lower value", 12, combined.getTimeoutMs()); // max <
         assertEquals("Expected the lower value", 45, combined.getReadLimitKBytes()); // limit <
-        assertEquals("Expected the lower value", 789, combined.getMaxPages());       // max =
-        
-        assertEquals("Expected -1 as max is set", -1, combined.getReadLimitTimeMs());       // max <
+        assertEquals("Expected the lower value", 789, combined.getMaxPages()); // max =
+
+        assertEquals("Expected -1 as max is set", -1, combined.getReadLimitTimeMs()); // max <
         assertEquals("Expected -1 as limit is set", -1, combined.getMaxSourceSizeKBytes()); // limit <
-        assertEquals("Expected -1 as limit is the same", -1, combined.getPageLimit());      // max =
+        assertEquals("Expected -1 as limit is the same", -1, combined.getPageLimit()); // max =
     }
-    
+
     @Test
     public void testCombineLimits() throws Exception
     {
@@ -270,14 +267,14 @@ public class TransformationOptionLimitsTest
         second.setReadLimitTimeMs(12);
         second.setReadLimitKBytes(-1);
         second.setPageLimit(789);
-        
+
         TransformationOptionLimits combined = limits.combine(second);
 
         assertEquals("Expected the lower value", 12, combined.getReadLimitTimeMs());
         assertEquals("Expected the lower value", 45, combined.getReadLimitKBytes());
         assertEquals("Expected the lower value", 789, combined.getPageLimit());
     }
-    
+
     @Test
     public void testCombineUpper() throws Exception
     {
@@ -289,18 +286,18 @@ public class TransformationOptionLimitsTest
         second.setTimeoutMs(12);
         second.setMaxSourceSizeKBytes(456);
         second.setMaxPages(789);
-        
+
         TransformationOptionLimits combined = limits.combineUpper(second);
 
         assertEquals("Expected -1 as only one max value was set", -1, combined.getTimeoutMs());
         assertEquals("Expected -1 as only one max value was set", -1, combined.getMaxSourceSizeKBytes());
         assertEquals("Expected -1 as only one max value was set", -1, combined.getMaxPages());
-        
+
         assertEquals("Expected -1 as only one limit value was set", -1, combined.getReadLimitTimeMs());
         assertEquals("Expected -1 as only one limit value was set", -1, combined.getReadLimitKBytes());
         assertEquals("Expected -1 as only one limit value was set", -1, combined.getPageLimit());
     }
-    
+
     @Test
     public void testCombineUpperLimits() throws Exception
     {
@@ -312,14 +309,14 @@ public class TransformationOptionLimitsTest
         second.setReadLimitTimeMs(12);
         second.setReadLimitKBytes(-1);
         second.setPageLimit(789);
-        
+
         TransformationOptionLimits combined = limits.combineUpper(second);
 
         assertEquals("Expected the higher value", 123, combined.getReadLimitTimeMs());
         assertEquals("Expected -1 as only one limit value was set", -1, combined.getReadLimitKBytes());
         assertEquals("Expected the higher value", 789, combined.getPageLimit());
     }
-    
+
     @Test
     public void testCombineDynamic() throws Exception
     {
@@ -331,61 +328,60 @@ public class TransformationOptionLimitsTest
         second.setReadLimitTimeMs(12);
         second.setReadLimitKBytes(456);
         second.setMaxPages(789);
-        
+
         TransformationOptionLimits combined = limits.combine(second);
-        
+
         // Test dynamic change of value
         limits.setReadLimitKBytes(4560);
         assertEquals("Expected the lower value", 456, combined.getReadLimitKBytes());
     }
-    
-    @Test(expected=UnsupportedOperationException.class)
+
+    @Test(expected = UnsupportedOperationException.class)
     public void testCombineSetTimeoutMs() throws Exception
     {
         TransformationOptionLimits combined = limits.combine(limits); // may combine with itself
         combined.setTimeoutMs(1);
     }
 
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testCombineSetReadLimitTimeMs() throws Exception
     {
         TransformationOptionLimits combined = limits.combine(limits); // may combine with itself
         combined.setReadLimitTimeMs(1);
     }
 
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testCombineSetMaxSourceSizeKBytes() throws Exception
     {
         TransformationOptionLimits combined = limits.combine(limits); // may combine with itself
         combined.setMaxSourceSizeKBytes(1);
     }
 
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testCombineSetReadLimitKBytes() throws Exception
     {
         TransformationOptionLimits combined = limits.combine(limits); // may combine with itself
         combined.setReadLimitKBytes(1);
     }
 
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testCombineSetMaxPages() throws Exception
     {
         TransformationOptionLimits combined = limits.combine(limits); // may combine with itself
         combined.setMaxPages(1);
     }
 
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testCombineSetPageLimit() throws Exception
     {
         TransformationOptionLimits combined = limits.combine(limits); // may combine with itself
         combined.setPageLimit(1);
     }
 
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testCombineSetMap() throws Exception
     {
         TransformationOptionLimits combined = limits.combine(limits); // may combine with itself
         combined.set(null);
     }
 }
-

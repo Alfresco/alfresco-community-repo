@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -48,7 +48,7 @@ public class RM452Test extends BaseRMTestCase
     {
         super.initServices();
 
-        testService = (TestService)applicationContext.getBean("TestService");
+        testService = (TestService) applicationContext.getBean("TestService");
     }
 
     @Override
@@ -65,8 +65,7 @@ public class RM452Test extends BaseRMTestCase
 
     public void testRM452() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -88,12 +87,9 @@ public class RM452Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new FailureTest
-        (
+        doTestInTransaction(new FailureTest(
                 "Shouldn't be able to call testMethodTwo on TestService, because override RM security for method is not configred.",
-                AlfrescoRuntimeException.class
-        )
-        {
+                AlfrescoRuntimeException.class) {
 
             @Override
             public void run() throws Exception

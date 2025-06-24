@@ -32,28 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
-
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.error.ExceptionStackUtil;
-import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.transaction.TooBusyException;
-import org.alfresco.repo.web.scripts.bean.LoginPost;
-import org.alfresco.service.cmr.repository.ArchivedIOException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -72,6 +54,23 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.error.ExceptionStackUtil;
+import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TooBusyException;
+import org.alfresco.repo.web.scripts.bean.LoginPost;
+import org.alfresco.service.cmr.repository.ArchivedIOException;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * Repository (server-tier) container for Web Scripts
@@ -99,55 +98,54 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     private Supplier<TempOutputStream> streamFactory = null;
     private String preserveHeadersPattern = null;
 
-    private Class<?>[] notPublicExceptions = new Class<?>[] {};
-    private Class<?>[] publicExceptions = new Class<?>[] {};
+    private Class<?>[] notPublicExceptions = new Class<?>[]{};
+    private Class<?>[] publicExceptions = new Class<?>[]{};
 
-    /*
-     * Shame init is already used (by TenantRepositoryContainer).
-     */
+    /* Shame init is already used (by TenantRepositoryContainer). */
     public void setup()
     {
         streamFactory = TempOutputStream.factory(
-            TempFileProvider.getTempDir(tempDirectoryName),
-            memoryThreshold, maxContentSize, encryptTempFiles);
+                TempFileProvider.getTempDir(tempDirectoryName),
+                memoryThreshold, maxContentSize, encryptTempFiles);
     }
 
     public void setEncryptTempFiles(Boolean encryptTempFiles)
     {
-		if(encryptTempFiles != null)
-		{
-			this.encryptTempFiles = encryptTempFiles;
-		}
-	}
+        if (encryptTempFiles != null)
+        {
+            this.encryptTempFiles = encryptTempFiles;
+        }
+    }
 
-	public void setTempDirectoryName(String tempDirectoryName)
-	{
-		this.tempDirectoryName = tempDirectoryName;
-	}
+    public void setTempDirectoryName(String tempDirectoryName)
+    {
+        this.tempDirectoryName = tempDirectoryName;
+    }
 
-	public void setMemoryThreshold(Integer memoryThreshold)
-	{
-		if(memoryThreshold != null)
-		{
-			this.memoryThreshold = memoryThreshold;
-		}
-	}
+    public void setMemoryThreshold(Integer memoryThreshold)
+    {
+        if (memoryThreshold != null)
+        {
+            this.memoryThreshold = memoryThreshold;
+        }
+    }
 
-	public void setMaxContentSize(Long maxContentSize)
-	{
-		if(maxContentSize != null)
-		{
-			this.maxContentSize = maxContentSize;
-		}
-	}
+    public void setMaxContentSize(Long maxContentSize)
+    {
+        if (maxContentSize != null)
+        {
+            this.maxContentSize = maxContentSize;
+        }
+    }
 
     public void setPreserveHeadersPattern(String preserveHeadersPattern)
     {
         this.preserveHeadersPattern = preserveHeadersPattern;
     }
 
-	/**
-     * @param repository Repository
+    /**
+     * @param repository
+     *            Repository
      */
     public void setRepository(Repository repository)
     {
@@ -155,15 +153,17 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     /**
-     * @param imageResolver RepositoryImageResolver
+     * @param imageResolver
+     *            RepositoryImageResolver
      */
     public void setRepositoryImageResolver(RepositoryImageResolver imageResolver)
     {
         this.imageResolver = imageResolver;
     }
-    
+
     /**
-     * @param transactionService TransactionService
+     * @param transactionService
+     *            TransactionService
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -171,7 +171,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     /**
-     * @param fallbackTransactionHelper an unlimited transaction helper used to generate error responses
+     * @param fallbackTransactionHelper
+     *            an unlimited transaction helper used to generate error responses
      */
     public void setFallbackTransactionHelper(RetryingTransactionHelper fallbackTransactionHelper)
     {
@@ -179,7 +180,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     /**
-     * @param descriptorService DescriptorService
+     * @param descriptorService
+     *            DescriptorService
      */
     public void setDescriptorService(DescriptorService descriptorService)
     {
@@ -187,7 +189,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     /**
-     * @param authorityService AuthorityService
+     * @param authorityService
+     *            AuthorityService
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -195,14 +198,15 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     /**
-     * Exceptions which may contain information that cannot be displayed in UI 
+     * Exceptions which may contain information that cannot be displayed in UI
      * 
-     * @param notPublicExceptions - {@link Class}&lt;?&gt;[] instance which contains list of not public exceptions
+     * @param notPublicExceptions
+     *            - {@link Class}&lt;?&gt;[] instance which contains list of not public exceptions
      */
     public void setNotPublicExceptions(List<Class<?>> notPublicExceptions)
     {
-        this.notPublicExceptions = new Class<?>[] {};
-        if((null != notPublicExceptions) && !notPublicExceptions.isEmpty())
+        this.notPublicExceptions = new Class<?>[]{};
+        if ((null != notPublicExceptions) && !notPublicExceptions.isEmpty())
         {
             this.notPublicExceptions = notPublicExceptions.toArray(this.notPublicExceptions);
         }
@@ -216,12 +220,13 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     /**
      * Exceptions which may contain information that need to display in UI
      *
-     * @param publicExceptions - {@link Class}&lt;?&gt;[] instance which contains list of public exceptions
+     * @param publicExceptions
+     *            - {@link Class}&lt;?&gt;[] instance which contains list of public exceptions
      */
     public void setPublicExceptions(List<Class<?>> publicExceptions)
     {
-        this.publicExceptions = new Class<?>[] {};
-        if((null != publicExceptions) && !publicExceptions.isEmpty())
+        this.publicExceptions = new Class<?>[]{};
+        if ((null != publicExceptions) && !publicExceptions.isEmpty())
         {
             this.publicExceptions = publicExceptions.toArray(this.publicExceptions);
         }
@@ -233,16 +238,16 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Container#getDescription()
-     */
+     * 
+     * @see org.alfresco.web.scripts.Container#getDescription() */
     public ServerModel getDescription()
     {
         return new RepositoryServerModel(descriptorService.getCurrentRepositoryDescriptor(), descriptorService.getServerDescriptor());
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getScriptParameters()
-     */
+     * 
+     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getScriptParameters() */
     public Map<String, Object> getScriptParameters()
     {
         Map<String, Object> params = new HashMap<>(super.getScriptParameters());
@@ -250,10 +255,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         return params;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getTemplateParameters()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getTemplateParameters() */
     public Map<String, Object> getTemplateParameters()
     {
         // Ensure we have a transaction - we might be generating the status template after the main transaction failed
@@ -268,12 +272,13 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     /**
      * Add Repository specific parameters
      * 
-     * @param params Map<String, Object>
+     * @param params
+     *            Map<String, Object>
      */
     private void addRepoParameters(Map<String, Object> params)
     {
         if (AlfrescoTransactionSupport.getTransactionId() != null &&
-            AuthenticationUtil.getFullAuthentication() != null)
+                AuthenticationUtil.getFullAuthentication() != null)
         {
             NodeRef rootHome = repository.getRootHome();
             if (rootHome != null)
@@ -299,10 +304,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.RuntimeContainer#executeScript(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse, org.alfresco.web.scripts.Authenticator)
-     */
+     * 
+     * @see org.alfresco.web.scripts.RuntimeContainer#executeScript(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse, org.alfresco.web.scripts.Authenticator) */
     public void executeScript(WebScriptRequest scriptReq, WebScriptResponse scriptRes, final Authenticator auth)
-        throws IOException
+            throws IOException
     {
         try
         {
@@ -334,9 +339,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer
             }
         }
     }
-    
+
     protected void executeScriptInternal(final WebScriptRequest scriptReq, final WebScriptResponse scriptRes, final Authenticator auth)
-        throws IOException
+            throws IOException
     {
         final WebScript script = scriptReq.getServiceMatch().getWebScript();
         final Description desc = script.getDescription();
@@ -351,7 +356,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         if (required == RequiredAuthentication.none)
         {
             // TODO revisit - cleared here, in-lieu of WebClient clear
-            //AuthenticationUtil.clearCurrentSecurityContext();
+            // AuthenticationUtil.clearCurrentSecurityContext();
 
             transactionedExecuteAs(script, scriptReq, scriptRes);
             return;
@@ -453,17 +458,18 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     private void checkGuestAccess(RequiredAuthentication required, String scriptDescriptorId)
     {
         if (required == RequiredAuthentication.user || required == RequiredAuthentication.admin
-                    || required == RequiredAuthentication.sysadmin)
+                || required == RequiredAuthentication.sysadmin)
         {
             final String authenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
             final String runAsUser = AuthenticationUtil.getRunAsUser();
 
             if ((authenticatedUser == null) || (authenticatedUser.equals(runAsUser)
-                        && authorityService.hasGuestAuthority()) || (!authenticatedUser.equals(runAsUser)
-                        && authorityService.isGuestAuthority(authenticatedUser)))
+                    && authorityService.hasGuestAuthority())
+                    || (!authenticatedUser.equals(runAsUser)
+                            && authorityService.isGuestAuthority(authenticatedUser)))
             {
                 throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + scriptDescriptorId
-                            + " requires user authentication; however, a guest has attempted access.");
+                        + " requires user authentication; however, a guest has attempted access.");
             }
         }
     }
@@ -477,25 +483,28 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         if (required == RequiredAuthentication.sysadmin && !(isSysAdminUser() || isAdminOrSystemUser()))
         {
             throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + scriptDescriptorId
-                        + " requires system-admin authentication; however, a non-system-admin has attempted access.");
+                    + " requires system-admin authentication; however, a non-system-admin has attempted access.");
         }
         else if (required == RequiredAuthentication.admin && !isAdminOrSystemUser())
         {
             throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + scriptDescriptorId
-                        + " requires admin authentication; however, a non-admin has attempted access.");
+                    + " requires admin authentication; however, a non-admin has attempted access.");
         }
     }
 
     /**
      * Execute script within required level of transaction
      * 
-     * @param script WebScript
-     * @param scriptReq WebScriptRequest
-     * @param scriptRes WebScriptResponse
+     * @param script
+     *            WebScript
+     * @param scriptReq
+     *            WebScriptRequest
+     * @param scriptRes
+     *            WebScriptResponse
      * @throws IOException
      */
     protected void transactionedExecute(final WebScript script, final WebScriptRequest scriptReq, final WebScriptResponse scriptRes)
-        throws IOException
+            throws IOException
     {
         final Description description = script.getDescription();
 
@@ -519,7 +528,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         final RequiredTransactionParameters trxParams = description.getRequiredTransactionParameters();
 
         try (final BufferedRequest bufferedReq = newBufferedRequest(trxParams, scriptReq, streamFactory);
-             final BufferedResponse bufferedRes = newBufferedResponse(trxParams, scriptRes, streamFactory))
+                final BufferedResponse bufferedRes = newBufferedResponse(trxParams, scriptRes, streamFactory))
         {
             boolean readonly = description.getRequiredTransactionParameters().getCapability() == TransactionCapability.readonly;
             boolean requiresNew = description.getRequiredTransaction() == RequiredTransaction.requiresnew;
@@ -527,10 +536,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer
             // log a warning if we detect a GET webscript being run in a readwrite transaction, GET calls should
             // NOT have any side effects so this scenario as a warning sign something maybe amiss, see ALF-10179.
             if (logger.isDebugEnabled() && !readonly && "GET".equalsIgnoreCase(
-                description.getMethod()))
+                    description.getMethod()))
             {
                 logger.debug("Webscript with URL '" + scriptReq.getURL() +
-                             "' is a GET request but it's descriptor has declared a readwrite transaction is required");
+                        "' is a GET request but it's descriptor has declared a readwrite transaction is required");
             }
 
             try
@@ -538,7 +547,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                 final RetryingTransactionHelper transactionHelper = transactionService.getRetryingTransactionHelper();
                 if (script instanceof LoginPost)
                 {
-                    //login script requires read-write transaction because of authorization interceptor
+                    // login script requires read-write transaction because of authorization interceptor
                     transactionHelper.setForceWritable(true);
                 }
                 transactionHelper.doInTransaction(() -> {
@@ -546,7 +555,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                     {
                         if (logger.isDebugEnabled())
                             logger.debug("Begin retry transaction block: " + description.getRequiredTransaction() + ","
-                                + description.getRequiredTransactionParameters().getCapability());
+                                    + description.getRequiredTransactionParameters().getCapability());
 
                         if (bufferedReq == null || bufferedRes == null)
                         {
@@ -600,7 +609,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                     {
                         if (logger.isDebugEnabled())
                             logger.debug("End retry transaction block: " + description.getRequiredTransaction() + ","
-                                + description.getRequiredTransactionParameters().getCapability());
+                                    + description.getRequiredTransactionParameters().getCapability());
                     }
 
                     return null;
@@ -651,7 +660,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         }
         // Note: if you need to look for more exceptions in the stack, then create a static array and pass it in
         if ((socketException != null && socketException.getMessage().contains("Broken pipe")) ||
-            (clientAbortException != null && ExceptionStackUtil.getCause(ioe, clientAbortException) != null))
+                (clientAbortException != null && ExceptionStackUtil.getCause(ioe, clientAbortException) != null))
         {
             if (logger.isDebugEnabled())
             {
@@ -671,9 +680,12 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     /**
      * Execute script within required level of transaction as required effective user.
      *
-     * @param script    WebScript
-     * @param scriptReq WebScriptRequest
-     * @param scriptRes WebScriptResponse
+     * @param script
+     *            WebScript
+     * @param scriptReq
+     *            WebScriptRequest
+     * @param scriptRes
+     *            WebScriptResponse
      * @throws IOException
      */
     private void transactionedExecuteAs(final WebScript script, final WebScriptRequest scriptReq,
@@ -696,14 +708,18 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     /**
      * Execute script within required level of transaction as required effective user.
      *
-     * @param script    WebScript
-     * @param scriptReq WebScriptRequest
-     * @param scriptRes WebScriptResponse
-     * @param requiredAuthentication Required authentication
+     * @param script
+     *            WebScript
+     * @param scriptReq
+     *            WebScriptRequest
+     * @param scriptRes
+     *            WebScriptResponse
+     * @param requiredAuthentication
+     *            Required authentication
      * @throws IOException
      */
     private void transactionedExecuteAs(final WebScript script, final WebScriptRequest scriptReq,
-                                        final WebScriptResponse scriptRes, RequiredAuthentication requiredAuthentication) throws IOException
+            final WebScriptResponse scriptRes, RequiredAuthentication requiredAuthentication) throws IOException
     {
         // Execute as System if and only if, the current user is a member of System-Admin group, and he is not a super admin.
         // E.g. if 'jdoe' is a member of ALFRESCO_SYSTEM_ADMINISTRATORS group, then the work should be executed as System to satisfy the ACL checks.
@@ -721,16 +737,16 @@ public class RepositoryContainer extends AbstractRuntimeContainer
             transactionedExecuteAs(script, scriptReq, scriptRes);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
+     * 
+     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#onApplicationEvent(org.springframework.context.ApplicationEvent) */
     @Override
     public void onApplicationEvent(ApplicationEvent event)
     {
         if (event instanceof ContextRefreshedEvent)
         {
-            ContextRefreshedEvent refreshEvent = (ContextRefreshedEvent)event;
+            ContextRefreshedEvent refreshEvent = (ContextRefreshedEvent) event;
             ApplicationContext refreshContext = refreshEvent.getApplicationContext();
             if (refreshContext.equals(applicationContext))
             {
@@ -741,10 +757,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer
             }
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getRequiredAuthentication()
-     */
+     * 
+     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getRequiredAuthentication() */
     @Override
     public RequiredAuthentication getRequiredAuthentication()
     {
@@ -752,31 +768,31 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         {
             return RequiredAuthentication.guest; // user or guest (ie. at least guest)
         }
-        
+
         return RequiredAuthentication.none;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.RuntimeContainer#authenticate(org.alfresco.web.scripts.Authenticator, org.alfresco.web.scripts.Description.RequiredAuthentication)
-     */
+     * 
+     * @see org.alfresco.web.scripts.RuntimeContainer#authenticate(org.alfresco.web.scripts.Authenticator, org.alfresco.web.scripts.Description.RequiredAuthentication) */
     @Override
     public boolean authenticate(Authenticator auth, RequiredAuthentication required)
     {
         if (auth != null)
         {
             AuthenticationUtil.clearCurrentSecurityContext();
-            
+
             return auth.authenticate(required, false);
         }
-        
+
         return false;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#reset()
-     */
+     * 
+     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#reset() */
     @Override
-    public void reset() 
+    public void reset()
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
             internalReset();
@@ -790,9 +806,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     private static BufferedRequest newBufferedRequest(
-        final RequiredTransactionParameters trxParams,
-        final WebScriptRequest scriptReq,
-        final Supplier<TempOutputStream> streamFactory)
+            final RequiredTransactionParameters trxParams,
+            final WebScriptRequest scriptReq,
+            final Supplier<TempOutputStream> streamFactory)
     {
         if (trxParams.getCapability() != TransactionCapability.readwrite)
         {
@@ -808,9 +824,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     private static BufferedResponse newBufferedResponse(
-        final RequiredTransactionParameters trxParams,
-        final WebScriptResponse scriptRes,
-        final Supplier<TempOutputStream> streamFactory)
+            final RequiredTransactionParameters trxParams,
+            final WebScriptResponse scriptRes,
+            final Supplier<TempOutputStream> streamFactory)
     {
         if (trxParams.getCapability() != TransactionCapability.readwrite)
         {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,14 +32,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition;
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
-import org.alfresco.service.cmr.action.ActionConditionDefinition;
-import org.alfresco.service.cmr.action.ActionService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition;
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.service.cmr.action.ActionConditionDefinition;
+import org.alfresco.service.cmr.action.ActionService;
 
 /**
  * Implementation for Java backed webscript to get the RM related action condition definition list.
@@ -74,7 +75,7 @@ public class RmActionConditionDefinitionsGet extends DeclarativeWebScript
 
         List<ActionConditionDefinition> defs = new ArrayList<>(dmDefs.size() + conditions.size());
         defs.addAll(dmDefs);
-        for (RecordsManagementActionCondition condition: conditions)
+        for (RecordsManagementActionCondition condition : conditions)
         {
             if (condition.isPublicCondition())
             {

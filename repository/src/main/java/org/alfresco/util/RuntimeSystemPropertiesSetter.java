@@ -40,26 +40,22 @@ import org.springframework.core.PriorityOrdered;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
- * Sets runtime JVM system properties for Spring Framework. 
+ * Sets runtime JVM system properties for Spring Framework.
  * <p>
- * This class is used by the Spring framework to inject system properties into
- * the runtime environment (e.g.:  alfresco.jmx.dir).   The motivation for this 
- * is that certain values must be set within spring must be computed in advance
- * for org.springframework.beans.factory.config.PropertyPlaceholderConfigurer
- * to work properly.
+ * This class is used by the Spring framework to inject system properties into the runtime environment (e.g.: alfresco.jmx.dir). The motivation for this is that certain values must be set within spring must be computed in advance for org.springframework.beans.factory.config.PropertyPlaceholderConfigurer to work properly.
  *
  * @author Jon Cox
  * @see #setJvmProperties(Map)
-*/
+ */
 public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, ApplicationContextAware, PriorityOrdered
 {
-    private static Log logger = LogFactory.getLog(RuntimeSystemPropertiesSetter.class );
+    private static Log logger = LogFactory.getLog(RuntimeSystemPropertiesSetter.class);
 
     /** default: just before PropertyPlaceholderConfigurer */
     private int order = Integer.MAX_VALUE - 1;
-    
+
     private ResourcePatternResolver resolver;
-    
+
     /**
      * @see #setJvmProperties(Map)
      */
@@ -71,24 +67,22 @@ public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, 
     }
 
     /**
-     * Set the properties that will get pushed into the JVM system properties.
-     * This will be akin to running the JVM with the <b>-Dprop=value</b>.  Existing system JVM properties
-     * <i>will not be overwritten</i>.
+     * Set the properties that will get pushed into the JVM system properties. This will be akin to running the JVM with the <b>-Dprop=value</b>. Existing system JVM properties <i>will not be overwritten</i>.
      * 
-     * @param jvmProperties     properties to set if they are not already present in the VM
+     * @param jvmProperties
+     *            properties to set if they are not already present in the VM
      */
     public void setJvmProperties(Map<String, String> jvmProperties)
     {
         this.jvmProperties = jvmProperties;
     }
 
-    
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
-        this.resolver  = applicationContext;
+        this.resolver = applicationContext;
     }
 
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException 
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException
     {
         // Push any mapped properties into the JVM
         for (Map.Entry<String, String> entry : jvmProperties.entrySet())
@@ -106,23 +100,26 @@ public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, 
                 }
             }
         }
-        
-        File path=null;
-        try 
+
+        File path = null;
+        try
         {
             // Typically, the value of 'path' will be something like:
             //
-            //     $TOMCAT_HOME/webapps/alfresco/WEB-INF/classes/alfresco/alfresco-jmxrmi.password
+            // $TOMCAT_HOME/webapps/alfresco/WEB-INF/classes/alfresco/alfresco-jmxrmi.password
             // or: $TOMCAT_HOME/shared/classes/alfresco/alfresco-jmxrmi.password
             path = this.resolver.getResource("classpath:alfresco/alfresco-jmxrmi.password").getFile().getCanonicalFile();
         }
-        catch (Exception e ) 
-        { 
-            if ( logger.isWarnEnabled() )
-                 logger.warn("Could not find alfresco-jmxrmi.password on classpath");
+        catch (Exception e)
+        {
+            if (logger.isWarnEnabled())
+                logger.warn("Could not find alfresco-jmxrmi.password on classpath");
         }
 
-        if ( path == null ) { System.setProperty("alfresco.jmx.dir", ""); }
+        if (path == null)
+        {
+            System.setProperty("alfresco.jmx.dir", "");
+        }
         else
         {
             String alfresco_jmx_dir = path.getParent();
@@ -133,6 +130,14 @@ public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, 
             System.setProperty("alfresco.jmx.dir", alfresco_jmx_dir);
         }
     }
-    public void setOrder(int order) { this.order = order; }
-    public int getOrder()           { return order; }               
+
+    public void setOrder(int order)
+    {
+        this.order = order;
+    }
+
+    public int getOrder()
+    {
+        return order;
+    }
 }

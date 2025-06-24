@@ -48,38 +48,30 @@ public class FormCreationDataImpl implements FormCreationData
         this.context = context;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.forms.processor.FormCreationData#getItemData()
-     */
+     * @see org.alfresco.repo.forms.processor.FormCreationData#getItemData() */
     public Object getItemData()
     {
         return itemData;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.repo.forms.processor.FormCreationData#isForcedField(java
-     * .lang.String)
-     */
+     * @see org.alfresco.repo.forms.processor.FormCreationData#isForcedField(java .lang.String) */
     public boolean isForcedField(String fieldName)
     {
         if (forcedFields == null)
         {
             return false;
         }
-        
+
         return forcedFields.contains(fieldName);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.forms.processor.FormCreationData#getContext()
-     */
+     * @see org.alfresco.repo.forms.processor.FormCreationData#getContext() */
     public Map<String, Object> getContext()
     {
         return context;

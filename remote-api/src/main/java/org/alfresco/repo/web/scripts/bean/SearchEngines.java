@@ -30,17 +30,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.config.Config;
 import org.springframework.extensions.config.ConfigService;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement;
 
 /**
  * List of (server-side) registered Search Engines
@@ -53,7 +53,7 @@ public class SearchEngines extends DeclarativeWebScript
     public static final String URL_ARG_DESCRIPTION = "description";
     public static final String URL_ARG_TEMPLATE = "template";
     public static final String URL_ARG_ALL = "all";
-    
+
     // Logger
     private static final Log logger = LogFactory.getLog(SearchEngines.class);
 
@@ -62,7 +62,8 @@ public class SearchEngines extends DeclarativeWebScript
     protected SearchProxy searchProxy;
 
     /**
-     * @param configService ConfigService
+     * @param configService
+     *            ConfigService
      */
     public void setConfigService(ConfigService configService)
     {
@@ -70,7 +71,8 @@ public class SearchEngines extends DeclarativeWebScript
     }
 
     /**
-     * @param searchProxy SearchProxy
+     * @param searchProxy
+     *            SearchProxy
      */
     public void setSearchProxy(SearchProxy searchProxy)
     {
@@ -78,8 +80,8 @@ public class SearchEngines extends DeclarativeWebScript
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * 
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     @SuppressWarnings("deprecation")
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
@@ -93,7 +95,7 @@ public class SearchEngines extends DeclarativeWebScript
         {
             urlType = URL_ARG_DESCRIPTION;
         }
-                
+
         //
         // retrieve open search engines configuration
         //
@@ -104,11 +106,11 @@ public class SearchEngines extends DeclarativeWebScript
         model.put("engines", urls);
         return model;
     }
-    
+
     /**
      * Retrieve registered search engines
      * 
-     * @return  set of search engines
+     * @return set of search engines
      */
     private Set<UrlTemplate> getUrls(String urlType)
     {
@@ -118,7 +120,7 @@ public class SearchEngines extends DeclarativeWebScript
         Set<UrlTemplate> urls = new HashSet<UrlTemplate>();
         Config config = configService.getConfig("OpenSearch");
 
-        OpenSearchConfigElement searchConfig = (OpenSearchConfigElement)config.getConfigElement(OpenSearchConfigElement.CONFIG_ELEMENT_ID);
+        OpenSearchConfigElement searchConfig = (OpenSearchConfigElement) config.getConfigElement(OpenSearchConfigElement.CONFIG_ELEMENT_ID);
         for (OpenSearchConfigElement.EngineConfig engineConfig : searchConfig.getEngines())
         {
             Map<String, String> engineUrls = engineConfig.getUrls();
@@ -126,10 +128,10 @@ public class SearchEngines extends DeclarativeWebScript
             {
                 String type = engineUrl.getKey();
                 String url = searchProxy.createUrl(engineConfig, type);
-                
+
                 if ((urlType.equals(URL_ARG_ALL)) ||
-                    (urlType.equals(URL_ARG_DESCRIPTION) && type.equals(MimetypeMap.MIMETYPE_OPENSEARCH_DESCRIPTION)) ||
-                    (urlType.equals(URL_ARG_TEMPLATE) && !type.equals(MimetypeMap.MIMETYPE_OPENSEARCH_DESCRIPTION)))
+                        (urlType.equals(URL_ARG_DESCRIPTION) && type.equals(MimetypeMap.MIMETYPE_OPENSEARCH_DESCRIPTION)) ||
+                        (urlType.equals(URL_ARG_TEMPLATE) && !type.equals(MimetypeMap.MIMETYPE_OPENSEARCH_DESCRIPTION)))
                 {
                     String label = engineConfig.getLabel();
                     String labelId = engineConfig.getLabelId();
@@ -145,16 +147,15 @@ public class SearchEngines extends DeclarativeWebScript
                 }
 
                 // TODO: Extract URL templates from OpenSearch description
-                else if (urlType.equals(URL_ARG_TEMPLATE) && 
-                         type.equals(MimetypeMap.MIMETYPE_OPENSEARCH_DESCRIPTION))
-                {            
-                }
+                else if (urlType.equals(URL_ARG_TEMPLATE) &&
+                        type.equals(MimetypeMap.MIMETYPE_OPENSEARCH_DESCRIPTION))
+                {}
             }
         }
-        
+
         if (logger.isDebugEnabled())
             logger.debug("Retrieved " + urls.size() + " engine registrations");
-        
+
         return urls;
     }
 
@@ -167,7 +168,7 @@ public class SearchEngines extends DeclarativeWebScript
         private String label;
         private String url;
         private UrlTemplate engine;
-        
+
         public UrlTemplate(String label, String type, String url)
         {
             this.label = label;
@@ -186,17 +187,17 @@ public class SearchEngines extends DeclarativeWebScript
         {
             return label;
         }
-        
+
         public String getType()
         {
             return type;
         }
-        
+
         public String getUrl()
         {
             return url;
         }
-        
+
         public String getUrlType()
         {
             return (type.equals(MimetypeMap.MIMETYPE_OPENSEARCH_DESCRIPTION) ? "description" : "template");
@@ -207,5 +208,5 @@ public class SearchEngines extends DeclarativeWebScript
             return engine;
         }
     }
-            
+
 }

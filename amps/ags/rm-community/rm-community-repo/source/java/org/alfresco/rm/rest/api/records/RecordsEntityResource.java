@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,9 @@ package org.alfresco.rm.rest.api.records;
 
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.dao.ConcurrencyFailureException;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordMissingMetadataException;
@@ -60,8 +63,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * An implementation of an Entity Resource for a record
@@ -70,12 +71,12 @@ import org.springframework.dao.ConcurrencyFailureException;
  * @author Tuna Aksoy
  * @since 2.6
  */
-@EntityResource(name="records", title = "Records")
+@EntityResource(name = "records", title = "Records")
 public class RecordsEntityResource implements BinaryResourceAction.Read,
-                                              EntityResourceAction.ReadById<Record>,
-                                              EntityResourceAction.Delete,
-                                              EntityResourceAction.Update<Record>,
-                                              InitializingBean
+        EntityResourceAction.ReadById<Record>,
+        EntityResourceAction.Delete,
+        EntityResourceAction.Update<Record>,
+        InitializingBean
 {
 
     private ApiNodesModelFactory nodesModelFactory;
@@ -118,8 +119,10 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     /**
      * Download content
      *
-     * @param recordId the id of the record to get the content from
-     * @param parameters {@link Parameters}
+     * @param recordId
+     *            the id of the record to get the content from
+     * @param parameters
+     *            {@link Parameters}
      * @return binary content resource
      * @throws EntityNotFoundException
      */
@@ -132,7 +135,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         mandatory("parameters", parameters);
 
         NodeRef record = apiUtils.validateRecord(recordId);
-        if(nodeService.getType(record).equals(RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT))
+        if (nodeService.getType(record).equals(RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT))
         {
             throw new IllegalArgumentException("Cannot read content from Non-electronic record " + recordId + ".");
         }
@@ -144,7 +147,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     }
 
     @Operation("file")
-    @WebApiDescription(title = "File record", description="File a record into fileplan.")
+    @WebApiDescription(title = "File record", description = "File a record into fileplan.")
     public Record fileRecord(String recordId, TargetContainer target, Parameters parameters, WithResponse withResponse)
     {
         checkNotBlank("recordId", recordId);
@@ -158,8 +161,8 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
 
         // Get the current parent type to decide if we link or move the record
         NodeRef primaryParent = nodeService.getPrimaryParent(record).getParentRef();
-        if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(nodeService.getType(primaryParent)))
-        {    
+        if (RecordsManagementModel.TYPE_RECORD_FOLDER.equals(nodeService.getType(primaryParent)))
+        {
             recordService.link(record, targetRecordFolder);
         }
         else
@@ -196,7 +199,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     }
 
     @Override
-    @WebApiDescription(title="Update record", description = "Updates a record with id 'recordId'")
+    @WebApiDescription(title = "Update record", description = "Updates a record with id 'recordId'")
     public Record update(String recordId, Record recordInfo, Parameters parameters)
     {
         checkNotBlank("recordId", recordId);
@@ -207,8 +210,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         NodeRef record = apiUtils.validateRecord(recordId);
 
         // update info
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 apiUtils.updateNode(record, recordInfo, parameters);
@@ -218,21 +220,20 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // return record state
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>() {
             public FileInfo execute()
             {
                 return fileFolderService.getFileInfo(record);
             }
         };
         FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
-        
+
         apiUtils.postActivity(info, recordInfo.getParentId(), ActivityType.FILE_UPDATED);
         return nodesModelFactory.createRecord(info, parameters, null, false);
     }
 
-    @Operation ("complete")
-    @WebApiDescription (title = "Complete record", description = "Complete a record.")
+    @Operation("complete")
+    @WebApiDescription(title = "Complete record", description = "Complete a record.")
     public Record completeRecord(String recordId, Void body, Parameters parameters, WithResponse withResponse)
     {
         checkNotBlank("recordId", recordId);
@@ -248,7 +249,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         }
         catch (RecordMissingMetadataException e)
         {
-            throw new IntegrityException("The record has missing mandatory properties.", null); 
+            throw new IntegrityException("The record has missing mandatory properties.", null);
         }
 
         // return record state
@@ -257,7 +258,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     }
 
     @Override
-    @WebApiDescription(title = "Delete record", description="Deletes a record with id 'recordId'")
+    @WebApiDescription(title = "Delete record", description = "Deletes a record with id 'recordId'")
     public void delete(String recordId, Parameters parameters)
     {
         checkNotBlank("recordId", recordId);

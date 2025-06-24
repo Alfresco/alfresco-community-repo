@@ -28,6 +28,8 @@ package org.alfresco.repo.security.authority.script;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.mozilla.javascript.Scriptable;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
@@ -35,7 +37,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * The Script user is a USER authority exposed to the scripting API
@@ -55,58 +56,62 @@ public class ScriptUser implements Authority, Serializable
     private String fullName;
     private NodeRef personNodeRef;
     private Scriptable scope;
-    
+
     /**
      * Constructs a scriptable object representing a user.
      * 
-     * @param userName The username
-     * @param personNodeRef The NodeRef
-     * @param serviceRegistry A ServiceRegistry instance
-     * @param scope Script scope
+     * @param userName
+     *            The username
+     * @param personNodeRef
+     *            The NodeRef
+     * @param serviceRegistry
+     *            A ServiceRegistry instance
+     * @param scope
+     *            Script scope
      * @since 4.0
      */
     public ScriptUser(String userName, NodeRef personNodeRef, ServiceRegistry serviceRegistry, Scriptable scope)
     {
-       this.serviceRegistry = serviceRegistry;
-       this.authorityService = serviceRegistry.getAuthorityService();
-       this.personService = serviceRegistry.getPersonService();
-       this.scope = scope;
-       this.personNodeRef = personNodeRef == null ? personService.getPerson(userName) : personNodeRef;
-       this.userName = userName;
-       
-       this.shortName = authorityService.getShortName(userName);
-       NodeService nodeService = serviceRegistry.getNodeService();
-       String firstName = (String)nodeService.getProperty(this.personNodeRef, ContentModel.PROP_FIRSTNAME);
-       String lastName = (String)nodeService.getProperty(this.personNodeRef, ContentModel.PROP_LASTNAME);
-       this.displayName = this.fullName = (firstName != null ? firstName : "") + (lastName != null ? (' ' + lastName) : "");
-    }
-    
-    public ScriptAuthorityType getAuthorityType() 
-    {
-       return authorityType;
+        this.serviceRegistry = serviceRegistry;
+        this.authorityService = serviceRegistry.getAuthorityService();
+        this.personService = serviceRegistry.getPersonService();
+        this.scope = scope;
+        this.personNodeRef = personNodeRef == null ? personService.getPerson(userName) : personNodeRef;
+        this.userName = userName;
+
+        this.shortName = authorityService.getShortName(userName);
+        NodeService nodeService = serviceRegistry.getNodeService();
+        String firstName = (String) nodeService.getProperty(this.personNodeRef, ContentModel.PROP_FIRSTNAME);
+        String lastName = (String) nodeService.getProperty(this.personNodeRef, ContentModel.PROP_LASTNAME);
+        this.displayName = this.fullName = (firstName != null ? firstName : "") + (lastName != null ? (' ' + lastName) : "");
     }
 
-    public String getShortName() 
+    public ScriptAuthorityType getAuthorityType()
     {
-       return shortName;
+        return authorityType;
     }
 
-    public String getFullName() 
+    public String getShortName()
     {
-       return fullName;
+        return shortName;
+    }
+
+    public String getFullName()
+    {
+        return fullName;
     }
 
     /**
-     * Return the User Name, also known as the Authority Full Name 
+     * Return the User Name, also known as the Authority Full Name
      */
-    public String getUserName() 
+    public String getUserName()
     {
-       return userName;
+        return userName;
     }
 
-    public String getDisplayName() 
+    public String getDisplayName()
     {
-       return displayName;
+        return displayName;
     }
 
     /**
@@ -116,12 +121,12 @@ public class ScriptUser implements Authority, Serializable
      */
     public NodeRef getPersonNodeRef()
     {
-       if (personNodeRef == null)
-       {
-          // Lazy lookup for Authority based creation
-          personNodeRef = authorityService.getAuthorityNodeRef(userName);
-       }
-       return personNodeRef;
+        if (personNodeRef == null)
+        {
+            // Lazy lookup for Authority based creation
+            personNodeRef = authorityService.getAuthorityNodeRef(userName);
+        }
+        return personNodeRef;
     }
 
     /**
@@ -131,7 +136,7 @@ public class ScriptUser implements Authority, Serializable
      */
     public ScriptNode getPerson()
     {
-       return new ScriptNode(getPersonNodeRef(), serviceRegistry, this.scope);
+        return new ScriptNode(getPersonNodeRef(), serviceRegistry, this.scope);
     }
 
     /**

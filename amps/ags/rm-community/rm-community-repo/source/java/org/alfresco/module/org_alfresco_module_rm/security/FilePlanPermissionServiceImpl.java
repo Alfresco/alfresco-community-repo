@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,18 +29,22 @@ package org.alfresco.module.org_alfresco_module_rm.security;
 
 import static java.util.Collections.singletonMap;
 
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 import static org.alfresco.repo.policy.annotation.BehaviourKind.CLASS;
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.getSystemUserName;
 import static org.alfresco.service.cmr.security.OwnableService.NO_OWNER;
 import static org.alfresco.util.ParameterCheck.mandatory;
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
@@ -66,8 +70,6 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * File plan permission service.
@@ -76,10 +78,10 @@ import org.apache.commons.logging.LogFactory;
  * @since 2.1
  */
 @BehaviourBean
-public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
-                                           implements FilePlanPermissionService,
-                                                      RMPermissionModel,
-                                                      NodeServicePolicies.OnMoveNodePolicy
+public class FilePlanPermissionServiceImpl extends ServiceBaseImpl
+        implements FilePlanPermissionService,
+        RMPermissionModel,
+        NodeServicePolicies.OnMoveNodePolicy
 {
     /** An audit key for the set permission event. */
     private static final String AUDIT_SET_PERMISSION = "set-permission";
@@ -129,8 +131,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 TYPE_RECORD_CATEGORY,
                 new JavaBehaviour(this, "onMoveNode", TRANSACTION_COMMIT));
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -151,7 +152,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param permissionService permission service
+     * @param permissionService
+     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -169,7 +171,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param policyComponent   policy component
+     * @param policyComponent
+     *            policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -187,7 +190,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param ownableService    ownable service
+     * @param ownableService
+     *            ownable service
      */
     public void setOwnableService(OwnableService ownableService)
     {
@@ -207,7 +211,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Sets the authority service
      *
-     * @param authorityService The authority service
+     * @param authorityService
+     *            The authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -227,7 +232,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Sets the file plan role service
      *
-     * @param filePlanRoleService The file plan role service to set
+     * @param filePlanRoleService
+     *            The file plan role service to set
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -247,7 +253,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Sets the file plan service
      *
-     * @param filePlanService The file plan service to set
+     * @param filePlanService
+     *            The file plan service to set
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -257,7 +264,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Set the RM audit service.
      *
-     * @param recordsManagementAuditService The RM audit service.
+     * @param recordsManagementAuditService
+     *            The RM audit service.
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
     {
@@ -286,15 +294,14 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Setup permissions on new unfiled record folder
      *
-     * @param childAssocRef child association reference
+     * @param childAssocRef
+     *            child association reference
      */
-    @Behaviour
-    (
+    @Behaviour(
             type = "rma:unfiledRecordFolder",
             kind = CLASS,
             policy = "alf:onCreateNode",
-            notificationFrequency = TRANSACTION_COMMIT
-    )
+            notificationFrequency = TRANSACTION_COMMIT)
     public void onCreateUnfiledRecordFolder(ChildAssociationRef childAssocRef)
     {
         mandatory("childAssocRef", childAssocRef);
@@ -304,15 +311,14 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Setup permissions on new record folder
      *
-     * @param childAssocRef child association reference
+     * @param childAssocRef
+     *            child association reference
      */
-    @Behaviour
-    (
+    @Behaviour(
             type = "rma:recordFolder",
             kind = CLASS,
             policy = "alf:onCreateNode",
-            notificationFrequency = TRANSACTION_COMMIT
-    )
+            notificationFrequency = TRANSACTION_COMMIT)
     public void onCreateRecordFolder(ChildAssociationRef childAssocRef)
     {
         mandatory("childAssocRef", childAssocRef);
@@ -322,15 +328,14 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Setup permissions on newly created hold.
      *
-     * @param childAssocRef child association reference
+     * @param childAssocRef
+     *            child association reference
      */
-    @Behaviour
-    (
+    @Behaviour(
             type = "rma:hold",
             kind = CLASS,
             policy = "alf:onCreateNode",
-            notificationFrequency = TRANSACTION_COMMIT
-    )
+            notificationFrequency = TRANSACTION_COMMIT)
     public void onCreateHold(final ChildAssociationRef childAssocRef)
     {
         createContainerElement(childAssocRef);
@@ -339,15 +344,14 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Setup permissions on newly created transfer.
      *
-     * @param childAssocRef child association reference
+     * @param childAssocRef
+     *            child association reference
      */
-    @Behaviour
-    (
+    @Behaviour(
             type = "rma:transfer",
             kind = CLASS,
             policy = "alf:onCreateNode",
-            notificationFrequency = TRANSACTION_COMMIT
-    )
+            notificationFrequency = TRANSACTION_COMMIT)
     public void onCreateTransfer(final ChildAssociationRef childAssocRef)
     {
         createContainerElement(childAssocRef);
@@ -369,14 +373,14 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Helper method to give filing permissions to the currently logged in user who creates the node (transfer folder, hold, etc.)
      *
-     * @param nodeRef The node reference of the created object
+     * @param nodeRef
+     *            The node reference of the created object
      */
     private void grantFilingPermissionToCreator(final NodeRef nodeRef)
     {
         final String user = AuthenticationUtil.getFullyAuthenticatedUser();
 
-        final boolean hasUserPermission = authenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
-        {
+        final boolean hasUserPermission = authenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>() {
             @Override
             public Boolean doWork()
             {
@@ -386,8 +390,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         if (!hasUserPermission)
         {
-            authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
-            {
+            authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
@@ -401,8 +404,10 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Helper method to setup permissions.
      *
-     * @param parent        parent node reference
-     * @param nodeRef       child node reference
+     * @param parent
+     *            parent node reference
+     * @param nodeRef
+     *            child node reference
      */
     @Override
     public void setupPermissions(final NodeRef parent, final NodeRef nodeRef)
@@ -412,8 +417,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         if (nodeService.exists(nodeRef) && nodeService.exists(parent))
         {
-            authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
-            {
+            authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>() {
                 @Override
                 public Object doWork()
                 {
@@ -423,7 +427,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     getPermissionService().setInheritParentPermissions(nodeRef, inheritanceAllowed);
 
                     Set<AccessPermission> keepPerms = new HashSet<>(5);
-                    Set<AccessPermission> origionalPerms= getPermissionService().getAllSetPermissions(nodeRef);
+                    Set<AccessPermission> origionalPerms = getPermissionService().getAllSetPermissions(nodeRef);
 
                     for (AccessPermission perm : origionalPerms)
                     {
@@ -493,17 +497,19 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Indicates whether the default behaviour is to inherit permissions or not.
      * 
-     * @param nodeRef               node reference
-     * @param isParentNodeFilePlan  true if parent node is a file plan, false otherwise
-     * @return boolean              true if inheritance true, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @param isParentNodeFilePlan
+     *            true if parent node is a file plan, false otherwise
+     * @return boolean true if inheritance true, false otherwise
      */
     private boolean isInheritanceAllowed(NodeRef nodeRef, Boolean isParentNodeFilePlan)
     {
-        return !(isFilePlan(nodeRef) || 
-                 isTransfer(nodeRef) || 
-                 isHold(nodeRef) || 
-                 isUnfiledRecordsContainer(nodeRef) || 
-                 (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
+        return !(isFilePlan(nodeRef) ||
+                isTransfer(nodeRef) ||
+                isHold(nodeRef) ||
+                isUnfiledRecordsContainer(nodeRef) ||
+                (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
     }
 
     /**
@@ -519,8 +525,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         mandatory("childAssocRef", record);
         mandatory("childAssocRef", aspectTypeQName);
 
-        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>() {
             @Override
             public Object doWork()
             {
@@ -538,16 +543,17 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * onMoveRecord behaviour
      *
-     * @param sourceAssocRef        source association reference
-     * @param destinationAssocRef   destination association reference
+     * @param sourceAssocRef
+     *            source association reference
+     * @param destinationAssocRef
+     *            destination association reference
      */
     public void onMoveRecord(final ChildAssociationRef sourceAssocRef, final ChildAssociationRef destinationAssocRef)
     {
         mandatory("sourceAssocRef", sourceAssocRef);
         mandatory("destinationAssocRef", destinationAssocRef);
 
-        authenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-        {
+        authenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -557,13 +563,13 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     boolean inheritParentPermissions = permissionService.getInheritParentPermissions(record);
 
                     Set<AccessPermission> keepPerms = new HashSet<>(5);
-                    Set<AccessPermission> origionalRecordPerms= permissionService.getAllSetPermissions(record);
+                    Set<AccessPermission> origionalRecordPerms = permissionService.getAllSetPermissions(record);
 
                     for (AccessPermission recordPermission : origionalRecordPerms)
                     {
                         String permission = recordPermission.getPermission();
                         if ((RMPermissionModel.FILING.equals(permission) || RMPermissionModel.READ_RECORDS.equals(permission)) &&
-                             recordPermission.isSetDirectly())
+                                recordPermission.isSetDirectly())
                         {
                             // then we can assume this is a permission we want to preserve
                             keepPerms.add(recordPermission);
@@ -597,8 +603,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("authority", authority);
         ParameterCheck.mandatory("permission", permission);
 
-        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>() {
             @Override
             public Void doWork()
             {
@@ -610,7 +615,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     getPermissionService().setPermission(nodeRef, authority, permission, true);
                     // Add an entry in the audit log.
                     recordsManagementAuditService.auditOrUpdateEvent(nodeRef, AUDIT_SET_PERMISSION, oldPermission,
-                                new HashMap<>(singletonMap(auditProperty, (Serializable) true)), true);
+                            new HashMap<>(singletonMap(auditProperty, (Serializable) true)), true);
                 }
                 else
                 {
@@ -628,9 +633,12 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Get the current permission on a node for an authority.
      *
-     * @param nodeRef The node.
-     * @param authority The authority.
-     * @param auditProperty The QName used as the key in the returned map.
+     * @param nodeRef
+     *            The node.
+     * @param authority
+     *            The authority.
+     * @param auditProperty
+     *            The QName used as the key in the returned map.
      * @return A map from the audit property to true or false depending on whether the user currently has permission.
      */
     private Map<QName, Serializable> getCurrentPermissionForAuthority(NodeRef nodeRef, String authority, String permission, QName auditProperty)
@@ -656,8 +664,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("authority", authority);
         ParameterCheck.mandatory("permission", permission);
 
-        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>() {
             @Override
             public Void doWork()
             {
@@ -669,7 +676,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     getPermissionService().deletePermission(nodeRef, authority, permission);
                     // Add an entry in the audit log.
                     recordsManagementAuditService.auditOrUpdateEvent(nodeRef, AUDIT_SET_PERMISSION, oldPermission,
-                                new HashMap<>(singletonMap(auditProperty, (Serializable) false)), true);
+                            new HashMap<>(singletonMap(auditProperty, (Serializable) false)), true);
                 }
                 else
                 {
@@ -687,8 +694,10 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Construct a QName so that the authority and permission are visible in the log.
      *
-     * @param authority The authority whose permission is being changed.
-     * @param permission The name of the permission being changed.
+     * @param authority
+     *            The authority whose permission is being changed.
+     * @param permission
+     *            The name of the permission being changed.
      * @return A QName such that the local name will make sense to the end user.
      */
     private QName constructAuditEventName(String authority, String permission)

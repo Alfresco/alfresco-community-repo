@@ -214,9 +214,13 @@
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
       <property name="remoteUserMapper" ref="RemoteUserMapper" />
       <property name="adminConsoleAuthenticator" ref="AdminConsoleAuthenticator" />
+       <property name="webScriptsHomeAuthenticator" ref="WebScriptsHomeAuthenticator" />
       <property name="alwaysAllowBasicAuthForAdminConsole">
          <value>${authentication.alwaysAllowBasicAuthForAdminConsole.enabled}</value>
       </property>
+       <property name="alwaysAllowBasicAuthForWebScriptsHome">
+           <value>${authentication.alwaysAllowBasicAuthForWebScriptsHome.enabled}</value>
+       </property>
       <property name="getRemoteUserTimeoutMilliseconds">
          <value>${authentication.getRemoteUserTimeoutMilliseconds}</value>
       </property>
@@ -250,7 +254,7 @@
       <property name="delegate" ref="webscript.content.streamer" />
       <property name="contentService" ref="contentService" />
       <property name="repository" ref="repositoryHelper" />
-      <property name="nonAttachContentTypes" value="#{T(java.util.Arrays).asList('${content.nonAttach.mimetypes}')}" />
+      <property name="nonAttachContentTypes" value="#{'${content.nonAttach.mimetypes}'.split(',')}" />
    </bean>
    
    <!--  Content Info -->

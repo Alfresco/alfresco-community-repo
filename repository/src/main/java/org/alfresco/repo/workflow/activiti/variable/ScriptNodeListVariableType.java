@@ -32,14 +32,14 @@ import org.activiti.engine.ActivitiException;
 import org.activiti.engine.impl.variable.SerializableType;
 import org.activiti.engine.impl.variable.ValueFields;
 import org.activiti.engine.impl.variable.VariableType;
+
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNodeList;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Custom {@link VariableType} that allows storing a list of {@link ActivitiScriptNode}s as
- * a process variable in activiti.
+ * Custom {@link VariableType} that allows storing a list of {@link ActivitiScriptNode}s as a process variable in activiti.
  *
  * @author Frederik Heremans
  * @since 3.4.e
@@ -47,7 +47,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class ScriptNodeListVariableType extends SerializableType
 {
     public static final String TYPE = "alfrescoScriptNodeList";
-    
+
     private ServiceRegistry serviceRegistry;
 
     @Override
@@ -67,23 +67,23 @@ public class ScriptNodeListVariableType extends SerializableType
     @Override
     public boolean isAbleToStore(Object value)
     {
-        if (value == null) 
+        if (value == null)
         {
             return true;
         }
         return ActivitiScriptNodeList.class.isAssignableFrom(value.getClass());
     }
- 
+
     @Override
     public void setValue(Object value, ValueFields valueFields)
     {
-        if (value != null) 
+        if (value != null)
         {
-            if (!(value instanceof ActivitiScriptNodeList)) 
+            if (!(value instanceof ActivitiScriptNodeList))
             {
                 throw new ActivitiException("Passed value is not an instance of ActivitiScriptNodeList, cannot set variable value.");
             }
-           
+
             // Extract all node references
             List<NodeRef> nodeRefs = ((ActivitiScriptNodeList) value).getNodeReferences();
             // Save the list as a serializable
@@ -100,22 +100,22 @@ public class ScriptNodeListVariableType extends SerializableType
         {
             return null;
         }
-        
+
         if (!(serializable instanceof List<?>))
         {
             throw new ActivitiException("Serializable stored in variable is not instance of List<NodeRef>, cannot get value.");
         }
-        
+
         ActivitiScriptNodeList scriptNodes = new ActivitiScriptNodeList();
         // Wrap all node references in an ActivitiScriptNode
-        List<NodeRef> nodeRefs =(List<NodeRef>) serializable;
-        for (NodeRef ref : nodeRefs) 
+        List<NodeRef> nodeRefs = (List<NodeRef>) serializable;
+        for (NodeRef ref : nodeRefs)
         {
             scriptNodes.add(new ActivitiScriptNode(ref, serviceRegistry));
         }
         return scriptNodes;
     }
-    
+
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;

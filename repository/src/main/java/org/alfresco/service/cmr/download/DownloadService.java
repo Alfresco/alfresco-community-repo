@@ -32,29 +32,44 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * Zip download service.
  * 
- * Implementations are responsible for triggering the Zip creation process and
- * reporting on the status of the of this process.
+ * Implementations are responsible for triggering the Zip creation process and reporting on the status of the of this process.
  *
  * @author Alex Miller
  */
 public interface DownloadService
 {
     /**
-     * Start the creation of a downlaodable archive file containing the content
-     * from the given nodeRefs.
+     * Start the creation of a downloadable archive file containing the content from the given nodeRefs.
      * 
-     * Implementations are expected to do this asynchronously, with clients 
-     * using the returned NodeRef to check on progress.
-
-     * Initially, only zip files will be supported, however this could be 
-     * extended in the future, to support additional archive types.
+     * Implementations are expected to do this asynchronously, with clients using the returned NodeRef to check on progress.
      * 
-     * @param nodeRefs NodeRefs of content to be added to the archive file
-     * @param recusirsive Recurse into container nodes
+     * Initially, only zip files will be supported, however this could be extended in the future, to support additional archive types.
+     * 
+     * @param nodeRefs
+     *            NodeRefs of content to be added to the archive file
+     * @param recursive
+     *            Recurse into container nodes
      * @return Reference to node which will eventually contain the archive file
      */
-    public NodeRef createDownload(NodeRef[] nodeRefs, boolean recusirsive);
-    
+    NodeRef createDownload(NodeRef[] nodeRefs, boolean recursive);
+
+    /**
+     * Start the creation of a downloadable archive file containing the content from the given nodeRefs.
+     *
+     * Implementations are expected to do this asynchronously, with clients using the returned NodeRef to check on progress.
+     * 
+     * Initially, only zip files will be supported, however this could be extended in the future, to support additional archive types.
+     *
+     * @param nodeRefs
+     *            NodeRefs of content to be added to the archive file
+     * @param recursive
+     *            Recurse into container nodes
+     * @param downloadNodeName
+     *            Download node name
+     * @return Reference to node which will eventually contain the archive file
+     */
+    NodeRef createDownload(NodeRef[] nodeRefs, boolean recursive, String downloadNodeName);
+
     /**
      * Get the status of the of the download identified by downloadNode.
      */
@@ -63,25 +78,25 @@ public interface DownloadService
     /**
      * Delete downloads created before before.
      * 
-     * @param before Date
+     * @param before
+     *            Date
      */
     public void deleteDownloads(Date before);
 
     /**
      * Delete downloads created before the specified date.
      *
-     * It also limits the number of deleted files for this batch of work to
-     * the specified batchSize;
+     * It also limits the number of deleted files for this batch of work to the specified batchSize;
      *
-     * It can also look into deleting downloads files from all sys:Download folders
-     * affected by MNT-20212
+     * It can also look into deleting downloads files from all sys:Download folders affected by MNT-20212
      */
     void deleteDownloads(Date before, int batchSize, boolean cleanAllSysDownloadFolders);
 
     /**
      * Cancel a download request
      * 
-     * @param downloadNodeRef NodeRef of the download to cancel
+     * @param downloadNodeRef
+     *            NodeRef of the download to cancel
      */
     public void cancelDownload(NodeRef downloadNodeRef);
 }

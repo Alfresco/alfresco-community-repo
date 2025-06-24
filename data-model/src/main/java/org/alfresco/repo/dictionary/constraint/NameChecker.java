@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.dictionary.constraint;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
@@ -32,7 +34,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Loads cm:filename constraint from dictionary to use it during batch jobs
@@ -46,23 +47,23 @@ public class NameChecker implements InitializingBean
     private DictionaryService dictionaryService;
 
     private Constraint nameConstraint;
-    
+
     // namespaceURI of the constraint
     private String namespaceURI = NamespaceService.CONTENT_MODEL_1_0_URI;
-    
-    //constraint local name
-    private String constraintLocalName ="filename";  
-    
+
+    // constraint local name
+    private String constraintLocalName = "filename";
+
     public void setNamespaceURI(String namespaceURI)
     {
         this.namespaceURI = namespaceURI;
     }
-    
+
     public void setConstraintLocalName(String constraintLocalName)
     {
         this.constraintLocalName = constraintLocalName;
     }
-    
+
     public DictionaryService getDictionaryService()
     {
         return dictionaryService;

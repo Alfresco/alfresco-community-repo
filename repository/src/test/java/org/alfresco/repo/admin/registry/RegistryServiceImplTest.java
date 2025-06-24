@@ -28,12 +28,12 @@ package org.alfresco.repo.admin.registry;
 import java.util.Collection;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.admin.registry.RegistryService
@@ -47,17 +47,17 @@ public class RegistryServiceImplTest extends TestCase
 
     private AuthenticationComponent authenticationComponent;
     private RegistryService registryService;
-    
+
     @Override
     protected void setUp() throws Exception
     {
         authenticationComponent = (AuthenticationComponent) ctx.getBean("AuthenticationComponent");
         registryService = (RegistryService) ctx.getBean("RegistryService");
-        
+
         // Run as system user
         authenticationComponent.setSystemUserAsCurrentUser();
     }
-    
+
     @Override
     protected void tearDown() throws Exception
     {
@@ -73,8 +73,7 @@ public class RegistryServiceImplTest extends TestCase
     }
 
     public void testSetup() throws Exception
-    {
-    }
+    {}
 
     private static final Long VALUE_ONE = 1L;
     private static final Long VALUE_TWO = 2L;
@@ -100,6 +99,7 @@ public class RegistryServiceImplTest extends TestCase
     private static final RegistryKey KEY_X_Y_Z_D_2 = new RegistryKey(null, "x", "y", "z", "d", "2");
     private static final RegistryKey KEY_SPECIAL = new RegistryKey(null, "me & you", "whatever");
     private static final RegistryKey KEY_DOES_NOT_EXIST = new RegistryKey(null, "does", "not", "exist");
+
     /**
      * General writing and reading back.
      */
@@ -111,41 +111,41 @@ public class RegistryServiceImplTest extends TestCase
         registryService.addProperty(KEY_A_B_C_D_1, VALUE_ONE);
         registryService.addProperty(KEY_A_B_C_D_2, VALUE_TWO);
         registryService.addProperty(KEY_A_B_C_D_3, VALUE_THREE);
-        
+
         assertEquals("Incorrect value from service registry", VALUE_ONE, registryService.getProperty(KEY_A_B_C_1));
         assertEquals("Incorrect value from service registry", VALUE_TWO, registryService.getProperty(KEY_A_B_C_2));
         assertEquals("Incorrect value from service registry", VALUE_THREE, registryService.getProperty(KEY_A_B_C_3));
         assertEquals("Incorrect value from service registry", VALUE_ONE, registryService.getProperty(KEY_A_B_C_D_1));
         assertEquals("Incorrect value from service registry", VALUE_TWO, registryService.getProperty(KEY_A_B_C_D_2));
         assertEquals("Incorrect value from service registry", VALUE_THREE, registryService.getProperty(KEY_A_B_C_D_3));
-        
+
         assertNull("Missing key should return null value", registryService.getProperty(KEY_A_B_C_0));
         assertNull("Missing key should return null value", registryService.getProperty(KEY_A_B_C_D_0));
         assertNull("Missing key should return null value", registryService.getProperty(KEY_DOES_NOT_EXIST));
     }
-    
+
     public void testGetElements() throws Exception
     {
         registryService.addProperty(KEY_A_B_C_1, VALUE_ONE);
         registryService.addProperty(KEY_A_B_C_2, VALUE_TWO);
-        
+
         // Check that we get an empty list for a random query
         assertEquals("Excpected empty collection for random query", 0, registryService.getChildElements(KEY_DOES_NOT_EXIST).size());
-        
+
         // Check that the property part of the key is ignored
         assertEquals("Incorrect number ofchild elements", 1, registryService.getChildElements(KEY_A_B_0).size());
         assertEquals("Incorrect number ofchild elements", 1, registryService.getChildElements(KEY_A_B_1).size());
-        
+
         Collection<String> childElements = registryService.getChildElements(KEY_A_B_0);
         assertTrue("Incorrect child elements retrieved", childElements.contains("c"));
     }
-    
+
     public void testSpecialCharacters()
     {
         registryService.addProperty(KEY_SPECIAL, VALUE_THREE);
         assertEquals("Incorrect value for special key", VALUE_THREE, registryService.getProperty(KEY_SPECIAL));
     }
-    
+
     public void testDelete()
     {
         registryService.addProperty(KEY_A_B_C_1, VALUE_ONE);
@@ -157,7 +157,7 @@ public class RegistryServiceImplTest extends TestCase
         // Property-based delete
         registryService.delete(KEY_A_B_C_1);
         assertNull("Expected deleted value to be null", registryService.getProperty(KEY_A_B_C_1));
-        
+
         // Path-based delete
         registryService.delete(KEY_A_B);
         assertNull("Expected deleted value to be null", registryService.getProperty(KEY_A_B_C_1));
@@ -166,14 +166,14 @@ public class RegistryServiceImplTest extends TestCase
         Collection<String> childElements = registryService.getChildElements(KEY_A);
         assertEquals("There should be no more elements within A", 0, childElements.size());
     }
-    
+
     public void testCopy()
     {
         registryService.addProperty(KEY_A_B_C_1, VALUE_ONE);
         registryService.addProperty(KEY_A_B_C_2, VALUE_TWO);
         registryService.addProperty(KEY_A_B_C_D_1, VALUE_ONE);
         registryService.addProperty(KEY_A_B_C_D_2, VALUE_TWO);
-        
+
         // Check illegal copy
         try
         {
@@ -193,11 +193,11 @@ public class RegistryServiceImplTest extends TestCase
         {
             // Expected
         }
-        
+
         // Property-based copy
         registryService.copy(KEY_A_B_C_1, KEY_X_Y_Z_0);
         assertEquals("Incorrect value after property copy", VALUE_ONE, registryService.getProperty(KEY_X_Y_Z_0));
-        
+
         // Path-based copy
         registryService.copy(KEY_A_B_C, KEY_X_Y_Z);
         assertEquals("Value not recursively copied during path copy", VALUE_ONE, registryService.getProperty(KEY_X_Y_Z_1));

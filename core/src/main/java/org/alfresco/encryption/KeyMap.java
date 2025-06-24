@@ -24,8 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A simple map of key aliases to keys. Each key has an associated timestamp indicating
- * when it was last loaded from the keystore on disk.
+ * A simple map of key aliases to keys. Each key has an associated timestamp indicating when it was last loaded from the keystore on disk.
  * 
  * @since 4.0
  *
@@ -44,7 +43,7 @@ public class KeyMap
         super();
         this.keys = keys;
     }
-    
+
     public int numKeys()
     {
         return keys.size();
@@ -66,7 +65,7 @@ public class KeyMap
     {
         return getCachedKey(keyAlias).getKey();
     }
-    
+
     public void setKey(String keyAlias, Key key)
     {
         keys.put(keyAlias, new CachedKey(key));

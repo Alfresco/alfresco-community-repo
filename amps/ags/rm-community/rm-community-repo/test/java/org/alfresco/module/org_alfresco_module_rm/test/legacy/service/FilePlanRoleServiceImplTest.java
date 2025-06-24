@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -52,8 +52,7 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
 
     public void testGetAllRolesContainerGroup() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 String allRolesGroup = filePlanRoleService.getAllRolesContainerGroup(filePlan);
@@ -66,8 +65,7 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
 
     public void testGetRoles() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 Set<Role> roles = filePlanRoleService.getRoles(filePlan);
@@ -92,8 +90,7 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
 
     public void testRolesByUser() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, rmUserName);
@@ -112,8 +109,7 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
 
     public void testGetRole() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 Role role = filePlanRoleService.getRole(filePlan, FilePlanRoleService.ROLE_POWER_USER);
@@ -130,8 +126,7 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
 
     public void testExistsRole() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 assertTrue(filePlanRoleService.existsRole(filePlan, FilePlanRoleService.ROLE_POWER_USER));
@@ -144,8 +139,7 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
 
     public void testCreateUpdateDeleteRole() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 assertFalse(filePlanRoleService.existsRole(filePlan, "Michelle Holt"));
@@ -180,13 +174,11 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
     }
 
     /**
-     * {@link FilePlanRoleService#assignRoleToAuthority(org.alfresco.service.cmr.repository.NodeRef, String, String)}
-     * {@link FilePlanRoleService#getAuthorities(org.alfresco.service.cmr.repository.NodeRef, String)
+     * {@link FilePlanRoleService#assignRoleToAuthority(org.alfresco.service.cmr.repository.NodeRef, String, String)} {@link FilePlanRoleService#getAuthorities(org.alfresco.service.cmr.repository.NodeRef, String)
      */
     public void testAuthorityAssignment() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, rmUserName);
@@ -222,7 +214,6 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
                 authorities = filePlanRoleService.getAllAssignedToRole(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER);
                 assertNotNull(authorities);
                 assertEquals(2, authorities.size());
-
 
                 return null;
             }

@@ -39,13 +39,12 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
-
 /**
  * Compiled Association Definition.
  * 
  * @author David Caruana
  */
-/*package*/ class M2AssociationDefinition implements AssociationDefinition
+/* package */ class M2AssociationDefinition implements AssociationDefinition
 {
 
     private ClassDefinition classDef;
@@ -56,49 +55,49 @@ import org.alfresco.util.EqualsHelper;
     private QName sourceRoleName;
     private QName targetRoleName;
     private transient MessageLookup staticMessageLookup = new StaticMessageLookup();
-    
-    
+
     /**
      * Construct
      * 
-     * @param classDef  ClassDefinition
-     * @param assoc  M2ClassAssociation
-     * @param resolver  NamespacePrefixResolver
+     * @param classDef
+     *            ClassDefinition
+     * @param assoc
+     *            M2ClassAssociation
+     * @param resolver
+     *            NamespacePrefixResolver
      */
-    /*package*/ M2AssociationDefinition(ClassDefinition classDef, M2ClassAssociation assoc, NamespacePrefixResolver resolver)
+    /* package */ M2AssociationDefinition(ClassDefinition classDef, M2ClassAssociation assoc, NamespacePrefixResolver resolver)
     {
         this.classDef = classDef;
         this.assoc = assoc;
-        
+
         // Resolve names
         this.name = QName.createQName(assoc.getName(), resolver);
         this.targetClassName = QName.createQName(assoc.getTargetClassName(), resolver);
         this.sourceRoleName = QName.createQName(assoc.getSourceRoleName(), resolver);
         this.targetRoleName = QName.createQName(assoc.getTargetRoleName(), resolver);
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(56);
         sb.append("Association")
-          .append("[ class=").append(classDef)
-          .append(", name=").append(name)
-          .append(", target class=").append(targetClassName)
-          .append(", source role=").append(sourceRoleName)
-          .append(", target role=").append(targetRoleName)
-          .append("]");
+                .append("[ class=").append(classDef)
+                .append(", name=").append(name)
+                .append(", target class=").append(targetClassName)
+                .append(", source role=").append(sourceRoleName)
+                .append(", target role=").append(targetRoleName)
+                .append("]");
         return sb.toString();
     }
 
-    
-    /*package*/ M2ClassAssociation getM2Association()
+    /* package */ M2ClassAssociation getM2Association()
     {
         return assoc;
     }
 
-
-    /*package*/ void resolveDependencies(ModelQuery query)
+    /* package */ void resolveDependencies(ModelQuery query)
     {
         if (targetClassName == null)
         {
@@ -110,7 +109,6 @@ import org.alfresco.util.EqualsHelper;
             throw new DictionaryException("d_dictionary.association.target_class_not_found", targetClassName.toPrefixString(), name.toPrefixString());
         }
     }
-    
 
     @Override
     public ModelDefinition getModel()
@@ -118,14 +116,12 @@ import org.alfresco.util.EqualsHelper;
         return classDef.getModel();
     }
 
-
     @Override
     public QName getName()
     {
         return name;
     }
 
-    
     @Override
     public boolean isChild()
     {
@@ -147,7 +143,7 @@ import org.alfresco.util.EqualsHelper;
     @Override
     public String getTitle(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(classDef.getModel(), messageLookup, "association", name, "title"); 
+        String value = M2Label.getLabel(classDef.getModel(), messageLookup, "association", name, "title");
         if (value == null)
         {
             value = assoc.getTitle();
@@ -155,11 +151,10 @@ import org.alfresco.util.EqualsHelper;
         return value;
     }
 
-
     @Override
     public String getDescription(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(classDef.getModel(), messageLookup, "association", name, "description"); 
+        String value = M2Label.getLabel(classDef.getModel(), messageLookup, "association", name, "description");
         if (value == null)
         {
             value = assoc.getDescription();
@@ -167,13 +162,11 @@ import org.alfresco.util.EqualsHelper;
         return value;
     }
 
-
     @Override
     public boolean isProtected()
     {
         return assoc.isProtected();
     }
-
 
     @Override
     public ClassDefinition getSourceClass()
@@ -181,13 +174,11 @@ import org.alfresco.util.EqualsHelper;
         return classDef;
     }
 
-
     @Override
     public QName getSourceRoleName()
     {
         return sourceRoleName;
     }
-
 
     @Override
     public boolean isSourceMandatory()
@@ -195,13 +186,11 @@ import org.alfresco.util.EqualsHelper;
         return assoc.isSourceMandatory();
     }
 
-
     @Override
     public boolean isSourceMany()
     {
         return assoc.isSourceMany();
     }
-
 
     @Override
     public ClassDefinition getTargetClass()
@@ -209,13 +198,11 @@ import org.alfresco.util.EqualsHelper;
         return targetClass;
     }
 
-
     @Override
     public QName getTargetRoleName()
     {
         return targetRoleName;
     }
-
 
     @Override
     public boolean isTargetMandatory()
@@ -223,76 +210,74 @@ import org.alfresco.util.EqualsHelper;
         return assoc.isTargetMandatory();
     }
 
-
     @Override
     public boolean isTargetMandatoryEnforced()
     {
         return assoc.isTargetMandatoryEnforced();
     }
 
-
     @Override
     public boolean isTargetMany()
     {
         return assoc.isTargetMany();
     }
-    
+
     /* package */ M2ModelDiff diffAssoc(AssociationDefinition assocDef)
     {
         M2ModelDiff modelDiff = null;
         boolean isUpdated = false;
         boolean isUpdatedIncrementally = false;
-        
+
         if (this == assocDef)
         {
             modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UNCHANGED);
             return modelDiff;
         }
-        
+
         // check name - cannot be null
-        if (! name.equals(assocDef.getName()))
-        { 
+        if (!name.equals(assocDef.getName()))
+        {
             isUpdated = true;
         }
-        
+
         // check title
-        if (! EqualsHelper.nullSafeEquals(getTitle(null), assocDef.getTitle(null), false))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getTitle(null), assocDef.getTitle(null), false))
+        {
             isUpdatedIncrementally = true;
         }
-        
+
         // check description
-        if (! EqualsHelper.nullSafeEquals(getDescription(null), assocDef.getDescription(null), false))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getDescription(null), assocDef.getDescription(null), false))
+        {
             isUpdatedIncrementally = true;
         }
-        
+
         // check source class qname
-        if (! EqualsHelper.nullSafeEquals(getSourceClass().getName(), assocDef.getSourceClass().getName()))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getSourceClass().getName(), assocDef.getSourceClass().getName()))
+        {
             isUpdated = true;
         }
-        
+
         // check source role qname
-        if (! EqualsHelper.nullSafeEquals(getSourceRoleName(), assocDef.getSourceRoleName()))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getSourceRoleName(), assocDef.getSourceRoleName()))
+        {
             isUpdated = true;
         }
-        
+
         // check target class qname
-        if (! EqualsHelper.nullSafeEquals(getTargetClass().getName(), assocDef.getTargetClass().getName()))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getTargetClass().getName(), assocDef.getTargetClass().getName()))
+        {
             isUpdated = true;
         }
-        
+
         // check target role qname
-        if (! EqualsHelper.nullSafeEquals(getTargetRoleName(), assocDef.getTargetRoleName()))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getTargetRoleName(), assocDef.getTargetRoleName()))
+        {
             isUpdated = true;
         }
-        
+
         // TODO - additional checks - is... (x7)
-        
+
         if (isUpdated)
         {
             modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UPDATED);
@@ -305,14 +290,14 @@ import org.alfresco.util.EqualsHelper;
         {
             modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_UNCHANGED);
         }
-        
+
         return modelDiff;
     }
-    
-    /*package*/ static Collection<M2ModelDiff> diffAssocLists(Collection<AssociationDefinition> previousAssocs, Collection<AssociationDefinition> newAssocs)
+
+    /* package */ static Collection<M2ModelDiff> diffAssocLists(Collection<AssociationDefinition> previousAssocs, Collection<AssociationDefinition> newAssocs)
     {
         List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
-        
+
         for (AssociationDefinition previousAssoc : previousAssocs)
         {
             boolean found = false;
@@ -320,18 +305,18 @@ import org.alfresco.util.EqualsHelper;
             {
                 if (newAssoc.getName().equals(previousAssoc.getName()))
                 {
-                    modelDiffs.add(((M2AssociationDefinition)previousAssoc).diffAssoc(newAssoc));
+                    modelDiffs.add(((M2AssociationDefinition) previousAssoc).diffAssoc(newAssoc));
                     found = true;
                     break;
                 }
             }
-            
-            if (! found)
+
+            if (!found)
             {
                 modelDiffs.add(new M2ModelDiff(previousAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_DELETED));
             }
         }
-        
+
         for (AssociationDefinition newAssoc : newAssocs)
         {
             boolean found = false;
@@ -343,13 +328,13 @@ import org.alfresco.util.EqualsHelper;
                     break;
                 }
             }
-            
-            if (! found)
+
+            if (!found)
             {
                 modelDiffs.add(new M2ModelDiff(newAssoc.getName(), M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_CREATED));
             }
         }
-        
+
         return modelDiffs;
     }
 

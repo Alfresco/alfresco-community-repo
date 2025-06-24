@@ -32,7 +32,8 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
  *
  * @author Gethin James
  */
-@RelationshipResource(name = "baah", entityResource=SheepEntityResource.class, title = "Sheep baah")
-public class SheepBaahResource{
+@RelationshipResource(name = "baah", entityResource = SheepEntityResource.class, title = "Sheep baah")
+public class SheepBaahResource
+{
 
 }

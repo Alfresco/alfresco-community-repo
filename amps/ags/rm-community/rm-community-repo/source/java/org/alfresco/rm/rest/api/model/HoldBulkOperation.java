@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,4 +30,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.api.search.model.Query;
 
-public record HoldBulkOperation(@JsonProperty(required = true) Query query, @JsonProperty(required = true) HoldBulkOperationType op) {}
+public record HoldBulkOperation(@JsonProperty(required = true) Query query, @JsonProperty(required = true) HoldBulkOperationType op)
+{}

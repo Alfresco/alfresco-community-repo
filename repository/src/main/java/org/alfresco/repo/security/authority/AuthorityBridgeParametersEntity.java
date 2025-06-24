@@ -32,20 +32,20 @@ package org.alfresco.repo.security.authority;
 public class AuthorityBridgeParametersEntity
 {
     Long typeQNameId;
-    
+
     Long storeId;
-    
+
     Long childAssocTypeQNameId;
-    
+
     Long authorityNameQNameId;
-    
+
     Long nodeId;
-    
+
     public AuthorityBridgeParametersEntity()
     {
-        
+
     }
-    
+
     public AuthorityBridgeParametersEntity(Long typeQNameId, Long childAssocTypeQNameId, Long authorityNameQNameId, Long storeId)
     {
         this.typeQNameId = typeQNameId;
@@ -53,7 +53,7 @@ public class AuthorityBridgeParametersEntity
         this.storeId = storeId;
         this.authorityNameQNameId = authorityNameQNameId;
     }
-    
+
     public AuthorityBridgeParametersEntity(Long typeQNameId, Long childAssocTypeQNameId, Long authorityNameQNameId, Long storeId, Long nodeId)
     {
         this(typeQNameId, childAssocTypeQNameId, authorityNameQNameId, storeId);
@@ -69,7 +69,8 @@ public class AuthorityBridgeParametersEntity
     }
 
     /**
-     * @param typeQNameId the typeQNameId to set
+     * @param typeQNameId
+     *            the typeQNameId to set
      */
     public void setTypeQNameId(Long typeQNameId)
     {
@@ -85,7 +86,8 @@ public class AuthorityBridgeParametersEntity
     }
 
     /**
-     * @param storeId the storeId to set
+     * @param storeId
+     *            the storeId to set
      */
     public void setStoreId(Long storeId)
     {
@@ -101,7 +103,8 @@ public class AuthorityBridgeParametersEntity
     }
 
     /**
-     * @param childAssocTypeQNameId the childAssocTypeQNameId to set
+     * @param childAssocTypeQNameId
+     *            the childAssocTypeQNameId to set
      */
     public void setChildAssocTypeQNameId(Long childAssocTypeQNameId)
     {
@@ -117,7 +120,8 @@ public class AuthorityBridgeParametersEntity
     }
 
     /**
-     * @param authorityNameQNameId the authorityNameQNameId to set
+     * @param authorityNameQNameId
+     *            the authorityNameQNameId to set
      */
     public void setAuthorityNameQNameId(Long authorityNameQNameId)
     {
@@ -133,12 +137,12 @@ public class AuthorityBridgeParametersEntity
     }
 
     /**
-     * @param nodeId the node id to set
+     * @param nodeId
+     *            the node id to set
      */
     public void setNodeId(Long nodeId)
     {
         this.nodeId = nodeId;
     }
 
-    
 }

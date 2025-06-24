@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,8 +31,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -43,10 +47,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Implementation for Java backed webscript to return user rights report.
@@ -64,7 +64,8 @@ public class UserRightsReportGet extends DeclarativeWebScript
     /**
      * Sets the AuthorityService instance
      *
-     * @param authorityService AuthorityService instance
+     * @param authorityService
+     *            AuthorityService instance
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -74,7 +75,8 @@ public class UserRightsReportGet extends DeclarativeWebScript
     /**
      * Sets the PersonService instance
      *
-     * @param personService PersonService instance
+     * @param personService
+     *            PersonService instance
      */
     public void setPersonService(PersonService personService)
     {
@@ -84,7 +86,8 @@ public class UserRightsReportGet extends DeclarativeWebScript
     /**
      * Sets the NodeService instance
      *
-     * @param nodeService NodeService instance
+     * @param nodeService
+     *            NodeService instance
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -92,7 +95,8 @@ public class UserRightsReportGet extends DeclarativeWebScript
     }
 
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -100,16 +104,15 @@ public class UserRightsReportGet extends DeclarativeWebScript
     }
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -118,7 +121,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
         if (filePlanNode == null)
         {
             status.setCode(HttpServletResponse.SC_BAD_REQUEST,
-                        "The default RM site could not be found.");
+                    "The default RM site could not be found.");
             return null;
         }
 
@@ -153,8 +156,8 @@ public class UserRightsReportGet extends DeclarativeWebScript
                 {
                     NodeRef userRef = this.personService.getPerson(userName);
                     userModel = new UserModel(userName,
-                                (String)this.nodeService.getProperty(userRef, ContentModel.PROP_FIRSTNAME),
-                                (String)this.nodeService.getProperty(userRef, ContentModel.PROP_LASTNAME));
+                            (String) this.nodeService.getProperty(userRef, ContentModel.PROP_FIRSTNAME),
+                            (String) this.nodeService.getProperty(userRef, ContentModel.PROP_LASTNAME));
                     usersMap.put(userName, userModel);
                 }
 
@@ -172,7 +175,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
                 if (groupModel == null)
                 {
                     groupModel = new GroupModel(groupName,
-                                authorityService.getAuthorityDisplayName(groupName));
+                            authorityService.getAuthorityDisplayName(groupName));
                     groupsMap.put(groupName, groupModel);
                 }
 
@@ -185,8 +188,8 @@ public class UserRightsReportGet extends DeclarativeWebScript
                     {
                         NodeRef userRef = this.personService.getPerson(userName);
                         userModel = new UserModel(userName,
-                                    (String)this.nodeService.getProperty(userRef, ContentModel.PROP_FIRSTNAME),
-                                    (String)this.nodeService.getProperty(userRef, ContentModel.PROP_LASTNAME));
+                                (String) this.nodeService.getProperty(userRef, ContentModel.PROP_FIRSTNAME),
+                                (String) this.nodeService.getProperty(userRef, ContentModel.PROP_LASTNAME));
                         usersMap.put(userName, userModel);
                     }
 

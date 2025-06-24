@@ -43,6 +43,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 
 import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
 
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
@@ -50,102 +51,15 @@ import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.search.SearchSqlRequest;
-import org.springframework.http.HttpMethod;
-
 
 /**
  * Wrapper for Search SQL API.
  * 
  * @author Meenal Bhave
  * 
- * Request POST
- * End point: /sql
- * PostBody:
- * {
- *   "stmt":"Select SITE from alfresco where SITE = 'swsdp' limit 2",
- *   "locales":["ja"],
- *   "timezone":"Israel",
- *   "includeMetadata":true,
- *   "format":"",
- *   "limit": 100
- * }
- * Response in json format:
- * {
- *    "list": {
- *        "pagination": {
- *            "count": 3,
- *            "hasMoreItems": false,
- *            "totalItems": 3,
- *            "skipCount": 0,
- *            "maxItems": 100
- *        },
- *        "entries": [
- *            {
- *                "entry": [
- *                    {
- *                        "label": "aliases",
- *                        "value": "{\"SITE\":\"SITE\"}"
- *                    },
- *                    {
- *                        "label": "isMetadata",
- *                        "value": "true"
- *                    },
- *                    {
- *                        "label": "fields",
- *                        "value": "[\"SITE\"]"
- *                    }
- *                ]
- *            },
- *            {
- *                "entry": [
- *                    {
- *                        "label": "SITE",
- *                        "value": "[\"swsdp\"]"
- *                    }
- *                ]
- *            },
- *            {
- *                "entry": [
- *                    {
- *                        "label": "SITE",
- *                        "value": "[\"swsdp\"]"
- *                    }
- *                ]
- *            }
- *        ]
- *    }
- * }
+ *         Request POST End point: /sql PostBody: { "stmt":"Select SITE from alfresco where SITE = 'swsdp' limit 2", "locales":["ja"], "timezone":"Israel", "includeMetadata":true, "format":"", "limit": 100 } Response in json format: { "list": { "pagination": { "count": 3, "hasMoreItems": false, "totalItems": 3, "skipCount": 0, "maxItems": 100 }, "entries": [ { "entry": [ { "label": "aliases", "value": "{\"SITE\":\"SITE\"}" }, { "label": "isMetadata", "value": "true" }, { "label": "fields", "value": "[\"SITE\"]" } ] }, { "entry": [ { "label": "SITE", "value": "[\"swsdp\"]" } ] }, { "entry": [ { "label": "SITE", "value": "[\"swsdp\"]" } ] } ] } }
  * 
- * Response in solr format
- * {
- *     "result-set": {
- *         "docs": [
- *             {
- *                 "aliases": {
- *                     "SITE": "SITE"
- *                 },
- *                 "isMetadata": true,
- *                 "fields": [
- *                     "SITE"
- *                 ]
- *             },
- *             {
- *                 "SITE": [
- *                    "swsdp"
- *                 ]
- *             },
- *             {
- *                 "SITE": [
- *                     "swsdp"
- *                 ]
- *             },
- *             {
- *                 "RESPONSE_TIME": 79,
- *                 "EOF": true
- *             }
- *         ]
- *     }
- * }
+ *         Response in solr format { "result-set": { "docs": [ { "aliases": { "SITE": "SITE" }, "isMetadata": true, "fields": [ "SITE" ] }, { "SITE": [ "swsdp" ] }, { "SITE": [ "swsdp" ] }, { "RESPONSE_TIME": 79, "EOF": true } ] } }
  */
 public class SearchSQLAPI extends ModelRequest<SearchSQLAPI>
 {
@@ -175,7 +89,7 @@ public class SearchSQLAPI extends ModelRequest<SearchSQLAPI>
         String timezone = (null == query.getTimezone() || query.getTimezone().isEmpty()) ? "" : query.getTimezone();
 
         Boolean includeMetadata = (query.getIncludeMetadata() != null && query.getIncludeMetadata());
-        
+
         Integer limit = null == query.getLimit() ? 0 : query.getLimit();
 
         JsonArrayBuilder filterQueries = null;
@@ -189,12 +103,12 @@ public class SearchSQLAPI extends ModelRequest<SearchSQLAPI>
         }
 
         JsonObjectBuilder builder = JsonBodyGenerator.defineJSON()
-                    .add("stmt", stmt)
-                    .add("format", format)
-                    .add("locales", array)
-                    .add("timezone", timezone)
-                    .add("includeMetadata", includeMetadata)
-                    .add("limit", limit);
+                .add("stmt", stmt)
+                .add("format", format)
+                .add("locales", array)
+                .add("timezone", timezone)
+                .add("includeMetadata", includeMetadata)
+                .add("limit", limit);
         if (filterQueries != null)
         {
             builder.add("filterQueries", filterQueries);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,6 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
 import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;
@@ -35,9 +38,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-
 
 /**
  * RM module bootstrap
@@ -51,12 +51,12 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
     private CustomEmailMappingService customEmailMappingService;
     private NodeParameterSuggesterBootstrap suggesterBootstrap;
 
-    public NodeParameterSuggesterBootstrap getSuggesterBootstrap() 
+    public NodeParameterSuggesterBootstrap getSuggesterBootstrap()
     {
         return suggesterBootstrap;
     }
 
-    public void setSuggesterBootstrap(NodeParameterSuggesterBootstrap suggesterBootstrap) 
+    public void setSuggesterBootstrap(NodeParameterSuggesterBootstrap suggesterBootstrap)
     {
         this.suggesterBootstrap = suggesterBootstrap;
     }
@@ -85,23 +85,21 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
     protected void onBootstrap(ApplicationEvent event)
     {
         // run as System on bootstrap
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork()
             {
-                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-                {
+                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
                     public Void execute()
                     {
                         // initialise caveat config
                         caveatConfigService.init();
-                        
+
                         // Initialize the suggester after the model
                         // in case it contains namespaces from custom models
                         suggesterBootstrap.init();
 
                         // Initialise the SplitEmailAction
-                        SplitEmailAction action = (SplitEmailAction)getApplicationContext().getBean("splitEmail");
+                        SplitEmailAction action = (SplitEmailAction) getApplicationContext().getBean("splitEmail");
                         action.bootstrap();
 
                         return null;
@@ -120,4 +118,3 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
         // NOOP
     }
 }
-

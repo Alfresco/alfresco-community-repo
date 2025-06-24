@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -41,8 +41,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-
-
 /**
  * Records management hasDispositionAction evaluator that evaluates whether the given node's disposition schedule has the specified disposition action.
  *
@@ -65,7 +63,8 @@ public class HasDispositionActionEvaluator extends RecordsManagementActionCondit
     /**
      * Sets the disposition service
      *
-     * @param dispositionService The disposition service
+     * @param dispositionService
+     *            The disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -78,7 +77,6 @@ public class HasDispositionActionEvaluator extends RecordsManagementActionCondit
         boolean result = false;
         String position = ((QName) actionCondition.getParameterValue(PARAM_DISPOSITION_ACTION_RELATIVE_POSITION)).getLocalName();
         String action = ((QName) actionCondition.getParameterValue(PARAM_DISPOSITION_ACTION)).getLocalName();
-
 
         if (dispositionService.isDisposableItem(actionedUponNodeRef))
         {

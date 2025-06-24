@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -33,14 +33,14 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.alfresco.repo.event.v1.model.RepoEvent;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.repo.event.v1.model.RepoEvent;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * Enqueuing event sender allows to create asynchronously the RepoEvent offloading the work to a ThreadPool but
- * at the same time it preserves the order of the events.
+ * Enqueuing event sender allows to create asynchronously the RepoEvent offloading the work to a ThreadPool but at the same time it preserves the order of the events.
  */
 public class EnqueuingEventSender extends DirectEventSender
 {
@@ -62,7 +62,9 @@ public class EnqueuingEventSender extends DirectEventSender
 
     /**
      * Procedure to enqueue the callback functions that creates an event.
-     * @param eventProducer Callback function that creates an event.
+     * 
+     * @param eventProducer
+     *            Callback function that creates an event.
      */
     @Override
     public void accept(Callable<Optional<RepoEvent<?>>> eventProducer)
@@ -89,6 +91,7 @@ public class EnqueuingEventSender extends DirectEventSender
 
     /**
      * Create listener task in charge of dequeuing and sending events ready to be sent.
+     * 
      * @return The task in charge of dequeuing and sending events ready to be sent.
      */
     private Runnable createListener()

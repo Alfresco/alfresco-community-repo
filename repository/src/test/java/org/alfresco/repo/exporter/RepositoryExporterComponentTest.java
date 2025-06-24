@@ -25,6 +25,13 @@
  */
 package org.alfresco.repo.exporter;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.test.annotation.Commit;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
@@ -37,13 +44,6 @@ import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.cmr.view.RepositoryExporterService.FileExportHandle;
 import org.alfresco.service.cmr.view.RepositoryExporterService.RepositoryExportHandle;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.test.annotation.Commit;
-import org.springframework.transaction.annotation.Transactional;
-
 
 @Transactional
 public class RepositoryExporterComponentTest extends BaseSpringTest
@@ -56,10 +56,10 @@ public class RepositoryExporterComponentTest extends BaseSpringTest
     @Before
     public void before() throws Exception
     {
-        this.nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
-        this.fileFolderService = (FileFolderService)applicationContext.getBean(ServiceRegistry.FILE_FOLDER_SERVICE.getLocalName());
-        this.repositoryService = (RepositoryExporterService)applicationContext.getBean("repositoryExporterComponent");
-        this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        this.nodeService = (NodeService) applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
+        this.fileFolderService = (FileFolderService) applicationContext.getBean(ServiceRegistry.FILE_FOLDER_SERVICE.getLocalName());
+        this.repositoryService = (RepositoryExporterService) applicationContext.getBean("repositoryExporterComponent");
+        this.authenticationComponent = (AuthenticationComponent) this.applicationContext.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
     }
 
@@ -68,15 +68,13 @@ public class RepositoryExporterComponentTest extends BaseSpringTest
     {
         authenticationComponent.clearCurrentSecurityContext();
     }
-    
 
     @Test
     public void testDummy()
-    {
-    }
-    
+    {}
+
     public void xtestTempFileExport()
-        throws Exception
+            throws Exception
     {
         FileExportHandle[] handles = repositoryService.export("test");
         assertNotNull(handles);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRMActionExecution;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRMActionExecution;
@@ -46,7 +48,6 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Records Management Action Service Implementation
@@ -104,7 +105,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     }
 
     /**
-     * @param freezeService freeze service
+     * @param freezeService
+     *            freeze service
      */
     public void setFreezeService(FreezeService freezeService)
     {
@@ -119,7 +121,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * Set the policy component
      *
-     * @param policyComponent policy component
+     * @param policyComponent
+     *            policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -129,7 +132,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * Set the node service
      *
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -173,9 +177,12 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * Invoke beforeRMActionExecution policy
      *
-     * @param nodeRef       node reference
-     * @param name          action name
-     * @param parameters    action parameters
+     * @param nodeRef
+     *            node reference
+     * @param name
+     *            action name
+     * @param parameters
+     *            action parameters
      */
     protected void invokeBeforeRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
     {
@@ -189,9 +196,12 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * Invoke onRMActionExecution policy
      *
-     * @param nodeRef       node reference
-     * @param name          action name
-     * @param parameters    action parameters
+     * @param nodeRef
+     *            node reference
+     * @param name
+     *            action name
+     * @param parameters
+     *            action parameters
      */
     protected void invokeOnRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
     {
@@ -226,7 +236,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * Gets the disposition actions for the given node
      *
-     * @param nodeRef The node reference
+     * @param nodeRef
+     *            The node reference
      * @return List of records management action
      */
     @SuppressWarnings("unused")

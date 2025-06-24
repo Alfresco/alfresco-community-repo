@@ -42,15 +42,15 @@ package org.alfresco.rest.requests.search;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.restassured.RestAssured;
+import io.restassured.http.Header;
+import io.restassured.http.Headers;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.ModelRequest;
-import org.springframework.http.HttpMethod;
-
-import io.restassured.RestAssured;
-import io.restassured.http.Header;
-import io.restassured.http.Headers;
 
 /**
  * Wrapper for SOLR Admin REST API
@@ -61,10 +61,10 @@ import io.restassured.http.Headers;
 public class SolrAdminAPI extends ModelRequest<SolrAdminAPI>
 {
     public SolrAdminAPI(RestWrapper restWrapper)
-    {  
+    {
         super(restWrapper);
         RestAssured.basePath = "solr/admin";
-        
+
         restWrapper.configureSolrEndPoint();
         restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
     }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,16 +33,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Abstract base class for all disposition related java backed webscripts.
@@ -52,11 +52,13 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class DispositionAbstractBase extends AbstractRmWebScript
 {
 
-    public final static String COMBINE_DISPOSITION_STEP_CONDITIONS =  "combineDispositionStepConditions";
+    public final static String COMBINE_DISPOSITION_STEP_CONDITIONS = "combineDispositionStepConditions";
+
     /**
      * Parses the request and providing it's valid returns the DispositionSchedule object.
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The DispositionSchedule object the request is aimed at
      */
     protected DispositionSchedule parseRequestForSchedule(WebScriptRequest req)
@@ -85,7 +87,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         if (schedule == null)
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Node " +
-                        nodeRef.toString() + " does not have a disposition schedule");
+                    nodeRef.toString() + " does not have a disposition schedule");
         }
 
         return schedule;
@@ -94,12 +96,14 @@ public class DispositionAbstractBase extends AbstractRmWebScript
     /**
      * Parses the request and providing it's valid returns the DispositionActionDefinition object.
      *
-     * @param req The webscript request
-     * @param schedule The disposition schedule
+     * @param req
+     *            The webscript request
+     * @param schedule
+     *            The disposition schedule
      * @return The DispositionActionDefinition object the request is aimed at
      */
     protected DispositionActionDefinition parseRequestForActionDefinition(WebScriptRequest req,
-              DispositionSchedule schedule)
+            DispositionSchedule schedule)
     {
         // make sure the requested action definition exists
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
@@ -108,7 +112,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         if (actionDef == null)
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND,
-                        "Requested disposition action definition (id:" + actionDefId + ") does not exist");
+                    "Requested disposition action definition (id:" + actionDefId + ") does not exist");
         }
 
         return actionDef;
@@ -117,12 +121,14 @@ public class DispositionAbstractBase extends AbstractRmWebScript
     /**
      * Helper to create a model to represent the given disposition action definition.
      *
-     * @param actionDef The DispositionActionDefinition instance to generate model for
-     * @param url The URL for the DispositionActionDefinition
+     * @param actionDef
+     *            The DispositionActionDefinition instance to generate model for
+     * @param url
+     *            The URL for the DispositionActionDefinition
      * @return Map representing the model
      */
     protected Map<String, Object> createActionDefModel(DispositionActionDefinition actionDef,
-                String url)
+            String url)
     {
         Map<String, Object> model = new HashMap<>(8);
 
@@ -169,7 +175,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
             model.put("events", eventNames);
         }
 
-        if(getNodeService().getProperty(actionDef.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
+        if (getNodeService().getProperty(actionDef.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
         {
             model.put("combineDispositionStepConditions", getNodeService().getProperty(actionDef.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
         }
@@ -180,7 +186,8 @@ public class DispositionAbstractBase extends AbstractRmWebScript
     /**
      * Helper method to parse the request and retrieve the disposition schedule model.
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return Map representing the model
      */
     protected Map<String, Object> getDispositionScheduleModel(WebScriptRequest req)
@@ -199,7 +206,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         scheduleModel.put("nodeRef", schedule.getNodeRef().toString());
         scheduleModel.put("recordLevelDisposition", schedule.isRecordLevelDisposition());
         scheduleModel.put("canStepsBeRemoved",
-                    !getDispositionService().hasDisposableItems(schedule));
+                !getDispositionService().hasDisposableItems(schedule));
 
         if (schedule.getDispositionAuthority() != null)
         {

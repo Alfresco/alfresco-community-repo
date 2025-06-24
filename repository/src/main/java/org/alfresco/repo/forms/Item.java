@@ -29,9 +29,9 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Represents an item a form is generated for.
- * <p>This class can be augmented with the item's type and a 
- * representational URL by the form processor used to process
- * the item.</p> 
+ * <p>
+ * This class can be augmented with the item's type and a representational URL by the form processor used to process the item.
+ * </p>
  * 
  * @author Gavin Cornwell
  */
@@ -41,18 +41,20 @@ public class Item
     protected String id;
     protected String type;
     protected String url;
-    
+
     /**
      * Constructs an item.
      * 
-     * @param kind The kind of item, for example, 'node', 'task'
-     * @param id The identifier of the item
+     * @param kind
+     *            The kind of item, for example, 'node', 'task'
+     * @param id
+     *            The identifier of the item
      */
     public Item(String kind, String id)
     {
         ParameterCheck.mandatoryString("kind", kind);
         ParameterCheck.mandatoryString("id", id);
-       
+
         this.kind = kind;
         this.id = id;
     }
@@ -76,10 +78,9 @@ public class Item
     {
         return this.id;
     }
-    
+
     /**
-     * Returns the type of the item the form is for, could be a content model type, a
-     * workflow task type, an XML schema etc.
+     * Returns the type of the item the form is for, could be a content model type, a workflow task type, an XML schema etc.
      * 
      * @return The type of the item
      */
@@ -87,7 +88,7 @@ public class Item
     {
         return this.type;
     }
-    
+
     /**
      * Returns a URL that represents the item
      * 
@@ -97,11 +98,12 @@ public class Item
     {
         return this.url;
     }
-    
+
     /**
      * Sets the type of the item
      * 
-     * @param type The type
+     * @param type
+     *            The type
      */
     public void setType(String type)
     {
@@ -111,22 +113,21 @@ public class Item
     /**
      * Sets the URL that represents the item
      * 
-     * @param url The URL
+     * @param url
+     *            The URL
      */
     public void setUrl(String url)
     {
         this.url = url;
     }
 
-    /*
-     * @see java.lang.Object#toString()
-     */
+    /* @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder("[");
         builder.append(this.kind).append("]").append(this.id);
-        
+
         if (this.type != null)
         {
             builder.append(", type=").append(this.type);
@@ -135,7 +136,7 @@ public class Item
         {
             builder.append(", url=").append(this.url);
         }
-        
+
         return builder.toString();
     }
 }

@@ -29,12 +29,11 @@ package org.alfresco.repo.virtual.ref;
 import java.util.Collections;
 import java.util.List;
 
-
 import org.alfresco.repo.virtual.ref.ReferenceParser.Cursor;
 import org.alfresco.util.Pair;
+
 /**
- * Custom parser for hash encoded strings of {@link Reference}s having the
- * protocol set to {@link VirtualProtocol}.
+ * Custom parser for hash encoded strings of {@link Reference}s having the protocol set to {@link VirtualProtocol}.
  */
 public class VirtualHashReferenceParser extends ProtocolHashParser
 {
@@ -45,7 +44,7 @@ public class VirtualHashReferenceParser extends ProtocolHashParser
     public VirtualHashReferenceParser(HashStore classpathHashStore)
     {
         this(classpathHashStore,
-             VIRTUAL_PROTOCOL_CODE);
+                VIRTUAL_PROTOCOL_CODE);
     }
 
     public VirtualHashReferenceParser(HashStore classpathHashStore, String protocolCode)
@@ -60,7 +59,7 @@ public class VirtualHashReferenceParser extends ProtocolHashParser
         if (!protocolCode.equals(cursor.currentToken()))
         {
             throw new ReferenceParseException("Node token \"" + protocolCode + "\" expected instead of \""
-                        + cursor.currentToken() + "\"");
+                    + cursor.currentToken() + "\"");
         }
         cursor.i++;
 
@@ -70,14 +69,14 @@ public class VirtualHashReferenceParser extends ProtocolHashParser
 
         String pathToken = cursor.nextToken();
         String pathCode = pathToken.substring(0,
-                                              1);
+                1);
         String templatePath;
 
         if (HASHED_NUMERIC_PATH_CODE.equals(pathCode))
         {
             String pathHash = pathToken.substring(1);
             templatePath = numericPathHasher.lookup(new Pair<String, String>(pathHash,
-                                                                             null));
+                    null));
         }
         else if (NUMERIC_ROOT_PATH_CODE.equals(pathCode))
         {
@@ -87,14 +86,14 @@ public class VirtualHashReferenceParser extends ProtocolHashParser
         {
             String pathNonHashed = pathToken.substring(1);
             templatePath = numericPathHasher.lookup(new Pair<String, String>(null,
-                                                                             pathNonHashed));
+                    pathNonHashed));
         }
         else if (MIXED_NUMERIC_PATH_CODE.equals(pathCode))
         {
             String pathHash = pathToken.substring(1);
             String pathNonHashed = cursor.nextToken();
             templatePath = numericPathHasher.lookup(new Pair<String, String>(pathHash,
-                                                                             pathNonHashed));
+                    pathNonHashed));
         }
         else
         {
@@ -102,20 +101,20 @@ public class VirtualHashReferenceParser extends ProtocolHashParser
         }
 
         return parseVirtualExtension(cursor,
-                                     templateResource,
-                                     templatePath,
-                                     actualNodeResource);
+                templateResource,
+                templatePath,
+                actualNodeResource);
 
     }
 
     protected Reference parseVirtualExtension(Cursor c, Resource templateResource, String templatePath,
-                Resource actualNodeResource)
+            Resource actualNodeResource)
     {
         List<Parameter> extraParameters = Collections.<Parameter> emptyList();
         return ((VirtualProtocol) Protocols.VIRTUAL.protocol).newReference(Encodings.HASH.encoding,
-                                                                           templateResource,
-                                                                           templatePath,
-                                                                           actualNodeResource,
-                                                                           extraParameters);
+                templateResource,
+                templatePath,
+                actualNodeResource,
+                extraParameters);
     }
 }

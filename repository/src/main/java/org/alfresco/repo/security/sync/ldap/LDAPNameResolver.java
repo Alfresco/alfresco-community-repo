@@ -35,7 +35,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
  */
 public interface LDAPNameResolver
 {
-    
+
     /**
      * Resolves a user ID to a distinguished name.
      * 

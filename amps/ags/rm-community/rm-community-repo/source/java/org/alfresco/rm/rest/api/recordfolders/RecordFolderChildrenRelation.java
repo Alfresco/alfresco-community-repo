@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.webscripts.servlet.FormData;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
@@ -62,7 +64,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * Record folder children relation
@@ -123,8 +124,7 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
 
         final List<FileInfo> page = pagingResults.getPage();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<Record> nodes = new AbstractList<Record>()
-        {
+        List<Record> nodes = new AbstractList<Record>() {
             @Override
             public Record get(int index)
             {
@@ -160,8 +160,7 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordFolderId, RecordsManagementModel.TYPE_RECORD_FOLDER);
 
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
+        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>() {
             public List<NodeRef> execute()
             {
                 List<NodeRef> createdNodes = new LinkedList<>();
@@ -178,7 +177,7 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
         // Get the nodes info
         List<Record> result = new LinkedList<>();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        for(NodeRef newNodeRef : createdNodes)
+        for (NodeRef newNodeRef : createdNodes)
         {
             FileInfo info = fileFolderService.getFileInfo(newNodeRef);
             apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
@@ -203,8 +202,7 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
                 uploadInfo.getRelativePath());
 
         // Create the record
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute()
             {
                 return apiUtils.uploadRecord(parentNodeRef, uploadInfo, parameters);

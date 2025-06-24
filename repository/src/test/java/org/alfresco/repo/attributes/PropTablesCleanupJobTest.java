@@ -28,7 +28,6 @@ package org.alfresco.repo.attributes;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +38,7 @@ import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Tests for the {@link PropTablesCleanupJob} class.
@@ -52,7 +52,7 @@ public class PropTablesCleanupJobTest
     private @Mock JobExecutionContext jobCtx;
     private @Mock PropTablesCleaner propTablesCleaner;
     private JobDetail jobDetail;
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -68,18 +68,18 @@ public class PropTablesCleanupJobTest
     public void testExecute() throws JobExecutionException
     {
         cleanupJob.execute(jobCtx);
-        
+
         verify(propTablesCleaner).execute();
     }
-    
-    @Test(expected=AlfrescoRuntimeException.class)
+
+    @Test(expected = AlfrescoRuntimeException.class)
     public void testMissingPropTablesCleaner() throws JobExecutionException
     {
         jobDetail.getJobDataMap().put("propTablesCleaner", null);
         cleanupJob.execute(jobCtx);
     }
-    
-    @Test(expected=AlfrescoRuntimeException.class)
+
+    @Test(expected = AlfrescoRuntimeException.class)
     public void testWrongTypeForPropTablesCleaner() throws JobExecutionException
     {
         jobDetail.getJobDataMap().put("propTablesCleaner", "This is not a PropTablesCleaner");

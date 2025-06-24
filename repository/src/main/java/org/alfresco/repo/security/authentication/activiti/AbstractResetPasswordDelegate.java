@@ -31,7 +31,7 @@ import org.alfresco.repo.workflow.activiti.BaseJavaDelegate;
 
 /**
  * @deprecated from 7.1.0
- *  
+ * 
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1
  */

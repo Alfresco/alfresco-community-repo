@@ -36,29 +36,31 @@ import java.util.Map;
  */
 public interface JSONAPIResult
 {
-    
+
     /**
      * Time to perform the requested action or command in SOLR
+     * 
      * @return Number of milliseconds
      */
     public Long getQueryTime();
-    
+
     /**
-     * HTTP Response code
-     * But for 200, that is being returned as 0
+     * HTTP Response code But for 200, that is being returned as 0
+     * 
      * @return Number representing an HTTP Status
      */
     public Long getStatus();
 
     /**
      * Name of the cores managed by SOLR
+     * 
      * @return A list with the names of the cores
      */
     public List<String> getCores();
 
     /**
-     * Information from the cores to be exposed in JMX Beans
-     * The names and the structure of the properties depend on the type of the Action
+     * Information from the cores to be exposed in JMX Beans The names and the structure of the properties depend on the type of the Action
+     * 
      * @return Core information by core name
      */
     public Map<String, Map<String, Object>> getCoresInfo();

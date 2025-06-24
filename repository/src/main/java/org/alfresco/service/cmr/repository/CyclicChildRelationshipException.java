@@ -35,7 +35,7 @@ public class CyclicChildRelationshipException extends RuntimeException
     private static final long serialVersionUID = 3545794381924874036L;
 
     private ChildAssociationRef assocRef;
-    
+
     public CyclicChildRelationshipException(String msg, ChildAssociationRef assocRef)
     {
         super(msg);

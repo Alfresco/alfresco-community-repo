@@ -57,48 +57,48 @@ public abstract class ProtocolHashParser implements HashEncodingArtefact
 
             String nodeRefHash = cursor.nextToken();
             String storeHash = nodeRefHash.substring(0,
-                                                     2);
+                    2);
             String nodeIdHash = nodeRefHash.substring(2);
             NodeRef nodeRef = nodeRefHasher.lookup(new Pair<String, String>(storeHash,
-                                                                            nodeIdHash));
+                    nodeIdHash));
             return new RepositoryResource(new RepositoryNodeRef(nodeRef));
         }
         else if (HASHED_CLASSPATH_RESOUCE_CODE.equals(token))
         {
             String cp = classpathHasher.lookup(new Pair<String, String>(cursor.nextToken(),
-                                                                        null));
+                    null));
             return new ClasspathResource(cp);
         }
         else if (MIXED_CLASSPATH_RESOUCE_CODE.equals(token))
         {
             String cp = classpathHasher.lookup(new Pair<String, String>(cursor.nextToken(),
-                                                                        cursor.nextToken()));
+                    cursor.nextToken()));
             return new ClasspathResource(cp);
         }
         else if (CLASSPATH_RESOUCE_CODE.equals(token))
         {
             String cp = classpathHasher.lookup(new Pair<String, String>(null,
-                                                                        cursor.nextToken()));
+                    cursor.nextToken()));
             return new ClasspathResource(cp);
         }
         else if (HASHED_REPOSITORY_PATH_CODE.equals(token))
         {
             String path = repositoryPathHasher.lookup(new Pair<String, String>(cursor.nextToken(),
-                                                                               null));
+                    null));
 
             return new RepositoryResource(new RepositoryPath(path));
         }
         else if (MIXED_REPOSITORY_PATH_CODE.equals(token))
         {
             String path = repositoryPathHasher.lookup(new Pair<String, String>(cursor.nextToken(),
-                                                                               cursor.nextToken()));
+                    cursor.nextToken()));
 
             return new RepositoryResource(new RepositoryPath(path));
         }
         else if (REPOSITORY_PATH_CODE.equals(token))
         {
             String path = repositoryPathHasher.lookup(new Pair<String, String>(null,
-                                                                               cursor.nextToken()));
+                    cursor.nextToken()));
 
             return new RepositoryResource(new RepositoryPath(path));
         }

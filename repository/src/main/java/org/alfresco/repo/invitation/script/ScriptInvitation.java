@@ -49,37 +49,37 @@ public abstract class ScriptInvitation<T extends Invitation>
     {
         invitationService.reject(invitation.getInviteId(), reason);
     }
-    
+
     public void cancel()
     {
         invitationService.cancel(invitation.getInviteId());
     }
 
-    public String getInviteId() 
+    public String getInviteId()
     {
         return invitation.getInviteId();
     }
 
-    public String getInvitationType() 
+    public String getInvitationType()
     {
         return invitation.getInvitationType().toString();
     }
-    
-    public String getResourceName() 
+
+    public String getResourceName()
     {
         return invitation.getResourceName();
     }
-    
-    public String getResourceType() 
+
+    public String getResourceType()
     {
         return invitation.getResourceType().toString();
     }
-    
+
     protected T getInvitation()
     {
         return invitation;
     }
-    
+
     protected InvitationService getInvitationService()
     {
         return invitationService;
@@ -87,6 +87,7 @@ public abstract class ScriptInvitation<T extends Invitation>
 
     /**
      * Which role to be added with
+     * 
      * @return the roleName
      */
     public String getRoleName()
@@ -96,14 +97,17 @@ public abstract class ScriptInvitation<T extends Invitation>
 
     /**
      * The inviteeUserName
+     * 
      * @return the invitee user name
      */
     public String getInviteeUserName()
     {
         return getInvitation().getInviteeUserName();
     }
-    
+
     public abstract String getInviteeEmail();
+
     public abstract String getInviteeFirstName();
+
     public abstract String getInviteeLastName();
 }

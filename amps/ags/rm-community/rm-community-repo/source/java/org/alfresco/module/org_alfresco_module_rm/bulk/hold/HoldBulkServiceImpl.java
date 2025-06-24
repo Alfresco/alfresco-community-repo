@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,6 +34,10 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkBaseService;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
@@ -56,9 +60,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of the {@link HoldBulkService} interface.
@@ -88,23 +89,23 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
 
     @Override
     protected BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation,
-        BulkStatusUpdater bulkStatusUpdater, BulkProgress bulkProgress)
+            BulkStatusUpdater bulkStatusUpdater, BulkProgress bulkProgress)
     {
         return new AddToHoldWorkerProvider(bulkOperation, bulkStatusUpdater, bulkProgress,
-            (HoldBulkMonitor) bulkMonitor);
+                (HoldBulkMonitor) bulkMonitor);
     }
 
     @Override
     protected BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation,
-        BulkProgress bulkProgress)
+            BulkProgress bulkProgress)
     {
         try
         {
             HoldBulkOperationType holdBulkOperationType = HoldBulkOperationType.valueOf(bulkOperation.operationType()
-                .toUpperCase(Locale.ENGLISH));
+                    .toUpperCase(Locale.ENGLISH));
             return switch (holdBulkOperationType)
             {
-                case ADD -> new AddToHoldWorkerBatch(nodeRef, bulkProgress);
+            case ADD -> new AddToHoldWorkerBatch(nodeRef, bulkProgress);
             };
         }
         catch (IllegalArgumentException e)
@@ -127,8 +128,8 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
             throw new InvalidArgumentException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
         }
         if (ADD.name().equals(bulkOperation.operationType()) && (!AccessStatus.ALLOWED.equals(
-            capabilityService.getCapabilityAccessState(holdRef, RMPermissionModel.ADD_TO_HOLD)) ||
-            permissionService.hasPermission(holdRef, RMPermissionModel.FILING) == AccessStatus.DENIED))
+                capabilityService.getCapabilityAccessState(holdRef, RMPermissionModel.ADD_TO_HOLD)) ||
+                permissionService.hasPermission(holdRef, RMPermissionModel.FILING) == AccessStatus.DENIED))
         {
             throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
         }
@@ -141,13 +142,13 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         if (bulkMonitor instanceof HoldBulkMonitor holdBulkMonitor)
         {
             HoldBulkStatusAndProcessDetails statusAndProcessDetails = holdBulkMonitor.getBulkStatusWithProcessDetails(
-                holdRef.getId(), bulkStatusId);
+                    holdRef.getId(), bulkStatusId);
 
             Optional.ofNullable(statusAndProcessDetails).map(HoldBulkStatusAndProcessDetails::holdBulkProcessDetails)
-                .map(HoldBulkProcessDetails::bulkOperation).ifPresent(bulkOperation -> {
-                    checkPermissions(holdRef, bulkOperation);
-                    holdBulkMonitor.cancelBulkOperation(bulkStatusId, cancellationRequest);
-                });
+                    .map(HoldBulkProcessDetails::bulkOperation).ifPresent(bulkOperation -> {
+                        checkPermissions(holdRef, bulkOperation);
+                        holdBulkMonitor.cancelBulkOperation(bulkStatusId, cancellationRequest);
+                    });
         }
     }
 
@@ -202,7 +203,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         private final BulkStatusUpdater bulkStatusUpdater;
 
         public AddToHoldWorkerProvider(BulkOperation bulkOperation,
-            BulkStatusUpdater bulkStatusUpdater, BulkProgress bulkProgress, HoldBulkMonitor holdBulkMonitor)
+                BulkStatusUpdater bulkStatusUpdater, BulkProgress bulkProgress, HoldBulkMonitor holdBulkMonitor)
         {
             this.searchQuery = bulkOperation.searchQuery();
             this.bulkProgress = bulkProgress;
@@ -243,7 +244,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
             if (LOGGER.isDebugEnabled())
             {
                 LOGGER.debug("Processing the next work for the batch processor, skipCount={}, size={}",
-                    searchParams.getSkipCount(), result.getNumberFound());
+                        searchParams.getSkipCount(), result.getNumberFound());
             }
             bulkProgress.currentNodeNumber().addAndGet(batchSize);
             bulkStatusUpdater.update();

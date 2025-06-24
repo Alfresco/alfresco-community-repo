@@ -34,21 +34,21 @@ public class RestCandidateModel extends TestModel implements IRestModel<RestCand
 {
     @JsonProperty(value = "entry")
     RestCandidateModel model;
-    
+
     public enum CandidateType
     {
         USER, GROUP
     }
-    
+
     private String candidateType;
     private String candidateId;
 
     @Override
     public RestCandidateModel onModel()
-    {         
+    {
         return model;
     }
-    
+
     public String getCandidateType()
     {
         return candidateType;
@@ -58,7 +58,7 @@ public class RestCandidateModel extends TestModel implements IRestModel<RestCand
     {
         this.candidateType = candidateType;
     }
-    
+
     public String getCandidateId()
     {
         return candidateId;

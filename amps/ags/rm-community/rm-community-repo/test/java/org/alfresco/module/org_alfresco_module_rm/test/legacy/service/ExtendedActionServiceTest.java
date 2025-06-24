@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -69,12 +69,11 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
         return true;
     }
 
-    // NOTE:  temporarily disabled test ... now that RM actions are no longer registered with the action service, aplicability
-    //        may no longer be relevant ... possibly something to back out??
+    // NOTE: temporarily disabled test ... now that RM actions are no longer registered with the action service, aplicability
+    // may no longer be relevant ... possibly something to back out??
     public void xtestAvailableActions()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 List<ActionDefinition> result = actionService.getActionDefinitions(recordOne);
@@ -145,8 +144,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
 
     public void testActionPropertySubstitution() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 Action action = actionService.createAction(TestActionPropertySubs.NAME);
@@ -181,52 +179,42 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
     }
 
     /**
-     * RM-3000 
-     * Tests if the actions extending DelegateAction inherit the parameter definitions from their delegate action 
+     * RM-3000 Tests if the actions extending DelegateAction inherit the parameter definitions from their delegate action
      */
     public void testDelegateActions()
     {
-        /*
-         * set-property-value is the delegate action for setPropertyValue.
-         */
+        /* set-property-value is the delegate action for setPropertyValue. */
         assertTrue(inheritsAllParameterDefinitions("setPropertyValue", "set-property-value"));
 
-        /*
-         * rmscript is the delegate action for executeScript.
-         */
+        /* rmscript is the delegate action for executeScript. */
         assertTrue(inheritsAllParameterDefinitions("executeScript", "rmscript"));
 
-        /*
-         * mail is the delegate action for sendEmail.
-         */
+        /* mail is the delegate action for sendEmail. */
         assertTrue(inheritsAllParameterDefinitions("sendEmail", "mail"));
     }
-    
+
     /**
      * Checks if the action definition rmAction inherits all the parameter definitions from delegateAction.
-     * @param rmAction The name of the action definition extending DelegateAction.
-     * @param delegateAction The name of the delegate action.
+     * 
+     * @param rmAction
+     *            The name of the action definition extending DelegateAction.
+     * @param delegateAction
+     *            The name of the delegate action.
      * @return true if rmAction inherits all the parameter definitions from delegateAction. false otherwise.
      */
     private boolean inheritsAllParameterDefinitions(String rmAction, String delegateAction)
     {
-        /*
-         * Get the parameter definition list for rmAction
-         */
+        /* Get the parameter definition list for rmAction */
         ActionDefinition rmActionDefinition = actionService.getActionDefinition(rmAction);
         assertNotNull(rmActionDefinition);
         List<ParameterDefinition> rmParameterDefinitions = rmActionDefinition.getParameterDefinitions();
 
-        /*
-         * Get the parameter definition list for the delegate action
-         */
+        /* Get the parameter definition list for the delegate action */
         ActionDefinition delegateActionDefinition = actionService.getActionDefinition(delegateAction);
         assertNotNull(delegateActionDefinition);
         List<ParameterDefinition> delegateParameterDefinitions = delegateActionDefinition.getParameterDefinitions();
 
-        /*
-         * Check if rmActionDefinition contains all the elements in  rmActionDefinition
-         */
+        /* Check if rmActionDefinition contains all the elements in rmActionDefinition */
         return rmParameterDefinitions.containsAll(delegateParameterDefinitions);
     }
 }

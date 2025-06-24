@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,6 +29,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -38,11 +43,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
 
 /**
  * Remove all duplicate users that have previously been split and had guids added to the uid. This been should be wired up into a custom bootstrap process
@@ -91,8 +92,7 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
     protected int removePeopleWithGUIDBasedIds()
     {
         Set<String> uidsToRemove = transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<Set<String>>()
-                {
+                new RetryingTransactionCallback<Set<String>>() {
                     public Set<String> execute() throws Exception
                     {
                         Set<String> uidsToRemove = new TreeSet<String>();
@@ -116,7 +116,7 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
                     }
 
                 });
-        
+
         if (uidsToRemove.isEmpty())
         {
             return 0;
@@ -125,8 +125,7 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
         // Process the duplicate persons in small batches
         BatchProcessor<String> batchProcessor = new BatchProcessor<String>("Split Person Removal", transactionService
                 .getRetryingTransactionHelper(), uidsToRemove, 2, 10, getApplicationContext(), log, 100);
-        batchProcessor.process(new BatchProcessor.BatchProcessWorker<String>()
-        {
+        batchProcessor.process(new BatchProcessor.BatchProcessWorker<String>() {
 
             public String getIdentifier(String entry)
             {
@@ -141,8 +140,7 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
             }
 
             public void afterProcess() throws Throwable
-            {
-            }
+            {}
 
             public void process(String entry) throws Throwable
             {
@@ -212,7 +210,7 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
     public static void main(String[] args)
     {
         SplitPersonCleanupBootstrapBean tester = new SplitPersonCleanupBootstrapBean();
-        String[] test = new String[] { "andy", "andy" + GUID.generate(), "andy(" + GUID.generate() + ")",
+        String[] test = new String[]{"andy", "andy" + GUID.generate(), "andy(" + GUID.generate() + ")",
                 GUID.generate() + "banana", "andy" + GUID.generate() + "banana",
                 "adbadbaddbadbadbadbabdbadbadbabdabdbbadbadbabdbadbadbadb"
 

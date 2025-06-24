@@ -26,15 +26,16 @@
 
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
+import org.alfresco.rest.model.RestAuditAppModel;
 import org.alfresco.rest.model.RestAuditAppModelsCollection;
 import org.alfresco.rest.model.RestAuditEntryModel;
-import org.alfresco.rest.model.RestAuditAppModel;
 import org.alfresco.rest.model.RestAuditEntryModelsCollection;
-import org.springframework.http.HttpMethod;
 
 /**
  * Declares all Rest API under the /audit-applications path
@@ -45,9 +46,8 @@ public class Audit extends ModelRequest<Audit>
 
     public Audit(RestWrapper restWrapper)
     {
-      super(restWrapper);
+        super(restWrapper);
     }
-    
 
     /**
      * Gets a list of audit applications in this repository using GET call on "/audit-applications"
@@ -97,7 +97,7 @@ public class Audit extends ModelRequest<Audit>
     {
         String postBody = JsonBodyGenerator.keyValueJson(key, value);
 
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "audit-applications/{auditApplicationId}",restAuditAppModel.getId());
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "audit-applications/{auditApplicationId}", restAuditAppModel.getId());
         return restWrapper.processModel(RestAuditAppModel.class, request);
     }
 
@@ -139,7 +139,7 @@ public class Audit extends ModelRequest<Audit>
         restWrapper.processEmptyModel(request);
     }
 
-    /** 
+    /**
      * Retrieves a list of audit entries for a node nodeId using GET call on "/nodes/{nodeId}/audit-entries"
      * 
      * @param nodeId

@@ -27,23 +27,23 @@ package org.alfresco.repo.security.authority;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -55,9 +55,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Checks that the duplicate child handling is done correctly.
@@ -96,9 +93,9 @@ public class DuplicateAuthorityTest extends TestCase
         {
             throw new AlfrescoRuntimeException(
                     "A previous tests did not clean up transaction: " +
-                    AlfrescoTransactionSupport.getTransactionId());
+                            AlfrescoTransactionSupport.getTransactionId());
         }
-        
+
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         transactionService = serviceRegistry.getTransactionService();
         retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
@@ -109,8 +106,7 @@ public class DuplicateAuthorityTest extends TestCase
         authorityService = (AuthorityService) ctx.getBean("authorityService");
         personService = (PersonService) ctx.getBean("personService");
 
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // authenticate
@@ -132,11 +128,10 @@ public class DuplicateAuthorityTest extends TestCase
 
     public void tearDown() throws Exception
     {
-        RetryingTransactionCallback<Void> callback1 = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback1 = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
-                for (int i = 0; i <= 10+1; i++)
+                for (int i = 0; i <= 10 + 1; i++)
                 {
                     if (authorityService.authorityExists("GROUP_" + i))
                     {
@@ -153,16 +148,15 @@ public class DuplicateAuthorityTest extends TestCase
     public void testDuplicateGroupDetection() throws Exception
     {
         // disable for now
-        if(true)
+        if (true)
         {
             return;
         }
         final int threadCount = 10;
-        RetryingTransactionCallback<Void> callback1 = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback1 = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
-                for (int i = 0; i <= threadCount+1; i++)
+                for (int i = 0; i <= threadCount + 1; i++)
                 {
                     if (authorityService.authorityExists("GROUP_" + i))
                     {
@@ -216,16 +210,15 @@ public class DuplicateAuthorityTest extends TestCase
     public void testDuplicatePersonDetection() throws Exception
     {
         // disable for now
-        if(true)
+        if (true)
         {
             return;
         }
         final int threadCount = 10;
-        RetryingTransactionCallback<Void> callback1 = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback1 = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
-                for (int i = 0; i <= threadCount+1; i++)
+                for (int i = 0; i <= threadCount + 1; i++)
                 {
                     if (personService.personExists("Person_" + i))
                     {
@@ -235,7 +228,7 @@ public class DuplicateAuthorityTest extends TestCase
                 return null;
             }
         };
-        //retryingTransactionHelper.doInTransaction(callback1, false, true);
+        // retryingTransactionHelper.doInTransaction(callback1, false, true);
 
         // First create a file name F1
         RetryingTransactionCallback<String> callback = new CreatePersonCallback(0);
@@ -385,7 +378,7 @@ public class DuplicateAuthorityTest extends TestCase
             endLatch.countDown();
         }
     }
-    
+
     private class PersonThread extends Thread
     {
         private CountDownLatch endLatch;

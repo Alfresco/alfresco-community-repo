@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,8 +27,8 @@
 package org.alfresco.repo.imap;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -75,13 +75,13 @@ public class ExtendedImapServiceImpl extends ImapServiceImpl
 
     /**
      * Overwrites the core functionality so we can list RM files in IMAP
+     * 
      * @see https://issues.alfresco.com/jira/browse/RM-3216
      */
     @Override
     public String getPathFromSites(final NodeRef ref)
     {
-        return doAsSystem(new RunAsWork<String>()
-        {
+        return doAsSystem(new RunAsWork<String>() {
             @Override
             public String doWork() throws Exception
             {

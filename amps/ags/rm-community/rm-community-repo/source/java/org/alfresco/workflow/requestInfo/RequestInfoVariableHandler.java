@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,12 +30,11 @@ package org.alfresco.workflow.requestInfo;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
+
 import org.alfresco.util.ParameterCheck;
 
 /**
- * A variable handler for saving the task variables to the execution context.
- * Some of the information will be needed in other tasks (e.g. "rmwf_message").
- * This variable handler saves the local task variable to the execution context.
+ * A variable handler for saving the task variables to the execution context. Some of the information will be needed in other tasks (e.g. "rmwf_message"). This variable handler saves the local task variable to the execution context.
  *
  * @author Tuna Aksoy
  * @since 2.1

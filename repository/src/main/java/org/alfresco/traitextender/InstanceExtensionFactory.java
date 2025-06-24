@@ -29,20 +29,19 @@ package org.alfresco.traitextender;
 import java.lang.reflect.Constructor;
 
 /**
- * Creates extension sub classes that are extension API implementors once per
- * extensible-extension point definition.
+ * Creates extension sub classes that are extension API implementors once per extensible-extension point definition.
  *
  * @author Bogdan Horje
  */
 public class InstanceExtensionFactory<I extends InstanceExtension<E, T>, T extends Trait, E> implements
-            ExtensionFactory<E>
+        ExtensionFactory<E>
 {
     private Class<? extends I> extensionClass;
 
     private Class<T> traitAPI;
 
     public <C extends I> InstanceExtensionFactory(Class<C> extensionClass, Class<T> traitAPI,
-                Class<? extends E> extensionAPI)
+            Class<? extends E> extensionAPI)
     {
         super();
         this.extensionClass = extensionClass;
@@ -51,7 +50,7 @@ public class InstanceExtensionFactory<I extends InstanceExtension<E, T>, T exten
         if (!extensionAPI.isAssignableFrom(extensionClass))
         {
             throw new InvalidExtension("Extension class " + extensionClass + " is incompatible with extensio API "
-                        + extensionAPI);
+                    + extensionAPI);
         }
     }
 
@@ -78,7 +77,7 @@ public class InstanceExtensionFactory<I extends InstanceExtension<E, T>, T exten
     public boolean canCreateExtensionFor(ExtensionPoint<?, ?> point)
     {
         return point.getExtensionAPI().isAssignableFrom(extensionClass)
-                    && traitAPI.isAssignableFrom(point.getTraitAPI());
+                && traitAPI.isAssignableFrom(point.getTraitAPI());
     }
 
 }

@@ -26,6 +26,10 @@
 
 package org.alfresco.rest.api.impl;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
+
 import org.alfresco.repo.content.ContentRestoreParams;
 import org.alfresco.rest.api.ContentStorageInformation;
 import org.alfresco.rest.api.model.ArchiveContentRequest;
@@ -37,10 +41,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Default implementation for {@link ContentStorageInformation}
@@ -80,11 +80,10 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
      */
     @Override
     public boolean requestArchiveContent(NodeRef nodeRef, String contentPropName,
-                                         ArchiveContentRequest archiveContentRequest)
+            ArchiveContentRequest archiveContentRequest)
     {
         final QName propQName = getQName(contentPropName);
-        final Map<String, Serializable> archiveParams =
-                archiveContentRequest == null ? Collections.emptyMap() : archiveContentRequest.getArchiveParams();
+        final Map<String, Serializable> archiveParams = archiveContentRequest == null ? Collections.emptyMap() : archiveContentRequest.getArchiveParams();
         return contentService.requestSendContentToArchive(nodeRef, propQName, archiveParams);
     }
 
@@ -93,13 +92,10 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
      */
     @Override
     public boolean requestRestoreContentFromArchive(NodeRef nodeRef, String contentPropName,
-                                                    RestoreArchivedContentRequest restoreArchivedContentRequest)
+            RestoreArchivedContentRequest restoreArchivedContentRequest)
     {
         final QName propQName = getQName(contentPropName);
-        final Map<String, Serializable> restoreParams =
-                (restoreArchivedContentRequest == null || restoreArchivedContentRequest.getRestorePriority() == null) ?
-                        Collections.emptyMap() :
-                        Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), restoreArchivedContentRequest.getRestorePriority());
+        final Map<String, Serializable> restoreParams = (restoreArchivedContentRequest == null || restoreArchivedContentRequest.getRestorePriority() == null) ? Collections.emptyMap() : Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), restoreArchivedContentRequest.getRestorePriority());
         try
         {
             return contentService.requestRestoreContentFromArchive(nodeRef, propQName, restoreParams);

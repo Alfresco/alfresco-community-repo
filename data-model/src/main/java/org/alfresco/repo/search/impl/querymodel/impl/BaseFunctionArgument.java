@@ -41,7 +41,7 @@ public class BaseFunctionArgument extends BaseDynamicArgument implements Functio
 {
 
     private Function function;
-    
+
     private Map<String, Argument> arguments;
 
     public BaseFunctionArgument(String name, Function function, Map<String, Argument> arguments)
@@ -50,47 +50,47 @@ public class BaseFunctionArgument extends BaseDynamicArgument implements Functio
         this.function = function;
         this.arguments = arguments;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue() */
     public Serializable getValue(FunctionEvaluationContext context)
     {
         return function.getValue(arguments, context);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunction()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunction() */
     public Function getFunction()
     {
-       return function;
+        return function;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunctionArguments()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionInvokation#getFunctionArguments() */
     public Map<String, Argument> getFunctionArguments()
     {
         return arguments;
     }
-    
+
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append("BaseFunctionArgument[");
         builder.append("Name=").append(getName()).append(", ");
-        builder.append("Function="+getFunction()).append(", ");
-        builder.append("Arguments="+getFunctionArguments());
+        builder.append("Function=" + getFunction()).append(", ");
+        builder.append("Arguments=" + getFunctionArguments());
         builder.append("]");
         return builder.toString();
     }
 
     public boolean isQueryable()
     {
-        for(Argument arg : arguments.values())
+        for (Argument arg : arguments.values())
         {
-            if(!arg.isQueryable())
+            if (!arg.isQueryable())
             {
                 return false;
             }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,18 +33,16 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This class offers the default implementation of a strategy for selection of
- * disposition schedule for a record when there is more than one which is applicable.
- * An example of where this strategy might be used would be in the case of a record
- * which was multiply filed.
+ * This class offers the default implementation of a strategy for selection of disposition schedule for a record when there is more than one which is applicable. An example of where this strategy might be used would be in the case of a record which was multiply filed.
  *
  * @author neilm
  */
@@ -59,7 +57,8 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
     /**
      * Set the disposition service
      *
-     * @param dispositionService    disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -80,25 +79,25 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
         }
         else
         {
-            //      46 CHAPTER 2
-            //      Records assigned more than 1 disposition must be retained and linked to the record folder (category) with the longest
-            //      retention period.
+            // 46 CHAPTER 2
+            // Records assigned more than 1 disposition must be retained and linked to the record folder (category) with the longest
+            // retention period.
 
             // Assumption: an event-based disposition action has a longer retention
             // period than a time-based one - as we cannot know when an event will occur
             // TODO Automatic events?
 
-        	NodeRef recordFolder = null;
-        	if (recordFolders.size() == 1)
-        	{
-        		recordFolder = recordFolders.get(0);
-        	}
-        	else
-        	{
-	            SortedSet<NodeRef> sortedFolders = new TreeSet<>(new DispositionableNodeRefComparator());
-	            sortedFolders.addAll(recordFolders);
-	            recordFolder = sortedFolders.first();
-        	}
+            NodeRef recordFolder = null;
+            if (recordFolders.size() == 1)
+            {
+                recordFolder = recordFolders.get(0);
+            }
+            else
+            {
+                SortedSet<NodeRef> sortedFolders = new TreeSet<>(new DispositionableNodeRefComparator());
+                sortedFolders.addAll(recordFolders);
+                recordFolder = sortedFolders.first();
+            }
 
             DispositionSchedule dispSchedule = dispositionService.getDispositionSchedule(recordFolder);
 
@@ -117,19 +116,14 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
     }
 
     /**
-     * This class defines a natural comparison order between NodeRefs that have
-     * the dispositionLifecycle aspect applied.
-     * This order has the following meaning: NodeRefs with a 'lesser' value are considered
-     * to have a shorter retention period, although the actual retention period may
-     * not be straightforwardly determined in all cases.
+     * This class defines a natural comparison order between NodeRefs that have the dispositionLifecycle aspect applied. This order has the following meaning: NodeRefs with a 'lesser' value are considered to have a shorter retention period, although the actual retention period may not be straightforwardly determined in all cases.
      */
     class DispositionableNodeRefComparator implements Comparator<NodeRef>
     {
         public int compare(final NodeRef f1, final NodeRef f2)
         {
             // Run as admin user
-            return AuthenticationUtil.runAs(new RunAsWork<Integer>()
-            {
+            return AuthenticationUtil.runAs(new RunAsWork<Integer>() {
                 public Integer doWork()
                 {
                     return compareImpl(f1, f2);

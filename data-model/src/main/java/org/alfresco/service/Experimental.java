@@ -34,17 +34,15 @@ import java.lang.annotation.Target;
 /**
  * Annotation to mark a type/method/field as experimental.
  * <p>
- * If this annotation is present on an element it marks it as experimental and subject to change without further notice.
- * The element may even be deleted or renamed without any notice.
- * Experimental element may likely become a valid one (not experimental anymore) in future releases but there is no guarantee when
- * and if that happens.
+ * If this annotation is present on an element it marks it as experimental and subject to change without further notice. The element may even be deleted or renamed without any notice. Experimental element may likely become a valid one (not experimental anymore) in future releases but there is no guarantee when and if that happens.
  *
  * @author mpichura
  */
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)
 @Documented
-public @interface Experimental {
+public @interface Experimental
+{
     /**
      * Further description that can optionally be added to clarify possible future changes of annotated object.
      *

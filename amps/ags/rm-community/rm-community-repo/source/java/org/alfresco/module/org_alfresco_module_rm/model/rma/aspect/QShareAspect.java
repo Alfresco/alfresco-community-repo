@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -39,8 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * qshare:shared aspect behaviour bean 
- * do not allow this aspect to be added for records
+ * qshare:shared aspect behaviour bean do not allow this aspect to be added for records
  *
  * @author Ramona Popa
  * @since 2.5
@@ -51,8 +50,7 @@ public class QShareAspect extends BaseBehaviourBean implements NodeServicePolici
     /**
      * Behaviour to prevent sharing a record
      *
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.namespace.QName)
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
     @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)

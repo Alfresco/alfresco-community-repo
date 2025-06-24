@@ -31,22 +31,21 @@ import java.util.TimeZone;
 
 public class PublicApiDateFormat
 {
-	private static DateFormat dateFormat;
-	
-	private PublicApiDateFormat()
-	{
-	}
+    private static DateFormat dateFormat;
 
-	// The date format to use when checking dates coming back from the rest api
-	static
-	{
-		dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    private PublicApiDateFormat()
+    {}
+
+    // The date format to use when checking dates coming back from the rest api
+    static
+    {
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         TimeZone gmt = TimeZone.getTimeZone("UTC");
-        dateFormat.setTimeZone(gmt);        
-	}
-	
-	public static DateFormat getDateFormat()
-	{
-		return dateFormat;
-	}
+        dateFormat.setTimeZone(gmt);
+    }
+
+    public static DateFormat getDateFormat()
+    {
+        return dateFormat;
+    }
 }

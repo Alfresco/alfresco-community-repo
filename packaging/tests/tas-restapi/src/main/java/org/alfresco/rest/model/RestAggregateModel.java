@@ -34,7 +34,7 @@ public class RestAggregateModel extends TestModel implements IRestModel<RestAggr
 {
     @JsonProperty(value = "aggregate")
     RestAggregateModel model;
-    
+
     @JsonProperty(required = true)
     private int numberOfRatings;
     private String average;
@@ -44,7 +44,7 @@ public class RestAggregateModel extends TestModel implements IRestModel<RestAggr
     {
         return model;
     }
-    
+
     public int getNumberOfRatings()
     {
         return numberOfRatings;

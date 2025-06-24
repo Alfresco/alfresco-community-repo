@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,7 +44,8 @@ public class CustomisableEmailMappingKeyBootstrap
     private CustomEmailMappingService customEmailMappingService;
 
     /**
-     * @param customisable  list of mappings to register as customisable
+     * @param customisable
+     *            list of mappings to register as customisable
      */
     public void setCustomisable(List<String> customisable)
     {
@@ -54,7 +55,8 @@ public class CustomisableEmailMappingKeyBootstrap
     /**
      * Custom email mapping service
      *
-     * @param customEmailMappingService the custom email mapping service
+     * @param customEmailMappingService
+     *            the custom email mapping service
      */
     public void setCustomEmailMappingService(CustomEmailMappingService customEmailMappingService)
     {

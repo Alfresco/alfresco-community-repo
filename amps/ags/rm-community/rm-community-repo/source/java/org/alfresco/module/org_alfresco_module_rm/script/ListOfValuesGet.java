@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,6 +34,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.util.StringUtils;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
@@ -48,15 +54,9 @@ import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.PeriodProvider;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.util.StringUtils;
 
 /**
- * Implementation for Java backed webscript to return lists
- * of values for various records management services.
+ * Implementation for Java backed webscript to return lists of values for various records management services.
  *
  * @author Gavin Cornwell
  */
@@ -72,7 +72,8 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Sets the RecordsManagementActionService instance
      *
-     * @param rmActionService The RecordsManagementActionService instance
+     * @param rmActionService
+     *            The RecordsManagementActionService instance
      */
     public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
     {
@@ -82,7 +83,8 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Sets the RecordsManagementAuditService instance
      *
-     * @param rmAuditService The RecordsManagementAuditService instance
+     * @param rmAuditService
+     *            The RecordsManagementAuditService instance
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService)
     {
@@ -92,7 +94,8 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Sets the RecordsManagementEventService instance
      *
-     * @param rmEventService The RecordsManagementEventService instance
+     * @param rmEventService
+     *            The RecordsManagementEventService instance
      */
     public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
     {
@@ -102,7 +105,8 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Sets the disposition service
      *
-     * @param dispositionService    the disposition service
+     * @param dispositionService
+     *            the disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -112,7 +116,8 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Sets the DictionaryService instance
      *
-     * @param ddService The DictionaryService instance
+     * @param ddService
+     *            The DictionaryService instance
      */
     public void setDictionaryService(DictionaryService ddService)
     {
@@ -122,16 +127,15 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Sets the NamespaceService instance
      *
-     * @param namespaceService The NamespaceService instance
+     * @param namespaceService
+     *            The NamespaceService instance
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
 
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -153,7 +157,8 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Creates the model for the list of disposition actions.
      *
-     * @param baseUrl The base URL of the service
+     * @param baseUrl
+     *            The base URL of the service
      * @return model of disposition actions list
      */
     protected Map<String, Object> createDispositionActionsModel(String baseUrl)
@@ -180,7 +185,8 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Creates the model for the list of events.
      *
-     * @param baseUrl The base URL of the service
+     * @param baseUrl
+     *            The base URL of the service
      * @return model of events list
      */
     protected Map<String, Object> createEventsModel(String baseUrl)
@@ -194,7 +200,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
             item.put("label", event.getDisplayLabel());
             item.put("value", event.getName());
             item.put("automatic",
-                        this.rmEventService.getEventType(event.getType()).isAutomaticEvent());
+                    this.rmEventService.getEventType(event.getType()).isAutomaticEvent());
             items.add(item);
         }
 
@@ -209,7 +215,8 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Creates the model for the list of period types.
      *
-     * @param baseUrl The base URL of the service
+     * @param baseUrl
+     *            The base URL of the service
      * @return model of period types list
      */
     protected Map<String, Object> createPeriodTypesModel(String baseUrl)
@@ -240,7 +247,8 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Creates the model for the list of period properties.
      *
-     * @param baseUrl The base URL of the service
+     * @param baseUrl
+     *            The base URL of the service
      * @return model of period properties list
      */
     protected Map<String, Object> createPeriodPropertiesModel(String baseUrl)
@@ -278,7 +286,8 @@ public class ListOfValuesGet extends DeclarativeWebScript
     /**
      * Creates the model for the list of audit events.
      *
-     * @param baseUrl The base URL of the service
+     * @param baseUrl
+     *            The base URL of the service
      * @return model of audit events list
      */
     protected Map<String, Object> createAuditEventsModel(String baseUrl)

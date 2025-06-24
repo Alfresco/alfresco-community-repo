@@ -28,6 +28,12 @@ package org.alfresco.repo.web.scripts.invitation;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -37,15 +43,9 @@ import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Cancel invitation for a web site; This is the controller for the
- * org/alfresco/repository/site/invitation/invitation.delete.desc.xml webscript
+ * Cancel invitation for a web site; This is the controller for the org/alfresco/repository/site/invitation/invitation.delete.desc.xml webscript
  */
 public class InvitationDelete extends DeclarativeWebScript
 {
@@ -82,8 +82,7 @@ public class InvitationDelete extends DeclarativeWebScript
             if (siteShortName != null && (SiteModel.SITE_MANAGER).equals(siteService.getMembersRole(siteShortName, currentUser)))
             {
 
-                RunAsWork<Void> runAsSystem = new RunAsWork<Void>()
-                {
+                RunAsWork<Void> runAsSystem = new RunAsWork<Void>() {
                     @Override
                     public Void doWork() throws Exception
                     {

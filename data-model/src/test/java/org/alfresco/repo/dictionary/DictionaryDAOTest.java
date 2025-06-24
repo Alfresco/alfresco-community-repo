@@ -40,6 +40,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
 import org.alfresco.repo.dictionary.constraint.RegisteredConstraint;
@@ -63,9 +67,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.DynamicallySizedThreadPoolExecutor;
 import org.alfresco.util.TraceableThreadFactory;
 import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  *
@@ -86,7 +87,7 @@ public class DictionaryDAOTest
     private static final String TEST_COMMON_NS_CHILD_MODEL = "org/alfresco/repo/dictionary/commonpropertynschild_model.xml";
 
     private DictionaryService service;
-    private DictionaryDAOImpl dictionaryDAO ;
+    private DictionaryDAOImpl dictionaryDAO;
 
     @Before
     public void setUp() throws Exception
@@ -183,7 +184,7 @@ public class DictionaryDAOTest
         try
         {
             bootstrap.bootstrap();
-            fail("Expected "+NamespaceException.class.getName()+" to be thrown, but it was not.");
+            fail("Expected " + NamespaceException.class.getName() + " to be thrown, but it was not.");
         }
         catch (NamespaceException e)
         {
@@ -191,6 +192,7 @@ public class DictionaryDAOTest
             // Good!
         }
     }
+
     @Test
     public void testNamespaceClashResultsInSensibleErrorWithNewFormat()
     {
@@ -214,7 +216,7 @@ public class DictionaryDAOTest
         try
         {
             bootstrap.bootstrap();
-            fail("Expected "+NamespaceException.class.getName()+" to be thrown, but it was not.");
+            fail("Expected " + NamespaceException.class.getName() + " to be thrown, but it was not.");
         }
         catch (NamespaceException e)
         {
@@ -297,10 +299,9 @@ public class DictionaryDAOTest
         assertEquals("List1 title", constraintDef.getTitle(service));
         assertEquals("List1 description", constraintDef.getDescription(service));
 
-
         // Localisation of List Of Values Constraint.
         // 1. LoV defined at the top of the model.
-        ListOfValuesConstraint lovConstraint = (ListOfValuesConstraint)constraintDef.getConstraint();
+        ListOfValuesConstraint lovConstraint = (ListOfValuesConstraint) constraintDef.getConstraint();
         assertEquals("Wrong localised lov value.", "ABC display", lovConstraint.getDisplayLabel("ABC", service));
         assertEquals("Wrong localised lov value.", "DEF display", lovConstraint.getDisplayLabel("DEF", service));
         assertEquals("Wrong localised lov value.", "VALUE WITH SPACES display", lovConstraint.getDisplayLabel("VALUE WITH SPACES", service)); // Keys with spaces.
@@ -313,7 +314,7 @@ public class DictionaryDAOTest
         List<ConstraintDefinition> constraints = constrainedPropDef.getConstraints();
         assertEquals("Wrong number of constraints.", 1, constraints.size());
         ConstraintDefinition inlineConstraintDef = constraints.get(0);
-        lovConstraint = (ListOfValuesConstraint)inlineConstraintDef.getConstraint();
+        lovConstraint = (ListOfValuesConstraint) inlineConstraintDef.getConstraint();
         assertEquals("Wrong localised lov value.", "ALPHA display", lovConstraint.getDisplayLabel("ALPHA", service));
         assertEquals("Wrong localised lov value.", "BETA display", lovConstraint.getDisplayLabel("BETA", service));
         assertEquals("Wrong localised lov value.", "GAMMA, DELTA display", lovConstraint.getDisplayLabel("GAMMA, DELTA", service)); // Keys with commas
@@ -570,15 +571,15 @@ public class DictionaryDAOTest
         assertFalse(testI3);
 
         // Test various flavours of subclassof
-        boolean test1 = service.isSubClass(file, referenceable);  // type vs aspect
+        boolean test1 = service.isSubClass(file, referenceable); // type vs aspect
         assertFalse(test1);
-        boolean test2 = service.isSubClass(file, folder);   // seperate hierarchies
+        boolean test2 = service.isSubClass(file, folder); // seperate hierarchies
         assertFalse(test2);
-        boolean test3 = service.isSubClass(file, file);   // self
+        boolean test3 = service.isSubClass(file, file); // self
         assertTrue(test3);
-        boolean test4 = service.isSubClass(folder, base);  // subclass
+        boolean test4 = service.isSubClass(folder, base); // subclass
         assertTrue(test4);
-        boolean test5 = service.isSubClass(base, folder);  // reversed test
+        boolean test5 = service.isSubClass(base, folder); // reversed test
         assertFalse(test5);
     }
 
@@ -622,7 +623,7 @@ public class DictionaryDAOTest
         assertTrue("Expected 'true' for timestamp propagation", childAssocDef.getPropagateTimestamps());
     }
 
-    //testing a model containing circular dependency cannot be imported with bootstrap
+    // testing a model containing circular dependency cannot be imported with bootstrap
     @Test
     public void testBootstrapImportModelWithCircularTypes()
     {
@@ -645,7 +646,7 @@ public class DictionaryDAOTest
             bootstrap.bootstrap();
             fail("Bootstrap should fail as the model contains a cyclic refrence");
         }
-        catch(DictionaryException e)
+        catch (DictionaryException e)
         {
             assertEquals(e.getMsgId(), "d_dictionary.bootstrap.model_not_imported");
         }
@@ -660,7 +661,7 @@ public class DictionaryDAOTest
         dictionaryDAO.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO, tenantService);
 
-        //create model
+        // create model
         String testNamespace = "http://www.alfresco.org/model/dictionary/1.0/my";
         M2Model model = M2Model.createModel("my:circularModel");
         model.createNamespace(testNamespace, "my");
@@ -675,7 +676,8 @@ public class DictionaryDAOTest
         {
             dictionaryDAO.putModel(model);
             fail("Model should not be saved successfully because it contains a cyclic reference");
-        } catch(DictionaryException e)
+        }
+        catch (DictionaryException e)
         {
             assertEquals(e.getMsgId(), "d_dictionary.compiled_model.err.compile.failure");
         }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 
 import net.sf.acegisecurity.Authentication;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -38,7 +39,11 @@ import org.alfresco.util.GUID;
 
 /**
  * Download as zip record test.
- * <pre>Tests for <a href="https://issues.alfresco.com/jira/browse/MNT-21292">MNT-21292</a> </pre>
+ * 
+ * <pre>
+ * Tests for <a href="https://issues.alfresco.com/jira/browse/MNT-21292">MNT-21292</a>
+ * </pre>
+ * 
  * @author Rodica Sutu
  * @since 3.2.0.1
  */
@@ -63,15 +68,12 @@ public class DownloadAsZipRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given a record and a user without view record capability
-     * When the user downloads the record
-     * Then Access Denied exception is thrown
+     * Given a record and a user without view record capability When the user downloads the record Then Access Denied exception is thrown
      */
     public void testDownloadRecordUserNoReadCapability()
     {
 
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class) {
             /** user with no view record capability */
             String userDownload;
             Authentication previousAuthentication;
@@ -92,7 +94,7 @@ public class DownloadAsZipRecordTest extends BaseRMTestCase
             {
                 previousAuthentication = AuthenticationUtil.getFullAuthentication();
                 AuthenticationUtil.setFullyAuthenticatedUser(userDownload);
-                downloadService.createDownload(new NodeRef[] { dmDocument }, true);
+                downloadService.createDownload(new NodeRef[]{dmDocument}, true);
             }
 
             public void after()
@@ -104,14 +106,11 @@ public class DownloadAsZipRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given a record and a user with view record capability
-     * When the user downloads the record
-     * Then download node is created
+     * Given a record and a user with view record capability When the user downloads the record Then download node is created
      */
     public void testDownloadRecordUserWithReadCapability()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef downloadStorageNode;
 
             public void given()
@@ -128,8 +127,8 @@ public class DownloadAsZipRecordTest extends BaseRMTestCase
             {
                 Authentication previousAuthentication = AuthenticationUtil.getFullAuthentication();
                 AuthenticationUtil.setFullyAuthenticatedUser(dmCollaborator);
-                //  request to download the record
-                downloadStorageNode = downloadService.createDownload(new NodeRef[] { dmDocument }, true);
+                // request to download the record
+                downloadStorageNode = downloadService.createDownload(new NodeRef[]{dmDocument}, true);
                 AuthenticationUtil.setFullAuthentication(previousAuthentication);
             }
 

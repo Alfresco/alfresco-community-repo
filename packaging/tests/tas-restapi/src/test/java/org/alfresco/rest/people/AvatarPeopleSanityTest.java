@@ -5,6 +5,11 @@ import static org.testng.Assert.assertTrue;
 
 import java.io.File;
 
+import io.restassured.response.ValidatableResponse;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.exception.DataPreparationException;
@@ -12,11 +17,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import io.restassured.response.ValidatableResponse;
 
 public class AvatarPeopleSanityTest extends RestTest
 {
@@ -29,8 +29,8 @@ public class AvatarPeopleSanityTest extends RestTest
         userModel = dataUser.createRandomTestUser();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY, TestGroup.RENDITIONS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Update Avatar for People")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY, TestGroup.RENDITIONS})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Update Avatar for People")
     public void updateGetAvatarForPeople() throws Exception
     {
         File avatarFile = Utility.getResourceTestDataFile("avatar.jpg");
@@ -38,8 +38,7 @@ public class AvatarPeopleSanityTest extends RestTest
         ValidatableResponse response = restClient.withCoreAPI().usingAuthUser()
                 .uploadAvatarContent(restProperties.envProperty().getFullServerUrl(), avatarFile).statusCode(200);
         // Renditions are async
-        Utility.sleep(500, 60000, () ->
-        {
+        Utility.sleep(500, 60000, () -> {
             restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().downloadAvatarContent();
             restClient.assertStatusCodeIs(HttpStatus.OK);
         });
@@ -47,8 +46,8 @@ public class AvatarPeopleSanityTest extends RestTest
         assertTrue(response.extract().body().asByteArray().length > 0, "Avatar Image not uploaded");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY, TestGroup.RENDITIONS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Remove Avatar for People")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY, TestGroup.RENDITIONS})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Remove Avatar for People")
     public void removeGetAvatarForPeople() throws Exception
     {
         File avatarFile = Utility.getResourceTestDataFile("avatar.jpg");

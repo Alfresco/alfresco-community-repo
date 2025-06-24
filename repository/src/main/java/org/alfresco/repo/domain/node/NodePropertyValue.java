@@ -38,8 +38,11 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
 import javax.crypto.SealedObject;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
@@ -56,9 +59,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ValueProtectingMap;
 import org.alfresco.util.VersionNumber;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Immutable property value storage class.
@@ -74,10 +74,10 @@ public class NodePropertyValue implements Cloneable, Serializable
     private static final String STRING_EMPTY = "";
     /** used to provide empty collection values in and out */
     public static final Serializable EMPTY_COLLECTION_VALUE = (Serializable) Collections.emptyList();
-    
+
     private static Log logger = LogFactory.getLog(NodePropertyValue.class);
     private static Log loggerOracle = LogFactory.getLog(NodePropertyValue.class.getName() + ".oracle");
-    
+
     /**
      * Immutable classes in addition to {@link ValueProtectingMap#DEFAULT_IMMUTABLE_CLASSES}
      * <li>ContentData</li>
@@ -171,11 +171,11 @@ public class NodePropertyValue implements Cloneable, Serializable
                 }
                 else if (value instanceof ContentDataId)
                 {
-                    return ((ContentDataId)value).getId();
+                    return ((ContentDataId) value).getId();
                 }
                 else if (value instanceof ContentDataWithId)
                 {
-                    return ((ContentDataWithId)value).getId();
+                    return ((ContentDataWithId) value).getId();
                 }
                 else
                 {
@@ -254,8 +254,7 @@ public class NodePropertyValue implements Cloneable, Serializable
             }
 
             /**
-             * Strings longer than the maximum of {@link org.alfresco.repo.domain.schema.SchemaBootstrap#DEFAULT_MAX_STRING_LENGTH}
-             * characters will be serialized.
+             * Strings longer than the maximum of {@link org.alfresco.repo.domain.schema.SchemaBootstrap#DEFAULT_MAX_STRING_LENGTH} characters will be serialized.
              */
             @Override
             protected ValueType getPersistedType(Serializable value)
@@ -524,8 +523,7 @@ public class NodePropertyValue implements Cloneable, Serializable
             }
 
             /**
-             * @return      Returns and empty <tt>Collection</tt> if the value is null
-             *              otherwise it just returns the original value
+             * @return Returns and empty <tt>Collection</tt> if the value is null otherwise it just returns the original value
              */
             @Override
             Serializable convert(Serializable value)
@@ -547,7 +545,7 @@ public class NodePropertyValue implements Cloneable, Serializable
             {
                 return Integer.valueOf(20);
             }
-            
+
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
@@ -567,7 +565,7 @@ public class NodePropertyValue implements Cloneable, Serializable
             {
                 return Integer.valueOf(21);
             }
-            
+
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
@@ -587,7 +585,7 @@ public class NodePropertyValue implements Cloneable, Serializable
                 }
                 else if (value instanceof ContentDataId)
                 {
-                    return ((ContentDataId)value).getId();
+                    return ((ContentDataId) value).getId();
                 }
                 else
                 {
@@ -602,7 +600,7 @@ public class NodePropertyValue implements Cloneable, Serializable
             {
                 return Integer.valueOf(22);
             }
-            
+
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
@@ -627,35 +625,36 @@ public class NodePropertyValue implements Cloneable, Serializable
             }
         },
         ;
-        
+
         /**
-         * @return      Returns the manually-maintained ordinal number for the value
+         * @return Returns the manually-maintained ordinal number for the value
          */
         public abstract Integer getOrdinalNumber();
-        
+
         /**
          * Override if the type gets persisted in a different format.
          * 
-         * @param value the actual value that is to be persisted.  May not be null.
+         * @param value
+         *            the actual value that is to be persisted. May not be null.
          */
         protected ValueType getPersistedType(Serializable value)
         {
             return this;
         }
-        
+
         /**
-         * Converts a value to this type.  The implementation must be able to cope with any legitimate
-         * source value.
+         * Converts a value to this type. The implementation must be able to cope with any legitimate source value.
          * 
          */
         abstract Serializable convert(Serializable value);
     }
-    
+
     /**
      * Determine the actual value type to aid in more concise persistence.
      * 
-     * @param value the value that is to be persisted
-     * @return Returns the value type equivalent of the 
+     * @param value
+     *            the value that is to be persisted
+     * @return Returns the value type equivalent of the
      */
     private static ValueType getActualType(Serializable value)
     {
@@ -745,12 +744,11 @@ public class NodePropertyValue implements Cloneable, Serializable
             return ValueType.SERIALIZABLE;
         }
     }
-    
+
     /** a mapping from a property type <code>QName</code> to the corresponding value type */
     private static Map<QName, ValueType> valueTypesByPropertyType;
     /**
-     * a mapping of {@link ValueType} ordinal number to the enum.  This is manually maintained
-     * and <b>MUST NOT BE CHANGED FOR EXISTING VALUES</b>.
+     * a mapping of {@link ValueType} ordinal number to the enum. This is manually maintained and <b>MUST NOT BE CHANGED FOR EXISTING VALUES</b>.
      */
     private static Map<Integer, ValueType> valueTypesByOrdinalNumber;
     static
@@ -776,7 +774,7 @@ public class NodePropertyValue implements Cloneable, Serializable
         valueTypesByPropertyType.put(DataTypeDefinition.QNAME, ValueType.QNAME);
         valueTypesByPropertyType.put(DataTypeDefinition.LOCALE, ValueType.LOCALE);
         valueTypesByPropertyType.put(DataTypeDefinition.PERIOD, ValueType.PERIOD);
-        
+
         valueTypesByOrdinalNumber = new HashMap<Integer, ValueType>(37);
         for (ValueType valueType : ValueType.values())
         {
@@ -792,11 +790,11 @@ public class NodePropertyValue implements Cloneable, Serializable
             valueTypesByOrdinalNumber.put(ordinalNumber, valueType);
         }
     }
-    
+
     /**
      * Helper method to convert the type <code>QName</code> into a <code>ValueType</code>
      * 
-     * @return Returns the <code>ValueType</code>  - never null
+     * @return Returns the <code>ValueType</code> - never null
      */
     private static ValueType makeValueType(QName typeQName)
     {
@@ -805,33 +803,32 @@ public class NodePropertyValue implements Cloneable, Serializable
         {
             throw new AlfrescoRuntimeException(
                     "Property type not recognised: \n" +
-                    "   type: " + typeQName);
+                            "   type: " + typeQName);
         }
         return valueType;
     }
-    
+
     /**
-     * Given an actual type qualified name, returns the <tt>int</tt> ordinal number
-     * that represents it in the database.
+     * Given an actual type qualified name, returns the <tt>int</tt> ordinal number that represents it in the database.
      * 
-     * @param typeQName the type qualified name
-     * @return Returns the <tt>int</tt> representation of the type,
-     *      e.g. <b>CONTENT.getOrdinalNumber()</b> for type <b>d:content</b>.
+     * @param typeQName
+     *            the type qualified name
+     * @return Returns the <tt>int</tt> representation of the type, e.g. <b>CONTENT.getOrdinalNumber()</b> for type <b>d:content</b>.
      */
     public static int convertToTypeOrdinal(QName typeQName)
     {
         ValueType valueType = makeValueType(typeQName);
         return valueType.getOrdinalNumber();
     }
-    
+
     /**
-     * Given an actual type qualified name, returns the <tt>int</tt> ordinal number
-     * that represents its persisted in the database.
+     * Given an actual type qualified name, returns the <tt>int</tt> ordinal number that represents its persisted in the database.
      * 
-     * @param typeQName     the type qualified name
-     * @param value         the value going to be persisted (optional, null for the default)
-     * @return Returns the <tt>int</tt> representation of the type,
-     *      e.g. <b>CONTENT.getOrdinalNumber()</b> for type <b>d:content</b>.
+     * @param typeQName
+     *            the type qualified name
+     * @param value
+     *            the value going to be persisted (optional, null for the default)
+     * @return Returns the <tt>int</tt> representation of the type, e.g. <b>CONTENT.getOrdinalNumber()</b> for type <b>d:content</b>.
      */
     public static int convertToPersistedTypeOrdinal(QName typeQName, Serializable value)
     {
@@ -844,44 +841,46 @@ public class NodePropertyValue implements Cloneable, Serializable
 
         return valueType.getPersistedType(value).getOrdinalNumber();
     }
-    
+
     /**
      * If property value of the type <code>QName</code> is supported
      * 
-     * @param typeQName the type qualified name
+     * @param typeQName
+     *            the type qualified name
      */
     public static boolean isDataTypeSupported(QName typeQName)
     {
         return valueTypesByPropertyType.keySet().contains(typeQName);
     }
-    
+
     /** the type of the property, prior to serialization persistence */
     private ValueType actualType;
     /** the type of persistence used */
     private ValueType persistedType;
-    
+
     private Boolean booleanValue;
     private Long longValue;
     private Float floatValue;
     private Double doubleValue;
     private String stringValue;
     private Serializable serializableValue;
-    
+
     /**
      * default constructor
      */
     public NodePropertyValue()
-    {
-    }
+    {}
 
     /**
      * Construct a new property value.
      * 
-     * @param typeQName         the dictionary-defined property type to store the property as
-     * @param value             the value to store.  This will be converted into a format compatible
-     *                          with the type given
+     * @param typeQName
+     *            the dictionary-defined property type to store the property as
+     * @param value
+     *            the value to store. This will be converted into a format compatible with the type given
      * 
-     * @throws java.lang.UnsupportedOperationException if the value cannot be converted to the type given
+     * @throws java.lang.UnsupportedOperationException
+     *             if the value cannot be converted to the type given
      */
     public NodePropertyValue(QName typeQName, Serializable value)
     {
@@ -894,12 +893,12 @@ public class NodePropertyValue implements Cloneable, Serializable
         }
         else
         {
-            // Convert the value to the type required.  This ensures that any type conversion issues
+            // Convert the value to the type required. This ensures that any type conversion issues
             // are caught early and prevent the scenario where the data in the DB cannot be given
             // back out because it is unconvertable.
             ValueType valueType = makeValueType(typeQName);
             value = valueType.convert(value);
-            
+
             this.actualType = NodePropertyValue.getActualType(value);
             // get the persisted type
             ValueType persistedValueType = this.actualType.getPersistedType(value);
@@ -931,7 +930,7 @@ public class NodePropertyValue implements Cloneable, Serializable
             return false;
         }
     }
-    
+
     @Override
     public int hashCode()
     {
@@ -943,7 +942,7 @@ public class NodePropertyValue implements Cloneable, Serializable
             h += 17 * persistedValue.hashCode();
         return h;
     }
-    
+
     @Override
     public Object clone() throws CloneNotSupportedException
     {
@@ -955,10 +954,10 @@ public class NodePropertyValue implements Cloneable, Serializable
     {
         StringBuilder sb = new StringBuilder(128);
         sb.append("PropertyValue")
-          .append("[actual-type=").append(actualType)
-          .append(", value-type=").append(persistedType)
-          .append(", value=").append(getPersistedValue())
-          .append("]");
+                .append("[actual-type=").append(actualType)
+                .append(", value-type=").append(persistedType)
+                .append(", value=").append(getPersistedValue())
+                .append("]");
         return sb.toString();
     }
 
@@ -968,7 +967,7 @@ public class NodePropertyValue implements Cloneable, Serializable
     }
 
     /**
-     * @return          Returns the actual type's String representation
+     * @return Returns the actual type's String representation
      */
     public String getActualTypeString()
     {
@@ -989,6 +988,7 @@ public class NodePropertyValue implements Cloneable, Serializable
     {
         return persistedType == null ? null : persistedType.getOrdinalNumber();
     }
+
     public void setPersistedType(Integer persistedType)
     {
         ValueType type = NodePropertyValue.valueTypesByOrdinalNumber.get(persistedType);
@@ -998,75 +998,77 @@ public class NodePropertyValue implements Cloneable, Serializable
         }
         this.persistedType = type;
     }
-    
+
     /**
-     * Stores the value in the correct slot based on the type of persistence requested.
-     * No conversion is done.
+     * Stores the value in the correct slot based on the type of persistence requested. No conversion is done.
      * 
-     * @param persistedType the value type
-     * @param value the value - it may only be null if the persisted type is {@code ValueType#NULL}
+     * @param persistedType
+     *            the value type
+     * @param value
+     *            the value - it may only be null if the persisted type is {@code ValueType#NULL}
      */
     public void setPersistedValue(ValueType persistedType, Serializable value)
     {
         switch (persistedType)
         {
-            case NULL:
-                if (value != null)
-                {
-                    throw new AlfrescoRuntimeException("Value must be null for persisted type: " + persistedType);
-                }
-                break;
-            case BOOLEAN:
-                this.booleanValue = (Boolean) value;
-                break;
-            case LONG:
-                this.longValue = (Long) value;
-                break;
-            case FLOAT:
-                this.floatValue = (Float) value;
-                break;
-            case DOUBLE:
-                this.doubleValue = (Double) value;
-                break;
-            case STRING:
-                this.stringValue = (String) value;
-                break;
-            case SERIALIZABLE:
-                this.serializableValue = cloneSerializable(value);
-                break;
-//            case ENCRYPTED_STRING:
-//                this.serializableValue = encrypt(value);
-//                break;
-            default:
-                throw new AlfrescoRuntimeException("Unrecognised value type: " + persistedType);
+        case NULL:
+            if (value != null)
+            {
+                throw new AlfrescoRuntimeException("Value must be null for persisted type: " + persistedType);
+            }
+            break;
+        case BOOLEAN:
+            this.booleanValue = (Boolean) value;
+            break;
+        case LONG:
+            this.longValue = (Long) value;
+            break;
+        case FLOAT:
+            this.floatValue = (Float) value;
+            break;
+        case DOUBLE:
+            this.doubleValue = (Double) value;
+            break;
+        case STRING:
+            this.stringValue = (String) value;
+            break;
+        case SERIALIZABLE:
+            this.serializableValue = cloneSerializable(value);
+            break;
+        // case ENCRYPTED_STRING:
+        // this.serializableValue = encrypt(value);
+        // break;
+        default:
+            throw new AlfrescoRuntimeException("Unrecognised value type: " + persistedType);
         }
         // we store the type that we persisted as
         this.persistedType = persistedType;
     }
-    
+
     /**
      * Clones a serializable object to disconnect the original instance from the persisted instance.
      * 
-     * @param original          the original object
-     * @return                  the new cloned object
+     * @param original
+     *            the original object
+     * @return the new cloned object
      */
     private Serializable cloneSerializable(Serializable original)
     {
-       ObjectOutputStream objectOut = null;
-       ByteArrayOutputStream byteOut = null;
-       ObjectInputStream objectIn = null;
+        ObjectOutputStream objectOut = null;
+        ByteArrayOutputStream byteOut = null;
+        ObjectInputStream objectIn = null;
         try
         {
-           // Write the object out to a byte array
-           byteOut = new ByteArrayOutputStream();
-           objectOut = new ObjectOutputStream(byteOut);
-           objectOut.writeObject(original);
-           objectOut.flush();
+            // Write the object out to a byte array
+            byteOut = new ByteArrayOutputStream();
+            objectOut = new ObjectOutputStream(byteOut);
+            objectOut.writeObject(original);
+            objectOut.flush();
 
-           objectIn = new ObjectInputStream(new ByteArrayInputStream(byteOut.toByteArray()));
-           Object target = objectIn.readObject();
-           // Done
-           return (Serializable) target;
+            objectIn = new ObjectInputStream(new ByteArrayInputStream(byteOut.toByteArray()));
+            Object target = objectIn.readObject();
+            // Done
+            return (Serializable) target;
         }
         catch (Throwable e)
         {
@@ -1074,18 +1076,33 @@ public class NodePropertyValue implements Cloneable, Serializable
         }
         finally
         {
-           if (objectOut != null)
-           {
-              try { objectOut.close(); } catch (Throwable e) {}
-           }
-           if (byteOut != null)
-           {
-              try { byteOut.close(); } catch (Throwable e) {}
-           }
-           if (objectIn != null)
-           {
-              try { objectIn.close(); } catch (Throwable e) {}
-           }
+            if (objectOut != null)
+            {
+                try
+                {
+                    objectOut.close();
+                }
+                catch (Throwable e)
+                {}
+            }
+            if (byteOut != null)
+            {
+                try
+                {
+                    byteOut.close();
+                }
+                catch (Throwable e)
+                {}
+            }
+            if (objectIn != null)
+            {
+                try
+                {
+                    objectIn.close();
+                }
+                catch (Throwable e)
+                {}
+            }
         }
     }
 
@@ -1096,52 +1113,50 @@ public class NodePropertyValue implements Cloneable, Serializable
     {
         switch (persistedType)
         {
-            case NULL:
-                return null;
-            case BOOLEAN:
-                return this.booleanValue;
-            case LONG:
-                return this.longValue;
-            case FLOAT:
-                return this.floatValue;
-            case DOUBLE:
-                return this.doubleValue;
-            case STRING:
-                // Oracle stores empty strings as 'null'...
-                if (this.stringValue == null)
+        case NULL:
+            return null;
+        case BOOLEAN:
+            return this.booleanValue;
+        case LONG:
+            return this.longValue;
+        case FLOAT:
+            return this.floatValue;
+        case DOUBLE:
+            return this.doubleValue;
+        case STRING:
+            // Oracle stores empty strings as 'null'...
+            if (this.stringValue == null)
+            {
+                // We know that we stored a non-null string, but now it is null.
+                // It can only mean one thing - Oracle
+                if (loggerOracle.isDebugEnabled())
                 {
-                    // We know that we stored a non-null string, but now it is null.
-                    // It can only mean one thing - Oracle
-                    if (loggerOracle.isDebugEnabled())
-                    {
-                        logger.debug("string_value is 'null'.  Forcing to empty String");
-                    }
-                    return NodePropertyValue.STRING_EMPTY;
+                    logger.debug("string_value is 'null'.  Forcing to empty String");
                 }
-                else
-                {
-                    return this.stringValue;
-                }
-            case SERIALIZABLE:
-                return this.serializableValue;
-            default:
-                throw new AlfrescoRuntimeException("Unrecognised value type: " + persistedType);
+                return NodePropertyValue.STRING_EMPTY;
+            }
+            else
+            {
+                return this.stringValue;
+            }
+        case SERIALIZABLE:
+            return this.serializableValue;
+        default:
+            throw new AlfrescoRuntimeException("Unrecognised value type: " + persistedType);
         }
     }
 
     /**
-     * Fetches the value as a desired type.  Collections (i.e. multi-valued properties)
-     * will be converted as a whole to ensure that all the values returned within the
-     * collection match the given type.
+     * Fetches the value as a desired type. Collections (i.e. multi-valued properties) will be converted as a whole to ensure that all the values returned within the collection match the given type.
      * 
-     * @param typeQName the type required for the return value
-     * @return Returns the value of this property as the desired type, or a <code>Collection</code>
-     *      of values of the required type
+     * @param typeQName
+     *            the type required for the return value
+     * @return Returns the value of this property as the desired type, or a <code>Collection</code> of values of the required type
      * 
      * @throws AlfrescoRuntimeException
-     *      if the type given is not recognized
+     *             if the type given is not recognized
      * @throws org.alfresco.service.cmr.repository.datatype.TypeConversionException
-     *      if the conversion to the required type fails
+     *             if the conversion to the required type fails
      * 
      * @see DataTypeDefinition#ANY The static qualified names for the types
      */
@@ -1154,7 +1169,7 @@ public class NodePropertyValue implements Cloneable, Serializable
             // the required type must be the actual type
             requiredType = this.actualType;
         }
-        
+
         // we need to convert
         Serializable ret = null;
         if (actualType == ValueType.COLLECTION && persistedType == ValueType.NULL)
@@ -1174,11 +1189,11 @@ public class NodePropertyValue implements Cloneable, Serializable
             // regardless of type.
             if (persistedValue instanceof Collection<?>)
             {
-                // We assume that the collection contained the correct type values.  They would
+                // We assume that the collection contained the correct type values. They would
                 // have been converted on the way in.
                 ret = (Serializable) persistedValue;
             }
-            else if(persistedValue instanceof SealedObject)
+            else if (persistedValue instanceof SealedObject)
             {
                 ret = (Serializable) persistedValue;
             }
@@ -1197,7 +1212,7 @@ public class NodePropertyValue implements Cloneable, Serializable
         }
         return ret;
     }
-    
+
     /**
      * Gets the value or values as a guaranteed collection.
      * 
@@ -1216,7 +1231,7 @@ public class NodePropertyValue implements Cloneable, Serializable
             return Collections.singletonList(value);
         }
     }
-    
+
     public boolean getBooleanValue()
     {
         if (booleanValue == null)
@@ -1224,11 +1239,12 @@ public class NodePropertyValue implements Cloneable, Serializable
         else
             return booleanValue.booleanValue();
     }
+
     public void setBooleanValue(boolean value)
     {
         this.booleanValue = Boolean.valueOf(value);
     }
-    
+
     public long getLongValue()
     {
         if (longValue == null)
@@ -1236,11 +1252,12 @@ public class NodePropertyValue implements Cloneable, Serializable
         else
             return longValue.longValue();
     }
+
     public void setLongValue(long value)
     {
         this.longValue = Long.valueOf(value);
     }
-    
+
     public float getFloatValue()
     {
         if (floatValue == null)
@@ -1248,11 +1265,12 @@ public class NodePropertyValue implements Cloneable, Serializable
         else
             return floatValue.floatValue();
     }
+
     public void setFloatValue(float value)
     {
         this.floatValue = Float.valueOf(value);
     }
-    
+
     public double getDoubleValue()
     {
         if (doubleValue == null)
@@ -1260,24 +1278,27 @@ public class NodePropertyValue implements Cloneable, Serializable
         else
             return doubleValue.doubleValue();
     }
+
     public void setDoubleValue(double value)
     {
         this.doubleValue = Double.valueOf(value);
     }
-    
+
     public String getStringValue()
     {
         return stringValue;
     }
+
     public void setStringValue(String value)
     {
         this.stringValue = value;
     }
-    
+
     public Serializable getSerializableValue()
     {
         return serializableValue;
     }
+
     public void setSerializableValue(Serializable value)
     {
         this.serializableValue = value;

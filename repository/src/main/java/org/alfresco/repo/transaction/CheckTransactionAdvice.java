@@ -25,10 +25,11 @@
  */
 package org.alfresco.repo.transaction;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 
 /**
  * A wrapper that checks that a transaction is present.
@@ -39,8 +40,8 @@ import org.aopalliance.intercept.MethodInvocation;
 public class CheckTransactionAdvice implements MethodInterceptor
 {
     public CheckTransactionAdvice()
-    {
-    }
+    {}
+
     public Object invoke(final MethodInvocation methodInvocation) throws Throwable
     {
         // Just check for any transaction

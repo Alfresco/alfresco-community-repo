@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -56,12 +56,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
-* Transfer Container children relation
-*
-* @author Silviu Dinuta
-* @since 2.6
-*/
-@RelationshipResource(name="transfers", entityResource = TransferContainerEntityResource.class, title = "Children of a transfer container")
+ * Transfer Container children relation
+ *
+ * @author Silviu Dinuta
+ * @since 2.6
+ */
+@RelationshipResource(name = "transfers", entityResource = TransferContainerEntityResource.class, title = "Children of a transfer container")
 public class TransferContainerChildrenRelation implements RelationshipResourceAction.Read<Transfer>
 {
     private FilePlanComponentsApiUtils apiUtils;
@@ -111,8 +111,7 @@ public class TransferContainerChildrenRelation implements RelationshipResourceAc
 
         final List<FileInfo> page = pagingResults.getPage();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<Transfer> nodes = new AbstractList<Transfer>()
-        {
+        List<Transfer> nodes = new AbstractList<Transfer>() {
             @Override
             public Transfer get(int index)
             {

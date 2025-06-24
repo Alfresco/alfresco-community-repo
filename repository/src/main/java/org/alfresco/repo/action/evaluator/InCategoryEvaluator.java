@@ -34,9 +34,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -47,7 +47,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase 
+public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
 {
     /**
      * Rule constants
@@ -55,31 +55,33 @@ public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
     public static final String NAME = "in-category";
     public static final String PARAM_CATEGORY_ASPECT = "category-aspect";
     public static final String PARAM_CATEGORY_VALUE = "category-value";
-    
+
     /**
      * The node service
      */
     private NodeService nodeService;
-    
+
     /**
      * The dictionary service
      */
     private DictionaryService dictionaryService;
-    
+
     /**
      * Sets the node service
      * 
-     * @param nodeService  the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Sets the dictionary service
      * 
-     * @param dictionaryService  the dictionary service
+     * @param dictionaryService
+     *            the dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -90,19 +92,19 @@ public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
      * Add the parameter definitions
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_ASPECT, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_CATEGORY_ASPECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_VALUE, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_CATEGORY_VALUE)));
     }
-    
+
     /**
      * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected boolean evaluateImpl(
             ActionCondition ruleCondition,
-            NodeRef actionedUponNodeRef) 
+            NodeRef actionedUponNodeRef)
     {
         boolean result = false;
 
@@ -110,17 +112,17 @@ public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
         if (this.nodeService.exists(actionedUponNodeRef) == true)
         {
             // Get the rule parameter values
-            QName categoryAspect = (QName)ruleCondition.getParameterValue(PARAM_CATEGORY_ASPECT);
-            NodeRef categoryValue = (NodeRef)ruleCondition.getParameterValue(PARAM_CATEGORY_VALUE);
-            
+            QName categoryAspect = (QName) ruleCondition.getParameterValue(PARAM_CATEGORY_ASPECT);
+            NodeRef categoryValue = (NodeRef) ruleCondition.getParameterValue(PARAM_CATEGORY_VALUE);
+
             // Check that the apect is classifiable and is currently applied to the node
             if (this.dictionaryService.isSubClass(categoryAspect, ContentModel.ASPECT_CLASSIFIABLE) == true &&
-                this.nodeService.hasAspect(actionedUponNodeRef, categoryAspect) == true)
+                    this.nodeService.hasAspect(actionedUponNodeRef, categoryAspect) == true)
             {
                 // Get the category property qname
                 QName categoryProperty = null;
                 Map<QName, PropertyDefinition> propertyDefs = this.dictionaryService.getAspect(categoryAspect).getProperties();
-                for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet()) 
+                for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet())
                 {
                     if (DataTypeDefinition.CATEGORY.equals(entry.getValue().getDataType().getName()) == true)
                     {
@@ -129,7 +131,7 @@ public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
                         break;
                     }
                 }
-                
+
                 if (categoryProperty != null)
                 {
                     // Check to see if the category value is in the list of currently set category values
@@ -148,9 +150,9 @@ public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
                     }
                 }
             }
-            
+
         }
-        
+
         return result;
     }
 }

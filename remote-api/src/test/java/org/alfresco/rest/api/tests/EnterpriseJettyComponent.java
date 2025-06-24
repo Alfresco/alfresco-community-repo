@@ -26,16 +26,15 @@
 package org.alfresco.rest.api.tests;
 
 /**
- * Manages an embedded jetty server, hooking it up to the repository spring context and providing 
- * authenticated, tenant-based access through the tenant servlet.
+ * Manages an embedded jetty server, hooking it up to the repository spring context and providing authenticated, tenant-based access through the tenant servlet.
  * 
  * @author steveglover
  *
  */
 public class EnterpriseJettyComponent extends PublicApiJettyComponent
 {
-	public EnterpriseJettyComponent(int port, String contextPath, String[] configLocations, String[] classLocations)
-	{
-		super(port, contextPath, configLocations, classLocations);
-	}
+    public EnterpriseJettyComponent(int port, String contextPath, String[] configLocations, String[] classLocations)
+    {
+        super(port, contextPath, configLocations, classLocations);
+    }
 }

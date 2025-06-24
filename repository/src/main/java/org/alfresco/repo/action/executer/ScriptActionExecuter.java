@@ -46,23 +46,17 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.UrlUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Action to execute a JavaScript. The script has access to the default model.
- * The actionedUponNodeRef is added to the default model as the 'document' and the owning
- * NodeRef is added as the 'space'.
+ * Action to execute a JavaScript. The script has access to the default model. The actionedUponNodeRef is added to the default model as the 'document' and the owning NodeRef is added as the 'space'.
  * 
  * @author Kevin Roast
  */
 public class ScriptActionExecuter extends ActionExecuterAbstractBase
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScriptActionExecuter.class);
     public static final String NAME = "script";
     public static final String PARAM_SCRIPTREF = "script-ref";
-    private static final String SYSTEM_USER = "System";
-    
+
     private ServiceRegistry serviceRegistry;
     private SysAdminParams sysAdminParams;
     private PersonService personService;
@@ -71,15 +65,17 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     private ScriptLocation scriptLocation;
 
     /**
-     * @param serviceRegistry       The serviceRegistry to set.
+     * @param serviceRegistry
+     *            The serviceRegistry to set.
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     /**
-     * @param sysAdminParams The sysAdminParams to set.
+     * @param sysAdminParams
+     *            The sysAdminParams to set.
      */
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
@@ -87,13 +83,14 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param personService         The personService to set.
+     * @param personService
+     *            The personService to set.
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     public void setStoreUrl(String storeUrl)
     {
         this.storeRef = new StoreRef(storeUrl);
@@ -103,11 +100,12 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     {
         this.companyHomePath = companyHomePath;
     }
-    
+
     /**
      * Set the script location from Spring
      * 
-     * @param scriptLocation    the script location
+     * @param scriptLocation
+     *            the script location
      */
     public void setScriptLocation(ScriptLocation scriptLocation)
     {
@@ -132,8 +130,8 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
         NodeService nodeService = this.serviceRegistry.getNodeService();
         if (nodeService.exists(actionedUponNodeRef))
         {
-            NodeRef scriptRef = (NodeRef)action.getParameterValue(PARAM_SCRIPTREF);
-            if(!isValidScriptRef(action))
+            NodeRef scriptRef = (NodeRef) action.getParameterValue(PARAM_SCRIPTREF);
+            if (!isValidScriptRef(action))
             {
                 throw new IllegalStateException("Invalid script ref path: " + scriptRef);
             }
@@ -151,19 +149,16 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                     spaceRef = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
                 }
             }
-            
+
             if (this.scriptLocation != null || (scriptRef != null && nodeService.exists(scriptRef) == true))
             {
                 // get the references we need to build the default scripting data-model
                 String userName = this.serviceRegistry.getAuthenticationService().getCurrentUserName();
-                if (SYSTEM_USER.equals(userName))
-                {
-                    LOGGER.info("Skipping Script Execution for the System user.");
-                    return;
-                }
-                NodeRef personRef = this.personService.getPerson(userName);
-                NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-                
+
+                // When a script is executed as a system user, there will no person or home space for providing to the scripting framework.
+                NodeRef personRef = this.personService.getPersonOrNull(userName);
+                NodeRef homeSpaceRef = personRef == null ? null : (NodeRef) nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+
                 // the default scripting model provides access to well known objects and searching
                 // facilities - it also provides basic create/update/delete/copy/move services
                 Map<String, Object> model = this.serviceRegistry.getScriptService().buildDefaultModel(
@@ -173,40 +168,41 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                         scriptRef,
                         actionedUponNodeRef,
                         spaceRef);
-                
+
                 // Add the action to the default model
                 ScriptAction scriptAction = new ScriptAction(this.serviceRegistry, action, this.actionDefinition);
                 model.put("action", scriptAction);
 
-                model.put("webApplicationContextUrl", UrlUtil.getAlfrescoUrl(sysAdminParams)); 
+                model.put("webApplicationContextUrl", UrlUtil.getAlfrescoUrl(sysAdminParams));
 
                 Object result = null;
                 if (this.scriptLocation == null)
                 {
                     // execute the script against the default model
                     result = this.serviceRegistry.getScriptService().executeScript(
-                        scriptRef,
-                        ContentModel.PROP_CONTENT,
-                        model);
+                            scriptRef,
+                            ContentModel.PROP_CONTENT,
+                            model);
                 }
                 else
                 {
                     // execute the script at the specified script location
                     result = this.serviceRegistry.getScriptService().executeScript(this.scriptLocation, model);
                 }
-                
+
                 // Set the result
                 if (result != null)
                 {
-                    action.setParameterValue(PARAM_RESULT, (Serializable)result);
+                    action.setParameterValue(PARAM_RESULT, (Serializable) result);
                 }
             }
         }
     }
-    
+
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
+    @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         if (scriptLocation == null)
@@ -214,16 +210,16 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
             paramList.add(new ParameterDefinitionImpl(PARAM_SCRIPTREF, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_SCRIPTREF), false, "ac-scripts"));
         }
     }
-    
+
     /**
      * Gets the company home node
      * 
-     * @return  the company home node ref
+     * @return the company home node ref
      */
     private NodeRef getCompanyHome()
     {
         NodeRef companyHomeRef;
-        
+
         List<NodeRef> refs = this.serviceRegistry.getSearchService().selectNodes(
                 this.serviceRegistry.getNodeService().getRootNode(storeRef),
                 companyHomePath,
@@ -238,7 +234,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
 
         return companyHomeRef;
     }
-    
+
     private boolean isValidScriptRef(Action action)
     {
         NodeRef scriptRef = (NodeRef) action.getParameterValue(PARAM_SCRIPTREF);

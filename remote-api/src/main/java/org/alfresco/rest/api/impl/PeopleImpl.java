@@ -25,6 +25,20 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -75,19 +89,6 @@ import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Centralises access to people services and maps between representations.
@@ -106,16 +107,15 @@ public class PeopleImpl implements People
     private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList();
     private static final List<QName> EXCLUDED_PROPS = Arrays.asList();
     private static final int USERNAME_MAXLENGTH = 100;
-    private static final String[] RESERVED_AUTHORITY_PREFIXES =
-    {
+    private static final String[] RESERVED_AUTHORITY_PREFIXES = {
             PermissionService.GROUP_PREFIX,
             PermissionService.ROLE_PREFIX
     };
 
     protected Nodes nodes;
-	protected Sites sites;
-	protected SiteService siteService;
-	protected NodeService nodeService;
+    protected Sites sites;
+    protected SiteService siteService;
+    protected NodeService nodeService;
     protected PersonService personService;
     protected AuthenticationService authenticationService;
     protected AuthorityService authorityService;
@@ -137,35 +137,35 @@ public class PeopleImpl implements People
         sort_params_to_qnames = Collections.unmodifiableMap(aMap);
     }
 
-	public void setSites(Sites sites)
-	{
-		this.sites = sites;
-	}
+    public void setSites(Sites sites)
+    {
+        this.sites = sites;
+    }
 
-	public void setSiteService(SiteService siteService)
-	{
-		this.siteService = siteService;
-	}
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
 
-	public void setNodes(Nodes nodes)
-	{
-		this.nodes = nodes;
-	}
+    public void setNodes(Nodes nodes)
+    {
+        this.nodes = nodes;
+    }
 
-	public void setNodeService(NodeService nodeService)
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-	
-	public void setPersonService(PersonService personService)
+
+    public void setPersonService(PersonService personService)
     {
-		this.personService = personService;
-	}
+        this.personService = personService;
+    }
 
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
-		this.authenticationService = authenticationService;
-	}
+        this.authenticationService = authenticationService;
+    }
 
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -174,18 +174,18 @@ public class PeopleImpl implements People
 
     public void setContentUsageService(ContentUsageService contentUsageService)
     {
-		this.contentUsageService = contentUsageService;
-	}
+        this.contentUsageService = contentUsageService;
+    }
 
-	public void setContentService(ContentService contentService)
-	{
-		this.contentService = contentService;
-	}
-	
-	public void setThumbnailService(ThumbnailService thumbnailService)
+    public void setContentService(ContentService contentService)
     {
-		this.thumbnailService = thumbnailService;
-	}
+        this.contentService = contentService;
+    }
+
+    public void setThumbnailService(ThumbnailService thumbnailService)
+    {
+        this.thumbnailService = thumbnailService;
+    }
 
     public void setResetPasswordService(ResetPasswordService resetPasswordService)
     {
@@ -214,102 +214,101 @@ public class PeopleImpl implements People
      * @return The validated and processed ID.
      */
     @Override
-	public String validatePerson(String personId)
-	{
-		return validatePerson(personId, false);
-	}
+    public String validatePerson(String personId)
+    {
+        return validatePerson(personId, false);
+    }
 
     @Override
-	public String validatePerson(final String requestedPersonId, boolean validateIsCurrentUser)
-	{
+    public String validatePerson(final String requestedPersonId, boolean validateIsCurrentUser)
+    {
         String personId = requestedPersonId;
-		if(personId == null)
-		{
-			throw new InvalidArgumentException("personId is null.");
-		}
-        
-    	if(personId.equalsIgnoreCase(DEFAULT_USER))
-    	{
-    		personId = AuthenticationUtil.getFullyAuthenticatedUser();
-    	}
+        if (personId == null)
+        {
+            throw new InvalidArgumentException("personId is null.");
+        }
 
-    	personId = personService.getUserIdentifier(personId);
-		if(personId == null)
-		{
+        if (personId.equalsIgnoreCase(DEFAULT_USER))
+        {
+            personId = AuthenticationUtil.getFullyAuthenticatedUser();
+        }
+
+        personId = personService.getUserIdentifier(personId);
+        if (personId == null)
+        {
             // Could not find canonical user ID by case-sensitive ID.
             throw new EntityNotFoundException(requestedPersonId);
-		}
+        }
 
-		if(validateIsCurrentUser)
-		{
-			String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
-			if(!currentUserId.equalsIgnoreCase(personId))
-			{
-				throw new EntityNotFoundException(personId);
-			}
-		}
+        if (validateIsCurrentUser)
+        {
+            String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
+            if (!currentUserId.equalsIgnoreCase(personId))
+            {
+                throw new EntityNotFoundException(personId);
+            }
+        }
 
-    	return personId;
-	}
+        return personId;
+    }
 
     protected void processPersonProperties(String userName, final Map<QName, Serializable> nodeProps)
     {
-		if(!contentUsageService.getEnabled())
-		{
-			// quota used will always be 0 in this case so remove from the person properties
-			nodeProps.remove(ContentModel.PROP_SIZE_QUOTA);
-			nodeProps.remove(ContentModel.PROP_SIZE_CURRENT);
-		}
+        if (!contentUsageService.getEnabled())
+        {
+            // quota used will always be 0 in this case so remove from the person properties
+            nodeProps.remove(ContentModel.PROP_SIZE_QUOTA);
+            nodeProps.remove(ContentModel.PROP_SIZE_CURRENT);
+        }
 
-		// The person description is located in a separate content file located at cm:persondescription
-		// "Inline" this data, by removing the cm:persondescription property and adding a temporary property
-		// (Person.PROP_PERSON_DESCRIPTION) containing the actual content as a string.
-		final ContentData personDescription = (ContentData)nodeProps.get(ContentModel.PROP_PERSONDESC);
-		if(personDescription != null)
-		{
-			nodeProps.remove(ContentModel.PROP_PERSONDESC);
+        // The person description is located in a separate content file located at cm:persondescription
+        // "Inline" this data, by removing the cm:persondescription property and adding a temporary property
+        // (Person.PROP_PERSON_DESCRIPTION) containing the actual content as a string.
+        final ContentData personDescription = (ContentData) nodeProps.get(ContentModel.PROP_PERSONDESC);
+        if (personDescription != null)
+        {
+            nodeProps.remove(ContentModel.PROP_PERSONDESC);
 
-			AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-			{
-				@Override
-				public Void doWork() throws Exception
-				{
-					ContentReader reader = contentService.getRawReader(personDescription.getContentUrl());
-					if(reader != null && reader.exists())
-					{
-						String description = reader.getContentString();
-						nodeProps.put(Person.PROP_PERSON_DESCRIPTION, description);
-					}
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    ContentReader reader = contentService.getRawReader(personDescription.getContentUrl());
+                    if (reader != null && reader.exists())
+                    {
+                        String description = reader.getContentString();
+                        nodeProps.put(Person.PROP_PERSON_DESCRIPTION, description);
+                    }
 
-					return null;
-				}
-			});
-		}
+                    return null;
+                }
+            });
+        }
     }
 
     public boolean hasAvatar(NodeRef personNodeRef)
     {
-    	return (getAvatarOriginal(personNodeRef) != null);
+        return (getAvatarOriginal(personNodeRef) != null);
     }
 
     @Override
     public NodeRef getAvatar(String personId)
     {
-    	NodeRef avatar = null;
-    	personId = validatePerson(personId);
-    	NodeRef personNode = personService.getPerson(personId);
-    	if(personNode != null)
-    	{
+        NodeRef avatar = null;
+        personId = validatePerson(personId);
+        NodeRef personNode = personService.getPerson(personId);
+        if (personNode != null)
+        {
             NodeRef avatarOrig = getAvatarOriginal(personNode);
             avatar = thumbnailService.getThumbnailByName(avatarOrig, ContentModel.PROP_CONTENT, "avatar");
-    	}
+        }
 
-    	if (avatar == null)
-    	{
-    		throw new EntityNotFoundException(personId);
-    	}
+        if (avatar == null)
+        {
+            throw new EntityNotFoundException(personId);
+        }
 
-    	return avatar;
+        return avatar;
     }
 
     private NodeRef getAvatarOriginal(NodeRef personNode)
@@ -379,7 +378,7 @@ public class PeopleImpl implements People
         if (mimeType.indexOf("image/") != 0)
         {
             throw new InvalidArgumentException(
-                    "Uploaded content must be an image (content type determined to be '"+mimeType+"')");
+                    "Uploaded content must be an image (content type determined to be '" + mimeType + "')");
         }
 
         // create thumbnail synchronously
@@ -416,7 +415,6 @@ public class PeopleImpl implements People
         nodeService.deleteNode(avatarOrigNodeRef);
     }
 
-
     /**
      * Get a full representation of a person.
      * 
@@ -435,7 +433,7 @@ public class PeopleImpl implements People
 
         return person;
     }
-    
+
     public Person getPerson(String personId, List<String> include)
     {
         personId = validatePerson(personId);
@@ -459,8 +457,7 @@ public class PeopleImpl implements People
         final List<PersonService.PersonInfo> page = pagingResult.getPage();
         int totalItems = pagingResult.getTotalResultCount().getFirst();
         final String personId = AuthenticationUtil.getFullyAuthenticatedUser();
-        List<Person> people = new AbstractList<Person>()
-        {
+        List<Person> people = new AbstractList<Person>() {
             @Override
             public Person get(int index)
             {
@@ -513,8 +510,7 @@ public class PeopleImpl implements People
             processPersonProperties(personId, nodeProps);
             // TODO this needs to be run as admin but should we do this here?
             final String pId = personId;
-            Boolean enabled = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-            {
+            Boolean enabled = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>() {
                 public Boolean doWork() throws Exception
                 {
                     return authenticationService.getAuthenticationEnabled(pId);
@@ -546,9 +542,9 @@ public class PeopleImpl implements People
                 capabilities.put("isAdmin", isAdminAuthority(personId));
                 capabilities.put("isGuest", isGuestAuthority(personId));
                 capabilities.put("isMutable", isMutableAuthority(personId));
-                person.setCapabilities(capabilities);               
+                person.setCapabilities(capabilities);
             }
-            
+
             // get avatar information
             if (hasAvatar(personNode))
             {
@@ -576,7 +572,7 @@ public class PeopleImpl implements People
     {
         validateCreatePersonData(person);
 
-        if (! isAdminAuthority())
+        if (!isAdminAuthority())
         {
             // note: do an explict check for admin here (since personExists does not throw 403 unlike createPerson,
             // hence next block would cause 409 to be returned)
@@ -599,22 +595,22 @@ public class PeopleImpl implements People
 
         Map<QName, Serializable> props = person.toProperties();
 
-		MutableAuthenticationService mas = (MutableAuthenticationService) authenticationService;
-		mas.createAuthentication(person.getUserName(), person.getPassword().toCharArray());
-		mas.setAuthenticationEnabled(person.getUserName(), person.isEnabled());
+        MutableAuthenticationService mas = (MutableAuthenticationService) authenticationService;
+        mas.createAuthentication(person.getUserName(), person.getPassword().toCharArray());
+        mas.setAuthenticationEnabled(person.getUserName(), person.isEnabled());
 
-		// Add custom properties
-		if (person.getProperties() != null)
-		{
-			Map<String, Object> customProps = person.getProperties();
-			props.putAll(nodes.mapToNodeProperties(customProps));
-		}
-		
-		NodeRef nodeRef = personService.createPerson(props);
-		
-		// Add custom aspects
-		nodes.addCustomAspects(nodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
-		
+        // Add custom properties
+        if (person.getProperties() != null)
+        {
+            Map<String, Object> customProps = person.getProperties();
+            props.putAll(nodes.mapToNodeProperties(customProps));
+        }
+
+        NodeRef nodeRef = personService.createPerson(props);
+
+        // Add custom aspects
+        nodes.addCustomAspects(nodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
+
         // Write the contents of PersonUpdate.getDescription() text to a content file
         // and store the content URL in ContentModel.PROP_PERSONDESC
         if (person.getDescription() != null)
@@ -625,18 +621,16 @@ public class PeopleImpl implements People
         // Return a fresh retrieval
         return getPerson(person.getUserName());
     }
-	
+
     /**
-     * Write the description to a content file and store the content URL in
-     * ContentModel.PROP_PERSONDESC
+     * Write the description to a content file and store the content URL in ContentModel.PROP_PERSONDESC
      * 
      * @param description
      * @param nodeRef
      */
     private void savePersonDescription(final String description, final NodeRef nodeRef)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -678,24 +672,24 @@ public class PeopleImpl implements People
         {
             if (username.toUpperCase().startsWith(prefix))
             {
-                throw new IllegalArgumentException("Username cannot start with the reserved prefix '"+prefix+"'.");
+                throw new IllegalArgumentException("Username cannot start with the reserved prefix '" + prefix + "'.");
             }
         }
     }
 
     private void checkRequiredField(String fieldName, Object fieldValue)
-	{
-		if (fieldValue == null)
-		{
-			throw new InvalidArgumentException("Field '"+fieldName+"' is null, but is required.");
-		}
+    {
+        if (fieldValue == null)
+        {
+            throw new InvalidArgumentException("Field '" + fieldName + "' is null, but is required.");
+        }
 
         // belts-and-braces - note: should not see empty string (since converted to null via custom json deserializer)
-        if ((fieldValue instanceof String) && ((String)fieldValue).isEmpty())
+        if ((fieldValue instanceof String) && ((String) fieldValue).isEmpty())
         {
-            throw new InvalidArgumentException("Field '"+fieldName+"' is empty, but is required.");
+            throw new InvalidArgumentException("Field '" + fieldName + "' is empty, but is required.");
         }
-	}
+    }
 
     @Override
     public Person update(String personId, final Person person)
@@ -718,7 +712,7 @@ public class PeopleImpl implements People
         Boolean isEnabled = person.isEnabled();
         if (isEnabled != null)
         {
-            if (isAdminAuthority(personIdToUpdate))
+            if (!isEnabled && isAdminAuthority(personIdToUpdate))
             {
                 throw new PermissionDeniedException("Admin authority cannot be disabled.");
             }
@@ -735,13 +729,13 @@ public class PeopleImpl implements People
             }
         }
 
-		NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);
-		if (person.wasSet(Person.PROP_PERSON_DESCRIPTION))
+        NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);
+        if (person.wasSet(Person.PROP_PERSON_DESCRIPTION))
         {
-			// Remove person description from saved properties
-			properties.remove(ContentModel.PROP_PERSONDESC);
+            // Remove person description from saved properties
+            properties.remove(ContentModel.PROP_PERSONDESC);
 
-			// Custom save for person description.
+            // Custom save for person description.
             savePersonDescription(person.getDescription(), personNodeRef);
         }
 
@@ -749,13 +743,13 @@ public class PeopleImpl implements People
         // addition of custom properties may result in the auto-addition of aspects
         // and we don't want to remove them during the update of explicitly specified aspects.
         nodes.updateCustomAspects(personNodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
-        
-		// Add custom properties
-		if (person.getProperties() != null)
-		{
-			Map<String, Object> customProps = person.getProperties();
-			properties.putAll(nodes.mapToNodeProperties(customProps));
-		}
+
+        // Add custom properties
+        if (person.getProperties() != null)
+        {
+            Map<String, Object> customProps = person.getProperties();
+            properties.putAll(nodes.mapToNodeProperties(customProps));
+        }
 
         // MNT-21150 LDAP synced attributes can't be changed using REST API
         immutableProperties.forEach(immutableProperty -> {
@@ -766,18 +760,18 @@ public class PeopleImpl implements People
         });
 
         // The person service only allows admin users to set the properties by default.
-        if(!properties.isEmpty())
+        if (!properties.isEmpty())
         {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
-                @Override public Void doWork() throws Exception
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
+                @Override
+                public Void doWork() throws Exception
                 {
                     personService.setPersonProperties(personIdToUpdate, properties, false);
                     return null;
                 }
             });
         }
-		
+
         return getPerson(personId);
     }
 
@@ -820,7 +814,7 @@ public class PeopleImpl implements People
     {
         nodes.validateAspects(person.getAspectNames(), EXCLUDED_NS, EXCLUDED_ASPECTS);
         nodes.validateProperties(person.getProperties(), EXCLUDED_NS, EXCLUDED_PROPS);
-        
+
         if (person.wasSet(ContentModel.PROP_FIRSTNAME))
         {
             checkRequiredField("firstName", person.getFirstName());
@@ -939,10 +933,10 @@ public class PeopleImpl implements People
         checkRequiredField("personId", personId);
 
         ResetPasswordDetails resetDetails = new ResetPasswordDetails()
-                    .setUserId(personId)
-                    .setPassword(passwordReset.getPassword())
-                    .setWorkflowId(passwordReset.getId())
-                    .setWorkflowKey(passwordReset.getKey());
+                .setUserId(personId)
+                .setPassword(passwordReset.getPassword())
+                .setWorkflowId(passwordReset.getId())
+                .setWorkflowKey(passwordReset.getKey());
         try
         {
             // This is an un-authenticated API call so we wrap it to run as System

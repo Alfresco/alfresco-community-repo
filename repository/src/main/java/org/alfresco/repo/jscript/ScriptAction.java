@@ -28,6 +28,9 @@ package org.alfresco.repo.jscript;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.Wrapper;
+
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -40,8 +43,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.Wrapper;
 
 /**
  * Scriptable Action
@@ -62,7 +63,7 @@ public class ScriptAction implements Serializable, Scopeable
     protected Action action;
 
     protected ActionDefinition actionDef;
-    
+
     protected ServiceRegistry services;
     private ActionService actionService;
     private NamespaceService namespaceService;
@@ -82,7 +83,7 @@ public class ScriptAction implements Serializable, Scopeable
         this.actionService = services.getActionService();
         this.namespaceService = services.getNamespaceService();
         this.transactionService = services.getTransactionService();
-        
+
         this.action = action;
         this.actionDef = actionDef;
         this.converter = new ActionValueConverter();
@@ -107,8 +108,7 @@ public class ScriptAction implements Serializable, Scopeable
     }
 
     /**
-     * Return all the properties known about this node. The Map returned implements the Scriptable interface to allow access to the properties via JavaScript associative array
-     * access. This means properties of a node can be access thus: <code>node.properties["name"]</code>
+     * Return all the properties known about this node. The Map returned implements the Scriptable interface to allow access to the properties via JavaScript associative array access. This means properties of a node can be access thus: <code>node.properties["name"]</code>
      * 
      * @return Map of properties for this Node.
      */
@@ -131,7 +131,7 @@ public class ScriptAction implements Serializable, Scopeable
     }
 
     /**
-     * Execute action.  The existing transaction will be joined.
+     * Execute action. The existing transaction will be joined.
      * 
      * @param node
      *            the node to execute action upon
@@ -141,16 +141,16 @@ public class ScriptAction implements Serializable, Scopeable
     {
         performParamConversionForRepo();
         executeImpl(node);
-        
+
         // Parameters may have been updated by action execution, so reset cache
         this.parameters = null;
-        
+
         // Reset the actioned upon node
         node.reset();
     }
-    
+
     /**
-     * Execute action.  The existing transaction will be joined.
+     * Execute action. The existing transaction will be joined.
      * 
      * @param node
      *            the node to execute action upon
@@ -160,10 +160,10 @@ public class ScriptAction implements Serializable, Scopeable
     {
         performParamConversionForRepo();
         executeAsynchronouslyImpl(node);
-        
+
         // Parameters may have been updated by action execution, so reset cache
         this.parameters = null;
-        
+
         // Reset the actioned upon node
         node.reset();
     }
@@ -172,12 +172,12 @@ public class ScriptAction implements Serializable, Scopeable
     {
         actionService.executeAction(action, node.getNodeRef());
     }
-    
+
     protected void executeAsynchronouslyImpl(ScriptNode node)
     {
         actionService.executeAction(action, node.getNodeRef(), true, true);
     }
-    
+
     /**
      * Execute action, optionally starting a new, potentially read-only transaction.
      * 
@@ -192,8 +192,7 @@ public class ScriptAction implements Serializable, Scopeable
     public void execute(final ScriptNode node, boolean readOnly, boolean newTxn)
     {
         performParamConversionForRepo();
-        RetryingTransactionCallback<Object> executionActionCallback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> executionActionCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 executeImpl(node);
@@ -204,16 +203,16 @@ public class ScriptAction implements Serializable, Scopeable
                 executionActionCallback,
                 readOnly,
                 newTxn);
-        
+
         // Parameters may have been updated by action execution, so reset cache
         this.parameters = null;
-        
+
         // Reset the actioned upon node
         node.reset();
     }
 
     /**
-     * Execute action.  The existing transaction will be joined.
+     * Execute action. The existing transaction will be joined.
      * 
      * @param nodeRef
      *            the node to execute action upon
@@ -242,8 +241,7 @@ public class ScriptAction implements Serializable, Scopeable
     public void execute(final NodeRef nodeRef, boolean readOnly, boolean newTxn)
     {
         performParamConversionForRepo();
-        RetryingTransactionCallback<Object> executionActionCallback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> executionActionCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 actionService.executeAction(action, nodeRef);
@@ -258,9 +256,10 @@ public class ScriptAction implements Serializable, Scopeable
         // Parameters may have been updated by action execution, so reset cache
         this.parameters = null;
     }
-    
-	protected void performParamConversionForRepo() {
-		if (this.parameters != null && this.parameters.isModified())
+
+    protected void performParamConversionForRepo()
+    {
+        if (this.parameters != null && this.parameters.isModified())
         {
             Map<String, Serializable> actionParams = action.getParameterValues();
             actionParams.clear();
@@ -273,8 +272,7 @@ public class ScriptAction implements Serializable, Scopeable
                 actionParams.put(name, value);
             }
         }
-	}
-
+    }
 
     /**
      * Value converter with specific knowledge of action parameters
@@ -336,7 +334,7 @@ public class ScriptAction implements Serializable, Scopeable
                         if (stringQName.startsWith("{"))
                         {
                             return QName.createQName(stringQName);
-                           
+
                         }
                         else
                         {
@@ -355,7 +353,7 @@ public class ScriptAction implements Serializable, Scopeable
             }
         }
     }
-    
+
     /**
      * Scripted Parameter map with modified flag.
      * 
@@ -388,22 +386,18 @@ public class ScriptAction implements Serializable, Scopeable
             this.modified = modified;
         }
 
-        /*
-         * (non-Javadoc)
+        /* (non-Javadoc)
          * 
-         * @see org.mozilla.javascript.Scriptable#getClassName()
-         */
+         * @see org.mozilla.javascript.Scriptable#getClassName() */
         @Override
         public String getClassName()
         {
             return "ScriptableParameterMap";
         }
 
-        /*
-         * (non-Javadoc)
+        /* (non-Javadoc)
          * 
-         * @see org.mozilla.javascript.Scriptable#delete(java.lang.String)
-         */
+         * @see org.mozilla.javascript.Scriptable#delete(java.lang.String) */
         @Override
         public void delete(String name)
         {
@@ -411,11 +405,9 @@ public class ScriptAction implements Serializable, Scopeable
             setModified(true);
         }
 
-        /*
-         * (non-Javadoc)
+        /* (non-Javadoc)
          * 
-         * @see org.mozilla.javascript.Scriptable#put(java.lang.String, org.mozilla.javascript.Scriptable, java.lang.Object)
-         */
+         * @see org.mozilla.javascript.Scriptable#put(java.lang.String, org.mozilla.javascript.Scriptable, java.lang.Object) */
         @Override
         public void put(String name, Scriptable start, Object value)
         {

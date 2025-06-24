@@ -47,7 +47,7 @@ public interface ManifestModel extends TransferModel
     static final String LOCALNAME_ELEMENT_ASPECT = "aspect";
     static final String LOCALNAME_ELEMENT_PROPERTIES = "properties";
     static final String LOCALNAME_ELEMENT_PROPERTY = "property";
-    static final String LOCALNAME_ELEMENT_PARENT_ASSOCS = "parentAssocs"; 
+    static final String LOCALNAME_ELEMENT_PARENT_ASSOCS = "parentAssocs";
     static final String LOCALNAME_ELEMENT_CHILD_ASSOCS = "childAssocs";
     static final String LOCALNAME_ELEMENT_CHILD_ASSOC = "childAssoc";
     static final String LOCALNAME_ELEMENT_PARENT_ASSOC = "parentAssoc";
@@ -66,8 +66,7 @@ public interface ManifestModel extends TransferModel
     static final String LOCALNAME_ELEMENT_ACL_PERMISSION = "permission";
     static final String LOCALNAME_ELEMENT_CATEGORIES = "categories";
     static final String LOCALNAME_ELEMENT_CATEGORY = "category";
-    
-    
+
     // Manifest file prefix
     static final String MANIFEST_PREFIX = "xfer";
 }

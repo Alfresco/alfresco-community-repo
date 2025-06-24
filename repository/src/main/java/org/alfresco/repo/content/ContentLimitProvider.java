@@ -26,11 +26,10 @@
 package org.alfresco.repo.content;
 
 /**
- * Implementations of this interface must provide a byte size limit for pieces of Alfresco content.
- * Simple implementations of this interface include:
+ * Implementations of this interface must provide a byte size limit for pieces of Alfresco content. Simple implementations of this interface include:
  * <ul>
- *   <li>{@link NoLimitProvider} which provides a value indicating no limit.</li>
- *   <li>{@link SimpleFixedLimitProvider} which provides a fixed numerical limit value.</li>
+ * <li>{@link NoLimitProvider} which provides a value indicating no limit.</li>
+ * <li>{@link SimpleFixedLimitProvider} which provides a fixed numerical limit value.</li>
  * </ul>
  * It is possible that smarter implementations may be added at a future date.
  * 
@@ -43,33 +42,34 @@ public interface ContentLimitProvider
      * A {@link ContentLimitProvider#getSizeLimit() limit} having this value is deemed not to be a limit.
      */
     public static final long NO_LIMIT = -1L;
-    
+
     /**
      * This method returns a size limit in bytes.
      */
     long getSizeLimit();
-    
+
     /**
      * A {@link ContentLimitProvider} which returns a fixed value.
      */
     public static class SimpleFixedLimitProvider implements ContentLimitProvider
     {
         private long limit;
-        
+
         public SimpleFixedLimitProvider()
         {
             // Default constructor for use as bean.
         }
+
         public SimpleFixedLimitProvider(long limit)
         {
             this.limit = limit;
         }
-        
+
         /**
-         * This method sets a value for the limit. If the string does not {@link Long#parseLong(String) parse} to a
-         * java long, the {@link ContentLimitProvider#NO_LIMIT default value} will be applied instead.
+         * This method sets a value for the limit. If the string does not {@link Long#parseLong(String) parse} to a java long, the {@link ContentLimitProvider#NO_LIMIT default value} will be applied instead.
          * 
-         * @param limit a String representing a valid Java long.
+         * @param limit
+         *            a String representing a valid Java long.
          */
         public void setSizeLimitString(String limit)
         {
@@ -79,25 +79,28 @@ public interface ContentLimitProvider
             try
             {
                 longLimit = Long.parseLong(limit);
-            } catch (NumberFormatException ignored)
+            }
+            catch (NumberFormatException ignored)
             {
                 // Intentionally empty
             }
             this.limit = longLimit;
         }
-        
-        @Override public long getSizeLimit()
+
+        @Override
+        public long getSizeLimit()
         {
             return limit;
         }
     }
-    
+
     /**
      * A {@link ContentLimitProvider} which returns a value indicating there is no limit.
      */
     public static class NoLimitProvider implements ContentLimitProvider
     {
-        @Override public long getSizeLimit()
+        @Override
+        public long getSizeLimit()
         {
             return NO_LIMIT;
         }

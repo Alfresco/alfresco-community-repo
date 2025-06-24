@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -40,7 +40,7 @@ public class EventCompletionDetails
 {
     /** node reference */
     private NodeRef nodeRef;
-    
+
     /** event name */
     private String eventName;
     private String eventLabel;
@@ -49,25 +49,31 @@ public class EventCompletionDetails
     private Date eventCompletedAt;
     private String eventCompletedBy;
 
-
     /**
      * Constructor
      * 
-     * @param nodeRef                   node reference
-     * @param eventName                 event name
-     * @param eventLabel                event label
-     * @param eventExecutionAutomatic   indicates whether the event is executed automatically or not
-     * @param eventComplete             indicates whether the event is complete or not
-     * @param eventCompletedAt          when the event was completed
-     * @param eventCompletedBy          who completed the event
+     * @param nodeRef
+     *            node reference
+     * @param eventName
+     *            event name
+     * @param eventLabel
+     *            event label
+     * @param eventExecutionAutomatic
+     *            indicates whether the event is executed automatically or not
+     * @param eventComplete
+     *            indicates whether the event is complete or not
+     * @param eventCompletedAt
+     *            when the event was completed
+     * @param eventCompletedBy
+     *            who completed the event
      */
-    public EventCompletionDetails(  NodeRef nodeRef,
-                                    String eventName,
-                                    String eventLabel,
-                                    boolean eventExecutionAutomatic, 
-                                    boolean eventComplete,
-                                    Date eventCompletedAt, 
-                                    String eventCompletedBy)
+    public EventCompletionDetails(NodeRef nodeRef,
+            String eventName,
+            String eventLabel,
+            boolean eventExecutionAutomatic,
+            boolean eventComplete,
+            Date eventCompletedAt,
+            String eventCompletedBy)
     {
         this.nodeRef = nodeRef;
         this.eventName = eventName;
@@ -76,8 +82,8 @@ public class EventCompletionDetails
         this.eventComplete = eventComplete;
         this.eventCompletedAt = eventCompletedAt;
         this.eventCompletedBy = eventCompletedBy;
-    } 
-    
+    }
+
     /**
      * @return the node reference
      */
@@ -85,7 +91,7 @@ public class EventCompletionDetails
     {
         return nodeRef;
     }
-    
+
     /**
      * @return the eventName
      */
@@ -93,15 +99,16 @@ public class EventCompletionDetails
     {
         return eventName;
     }
-    
+
     /**
-     * @param eventName the eventName to set
+     * @param eventName
+     *            the eventName to set
      */
     public void setEventName(String eventName)
     {
         this.eventName = eventName;
     }
-    
+
     /**
      * @return The display label of the event
      */
@@ -109,7 +116,7 @@ public class EventCompletionDetails
     {
         return this.eventLabel;
     }
-    
+
     /**
      * @return the eventExecutionAutomatic
      */
@@ -117,15 +124,16 @@ public class EventCompletionDetails
     {
         return eventExecutionAutomatic;
     }
-    
+
     /**
-     * @param eventExecutionAutomatic the eventExecutionAutomatic to set
+     * @param eventExecutionAutomatic
+     *            the eventExecutionAutomatic to set
      */
     public void setEventExecutionAutomatic(boolean eventExecutionAutomatic)
     {
         this.eventExecutionAutomatic = eventExecutionAutomatic;
     }
-    
+
     /**
      * @return the eventComplete
      */
@@ -133,15 +141,16 @@ public class EventCompletionDetails
     {
         return eventComplete;
     }
-    
+
     /**
-     * @param eventComplete the eventComplete to set
+     * @param eventComplete
+     *            the eventComplete to set
      */
     public void setEventComplete(boolean eventComplete)
     {
         this.eventComplete = eventComplete;
     }
-    
+
     /**
      * @return the eventCompletedAt
      */
@@ -149,15 +158,16 @@ public class EventCompletionDetails
     {
         return eventCompletedAt;
     }
-    
+
     /**
-     * @param eventCompletedAt the eventCompletedAt to set
+     * @param eventCompletedAt
+     *            the eventCompletedAt to set
      */
     public void setEventCompletedAt(Date eventCompletedAt)
     {
         this.eventCompletedAt = eventCompletedAt;
     }
-    
+
     /**
      * @return the eventCompletedBy
      */
@@ -165,12 +175,13 @@ public class EventCompletionDetails
     {
         return eventCompletedBy;
     }
-    
+
     /**
-     * @param eventCompletedBy the eventCompletedBy to set
+     * @param eventCompletedBy
+     *            the eventCompletedBy to set
      */
     public void setEventCompletedBy(String eventCompletedBy)
     {
         this.eventCompletedBy = eventCompletedBy;
-    }  
+    }
 }

@@ -29,7 +29,6 @@ import java.util.Date;
 
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public class LockUtils
@@ -44,21 +43,23 @@ public class LockUtils
     {
         return lockService.isLockedAndReadOnly(nodeRef);
     }
-    
+
     /**
-     * Given the lock owner and expiry date of a lock calculates the lock status with respect
-     * to the user name supplied, e.g. the current user.
+     * Given the lock owner and expiry date of a lock calculates the lock status with respect to the user name supplied, e.g. the current user.
      * 
-     * @param userName    User name to evaluate the lock against.
-     * @param lockOwner   Owner of the lock.
-     * @param expiryDate  Expiry date of the lock.
+     * @param userName
+     *            User name to evaluate the lock against.
+     * @param lockOwner
+     *            Owner of the lock.
+     * @param expiryDate
+     *            Expiry date of the lock.
      * @return LockStatus
      * @deprecated eventually move into LockService
      */
     public static LockStatus lockStatus(String userName, String lockOwner, Date expiryDate)
     {
         LockStatus result = LockStatus.NO_LOCK;
-        
+
         if (lockOwner != null)
         {
             if (expiryDate != null && expiryDate.before(new Date()) == true)

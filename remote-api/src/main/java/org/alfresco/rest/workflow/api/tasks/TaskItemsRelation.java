@@ -51,8 +51,8 @@ public class TaskItemsRelation implements RelationshipResourceAction.ReadById<It
     {
         this.tasks = tasks;
     }
-    
-	@Override
+
+    @Override
     public Item readById(String taskId, String itemId, Parameters parameters) throws RelationshipResourceNotFoundException
     {
         return tasks.getItem(taskId, itemId);
@@ -76,14 +76,14 @@ public class TaskItemsRelation implements RelationshipResourceAction.ReadById<It
         List<Item> result = new ArrayList<Item>(entity.size());
         for (Item item : entity)
         {
-           result.add(tasks.createItem(taskId, item));
+            result.add(tasks.createItem(taskId, item));
         }
         return result;
     }
-    
+
     @Override
     public void delete(String taskId, String itemId, Parameters parameters)
     {
-       tasks.deleteItem(taskId, itemId);
+        tasks.deleteItem(taskId, itemId);
     }
 }

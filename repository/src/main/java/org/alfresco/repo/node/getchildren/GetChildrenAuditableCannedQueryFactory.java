@@ -41,8 +41,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 
 /**
- * A {@link CannedQueryFactory} for various queries relating to getting
- * {@link NodeBackedEntity} entires filtering by auditable properties.
+ * A {@link CannedQueryFactory} for various queries relating to getting {@link NodeBackedEntity} entires filtering by auditable properties.
  * 
  * @author Nick Burch
  * @since 4.0
@@ -54,43 +53,41 @@ public class GetChildrenAuditableCannedQueryFactory extends AbstractQNameAwareCa
     {
         super.afterPropertiesSet();
     }
-    
+
     @Override
     public CannedQuery<NodeBackedEntity> getCannedQuery(CannedQueryParameters parameters)
     {
         final GetChildrenAuditableCannedQuery cq = new GetChildrenAuditableCannedQuery(
-              cannedQueryDAO, methodSecurity, parameters
-        );
-        
+                cannedQueryDAO, methodSecurity, parameters);
+
         return (CannedQuery<NodeBackedEntity>) cq;
     }
-    
-    public CannedQuery<NodeBackedEntity> getCannedQuery(NodeRef parentNodeRef, QName contentType, 
-          String createdBy, Date createdFrom, Date createdTo,
-          String modifiedBy, Date modifiedFrom, Date modifiedTo, 
-          CannedQuerySortDetails sortDetails, PagingRequest pagingReq)
+
+    public CannedQuery<NodeBackedEntity> getCannedQuery(NodeRef parentNodeRef, QName contentType,
+            String createdBy, Date createdFrom, Date createdTo,
+            String modifiedBy, Date modifiedFrom, Date modifiedTo,
+            CannedQuerySortDetails sortDetails, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("parentNodeRef", parentNodeRef);
         ParameterCheck.mandatory("contentType", contentType);
         ParameterCheck.mandatory("pagingReq", pagingReq);
-        
+
         int requestTotalCountMax = pagingReq.getRequestTotalCountMax();
-        
-        //FIXME Need tenant service like for GetChildren?
+
+        // FIXME Need tenant service like for GetChildren?
         GetChildrenAuditableCannedQueryParams paramBean = new GetChildrenAuditableCannedQueryParams(
-              getNodeId(parentNodeRef), 
-              getQNameId(ContentModel.PROP_NAME),
-              getQNameId(contentType),
-              createdBy, createdFrom, createdTo,
-              modifiedBy, modifiedFrom, modifiedTo
-        );
-        
+                getNodeId(parentNodeRef),
+                getQNameId(ContentModel.PROP_NAME),
+                getQNameId(contentType),
+                createdBy, createdFrom, createdTo,
+                modifiedBy, modifiedFrom, modifiedTo);
+
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
-        
+
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(
-              paramBean, cqpd, sortDetails, requestTotalCountMax, pagingReq.getQueryExecutionId());
-        
+                paramBean, cqpd, sortDetails, requestTotalCountMax, pagingReq.getQueryExecutionId());
+
         // return canned query instance
         return getCannedQuery(params);
     }

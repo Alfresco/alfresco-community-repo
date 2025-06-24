@@ -32,8 +32,7 @@ import java.util.List;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Parses string references into {@link Reference} objects based on Plain
- * encodings grammar.
+ * Parses string references into {@link Reference} objects based on Plain encodings grammar.
  * <p>
  * For grammar examples see {@link Encodings#PLAIN} encoding definition.
  */
@@ -44,14 +43,12 @@ public class PlainReferenceParser implements ReferenceParser, PlainEncoding
      */
     private static final long serialVersionUID = -7053644289373735564L;
 
-    
-
     @Override
     public Reference parse(String referenceString) throws ReferenceParseException
     {
         String[] referenceTokens = referenceString.split(DELIMITER);
         final Cursor cursor = new Cursor(referenceTokens,
-                                         0);
+                0);
         if (referenceTokens.length < 2)
         {
             throw new ReferenceParseException("Invalid reference " + referenceString);
@@ -76,14 +73,14 @@ public class PlainReferenceParser implements ReferenceParser, PlainEncoding
             final List<Parameter> parameters = parseParameters(cursor);
 
             return new Reference(Encodings.PLAIN.encoding,
-                                 protocol,
-                                 resource,
-                                 parameters);
+                    protocol,
+                    resource,
+                    parameters);
         }
         catch (ArrayIndexOutOfBoundsException e)
         {
             throw new ReferenceParseException("Invalid reference",
-                                              e);
+                    e);
         }
     }
 
@@ -128,12 +125,10 @@ public class PlainReferenceParser implements ReferenceParser, PlainEncoding
     }
 
     /**
-     * Obtains a {@link Parameter} reference that is instance of
-     * {@link StringParameter} from the cursor parameter
+     * Obtains a {@link Parameter} reference that is instance of {@link StringParameter} from the cursor parameter
      * 
      * @param cursor
-     * @return a {@link Parameter} reference that is instance of
-     *         {@link StringParameter} from the cursor parameter
+     * @return a {@link Parameter} reference that is instance of {@link StringParameter} from the cursor parameter
      */
     private Parameter parseStringParameter(Cursor cursor)
     {
@@ -143,12 +138,10 @@ public class PlainReferenceParser implements ReferenceParser, PlainEncoding
     }
 
     /**
-     * Obtains a {@link Parameter} reference that is instance of
-     * {@link ResourceParameter} from the cursor parameter
+     * Obtains a {@link Parameter} reference that is instance of {@link ResourceParameter} from the cursor parameter
      * 
      * @param cursor
-     * @return a {@link Parameter} reference that is instance of
-     *         {@link ResourceParameter} from the cursor parameter
+     * @return a {@link Parameter} reference that is instance of {@link ResourceParameter} from the cursor parameter
      * @throws ReferenceParseException
      */
     private Parameter parseResourceParameter(Cursor cursor) throws ReferenceParseException
@@ -158,18 +151,10 @@ public class PlainReferenceParser implements ReferenceParser, PlainEncoding
     }
 
     /**
-     * Obtains {@link Resource} reference witch is an instance of
-     * {@link RepositoryResource} if current token is
-     * {@link PlainEncoding#REPOSITORY} or an instance of
-     * {@link ClasspathResource} if current token is
-     * {@link PlainEncoding#CLASSPATH}
+     * Obtains {@link Resource} reference witch is an instance of {@link RepositoryResource} if current token is {@link PlainEncoding#REPOSITORY} or an instance of {@link ClasspathResource} if current token is {@link PlainEncoding#CLASSPATH}
      * 
      * @param cursor
-     * @return {@link Resource} reference witch an instance of
-     *         {@link RepositoryResource} if current token is
-     *         {@link PlainEncoding#REPOSITORY} or an instance of
-     *         {@link ClasspathResource} if current token is
-     *         {@link PlainEncoding#CLASSPATH}
+     * @return {@link Resource} reference witch an instance of {@link RepositoryResource} if current token is {@link PlainEncoding#REPOSITORY} or an instance of {@link ClasspathResource} if current token is {@link PlainEncoding#CLASSPATH}
      * @throws ReferenceParseException
      */
     private Resource parseResource(Cursor cursor) throws ReferenceParseException
@@ -203,17 +188,10 @@ public class PlainReferenceParser implements ReferenceParser, PlainEncoding
     }
 
     /**
-     * Obtains {@link RepositoryLocation} reference witch is an instance of
-     * {@link RepositoryPath} if current token is {@link PlainEncoding#PATH} or
-     * an instance of {@link RepositoryNodeRef} if current token is
-     * {@link PlainEncoding#NODE}
+     * Obtains {@link RepositoryLocation} reference witch is an instance of {@link RepositoryPath} if current token is {@link PlainEncoding#PATH} or an instance of {@link RepositoryNodeRef} if current token is {@link PlainEncoding#NODE}
      * 
      * @param cursor
-     * @return A {@link RepositoryLocation} reference witch an instance of
-     *         {@link RepositoryPath} if current token is
-     *         {@link PlainEncoding#PATH} or an instance of
-     *         {@link RepositoryNodeRef} if current token is
-     *         {@link PlainEncoding#NODE}
+     * @return A {@link RepositoryLocation} reference witch an instance of {@link RepositoryPath} if current token is {@link PlainEncoding#PATH} or an instance of {@link RepositoryNodeRef} if current token is {@link PlainEncoding#NODE}
      * @throws ReferenceParseException
      */
     private RepositoryLocation parseRepositoryLocation(Cursor cursor) throws ReferenceParseException
@@ -235,12 +213,10 @@ public class PlainReferenceParser implements ReferenceParser, PlainEncoding
     }
 
     /**
-     * Obtains {@link RepositoryPath} reference from current token of the cursor
-     * parameter
+     * Obtains {@link RepositoryPath} reference from current token of the cursor parameter
      * 
      * @param cursor
-     * @return A {@link RepositoryPath} reference from current token of the
-     *         cursor parameter
+     * @return A {@link RepositoryPath} reference from current token of the cursor parameter
      */
     private RepositoryPath parseRepositoryPath(Cursor cursor)
     {
@@ -250,14 +226,10 @@ public class PlainReferenceParser implements ReferenceParser, PlainEncoding
     }
 
     /**
-     * Obtains {@link RepositoryNodeRef} reference from store protocol, store
-     * identifier and node id obtained from cursor's tokens starting with
-     * current token of the cursor.
+     * Obtains {@link RepositoryNodeRef} reference from store protocol, store identifier and node id obtained from cursor's tokens starting with current token of the cursor.
      * 
      * @param cursor
-     * @return A {@link RepositoryNodeRef} reference from store protocol, store
-     *         identifier and node id obtained from cursor's tokens starting
-     *         with current token of the cursor.
+     * @return A {@link RepositoryNodeRef} reference from store protocol, store identifier and node id obtained from cursor's tokens starting with current token of the cursor.
      */
     private RepositoryNodeRef parseRepositoryNode(Cursor cursor)
     {
@@ -267,17 +239,15 @@ public class PlainReferenceParser implements ReferenceParser, PlainEncoding
         cursor.i += 3;
 
         return new RepositoryNodeRef(new NodeRef(storeProtocol,
-                                                 storeIdentifier,
-                                                 id));
+                storeIdentifier,
+                id));
     }
 
     /**
-     * Obtains {@link ClasspathResource} reference from current token of the
-     * cursor parameter
+     * Obtains {@link ClasspathResource} reference from current token of the cursor parameter
      * 
      * @param cursor
-     * @return A {@link ClasspathResource} reference from current token of the
-     *         cursor parameter
+     * @return A {@link ClasspathResource} reference from current token of the cursor parameter
      */
     private ClasspathResource parseClasspathResource(Cursor cursor)
     {

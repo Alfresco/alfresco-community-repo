@@ -28,8 +28,7 @@ package org.alfresco.rest.workflow.api.impl;
 import java.util.Set;
 
 /**
- * Query walker extension of MapBasedQueryWalker created to
- * add support for OR operation and set AND operation as unsupported.
+ * Query walker extension of MapBasedQueryWalker created to add support for OR operation and set AND operation as unsupported.
  *
  */
 public class MapBasedQueryWalkerOrSupported extends MapBasedQueryWalker

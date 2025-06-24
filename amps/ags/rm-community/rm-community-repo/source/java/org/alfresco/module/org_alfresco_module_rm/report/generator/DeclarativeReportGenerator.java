@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -35,6 +35,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
@@ -54,8 +57,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.UrlUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Declarative report generator.
@@ -103,7 +104,8 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     protected SysAdminParams sysAdminParams;
 
     /**
-     * @param applicableTypes   applicable types
+     * @param applicableTypes
+     *            applicable types
      */
     public void setApplicableTypes(Set<QName> applicableTypes)
     {
@@ -111,7 +113,8 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     }
 
     /**
-     * @param mimetypeService   mimetype service
+     * @param mimetypeService
+     *            mimetype service
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
@@ -119,7 +122,8 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     }
 
     /**
-     * @param fileFolderService file folder service
+     * @param fileFolderService
+     *            file folder service
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -127,7 +131,8 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     }
 
     /**
-     * @param templateService   template service
+     * @param templateService
+     *            template service
      */
     public void setTemplateService(TemplateService templateService)
     {
@@ -135,7 +140,8 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     }
 
     /**
-     * @param contentService    content service
+     * @param contentService
+     *            content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -143,7 +149,8 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -151,7 +158,8 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -159,7 +167,8 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     }
 
     /**
-     * @param repository    repository helper
+     * @param repository
+     *            repository helper
      */
     public void setRepository(Repository repository)
     {
@@ -167,7 +176,8 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     }
 
     /**
-     * @param sysAdminParams    sys admin params
+     * @param sysAdminParams
+     *            sys admin params
      */
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
@@ -184,7 +194,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
         String extension = mimetypeService.getExtension(mimetype);
 
         // get the name of the reported updon node ref
-        String name = (String)nodeService.getProperty(reportedUponNodeRef, ContentModel.PROP_NAME);
+        String name = (String) nodeService.getProperty(reportedUponNodeRef, ContentModel.PROP_NAME);
 
         // build default report name
         StringBuilder builder = new StringBuilder();
@@ -201,7 +211,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     /**
      * Helper method to get the report types display label
      *
-     * @return  {@link String}  report type display label
+     * @return {@link String} report type display label
      */
     private String getReportDisplayLabel()
     {
@@ -256,10 +266,10 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
         // build the default model
         NodeRef person = repository.getPerson();
         templateService.buildDefaultModel(person,
-                                          repository.getCompanyHome(),
-                                          repository.getUserHome(person),
-                                          templateNodeRef,
-                                          null);
+                repository.getCompanyHome(),
+                repository.getUserHome(person),
+                templateNodeRef,
+                null);
 
         // put the reported upon node reference in the model
         model.put(KEY_NODE, reportedUponNodeRef);
@@ -267,7 +277,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
         // context url's (handy for images and links)
         model.put("url", UrlUtil.getAlfrescoUrl(sysAdminParams));
         model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(sysAdminParams));
-        
+
         // who and when the report was generated
         model.put("reportUser", AuthenticationUtil.getRunAsUser());
         Calendar now = Calendar.getInstance(I18NUtil.getContentLocale());
@@ -317,11 +327,11 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
         String extension = mimetypeService.getExtension(mimetype);
 
         StringBuilder sb = new StringBuilder(128)
-                                .append("report_")
-                                .append(typePrefixName)
-                                .append(".")
-                                .append(extension)
-                                .append(".ftl");
+                .append("report_")
+                .append(typePrefixName)
+                .append(".")
+                .append(extension)
+                .append(".ftl");
 
         return sb.toString();
     }
@@ -350,7 +360,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
             {
                 // throw an exception
                 throw new AlfrescoRuntimeException("Can't generate report, because the provided reported upon node reference is type " + type.toString() +
-                                                   " which is not an applicable type for a " + reportType.toString() + " report.");
+                        " which is not an applicable type for a " + reportType.toString() + " report.");
             }
         }
     }

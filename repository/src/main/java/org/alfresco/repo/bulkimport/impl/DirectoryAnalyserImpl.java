@@ -40,6 +40,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.exception.PlatformRuntimeException;
+
 import org.alfresco.repo.bulkimport.AnalysedDirectory;
 import org.alfresco.repo.bulkimport.DirectoryAnalyser;
 import org.alfresco.repo.bulkimport.ImportFilter;
@@ -54,13 +58,9 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.exception.PlatformRuntimeException;
 
 /**
- * This class provides the implementation for directory analysis, the process by
- * which a directory listing of files is broken up into ImportableItems.
+ * This class provides the implementation for directory analysis, the process by which a directory listing of files is broken up into ImportableItems.
  * 
  * @since 4.0
  * 
@@ -68,7 +68,7 @@ import org.springframework.extensions.surf.exception.PlatformRuntimeException;
 public class DirectoryAnalyserImpl implements DirectoryAnalyser
 {
     private final static Log log = LogFactory.getLog(DirectoryAnalyserImpl.class);
-    
+
     private final static Pattern VERSION_SUFFIX_PATTERN = Pattern.compile(".+" + VERSION_SUFFIX_REGEX);
 
     private MetadataLoader metadataLoader;
@@ -77,7 +77,6 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     private NameChecker nameChecker;
     private DictionaryService dictionaryService;
 
-    
     public DirectoryAnalyserImpl(MetadataLoader metadataLoader, BulkImportStatusImpl importStatus, List<ImportFilter> importFilters,
             NameChecker nameChecker)
     {
@@ -86,40 +85,39 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         this.importFilters = importFilters;
         this.nameChecker = nameChecker;
     }
-    
+
     public DirectoryAnalyserImpl()
-    {
-    }
-    
+    {}
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     public void setNameChecker(NameChecker nameChecker)
     {
         this.nameChecker = nameChecker;
     }
 
-	public void setMetadataLoader(MetadataLoader metadataLoader)
-	{
-		this.metadataLoader = metadataLoader;
-	}
-	
-	public void setImportStatus(BulkImportStatusImpl status)
-	{
-		importStatus = status;
-	}
-
-	public final void setImportFilters(List<ImportFilter> importFilters)
+    public void setMetadataLoader(MetadataLoader metadataLoader)
     {
-        if(importFilters != null)
+        this.metadataLoader = metadataLoader;
+    }
+
+    public void setImportStatus(BulkImportStatusImpl status)
+    {
+        importStatus = status;
+    }
+
+    public final void setImportFilters(List<ImportFilter> importFilters)
+    {
+        if (importFilters != null)
         {
-        	this.importFilters = importFilters;
+            this.importFilters = importFilters;
         }
         else
         {
-        	this.importFilters = new ArrayList<ImportFilter>();
+            this.importFilters = new ArrayList<ImportFilter>();
         }
     }
 
@@ -127,7 +125,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     {
         boolean filterImportableItem = false;
 
-        if(importFilters != null && importFilters.size() > 0)
+        if (importFilters != null && importFilters.size() > 0)
         {
             for (ImportFilter filter : importFilters)
             {
@@ -147,12 +145,12 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
      */
     public AnalysedDirectory analyseDirectory(ImportableItem directory, DirectoryStream.Filter<Path> filter)
     {
-    	Path directoryFile = directory.getHeadRevision().getContentFile();
-    	AnalysedDirectory result = new AnalysedDirectory(listFiles(directoryFile, filter));
-        
+        Path directoryFile = directory.getHeadRevision().getContentFile();
+        AnalysedDirectory result = new AnalysedDirectory(listFiles(directoryFile, filter));
+
         if (log.isDebugEnabled())
         {
-        	log.debug("Analysing directory " + FileUtils.getFileName(directoryFile) + "...");
+            log.debug("Analysing directory " + FileUtils.getFileName(directoryFile) + "...");
         }
 
         // Build up the list of ImportableItems from the directory listing
@@ -171,12 +169,12 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
                 importStatus.incrementNumberOfUnreadableEntries();
                 continue;
             }
-            
+
             if (log.isTraceEnabled())
             {
-            	log.trace("Scanning file " + FileUtils.getFileName(file) + "...");
+                log.trace("Scanning file " + FileUtils.getFileName(file) + "...");
             }
-            
+
             if (Files.isReadable(file))
             {
                 try
@@ -191,10 +189,10 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
                     }
                     // mark file with invalid name as unreadable
                     importStatus.incrementNumberOfUnreadableEntries();
-                    
+
                     continue;
                 }
-                
+
                 if (isVersionFile(file))
                 {
                     addVersionFile(directory, result, file);
@@ -208,7 +206,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
                 else
                 {
                     boolean isDirectory = addParentFile(directory, result, file);
-                    
+
                     if (isDirectory)
                     {
                         importStatus.incrementNumberOfFoldersScanned();
@@ -223,7 +221,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
             {
                 if (log.isWarnEnabled())
                 {
-                	log.warn("Skipping unreadable file '" + FileUtils.getFileName(file) + "'.");
+                    log.warn("Skipping unreadable file '" + FileUtils.getFileName(file) + "'.");
                 }
 
                 importStatus.incrementNumberOfUnreadableEntries();
@@ -243,7 +241,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
                 iter.remove();
             }
         }
-        
+
         iter = result.getImportableDirectories().iterator();
         while (iter.hasNext())
         {
@@ -257,20 +255,20 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
 
         if (log.isDebugEnabled())
         {
-        	log.debug("Finished analysing directory " + FileUtils.getFileName(directoryFile) + ".");
+            log.debug("Finished analysing directory " + FileUtils.getFileName(directoryFile) + ".");
         }
 
         return result;
     }
-    
+
     private List<Path> listFiles(Path sourceDirectory, DirectoryStream.Filter<Path> filter)
     {
         List<Path> files = new ArrayList<Path>();
         try (DirectoryStream<Path> paths = (filter != null) ? Files.newDirectoryStream(sourceDirectory, filter) : Files.newDirectoryStream(sourceDirectory))
         {
-            for (Iterator<Path> it = paths.iterator(); it.hasNext();) 
+            for (Iterator<Path> it = paths.iterator(); it.hasNext();)
             {
-               files.add(it.next());
+                files.add(it.next());
             }
         }
         catch (IOException e)
@@ -286,12 +284,12 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         {
             return true;
         }
-        
+
         if (metadataLoader != null)
         {
             MetadataLoader.Metadata result = new MetadataLoader.Metadata();
             metadataLoader.loadMetadata(importableItem.getHeadRevision(), result);
-            
+
             Map<QName, Serializable> metadataProperties = result.getProperties();
             for (QName propertyName : metadataProperties.keySet())
             {
@@ -312,7 +310,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
                                 if (log.isWarnEnabled())
                                 {
                                     log.warn("Skipping file '" + FileUtils.getFileName(importableItem.getHeadRevision().getContentFile())
-                                       +"' with invalid metadata: '" + FileUtils.getFileName(importableItem.getHeadRevision().getMetadataFile()) + "'.", e);
+                                            + "' with invalid metadata: '" + FileUtils.getFileName(importableItem.getHeadRevision().getMetadataFile()) + "'.", e);
                                 }
                                 return false;
                             }
@@ -321,7 +319,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
                 }
             }
         }
-        
+
         return true;
     }
 
@@ -332,29 +330,28 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         return matcher.matches();
     }
 
-
     private boolean isMetadataFile(Path file)
     {
         boolean result = false;
-        
+
         if (metadataLoader != null)
         {
             String name = file.getFileName().toString();
             result = name.endsWith(MetadataLoader.METADATA_SUFFIX + metadataLoader.getMetadataFileExtension());
         }
-        
-        return(result);
+
+        return (result);
     }
 
     private void addVersionFile(ImportableItem parent, AnalysedDirectory analysedDirectory, Path versionFile)
     {
         Path parentContentFile = getParentOfVersionFile(versionFile);
-        boolean isContentVersion  = false;
+        boolean isContentVersion = false;
 
         if (isMetadataFile(parentContentFile))
         {
             parentContentFile = getParentOfMetadatafile(parentContentFile);
-            isContentVersion  = false;
+            isContentVersion = false;
         }
         else
         {
@@ -375,7 +372,6 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         }
     }
 
-
     private void addMetadataFile(ImportableItem parent, AnalysedDirectory analysedDirectory, Path metadataFile)
     {
         Path parentContentfile = getParentOfMetadatafile(metadataFile);
@@ -385,14 +381,13 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         importableItem.getHeadRevision().setMetadataFile(metadataFile);
     }
 
-
     private boolean addParentFile(ImportableItem parent, AnalysedDirectory analysedDirectory, Path contentFile)
     {
         ImportableItem importableItem = findOrCreateImportableItem(parent, analysedDirectory, contentFile);
 
         importableItem.getHeadRevision().setContentFile(contentFile);
-        
-        return(importableItem.getHeadRevision().getContentFileType() == FileType.DIRECTORY);
+
+        return (importableItem.getHeadRevision().getContentFileType() == FileType.DIRECTORY);
     }
 
     private ImportableItem findOrCreateImportableItem(ImportableItem parent, AnalysedDirectory analysedDirectory, Path contentFile)
@@ -405,15 +400,14 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
             result = new ImportableItem();
             result.setParent(parent);
             result.getHeadRevision().setContentFile(contentFile);
-            if(!shouldFilter(result))
+            if (!shouldFilter(result))
             {
-            	analysedDirectory.addImportableItem(result);
+                analysedDirectory.addImportableItem(result);
             }
         }
 
-        return(result);
+        return (result);
     }
-
 
     private ImportableItem findImportableItem(AnalysedDirectory analysedDirectory, Path contentFile)
     {
@@ -426,9 +420,8 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
 
         result = analysedDirectory.findImportableItem(contentFile);
 
-        return(result);
+        return (result);
     }
-
 
     private ImportableItem.VersionedContentAndMetadata findOrCreateVersionEntry(ImportableItem importableItem, int version)
     {
@@ -437,13 +430,12 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         if (result == null)
         {
             result = importableItem.new VersionedContentAndMetadata(version);
-            
+
             importableItem.addVersionEntry(result);
         }
 
         return (result);
     }
-
 
     private ImportableItem.VersionedContentAndMetadata findVersionEntry(ImportableItem importableItem, int version)
     {
@@ -461,9 +453,8 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
             }
         }
 
-        return(result);
+        return (result);
     }
-
 
     private int getVersionNumber(Path versionFile)
     {
@@ -488,9 +479,8 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
 
         result = Integer.parseInt(versionStr);
 
-        return(result);
+        return (result);
     }
-
 
     private Path getParentOfVersionFile(Path versionFile)
     {
@@ -504,10 +494,9 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         String parentFilename = versionFile.getFileName().toString().replaceFirst(VERSION_SUFFIX_REGEX, "");
 
         result = versionFile.getParent().resolve(parentFilename);
-        
-        return(result);
-    }
 
+        return (result);
+    }
 
     private Path getParentOfMetadatafile(Path metadataFile)
     {
@@ -523,7 +512,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
 
         result = metadataFile.getParent().resolve(contentName);
 
-        return(result);
+        return (result);
     }
 
 }

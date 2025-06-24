@@ -56,8 +56,7 @@ public class AspectIndexFilter extends AbstractIndexFilter
     public void init()
     {
         super.init();
-        initIgnoringPathsByCriterion(aspectsForIgnoringPathsString, aspectsForIgnoringPaths, new DefinitionExistChecker()
-        {
+        initIgnoringPathsByCriterion(aspectsForIgnoringPathsString, aspectsForIgnoringPaths, new DefinitionExistChecker() {
             @Override
             public boolean isDefinitionExists(QName qName)
             {
@@ -72,7 +71,7 @@ public class AspectIndexFilter extends AbstractIndexFilter
         {
             return false;
         }
-        
+
         if ((null != aspects) && !aspects.isEmpty())
         {
             for (QName aspectForIgnoringPaths : aspectsForIgnoringPaths)

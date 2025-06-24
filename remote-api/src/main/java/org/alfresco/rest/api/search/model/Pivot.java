@@ -25,11 +25,11 @@
  */
 package org.alfresco.rest.api.search.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Collections;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * POJO class representing Pivot
@@ -43,7 +43,7 @@ public class Pivot
     public Pivot(@JsonProperty("key") String key, @JsonProperty("pivots") List<Pivot> pivots)
     {
         this.key = key;
-        this.pivots = pivots == null? Collections.emptyList():pivots;
+        this.pivots = pivots == null ? Collections.emptyList() : pivots;
     }
 
     public String getKey()

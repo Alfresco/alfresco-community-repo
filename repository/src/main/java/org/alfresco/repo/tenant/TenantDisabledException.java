@@ -37,10 +37,10 @@ public class TenantDisabledException extends AlfrescoRuntimeException
     public static final String DISABLED_TENANT_MSG = "system.mt.disabled";
     private static final long serialVersionUID = 1L;
     private String tenantDomain;
-    
+
     public TenantDisabledException(String tenantDomain)
     {
-        super(DISABLED_TENANT_MSG, new Object[] { tenantDomain });
+        super(DISABLED_TENANT_MSG, new Object[]{tenantDomain});
         this.tenantDomain = tenantDomain;
     }
 

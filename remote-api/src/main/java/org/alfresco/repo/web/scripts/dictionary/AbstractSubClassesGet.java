@@ -32,14 +32,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Webscript to get the Sub-Classdefinitions using classfilter , namespacePrefix and name
@@ -151,16 +152,21 @@ public abstract class AbstractSubClassesGet extends DictionaryWebServiceBase
     }
 
     /**
-     * @param req - webscript request
-     * @param recursive - flag to get SubAspects or SubTypes recursively
+     * @param req
+     *            - webscript request
+     * @param recursive
+     *            - flag to get SubAspects or SubTypes recursively
      * @return collection of qualified names for subclasses
      */
     protected abstract Collection<QName> getQNameCollection(WebScriptRequest req, boolean recursive);
 
     /**
      * Throws WebScriptException if classname is invalid
-     * @param namespacePrefix - namespace prefix of a class
-     * @param name - localname of a class
+     * 
+     * @param namespacePrefix
+     *            - namespace prefix of a class
+     * @param name
+     *            - localname of a class
      */
     protected abstract void validateClassname(String namespacePrefix, String name);
 

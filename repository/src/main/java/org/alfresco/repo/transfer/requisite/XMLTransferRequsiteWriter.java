@@ -27,10 +27,6 @@ package org.alfresco.repo.transfer.requisite;
 
 import java.io.Writer;
 
-import org.alfresco.repo.transfer.TransferModel;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.io.OutputFormat;
@@ -38,18 +34,22 @@ import org.dom4j.io.XMLWriter;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import org.alfresco.repo.transfer.TransferModel;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+
 /**
  * Writes the transfer requsite out in XML format to the specified writer.
- *  
- * XMLTransferRequsiteWriter is a statefull object used for writing out a single transfer requsite 
- * file in XML format to the writer passed in via startTransferRequsite.
+ * 
+ * XMLTransferRequsiteWriter is a statefull object used for writing out a single transfer requsite file in XML format to the writer passed in via startTransferRequsite.
  *
  * @author Mark Rogers
  */
 public class XMLTransferRequsiteWriter implements TransferRequsiteWriter
 {
     private static final Log log = LogFactory.getLog(XMLTransferRequsiteWriter.class);
-    
+
     public XMLTransferRequsiteWriter(Writer out)
     {
         OutputFormat format = OutputFormat.createPrettyPrint();
@@ -81,8 +81,9 @@ public class XMLTransferRequsiteWriter implements TransferRequsiteWriter
             // Start Transfer Manifest // uri, name, prefix
             this.writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     RequsiteModel.LOCALNAME_TRANSFER_REQUSITE, PREFIX + ":"
-                                + RequsiteModel.LOCALNAME_TRANSFER_REQUSITE, EMPTY_ATTRIBUTES);
-        } 
+                            + RequsiteModel.LOCALNAME_TRANSFER_REQUSITE,
+                    EMPTY_ATTRIBUTES);
+        }
         catch (SAXException se)
         {
             log.debug("error", se);
@@ -99,7 +100,7 @@ public class XMLTransferRequsiteWriter implements TransferRequsiteWriter
             // End Transfer Manifest
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     RequsiteModel.LOCALNAME_TRANSFER_REQUSITE, PREFIX + ":"
-                                + RequsiteModel.LOCALNAME_TRANSFER_REQUSITE);
+                            + RequsiteModel.LOCALNAME_TRANSFER_REQUSITE);
             writer.endPrefixMapping(PREFIX);
 
             writer.endDocument();
@@ -122,12 +123,13 @@ public class XMLTransferRequsiteWriter implements TransferRequsiteWriter
 
             // Start Missing Content
             this.writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
-                RequsiteModel.LOCALNAME_ELEMENT_CONTENT, PREFIX + ":"
-                            + RequsiteModel.LOCALNAME_ELEMENT_CONTENT, attributes);
-        
+                    RequsiteModel.LOCALNAME_ELEMENT_CONTENT, PREFIX + ":"
+                            + RequsiteModel.LOCALNAME_ELEMENT_CONTENT,
+                    attributes);
+
             // Missing Content
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
-                RequsiteModel.LOCALNAME_ELEMENT_CONTENT, PREFIX + ":"
+                    RequsiteModel.LOCALNAME_ELEMENT_CONTENT, PREFIX + ":"
                             + RequsiteModel.LOCALNAME_ELEMENT_CONTENT);
         }
         catch (SAXException se)
@@ -136,5 +138,4 @@ public class XMLTransferRequsiteWriter implements TransferRequsiteWriter
         }
     }
 
- 
 }

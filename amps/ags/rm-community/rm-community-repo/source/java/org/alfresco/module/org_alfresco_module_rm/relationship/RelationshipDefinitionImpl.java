@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -50,9 +50,12 @@ public class RelationshipDefinitionImpl implements RelationshipDefinition
     /**
      * Constructor for creating a relationship definition
      *
-     * @param uniqueName The unique name of the relationship definition
-     * @param type The type of the relationship definition
-     * @param displayName The display name of the relationship definition
+     * @param uniqueName
+     *            The unique name of the relationship definition
+     * @param type
+     *            The type of the relationship definition
+     * @param displayName
+     *            The display name of the relationship definition
      */
     public RelationshipDefinitionImpl(String uniqueName, RelationshipType type, RelationshipDisplayName displayName)
     {
@@ -77,7 +80,8 @@ public class RelationshipDefinitionImpl implements RelationshipDefinition
     /**
      * Sets the name of the relationship definition
      *
-     * @param uniqueName The name of the relationship definition
+     * @param uniqueName
+     *            The name of the relationship definition
      */
     private void setUniqueName(String uniqueName)
     {
@@ -96,7 +100,8 @@ public class RelationshipDefinitionImpl implements RelationshipDefinition
     /**
      * Sets the type of the relationship definition
      *
-     * @param type The type of the relationship definition
+     * @param type
+     *            The type of the relationship definition
      */
     private void setType(RelationshipType type)
     {
@@ -115,7 +120,8 @@ public class RelationshipDefinitionImpl implements RelationshipDefinition
     /**
      * Sets the display name of the relationship definition
      *
-     * @param displayName The display name of the relationship definition
+     * @param displayName
+     *            The display name of the relationship definition
      */
     private void setDisplayName(RelationshipDisplayName displayName)
     {

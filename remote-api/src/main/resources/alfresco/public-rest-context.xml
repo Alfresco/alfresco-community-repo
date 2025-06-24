@@ -996,6 +996,25 @@
         </property>
     </bean>
 
+    <bean id="sizeDetailsImpl" class="org.alfresco.rest.api.impl.SizeDetailsImpl">
+        <constructor-arg name="nodes" ref="nodes" />
+        <constructor-arg name="nodeSizeDetailsService" ref="NodeSizeDetailsService" />
+    </bean>
+
+    <bean id="sizeDetails" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.SizeDetails</value>
+        </property>
+        <property name="target">
+            <ref bean="sizeDetailsImpl" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
     <bean class="org.alfresco.rest.api.rules.NodeRuleSettingsRelation">
         <property name="ruleSettings" ref="RuleSettings" />
     </bean>
@@ -1097,7 +1116,7 @@
         <property name="siteMembershipRequests" ref="SiteMembershipRequests" />
     </bean>
 
-    <bean class="org.alfresco.rest.api.people.PeopleEntityResource">
+    <bean id="peopleEntityResource" class="org.alfresco.rest.api.people.PeopleEntityResource">
         <property name="people" ref="People" />
     </bean>
 
@@ -1769,5 +1788,9 @@
                 <idref bean="legacyExceptionInterceptor" />
             </list>
         </property>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeSizeDetailsRelation">
+        <property name="sizeDetails" ref="sizeDetails" />
     </bean>
 </beans>

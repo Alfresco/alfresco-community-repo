@@ -25,13 +25,27 @@
  */
 package org.alfresco.repo.web.scripts.solr;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.web.scripts.content.StreamContent;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -40,24 +54,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
-
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
 
 /**
- * A web service to return the text content (transformed if required) of a node's
- * content property.
+ * A web service to return the text content (transformed if required) of a node's content property.
  * 
  * @since 4.0
  */
@@ -66,7 +65,7 @@ public class NodeContentGet extends StreamContent
     private static final String TRANSFORM_STATUS_HEADER = "X-Alfresco-transformStatus";
     private static final String TRANSFORM_EXCEPTION_HEADER = "X-Alfresco-transformException";
     private static final String TRANSFORM_DURATION_HEADER = "X-Alfresco-transformDuration";
-    
+
     private static final Log logger = LogFactory.getLog(NodeContentGet.class);
 
     /**
@@ -101,8 +100,10 @@ public class NodeContentGet extends StreamContent
 
     /**
      *
-     * @param req WebScriptRequest
-     * @param res WebScriptResponse
+     * @param req
+     *            WebScriptRequest
+     * @param res
+     *            WebScriptResponse
      * @throws IOException
      */
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
@@ -111,7 +112,7 @@ public class NodeContentGet extends StreamContent
         Exception transformException = null;
 
         String nodeIDString = req.getParameter("nodeId");
-        if(nodeIDString == null)
+        if (nodeIDString == null)
         {
             throw new WebScriptException("nodeID parameter is required for GetNodeContent");
         }
@@ -119,7 +120,7 @@ public class NodeContentGet extends StreamContent
 
         String propertyQName = req.getParameter("propertyQName");
         QName propertyName = null;
-        if(propertyQName == null)
+        if (propertyQName == null)
         {
             propertyName = ContentModel.PROP_CONTENT;
         }
@@ -128,7 +129,7 @@ public class NodeContentGet extends StreamContent
             propertyName = QName.createQName(propertyQName);
         }
         Pair<Long, NodeRef> pair = nodeDAO.getNodePair(nodeId);
-        if(pair == null)
+        if (pair == null)
         {
             // If the node does not exists we treat it as if it has no content
             // We could be trying to update the content of a node in the index that has been deleted.
@@ -138,15 +139,15 @@ public class NodeContentGet extends StreamContent
         NodeRef nodeRef = pair.getSecond();
 
         // check If-Modified-Since header and set Last-Modified header as appropriate
-        Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        Date modified = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
         // May be null - if so treat as just changed
-        if(modified == null)
+        if (modified == null)
         {
             modified = new Date();
         }
         long modifiedSince = -1;
         String modifiedSinceStr = req.getHeader("If-Modified-Since");
-        if(modifiedSinceStr != null)
+        if (modifiedSinceStr != null)
         {
             try
             {
@@ -173,7 +174,7 @@ public class NodeContentGet extends StreamContent
         }
 
         ContentReader reader = contentService.getReader(nodeRef, propertyName);
-        if(reader == null)
+        if (reader == null)
         {
             res.setStatus(HttpStatus.SC_NO_CONTENT);
             return;
@@ -203,7 +204,7 @@ public class NodeContentGet extends StreamContent
             transformException = e;
         }
 
-        if(transformException == null)
+        if (transformException == null)
         {
             // point the reader to the new-written content
             textReader = writer.getReader();
@@ -212,11 +213,11 @@ public class NodeContentGet extends StreamContent
             {
                 transformException = new ContentIOException(
                         "The transformation did not write any content, yet: \n"
-                        + "   temp writer:     " + writer);
+                                + "   temp writer:     " + writer);
             }
         }
 
-        if(transformException != null)
+        if (transformException != null)
         {
             res.setHeader(TRANSFORM_STATUS_HEADER, "transformFailed");
             res.setHeader(TRANSFORM_EXCEPTION_HEADER, transformException.getMessage());

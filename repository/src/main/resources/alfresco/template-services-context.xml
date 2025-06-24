@@ -172,7 +172,7 @@
         </property>
     </bean>
 
-    <bean id="testDocumentUrl" parent="baseTemplateImplementation" class="org.alfresco.repo.template.DocumentationURLMethod">
+    <bean id="documentationUrlExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.DocumentationURLMethod">
         <property name="extensionName">
             <value>documentationUrl</value>
         </property>

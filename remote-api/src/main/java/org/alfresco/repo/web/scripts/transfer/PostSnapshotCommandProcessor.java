@@ -27,15 +27,11 @@
 package org.alfresco.repo.web.scripts.transfer;
 
 import java.io.OutputStream;
-
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.alfresco.repo.transfer.TransferCommons;
-import org.alfresco.service.cmr.transfer.TransferException;
-import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.apache.commons.fileupload2.core.FileItemInput;
 import org.apache.commons.fileupload2.core.FileItemInputIterator;
-import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
@@ -43,6 +39,10 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+
+import org.alfresco.repo.transfer.TransferCommons;
+import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferReceiver;
 
 /**
  * This command processor is used to receive the snapshot for a given transfer.
@@ -53,17 +53,17 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest
 public class PostSnapshotCommandProcessor implements CommandProcessor
 {
     private TransferReceiver receiver;
-    
+
     private static Log logger = LogFactory.getLog(PostSnapshotCommandProcessor.class);
 
     private static final String MSG_CAUGHT_UNEXPECTED_EXCEPTION = "transfer_service.receiver.caught_unexpected_exception";
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * 
+     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     public int process(WebScriptRequest req, WebScriptResponse resp)
     {
-        
+
         int result = Status.STATUS_OK;
         // Unwrap to a WebScriptServletRequest if we have one
         WebScriptServletRequest webScriptServletRequest = null;
@@ -83,45 +83,44 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
             {
                 current = null;
             }
-        }
-        while (current != null);
-        if (webScriptServletRequest == null) 
+        } while (current != null);
+        if (webScriptServletRequest == null)
         {
             logger.debug("bad request, not assignable from");
             resp.setStatus(Status.STATUS_BAD_REQUEST);
             return Status.STATUS_BAD_REQUEST;
         }
-                
-        //We can't use the WebScriptRequest version of getParameter, since that may cause the content stream 
-        //to be parsed. Get hold of the raw HttpServletRequest and work with that.
+
+        // We can't use the WebScriptRequest version of getParameter, since that may cause the content stream
+        // to be parsed. Get hold of the raw HttpServletRequest and work with that.
         HttpServletRequest servletRequest = webScriptServletRequest.getHttpServletRequest();
-        
-        //Read the transfer id from the request
+
+        // Read the transfer id from the request
         String transferId = servletRequest.getParameter("transferId");
-        
+
         if ((transferId == null) || !JakartaServletFileUpload.isMultipartContent(servletRequest))
         {
             logger.debug("bad request, not multipart");
             resp.setStatus(Status.STATUS_BAD_REQUEST);
             return Status.STATUS_BAD_REQUEST;
         }
-        
-        try 
+
+        try
         {
             logger.debug("about to upload manifest file");
 
             JakartaServletFileUpload upload = new JakartaServletFileUpload();
             FileItemInputIterator iter = upload.getItemIterator(servletRequest);
-            while (iter.hasNext()) 
+            while (iter.hasNext())
             {
                 FileItemInput item = iter.next();
-                if (!item.isFormField() && TransferCommons.PART_NAME_MANIFEST.equals(item.getFieldName())) 
+                if (!item.isFormField() && TransferCommons.PART_NAME_MANIFEST.equals(item.getFieldName()))
                 {
                     logger.debug("got manifest file");
                     receiver.saveSnapshot(transferId, item.getInputStream());
                 }
             }
-          
+
             logger.debug("success");
             resp.setStatus(Status.STATUS_OK);
 
@@ -133,10 +132,10 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
                 receiver.generateRequsite(transferId, out);
             }
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             logger.debug("exception caught", ex);
-            if(transferId != null)
+            if (transferId != null)
             {
                 logger.debug("ending transfer", ex);
                 receiver.end(transferId);
@@ -151,7 +150,8 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
     }
 
     /**
-     * @param receiver the receiver to set
+     * @param receiver
+     *            the receiver to set
      */
     public void setReceiver(TransferReceiver receiver)
     {

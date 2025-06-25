@@ -28,11 +28,9 @@ package org.alfresco.repo.web.scripts.transfer;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.alfresco.service.cmr.transfer.TransferException;
-import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.apache.commons.fileupload2.core.FileItemInput;
 import org.apache.commons.fileupload2.core.FileItemInputIterator;
-import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
@@ -40,6 +38,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+
+import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferReceiver;
 
 /**
  * This command processor is used to receive one or more content files for a given transfer.
@@ -50,9 +51,9 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest
 public class PostContentCommandProcessor implements CommandProcessor
 {
     private TransferReceiver receiver;
-    
+
     private static final String MSG_CAUGHT_UNEXPECTED_EXCEPTION = "transfer_service.receiver.caught_unexpected_exception";
-    
+
     private static Log logger = LogFactory.getLog(PostContentCommandProcessor.class);
 
     /**
@@ -64,12 +65,9 @@ public class PostContentCommandProcessor implements CommandProcessor
         this.receiver = receiver;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco.web.scripts.WebScriptRequest,
-     * org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     public int process(WebScriptRequest req, WebScriptResponse resp)
     {
         logger.debug("post content start");
@@ -91,8 +89,7 @@ public class PostContentCommandProcessor implements CommandProcessor
             {
                 current = null;
             }
-        }
-        while (current != null);
+        } while (current != null);
         if (webScriptServletRequest == null)
         {
             resp.setStatus(Status.STATUS_BAD_REQUEST);
@@ -101,7 +98,7 @@ public class PostContentCommandProcessor implements CommandProcessor
 
         HttpServletRequest servletRequest = webScriptServletRequest.getHttpServletRequest();
 
-        //Read the transfer id from the request
+        // Read the transfer id from the request
         String transferId = servletRequest.getParameter("transferId");
 
         if ((transferId == null) || !JakartaServletFileUpload.isMultipartContent(servletRequest))
@@ -124,34 +121,34 @@ public class PostContentCommandProcessor implements CommandProcessor
                     logger.debug("got content Mime Part : " + name);
                     receiver.saveContent(transferId, item.getName(), item.getInputStream());
                 }
-            }            
-            
-//            WebScriptServletRequest alfRequest = (WebScriptServletRequest)req;
-//            String[] names = alfRequest.getParameterNames();
-//            for(String name : names)
-//            {
-//                FormField item = alfRequest.getFileField(name);
-//                
-//                if(item != null)
-//                {
-//                    logger.debug("got content Mime Part : " + name);
-//                    receiver.saveContent(transferId, item.getName(), item.getInputStream());
-//                }
-//                else
-//                {
-//                    //TODO - should this be an exception?
-//                    logger.debug("Unable to get content for Mime Part : " + name);
-//                }
-//            }
-            
+            }
+
+            // WebScriptServletRequest alfRequest = (WebScriptServletRequest)req;
+            // String[] names = alfRequest.getParameterNames();
+            // for(String name : names)
+            // {
+            // FormField item = alfRequest.getFileField(name);
+            //
+            // if(item != null)
+            // {
+            // logger.debug("got content Mime Part : " + name);
+            // receiver.saveContent(transferId, item.getName(), item.getInputStream());
+            // }
+            // else
+            // {
+            // //TODO - should this be an exception?
+            // logger.debug("Unable to get content for Mime Part : " + name);
+            // }
+            // }
+
             logger.debug("success");
-            
+
             resp.setStatus(Status.STATUS_OK);
-        } 
+        }
         catch (Exception ex)
         {
             logger.debug("exception caught", ex);
-            if(transferId != null)
+            if (transferId != null)
             {
                 logger.debug("ending transfer", ex);
                 receiver.end(transferId);

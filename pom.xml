@@ -63,7 +63,7 @@
         <dependency.jackson.version>2.17.2</dependency.jackson.version>
         <dependency.cxf.version>4.1.0</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
-        <dependency.webscripts.version>9.4</dependency.webscripts.version>
+        <dependency.webscripts.version>10.2</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.78.1</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.14.1</dependency.mockito-core.version>
         <dependency.assertj.version>3.26.3</dependency.assertj.version>
@@ -439,8 +439,8 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
-                <artifactId>commons-fileupload2-jakarta</artifactId>
-                <version>2.0.0-M1</version>
+                <artifactId>commons-fileupload2-jakarta-servlet6</artifactId>
+                <version>2.0.0-M4</version>
             </dependency>
             <dependency>
                 <groupId>commons-net</groupId>

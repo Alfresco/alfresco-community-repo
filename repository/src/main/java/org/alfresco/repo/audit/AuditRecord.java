@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2024 Alfresco Software Limited
+ * Copyright (C) 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,10 +25,10 @@
  */
 package org.alfresco.repo.audit;
 
-import org.alfresco.repo.event.v1.model.UserInfo;
-
 import java.time.ZonedDateTime;
 import java.util.Map;
+
+import org.alfresco.repo.event.v1.model.UserInfo;
 
 public class AuditRecord
 {
@@ -127,4 +127,3 @@ public class AuditRecord
     }
 
 }
-

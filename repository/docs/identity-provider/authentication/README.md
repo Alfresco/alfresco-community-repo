@@ -27,7 +27,7 @@ to integrate with a number of external Authentication providers including
   * https://github.com/Alfresco/alfresco-data-model/tree/master/src/main/java/org/alfresco/repo/security/authentication
 * License: LGPL
 * Issue Tracker Link: https://issues.alfresco.com/jira/issues/?jql=project%3DREPO
-* Documentation Link: https://support.hyland.com/r/Alfresco/Alfresco-Content-Services-Community-Edition/23.4/Alfresco-Content-Services-Community-Edition/Administer/Manage-Security/Authentication-and-sync
+* Documentation Link: https://support.hyland.com/access?dita:id=byj1720776091160&vrm_version=25.2&component=Alfresco%20Content%20Services%20Community%20Edition
 * Contribution Model: Alfresco Open Source
 ***
 

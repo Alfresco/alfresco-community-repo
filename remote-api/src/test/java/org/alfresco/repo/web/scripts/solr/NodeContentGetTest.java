@@ -56,7 +56,7 @@ public class NodeContentGetTest extends AbstractSingleNetworkSiteTest
     public void before() throws Exception
     {
         super.setup();
-        repoHttpClient = new RepoHttpClient();
+        // repoHttpClient = new RepoHttpClient();
 
         // System.setProperty("localTransform.core-aio.url", "http://localhost:8090/");
         // System.setProperty("transform.service.enabled", "false");

@@ -34,9 +34,9 @@ jobs:
   prepare:
     name: "Prepare"
     runs-on: ubuntu-latest
-#    if: >
-#      !contains(github.event.head_commit.message, '[skip tests]') &&
-#      !contains(github.event.head_commit.message, '[force')
+    if: >
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
     steps:
       - uses: actions/checkout@v4
         with:

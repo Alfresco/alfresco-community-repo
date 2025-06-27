@@ -27,9 +27,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.io.File;
-import java.net.URL;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,28 +41,23 @@ import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 
-//@RunWith(SpringRunner.class)
-//@ContextConfiguration({"classpath:alfresco/application-context.xml"})
-//@ContextCustomizerFactories(factories = {}, mergeMode = ContextCustomizerFactories.MergeMode.REPLACE_DEFAULTS)
 public class NodeContentGetTest extends AbstractSingleNetworkSiteTest
 {
 
-    private final URL TEST_FILE_URL = NodeContentGetTest.class.getClassLoader().getResource("publicapi/upload/babekyrtso.pdf");
     private final String TEST_FILE_NAME = "testFile.pdf";
     private final String SEARCH_TERM = "babekyrtso";
     private RepoHttpClient repoHttpClient;
 
     @Before
-    public void before() throws Exception
+    public void setup() throws Exception
     {
         super.setup();
-        // repoHttpClient = new RepoHttpClient();
+    }
 
-        // System.setProperty("localTransform.core-aio.url", "http://localhost:8090/");
-        // System.setProperty("transform.service.enabled", "false");
-        // System.setProperty("local.transform.service.enabled", "true");
-        // System.setProperty("transformer.strict.mimetype.check", "true");
-        // System.setProperty("content.transformer.retryOn.different.mimetype", "true");
+    @After
+    public void tearDown() throws Exception
+    {
+        super.tearDown();
     }
 
     @Test
@@ -70,6 +65,7 @@ public class NodeContentGetTest extends AbstractSingleNetworkSiteTest
     {
 
         // repoHttpClient.uploadFile(TEST_FILE_URL,TEST_FILE_NAME);
+
         setRequestContext(user1);
         String fileName = "babekyrtso.pdf";
         String term = "babekyrtso";

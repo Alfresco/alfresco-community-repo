@@ -232,7 +232,7 @@ jobs:
   remote_api_node_content_test_suites:
     name: Remote-api - ${{ matrix.testSuite }}
     runs-on: ubuntu-latest
-    needs: [ prepare ]
+#    needs: [ prepare ]
     if: >
       (github.ref_name == 'fix/ACS-9788-nodecontent-tescase')
     strategy:

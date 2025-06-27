@@ -199,8 +199,8 @@ jobs:
         include:
 #          - testSuite: AppContext01TestSuite
 #            compose-profile: default
-#          - testSuite: AppContext02TestSuite
-#            compose-profile: with-transform-core-aio
+          - testSuite: AppContext02TestSuite
+            compose-profile: with-transform-core-aio
 #          - testSuite: AppContext03TestSuite
 #            compose-profile: with-transform-core-aio
 #          - testSuite: AppContext04TestSuite
@@ -208,7 +208,7 @@ jobs:
 #          - testSuite: AppContextExtraTestSuite
 #            compose-profile: default
           - testSuite: NodeContentTestSuite
-            compose-profile: default
+            compose-profile: with-transform-core-aio
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:

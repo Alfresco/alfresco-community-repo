@@ -208,7 +208,7 @@ jobs:
 #          - testSuite: AppContextExtraTestSuite
 #            compose-profile: default
           - testSuite: NodeContentTestSuite
-            compose-profile: with-transform-core-aio
+            compose-profile: default
             mvn-options: "-Dindex.subsystem.name=solr6"
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true

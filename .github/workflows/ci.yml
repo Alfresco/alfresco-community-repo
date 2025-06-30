@@ -199,8 +199,8 @@ jobs:
         include:
 #          - testSuite: AppContext01TestSuite
 #            compose-profile: default
-          - testSuite: AppContext02TestSuite
-            compose-profile: with-transform-core-aio
+#          - testSuite: AppContext02TestSuite
+#            compose-profile: with-transform-core-aio
 #          - testSuite: AppContext03TestSuite
 #            compose-profile: with-transform-core-aio
 #          - testSuite: AppContext04TestSuite

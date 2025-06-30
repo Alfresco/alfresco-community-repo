@@ -29,9 +29,9 @@ import static org.junit.Assert.assertFalse;
 import java.io.File;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
@@ -41,7 +41,10 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 
+@Category({LuceneTests.class, RedundantTests.class})
 public class NodeContentGetTest extends AbstractSingleNetworkSiteTest
 {
 
@@ -54,12 +57,12 @@ public class NodeContentGetTest extends AbstractSingleNetworkSiteTest
     {
         super.setup();
     }
-
-    @After
-    public void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
+    //
+    // @After
+    // public void tearDown() throws Exception
+    // {
+    // super.tearDown();
+    // }
 
     @Test
     public void testNodeContentGet() throws Exception

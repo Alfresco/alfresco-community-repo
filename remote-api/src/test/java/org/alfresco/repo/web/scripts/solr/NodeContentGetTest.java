@@ -29,6 +29,7 @@ import static org.junit.Assert.assertFalse;
 import java.io.File;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -57,12 +58,12 @@ public class NodeContentGetTest extends AbstractSingleNetworkSiteTest
     {
         super.setup();
     }
-    //
-    // @After
-    // public void tearDown() throws Exception
-    // {
-    // super.tearDown();
-    // }
+
+    @After
+    public void tearDown() throws Exception
+    {
+        super.tearDown();
+    }
 
     @Test
     public void testNodeContentGet() throws Exception

@@ -32,7 +32,6 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
@@ -42,16 +41,12 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.util.testing.category.LuceneTests;
-import org.alfresco.util.testing.category.RedundantTests;
 
-@Category({LuceneTests.class, RedundantTests.class})
 public class NodeContentGetTest extends AbstractSingleNetworkSiteTest
 {
 
     private final String TEST_FILE_NAME = "testFile.pdf";
     private final String SEARCH_TERM = "babekyrtso";
-    private RepoHttpClient repoHttpClient;
 
     @Before
     public void setup() throws Exception

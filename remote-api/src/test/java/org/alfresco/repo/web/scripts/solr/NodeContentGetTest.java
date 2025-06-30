@@ -37,6 +37,7 @@ import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
+import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
@@ -76,6 +77,8 @@ public class NodeContentGetTest extends AbstractSingleNetworkSiteTest
         MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
 
         HttpResponse uploadResponse = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(uploadResponse.getJsonResponse(), Document.class);
+        assertEquals(TEST_FILE_NAME, document.getName());
 
         String searchJson = "{\"query\":{\"language\":\"afts\",\"query\":\"" + term + "\"}}";
         HttpResponse response = post("search", searchJson, null, null, "search", 200);

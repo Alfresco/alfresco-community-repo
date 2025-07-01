@@ -489,41 +489,41 @@ jobs:
   tas_tests:
     name: ${{ matrix.test-name }}
     runs-on: ubuntu-latest
-#    needs: [prepare]
-#    if: >
-#      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-#      !contains(github.event.head_commit.message, '[skip tas]')) ||
-#      contains(github.event.head_commit.message, '[tas]')) &&
-#      !contains(github.event.head_commit.message, '[skip tests]') &&
-#      !contains(github.event.head_commit.message, '[force')
+    needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      !contains(github.event.head_commit.message, '[skip tas]')) ||
+      contains(github.event.head_commit.message, '[tas]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
     strategy:
       fail-fast: false
       matrix:
         include:
-#          - test-name: "REST API TAS tests part1"
-#            pom-dir: tas-restapi
-#            test-profile: run-restapi-part1
+          - test-name: "REST API TAS tests part1"
+            pom-dir: tas-restapi
+            test-profile: run-restapi-part1
           - test-name: "REST API TAS tests part2"
             pom-dir: tas-restapi
             test-profile: run-restapi-part2
-#          - test-name: "REST API TAS tests part3"
-#            pom-dir: tas-restapi
-#            test-profile: run-restapi-part3
-#          - test-name: "CMIS TAS tests - BROWSER binding"
-#            pom-dir: tas-cmis
-#            test-profile: run-cmis-browser
-#          - test-name: "CMIS TAS tests - ATOM binding"
-#            pom-dir: tas-cmis
-#            test-profile: run-cmis-atom
-#          - test-name: "CMIS TAS tests - WEBSERVICES binding"
-#            pom-dir: tas-cmis
-#            test-profile: run-cmis-webservices
-#          - test-name: "Email TAS tests"
-#            pom-dir: tas-email
-#          - test-name: "WebDAV TAS tests"
-#            pom-dir: tas-webdav
-#          - test-name: "Integration TAS tests"
-#            pom-dir: tas-integration
+          - test-name: "REST API TAS tests part3"
+            pom-dir: tas-restapi
+            test-profile: run-restapi-part3
+          - test-name: "CMIS TAS tests - BROWSER binding"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-browser
+          - test-name: "CMIS TAS tests - ATOM binding"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-atom
+          - test-name: "CMIS TAS tests - WEBSERVICES binding"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-webservices
+          - test-name: "Email TAS tests"
+            pom-dir: tas-email
+          - test-name: "WebDAV TAS tests"
+            pom-dir: tas-webdav
+          - test-name: "Integration TAS tests"
+            pom-dir: tas-integration
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:

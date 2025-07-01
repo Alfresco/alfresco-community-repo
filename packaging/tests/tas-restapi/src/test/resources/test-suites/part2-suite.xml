@@ -8,13 +8,16 @@
 	</listeners>
 
     <test name="Part2">
-        <packages>
-            <package name="org.alfresco.rest.groups.*"/>
-            <package name="org.alfresco.rest.misc.*"/>
-            <package name="org.alfresco.rest.nodes.*"/>
-            <package name="org.alfresco.rest.people.*"/>
-            <package name="org.alfresco.rest.queries.*"/>
-            <package name="org.alfresco.rest.ratings.*"/>
-        </packages>
+<!--        <packages>-->
+<!--            <package name="org.alfresco.rest.groups.*"/>-->
+<!--            <package name="org.alfresco.rest.misc.*"/>-->
+<!--            <package name="org.alfresco.rest.nodes.*"/>-->
+<!--            <package name="org.alfresco.rest.people.*"/>-->
+<!--            <package name="org.alfresco.rest.queries.*"/>-->
+<!--            <package name="org.alfresco.rest.ratings.*"/>-->
+<!--        </packages>-->
+        <classes>
+            <class name="org.alfresco.rest.content.NodeContentTest"/>
+        </classes>
     </test>
 </suite>

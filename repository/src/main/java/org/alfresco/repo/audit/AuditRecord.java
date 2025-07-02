@@ -28,23 +28,17 @@ package org.alfresco.repo.audit;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
-import org.alfresco.repo.event.v1.model.UserInfo;
-
 public class AuditRecord
 {
     private final boolean inTransaction;
-    private final String auditedActionType;
     private final ZonedDateTime createdAt;
-    private final UserInfo userInfo;
     private final Map<String, ?> auditData;
 
     public AuditRecord(Builder builder)
     {
         this.inTransaction = builder.inTransaction;
-        this.auditedActionType = builder.auditedActionType;
-        this.userInfo = builder.userInfo;
         this.auditData = builder.auditData;
-        this.createdAt = builder.createdAt;
+        this.createdAt = ZonedDateTime.now();
     }
 
     public boolean isInTransaction()
@@ -52,19 +46,9 @@ public class AuditRecord
         return inTransaction;
     }
 
-    public String getAuditedActionType()
-    {
-        return auditedActionType;
-    }
-
     public ZonedDateTime getCreatedAt()
     {
         return createdAt;
-    }
-
-    public UserInfo getUserInfo()
-    {
-        return userInfo;
     }
 
     public Map<String, ?> getAuditData()
@@ -79,16 +63,8 @@ public class AuditRecord
 
     public static class Builder
     {
-        public static final String BASIC_ACTION = "basic_action";
-        public static final String LOGIN = "login";
-        public static final String DOWNLOAD_CONTENT = "download-content";
-        public static final String API_CALL = "api-call";
-
         private boolean inTransaction;
-        private String auditedActionType;
-        private UserInfo userInfo;
         private Map<String, ?> auditData;
-        private ZonedDateTime createdAt;
 
         public Builder setInTransaction(boolean inTransaction)
         {
@@ -96,27 +72,9 @@ public class AuditRecord
             return this;
         }
 
-        public Builder setAuditedActionType(String auditedActionType)
-        {
-            this.auditedActionType = auditedActionType;
-            return this;
-        }
-
-        public Builder setUserInfo(UserInfo userInfo)
-        {
-            this.userInfo = userInfo;
-            return this;
-        }
-
         public Builder setAuditData(Map<String, ?> auditData)
         {
             this.auditData = auditData;
-            return this;
-        }
-
-        public Builder setCreatedAt(ZonedDateTime createdAt)
-        {
-            this.createdAt = createdAt;
             return this;
         }
 

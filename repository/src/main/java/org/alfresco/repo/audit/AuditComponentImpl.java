@@ -82,6 +82,7 @@ public class AuditComponentImpl implements AuditComponent
     private TransactionService transactionService;
     private AuditFilter auditFilter;
     private UserAuditFilter userAuditFilter;
+    private AuditRecordReporter auditRecordReporter;
 
     /**
      * Default constructor
@@ -138,6 +139,11 @@ public class AuditComponentImpl implements AuditComponent
     public void setUserAuditFilter(UserAuditFilter userAuditFilter)
     {
         this.userAuditFilter = userAuditFilter;
+    }
+
+    public void setAuditRecordReporter(AuditRecordReporter auditRecordReporter)
+    {
+        this.auditRecordReporter = auditRecordReporter;
     }
 
     /**
@@ -599,14 +605,18 @@ public class AuditComponentImpl implements AuditComponent
             RetryingTransactionCallback<Map<String, Serializable>> callback = new RetryingTransactionCallback<Map<String, Serializable>>() {
                 public Map<String, Serializable> execute() throws Throwable
                 {
-                    return recordAuditValuesImpl(mappedValues);
+                    Map<String, Serializable> recordedAuditValues = recordAuditValuesImpl(mappedValues);
+                    auditRecordReporter.reportAuditRecord(createAuditRecord(recordedAuditValues, true));
+                    return recordedAuditValues;
                 }
             };
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setForceWritable(true);
             return txnHelper.doInTransaction(callback, false, true);
         case TXN_READ_WRITE:
-            return recordAuditValuesImpl(mappedValues);
+            Map<String, Serializable> recordedAuditValues = recordAuditValuesImpl(mappedValues);
+            auditRecordReporter.reportAuditRecord(createAuditRecord(recordedAuditValues, true));
+            return recordedAuditValues;
         default:
             throw new IllegalStateException("Unknown txn state: " + txnState);
         }
@@ -923,6 +933,14 @@ public class AuditComponentImpl implements AuditComponent
         }
         // Done
         return newData;
+    }
+
+    private AuditRecord createAuditRecord(Map<String, ?> auditData, boolean inTransaction)
+    {
+        AuditRecord.Builder builder = new AuditRecord.Builder();
+        builder.setAuditData(auditData);
+        builder.setInTransaction(inTransaction);
+        return builder.build();
     }
 
     /**

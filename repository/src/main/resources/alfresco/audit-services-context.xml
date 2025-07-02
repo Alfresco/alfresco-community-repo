@@ -37,6 +37,7 @@
                 <property name="properties" ref="global-properties" />
             </bean>
         </property>
+        <property name="auditRecordReporter" ref="auditRecordReporter"/>
     </bean>
 
     <!-- User Audit Filter -->

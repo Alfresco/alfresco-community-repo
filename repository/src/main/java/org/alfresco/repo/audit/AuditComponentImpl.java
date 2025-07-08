@@ -48,7 +48,6 @@ import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -73,8 +72,8 @@ public class AuditComponentImpl implements AuditComponent
 {
     private static final String INBOUND_LOGGER = "org.alfresco.repo.audit.inbound";
 
-    private static Log logger = LogFactory.getLog(AuditComponentImpl.class);
-    private static Log loggerInbound = LogFactory.getLog(INBOUND_LOGGER);
+    private static final Log logger = LogFactory.getLog(AuditComponentImpl.class);
+    private static final Log loggerInbound = LogFactory.getLog(INBOUND_LOGGER);
 
     private AuditModelRegistryImpl auditModelRegistry;
     private PropertyValueDAO propertyValueDAO;
@@ -221,7 +220,7 @@ public class AuditComponentImpl implements AuditComponent
     public int deleteAuditEntries(List<Long> auditEntryIds)
     {
         // Shortcut, if necessary
-        if (auditEntryIds.size() == 0)
+        if (auditEntryIds.isEmpty())
         {
             return 0;
         }
@@ -240,7 +239,7 @@ public class AuditComponentImpl implements AuditComponent
         {
             Long disabledPathsId = application.getDisabledPathsId();
             Set<String> disabledPaths = (Set<String>) propertyValueDAO.getPropertyById(disabledPathsId);
-            return new HashSet<String>(disabledPaths);
+            return new HashSet<>(disabledPaths);
         }
         catch (Throwable e)
         {
@@ -315,7 +314,7 @@ public class AuditComponentImpl implements AuditComponent
     {
         PathMapper pathMapper = auditModelRegistry.getAuditPathMapper();
         Set<String> mappedPaths = pathMapper.getMappedPathsWithPartialMatch(path);
-        return loggerInbound.isDebugEnabled() || mappedPaths.size() > 0;
+        return loggerInbound.isDebugEnabled() || !mappedPaths.isEmpty();
     }
 
     /**
@@ -352,7 +351,7 @@ public class AuditComponentImpl implements AuditComponent
 
         // Check if there are any entries that match or supercede the given path
         String disablingPath = null;
-        ;
+
         for (String disabledPath : disabledPaths)
         {
             if (path.startsWith(disabledPath))
@@ -579,7 +578,7 @@ public class AuditComponentImpl implements AuditComponent
         }
 
         // Build the key paths using the session root path
-        Map<String, Serializable> pathedValues = new HashMap<String, Serializable>(values.size() * 2);
+        Map<String, Serializable> pathedValues = new HashMap<>(values.size() * 2);
         for (Map.Entry<String, Serializable> entry : values.entrySet())
         {
             String pathElement = entry.getKey();
@@ -602,13 +601,10 @@ public class AuditComponentImpl implements AuditComponent
         case TXN_NONE:
         case TXN_READ_ONLY:
             // New transaction
-            RetryingTransactionCallback<Map<String, Serializable>> callback = new RetryingTransactionCallback<Map<String, Serializable>>() {
-                public Map<String, Serializable> execute() throws Throwable
-                {
-                    Map<String, Serializable> recordedAuditValues = recordAuditValuesImpl(mappedValues);
-                    auditRecordReporter.reportAuditRecord(createAuditRecord(recordedAuditValues, true));
-                    return recordedAuditValues;
-                }
+            RetryingTransactionCallback<Map<String, Serializable>> callback = () -> {
+                Map<String, Serializable> recordedAuditValues = recordAuditValuesImpl(mappedValues);
+                auditRecordReporter.reportAuditRecord(createAuditRecord(recordedAuditValues, true));
+                return recordedAuditValues;
             };
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setForceWritable(true);
@@ -628,7 +624,7 @@ public class AuditComponentImpl implements AuditComponent
     public Map<String, Serializable> recordAuditValuesImpl(Map<String, Serializable> mappedValues)
     {
         // Group the values by root path
-        Map<String, Map<String, Serializable>> mappedValuesByRootKey = new HashMap<String, Map<String, Serializable>>();
+        Map<String, Map<String, Serializable>> mappedValuesByRootKey = new HashMap<>();
         for (Map.Entry<String, Serializable> entry : mappedValues.entrySet())
         {
             String path = entry.getKey();
@@ -636,7 +632,7 @@ public class AuditComponentImpl implements AuditComponent
             Map<String, Serializable> rootKeyMappedValues = mappedValuesByRootKey.get(rootKey);
             if (rootKeyMappedValues == null)
             {
-                rootKeyMappedValues = new HashMap<String, Serializable>(7);
+                rootKeyMappedValues = new HashMap<>(7);
                 mappedValuesByRootKey.put(rootKey, rootKeyMappedValues);
             }
             rootKeyMappedValues.put(path, entry.getValue());
@@ -704,7 +700,7 @@ public class AuditComponentImpl implements AuditComponent
         }
 
         // Check if there is anything to audit
-        if (values.size() == 0)
+        if (values.isEmpty())
         {
             if (logger.isDebugEnabled())
             {
@@ -737,12 +733,7 @@ public class AuditComponentImpl implements AuditComponent
         Map<String, Serializable> auditData = generateData(generators);
 
         // Now extract values
-        Map<String, Serializable> extractedData = AuthenticationUtil.runAs(new RunAsWork<Map<String, Serializable>>() {
-            public Map<String, Serializable> doWork() throws Exception
-            {
-                return extractData(application, values);
-            }
-        }, AuthenticationUtil.getSystemUserName());
+        Map<String, Serializable> extractedData = AuthenticationUtil.runAs(() -> extractData(application, values), AuthenticationUtil.getSystemUserName());
 
         // Combine extracted and generated values (extracted data takes precedence)
         auditData.putAll(extractedData);
@@ -910,7 +901,7 @@ public class AuditComponentImpl implements AuditComponent
      */
     private Map<String, Serializable> generateData(Map<String, DataGenerator> generators)
     {
-        Map<String, Serializable> newData = new HashMap<String, Serializable>(generators.size() + 5);
+        Map<String, Serializable> newData = new HashMap<>(generators.size() + 5);
         for (Map.Entry<String, DataGenerator> entry : generators.entrySet())
         {
             String path = entry.getKey();
@@ -937,8 +928,7 @@ public class AuditComponentImpl implements AuditComponent
 
     private AuditRecord createAuditRecord(Map<String, ?> auditData, boolean inTransaction)
     {
-        AuditRecord.Builder builder = new AuditRecord.Builder();
-        builder.setAuditData(auditData);
+        AuditRecord.Builder builder = AuditRecordUtils.generateAuditRecordBuilder(auditData);
         builder.setInTransaction(inTransaction);
         return builder.build();
     }

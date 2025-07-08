@@ -31,11 +31,13 @@ import java.util.Map;
 public class AuditRecord
 {
     private final boolean inTransaction;
+    private final String auditApplicationId;
     private final ZonedDateTime createdAt;
     private final Map<String, ?> auditData;
 
     public AuditRecord(Builder builder)
     {
+        this.auditApplicationId = builder.auditApplicationId;
         this.inTransaction = builder.inTransaction;
         this.auditData = builder.auditData;
         this.createdAt = ZonedDateTime.now();
@@ -44,6 +46,11 @@ public class AuditRecord
     public boolean isInTransaction()
     {
         return inTransaction;
+    }
+
+    public String getAuditApplicationId()
+    {
+        return auditApplicationId;
     }
 
     public ZonedDateTime getCreatedAt()
@@ -63,8 +70,15 @@ public class AuditRecord
 
     public static class Builder
     {
+        private String auditApplicationId;
         private boolean inTransaction;
         private Map<String, ?> auditData;
+
+        public Builder setAuditApplicationId(String auditApplicationId)
+        {
+            this.auditApplicationId = auditApplicationId;
+            return this;
+        }
 
         public Builder setInTransaction(boolean inTransaction)
         {

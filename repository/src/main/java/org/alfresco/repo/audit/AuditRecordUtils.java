@@ -28,14 +28,13 @@ package org.alfresco.repo.audit;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Objects;
 
 public class AuditRecordUtils
 {
     /**
-     * This method will generate {@link AuditRecord#builder()} from provided structured audit data. Provided data will be translated from `key - value` structure to json structure. Generated builder will be preloaded with {@link AuditRecord#auditApplicationId} and {@link AuditRecord#auditData}
-     *
+     * This method will generate {@link AuditRecord#builder()} from provided flat audit data. Provided data will be translated from `key - value` structure to json structure. Generated builder will be preloaded with {@link AuditRecord#auditApplicationId} and {@link AuditRecord#auditData}. This method splits key by `/` and maps its value to the nested json as a {@link AuditRecord#auditData}. In addition, it extracts root from key as {@link AuditRecord#auditApplicationId}.
+     * 
      * @param data
      *            represent `key - value` structured map that contains audit data.
      * @return preloaded {@link AuditRecord#builder()}.
@@ -44,21 +43,28 @@ public class AuditRecordUtils
     public static AuditRecord.Builder generateAuditRecordBuilder(Map<String, ?> data)
     {
         var auditRecordBuilder = AuditRecord.builder();
+        var rootNode = new HashMap<String, Object>();
 
-        var rootNode = new HashMap<String, Serializable>();
         data.forEach((k, v) -> {
             var keys = k.split("/");
-            auditRecordBuilder.setAuditApplicationId(keys[0]);
-            var current = rootNode;
-            for (int i = 1; i < keys.length - 1; i++)
+
+            var startPoint = 0;
+            if (Objects.equals(keys[startPoint], ""))
             {
-                if (!current.containsKey(keys[i]) || !(current.get(keys[i]) instanceof ObjectNode))
+                startPoint = 1;
+                auditRecordBuilder.setAuditApplicationId(keys[startPoint]);
+            }
+
+            var current = rootNode;
+            for (int i = startPoint + 1; i < keys.length - 1; i++)
+            {
+                if (!current.containsKey(keys[i]) || !(current.get(keys[i]) instanceof Map<?, ?>))
                 {
                     current.put(keys[i], new HashMap<String, Serializable>());
                 }
-                current = (HashMap<String, Serializable>) current.get(keys[i]);
+                current = (HashMap<String, Object>) current.get(keys[i]);
             }
-            current.put(keys[keys.length - 1], v.toString());
+            current.put(keys[keys.length - 1], v);
         });
 
         auditRecordBuilder.setAuditData(rootNode);

@@ -575,12 +575,12 @@ public class ExtendedSecurityServiceImplUnitTest
                 any(PagingRequest.class)))
             .thenReturn(mockedCorrectWritePResults);
 
-        // Don't return results for the incorrect groups
+        // Don't return results for the incorrect groups (lenient as these may not be called with normalization enabled)
         PagingResults<String> mockedWrongReadPResults = mock(PagingResults.class);
         PagingResults<String> mockedWrongWritePResults = mock(PagingResults.class);
-        when(mockedWrongReadPResults.getPage())
+        lenient().when(mockedWrongReadPResults.getPage())
             .thenReturn(Collections.emptyList());
-        when(mockedAuthorityService.getAuthorities(
+        lenient().when(mockedAuthorityService.getAuthorities(
                 eq(AuthorityType.GROUP), 
                 eq(RMAuthority.ZONE_APP_RM), 
                 eq(wrongReadGroupPrefix),
@@ -589,9 +589,9 @@ public class ExtendedSecurityServiceImplUnitTest
                 any(PagingRequest.class)))
             .thenReturn(mockedWrongReadPResults);
         
-        when(mockedWrongWritePResults.getPage())
+        lenient().when(mockedWrongWritePResults.getPage())
             .thenReturn(Collections.emptyList());
-        when(mockedAuthorityService.getAuthorities(
+        lenient().when(mockedAuthorityService.getAuthorities(
                 eq(AuthorityType.GROUP), 
                 eq(RMAuthority.ZONE_APP_RM), 
                 eq(wrongWriteGroupPrefix),

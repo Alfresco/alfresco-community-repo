@@ -97,7 +97,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /** transaction service */
     private TransactionService transactionService;
 
-    private boolean enableUsernameNormalization = false;
+    private boolean enableUsernameNormalization;
 
     /**
      * @param filePlanService

@@ -404,11 +404,13 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         boolean hasMoreItems = true;
         int pageCount = 0;
 
-        // Normalize authorities to match the usernames if they exists
-        Set<String> authoritiesNormalized = normalizeAuthorities(authorities);
+        // If enabled, the authorities are forced to match the correct casing of the usernames in case they were set with the incorrect casing.
+        // If not, it will just use the authorities as they are.
+        // In normal circumstances, the authorities are in the correct casing, so this is disabled by default.
+        Set<String> authoritySet = normalizeAuthorities(authorities);
 
         // determine the short name prefix
-        String groupShortNamePrefix = getIPRGroupPrefixShortName(groupPrefix, authoritiesNormalized);
+        String groupShortNamePrefix = getIPRGroupPrefixShortName(groupPrefix, authoritySet);
 
         // iterate over the authorities to find a match
         while (hasMoreItems == true)
@@ -429,7 +431,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             for (String group : results.getPage())
             {
                 // if exists and matches we have found our group
-                if (isIPRGroupTrueMatch(group, authoritiesNormalized))
+                if (isIPRGroupTrueMatch(group, authoritySet))
                 {
                     return new Pair<String, Integer>(group, nextGroupIndex);
                 }
@@ -451,6 +453,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      */
     private Set<String> normalizeAuthorities(Set<String> authNames)
     {
+        // If disabled or no authorities, return as is
         if (!enableUsernameNormalization || authNames == null || authNames.isEmpty())
         {
             return authNames;
@@ -465,7 +468,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * Usernames are case insensitive but affect the IPR group matching when set with different casing. For a given authority of type user, this method normalizes the authority name. if group, it returns the name as-is.
+     * Usernames are case insensitive but affect the IPR group matching when set with different casing. For a given authority of type user, this method normalizes the authority name. If group, it returns the name as-is.
      *
      * @param authorityName
      *            the authority name to normalize
@@ -492,7 +495,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             }
             catch (Exception e)
             {
-                // If anything goes wrong, fall back to the original name
+                // If anything goes wrong, fallback to the original name
             }
         }
 

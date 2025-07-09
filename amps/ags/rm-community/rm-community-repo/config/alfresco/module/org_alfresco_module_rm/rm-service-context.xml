@@ -611,6 +611,7 @@
         <property name="authorityService" ref="authorityService"/>
         <property name="permissionService" ref="permissionService"/>
         <property name="transactionService" ref="transactionService"/>
+        <property name="enableUsernameNormalization" value="${rm.extendedSecurity.enableUsernameNormalization}" />
     </bean>
 
     <bean id="ExtendedSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">

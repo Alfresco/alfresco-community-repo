@@ -115,14 +115,14 @@ public class NodePermissionAssessor
         Set<QName> nodeAspects = nodeService.getAspects(node.getNodeRef());
 
         String userName = null;
-        if (nodeAspects.contains(ContentModel.ASPECT_AUDITABLE))
-        {
-            userName = node.getAuditableProperties().getAuditCreator();
-        }
-        else if (nodeAspects.contains(ContentModel.ASPECT_OWNABLE))
+        if (nodeAspects.contains(ContentModel.ASPECT_OWNABLE))
         {
             Serializable owner = nodeService.getProperty(node.getNodeRef(), ContentModel.PROP_OWNER);
             userName = DefaultTypeConverter.INSTANCE.convert(String.class, owner);
+        }
+        else if (nodeAspects.contains(ContentModel.ASPECT_AUDITABLE))
+        {
+            userName = node.getAuditableProperties().getAuditCreator();
         }
 
         return userName;

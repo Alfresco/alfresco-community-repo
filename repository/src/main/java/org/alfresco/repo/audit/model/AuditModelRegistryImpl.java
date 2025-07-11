@@ -85,12 +85,16 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
 {
     /** The name of the global enablement property. */
     public static final String PROPERTY_AUDIT_ENABLED = "audit.enabled";
+
+    private static final String AUDITING_TO_DATABASE = ".auditingToDatabase";
+    private static final String AUDITING_TO_AUDIT_STORAGE = ".auditingToAuditStorage";
     /** The name of the strict loading flag. */
     public static final String PROPERTY_AUDIT_CONFIG_STRICT = "audit.config.strict";
     /** The XSD classpath location. */
     private static final String AUDIT_SCHEMA_LOCATION = "classpath:alfresco/audit/alfresco-audit-3.2.xsd";
 
     private static final Log logger = LogFactory.getLog(AuditModelRegistryImpl.class);
+
 
     private String[] searchPath;
     private TransactionService transactionService;
@@ -249,6 +253,21 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         return value != null && value.equalsIgnoreCase("true");
     }
 
+    @Override
+    public boolean isAuditingToDatabaseEnabled()
+    {
+        String value = getProperty(AUDIT_PROPERTY_AUDIT_ENABLED + AUDITING_TO_DATABASE);
+        if (value == null) return true;
+        return value.equalsIgnoreCase("true");
+    }
+
+    @Override
+    public boolean isAuditingToAuditStorageEnabled()
+    {
+        String value = getProperty(AUDIT_PROPERTY_AUDIT_ENABLED + AUDITING_TO_AUDIT_STORAGE);
+        return value != null && value.equalsIgnoreCase("true");
+    }
+
     /**
      * Enables audit and registers an audit model at a given URL. Does not register across the cluster and should only be used for unit test purposes.
      * 
@@ -296,6 +315,8 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
 
             // Default value for global enabled property
             properties.put(AUDIT_PROPERTY_AUDIT_ENABLED, false);
+            properties.put(AUDIT_PROPERTY_AUDIT_ENABLED + AUDITING_TO_DATABASE, true);
+            properties.put(AUDIT_PROPERTY_AUDIT_ENABLED + AUDITING_TO_AUDIT_STORAGE, false);
 
             // Let's search for config files in the appropriate places. The individual applications they contain can still
             // be enabled/disabled by the bean properties

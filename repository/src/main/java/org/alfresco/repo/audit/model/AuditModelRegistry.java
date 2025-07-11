@@ -59,6 +59,20 @@ public interface AuditModelRegistry
     public boolean isAuditEnabled();
 
     /**
+     * Determines whether audit values should be stored in database.
+     *
+     * @return @return <code>true</code> if audit is enabled.
+     */
+    boolean isAuditingToDatabaseEnabled();
+
+    /**
+     * Determines whether audit values should be stored in audit storage.
+     * @return @return <code>true</code> if auditing to Audit Storage is enabled.
+     *
+     */
+    boolean isAuditingToAuditStorageEnabled();
+
+    /**
      * Get a map of all audit applications key by name
      * 
      * @return the audit applications

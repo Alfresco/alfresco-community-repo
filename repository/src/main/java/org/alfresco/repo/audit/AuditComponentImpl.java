@@ -259,6 +259,16 @@ public class AuditComponentImpl implements AuditComponent
         return auditModelRegistry.isAuditEnabled();
     }
 
+    public boolean isAuditingToDatabaseEnabled()
+    {
+        return auditModelRegistry.isAuditingToDatabaseEnabled();
+    }
+
+    public boolean isAuditingToAuditStorageEnabled()
+    {
+        return auditModelRegistry.isAuditingToAuditStorageEnabled();
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -601,18 +611,12 @@ public class AuditComponentImpl implements AuditComponent
         case TXN_NONE:
         case TXN_READ_ONLY:
             // New transaction
-            RetryingTransactionCallback<Map<String, Serializable>> callback = () -> {
-                Map<String, Serializable> recordedAuditValues = recordAuditValuesImpl(mappedValues);
-                auditRecordReporter.reportAuditRecord(createAuditRecord(recordedAuditValues, true));
-                return recordedAuditValues;
-            };
+            RetryingTransactionCallback<Map<String, Serializable>> callback = () -> recordAuditValuesImpl(mappedValues);
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setForceWritable(true);
             return txnHelper.doInTransaction(callback, false, true);
         case TXN_READ_WRITE:
-            Map<String, Serializable> recordedAuditValues = recordAuditValuesImpl(mappedValues);
-            auditRecordReporter.reportAuditRecord(createAuditRecord(recordedAuditValues, true));
-            return recordedAuditValues;
+            return recordAuditValuesImpl(mappedValues);
         default:
             throw new IllegalStateException("Unknown txn state: " + txnState);
         }
@@ -761,10 +765,15 @@ public class AuditComponentImpl implements AuditComponent
         {
             // Persist the values (if not just gathering data in a pre call for use in a post call)
             boolean justGatherPreCallData = application.isApplicationJustGeneratingPreCallData();
-            if (!justGatherPreCallData)
+            if (!justGatherPreCallData && isAuditingToDatabaseEnabled())
             {
                 entryId = auditDAO.createAuditEntry(applicationId, time, username, auditData);
             }
+            if (isAuditingToAuditStorageEnabled())
+            {
+                auditRecordReporter.reportAuditRecord(createAuditRecord(auditData, true));
+            }
+
             // Done
             if (logger.isDebugEnabled())
             {

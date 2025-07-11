@@ -95,7 +95,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
 
     private static final Log logger = LogFactory.getLog(AuditModelRegistryImpl.class);
 
-
     private String[] searchPath;
     private TransactionService transactionService;
     private AuditDAO auditDAO;
@@ -257,7 +256,8 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     public boolean isAuditingToDatabaseEnabled()
     {
         String value = getProperty(AUDIT_PROPERTY_AUDIT_ENABLED + AUDITING_TO_DATABASE);
-        if (value == null) return true;
+        if (value == null)
+            return true;
         return value.equalsIgnoreCase("true");
     }
 

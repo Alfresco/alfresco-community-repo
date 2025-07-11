@@ -67,6 +67,7 @@ public interface AuditModelRegistry
 
     /**
      * Determines whether audit values should be stored in audit storage.
+     * 
      * @return @return <code>true</code> if auditing to Audit Storage is enabled.
      *
      */

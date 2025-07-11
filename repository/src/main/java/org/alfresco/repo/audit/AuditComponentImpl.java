@@ -748,8 +748,8 @@ public class AuditComponentImpl implements AuditComponent
         {
             String root = value.getKey();
             int index = root.lastIndexOf("/");
-            Map<String, Serializable> argc = new HashMap<String, Serializable>(1);
-            argc.put(root.substring(index, root.length()).substring(1), value.getValue());
+            Map<String, Serializable> argc = new HashMap<>(1);
+            argc.put(root.substring(index).substring(1), value.getValue());
             if (!auditFilter.accept(root.substring(0, index), argc))
             {
                 return Collections.emptyMap();
@@ -771,7 +771,7 @@ public class AuditComponentImpl implements AuditComponent
             }
             if (isAuditingToAuditStorageEnabled())
             {
-                auditRecordReporter.reportAuditRecord(createAuditRecord(auditData, true));
+                auditRecordReporter.reportAuditRecord(createAuditRecord(auditData, true, application.getApplicationName()));
             }
 
             // Done
@@ -935,9 +935,21 @@ public class AuditComponentImpl implements AuditComponent
         return newData;
     }
 
-    private AuditRecord createAuditRecord(Map<String, ?> auditData, boolean inTransaction)
+    /**
+     * Creates an AuditRecord from the provided audit data.
+     *
+     * @param auditData
+     *            the map containing audit data
+     * @param inTransaction
+     *            whether the record is created within a transaction
+     * @param applicationName
+     *            the name of the audit application
+     * @return a constructed AuditRecord instance
+     */
+    private AuditRecord createAuditRecord(Map<String, ?> auditData, boolean inTransaction, String applicationName)
     {
-        AuditRecord.Builder builder = AuditRecordUtils.generateAuditRecordBuilder(auditData);
+        int rootSize = applicationName.length() + 2; // Root is constructed like this -> '/' + auditedApplicationName + '/'.
+        AuditRecord.Builder builder = AuditRecordUtils.generateAuditRecordBuilder(auditData, rootSize);
         builder.setInTransaction(inTransaction);
         return builder.build();
     }

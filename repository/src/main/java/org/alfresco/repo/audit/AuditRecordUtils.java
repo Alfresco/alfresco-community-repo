@@ -31,34 +31,25 @@ import java.util.Map;
 public class AuditRecordUtils
 {
     /**
-     * This method will generate {@link AuditRecord#builder()} from provided flat audit data. Provided data will be translated from `key - value` structure to json structure. Generated builder will be preloaded with {@link AuditRecord#auditApplicationId} and {@link AuditRecord#auditData}. This method splits key by `/` and maps its value to the nested json as a {@link AuditRecord#auditData}. In addition, it extracts root from key as {@link AuditRecord#auditApplicationId}.
-     * 
+     * Generates an {@link AuditRecord.Builder} from flat audit data. Translates `key-value` pairs into a nested JSON structure, preloading the builder with {@link AuditRecord#auditApplicationId} and {@link AuditRecord#auditData}. Keys are split by `/` to build the nested structure, with the root key used as the application ID. Each key starts with the same root constructed like this '/' + auditedApplicationName + '/'. Before split, this root is removed from the key.
+     *
      * @param data
-     *            represent `key - value` structured map that contains audit data.
-     * @return preloaded {@link AuditRecord#builder()}.
+     *            a map containing flat audit data as `key-value` pairs
+     * @param keyRootLength
+     *            is a length of key root.
+     * @return a preloaded {@link AuditRecord.Builder}
      */
     @SuppressWarnings("unchecked")
-    public static AuditRecord.Builder generateAuditRecordBuilder(Map<String, ?> data)
+    public static AuditRecord.Builder generateAuditRecordBuilder(Map<String, ?> data, int keyRootLength)
     {
         var auditRecordBuilder = AuditRecord.builder();
         var rootNode = new HashMap<String, Object>();
 
         data.forEach((k, v) -> {
-            var keys = k.split("/");
-
-            var startPoint = 0;
-            if (keys.length > 1 && keys[startPoint].isEmpty())
-            {
-                startPoint = 1;
-                auditRecordBuilder.setAuditApplicationId(keys[startPoint]);
-            }
-            else
-            {
-                auditRecordBuilder.setAuditApplicationId(keys[startPoint]);
-            }
+            var keys = k.substring(keyRootLength).split("/");
 
             var current = rootNode;
-            for (int i = startPoint + 1; i < keys.length - 1; i++)
+            for (int i = 0; i < keys.length - 1; i++)
             {
                 current = (HashMap<String, Object>) current.computeIfAbsent(keys[i], newMap -> new HashMap<String, Object>());
             }

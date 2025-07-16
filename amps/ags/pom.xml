@@ -72,7 +72,7 @@
                         <addSvnKeyWords>false</addSvnKeyWords>
                         <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
                         <organizationName>Alfresco Software Limited</organizationName>
-                        <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+                        <descriptionTemplate>${project.basedir}/license/description.ftl</descriptionTemplate>
                         <canUpdateCopyright>true</canUpdateCopyright>
                         <canUpdateDescription>true</canUpdateDescription>
                         <licenseResolver>file:${project.basedir}/license</licenseResolver>

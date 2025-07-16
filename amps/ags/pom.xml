@@ -67,6 +67,7 @@
                      </goals>
                      <phase>validate</phase>
                      <configuration>
+                        <licenseName>alfresco_community</licenseName>
                         <verbose>${license.verbose}</verbose>
                         <addSvnKeyWords>false</addSvnKeyWords>
                         <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>

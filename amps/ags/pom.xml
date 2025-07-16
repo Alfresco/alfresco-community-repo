@@ -74,7 +74,7 @@
                         <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
                         <canUpdateCopyright>true</canUpdateCopyright>
                         <canUpdateDescription>true</canUpdateDescription>
-                        <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+                        <licenseResolver>file:${project.basedir}/license</licenseResolver>
                         <failOnMissingHeader>true</failOnMissingHeader>
                         <failOnNotUptodateHeader>${license.failOnNotUptodateHeader}</failOnNotUptodateHeader>
                         <roots>

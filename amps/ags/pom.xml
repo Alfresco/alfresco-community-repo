@@ -72,10 +72,10 @@
                         <addSvnKeyWords>false</addSvnKeyWords>
                         <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
                         <organizationName>Alfresco Software Limited</organizationName>
-                        <descriptionTemplate>${project.parent.basedir}/license/description.ftl</descriptionTemplate>
+                        <descriptionTemplate>${project.basedir}/license/description.ftl</descriptionTemplate>
                         <canUpdateCopyright>true</canUpdateCopyright>
                         <canUpdateDescription>true</canUpdateDescription>
-                        <licenseResolver>file:${project.parent.basedir}/license</licenseResolver>
+                        <licenseResolver>file:${project.basedir}/ags/license</licenseResolver>
                         <failOnMissingHeader>true</failOnMissingHeader>
                         <failOnNotUptodateHeader>${license.failOnNotUptodateHeader}</failOnNotUptodateHeader>
                         <roots>

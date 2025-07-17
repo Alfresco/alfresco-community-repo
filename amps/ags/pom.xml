@@ -75,7 +75,7 @@
                         <descriptionTemplate>${project.parent}/license/description.ftl</descriptionTemplate>
                         <canUpdateCopyright>true</canUpdateCopyright>
                         <canUpdateDescription>true</canUpdateDescription>
-                        <licenseResolver>file:${project.parent}/license/licenses.properties</licenseResolver>
+                        <licenseResolver>file:${project.parent}/license</licenseResolver>
                         <failOnMissingHeader>true</failOnMissingHeader>
                         <failOnNotUptodateHeader>${license.failOnNotUptodateHeader}</failOnNotUptodateHeader>
                         <roots>

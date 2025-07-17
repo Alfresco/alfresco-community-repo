@@ -708,7 +708,7 @@
             <dependency>
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
-                <version>1.5.5</version>
+                <version>1.5.8</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>

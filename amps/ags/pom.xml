@@ -75,7 +75,7 @@
                         <descriptionTemplate>${project.basedir}/license/description.ftl</descriptionTemplate>
                         <canUpdateCopyright>true</canUpdateCopyright>
                         <canUpdateDescription>true</canUpdateDescription>
-                        <licenseResolver>file:${project.basedir}/license</licenseResolver>
+                        <licenseResolver>file:${project.rootDirectory}/amps/ags/license</licenseResolver>
                         <failOnMissingHeader>true</failOnMissingHeader>
                         <failOnNotUptodateHeader>${license.failOnNotUptodateHeader}</failOnNotUptodateHeader>
                         <roots>

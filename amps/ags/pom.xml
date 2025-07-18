@@ -75,7 +75,7 @@
                         <descriptionTemplate>${project.basedir}/license/description.ftl</descriptionTemplate>
                         <canUpdateCopyright>true</canUpdateCopyright>
                         <canUpdateDescription>true</canUpdateDescription>
-                        <licenseResolver>file:${project.rootDirectory}/amps/ags/license</licenseResolver>
+                        <licenseResolver>classpath://alfresco</licenseResolver>
                         <failOnMissingHeader>true</failOnMissingHeader>
                         <failOnNotUptodateHeader>${license.failOnNotUptodateHeader}</failOnNotUptodateHeader>
                         <roots>

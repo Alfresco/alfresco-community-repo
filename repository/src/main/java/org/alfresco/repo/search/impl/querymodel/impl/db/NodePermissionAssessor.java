@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -115,14 +115,14 @@ public class NodePermissionAssessor
         Set<QName> nodeAspects = nodeService.getAspects(node.getNodeRef());
 
         String userName = null;
-        if (nodeAspects.contains(ContentModel.ASPECT_AUDITABLE))
-        {
-            userName = node.getAuditableProperties().getAuditCreator();
-        }
-        else if (nodeAspects.contains(ContentModel.ASPECT_OWNABLE))
+        if (nodeAspects.contains(ContentModel.ASPECT_OWNABLE))
         {
             Serializable owner = nodeService.getProperty(node.getNodeRef(), ContentModel.PROP_OWNER);
             userName = DefaultTypeConverter.INSTANCE.convert(String.class, owner);
+        }
+        else if (nodeAspects.contains(ContentModel.ASPECT_AUDITABLE))
+        {
+            userName = node.getAuditableProperties().getAuditCreator();
         }
 
         return userName;

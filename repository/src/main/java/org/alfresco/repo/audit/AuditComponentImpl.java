@@ -25,19 +25,6 @@
  */
 package org.alfresco.repo.audit;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.ParameterCheck;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.extractor.DataExtractor;
 import org.alfresco.repo.audit.generator.DataGenerator;
@@ -48,7 +35,6 @@ import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -57,6 +43,18 @@ import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PathMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Component that records audit values as well as providing the query implementation.
@@ -73,8 +71,8 @@ public class AuditComponentImpl implements AuditComponent
 {
     private static final String INBOUND_LOGGER = "org.alfresco.repo.audit.inbound";
 
-    private static Log logger = LogFactory.getLog(AuditComponentImpl.class);
-    private static Log loggerInbound = LogFactory.getLog(INBOUND_LOGGER);
+    private static final Log logger = LogFactory.getLog(AuditComponentImpl.class);
+    private static final Log loggerInbound = LogFactory.getLog(INBOUND_LOGGER);
 
     private AuditModelRegistryImpl auditModelRegistry;
     private PropertyValueDAO propertyValueDAO;
@@ -82,6 +80,7 @@ public class AuditComponentImpl implements AuditComponent
     private TransactionService transactionService;
     private AuditFilter auditFilter;
     private UserAuditFilter userAuditFilter;
+    private AuditRecordReporter auditRecordReporter;
 
     /**
      * Default constructor
@@ -138,6 +137,11 @@ public class AuditComponentImpl implements AuditComponent
     public void setUserAuditFilter(UserAuditFilter userAuditFilter)
     {
         this.userAuditFilter = userAuditFilter;
+    }
+
+    public void setAuditRecordReporter(AuditRecordReporter auditRecordReporter)
+    {
+        this.auditRecordReporter = auditRecordReporter;
     }
 
     /**
@@ -215,7 +219,7 @@ public class AuditComponentImpl implements AuditComponent
     public int deleteAuditEntries(List<Long> auditEntryIds)
     {
         // Shortcut, if necessary
-        if (auditEntryIds.size() == 0)
+        if (auditEntryIds.isEmpty())
         {
             return 0;
         }
@@ -234,7 +238,7 @@ public class AuditComponentImpl implements AuditComponent
         {
             Long disabledPathsId = application.getDisabledPathsId();
             Set<String> disabledPaths = (Set<String>) propertyValueDAO.getPropertyById(disabledPathsId);
-            return new HashSet<String>(disabledPaths);
+            return new HashSet<>(disabledPaths);
         }
         catch (Throwable e)
         {
@@ -252,6 +256,16 @@ public class AuditComponentImpl implements AuditComponent
     public boolean isAuditEnabled()
     {
         return auditModelRegistry.isAuditEnabled();
+    }
+
+    public boolean isAuditingToDatabaseEnabled()
+    {
+        return auditModelRegistry.isAuditingToDatabaseEnabled();
+    }
+
+    public boolean isAuditingToAuditStorageEnabled()
+    {
+        return auditModelRegistry.isAuditingToAuditStorageEnabled();
     }
 
     /**
@@ -309,7 +323,7 @@ public class AuditComponentImpl implements AuditComponent
     {
         PathMapper pathMapper = auditModelRegistry.getAuditPathMapper();
         Set<String> mappedPaths = pathMapper.getMappedPathsWithPartialMatch(path);
-        return loggerInbound.isDebugEnabled() || mappedPaths.size() > 0;
+        return loggerInbound.isDebugEnabled() || !mappedPaths.isEmpty();
     }
 
     /**
@@ -346,7 +360,7 @@ public class AuditComponentImpl implements AuditComponent
 
         // Check if there are any entries that match or supercede the given path
         String disablingPath = null;
-        ;
+
         for (String disabledPath : disabledPaths)
         {
             if (path.startsWith(disabledPath))
@@ -573,7 +587,7 @@ public class AuditComponentImpl implements AuditComponent
         }
 
         // Build the key paths using the session root path
-        Map<String, Serializable> pathedValues = new HashMap<String, Serializable>(values.size() * 2);
+        Map<String, Serializable> pathedValues = new HashMap<>(values.size() * 2);
         for (Map.Entry<String, Serializable> entry : values.entrySet())
         {
             String pathElement = entry.getKey();
@@ -596,12 +610,7 @@ public class AuditComponentImpl implements AuditComponent
         case TXN_NONE:
         case TXN_READ_ONLY:
             // New transaction
-            RetryingTransactionCallback<Map<String, Serializable>> callback = new RetryingTransactionCallback<Map<String, Serializable>>() {
-                public Map<String, Serializable> execute() throws Throwable
-                {
-                    return recordAuditValuesImpl(mappedValues);
-                }
-            };
+            RetryingTransactionCallback<Map<String, Serializable>> callback = () -> recordAuditValuesImpl(mappedValues);
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setForceWritable(true);
             return txnHelper.doInTransaction(callback, false, true);
@@ -618,21 +627,16 @@ public class AuditComponentImpl implements AuditComponent
     public Map<String, Serializable> recordAuditValuesImpl(Map<String, Serializable> mappedValues)
     {
         // Group the values by root path
-        Map<String, Map<String, Serializable>> mappedValuesByRootKey = new HashMap<String, Map<String, Serializable>>();
+        Map<String, Map<String, Serializable>> mappedValuesByRootKey = new HashMap<>();
         for (Map.Entry<String, Serializable> entry : mappedValues.entrySet())
         {
             String path = entry.getKey();
             String rootKey = AuditApplication.getRootKey(path);
-            Map<String, Serializable> rootKeyMappedValues = mappedValuesByRootKey.get(rootKey);
-            if (rootKeyMappedValues == null)
-            {
-                rootKeyMappedValues = new HashMap<String, Serializable>(7);
-                mappedValuesByRootKey.put(rootKey, rootKeyMappedValues);
-            }
+            Map<String, Serializable> rootKeyMappedValues = mappedValuesByRootKey.computeIfAbsent(rootKey, k -> new HashMap<>(7));
             rootKeyMappedValues.put(path, entry.getValue());
         }
 
-        Map<String, Serializable> allAuditedValues = new HashMap<String, Serializable>(mappedValues.size() * 2 + 1);
+        Map<String, Serializable> allAuditedValues = new HashMap<>(mappedValues.size() * 2 + 1);
         // Now audit for each of the root keys
         for (Map.Entry<String, Map<String, Serializable>> entry : mappedValuesByRootKey.entrySet())
         {
@@ -694,7 +698,7 @@ public class AuditComponentImpl implements AuditComponent
         }
 
         // Check if there is anything to audit
-        if (values.size() == 0)
+        if (values.isEmpty())
         {
             if (logger.isDebugEnabled())
             {
@@ -727,12 +731,7 @@ public class AuditComponentImpl implements AuditComponent
         Map<String, Serializable> auditData = generateData(generators);
 
         // Now extract values
-        Map<String, Serializable> extractedData = AuthenticationUtil.runAs(new RunAsWork<Map<String, Serializable>>() {
-            public Map<String, Serializable> doWork() throws Exception
-            {
-                return extractData(application, values);
-            }
-        }, AuthenticationUtil.getSystemUserName());
+        Map<String, Serializable> extractedData = AuthenticationUtil.runAs(() -> extractData(application, values), AuthenticationUtil.getSystemUserName());
 
         // Combine extracted and generated values (extracted data takes precedence)
         auditData.putAll(extractedData);
@@ -743,8 +742,8 @@ public class AuditComponentImpl implements AuditComponent
         {
             String root = value.getKey();
             int index = root.lastIndexOf("/");
-            Map<String, Serializable> argc = new HashMap<String, Serializable>(1);
-            argc.put(root.substring(index, root.length()).substring(1), value.getValue());
+            Map<String, Serializable> argc = new HashMap<>(1);
+            argc.put(root.substring(index).substring(1), value.getValue());
             if (!auditFilter.accept(root.substring(0, index), argc))
             {
                 return Collections.emptyMap();
@@ -760,10 +759,15 @@ public class AuditComponentImpl implements AuditComponent
         {
             // Persist the values (if not just gathering data in a pre call for use in a post call)
             boolean justGatherPreCallData = application.isApplicationJustGeneratingPreCallData();
-            if (!justGatherPreCallData)
+            if (!justGatherPreCallData && isAuditingToDatabaseEnabled())
             {
                 entryId = auditDAO.createAuditEntry(applicationId, time, username, auditData);
             }
+            if (isAuditingToAuditStorageEnabled())
+            {
+                auditRecordReporter.reportAuditRecord(createAuditRecord(auditData, true, application.getApplicationName()));
+            }
+
             // Done
             if (logger.isDebugEnabled())
             {
@@ -900,7 +904,7 @@ public class AuditComponentImpl implements AuditComponent
      */
     private Map<String, Serializable> generateData(Map<String, DataGenerator> generators)
     {
-        Map<String, Serializable> newData = new HashMap<String, Serializable>(generators.size() + 5);
+        Map<String, Serializable> newData = new HashMap<>(generators.size() + 5);
         for (Map.Entry<String, DataGenerator> entry : generators.entrySet())
         {
             String path = entry.getKey();
@@ -923,6 +927,26 @@ public class AuditComponentImpl implements AuditComponent
         }
         // Done
         return newData;
+    }
+
+    /**
+     * Creates an AuditRecord from the provided audit data.
+     *
+     * @param auditData
+     *            the map containing audit data
+     * @param inTransaction
+     *            whether the record is created within a transaction
+     * @param applicationName
+     *            the name of the audit application
+     * @return a constructed AuditRecord instance
+     */
+    private AuditRecord createAuditRecord(Map<String, ?> auditData, boolean inTransaction, String applicationName)
+    {
+        int rootSize = applicationName.length() + 2; // Root is constructed like this -> '/' + auditedApplicationName + '/'.
+        AuditRecord.Builder builder = AuditRecordUtils.generateAuditRecordBuilder(auditData, rootSize);
+        builder.setAuditApplicationId(applicationName);
+        builder.setInTransaction(inTransaction);
+        return builder.build();
     }
 
     /**

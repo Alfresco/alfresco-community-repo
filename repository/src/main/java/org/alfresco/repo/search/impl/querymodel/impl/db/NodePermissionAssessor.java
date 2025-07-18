@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,6 +30,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.domain.node.Node;
@@ -41,8 +44,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class NodePermissionAssessor
 {
@@ -57,7 +58,7 @@ public class NodePermissionAssessor
     private long startTime;
     private int maxPermissionChecks;
     private long maxPermissionCheckTimeMillis;
-    
+
     private EntityLookupCache<Long, Node, NodeRef> nodesCache;
     private NodeService nodeService;
     private PermissionService permissionService;
@@ -68,7 +69,7 @@ public class NodePermissionAssessor
         this.permissionService = permissionService;
         this.nodesCache = nodeCache;
         this.nodeService = nodeService;
-        
+
         this.checksPerformed = 0;
         this.maxPermissionChecks = Integer.MAX_VALUE;
         this.maxPermissionCheckTimeMillis = Long.MAX_VALUE;
@@ -82,12 +83,12 @@ public class NodePermissionAssessor
     }
 
     public boolean isIncluded(Node node)
-    { 
+    {
         if (isFirstRecord())
         {
             this.startTime = System.currentTimeMillis();
         }
-        
+
         checksPerformed++;
         return isReallyIncluded(node);
     }
@@ -107,34 +108,34 @@ public class NodePermissionAssessor
         String owner = getOwner(node);
         return EqualsHelper.nullSafeEquals(authority.getAuthority(), owner);
     }
-    
+
     private String getOwner(Node node)
     {
         nodesCache.setValue(node.getId(), node);
         Set<QName> nodeAspects = nodeService.getAspects(node.getNodeRef());
-        
+
         String userName = null;
-        if (nodeAspects.contains(ContentModel.ASPECT_AUDITABLE))
-        {
-            userName = node.getAuditableProperties().getAuditCreator();
-        }
-        else if (nodeAspects.contains(ContentModel.ASPECT_OWNABLE))
+        if (nodeAspects.contains(ContentModel.ASPECT_OWNABLE))
         {
             Serializable owner = nodeService.getProperty(node.getNodeRef(), ContentModel.PROP_OWNER);
             userName = DefaultTypeConverter.INSTANCE.convert(String.class, owner);
         }
-        
+        else if (nodeAspects.contains(ContentModel.ASPECT_AUDITABLE))
+        {
+            userName = node.getAuditableProperties().getAuditCreator();
+        }
+
         return userName;
     }
-    
+
     boolean isReallyIncluded(Node node)
     {
         if (isNullReading)
         {
             return false;
         }
-        
-        return  isSystemReading ||
+
+        return isSystemReading ||
                 isAdminReading ||
                 canRead(node.getAclId()) ||
                 isOwnerReading(node, authority);
@@ -151,7 +152,7 @@ public class NodePermissionAssessor
             this.maxPermissionChecks = maxPermissionChecks + 1;
         }
     }
-    
+
     public boolean shouldQuitChecks()
     {
         if (checksPerformed >= maxPermissionChecks)
@@ -173,7 +174,7 @@ public class NodePermissionAssessor
     {
         this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
     }
-            
+
     protected boolean canRead(Long aclId)
     {
         Boolean res = aclReadCache.get(aclId);
@@ -184,7 +185,7 @@ public class NodePermissionAssessor
         }
         return res;
     }
-    
+
     protected boolean canCurrentUserRead(Long aclId)
     {
         // cache resolved ACLs
@@ -195,7 +196,7 @@ public class NodePermissionAssessor
         {
             if (authorities.contains(auth))
             {
-                return false; 
+                return false;
             }
         }
 
@@ -204,7 +205,7 @@ public class NodePermissionAssessor
         {
             if (authorities.contains(auth))
             {
-                return true; 
+                return true;
             }
         }
 

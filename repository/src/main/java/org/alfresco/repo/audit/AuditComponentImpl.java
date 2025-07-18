@@ -632,16 +632,11 @@ public class AuditComponentImpl implements AuditComponent
         {
             String path = entry.getKey();
             String rootKey = AuditApplication.getRootKey(path);
-            Map<String, Serializable> rootKeyMappedValues = mappedValuesByRootKey.get(rootKey);
-            if (rootKeyMappedValues == null)
-            {
-                rootKeyMappedValues = new HashMap<>(7);
-                mappedValuesByRootKey.put(rootKey, rootKeyMappedValues);
-            }
+            Map<String, Serializable> rootKeyMappedValues = mappedValuesByRootKey.computeIfAbsent(rootKey, k -> new HashMap<>(7));
             rootKeyMappedValues.put(path, entry.getValue());
         }
 
-        Map<String, Serializable> allAuditedValues = new HashMap<String, Serializable>(mappedValues.size() * 2 + 1);
+        Map<String, Serializable> allAuditedValues = new HashMap<>(mappedValues.size() * 2 + 1);
         // Now audit for each of the root keys
         for (Map.Entry<String, Map<String, Serializable>> entry : mappedValuesByRootKey.entrySet())
         {

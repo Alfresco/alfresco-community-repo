@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>25.3.0.10-SNAPSHOT</version>
+        <version>25.3.0.13-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>org.apache.santuario</groupId>
             <artifactId>xmlsec</artifactId>
-            <version>4.0.3</version>
+            <version>4.0.4</version>
         </dependency>
         <!-- newer version, see REPO-3133 -->
         <dependency>

@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.audit;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,10 +41,10 @@ public class AuditRecordUtils
      * @return a preloaded {@link AuditRecord.Builder}
      */
     @SuppressWarnings("unchecked")
-    public static AuditRecord.Builder generateAuditRecordBuilder(Map<String, ?> data, int keyRootLength)
+    public static AuditRecord.Builder generateAuditRecordBuilder(Map<String, Serializable> data, int keyRootLength)
     {
         var auditRecordBuilder = AuditRecord.builder();
-        var rootNode = new HashMap<String, Object>();
+        var rootNode = new HashMap<String, Serializable>();
 
         data.forEach((k, v) -> {
             var keys = k.substring(keyRootLength).split("/");
@@ -51,7 +52,7 @@ public class AuditRecordUtils
             var current = rootNode;
             for (int i = 0; i < keys.length - 1; i++)
             {
-                current = (HashMap<String, Object>) current.computeIfAbsent(keys[i], newMap -> new HashMap<String, Object>());
+                current = (HashMap<String, Serializable>) current.computeIfAbsent(keys[i], newMap -> new HashMap<String, Serializable>());
             }
             current.put(keys[keys.length - 1], v);
         });

@@ -26,17 +26,17 @@
 
 package org.alfresco.repo.audit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.alfresco.service.namespace.QName;
+import org.junit.Test;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
-
-import org.alfresco.service.namespace.QName;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class AuditRecordUtilsTest
 {
@@ -44,14 +44,14 @@ public class AuditRecordUtilsTest
     @SuppressWarnings("unchecked")
     public void generateAuditRecordBuilderTest()
     {
-        var testData = new HashMap<String, Object>();
+        var testData = new HashMap<String, Serializable>();
 
         testData.put("/alfresco-access/transaction/path", "/app:company_home");
         testData.put("/alfresco-access/transaction/user", "admin");
         testData.put("/alfresco-access/transaction/sub-actions", "updateNodeProperties");
         var now = Instant.now();
-        testData.put("/alfresco-access/transaction/properties/from", Map.of(QName.createQName("modified"), Date.from(now)));
-        testData.put("/alfresco-access/transaction/properties/to", Map.of(QName.createQName("modified"), Date.from(now)));
+        testData.put("/alfresco-access/transaction/properties/from", (Serializable) Map.of(QName.createQName("modified"), Date.from(now)));
+        testData.put("/alfresco-access/transaction/properties/to", (Serializable) Map.of(QName.createQName("modified"), Date.from(now)));
 
         var builder = AuditRecordUtils.generateAuditRecordBuilder(testData, "/alfresco-access/".length());
         builder.setAuditApplicationId("alfresco-access");

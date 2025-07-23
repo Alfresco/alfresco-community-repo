@@ -940,7 +940,7 @@ public class AuditComponentImpl implements AuditComponent
      *            the name of the audit application
      * @return a constructed AuditRecord instance
      */
-    private AuditRecord createAuditRecord(Map<String, ?> auditData, boolean inTransaction, String applicationName)
+    private AuditRecord createAuditRecord(Map<String, Serializable> auditData, boolean inTransaction, String applicationName)
     {
         int rootSize = applicationName.length() + 2; // Root is constructed like this -> '/' + auditedApplicationName + '/'.
         AuditRecord.Builder builder = AuditRecordUtils.generateAuditRecordBuilder(auditData, rootSize);

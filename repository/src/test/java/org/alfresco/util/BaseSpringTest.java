@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -32,20 +32,19 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextCustomizerFactories;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Base test class providing Hibernate sessions.
  * <p>
- * By default this is auto-wired by type. If a this is going to 
- * result in a conlict the use auto-wire by name.  This can be done by
- * setting populateProtectedVariables to true in the constructor and 
- * then adding protected members with the same name as the bean you require.
+ * By default this is auto-wired by type. If a this is going to result in a conlict the use auto-wire by name. This can be done by setting populateProtectedVariables to true in the constructor and then adding protected members with the same name as the bean you require.
  * 
  * @author Derek Hulley
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration({"classpath:alfresco/application-context.xml"})
+@ContextCustomizerFactories(factories = {}, mergeMode = ContextCustomizerFactories.MergeMode.REPLACE_DEFAULTS)
 public abstract class BaseSpringTest extends TestCase
 {
     public Log logger = LogFactory.getLog(getClass().getName());

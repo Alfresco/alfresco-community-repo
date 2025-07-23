@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,15 +28,16 @@ package org.alfresco.repo.transaction;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.transaction.TransactionService;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.interceptor.TransactionAttribute;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * @author Dmitry Velichkevich
@@ -64,7 +65,7 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
             final TransactionAttribute txnAttr = getTransactionAttributeSource().getTransactionAttribute(
                     method, invocation.getThis().getClass());
 
-            final TransactionManager tm = determineTransactionManager(txnAttr);
+            final TransactionManager tm = determineTransactionManager(txnAttr, null);
 
             if (tm != null && !(tm instanceof PlatformTransactionManager))
             {
@@ -83,8 +84,7 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
                     retryingTransactionHelper.setExtraExceptions(extraExceptions);
 
                     return retryingTransactionHelper.doInTransaction(
-                            new RetryingTransactionCallback<Object>()
-                            {
+                            new RetryingTransactionCallback<Object>() {
                                 public Object execute()
                                 {
                                     TransactionInfo txInfo = createTransactionIfNecessary(ptm, TransactionAttribute.PROPAGATION_REQUIRES_NEW == txnAttr

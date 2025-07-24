@@ -26,8 +26,8 @@
 
 package org.alfresco.repo.audit;
 
-import org.alfresco.service.namespace.QName;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -35,8 +35,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
+
+import org.alfresco.service.namespace.QName;
 
 public class AuditRecordUtilsTest
 {

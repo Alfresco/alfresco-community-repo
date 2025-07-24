@@ -826,7 +826,7 @@ public class AuditComponentImpl implements AuditComponent
             AuditApplication application,
             Map<String, Serializable> values)
     {
-        Map<String, Serializable> newData = new HashMap<String, Serializable>(values.size());
+        Map<String, Serializable> newData = new HashMap<>(values.size());
 
         List<DataExtractorDefinition> extractors = application.getDataExtractors();
         for (DataExtractorDefinition extractorDef : extractors)
@@ -944,7 +944,7 @@ public class AuditComponentImpl implements AuditComponent
     {
         int rootSize = applicationName.length() + 2; // Root is constructed like this -> '/' + auditedApplicationName + '/'.
         AuditRecord.Builder builder = AuditRecordUtils.generateAuditRecordBuilder(auditData, rootSize);
-        builder.setAuditApplicationId(applicationName);
+        builder.setAuditRecordType(applicationName);
         builder.setInTransaction(inTransaction);
         return builder.build();
     }

@@ -54,7 +54,7 @@ public class AuditRecordUtilsTest
         testData.put("/alfresco-access/transaction/properties/to", (Serializable) Map.of(QName.createQName("modified"), Date.from(now)));
 
         var builder = AuditRecordUtils.generateAuditRecordBuilder(testData, "/alfresco-access/".length());
-        builder.setAuditApplicationId("alfresco-access");
+        builder.setAuditRecordType("alfresco-access");
         var auditRecord = builder.build();
 
         assertNotNull(auditRecord);

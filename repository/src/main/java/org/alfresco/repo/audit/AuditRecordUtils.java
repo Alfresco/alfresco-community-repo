@@ -32,7 +32,7 @@ import java.util.Map;
 public class AuditRecordUtils
 {
     /**
-     * Generates an {@link AuditRecord.Builder} from flat audit data. Translates `key-value` pairs into a nested JSON structure, preloading the builder with {@link AuditRecord#auditApplicationId} and {@link AuditRecord#auditData}. Keys are split by `/` to build the nested structure, with the root key used as the application ID. Each key starts with the same root constructed like this '/' + auditedApplicationName + '/'. Before split, this root is removed from the key.
+     * Generates an {@link AuditRecord.Builder} from flat audit data. Translates `key-value` pairs into a nested JSON structure, preloading the builder with arguments. Keys are split by `/` to build the nested structure, with the root key used as the application ID. Each key starts with the same root constructed like this '/' + auditedApplicationName + '/'. Before split, this root is removed from the key.
      *
      * @param data
      *            a map containing flat audit data as `key-value` pairs
@@ -56,7 +56,7 @@ public class AuditRecordUtils
             }
             current.put(keys[keys.length - 1], v);
         });
-        auditRecordBuilder.setAuditData(rootNode);
+        auditRecordBuilder.setAuditRecordData(rootNode);
 
         return auditRecordBuilder;
     }

@@ -38,9 +38,9 @@ public class AuditRecord
 
     public AuditRecord(Builder builder)
     {
-        this.auditApplicationId = builder.auditApplicationId;
+        this.auditApplicationId = builder.auditRecordType;
         this.inTransaction = builder.inTransaction;
-        this.auditData = builder.auditData;
+        this.auditData = builder.auditRecordData;
         this.createdAt = ZonedDateTime.now();
     }
 
@@ -71,13 +71,13 @@ public class AuditRecord
 
     public static class Builder
     {
-        private String auditApplicationId;
+        private String auditRecordType;
         private boolean inTransaction;
-        private Map<String, Serializable> auditData;
+        private Map<String, Serializable> auditRecordData;
 
-        public Builder setAuditApplicationId(String auditApplicationId)
+        public Builder setAuditRecordType(String auditRecordType)
         {
-            this.auditApplicationId = auditApplicationId;
+            this.auditRecordType = auditRecordType;
             return this;
         }
 
@@ -87,9 +87,9 @@ public class AuditRecord
             return this;
         }
 
-        public Builder setAuditData(Map<String, Serializable> auditData)
+        public Builder setAuditRecordData(Map<String, Serializable> auditRecordData)
         {
-            this.auditData = auditData;
+            this.auditRecordData = auditRecordData;
             return this;
         }
 

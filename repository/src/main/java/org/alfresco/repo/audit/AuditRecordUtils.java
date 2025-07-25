@@ -31,6 +31,11 @@ import java.util.Map;
 
 public class AuditRecordUtils
 {
+    private AuditRecordUtils()
+    {
+        //This is a utility class and cannot be instantiated.
+    }
+
     /**
      * Generates an {@link AuditRecord.Builder} from flat audit data. Translates `key-value` pairs into a nested JSON structure, preloading the builder with arguments. Keys are split by `/` to build the nested structure, with the root key used as the application ID. Each key starts with the same root constructed like this '/' + auditedApplicationName + '/'. Before split, this root is removed from the key.
      *

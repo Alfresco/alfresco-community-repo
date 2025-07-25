@@ -256,9 +256,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     public boolean isAuditingToDatabaseEnabled()
     {
         String value = getProperty(AUDIT_PROPERTY_AUDIT_ENABLED + AUDITING_TO_DATABASE);
-        if (value == null)
-            return true;
-        return value.equalsIgnoreCase("true");
+        return value == null || value.equalsIgnoreCase("true");
     }
 
     @Override

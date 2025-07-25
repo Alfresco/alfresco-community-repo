@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
-import org.junit.Test;
 
 import org.alfresco.service.namespace.QName;
 

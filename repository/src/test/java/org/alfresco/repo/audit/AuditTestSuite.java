@@ -28,6 +28,7 @@ package org.alfresco.repo.audit;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+
 import org.alfresco.repo.audit.access.AccessAuditorTest;
 
 /**

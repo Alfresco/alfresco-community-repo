@@ -35,8 +35,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.namespace.QName;
 import org.junit.Test;
+
+import org.alfresco.service.namespace.QName;
 
 public class AuditRecordUtilsTest
 {

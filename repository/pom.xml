@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>25.2.0.61-SNAPSHOT</version>
+        <version>25.3.0.14-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -94,7 +94,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.17.0</version>
+            <version>3.18.0</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -120,7 +120,7 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.9.0</version>
+            <version>1.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -358,7 +358,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>7.0.0</version>
+            <version>7.1.1</version>
         </dependency>
 
         <dependency>
@@ -402,7 +402,7 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis-spring</artifactId>
-            <version>3.0.4</version>
+            <version>3.0.5</version>
         </dependency>
 
         <!-- Activiti -->

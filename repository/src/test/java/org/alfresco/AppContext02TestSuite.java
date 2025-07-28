@@ -25,12 +25,11 @@
  */
 package org.alfresco;
 
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-
-import org.alfresco.util.testing.category.DBTests;
-import org.alfresco.util.testing.category.NonBuildTests;
 
 /**
  * Repository project tests using the main context alfresco/application-context.xml. To balance test jobs tests using this context have been split into multiple test suites. Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
@@ -48,6 +47,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.audit.UserAuditFilterTest.class,
         org.alfresco.repo.audit.AuditMethodInterceptorTest.class,
         org.alfresco.repo.audit.access.AccessAuditorTest.class,
+        org.alfresco.repo.audit.AuditRecordUtilsTest.class,
 
         // the following test will lock up the DB if run in the applicationContext_01 test suite
         org.alfresco.repo.activities.feed.FeedNotifierTest.class,

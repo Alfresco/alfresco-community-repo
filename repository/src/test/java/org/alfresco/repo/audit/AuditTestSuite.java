@@ -28,7 +28,6 @@ package org.alfresco.repo.audit;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-
 import org.alfresco.repo.audit.access.AccessAuditorTest;
 
 /**
@@ -49,8 +48,8 @@ public class AuditTestSuite extends TestSuite
         suite.addTestSuite(AuditComponentTest.class);
         suite.addTestSuite(UserAuditFilterTest.class);
         suite.addTestSuite(AuditMethodInterceptorTest.class);
-        suite.addTest(new JUnit4TestAdapter(AuditRecordUtilsTest.class));
 
+        suite.addTest(new JUnit4TestAdapter(AuditRecordUtilsTest.class));
         suite.addTest(new JUnit4TestAdapter(PropertyAuditFilterTest.class));
         suite.addTest(new JUnit4TestAdapter(AccessAuditorTest.class));
 

@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -67,6 +68,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -522,6 +524,104 @@ public class ExtendedSecurityServiceImplUnitTest
         verify(mockedPermissionService).setPermission(nodeRef, writeGroup, RMPermissionModel.FILING, true);
         
     }
+
+    /**
+     * Given a node with no previous IPR groups assigned
+     * And having pre-existing IPR groups matching the ones we need
+     * When I add some read and write authorities but with a different casing
+     * Then the existing IPR groups are used
+     */
+    @SuppressWarnings("unchecked")
+    @Test public void addExtendedSecurityWithMixedCasingUsernames()
+    {
+        // Have the usernames in the node as the correct usernames but with incorrect casing
+        String user1 = "UseR";
+        String user2 = "UseR_w";
+
+        // Incorrect IPR Group names
+        Set<String> diffCasingReaders = Stream.of(user1, GROUP).collect(Collectors.toSet());
+        Set<String> diffCasingWriters = Stream.of(user2, GROUP_W).collect(Collectors.toSet());
+        String wrongReadGroupPrefix = extendedSecurityService.getIPRGroupPrefixShortName(READER_GROUP_PREFIX, diffCasingReaders);
+        String wrongWriteGroupPrefix = extendedSecurityService.getIPRGroupPrefixShortName(WRITER_GROUP_PREFIX, diffCasingWriters);
+        String wrongReadGroup = wrongReadGroupPrefix + "0";
+        String wrongWriteGroup = wrongWriteGroupPrefix + "0";
+
+        // Correct Group names
+        String correctReadGroup = readGroupPrefix + "0";
+        String correctWriteGroup = writeGroupPrefix + "0";
+
+        // If queried for the correct groups, return the results
+        PagingResults<String> mockedCorrectReadPResults = mock(PagingResults.class);
+        PagingResults<String> mockedCorrectWritePResults = mock(PagingResults.class);
+        when(mockedCorrectReadPResults.getPage())
+            .thenReturn(Stream.of(GROUP_PREFIX + correctReadGroup).collect(Collectors.toList()));
+        when(mockedAuthorityService.getAuthorities(
+                eq(AuthorityType.GROUP), 
+                eq(RMAuthority.ZONE_APP_RM), 
+                eq(readGroupPrefix),
+                eq(false), 
+                eq(false), 
+                any(PagingRequest.class)))
+            .thenReturn(mockedCorrectReadPResults);
+        
+        when(mockedCorrectWritePResults.getPage())
+            .thenReturn(Stream.of(GROUP_PREFIX + correctWriteGroup).collect(Collectors.toList()));
+        when(mockedAuthorityService.getAuthorities(
+                eq(AuthorityType.GROUP), 
+                eq(RMAuthority.ZONE_APP_RM), 
+                eq(writeGroupPrefix),
+                eq(false), 
+                eq(false), 
+                any(PagingRequest.class)))
+            .thenReturn(mockedCorrectWritePResults);
+
+        // Don't return results for the incorrect groups (lenient as these may not be called with normalization enabled)
+        PagingResults<String> mockedWrongReadPResults = mock(PagingResults.class);
+        PagingResults<String> mockedWrongWritePResults = mock(PagingResults.class);
+        lenient().when(mockedWrongReadPResults.getPage())
+            .thenReturn(Collections.emptyList());
+        lenient().when(mockedAuthorityService.getAuthorities(
+                eq(AuthorityType.GROUP), 
+                eq(RMAuthority.ZONE_APP_RM), 
+                eq(wrongReadGroupPrefix),
+                eq(false), 
+                eq(false), 
+                any(PagingRequest.class)))
+            .thenReturn(mockedWrongReadPResults);
+        
+        lenient().when(mockedWrongWritePResults.getPage())
+            .thenReturn(Collections.emptyList());
+        lenient().when(mockedAuthorityService.getAuthorities(
+                eq(AuthorityType.GROUP), 
+                eq(RMAuthority.ZONE_APP_RM), 
+                eq(wrongWriteGroupPrefix),
+                eq(false), 
+                eq(false), 
+                any(PagingRequest.class)))
+            .thenReturn(mockedWrongWritePResults);
+
+        // The users do exist, despite being in a different casing and are able to be retrieved
+        NodeRef noderefUser1 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, USER);
+        when(mockedAuthorityService.authorityExists(user1)).thenReturn(true);
+        when(mockedAuthorityService.getAuthorityNodeRef(user1)).thenReturn(noderefUser1);
+        when(mockedNodeService.getProperty(noderefUser1, ContentModel.PROP_USERNAME)).thenReturn(USER);
+
+        NodeRef noderefUser2 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, USER_W);
+        when(mockedAuthorityService.authorityExists(user2)).thenReturn(true);
+        when(mockedAuthorityService.getAuthorityNodeRef(user2)).thenReturn(noderefUser2);
+        when(mockedNodeService.getProperty(noderefUser2, ContentModel.PROP_USERNAME)).thenReturn(USER_W);
+
+        // Set the extended security service to normalize usernames
+        extendedSecurityService.setEnableUsernameNormalization(true);
+        extendedSecurityService.set(nodeRef, diffCasingReaders, diffCasingWriters);
+
+        // Verify that the incorrect read group is not created
+        verify(mockedAuthorityService, never()).createAuthority(AuthorityType.GROUP, wrongReadGroup, wrongReadGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
+
+        // Verify that the incorrect write group is not created
+        verify(mockedAuthorityService, never()).createAuthority(AuthorityType.GROUP, wrongWriteGroup, wrongWriteGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
+
+    }
     
     /**
      * Given a node with no previous IPR groups assigned
@@ -571,7 +671,7 @@ public class ExtendedSecurityServiceImplUnitTest
             .thenReturn(Stream
                 .of(USER_W, AlfMock.generateText())
                 .collect(Collectors.toSet()));
-        
+
         // add extended security
         extendedSecurityService.set(nodeRef, READERS, WRITERS);
         
@@ -895,7 +995,7 @@ public class ExtendedSecurityServiceImplUnitTest
         // group names
         String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_FULL_PREFIX, READERS, 0);
         String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_FULL_PREFIX, WRITERS, 0);
-        
+
         // setup renditions
         NodeRef renditionNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD))
@@ -904,7 +1004,7 @@ public class ExtendedSecurityServiceImplUnitTest
             .thenReturn(renditionNodeRef);
         when(mockedNodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL))
             .thenReturn(Collections.singletonList(mockedChildAssociationRef));        
-        
+
         // setup permissions
         Set<AccessPermission> permissions = Stream
             .of(new AccessPermissionImpl(AlfMock.generateText(), AccessStatus.ALLOWED, readGroup, 0),
@@ -913,17 +1013,17 @@ public class ExtendedSecurityServiceImplUnitTest
             .collect(Collectors.toSet());        
         when(mockedPermissionService.getAllSetPermissions(nodeRef))
             .thenReturn(permissions);      
-        
+
         // remove extended security
         extendedSecurityService.remove(nodeRef);
-        
+
         // verify that the groups permissions have been removed
         verify(mockedPermissionService).clearPermission(nodeRef, readGroup);
         verify(mockedPermissionService).clearPermission(nodeRef, writeGroup);
-        
+
         // verify that the groups permissions have been removed from the rendition
         verify(mockedPermissionService).clearPermission(renditionNodeRef, readGroup);
         verify(mockedPermissionService).clearPermission(renditionNodeRef, writeGroup);
-        
+
     }
 }

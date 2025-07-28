@@ -35,13 +35,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.alfresco.service.namespace.QName;
+import org.junit.Test;
 
-public class AuditRecordUtilsTest extends TestCase
+public class AuditRecordUtilsTest
 {
     @SuppressWarnings("unchecked")
+    @Test
     public void testGenerateAuditRecordBuilderTest()
     {
         var testData = new HashMap<String, Serializable>();

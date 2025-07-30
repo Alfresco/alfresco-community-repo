@@ -1130,7 +1130,10 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                     // for example the key could be: {!afts}@{http://www.alfresco.org/model/content/1.0}created:[NOW/DAY-1DAY TO NOW/DAY+1DAY]
                     // qName => @{http://www.alfresco.org/model/content/1.0}created
                     // 7 => {!afts}
-                    key = key.substring(7);
+                    if (key.startsWith("{!afts}"))
+                    {
+                        key = key.substring(7);
+                    }
                     String qName = key.substring(0, key.lastIndexOf(':'));
 
                     // Retrieve the previous facet queries

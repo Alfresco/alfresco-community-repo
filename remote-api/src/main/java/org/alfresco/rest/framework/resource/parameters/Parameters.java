@@ -27,7 +27,6 @@ package org.alfresco.rest.framework.resource.parameters;
 
 import java.util.List;
 
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -69,7 +68,7 @@ public interface Parameters
      * @return The Parameter value
      * @throws InvalidArgumentException
      */
-    T getParameter(String parameterName, Class<T> clazz) throws InvalidArgumentException;
+    <T> T getParameter(String parameterName, Class<T> clazz) throws InvalidArgumentException;
 
     /**
      * Returns a representation of the Paging of collections of resources, with skip count and max items. See {@link Paging} Specified by the "skipCount" and "maxItems" request parameters.

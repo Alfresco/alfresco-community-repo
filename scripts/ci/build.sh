@@ -7,7 +7,7 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
 GIT_REPO="github.com/Alfresco/alfresco-transform-core.git"
-BRANCH="fix/MNT-24883-transformoptions"
+BRANCH="fix/ACS-9926_skip_JAI_TiffReader"
 
 buildCoreAio "${GIT_REPO}" "${BRANCH}"
 

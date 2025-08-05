@@ -859,9 +859,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         if (aspectDef != null)
         {
             // Remove default properties
+            Map<QName, Serializable> propsBefore = nodeDAO.getNodeProperties(nodeId);
             Map<QName, PropertyDefinition> propertyDefs = aspectDef.getProperties();
             Set<QName> propertyToRemoveQNames = propertyDefs.keySet();
-            nodeDAO.removeNodeProperties(nodeId, propertyToRemoveQNames);
+            boolean propertiesRemoved = nodeDAO.removeNodeProperties(nodeId, propertyToRemoveQNames);
+
+            if (propertiesRemoved)
+            {
+                invokeOnUpdateProperties(
+                        nodeRef,
+                        propsBefore, // before
+                        nodeDAO.getNodeProperties(nodeId)); // after
+            }
 
             // Remove child associations
             // We have to iterate over the associations and remove all those between the parent and child

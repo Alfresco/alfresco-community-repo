@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>25.2.0.46-SNAPSHOT</version>
+      <version>25.3.0.17-SNAPSHOT</version>
    </parent>
 
    <build>
@@ -75,16 +75,6 @@
          <version>1.1</version>
       </dependency>
       <dependency>
-         <groupId>com.epam.reportportal</groupId>
-         <artifactId>agent-java-testng</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>com.squareup.okhttp3</groupId>
-         <artifactId>okhttp</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
          <groupId>org.awaitility</groupId>
          <artifactId>awaitility</artifactId>
          <version>${dependency.awaitility.version}</version>
@@ -93,7 +83,7 @@
       <dependency>
          <groupId>org.apache.commons</groupId>
          <artifactId>commons-collections4</artifactId>
-         <version>4.4</version>
+         <version>4.5.0</version>
       </dependency>
       <dependency>
          <groupId>com.github.docker-java</groupId>

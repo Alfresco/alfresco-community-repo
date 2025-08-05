@@ -38,6 +38,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.webscripts.ui.common.StringUtils;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -96,6 +97,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /** transaction service */
     private TransactionService transactionService;
 
+    private boolean enableUsernameNormalization;
+
     /**
      * @param filePlanService
      *            file plan service
@@ -139,6 +142,15 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    /**
+     * @param enableUsernameNormalization
+     *            enable username normalization to ensure correct casing
+     */
+    public void setEnableUsernameNormalization(boolean enableUsernameNormalization)
+    {
+        this.enableUsernameNormalization = enableUsernameNormalization;
     }
 
     /**
@@ -392,14 +404,20 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         boolean hasMoreItems = true;
         int pageCount = 0;
 
+        // If enabled, the authorities are forced to match the correct casing of the usernames in case they were set with the incorrect casing.
+        // If not, it will just use the authorities as they are.
+        // In normal circumstances, the authorities are in the correct casing, so this is disabled by default.
+        Set<String> authoritySet = normalizeAuthorities(authorities);
+
         // determine the short name prefix
-        String groupShortNamePrefix = getIPRGroupPrefixShortName(groupPrefix, authorities);
+        String groupShortNamePrefix = getIPRGroupPrefixShortName(groupPrefix, authoritySet);
 
         // iterate over the authorities to find a match
         while (hasMoreItems == true)
         {
             // get matching authorities
-            PagingResults<String> results = authorityService.getAuthorities(AuthorityType.GROUP,
+            PagingResults<String> results = authorityService.getAuthorities(
+                    AuthorityType.GROUP,
                     RMAuthority.ZONE_APP_RM,
                     groupShortNamePrefix,
                     false,
@@ -413,7 +431,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             for (String group : results.getPage())
             {
                 // if exists and matches we have found our group
-                if (isIPRGroupTrueMatch(group, authorities))
+                if (isIPRGroupTrueMatch(group, authoritySet))
                 {
                     return new Pair<String, Integer>(group, nextGroupIndex);
                 }
@@ -425,6 +443,63 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         }
 
         return new Pair<>(iprGroup, nextGroupIndex);
+    }
+
+    /**
+     * Given a set of authorities, normalizes the authority names to ensure correct casing.
+     * 
+     * @param authNames
+     * @return
+     */
+    private Set<String> normalizeAuthorities(Set<String> authNames)
+    {
+        // If disabled or no authorities, return as is
+        if (!enableUsernameNormalization || authNames == null || authNames.isEmpty())
+        {
+            return authNames;
+        }
+
+        Set<String> normalizedAuthorities = new HashSet<>();
+        for (String authorityName : authNames)
+        {
+            normalizedAuthorities.add(normalizeAuthorityName(authorityName));
+        }
+        return normalizedAuthorities;
+    }
+
+    /**
+     * Usernames are case insensitive but affect the IPR group matching when set with different casing. For a given authority of type user, this method normalizes the authority name. If group, it returns the name as-is.
+     *
+     * @param authorityName
+     *            the authority name to normalize
+     * @return the normalized authority name
+     */
+    private String normalizeAuthorityName(String authorityName)
+    {
+        if (authorityName == null || authorityName.startsWith(GROUP_PREFIX))
+        {
+            return authorityName;
+        }
+
+        // For users, attempt to get the correct casing from the username property of the user node
+        if (authorityService.authorityExists(authorityName))
+        {
+            try
+            {
+                NodeRef authorityNodeRef = authorityService.getAuthorityNodeRef(authorityName);
+                if (authorityNodeRef != null)
+                {
+                    String username = (String) nodeService.getProperty(authorityNodeRef, ContentModel.PROP_USERNAME);
+                    return username != null ? username : authorityName;
+                }
+            }
+            catch (Exception e)
+            {
+                // If anything goes wrong, fallback to the original name
+            }
+        }
+
+        return authorityName;
     }
 
     /**

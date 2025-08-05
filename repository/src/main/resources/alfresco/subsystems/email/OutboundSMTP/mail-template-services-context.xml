@@ -161,4 +161,25 @@
             <ref bean="ServiceRegistry"/>
         </property>
     </bean>
+
+    <bean id="documentationUrlExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.DocumentationURLMethod">
+        <property name="extensionName">
+            <value>documentationUrl</value>
+        </property>
+        <property name="documentationBaseUrl">
+            <value>${alfresco.documentation.baseurl}</value>
+        </property>
+        <property name="acsVersion">
+            <value>${alfresco.documentation.acsVersion}</value>
+        </property>
+        <property name="alfrescoSearchVersion">
+            <value>${alfresco.documentation.searchVersion}</value>
+        </property>
+        <property name="alfrescoSearchEnterpriseVersion">
+            <value>${alfresco.documentation.searchEnterpriseVersion}</value>
+        </property>
+        <property name="defaultDocumentationUrl">
+            <value>${alfresco.documentation.defaultDocumentationUrl}</value>
+        </property>
+    </bean>
 </beans>

@@ -220,7 +220,7 @@ jobs:
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
       - name: "Set transformers tag"
-        run: echo "TRANSFORMERS_TAG=$latest" >> $GITHUB_ENV
+        run: echo "TRANSFORMERS_TAG=latest" >> $GITHUB_ENV
       - name: "Set up the environment"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d

@@ -33,6 +33,7 @@ public class EnterprisePublicApiTestFixture extends EnterpriseTestFixture
             "classpath:alfresco/application-context.xml",
             "classpath:alfresco/web-scripts-application-context.xml",
             "classpath:alfresco/web-scripts-application-context-test.xml",
+            "classpath:alfresco/enterprise-web-scripts-application-context.xml",
             "rest-api-test-context.xml",
             "testcmis-model-context.xml"
     };

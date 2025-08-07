@@ -53,5 +53,4 @@ public class EnterpriseTestApi extends AbstractTestApi
         return EnterprisePublicApiTestFixture.getInstance(createTestData, getCustomConfigLocations());
     }
 
-
 }

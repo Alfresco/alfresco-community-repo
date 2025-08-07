@@ -45,32 +45,40 @@ public class EnterprisePublicApiTestFixture extends EnterpriseTestFixture
     private String[] customConfigLocations;
 
     /* Note: synchronized for multi-threaded test access */
-    public synchronized static EnterprisePublicApiTestFixture getInstance(boolean createTestData, String[] customConfigLocations) throws Exception
+    public synchronized static EnterprisePublicApiTestFixture getInstance(boolean createTestData, String... customConfigLocations)
     {
         if (instance == null)
         {
             instance = new EnterprisePublicApiTestFixture(customConfigLocations);
-            instance.setup(createTestData);
+            try
+            {
+                instance.setup(createTestData);
+            }
+            catch (Exception e)
+            {
+                String errorMessage = "Exception was thrown during setup EnterprisePublicApiTestFixture: " + e.getClass() + " - " + e.getMessage();
+                throw new RuntimeException(errorMessage, e);
+            }
         }
         return instance;
     }
 
-    public static EnterprisePublicApiTestFixture getInstance(String[] customConfigLocations) throws Exception
+    public static EnterprisePublicApiTestFixture getInstance(String... customConfigLocations)
     {
         return getInstance(true, customConfigLocations);
     }
 
-    public static EnterprisePublicApiTestFixture getInstance() throws Exception
+    public static EnterprisePublicApiTestFixture getInstance()
     {
         return getInstance(true, null);
     }
 
-    public static EnterprisePublicApiTestFixture getInstance(boolean createTestData) throws Exception
+    public static EnterprisePublicApiTestFixture getInstance(boolean createTestData)
     {
         return getInstance(createTestData, null);
     }
 
-    private EnterprisePublicApiTestFixture(String[] customConfigLocations)
+    private EnterprisePublicApiTestFixture(String... customConfigLocations)
     {
         super(CONFIG_LOCATIONS, CLASS_LOCATIONS, PORT, CONTEXT_PATH, PUBLIC_API_SERVLET_NAME, DEFAULT_NUM_MEMBERS_PER_SITE, false);
         this.customConfigLocations = customConfigLocations;

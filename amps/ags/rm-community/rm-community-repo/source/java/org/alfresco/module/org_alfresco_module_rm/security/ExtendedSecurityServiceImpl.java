@@ -34,6 +34,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.extensions.webscripts.ui.common.StringUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -43,7 +47,10 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authority.RMAuthority;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -55,12 +62,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.extensions.webscripts.ui.common.StringUtils;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 
 /**
  * Extended security service implementation.
@@ -69,9 +70,9 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
  * @since 2.1
  */
 public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
-                                         implements ExtendedSecurityService,
-                                                    RecordsManagementModel,
-                                                    ApplicationListener<ContextRefreshedEvent>
+        implements ExtendedSecurityService,
+        RecordsManagementModel,
+        ApplicationListener<ContextRefreshedEvent>
 {
     /** ipr group names */
     static final String ROOT_IPR_GROUP = "INPLACE_RECORD_MANAGEMENT";
@@ -99,7 +100,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     private boolean enableUsernameNormalization;
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -107,7 +109,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -115,7 +118,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @param authorityService  authority service
+     * @param authorityService
+     *            authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -123,7 +127,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @param permissionService permission service
+     * @param permissionService
+     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -131,7 +136,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @param transactionService    transaction service
+     * @param transactionService
+     *            transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -154,19 +160,17 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent)
     {
         // run as System on bootstrap
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork()
             {
-                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-                {
+                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
                     public Void execute()
                     {
                         // if the root group doesn't exist then create it
                         if (!authorityService.authorityExists(getRootIRPGroup()))
                         {
                             authorityService.createAuthority(AuthorityType.GROUP, ROOT_IPR_GROUP, ROOT_IPR_GROUP,
-                                        Collections.singleton(RMAuthority.ZONE_APP_RM));
+                                    Collections.singleton(RMAuthority.ZONE_APP_RM));
                         }
                         return null;
                     }
@@ -186,7 +190,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         return GROUP_PREFIX + ROOT_IPR_GROUP;
     }
 
-	/**
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#hasExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
@@ -236,8 +240,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * Helper to get authorities for a given group
      *
-     * @param group         group name
-     * @return Set<String>  immediate authorities
+     * @param group
+     *            group name
+     * @return Set<String> immediate authorities
      */
     private Set<String> getAuthorities(String group)
     {
@@ -296,8 +301,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * <p>
      * Return null if none found.
      *
-     * @param nodeRef                node reference
-     * @return Pair<String, String>  where first is the read group and second if the write group, null if none found
+     * @param nodeRef
+     *            node reference
+     * @return Pair<String, String> where first is the read group and second if the write group, null if none found
      */
     private Pair<String, String> getIPRGroups(NodeRef nodeRef)
     {
@@ -333,17 +339,17 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * Given a set of readers and writers find or create the appropriate IPR groups.
      * <p>
-     * The IPR groups are named with hashes of the authority lists in order to reduce
-     * the set of groups that require exact match.  A further index is used to handle
-     * a situation where there is a hash clash, but a difference in the authority lists.
+     * The IPR groups are named with hashes of the authority lists in order to reduce the set of groups that require exact match. A further index is used to handle a situation where there is a hash clash, but a difference in the authority lists.
      * <p>
-     * When no match is found the groups are created.  Once created
+     * When no match is found the groups are created. Once created
      *
-     * @param filePlan              file plan
-     * @param readers               authorities with read
-     * @param writers               authorities with write
-     * @return Pair<String, String> where first is the full name of the read group and
-     *                              second is the full name of the write group
+     * @param filePlan
+     *            file plan
+     * @param readers
+     *            authorities with read
+     * @param writers
+     *            authorities with write
+     * @return Pair<String, String> where first is the full name of the read group and second is the full name of the write group
      */
     private Pair<String, String> createOrFindIPRGroups(Set<String> readers, Set<String> writers)
     {
@@ -355,9 +361,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * Create or find an IPR group based on the provided prefix and authorities.
      *
-     * @param groupPrefix   group prefix
-     * @param authorities   authorities
-     * @return String       full group name
+     * @param groupPrefix
+     *            group prefix
+     * @param authorities
+     *            authorities
+     * @return String full group name
      */
     private String createOrFindIPRGroup(String groupPrefix, Set<String> authorities)
     {
@@ -387,13 +395,13 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * Given a group name prefix and the authorities, finds the exact match existing group.
      * <p>
-     * If the group does not exist then the group returned is null and the index shows the next available
-     * group index for creation.
+     * If the group does not exist then the group returned is null and the index shows the next available group index for creation.
      *
-     * @param groupPrefix             group name prefix
-     * @param authorities             authorities
-     * @return Pair<String, Integer>  where first is the name of the found group, null if none found and second
-     *                                if the next available create index
+     * @param groupPrefix
+     *            group name prefix
+     * @param authorities
+     *            authorities
+     * @return Pair<String, Integer> where first is the name of the found group, null if none found and second if the next available create index
      */
     private Pair<String, Integer> findIPRGroup(String groupPrefix, Set<String> authorities)
     {
@@ -411,11 +419,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             // get matching authorities
             PagingResults<String> results = authorityService.getAuthorities(
                     AuthorityType.GROUP,
-                        RMAuthority.ZONE_APP_RM,
-                        groupShortNamePrefix,
-                        false,
-                        false,
-                        new PagingRequest(MAX_ITEMS*pageCount, MAX_ITEMS));
+                    RMAuthority.ZONE_APP_RM,
+                    groupShortNamePrefix,
+                    false,
+                    false,
+                    new PagingRequest(MAX_ITEMS * pageCount, MAX_ITEMS));
 
             // record the total count
             nextGroupIndex = nextGroupIndex + results.getPage().size();
@@ -432,7 +440,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
 
             // determine if there are any more pages to inspect
             hasMoreItems = results.hasMoreItems();
-            pageCount ++;
+            pageCount++;
         }
 
         return new Pair<>(iprGroup, nextGroupIndex);
@@ -498,20 +506,22 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * Determines whether a group exactly matches a list of authorities.
      *
-     * @param authorities           list of authorities
-     * @param group                 group
+     * @param authorities
+     *            list of authorities
+     * @param group
+     *            group
      * @return
      */
     private boolean isIPRGroupTrueMatch(String group, Set<String> authorities)
     {
-        //Remove GROUP_EVERYONE for proper comparison as GROUP_EVERYONE is never included in an IPR group
+        // Remove GROUP_EVERYONE for proper comparison as GROUP_EVERYONE is never included in an IPR group
         Set<String> plainAuthorities = new HashSet<String>();
         if (authorities != null)
         {
             plainAuthorities.addAll(authorities);
             plainAuthorities.remove(PermissionService.ALL_AUTHORITIES);
         }
-        Set<String> contained =  authorityService.getContainedAuthorities(null, group, true);
+        Set<String> contained = authorityService.getContainedAuthorities(null, group, true);
         return contained.equals(plainAuthorities);
     }
 
@@ -520,15 +530,17 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * <p>
      * 'package' scope to help testing.
      *
-     * @param prefix        prefix
-     * @param authorities   authorities
-     * @return String       group prefix short name
+     * @param prefix
+     *            prefix
+     * @param authorities
+     *            authorities
+     * @return String group prefix short name
      */
-    /*package*/ String getIPRGroupPrefixShortName(String prefix, Set<String> authorities)
+    /* package */ String getIPRGroupPrefixShortName(String prefix, Set<String> authorities)
     {
         StringBuilder builder = new StringBuilder(128)
-               .append(prefix)
-               .append(getAuthoritySetHashCode(authorities));
+                .append(prefix)
+                .append(getAuthoritySetHashCode(authorities));
 
         return builder.toString();
     }
@@ -540,13 +552,17 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * <p>
      * 'package' scope to help testing.
      *
-     * @param prefix    prefix
-     * @param readers   read authorities
-     * @param writers   write authorities
-     * @param index     group index
-     * @return String   group short name
+     * @param prefix
+     *            prefix
+     * @param readers
+     *            read authorities
+     * @param writers
+     *            write authorities
+     * @param index
+     *            group index
+     * @return String group short name
      */
-    /*package*/ String getIPRGroupShortName(String prefix, Set<String> authorities, int index)
+    /* package */ String getIPRGroupShortName(String prefix, Set<String> authorities, int index)
     {
         return getIPRGroupShortName(prefix, authorities, Integer.toString(index));
     }
@@ -556,17 +572,21 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * <p>
      * Note this excludes the "GROUP_" prefix.
      *
-     * @param prefix    prefix
-     * @param readers   read authorities
-     * @param writers   write authorities
-     * @param index     group index
-     * @return String   group short name
+     * @param prefix
+     *            prefix
+     * @param readers
+     *            read authorities
+     * @param writers
+     *            write authorities
+     * @param index
+     *            group index
+     * @return String group short name
      */
     private String getIPRGroupShortName(String prefix, Set<String> authorities, String index)
     {
         StringBuilder builder = new StringBuilder(128)
-               .append(getIPRGroupPrefixShortName(prefix, authorities))
-               .append(index);
+                .append(getIPRGroupPrefixShortName(prefix, authorities))
+                .append(index);
 
         return builder.toString();
     }
@@ -574,8 +594,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * Gets the hashcode value of a set of authorities.
      *
-     * @param authorities   set of authorities
-     * @return int          hash code
+     * @param authorities
+     *            set of authorities
+     * @return int hash code
      */
     private int getAuthoritySetHashCode(Set<String> authorities)
     {
@@ -590,10 +611,13 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * Creates a new IPR group.
      *
-     * @param groupNamePrefix   group name prefix
-     * @param children          child authorities
-     * @param index             group index
-     * @return String           full name of created group
+     * @param groupNamePrefix
+     *            group name prefix
+     * @param children
+     *            child authorities
+     * @param index
+     *            group index
+     * @return String full name of created group
      */
     private String createIPRGroup(String groupNamePrefix, Set<String> children, int index)
     {
@@ -623,7 +647,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 }
             }
         }
-        catch(DuplicateChildNodeNameException ex)
+        catch (DuplicateChildNodeNameException ex)
         {
             // the group was concurrently created
             group = authorityService.getName(AuthorityType.GROUP, groupShortName);
@@ -635,8 +659,10 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * Assign IPR groups to a node reference with the correct permissions.
      *
-     * @param iprGroups iprGroups, first read and second write
-     * @param nodeRef   node reference
+     * @param iprGroups
+     *            iprGroups, first read and second write
+     * @param nodeRef
+     *            node reference
      */
     private void assignIPRGroupsToNode(Pair<String, String> iprGroups, NodeRef nodeRef)
     {
@@ -674,7 +700,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * Clear the nodes IPR permissions
      *
-     * @param nodeRef   node reference
+     * @param nodeRef
+     *            node reference
      */
     private void clearPermissions(NodeRef nodeRef, Pair<String, String> iprGroups)
     {
@@ -686,7 +713,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#getExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
      */
-    @Override @Deprecated public Set<String> getExtendedReaders(NodeRef nodeRef)
+    @Override
+    @Deprecated
+    public Set<String> getExtendedReaders(NodeRef nodeRef)
     {
         return getReaders(nodeRef);
     }
@@ -694,7 +723,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#getExtendedWriters(org.alfresco.service.cmr.repository.NodeRef)
      */
-    @Override @Deprecated public Set<String> getExtendedWriters(NodeRef nodeRef)
+    @Override
+    @Deprecated
+    public Set<String> getExtendedWriters(NodeRef nodeRef)
     {
         return getWriters(nodeRef);
     }
@@ -702,7 +733,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)
      */
-    @Override @Deprecated public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
+    @Override
+    @Deprecated
+    public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
         set(nodeRef, readers, writers);
     }
@@ -710,7 +743,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
      */
-    @Override @Deprecated public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
+    @Override
+    @Deprecated
+    public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
     {
         set(nodeRef, readers, writers);
     }
@@ -718,7 +753,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#removeAllExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
      */
-    @Override @Deprecated public void removeAllExtendedSecurity(NodeRef nodeRef)
+    @Override
+    @Deprecated
+    public void removeAllExtendedSecurity(NodeRef nodeRef)
     {
         remove(nodeRef);
     }
@@ -726,7 +763,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#removeExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)
      */
-    @Override @Deprecated public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
+    @Override
+    @Deprecated
+    public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
         remove(nodeRef);
     }
@@ -734,7 +773,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#removeExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
      */
-    @Override @Deprecated public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String>writers, boolean applyToParents)
+    @Override
+    @Deprecated
+    public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
     {
         remove(nodeRef);
     }
@@ -742,7 +783,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#removeAllExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
-    @Override @Deprecated public void removeAllExtendedSecurity(NodeRef nodeRef, boolean applyToParents)
+    @Override
+    @Deprecated
+    public void removeAllExtendedSecurity(NodeRef nodeRef, boolean applyToParents)
     {
         remove(nodeRef);
     }

@@ -41,6 +41,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.M2Model;
@@ -59,7 +62,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.junit.Test;
 
 /**
  * @author Iulian Aftene
@@ -72,20 +74,20 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     public void testUpdateNodeResourceContent()
     {
         ContentService contentService = (ContentService) applicationContext.getBean(
-            "contentService");
+                "contentService");
 
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
 
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(),
-            resultRepoEvent.getType());
+                resultRepoEvent.getType());
 
         NodeResource resource = getNodeResource(resultRepoEvent);
         assertNull("Content should have been null.", resource.getContent());
 
         retryingTransactionHelper.doInTransaction(() -> {
             ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT,
-                true);
+                    true);
             writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
             writer.setEncoding("UTF-8");
             writer.putContent("test content.");
@@ -96,7 +98,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         resultRepoEvent = getRepoEvent(2);
         assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
-            resultRepoEvent.getType());
+                resultRepoEvent.getType());
 
         resource = getNodeResource(resultRepoEvent);
         ContentInfo content = resource.getContent();
@@ -111,7 +113,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         // Update the content again
         retryingTransactionHelper.doInTransaction(() -> {
             ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT,
-                true);
+                    true);
             writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
             writer.setEncoding("UTF-8");
             writer.putContent("A quick brown fox jumps over the lazy dog.");
@@ -376,7 +378,6 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("new test title", title);
         assertEquals("new test title", getLocalizedProperty(resource, "cm:title", defaultLocale));
 
-
         resourceBefore = getNodeResourceBefore(3);
         title = getProperty(resourceBefore, "cm:title");
         assertEquals("Wrong old property.", "test title", title);
@@ -496,14 +497,14 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         resource = getNodeResource(2);
         assertNotNull(resource.getAspectNames());
         assertTrue(resource.getAspectNames().contains("cm:versionable"));
-        //Check all aspects
+        // Check all aspects
         Set<String> expectedAspects = new HashSet<>(originalAspects);
         expectedAspects.add("cm:versionable");
         assertEquals(expectedAspects, resource.getAspectNames());
         // Check properties
         assertFalse(resource.getProperties().isEmpty());
 
-        //Check resourceBefore
+        // Check resourceBefore
         NodeResource resourceBefore = getNodeResourceBefore(2);
         assertNotNull(resourceBefore.getAspectNames());
         assertEquals(originalAspects, resourceBefore.getAspectNames());
@@ -599,15 +600,15 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         retryingTransactionHelper.doInTransaction(() -> {
 
             NodeRef node1 = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE, GUID.generate()),
-                ContentModel.TYPE_CONTENT).getChildRef();
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                    ContentModel.TYPE_CONTENT).getChildRef();
 
             nodeService.setProperty(node1, PROP_DESCRIPTION, "test description");
             return null;
         });
-        //Create and update node are done in the same transaction so one event is expected
+        // Create and update node are done in the same transaction so one event is expected
         // to be generated
         checkNumOfEvents(1);
     }
@@ -642,8 +643,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Incorrect node type was found", "cm:folder", nodeResource.getNodeType());
 
         NodeResource resourceBefore = getNodeResourceBefore(2);
-        assertEquals("Incorrect node type was found","cm:content", resourceBefore.getNodeType());
-        // assertNotNull(resourceBefore.getModifiedAt());  uncomment this when the issue will be fixed
+        assertEquals("Incorrect node type was found", "cm:content", resourceBefore.getNodeType());
+        // assertNotNull(resourceBefore.getModifiedAt()); uncomment this when the issue will be fixed
         assertNull(resourceBefore.getId());
         assertNull(resourceBefore.getContent());
         assertNull(resourceBefore.isFile());
@@ -673,8 +674,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         m2Type.setTitle("Test type title");
 
         // Create active model
-        CustomModelDefinition modelDefinition =
-            retryingTransactionHelper.doInTransaction(() -> customModelService.createCustomModel(model, true));
+        CustomModelDefinition modelDefinition = retryingTransactionHelper.doInTransaction(() -> customModelService.createCustomModel(model, true));
 
         assertNotNull(modelDefinition);
         assertEquals(modelName, modelDefinition.getName().getLocalName());
@@ -704,7 +704,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
         assertEquals("cm:content node type was not found", "cm:content", nodeResource.getNodeType());
 
-        QName typeQName = QName.createQName("{" + namespacePair.getFirst()+ "}" + typeName);
+        QName typeQName = QName.createQName("{" + namespacePair.getFirst() + "}" + typeName);
         retryingTransactionHelper.doInTransaction(() -> {
             nodeService.setType(nodeRef, typeQName);
 
@@ -806,7 +806,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         // we should have only 1 event, node.Created
         checkNumOfEvents(1);
 
-        RepoEvent<EventData<NodeResource>>  resultRepoEvent = getRepoEvent(1);
+        RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
         NodeResource nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", "cm:folder", nodeResource.getNodeType());
@@ -832,10 +832,10 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         retryingTransactionHelper.doInTransaction(() -> {
             nodeService.moveNode(
-                moveFile,
-                folder2,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
+                    moveFile,
+                    folder2,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(TEST_NAMESPACE));
             return null;
         });
 
@@ -850,7 +850,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong node parent.", folder1ID, moveFileParentBeforeMove);
         assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
         assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
-            getRepoEvent(4).getType());
+                getRepoEvent(4).getType());
 
         assertNull(resourceBefore.getId());
         assertNull(resourceBefore.getName());
@@ -882,10 +882,10 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         retryingTransactionHelper.doInTransaction(() -> {
             nodeService.moveNode(
-                moveFolder,
-                grandParent,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
+                    moveFolder,
+                    grandParent,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(TEST_NAMESPACE));
             return null;
         });
 
@@ -894,15 +894,13 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         final String grandParentID = getNodeResource(1).getId();
         final String parentID = getNodeResource(2).getId();
 
-        final String moveFolderParentBeforeMove =
-            getNodeResourceBefore(4).getPrimaryHierarchy().get(0);
-        final String moveFolderParentAfterMove =
-            getNodeResource(4).getPrimaryHierarchy().get(0);
+        final String moveFolderParentBeforeMove = getNodeResourceBefore(4).getPrimaryHierarchy().get(0);
+        final String moveFolderParentAfterMove = getNodeResource(4).getPrimaryHierarchy().get(0);
 
         assertEquals("Wrong node parent.", parentID, moveFolderParentBeforeMove);
         assertEquals("Wrong node parent.", grandParentID, moveFolderParentAfterMove);
         assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
-            getRepoEventWithoutWait(4).getType());
+                getRepoEventWithoutWait(4).getType());
     }
 
     @Test
@@ -916,28 +914,25 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         retryingTransactionHelper.doInTransaction(() -> {
             nodeService.moveNode(
-                grandParent,
-                root2,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
+                    grandParent,
+                    root2,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(TEST_NAMESPACE));
             return null;
         });
 
         checkNumOfEvents(6);
 
         final String root2ID = getNodeResource(2).getId();
-        final String grandParentParentAfterMove =
-            getNodeResource(6).getPrimaryHierarchy().get(0);
+        final String grandParentParentAfterMove = getNodeResource(6).getPrimaryHierarchy().get(0);
         assertEquals("Wrong node parent.", root2ID, grandParentParentAfterMove);
 
         final String grandParentID = getNodeResource(3).getId();
-        final String parentIDOfTheParentFolder =
-            getNodeResource(4).getPrimaryHierarchy().get(0);
+        final String parentIDOfTheParentFolder = getNodeResource(4).getPrimaryHierarchy().get(0);
         assertEquals("Wrong node parent.", grandParentID, parentIDOfTheParentFolder);
 
         final String parentID = getNodeResource(4).getId();
-        final String contentParentID =
-            getNodeResource(5).getPrimaryHierarchy().get(0);
+        final String contentParentID = getNodeResource(5).getPrimaryHierarchy().get(0);
         assertEquals("Wrong node parent.", parentID, contentParentID);
     }
 
@@ -955,10 +950,10 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         retryingTransactionHelper.doInTransaction(() -> {
             nodeService.moveNode(
-                moveFile,
-                folder2,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
+                    moveFile,
+                    folder2,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(TEST_NAMESPACE));
             return null;
         });
 
@@ -967,8 +962,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertTrue("Wrong aspect.", resource.getAspectNames().contains("cm:versionable"));
 
         final String folder2ID = getNodeResource(2).getId();
-        final String moveFileParentAfterMove =
-            getNodeResource(5).getPrimaryHierarchy().get(0);
+        final String moveFileParentAfterMove = getNodeResource(5).getPrimaryHierarchy().get(0);
 
         assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
     }
@@ -984,10 +978,10 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
             nodeService.setProperty(moveFile, ContentModel.PROP_NAME, "test_new_name");
 
             nodeService.moveNode(
-                moveFile,
-                folder2,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
+                    moveFile,
+                    folder2,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(TEST_NAMESPACE));
             return null;
         });
 
@@ -995,8 +989,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("test_new_name", resource.getName());
 
         final String folder2ID = getNodeResource(2).getId();
-        final String moveFileParentAfterMove =
-            getNodeResource(4).getPrimaryHierarchy().get(0);
+        final String moveFileParentAfterMove = getNodeResource(4).getPrimaryHierarchy().get(0);
 
         assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
     }
@@ -1007,28 +1000,28 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         retryingTransactionHelper.doInTransaction(() -> {
 
             NodeRef folder1 = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE),
-                ContentModel.TYPE_FOLDER).getChildRef();
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(TEST_NAMESPACE),
+                    ContentModel.TYPE_FOLDER).getChildRef();
 
             NodeRef folder2 = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE),
-                ContentModel.TYPE_FOLDER).getChildRef();
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(TEST_NAMESPACE),
+                    ContentModel.TYPE_FOLDER).getChildRef();
 
             NodeRef fileToMove = nodeService.createNode(
-                folder1,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE),
-                ContentModel.TYPE_CONTENT).getChildRef();
+                    folder1,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(TEST_NAMESPACE),
+                    ContentModel.TYPE_CONTENT).getChildRef();
 
             nodeService.moveNode(
-                fileToMove,
-                folder2,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(TEST_NAMESPACE));
+                    fileToMove,
+                    folder2,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(TEST_NAMESPACE));
 
             assertEquals(folder2, nodeService.getPrimaryParent(fileToMove).getParentRef());
 
@@ -1038,8 +1031,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         checkNumOfEvents(3);
 
         final String folder2ID = getNodeResource(2).getId();
-        final String moveFileParentAfterMove =
-            getNodeResource(3).getPrimaryHierarchy().get(0);
+        final String moveFileParentAfterMove = getNodeResource(3).getPrimaryHierarchy().get(0);
 
         assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
     }
@@ -1051,7 +1043,6 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         NodeResource resource = getNodeResource(1);
         final Set<String> originalAspects = resource.getAspectNames();
         assertNotNull(originalAspects);
-
 
         retryingTransactionHelper.doInTransaction(() -> {
             // Add cm:geographic aspect with default value

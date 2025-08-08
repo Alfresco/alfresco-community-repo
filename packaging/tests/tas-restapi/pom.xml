@@ -23,7 +23,7 @@
 
     <properties>
         <suiteXmlFile>${project.basedir}/src/test/resources/restapi-suite.xml</suiteXmlFile>
-        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
     </properties>
 
     <profiles>

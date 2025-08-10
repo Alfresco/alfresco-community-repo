@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -48,6 +48,7 @@ public class ExtendedFileFolderServiceImpl extends FileFolderServiceImpl
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName)
     {
         return create(parentNodeRef, name, typeQName, null);
+
     }
 
     @Override

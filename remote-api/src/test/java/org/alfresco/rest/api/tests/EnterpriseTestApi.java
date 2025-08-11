@@ -36,15 +36,21 @@ public class EnterpriseTestApi extends AbstractTestApi
         getTestFixture().getRandomNetwork();
     }
 
+    protected String[] getCustomConfigLocations()
+    {
+        return new String[]{};
+    }
+
     @Override
     protected TestFixture getTestFixture() throws Exception
     {
-        return EnterprisePublicApiTestFixture.getInstance();
+        return EnterprisePublicApiTestFixture.getInstance(getCustomConfigLocations());
     }
 
     @Override
     protected TestFixture getTestFixture(boolean createTestData) throws Exception
     {
-        return EnterprisePublicApiTestFixture.getInstance(createTestData);
+        return EnterprisePublicApiTestFixture.getInstance(createTestData, getCustomConfigLocations());
     }
+
 }

@@ -371,12 +371,18 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         String group = null;
 
+        // If enabled, the authorities are forced to match the correct casing of the usernames in case they were set
+        // with the incorrect casing.
+        // If not, it will just use the authorities as they are.
+        // In normal circumstances, the authorities are in the correct casing, so this is disabled by default.
+        Set<String> authoritySet = normalizeAuthorities(authorities);
+
         // find group or determine what the next index is if no group exists or there is a clash
-        Pair<String, Integer> groupResult = findIPRGroup(groupPrefix, authorities);
+        Pair<String, Integer> groupResult = findIPRGroup(groupPrefix, authoritySet);
 
         if (groupResult.getFirst() == null)
         {
-            group = createIPRGroup(groupPrefix, authorities, groupResult.getSecond());
+            group = createIPRGroup(groupPrefix, authoritySet, groupResult.getSecond());
         }
         else
         {
@@ -404,13 +410,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         boolean hasMoreItems = true;
         int pageCount = 0;
 
-        // If enabled, the authorities are forced to match the correct casing of the usernames in case they were set with the incorrect casing.
-        // If not, it will just use the authorities as they are.
-        // In normal circumstances, the authorities are in the correct casing, so this is disabled by default.
-        Set<String> authoritySet = normalizeAuthorities(authorities);
-
         // determine the short name prefix
-        String groupShortNamePrefix = getIPRGroupPrefixShortName(groupPrefix, authoritySet);
+        String groupShortNamePrefix = getIPRGroupPrefixShortName(groupPrefix, authorities);
 
         // iterate over the authorities to find a match
         while (hasMoreItems == true)
@@ -431,7 +432,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             for (String group : results.getPage())
             {
                 // if exists and matches we have found our group
-                if (isIPRGroupTrueMatch(group, authoritySet))
+                if (isIPRGroupTrueMatch(group, authorities))
                 {
                     return new Pair<String, Integer>(group, nextGroupIndex);
                 }

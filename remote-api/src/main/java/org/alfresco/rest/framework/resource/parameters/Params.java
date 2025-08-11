@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.repo.content.MimetypeMap;
@@ -231,7 +230,7 @@ public class Params implements Parameters
     }
 
     @Override
-    public T getParameter(String parameterName, Class<T> clazz) throws InvalidArgumentException
+    public <T> T getParameter(String parameterName, Class<T> clazz) throws InvalidArgumentException
     {
         String param = getParameter(parameterName);
         if (param == null)
@@ -239,7 +238,7 @@ public class Params implements Parameters
         Object obj = ConvertUtils.convert(param, clazz);
         if (obj != null && obj.getClass().equals(clazz))
         {
-            return (T) obj;
+            return clazz.cast(obj);
         }
         throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID, new Object[]{parameterName});
     }

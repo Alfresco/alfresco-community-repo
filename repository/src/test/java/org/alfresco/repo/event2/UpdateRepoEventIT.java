@@ -26,6 +26,12 @@
 
 package org.alfresco.repo.event2;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import static org.alfresco.model.ContentModel.PROP_DESCRIPTION;
 
 import java.io.Serializable;
@@ -543,6 +549,49 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         NodeResource resourceBefore = getNodeResourceBefore(3);
         assertNotNull(resourceBefore.getAspectNames());
         assertEquals(aspectsBeforeRemove, resourceBefore.getAspectNames());
+    }
+
+    @Test
+    public void testRemoveAspectPropertiesTest()
+    {
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+        NodeResource resource = getNodeResource(1);
+        final Set<String> originalAspects = resource.getAspectNames();
+        assertNotNull(originalAspects);
+
+        // Add cm:geographic aspect with properties
+        retryingTransactionHelper.doInTransaction(() -> {
+            Map<QName, Serializable> aspectProperties = new HashMap<>();
+            aspectProperties.put(ContentModel.PROP_LATITUDE, "12.345678");
+            aspectProperties.put(ContentModel.PROP_LONGITUDE, "12.345678");
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, aspectProperties);
+            return null;
+        });
+        resource = getNodeResource(2);
+        Set<String> aspectsBeforeRemove = resource.getAspectNames();
+        assertNotNull(aspectsBeforeRemove);
+        assertTrue(aspectsBeforeRemove.contains("cm:geographic"));
+
+        // Remove cm:geographic aspect - this automatically removes the properties from the node
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC);
+            return null;
+        });
+
+        resource = getNodeResource(3);
+        assertEquals(originalAspects, resource.getAspectNames());
+
+        NodeResource resourceBefore = getNodeResourceBefore(3);
+        assertNotNull(resourceBefore.getAspectNames());
+        assertEquals(aspectsBeforeRemove, resourceBefore.getAspectNames());
+        // Resource before should contain cm:latitude and cm:longitude properties
+        assertNotNull(resourceBefore.getProperties());
+        assertTrue(resourceBefore.getProperties().containsKey("cm:latitude"));
+        assertTrue(resourceBefore.getProperties().containsKey("cm:longitude"));
+        // Resource after should NOT contain cm:latitude and cm:longitude properties
+        assertNotNull(resource.getProperties());
+        assertFalse(resource.getProperties().containsKey("cm:latitude"));
+        assertFalse(resource.getProperties().containsKey("cm:longitude"));
     }
 
     @Test

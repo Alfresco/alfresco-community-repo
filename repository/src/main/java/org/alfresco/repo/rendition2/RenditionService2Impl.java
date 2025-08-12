@@ -290,8 +290,22 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         {
             if (!isEnabled())
             {
-                throw new RenditionService2Exception("Async transforms and renditions are disabled " +
-                        "(system.thumbnail.generate=false or renditionService2.enabled=false).");
+                TransformDefinition transformDefinition = (TransformDefinition) renderOrTransform.getRenditionDefinition();
+
+                // Check if flow is text extraction for content indexing.
+                boolean ifTextExtract = false;
+                if (transformDefinition != null)
+                {
+                     String replyQueue = transformDefinition.getReplyQueue();
+                     String targetMimetype = transformDefinition.getTargetMimetype();
+                     ifTextExtract = "org.alfresco.search.contentstore.event".equals(replyQueue)
+                             && MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype);
+                }
+                if(!ifTextExtract)
+                {
+                    throw new RenditionService2Exception("Async transforms and renditions are disabled " +
+                            "(system.thumbnail.generate=false or renditionService2.enabled=false).");
+                }
             }
 
             if (!nodeService.exists(sourceNodeRef))

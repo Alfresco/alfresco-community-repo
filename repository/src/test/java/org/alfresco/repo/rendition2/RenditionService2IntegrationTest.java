@@ -34,12 +34,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.repo.content.MimetypeMap;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -790,8 +790,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
                 java.util.Collections.emptyMap(),
                 "clientData",
                 replyQueue,
-                "requestId"
-        );
+                "requestId");
 
         renditionService2.setThumbnailsEnabled(false);
         try
@@ -804,7 +803,8 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
                 });
                 return null;
             }, ADMIN);
-        } finally
+        }
+        finally
         {
             renditionService2.setEnabled(true);
         }
@@ -822,18 +822,17 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
                 java.util.Collections.emptyMap(),
                 "clientData",
                 replyQueue,
-                "requestId"
-        );
+                "requestId");
 
         renditionService2.setThumbnailsEnabled(false);
         try
         {
-            AuthenticationUtil.runAs(() ->
-            {
+            AuthenticationUtil.runAs(() -> {
                 renditionService2.transform(sourceNodeRef, nonTextExtractTransform);
                 return null;
             }, ADMIN);
-        } finally
+        }
+        finally
         {
             renditionService2.setEnabled(true);
         }

@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -776,4 +777,66 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         }
 
     }
+
+    @Test
+    public void testTextExtractTransformAllowedWhenThumbnailDisabled()
+    {
+        NodeRef sourceNodeRef = createSource(ADMIN, "quick.txt");
+        String replyQueue = "org.alfresco.search.contentstore.event";
+        String targetMimetype = MimetypeMap.MIMETYPE_TEXT_PLAIN;
+
+        TransformDefinition textExtractTransform = new TransformDefinition(
+                targetMimetype,
+                java.util.Collections.emptyMap(),
+                "clientData",
+                replyQueue,
+                "requestId"
+        );
+
+        renditionService2.setThumbnailsEnabled(false);
+        try
+        {
+            // Should NOT throw, as this is a text extract transform
+            AuthenticationUtil.runAs(() -> {
+                transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                    renditionService2.transform(sourceNodeRef, textExtractTransform);
+                    return null;
+                });
+                return null;
+            }, ADMIN);
+        } finally
+        {
+            renditionService2.setEnabled(true);
+        }
+    }
+
+    @Test(expected = RenditionService2Exception.class)
+    public void testNonTextExtractTransformThrowsWhenThumbnailDisabled()
+    {
+        NodeRef sourceNodeRef = createSource(ADMIN, "quick.txt");
+        String replyQueue = "some.other.queue";
+        String targetMimetype = MimetypeMap.MIMETYPE_PDF;
+
+        TransformDefinition nonTextExtractTransform = new TransformDefinition(
+                targetMimetype,
+                java.util.Collections.emptyMap(),
+                "clientData",
+                replyQueue,
+                "requestId"
+        );
+
+        renditionService2.setThumbnailsEnabled(false);
+        try
+        {
+            AuthenticationUtil.runAs(() ->
+            {
+                renditionService2.transform(sourceNodeRef, nonTextExtractTransform);
+                return null;
+            }, ADMIN);
+        } finally
+        {
+            renditionService2.setEnabled(true);
+        }
+    }
+
 }

@@ -806,7 +806,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         }
         finally
         {
-            renditionService2.setEnabled(true);
+            renditionService2.setThumbnailsEnabled(true);
         }
     }
 
@@ -834,7 +834,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         }
         finally
         {
-            renditionService2.setEnabled(true);
+            renditionService2.setThumbnailsEnabled(true);
         }
     }
 

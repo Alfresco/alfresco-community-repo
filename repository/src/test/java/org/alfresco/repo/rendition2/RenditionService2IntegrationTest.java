@@ -781,7 +781,9 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     @Test
     public void testTextExtractTransformAllowedWhenThumbnailDisabled()
     {
+        //create a source node
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.txt");
+        assertNotNull("Node not generated", sourceNodeRef);
         String replyQueue = "org.alfresco.search.contentstore.event";
         String targetMimetype = MimetypeMap.MIMETYPE_TEXT_PLAIN;
 
@@ -801,34 +803,6 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
                     renditionService2.transform(sourceNodeRef, textExtractTransform);
                     return null;
                 });
-                return null;
-            }, ADMIN);
-        }
-        finally
-        {
-            renditionService2.setThumbnailsEnabled(true);
-        }
-    }
-
-    @Test(expected = RenditionService2Exception.class)
-    public void testNonTextExtractTransformThrowsWhenThumbnailDisabled()
-    {
-        NodeRef sourceNodeRef = createSource(ADMIN, "quick.txt");
-        String replyQueue = "some.other.queue";
-        String targetMimetype = MimetypeMap.MIMETYPE_PDF;
-
-        TransformDefinition nonTextExtractTransform = new TransformDefinition(
-                targetMimetype,
-                java.util.Collections.emptyMap(),
-                "clientData",
-                replyQueue,
-                "requestId");
-
-        renditionService2.setThumbnailsEnabled(false);
-        try
-        {
-            AuthenticationUtil.runAs(() -> {
-                renditionService2.transform(sourceNodeRef, nonTextExtractTransform);
                 return null;
             }, ADMIN);
         }

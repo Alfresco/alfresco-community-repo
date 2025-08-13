@@ -290,18 +290,20 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         {
             if (!isEnabled())
             {
-                // Check if flow is text extraction for content indexing.
+                // Check if flow is text extraction for content indexing and allow it.
                 boolean ifTextExtract = false;
+                TransformDefinition transformDefinition = null;
                 if (renderOrTransform.getRenditionDefinition() instanceof TransformDefinition)
                 {
-                    TransformDefinition transformDefinition = (TransformDefinition) renderOrTransform.getRenditionDefinition();
-                    if (transformDefinition != null)
-                    {
-                        String replyQueue = transformDefinition.getReplyQueue();
-                        String targetMimetype = transformDefinition.getTargetMimetype();
-                        ifTextExtract = "org.alfresco.search.contentstore.event".equals(replyQueue)
-                                && MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype);
-                    }
+                    transformDefinition = (TransformDefinition) renderOrTransform.getRenditionDefinition();
+                }
+
+                if (transformDefinition != null) 
+                {
+                    String replyQueue = transformDefinition.getReplyQueue();
+                    String targetMimetype = transformDefinition.getTargetMimetype();
+                    ifTextExtract = "org.alfresco.search.contentstore.event".equals(replyQueue)
+                            && MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype);
                 }
 
                 if (!ifTextExtract)

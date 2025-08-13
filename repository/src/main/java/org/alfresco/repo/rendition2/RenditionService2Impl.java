@@ -292,7 +292,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             {
                 // Check if flow is text extraction for content indexing.
                 boolean ifTextExtract = false;
-                if(renderOrTransform.getRenditionDefinition() instanceof TransformDefinition)
+                if (renderOrTransform.getRenditionDefinition() instanceof TransformDefinition)
                 {
                     TransformDefinition transformDefinition = (TransformDefinition) renderOrTransform.getRenditionDefinition();
                     if (transformDefinition != null)

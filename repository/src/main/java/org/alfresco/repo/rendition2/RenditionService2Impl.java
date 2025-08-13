@@ -78,6 +78,7 @@ import org.alfresco.util.PropertyCheck;
 public class RenditionService2Impl implements RenditionService2, InitializingBean, ContentServicePolicies.OnContentUpdatePolicy
 {
     public static final String TRANSFORMING_ERROR_MESSAGE = "Some error occurred during document transforming. Error message: ";
+    public static final String CONTENT_AVAILABILITY_REPLY_QUEUE = "org.alfresco.search.contentstore.event";
 
     public static final QName DEFAULT_RENDITION_CONTENT_PROP = ContentModel.PROP_CONTENT;
     public static final String DEFAULT_MIMETYPE = MimetypeMap.MIMETYPE_TEXT_PLAIN;
@@ -288,29 +289,10 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     {
         try
         {
-            if (!isEnabled())
+            if (!isEnabled() && !isTextExtractTransform(renderOrTransform))
             {
-                // Check if flow is text extraction for content indexing and allow it.
-                boolean ifTextExtract = false;
-                TransformDefinition transformDefinition = null;
-                if (renderOrTransform.getRenditionDefinition() instanceof TransformDefinition)
-                {
-                    transformDefinition = (TransformDefinition) renderOrTransform.getRenditionDefinition();
-                }
-
-                if (transformDefinition != null)
-                {
-                    String replyQueue = transformDefinition.getReplyQueue();
-                    String targetMimetype = transformDefinition.getTargetMimetype();
-                    ifTextExtract = "org.alfresco.search.contentstore.event".equals(replyQueue)
-                            && MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype);
-                }
-
-                if (!ifTextExtract)
-                {
-                    throw new RenditionService2Exception("Async transforms and renditions are disabled " +
-                            "(system.thumbnail.generate=false or renditionService2.enabled=false).");
-                }
+                throw new RenditionService2Exception("Async transforms and renditions are disabled " +
+                        "(system.thumbnail.generate=false or renditionService2.enabled=false).");
             }
 
             if (!nodeService.exists(sourceNodeRef))
@@ -985,5 +967,17 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 }
             }
         }
+    }
+
+    // Checks if the given transform callback is a text extract transform for content indexing.
+    private boolean isTextExtractTransform(RenderOrTransformCallBack renderOrTransform)
+    {
+        if (!(renderOrTransform.getRenditionDefinition() instanceof TransformDefinition))
+        {
+            return false;
+        }
+        TransformDefinition def = (TransformDefinition) renderOrTransform.getRenditionDefinition();
+        return CONTENT_AVAILABILITY_REPLY_QUEUE.equals(def.getReplyQueue())
+                && MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(def.getTargetMimetype());
     }
 }

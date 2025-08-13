@@ -781,7 +781,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     @Test
     public void testTextExtractTransformAllowedWhenThumbnailDisabled()
     {
-        //create a source node
+        // create a source node
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.txt");
         assertNotNull("Node not generated", sourceNodeRef);
         String replyQueue = "org.alfresco.search.contentstore.event";

@@ -298,7 +298,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                     transformDefinition = (TransformDefinition) renderOrTransform.getRenditionDefinition();
                 }
 
-                if (transformDefinition != null) 
+                if (transformDefinition != null)
                 {
                     String replyQueue = transformDefinition.getReplyQueue();
                     String targetMimetype = transformDefinition.getTargetMimetype();

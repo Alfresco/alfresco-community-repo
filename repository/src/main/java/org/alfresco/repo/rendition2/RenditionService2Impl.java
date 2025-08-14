@@ -288,22 +288,10 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     {
         try
         {
-            // If enabled is false, all async transforms/renditions must be blocked
-            if (!enabled)
+            if (!isAsyncAllowed(renderOrTransform))
             {
                 throw new RenditionService2Exception("Async transforms and renditions are disabled " +
                         "(system.thumbnail.generate=false or renditionService2.enabled=false).");
-            }
-
-            // If thumbnailsEnabled is false, only text extract transforms are allowed for content indexing.
-            if (!thumbnailsEnabled)
-            {
-                boolean isTextExtract = isTextExtractTransform(renderOrTransform);
-                if (!isTextExtract)
-                {
-                    throw new RenditionService2Exception("Async transforms and renditions are disabled " +
-                            "(system.thumbnail.generate=false or renditionService2.enabled=false).");
-                }
             }
 
             if (!nodeService.exists(sourceNodeRef))
@@ -990,4 +978,22 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         TransformDefinition def = (TransformDefinition) renderOrTransform.getRenditionDefinition();
         return MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(def.getTargetMimetype());
     }
+
+    private boolean isAsyncAllowed(RenderOrTransformCallBack renderOrTransform)
+    {
+        // If enabled is false, all async transforms/renditions must be blocked
+        if (!enabled)
+        {
+            return false;
+        }
+
+        // If thumbnails are not enabled, only text extract transforms are allowed for content indexing
+        if (!thumbnailsEnabled)
+        {
+            return isTextExtractTransform(renderOrTransform);
+        }
+
+        return true;
+    }
+
 }

@@ -987,7 +987,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             return false;
         }
 
-        // If thumbnails are disabled, allow only text extract transforms are allowed for content indexing
+        // If thumbnails are disabled, allow only text extract transforms for content indexing
         return thumbnailsEnabled || isTextExtractTransform(renderOrTransform);
     }
 

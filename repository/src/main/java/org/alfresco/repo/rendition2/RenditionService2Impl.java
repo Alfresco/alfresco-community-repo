@@ -78,7 +78,6 @@ import org.alfresco.util.PropertyCheck;
 public class RenditionService2Impl implements RenditionService2, InitializingBean, ContentServicePolicies.OnContentUpdatePolicy
 {
     public static final String TRANSFORMING_ERROR_MESSAGE = "Some error occurred during document transforming. Error message: ";
-    public static final String CONTENT_AVAILABILITY_REPLY_QUEUE = "org.alfresco.search.contentstore.event";
 
     public static final QName DEFAULT_RENDITION_CONTENT_PROP = ContentModel.PROP_CONTENT;
     public static final String DEFAULT_MIMETYPE = MimetypeMap.MIMETYPE_TEXT_PLAIN;
@@ -289,10 +288,22 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     {
         try
         {
-            if (!isEnabled() && !isTextExtractTransform(renderOrTransform))
+            // If enabled is false, all async transforms/renditions must be blocked
+            if (!enabled)
             {
                 throw new RenditionService2Exception("Async transforms and renditions are disabled " +
                         "(system.thumbnail.generate=false or renditionService2.enabled=false).");
+            }
+
+            // If thumbnailsEnabled is false, only text extract transforms are allowed for content indexing.
+            if (!thumbnailsEnabled)
+            {
+                boolean isTextExtract = isTextExtractTransform(renderOrTransform);
+                if (!isTextExtract)
+                {
+                    throw new RenditionService2Exception("Async transforms and renditions are disabled " +
+                            "(system.thumbnail.generate=false or renditionService2.enabled=false).");
+                }
             }
 
             if (!nodeService.exists(sourceNodeRef))
@@ -977,7 +988,6 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             return false;
         }
         TransformDefinition def = (TransformDefinition) renderOrTransform.getRenditionDefinition();
-        return CONTENT_AVAILABILITY_REPLY_QUEUE.equals(def.getReplyQueue())
-                && MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(def.getTargetMimetype());
+        return MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(def.getTargetMimetype());
     }
 }

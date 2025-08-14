@@ -288,7 +288,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     {
         try
         {
-            if (!isEnabled())
+            if (!isAsyncAllowed(renderOrTransform))
             {
                 throw new RenditionService2Exception("Async transforms and renditions are disabled " +
                         "(system.thumbnail.generate=false or renditionService2.enabled=false).");
@@ -967,4 +967,24 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             }
         }
     }
+
+    // Checks if the given transform callback is a text extract transform for content indexing.
+    private boolean isTextExtractTransform(RenderOrTransformCallBack renderOrTransform)
+    {
+        RenditionDefinition2 renditionDefinition = renderOrTransform.getRenditionDefinition();
+        return renditionDefinition != null && MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(renditionDefinition.getTargetMimetype());
+    }
+
+    private boolean isAsyncAllowed(RenderOrTransformCallBack renderOrTransform)
+    {
+        // If enabled is false, all async transforms/renditions must be blocked
+        if (!enabled)
+        {
+            return false;
+        }
+
+        // If thumbnails are disabled, allow only text extract transforms for content indexing
+        return thumbnailsEnabled || isTextExtractTransform(renderOrTransform);
+    }
+
 }

@@ -971,12 +971,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     // Checks if the given transform callback is a text extract transform for content indexing.
     private boolean isTextExtractTransform(RenderOrTransformCallBack renderOrTransform)
     {
-        if (!(renderOrTransform.getRenditionDefinition() instanceof TransformDefinition))
-        {
-            return false;
-        }
-        TransformDefinition def = (TransformDefinition) renderOrTransform.getRenditionDefinition();
-        return MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(def.getTargetMimetype());
+        RenditionDefinition2 renditionDefinition = renderOrTransform.getRenditionDefinition();
+        return renditionDefinition != null && MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(renditionDefinition.getTargetMimetype());
     }
 
     private boolean isAsyncAllowed(RenderOrTransformCallBack renderOrTransform)

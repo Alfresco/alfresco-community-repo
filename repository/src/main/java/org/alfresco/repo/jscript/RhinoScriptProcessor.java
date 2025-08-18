@@ -124,6 +124,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     /** Number of (bytecode) instructions that will trigger the observer */
     private int observerInstructionCount = 100;
 
+    /** Flag to enable or disable scope cleaning at the end of each script execution */
+    private boolean cleanScope = true;
+
     /** Custom context factory */
     public static AlfrescoContextFactory contextFactory;
 
@@ -208,6 +211,15 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     public void setObserverInstructionCount(int observerInstructionCount)
     {
         this.observerInstructionCount = observerInstructionCount;
+    }
+
+    /**
+     * @param cleanScope true to enable scope cleaning at the end of each script execution - set to
+     * false to disable this feature.
+     */
+    public void setCleanScope(boolean cleanScope)
+    {
+        this.cleanScope = cleanScope;
     }
 
     /**
@@ -619,7 +631,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
         finally
         {
-            if (!secure)
+            if (!secure && cleanScope)
             {
                 unsetScope(model, scope);
             }

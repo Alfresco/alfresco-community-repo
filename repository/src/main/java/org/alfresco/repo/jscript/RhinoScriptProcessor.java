@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -214,8 +214,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     }
 
     /**
-     * @param cleanScope true to enable scope cleaning at the end of each script execution - set to
-     * false to disable this feature.
+     * @param cleanScope
+     *            true to enable scope cleaning at the end of each script execution - set to false to disable this feature.
      */
     public void setCleanScope(boolean cleanScope)
     {

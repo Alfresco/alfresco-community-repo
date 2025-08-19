@@ -4,6 +4,13 @@
 
 <mapper namespace="alfresco.node.select">
 
+    <resultMap id="result_NodeRef" type="Node">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+
     <select id="select_Deleted_NodesByTxnCommitTime" parameterType="TransactionQuery" fetchSize="-2147483648" resultType="java.lang.Long">
         select
             node.id
@@ -28,6 +35,25 @@
                node.transaction_id = alf_transaction.id
             )
       <![CDATA[and commit_time_ms <= #{maxCommitTime}]]>
+    </select>
+
+    <select id="select_NodesWithAspectIds_Limited" parameterType="Ids" resultMap="result_NodeRef" >
+        select
+        node.id             as id,
+        store.protocol      as protocol,
+        store.identifier    as identifier,
+        node.uuid           as uuid
+        from
+        alf_node_aspects na
+        join alf_node node on (na.node_id = node.id)
+        left join alf_store store on (store.id = node.store_id)
+        where
+        <![CDATA[na.node_id >= #{idOne}]]>
+        <if test="idTwo != null"><![CDATA[and na.node_id < #{idTwo}]]></if>
+        and na.qname_id in
+        <foreach item="item" index="i" collection="ids" open="(" separator="," close=")">#{item}</foreach>
+        <if test="ordered == true">order by node.id ASC</if>
+        <if test="maxResults != null"><![CDATA[limit #{maxResults}]]></if>
     </select>
 
 </mapper>

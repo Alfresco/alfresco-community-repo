@@ -782,9 +782,9 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     public void testTextExtractTransformAllowedWhenThumbnailDisabled()
     {
         // create a source node
-        NodeRef sourceNodeRef = createSource(ADMIN, "quick.txt");
+        NodeRef sourceNodeRef = createSource(ADMIN, "quick.pdf");
         assertNotNull("Node not generated", sourceNodeRef);
-        String replyQueue = "org.alfresco.search.contentstore.event";
+        String replyQueue = "org.test.queue";
         String targetMimetype = MimetypeMap.MIMETYPE_TEXT_PLAIN;
 
         TransformDefinition textExtractTransform = new TransformDefinition(
@@ -805,6 +805,25 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
                 });
                 return null;
             }, ADMIN);
+        }
+        finally
+        {
+            renditionService2.setThumbnailsEnabled(true);
+        }
+    }
+
+    @Test
+    public void testMetadataExtractTransformAllowedWhenThumbnailDisabled()
+    {
+        // create a source node
+        NodeRef sourceNodeRef = createSource(ADMIN, "quick.pdf");
+        assertNotNull("Node not generated", sourceNodeRef);
+        renditionService2.setThumbnailsEnabled(false);
+        try
+        {
+            // Should NOT throw, as this is a metadata extract transform
+            extract(ADMIN, sourceNodeRef);
+            waitForExtract(ADMIN, sourceNodeRef, true);
         }
         finally
         {

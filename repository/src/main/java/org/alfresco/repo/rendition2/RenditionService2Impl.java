@@ -82,6 +82,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     public static final QName DEFAULT_RENDITION_CONTENT_PROP = ContentModel.PROP_CONTENT;
     public static final String DEFAULT_MIMETYPE = MimetypeMap.MIMETYPE_TEXT_PLAIN;
     public static final String MIMETYPE_METADATA_EXTRACT = "alfresco-metadata-extract";
+    public static final String MIMETYPE_METADATA_EMBED = "alfresco-metadata-embed";
     public static final String DEFAULT_ENCODING = "UTF-8";
 
     public static final int SOURCE_HAS_NO_CONTENT = -1;
@@ -969,11 +970,11 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }
     }
 
-    // Checks if the given transform callback is a text extract transform for content indexing or metadata extract.
+    // Checks if the given transform callback is a text extract transform for content indexing or metadata extract/embed.
     private boolean isTextOrMetadataExtractTransform(RenderOrTransformCallBack renderOrTransform)
     {
         RenditionDefinition2 renditionDefinition = renderOrTransform.getRenditionDefinition();
-        return renditionDefinition != null && (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(renditionDefinition.getTargetMimetype()) || MIMETYPE_METADATA_EXTRACT.equals(renditionDefinition.getTargetMimetype()));
+        return renditionDefinition != null && (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(renditionDefinition.getTargetMimetype()) || MIMETYPE_METADATA_EXTRACT.equals(renditionDefinition.getTargetMimetype()) || MIMETYPE_METADATA_EMBED.equals(renditionDefinition.getTargetMimetype()));
     }
 
     private boolean isAsyncAllowed(RenderOrTransformCallBack renderOrTransform)
@@ -984,7 +985,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             return false;
         }
 
-        // If thumbnails are disabled, allow only text extract or metadata extract transforms
+        // If thumbnails are disabled, allow only text extract or metadata extract/embed transforms
         return thumbnailsEnabled || isTextOrMetadataExtractTransform(renderOrTransform);
     }
 

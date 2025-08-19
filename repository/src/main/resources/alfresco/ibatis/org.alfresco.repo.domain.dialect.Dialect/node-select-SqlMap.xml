@@ -4,13 +4,6 @@
 
 <mapper namespace="alfresco.node.select">
 
-    <resultMap id="result_NodeRef" type="Node">
-        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </resultMap>
-
     <select id="select_Deleted_NodesByTxnCommitTime" parameterType="TransactionQuery" fetchSize="100000" resultType="java.lang.Long">
         select
             node.id
@@ -37,7 +30,7 @@
       <![CDATA[and commit_time_ms <= #{maxCommitTime}]]>
     </select>
 
-    <select id="select_NodesWithAspectIds_Limited" parameterType="Ids" resultMap="result_NodeRef" >
+    <select id="select_NodesWithAspectIds_Limited" parameterType="Ids" resultMap="alfresco.node.result_NodeRef" >
         select
         node.id             as id,
         store.protocol      as protocol,

@@ -32,19 +32,19 @@
 
     <select id="select_NodesWithAspectIds_Limited" parameterType="Ids" resultMap="alfresco.node.result_NodeRef" >
         select
-        node.id             as id,
-        store.protocol      as protocol,
-        store.identifier    as identifier,
-        node.uuid           as uuid
+            node.id             as id,
+            store.protocol      as protocol,
+            store.identifier    as identifier,
+            node.uuid           as uuid
         from
-        alf_node_aspects na
-        join alf_node node on (na.node_id = node.id)
-        left join alf_store store on (store.id = node.store_id)
+            alf_node_aspects na
+            join alf_node node on (na.node_id = node.id)
+            left join alf_store store on (store.id = node.store_id)
         where
-        <![CDATA[na.node_id >= #{idOne}]]>
-        <if test="idTwo != null"><![CDATA[and na.node_id < #{idTwo}]]></if>
-        and na.qname_id in
-        <foreach item="item" index="i" collection="ids" open="(" separator="," close=")">#{item}</foreach>
+            <![CDATA[na.node_id >= #{idOne}]]>
+            <if test="idTwo != null"><![CDATA[and na.node_id < #{idTwo}]]></if>
+            and na.qname_id in
+                <foreach item="item" index="i" collection="ids" open="(" separator="," close=")">#{item}</foreach>
         <if test="ordered == true">order by node.id ASC</if>
         <if test="maxResults != null"><![CDATA[limit #{maxResults}]]></if>
     </select>

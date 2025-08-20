@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,16 +25,21 @@
  */
 package org.alfresco.repo.rendition2;
 
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
 import static org.junit.Assert.assertNotEquals;
+
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -44,8 +49,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Integration tests for {@link RenditionService2}
@@ -62,37 +65,37 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     // PDF transformation
 
     @Test
-    public void testLocalRenderPdfToJpegMedium() 
+    public void testLocalRenderPdfToJpegMedium()
     {
         checkRendition("quick.pdf", "medium", true);
     }
 
     @Test
-    public void testLocalRenderPdfToDoclib() 
+    public void testLocalRenderPdfToDoclib()
     {
         checkRendition("quick.pdf", "doclib", true);
     }
 
     @Test
-    public void testLocalRenderPdfJpegImgpreview() 
+    public void testLocalRenderPdfJpegImgpreview()
     {
         checkRendition("quick.pdf", "imgpreview", true);
     }
 
     @Test
-    public void testLocalRenderPdfPngAvatar() 
+    public void testLocalRenderPdfPngAvatar()
     {
         checkRendition("quick.pdf", "avatar", true);
     }
 
     @Test
-    public void testLocalRenderPdfPngAvatar32() 
+    public void testLocalRenderPdfPngAvatar32()
     {
         checkRendition("quick.pdf", "avatar32", true);
     }
 
     @Test
-    public void testLocalRenderPdfFlashWebpreview() 
+    public void testLocalRenderPdfFlashWebpreview()
     {
         checkRendition("quick.pdf", "webpreview", false);
     }
@@ -100,43 +103,43 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     // DOCX transformation
 
     @Test
-    public void testLocalRenderDocxJpegMedium() 
+    public void testLocalRenderDocxJpegMedium()
     {
         checkRendition("quick.docx", "medium", true);
     }
 
     @Test
-    public void testLocalRenderDocxDoclib() 
+    public void testLocalRenderDocxDoclib()
     {
         checkRendition("quick.docx", "doclib", true);
     }
 
     @Test
-    public void testLocalRenderDocxJpegImgpreview() 
+    public void testLocalRenderDocxJpegImgpreview()
     {
         checkRendition("quick.docx", "imgpreview", true);
     }
 
     @Test
-    public void testLocalRenderDocxPngAvatar() 
+    public void testLocalRenderDocxPngAvatar()
     {
         checkRendition("quick.docx", "avatar", true);
     }
 
     @Test
-    public void testLocalRenderDocxPngAvatar32() 
+    public void testLocalRenderDocxPngAvatar32()
     {
         checkRendition("quick.docx", "avatar32", true);
     }
 
     @Test
-    public void testLocalRenderDocxFlashWebpreview() 
+    public void testLocalRenderDocxFlashWebpreview()
     {
         checkRendition("quick.docx", "webpreview", false);
     }
 
     @Test
-    public void testLocalRenderDocxPdf() 
+    public void testLocalRenderDocxPdf()
     {
         checkRendition("quick.docx", "pdf", true);
     }
@@ -150,7 +153,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
-    public void changedSourceToNullContent() 
+    public void changedSourceToNullContent()
     {
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
         render(ADMIN, sourceNodeRef, DOC_LIB);
@@ -158,8 +161,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
 
         clearContent(ADMIN, sourceNodeRef);
         render(ADMIN, sourceNodeRef, DOC_LIB);
-        ChildAssociationRef assoc = AuthenticationUtil.runAs(() ->
-                renditionService2.getRenditionByName(sourceNodeRef, DOC_LIB), ADMIN);
+        ChildAssociationRef assoc = AuthenticationUtil.runAs(() -> renditionService2.getRenditionByName(sourceNodeRef, DOC_LIB), ADMIN);
         waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, false);
         assertNull("There should be no rendition as there was no content", assoc);
     }
@@ -190,8 +192,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
 
         clearContent(ADMIN, sourceNodeRef);
         render(ADMIN, sourceNodeRef, DOC_LIB);
-        ChildAssociationRef assoc = AuthenticationUtil.runAs(() ->
-                renditionService2.getRenditionByName(sourceNodeRef, DOC_LIB), ADMIN);
+        ChildAssociationRef assoc = AuthenticationUtil.runAs(() -> renditionService2.getRenditionByName(sourceNodeRef, DOC_LIB), ADMIN);
         waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, false);
         assertNull("There should be no rendition as there was no content", assoc);
 
@@ -201,7 +202,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
-    public void testCreateRenditionByUser() 
+    public void testCreateRenditionByUser()
     {
         String userName = createRandomUser();
         NodeRef sourceNodeRef = createSource(userName, "quick.jpg");
@@ -211,13 +212,12 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
-    public void testReadRenditionByOtherUser() 
+    public void testReadRenditionByOtherUser()
     {
         String ownerUserName = createRandomUser();
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");
         String otherUserName = createRandomUser();
-        transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
             permissionService.setPermission(sourceNodeRef, otherUserName, PermissionService.READ, true);
             return null;
         });
@@ -231,13 +231,12 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
-    public void testRenderByReader() 
+    public void testRenderByReader()
     {
         String ownerUserName = createRandomUser();
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");
         String otherUserName = createRandomUser();
-        transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
             permissionService.setPermission(sourceNodeRef, otherUserName, PermissionService.READ, true);
             return null;
         });
@@ -251,14 +250,13 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
-    public void testAccessWithNoPermissions() 
+    public void testAccessWithNoPermissions()
     {
         String ownerUserName = createRandomUser();
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");
         render(ownerUserName, sourceNodeRef, DOC_LIB);
         String noPermissionsUser = createRandomUser();
-        transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
             permissionService.setPermission(sourceNodeRef, noPermissionsUser, PermissionService.ALL_PERMISSIONS, false);
             return null;
         });
@@ -280,12 +278,9 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");
         final QName doclibRendDefQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
         transactionService.getRetryingTransactionHelper()
-                .doInTransaction(() ->
-                AuthenticationUtil.runAs(() ->
-                        renditionService.render(sourceNodeRef, doclibRendDefQName), ownerUserName));
+                .doInTransaction(() -> AuthenticationUtil.runAs(() -> renditionService.render(sourceNodeRef, doclibRendDefQName), ownerUserName));
 
-        NodeRef oldRendition = AuthenticationUtil.runAs(() ->
-                renditionService.getRenditionByName(sourceNodeRef, doclibRendDefQName).getChildRef(), ownerUserName);
+        NodeRef oldRendition = AuthenticationUtil.runAs(() -> renditionService.getRenditionByName(sourceNodeRef, doclibRendDefQName).getChildRef(), ownerUserName);
         assertFalse("The rendition should be generated by old Rendition Service",
                 AuthenticationUtil.runAs(() -> nodeService.hasAspect(oldRendition, RenditionModel.ASPECT_RENDITION2), ownerUserName));
 
@@ -335,12 +330,10 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         renditionService2.setEnabled(false);
 
         // Call 'clearRenditionContentData' method directly to prove rendition content will be cleaned
-        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
-            transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-            {
-                renditionService2.clearRenditionContentData(sourceNodeRef, DOC_LIB);
-                return null;
-            }), ADMIN);
+        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            renditionService2.clearRenditionContentData(sourceNodeRef, DOC_LIB);
+            return null;
+        }), ADMIN);
 
         // The rendition should not have content by now
         assertNull("Rendition has content", nodeService.getProperty(renditionNodeRef, ContentModel.PROP_CONTENT));
@@ -356,8 +349,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     /**
      * Tests if a rendition without content (but with contentHashCode) can be generated again.
      * <p>
-     * If the rendition consumption receives a null InputStream, the contentHashCode should be cleaned from the
-     * rendition node, allowing new requests to generate the rendition.
+     * If the rendition consumption receives a null InputStream, the contentHashCode should be cleaned from the rendition node, allowing new requests to generate the rendition.
      * </p>
      */
     @Test
@@ -369,8 +361,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     /**
      * Tests if a rendition without content (but with contentHashCode) can be generated again.
      * <p>
-     * If the rendition consumption receives a zero length InputStream, the contentHashCode should be cleaned from the
-     * rendition node, allowing new requests to generate the rendition.
+     * If the rendition consumption receives a zero length InputStream, the contentHashCode should be cleaned from the rendition node, allowing new requests to generate the rendition.
      * </p>
      */
     @Test
@@ -492,22 +483,16 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
             NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
             final QName doclibRendDefQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
             transactionService.getRetryingTransactionHelper()
-                    .doInTransaction(() ->
-                            AuthenticationUtil.runAs(() ->
-                                    renditionService.render(sourceNodeRef, doclibRendDefQName), ADMIN));
+                    .doInTransaction(() -> AuthenticationUtil.runAs(() -> renditionService.render(sourceNodeRef, doclibRendDefQName), ADMIN));
             assertNotNull("The old renditions service did not render", waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true));
             List<String> lastThumbnailModification = transactionService.getRetryingTransactionHelper()
-                    .doInTransaction(() ->
-                            AuthenticationUtil.runAs(() ->
-                                    (List<String>) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA), ADMIN));
+                    .doInTransaction(() -> AuthenticationUtil.runAs(() -> (List<String>) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA), ADMIN));
             updateContent(ADMIN, sourceNodeRef, "quick.png");
             List<String> newThumbnailModification = null;
             for (int i = 0; i < 5; i++)
             {
                 newThumbnailModification = transactionService.getRetryingTransactionHelper()
-                        .doInTransaction(() ->
-                                AuthenticationUtil.runAs(() ->
-                                        (List<String>) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA), ADMIN));
+                        .doInTransaction(() -> AuthenticationUtil.runAs(() -> (List<String>) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA), ADMIN));
                 if (!newThumbnailModification.equals(lastThumbnailModification))
                 {
                     break;
@@ -579,9 +564,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
             NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
             final QName doclibRendDefQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
             transactionService.getRetryingTransactionHelper()
-                    .doInTransaction(() ->
-                            AuthenticationUtil.runAs(() ->
-                                    renditionService.render(sourceNodeRef, doclibRendDefQName), ADMIN));
+                    .doInTransaction(() -> AuthenticationUtil.runAs(() -> renditionService.render(sourceNodeRef, doclibRendDefQName), ADMIN));
             waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
 
             renditionService2.setEnabled(true);
@@ -652,9 +635,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
             NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
             final QName doclibRendDefQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
             transactionService.getRetryingTransactionHelper()
-                    .doInTransaction(() ->
-                            AuthenticationUtil.runAs(() ->
-                                    renditionService.render(sourceNodeRef, doclibRendDefQName), ADMIN));
+                    .doInTransaction(() -> AuthenticationUtil.runAs(() -> renditionService.render(sourceNodeRef, doclibRendDefQName), ADMIN));
             waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
 
             renditionService2.setEnabled(true);
@@ -680,6 +661,59 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         finally
         {
             renditionService2.setEnabled(true);
+        }
+    }
+
+    @Test
+    public void testTextExtractTransformAllowedWhenThumbnailDisabled()
+    {
+        // create a source node
+        NodeRef sourceNodeRef = createSource(ADMIN, "quick.pdf");
+        assertNotNull("Node not generated", sourceNodeRef);
+        String replyQueue = "org.test.queue";
+        String targetMimetype = MimetypeMap.MIMETYPE_TEXT_PLAIN;
+
+        TransformDefinition textExtractTransform = new TransformDefinition(
+                targetMimetype,
+                java.util.Collections.emptyMap(),
+                "clientData",
+                replyQueue,
+                "requestId");
+
+        renditionService2.setThumbnailsEnabled(false);
+        try
+        {
+            // Should NOT throw, as this is a text extract transform
+            AuthenticationUtil.runAs(() -> {
+                transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                    renditionService2.transform(sourceNodeRef, textExtractTransform);
+                    return null;
+                });
+                return null;
+            }, ADMIN);
+        }
+        finally
+        {
+            renditionService2.setThumbnailsEnabled(true);
+        }
+    }
+
+    @Test
+    public void testMetadataExtractTransformAllowedWhenThumbnailDisabled()
+    {
+        // create a source node
+        NodeRef sourceNodeRef = createSource(ADMIN, "quick.pdf");
+        assertNotNull("Node not generated", sourceNodeRef);
+        renditionService2.setThumbnailsEnabled(false);
+        try
+        {
+            // Should NOT throw, as this is a metadata extract transform
+            extract(ADMIN, sourceNodeRef);
+            waitForExtract(ADMIN, sourceNodeRef, true);
+        }
+        finally
+        {
+            renditionService2.setThumbnailsEnabled(true);
         }
     }
 }

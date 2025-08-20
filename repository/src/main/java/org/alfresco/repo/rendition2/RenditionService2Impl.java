@@ -88,6 +88,12 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     public static final int SOURCE_HAS_NO_CONTENT = -1;
     public static final int RENDITION2_DOES_NOT_EXIST = -2;
 
+    // Allowed mimetypes to support text or metadata extract transforms when thumbnails are disabled.
+    private static final Set<String> ALLOWED_TEXT_OR_METADATA_MIMETYPES = Set.of(
+            MimetypeMap.MIMETYPE_TEXT_PLAIN,
+            MIMETYPE_METADATA_EXTRACT,
+            MIMETYPE_METADATA_EMBED);
+
     private static Log logger = LogFactory.getLog(RenditionService2Impl.class);
 
     // As Async transforms and renditions are so similar, this class provides a way to provide the code that is different.
@@ -974,7 +980,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     private boolean isTextOrMetadataExtractTransform(RenderOrTransformCallBack renderOrTransform)
     {
         RenditionDefinition2 renditionDefinition = renderOrTransform.getRenditionDefinition();
-        return renditionDefinition != null && (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(renditionDefinition.getTargetMimetype()) || MIMETYPE_METADATA_EXTRACT.equals(renditionDefinition.getTargetMimetype()) || MIMETYPE_METADATA_EMBED.equals(renditionDefinition.getTargetMimetype()));
+        return renditionDefinition != null && ALLOWED_TEXT_OR_METADATA_MIMETYPES.contains(renditionDefinition.getTargetMimetype());
     }
 
     private boolean isAsyncAllowed(RenderOrTransformCallBack renderOrTransform)

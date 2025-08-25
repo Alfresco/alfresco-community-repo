@@ -37,7 +37,7 @@ import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPr
 
 import java.util.Collections;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
@@ -56,7 +56,7 @@ import org.alfresco.test.AlfrescoTest;
 
 /**
  * Add Relationship tests
- * 
+ *
  * @author Kavit Shah
  */
 public class AddRelationshipTests extends BaseRMRestTest

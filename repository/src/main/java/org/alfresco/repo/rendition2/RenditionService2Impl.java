@@ -81,10 +81,18 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
     public static final QName DEFAULT_RENDITION_CONTENT_PROP = ContentModel.PROP_CONTENT;
     public static final String DEFAULT_MIMETYPE = MimetypeMap.MIMETYPE_TEXT_PLAIN;
+    public static final String MIMETYPE_METADATA_EXTRACT = "alfresco-metadata-extract";
+    public static final String MIMETYPE_METADATA_EMBED = "alfresco-metadata-embed";
     public static final String DEFAULT_ENCODING = "UTF-8";
 
     public static final int SOURCE_HAS_NO_CONTENT = -1;
     public static final int RENDITION2_DOES_NOT_EXIST = -2;
+
+    // Allowed mimetypes to support text or metadata extract transforms when thumbnails are disabled.
+    private static final Set<String> ALLOWED_MIMETYPES = Set.of(
+            MimetypeMap.MIMETYPE_TEXT_PLAIN,
+            MIMETYPE_METADATA_EXTRACT,
+            MIMETYPE_METADATA_EMBED);
 
     private static Log logger = LogFactory.getLog(RenditionService2Impl.class);
 
@@ -288,7 +296,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     {
         try
         {
-            if (!isEnabled())
+            if (!isAsyncAllowed(renderOrTransform))
             {
                 throw new RenditionService2Exception("Async transforms and renditions are disabled " +
                         "(system.thumbnail.generate=false or renditionService2.enabled=false).");
@@ -967,4 +975,24 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             }
         }
     }
+
+    // Checks if the given transform callback is a text extract transform for content indexing or metadata extract/embed.
+    private boolean isTextOrMetadataExtractTransform(RenderOrTransformCallBack renderOrTransform)
+    {
+        RenditionDefinition2 renditionDefinition = renderOrTransform.getRenditionDefinition();
+        return renditionDefinition != null && ALLOWED_MIMETYPES.contains(renditionDefinition.getTargetMimetype());
+    }
+
+    private boolean isAsyncAllowed(RenderOrTransformCallBack renderOrTransform)
+    {
+        // If enabled is false, all async transforms/renditions must be blocked
+        if (!enabled)
+        {
+            return false;
+        }
+
+        // If thumbnails are disabled, allow only text extract or metadata extract/embed transforms
+        return thumbnailsEnabled || isTextOrMetadataExtractTransform(renderOrTransform);
+    }
+
 }

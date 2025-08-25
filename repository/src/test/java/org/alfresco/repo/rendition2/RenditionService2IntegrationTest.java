@@ -39,6 +39,7 @@ import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -776,4 +777,58 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         }
 
     }
+
+    @Test
+    public void testTextExtractTransformAllowedWhenThumbnailDisabled()
+    {
+        // create a source node
+        NodeRef sourceNodeRef = createSource(ADMIN, "quick.pdf");
+        assertNotNull("Node not generated", sourceNodeRef);
+        String replyQueue = "org.test.queue";
+        String targetMimetype = MimetypeMap.MIMETYPE_TEXT_PLAIN;
+
+        TransformDefinition textExtractTransform = new TransformDefinition(
+                targetMimetype,
+                java.util.Collections.emptyMap(),
+                "clientData",
+                replyQueue,
+                "requestId");
+
+        renditionService2.setThumbnailsEnabled(false);
+        try
+        {
+            // Should NOT throw, as this is a text extract transform
+            AuthenticationUtil.runAs(() -> {
+                transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                    renditionService2.transform(sourceNodeRef, textExtractTransform);
+                    return null;
+                });
+                return null;
+            }, ADMIN);
+        }
+        finally
+        {
+            renditionService2.setThumbnailsEnabled(true);
+        }
+    }
+
+    @Test
+    public void testMetadataExtractTransformAllowedWhenThumbnailDisabled()
+    {
+        // create a source node
+        NodeRef sourceNodeRef = createSource(ADMIN, "quick.pdf");
+        assertNotNull("Node not generated", sourceNodeRef);
+        renditionService2.setThumbnailsEnabled(false);
+        try
+        {
+            // Should NOT throw, as this is a metadata extract transform
+            extract(ADMIN, sourceNodeRef);
+            waitForExtract(ADMIN, sourceNodeRef, true);
+        }
+        finally
+        {
+            renditionService2.setThumbnailsEnabled(true);
+        }
+    }
+
 }

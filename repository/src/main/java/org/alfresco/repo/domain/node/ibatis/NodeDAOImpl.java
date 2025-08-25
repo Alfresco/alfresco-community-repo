@@ -116,7 +116,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODE_MAX_ID = "alfresco.node.select_NodeMaxId";
     private static final String SELECT_NODE_INTERVAL_BY_TYPE = "alfresco.node.select_MinMaxNodeIdForNodeType";
     private static final String SELECT_NODES_WITH_ASPECT_IDS = "alfresco.node.select_NodesWithAspectIds";
-    private static final String SELECT_NODES_WITH_ASPECT_IDS_LIMITED = "alfresco.node.select_NodesWithAspectIds_Limited";
+    private static final String SELECT_NODES_WITH_ASPECT_IDS_LIMITED = "alfresco.node.select.select_NodesWithAspectIds_Limited";
     private static final String INSERT_NODE_ASSOC = "alfresco.node.insert.insert_NodeAssoc";
     private static final String UPDATE_NODE_ASSOC = "alfresco.node.update_NodeAssoc";
     private static final String DELETE_NODE_ASSOC = "alfresco.node.delete_NodeAssoc";

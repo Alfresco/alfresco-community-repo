@@ -37,8 +37,7 @@ commons-fileupload  http://jakarta.apache.org/commons/
 commons-httpclient  http://jakarta.apache.org/commons/ 
 commons-io  http://jakarta.apache.org/commons/ 
 commons-jxpath  http://jakarta.apache.org/commons/ 
-commons-lang    http://jakarta.apache.org/commons/ 
-commons-lang3   http://jakarta.apache.org/commons/ 
+commons-lang3   http://jakarta.apache.org/commons/
 commons-logging http://jakarta.apache.org/commons/ 
 commons-net http://jakarta.apache.org/commons/
 commons-pool    http://jakarta.apache.org/commons/ 

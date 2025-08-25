@@ -60,6 +60,9 @@
         <property name="observerInstructionCount">
             <value>${scripts.execution.observerInstructionCount}</value>
         </property>
+        <property name="cleanScope">
+            <value>${scripts.execution.clean.scope}</value>
+        </property>
     </bean>
 
     <!-- base config implementation that script extension beans extend from - for auto registration

@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jakarta.transaction.UserTransaction;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -958,7 +958,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
                 String link = m.group(1);
                 link += "?title=<script>alert('xss');</script>";
                 WikiPageInfo wikiPage2 = this.wikiService.getWikiPage(SITE_SHORT_NAME_WIKI, link);
-                WikiPageInfo wikiPage1 = this.wikiService.getWikiPage(SITE_SHORT_NAME_WIKI, StringEscapeUtils.unescapeHtml(link));
+                WikiPageInfo wikiPage1 = this.wikiService.getWikiPage(SITE_SHORT_NAME_WIKI, StringEscapeUtils.unescapeHtml4(link));
                 assertEquals(wikiPage2, wikiPage1);
             }
 

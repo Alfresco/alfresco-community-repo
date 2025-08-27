@@ -182,11 +182,14 @@ var Filters =
          case "favourites":
             for (var favourite in favourites)
             {
-               if (filterQuery)
+               if (favourite && favourite.trim() !== "")
                {
-                  filterQuery += " OR ";
+                  if (filterQuery)
+                  {
+                     filterQuery += " OR ";
+                  }
+                  filterQuery += "ID:\"" + favourite + "\"";
                }
-               filterQuery += "ID:\"" + favourite + "\"";
             }
             
             if (filterQuery.length !== 0)
@@ -201,7 +204,13 @@ var Filters =
             else
             {
                // empty favourites query
-               filterQuery = "+ID:\"\"";
+               logger.warn("No favourites found for user: " + person.properties.userName);
+               return {
+                  query: null,
+                  limitResults: 0,
+                  sort: [],
+                  language: "lucene"
+               };
             }
             
             filterParams.query = filterQuery;

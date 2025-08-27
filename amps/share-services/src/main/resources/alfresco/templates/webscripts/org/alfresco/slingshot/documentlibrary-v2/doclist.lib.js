@@ -91,6 +91,15 @@ function doclist_getAllNodes(parsedArgs, filterParams, query, totalItemCount)
    };
 }
 
+function sanitizeJunkFavouriteKeys(favourites){
+   for (var key in favourites) {
+      if (!key || key.trim() === "") {
+         delete favourites[key];
+      }
+   }
+   return favourites;
+}
+
 /**
  * Main entry point: Create collection of documents and folders in the given space
  *
@@ -123,6 +132,32 @@ function doclist_main()
    
    if (logger.isLoggingEnabled())
       logger.log("doclist.lib.js - NodeRef: " + parsedArgs.nodeRef + " Query: " + query);
+
+   favourites = sanitizeJunkFavouriteKeys(favourites);
+   logger.warn("Favourites : - " + jsonUtils.toJSONString(favourites));
+
+   if(Object.keys(favourites).length === 0 && query === null)
+   {
+
+      logger.warn("doclist.lib.js - Skipping search, no valid query for filter : " + filter);
+
+      return {
+         luceneQuery: "",
+         paging: {
+            totalRecords: 0,
+            startIndex: 0
+         },
+         container: parsedArgs.rootNode,
+         parent: null,
+         onlineEditing: utils.moduleInstalled("org.alfresco.module.vti"),
+         itemCount: {
+            folders: 0,
+            documents: 0
+         },
+         items: [],
+         customJSON: slingshotDocLib.getJSON()
+      };
+   }
    
    var totalItemCount = filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : -1;
    // For all sites documentLibrary query we pull in all available results and post filter

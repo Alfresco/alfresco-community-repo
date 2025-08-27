@@ -94,7 +94,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -741,10 +740,6 @@
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
         </dependency>
     </dependencies>
 

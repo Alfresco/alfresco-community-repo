@@ -42,7 +42,7 @@ import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.RecordCategoriesAPI;
 import org.alfresco.test.AlfrescoTest;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;

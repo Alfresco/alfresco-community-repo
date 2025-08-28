@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -125,6 +125,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     /** Number of (bytecode) instructions that will trigger the observer */
     private int observerInstructionCount = 100;
 
+    /** Flag to enable or disable scope cleaning at the end of each script execution */
+    private boolean cleanScope = true;
+
     /** Custom context factory */
     public static AlfrescoContextFactory contextFactory;
 
@@ -206,6 +209,15 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     public void setObserverInstructionCount(int observerInstructionCount)
     {
         this.observerInstructionCount = observerInstructionCount;
+    }
+
+    /**
+     * @param cleanScope
+     *            true to enable scope cleaning at the end of each script execution - set to false to disable this feature.
+     */
+    public void setCleanScope(boolean cleanScope)
+    {
+        this.cleanScope = cleanScope;
     }
 
     /**
@@ -614,7 +626,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
         finally
         {
-            if (!secure)
+            if (!secure && cleanScope)
             {
                 unsetScope(model, scope);
             }

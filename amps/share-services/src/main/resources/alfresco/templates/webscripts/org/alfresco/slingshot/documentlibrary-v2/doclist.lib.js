@@ -134,13 +134,9 @@ function doclist_main()
       logger.log("doclist.lib.js - NodeRef: " + parsedArgs.nodeRef + " Query: " + query);
 
    favourites = sanitizeJunkFavouriteKeys(favourites);
-   logger.warn("Favourites : - " + jsonUtils.toJSONString(favourites));
 
    if(Object.keys(favourites).length === 0 && query === null)
    {
-
-      logger.warn("doclist.lib.js - Skipping search, no valid query for filter : " + filter);
-
       return {
          luceneQuery: "",
          paging: {

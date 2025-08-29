@@ -16,11 +16,11 @@
     </organization>
 
     <properties>
-        <maven.build.sourceVersion>17</maven.build.sourceVersion>
+        <maven.build.sourceVersion>21</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <maven-release.version>2.5.3</maven-release.version>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <suiteXmlFile>${project.basedir}/src/test/resources/cmis-suite.xml</suiteXmlFile>
         <cmis.binding />
         <cmis.basePath />

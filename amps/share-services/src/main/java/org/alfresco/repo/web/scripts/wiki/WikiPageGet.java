@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.wiki.WikiPageInfo;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -92,7 +92,7 @@ public class WikiPageGet extends AbstractWikiWebScript
             {
                links.add(link);
                // build the list of available pages
-               WikiPageInfo wikiPage = wikiService.getWikiPage(site.getShortName(), StringEscapeUtils.unescapeHtml(link));
+               WikiPageInfo wikiPage = wikiService.getWikiPage(site.getShortName(), StringEscapeUtils.unescapeHtml4(link));
                if (wikiPage != null)
                {
                    pageTitles.add(wikiPage.getTitle());

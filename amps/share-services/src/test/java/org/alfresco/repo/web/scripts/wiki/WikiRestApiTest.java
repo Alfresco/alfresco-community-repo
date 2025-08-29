@@ -45,7 +45,7 @@ import org.alfresco.service.cmr.wiki.WikiPageInfo;
 import org.alfresco.service.cmr.wiki.WikiService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -996,7 +996,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
     			String link = m.group(1); 
     			link += "?title=<script>alert('xss');</script>";
     			WikiPageInfo wikiPage2 = this.wikiService.getWikiPage(SITE_SHORT_NAME_WIKI, link);
-    			WikiPageInfo wikiPage1 = this.wikiService.getWikiPage(SITE_SHORT_NAME_WIKI, StringEscapeUtils.unescapeHtml(link));
+    			WikiPageInfo wikiPage1 = this.wikiService.getWikiPage(SITE_SHORT_NAME_WIKI, StringEscapeUtils.unescapeHtml4(link));
     			assertEquals(wikiPage2, wikiPage1);
     		}
       

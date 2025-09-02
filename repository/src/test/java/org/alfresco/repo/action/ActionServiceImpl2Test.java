@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.action.executer.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -51,11 +52,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.executer.ActionExecuter;
-import org.alfresco.repo.action.executer.ContentMetadataExtracter;
-import org.alfresco.repo.action.executer.CounterIncrementActionExecuter;
-import org.alfresco.repo.action.executer.ScriptActionExecuter;
-import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -239,6 +235,34 @@ public class ActionServiceImpl2Test
                 return null;
             }
         });
+    }
+
+    @Test
+    public void testAISummaryActionExecuterIntegration() throws Exception
+    {
+        final File file = loadAndAddQuickFileAsManager(testNode, "quick.pdf", MimetypeMap.MIMETYPE_PDF);
+        assertNotNull("Failed to load required test file.", file);
+//        // Add plain text content to the test node
+//        AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);
+//        transactionHelper.doInTransaction(() -> {
+//            ContentWriter writer = contentService.getWriter(testNode, ContentModel.PROP_CONTENT, true);
+//            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+//            writer.putContent("This is a test document for AI summary.");
+//            return null;
+//        });
+
+        // Execute the ai-summary action
+        AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);
+        transactionHelper.doInTransaction(() -> {
+            Action aiSummaryAction = actionService.createAction(AISummaryActionExecuter.NAME);
+            actionService.executeAction(aiSummaryAction, testNode);
+            return null;
+        });
+
+        // Assert the summary property is set
+        Serializable summary = nodeService.getProperty(testNode, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "AiSummary"));
+        assertNotNull("AI summary property should be set", summary);
+        assertEquals("AI summary or insights result", summary);
     }
 
     @Test

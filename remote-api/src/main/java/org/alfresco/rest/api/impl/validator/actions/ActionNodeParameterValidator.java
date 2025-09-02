@@ -39,17 +39,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.alfresco.repo.action.executer.*;
 import org.apache.commons.collections.MapUtils;
 import org.apache.logging.log4j.util.Strings;
 
-import org.alfresco.repo.action.executer.CheckOutActionExecuter;
-import org.alfresco.repo.action.executer.CopyActionExecuter;
-import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
-import org.alfresco.repo.action.executer.ImporterActionExecuter;
-import org.alfresco.repo.action.executer.LinkCategoryActionExecuter;
-import org.alfresco.repo.action.executer.MoveActionExecuter;
-import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
-import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.actions.ActionValidator;
@@ -115,7 +108,7 @@ public class ActionNodeParameterValidator implements ActionValidator
     {
         return List.of(CopyActionExecuter.NAME, MoveActionExecuter.NAME, CheckOutActionExecuter.NAME, ImporterActionExecuter.NAME,
                 LinkCategoryActionExecuter.NAME, SimpleWorkflowActionExecuter.NAME, TransformActionExecuter.NAME,
-                ImageTransformActionExecuter.NAME);
+                ImageTransformActionExecuter.NAME, AISummaryActionExecuter.NAME);
     }
 
     @Override

@@ -34,6 +34,8 @@ public class AuditRecord
     private final boolean inTransaction;
     private final String auditApplicationId;
     private final ZonedDateTime createdAt;
+    private final String username;
+    private final Long entryDBId;
     private final Map<String, Serializable> auditData;
 
     public AuditRecord(Builder builder)
@@ -42,11 +44,8 @@ public class AuditRecord
         this.inTransaction = builder.inTransaction;
         this.auditData = builder.auditRecordData;
         this.createdAt = ZonedDateTime.now();
-    }
-
-    public boolean isInTransaction()
-    {
-        return inTransaction;
+        this.username = builder.username;
+        this.entryDBId = builder.entryDBId;
     }
 
     public String getAuditApplicationId()
@@ -54,9 +53,24 @@ public class AuditRecord
         return auditApplicationId;
     }
 
+    public boolean isInTransaction()
+    {
+        return inTransaction;
+    }
+
     public ZonedDateTime getCreatedAt()
     {
         return createdAt;
+    }
+
+    public String getUsername()
+    {
+        return username;
+    }
+
+    public Long getEntryDBId()
+    {
+        return entryDBId;
     }
 
     public Map<String, Serializable> getAuditData()
@@ -74,6 +88,8 @@ public class AuditRecord
         private String auditRecordType;
         private boolean inTransaction;
         private Map<String, Serializable> auditRecordData;
+        private String username;
+        private Long entryDBId;
 
         public Builder setAuditRecordType(String auditRecordType)
         {
@@ -90,6 +106,18 @@ public class AuditRecord
         public Builder setAuditRecordData(Map<String, Serializable> auditRecordData)
         {
             this.auditRecordData = auditRecordData;
+            return this;
+        }
+
+        public Builder setUsername(String username)
+        {
+            this.username = username;
+            return this;
+        }
+
+        public Builder setEntryDBId(Long entryDBId)
+        {
+            this.entryDBId = entryDBId;
             return this;
         }
 

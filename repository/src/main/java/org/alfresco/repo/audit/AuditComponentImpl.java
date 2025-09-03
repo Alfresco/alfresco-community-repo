@@ -766,7 +766,7 @@ public class AuditComponentImpl implements AuditComponent
             }
             if (isAuditingToAuditStorageEnabled())
             {
-                auditRecordReporter.reportAuditRecord(createAuditRecord(auditData, true, application.getApplicationName()));
+                auditRecordReporter.reportAuditRecord(createAuditRecord(auditData, true, username, entryId, application.getApplicationName()));
             }
 
             // Done
@@ -941,12 +941,14 @@ public class AuditComponentImpl implements AuditComponent
      *            the name of the audit application
      * @return a constructed AuditRecord instance
      */
-    private AuditRecord createAuditRecord(Map<String, Serializable> auditData, boolean inTransaction, String applicationName)
+    private AuditRecord createAuditRecord(Map<String, Serializable> auditData, boolean inTransaction, String username, Long entryId, String applicationName)
     {
         int rootSize = applicationName.length() + 2; // Root is constructed like this -> '/' + auditedApplicationName + '/'.
         AuditRecord.Builder builder = AuditRecordUtils.generateAuditRecordBuilder(auditData, rootSize);
         builder.setAuditRecordType(applicationName);
         builder.setInTransaction(inTransaction);
+        builder.setUsername(username);
+        builder.setEntryDBId(entryId);
         return builder.build();
     }
 

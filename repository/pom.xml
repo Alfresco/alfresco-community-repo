@@ -840,12 +840,12 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <complianceLevel>17</complianceLevel>
+                    <complianceLevel>21</complianceLevel>
                     <outxml>false</outxml>
                     <verbose>true</verbose>
                     <showWeaveInfo>true</showWeaveInfo>
-                    <source>17</source>
-                    <target>17</target>
+                    <source>21</source>
+                    <target>21</target>
                     <additionalCompilerArgs>
                         <arg>-parameters</arg>
                     </additionalCompilerArgs>

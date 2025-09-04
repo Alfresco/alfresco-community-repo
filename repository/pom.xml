@@ -840,12 +840,12 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <complianceLevel>21</complianceLevel>
+                    <complianceLevel>${java.version}</complianceLevel>
                     <outxml>false</outxml>
                     <verbose>true</verbose>
                     <showWeaveInfo>true</showWeaveInfo>
-                    <source>21</source>
-                    <target>21</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                     <additionalCompilerArgs>
                         <arg>-parameters</arg>
                     </additionalCompilerArgs>

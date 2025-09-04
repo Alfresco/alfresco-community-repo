@@ -128,7 +128,7 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
         ContentReader txtReader = tempWriter.getReader();
         try (InputStream is = txtReader.getContentInputStream()) {
             String textString = new String(is.readAllBytes());
-            String aiResult = sendToAIEndpoint(is);
+            String aiResult = sendToAIEndpoint(textString);
             QName AI_SUMMARY_PROP = QName.createQName(CONTENT_MODEL_1_0_URI, "AiSummary");
             nodeService.setProperty(actionedUponNodeRef, AI_SUMMARY_PROP, aiResult);
             // Optionally, store or log the result
@@ -141,44 +141,37 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
      * Placeholder for sending content to an AI endpoint.
      * Implement actual HTTP call or integration as needed.
      */
-    private String sendToAIEndpoint(InputStream txtContent) throws Exception {
-        // Example: read content, send to AI, return result
-        // Implement actual HTTP client logic here
+    private String sendToAIEndpoint(String txtContent) throws Exception {
         // Read input stream to string
-//        String inputText = new String(txtContent.readAllBytes(), StandardCharsets.UTF_8);
-//
-//        // Prepare JSON payload
-//        String payload = "{ \"inputs\": " + escapeJson(inputText) + " }";
-//
-//        // Create connection
-//        URL url = new URL("https://api-inference.huggingface.co/models/gpt2");
-//        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//        conn.setRequestMethod("POST");
-//        conn.setRequestProperty("Authorization", "Bearer " + HUGGING_FACE_TOKEN);
-//        conn.setRequestProperty("Content-Type", "application/json");
-//        conn.setDoOutput(true);
-//
-//        // Send request
-//        try (OutputStream os = conn.getOutputStream()) {
-//            os.write(payload.getBytes(StandardCharsets.UTF_8));
-//        }
-//
-//        // Read response
-//        int status = conn.getResponseCode();
-//        InputStream responseStream = (status >= 200 && status < 300) ? conn.getInputStream() : conn.getErrorStream();
-//        String response = new String(responseStream.readAllBytes(), StandardCharsets.UTF_8);
-//
-//        // Simple extraction of generated text (not robust, for demo)
-//        int start = response.indexOf("\"generated_text\":\"");
-//        if (start != -1) {
-//            start += 18;
-//            int end = response.indexOf("\"", start);
-//            if (end != -1) {
-//                return response.substring(start, end);
-//            }
-//        }
-//        return "AI summary unavailable";
-        return "AI summary or insights result";
+
+
+        // Build JSON payload
+        String payload = "{"
+                + "\"context\": " + escapeJson(txtContent) + ","
+                + "\"prompt\": \"provide concise summary\""
+                + "}";
+
+        // Create connection
+        URL url = new URL("http://alfresco-llm-ai:5000/api/respond");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setDoOutput(true);
+
+        // Send request
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(payload.getBytes(StandardCharsets.UTF_8));
+        }
+
+        // Read response
+        int status = conn.getResponseCode();
+        InputStream responseStream = (status >= 200 && status < 300) ? conn.getInputStream() : conn.getErrorStream();
+        String jsonResponse = new String(responseStream.readAllBytes(), StandardCharsets.UTF_8);
+
+        // Parse JSON and extract the "response" field
+        org.json.JSONObject obj = new org.json.JSONObject(jsonResponse);
+        String summary = obj.optString("response", "");
+        return summary.trim();
     }
 
     // Helper to escape JSON string

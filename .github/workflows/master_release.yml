@@ -7,6 +7,7 @@ on:
       - release/**
 
 env:
+  JAVA_VERSION: '21'
   GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
   GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
   GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
@@ -37,6 +38,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v8.24.1
@@ -66,6 +69,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v8.24.1

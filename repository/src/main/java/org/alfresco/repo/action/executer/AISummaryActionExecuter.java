@@ -34,10 +34,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.rendition2.TransformationOptionsConverter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.rule.RuleServiceException;
@@ -79,6 +81,8 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
         // No extra parameters for this action
+        paramList.add(new ParameterDefinitionImpl("prompt", DataTypeDefinition.TEXT,
+                true, getParamDisplayLabel("prompt")));
     }
 
     @Override
@@ -124,13 +128,15 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
 
         synchronousTransformClient.transform(contentReader, tempWriter, options, null, actionedUponNodeRef);
 
+        // Get the AI prompt from action parameters
+        String aiPrompt = (String) ruleAction.getParameterValue("prompt");
         // Read transformed content as plain text
         ContentReader txtReader = tempWriter.getReader();
         try (InputStream is = txtReader.getContentInputStream()) {
             String textString = new String(is.readAllBytes());
-            String aiResult = sendToAIEndpoint(textString);
-            QName AI_SUMMARY_PROP = QName.createQName(CONTENT_MODEL_1_0_URI, "AiSummary");
-            nodeService.setProperty(actionedUponNodeRef, AI_SUMMARY_PROP, aiResult);
+            String aiResult = sendToAIEndpoint(textString, aiPrompt);
+            QName AI_RESPONSE_PROP = QName.createQName(CONTENT_MODEL_1_0_URI, "AiResponse");
+            nodeService.setProperty(actionedUponNodeRef, AI_RESPONSE_PROP, aiResult);
             // Optionally, store or log the result
         } catch (Exception e) {
             throw new RuleServiceException("AI endpoint call failed: " + e.getMessage(), e);
@@ -141,14 +147,14 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
      * Placeholder for sending content to an AI endpoint.
      * Implement actual HTTP call or integration as needed.
      */
-    private String sendToAIEndpoint(String txtContent) throws Exception {
+    private String sendToAIEndpoint(String txtContent, String prompt) throws Exception {
         // Read input stream to string
 
 
         // Build JSON payload
         String payload = "{"
-                + "\"context\": " + escapeJson(txtContent) + ","
-                + "\"prompt\": \"provide concise summary\""
+                + "\"context\": " + escapeJson(txtContent.trim()) + ","
+                + "\"prompt\": " + escapeJson(prompt.trim())
                 + "}";
 
         // Create connection

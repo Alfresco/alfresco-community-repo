@@ -27,9 +27,15 @@ package org.alfresco.repo.audit;
 
 public class AuditRecordReporterImpl implements AuditRecordReporter
 {
+    /**
+     * This method intentionally has an empty implementation.
+     * <p>
+     * This class provides a no-op implementation of {@link AuditRecordReporter}.
+     * Implement this method if audit record reporting is required in the future.
+     */
     @Override
     public void reportAuditRecord(AuditRecord auditRecord)
     {
-        // empty implementation
+        // No operation performed.
     }
 }

@@ -47,10 +47,20 @@ public class AuditRecordUtils
      *            is a length of key root.
      * @return a preloaded {@link AuditRecord.Builder}
      */
-    @SuppressWarnings("unchecked")
     public static AuditRecord.Builder generateAuditRecordBuilder(Map<String, Serializable> data, int keyRootLength)
     {
         var auditRecordBuilder = AuditRecord.builder();
+
+        var rootNode = createRootNode(data, keyRootLength);
+
+        auditRecordBuilder.setAuditRecordData(rootNode);
+
+        return auditRecordBuilder;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static HashMap<String, Serializable> createRootNode(Map<String, Serializable> data, int keyRootLength)
+    {
         var rootNode = new HashMap<String, Serializable>();
 
         data.forEach((k, v) -> {
@@ -63,14 +73,17 @@ public class AuditRecordUtils
             }
             current.put(keys[keys.length - 1], decodeValueByInstance(v));
         });
-        auditRecordBuilder.setAuditRecordData(rootNode);
-
-        return auditRecordBuilder;
+        return rootNode;
     }
 
+    @SuppressWarnings("unchecked")
     private static Serializable decodeValueByInstance(Serializable value)
     {
-        if (value instanceof NodeRef)
+        if (value instanceof HashMap<?, ?>)
+        {
+            return createRootNode((HashMap<String, Serializable>) value, 0);
+        }
+        else if (value instanceof NodeRef)
         {
             return ((NodeRef) value).getId();
         }

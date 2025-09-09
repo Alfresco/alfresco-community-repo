@@ -37,6 +37,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 public class AuditRecordUtilsTest
@@ -76,6 +77,47 @@ public class AuditRecordUtilsTest
         assertEquals(2, properties.size());
         assertEquals(testData.get("/alfresco-access/transaction/properties/from"), properties.get("from"));
         assertEquals(testData.get("/alfresco-access/transaction/properties/to"), properties.get("to"));
+
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testGenerateAuditRecordBuilderTestNodeRef()
+    {
+        var testData = new HashMap<String, Serializable>();
+        var expectedValue = new HashMap<String, Serializable>();
+
+        expectedValue.put("nodeRef", new NodeRef("workspace://SpacesStore/bfa612e6-1a02-46a0-a612-e61a02e6a036"));
+        expectedValue.put("objectId", "bfa612e6-1a02-46a0-a612-e61a02e6a036;1.0");
+
+        testData.put("/CMISChangeLog/CREATED/result/value", expectedValue);
+
+        var builder = AuditRecordUtils.generateAuditRecordBuilder(testData, "/CMISChangeLog/".length());
+        builder.setAuditRecordType("CMISChangeLog");
+        var auditRecord = builder.build();
+
+        assertNotNull(auditRecord);
+
+        assertEquals("CMISChangeLog", auditRecord.getAuditApplicationId());
+
+        var auditData = auditRecord.getAuditData();
+        assertEquals(1, auditData.size());
+
+        var created = (HashMap<String, ?>) auditData.get("CREATED");
+        assertNotNull(created);
+
+        assertEquals(1, created.size());
+        var result = (HashMap<String, Object>) created.get("result");
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        var resultValue = (HashMap<String, Object>) result.get("value");
+        assertNotNull(resultValue);
+        assertEquals(2, resultValue.size());
+
+        var expectedNodeRef = (NodeRef) expectedValue.get("nodeRef");
+        assertEquals(expectedNodeRef.getId(), resultValue.get("nodeRef"));
+        assertEquals(expectedValue.get("objectId"), resultValue.get("objectId"));
 
     }
 }

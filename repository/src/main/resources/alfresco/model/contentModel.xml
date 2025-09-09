@@ -562,10 +562,11 @@
    
    <aspects>
       <aspect name="cm:aillm">
-         <title>AI LLM</title>
+         <title>AI Insights</title>
          <properties>
             <property name="cm:airesponse">
-               <type>d:text</type>
+                <title>AI Response</title>
+               <type>d:mltext</type>
                <mandatory>false</mandatory>
             </property>
          </properties>

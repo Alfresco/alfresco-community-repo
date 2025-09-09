@@ -45,8 +45,6 @@ import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.namespace.QName;
 
-import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
-
 public class AISummaryActionExecuter extends ActionExecuterAbstractBase
 {
     public static final String NAME = "ai-summary";
@@ -58,31 +56,37 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
     private SynchronousTransformClient synchronousTransformClient;
     private TransformationOptionsConverter converter;
 
-    public void setDictionaryService(DictionaryService dictionaryService) {
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
         this.dictionaryService = dictionaryService;
     }
 
-    public void setContentService(ContentService contentService) {
+    public void setContentService(ContentService contentService)
+    {
         this.contentService = contentService;
     }
 
-    public void setNodeService(NodeService nodeService) {
+    public void setNodeService(NodeService nodeService)
+    {
         this.nodeService = nodeService;
     }
 
-    public void setSynchronousTransformClient(SynchronousTransformClient synchronousTransformClient) {
+    public void setSynchronousTransformClient(SynchronousTransformClient synchronousTransformClient)
+    {
         this.synchronousTransformClient = synchronousTransformClient;
     }
 
-    public void setConverter(TransformationOptionsConverter converter) {
+    public void setConverter(TransformationOptionsConverter converter)
+    {
         this.converter = converter;
     }
 
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {
         // No extra parameters for this action
-        paramList.add(new ParameterDefinitionImpl("prompt", DataTypeDefinition.TEXT,
-                true, getParamDisplayLabel("prompt")));
+        paramList.add(new ParameterDefinitionImpl("Prompt", DataTypeDefinition.TEXT,
+                true, getParamDisplayLabel("Prompt")));
     }
 
     @Override
@@ -102,7 +106,8 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
         }
 
         ContentReader contentReader = this.contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
-        if (contentReader == null || !contentReader.exists()) {
+        if (contentReader == null || !contentReader.exists())
+        {
             throw new RuleServiceException("Content Reader not found.");
         }
 
@@ -117,7 +122,8 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
         Map<String, String> options = converter.getOptions(transformationOptions, sourceMimetype, TARGET_MIMETYPE);
 
         if (!synchronousTransformClient.isSupported(sourceMimetype, sourceSizeInBytes,
-                contentUrl, TARGET_MIMETYPE, options, null, actionedUponNodeRef)) {
+                contentUrl, TARGET_MIMETYPE, options, null, actionedUponNodeRef))
+        {
             throw new RuleServiceException("No transformer for " + sourceMimetype + " -> " + TARGET_MIMETYPE);
         }
 
@@ -129,27 +135,32 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
         synchronousTransformClient.transform(contentReader, tempWriter, options, null, actionedUponNodeRef);
 
         // Get the AI prompt from action parameters
-        String aiPrompt = (String) ruleAction.getParameterValue("prompt");
+        String aiPrompt = (String) ruleAction.getParameterValue("Prompt");
         // Read transformed content as plain text
         ContentReader txtReader = tempWriter.getReader();
-        try (InputStream is = txtReader.getContentInputStream()) {
+        try (InputStream is = txtReader.getContentInputStream())
+        {
             String textString = new String(is.readAllBytes());
             String aiResult = sendToAIEndpoint(textString, aiPrompt);
-            QName AI_RESPONSE_PROP = QName.createQName(CONTENT_MODEL_1_0_URI, "AiResponse");
-            nodeService.setProperty(actionedUponNodeRef, AI_RESPONSE_PROP, aiResult);
+            nodeService.setProperty(actionedUponNodeRef, ContentModel.PROP_AI_RESPONSE, aiResult);
+            if (!nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_AI))
+            {
+                nodeService.addAspect(actionedUponNodeRef, ContentModel.ASPECT_AI, null);
+            }
             // Optionally, store or log the result
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             throw new RuleServiceException("AI endpoint call failed: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Placeholder for sending content to an AI endpoint.
-     * Implement actual HTTP call or integration as needed.
+     * Placeholder for sending content to an AI endpoint. Implement actual HTTP call or integration as needed.
      */
-    private String sendToAIEndpoint(String txtContent, String prompt) throws Exception {
+    private String sendToAIEndpoint(String txtContent, String prompt) throws Exception
+    {
         // Read input stream to string
-
 
         // Build JSON payload
         String payload = "{"
@@ -165,7 +176,8 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
         conn.setDoOutput(true);
 
         // Send request
-        try (OutputStream os = conn.getOutputStream()) {
+        try (OutputStream os = conn.getOutputStream())
+        {
             os.write(payload.getBytes(StandardCharsets.UTF_8));
         }
 

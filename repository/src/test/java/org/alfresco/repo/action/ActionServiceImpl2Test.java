@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.action.executer.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,6 +51,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.*;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -242,14 +242,14 @@ public class ActionServiceImpl2Test
     {
         final File file = loadAndAddQuickFileAsManager(testNode, "quick.pdf", MimetypeMap.MIMETYPE_PDF);
         assertNotNull("Failed to load required test file.", file);
-//        // Add plain text content to the test node
-//        AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);
-//        transactionHelper.doInTransaction(() -> {
-//            ContentWriter writer = contentService.getWriter(testNode, ContentModel.PROP_CONTENT, true);
-//            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-//            writer.putContent("This is a test document for AI summary.");
-//            return null;
-//        });
+        // // Add plain text content to the test node
+        // AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);
+        // transactionHelper.doInTransaction(() -> {
+        // ContentWriter writer = contentService.getWriter(testNode, ContentModel.PROP_CONTENT, true);
+        // writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        // writer.putContent("This is a test document for AI summary.");
+        // return null;
+        // });
 
         // Execute the ai-summary action
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);

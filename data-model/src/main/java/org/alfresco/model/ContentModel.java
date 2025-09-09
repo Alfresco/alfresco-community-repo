@@ -457,4 +457,7 @@ public interface ContentModel
     static final QName PROP_CASCADE_CRC = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "cascadeCRC");
     static final QName PROP_CASCADE_TX = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "cascadeTx");
 
+    static final QName ASPECT_AI = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "aillm");
+    static final QName PROP_AI_RESPONSE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "airesponse");
+
 }

@@ -39,7 +39,16 @@ public class AuditRecordUtils
     }
 
     /**
-     * Generates an {@link AuditRecord.Builder} from flat audit data. Translates `key-value` pairs into a nested JSON structure, preloading the builder with arguments. Keys are split by `/` to build the nested structure, with the root key used as the application ID. Each key starts with the same root constructed like this '/' + auditedApplicationName + '/'. Before split, this root is removed from the key.
+     * Generates an {@link AuditRecord.Builder} from flat audit data.
+     * <p>
+     * This method:
+     * <ul>
+     * <li>Translates flat {@code key-value} pairs into a nested JSON structure.</li>
+     * <li>Preloads the builder with the provided arguments.</li>
+     * <li>Splits keys by {@code /} to build the nested structure.</li>
+     * <li>Uses the root key as the application ID.</li>
+     * <li>Assumes each key starts with the same root, constructed as {@code '/' + auditedApplicationName + '/'}, which is removed before splitting.</li>
+     * </ul>
      *
      * @param data
      *            a map containing flat audit data as `key-value` pairs

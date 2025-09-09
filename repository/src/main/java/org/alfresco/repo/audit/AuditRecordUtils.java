@@ -29,6 +29,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 public class AuditRecordUtils
 {
     private AuditRecordUtils()
@@ -59,10 +61,22 @@ public class AuditRecordUtils
             {
                 current = (HashMap<String, Serializable>) current.computeIfAbsent(keys[i], newMap -> new HashMap<String, Serializable>());
             }
-            current.put(keys[keys.length - 1], v);
+            current.put(keys[keys.length - 1], decodeValueByInstance(v));
         });
         auditRecordBuilder.setAuditRecordData(rootNode);
 
         return auditRecordBuilder;
+    }
+
+    private static Serializable decodeValueByInstance(Serializable value)
+    {
+        if (value instanceof NodeRef)
+        {
+            return ((NodeRef) value).getId();
+        }
+        else
+        {
+            return value;
+        }
     }
 }

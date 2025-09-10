@@ -449,12 +449,13 @@
         </property>
     </bean>
 
-    <bean id="ai-summary" class="org.alfresco.repo.action.executer.AISummaryActionExecuter" parent="action-executer">
+    <bean id="ai-action" class="org.alfresco.repo.action.executer.AISummaryActionExecuter" parent="action-executer">
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="contentService" ref="ContentService" />
         <property name="nodeService" ref="NodeService" />
         <property name="synchronousTransformClient" ref="synchronousTransformClient" />
         <property name="converter" ref="transformOptionsConverter" />
+        <property name="AI_ENDPOINT_URL" value="${ai.endpoint.url}" />
         <property name="applicableTypes">
             <list>
                 <value>{http://www.alfresco.org/model/content/1.0}content</value>

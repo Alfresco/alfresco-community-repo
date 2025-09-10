@@ -47,8 +47,9 @@ import org.alfresco.service.namespace.QName;
 
 public class AISummaryActionExecuter extends ActionExecuterAbstractBase
 {
-    public static final String NAME = "ai-summary";
+    public static final String NAME = "ai-action";
     private static final String TARGET_MIMETYPE = "text/plain";
+    private String AI_ENDPOINT_URL;
 
     private DictionaryService dictionaryService;
     private ContentService contentService;
@@ -79,6 +80,11 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
     public void setConverter(TransformationOptionsConverter converter)
     {
         this.converter = converter;
+    }
+
+    public void setAI_ENDPOINT_URL(String aiUrl)
+    {
+        this.AI_ENDPOINT_URL = aiUrl;
     }
 
     @Override
@@ -169,7 +175,7 @@ public class AISummaryActionExecuter extends ActionExecuterAbstractBase
                 + "}";
 
         // Create connection
-        URL url = new URL("http://alfresco-llm-ai:5000/api/respond");
+        URL url = new URL(AI_ENDPOINT_URL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");

@@ -252,6 +252,9 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         return value != null && value.equalsIgnoreCase("true");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isAuditingToDatabaseEnabled()
     {
@@ -259,6 +262,9 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         return value == null || value.equalsIgnoreCase("true");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isAuditingToAuditStorageEnabled()
     {

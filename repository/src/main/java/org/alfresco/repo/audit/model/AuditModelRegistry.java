@@ -59,7 +59,7 @@ public interface AuditModelRegistry
     public boolean isAuditEnabled();
 
     /**
-     * Determines whether audit values should be stored in database.
+     * Determines whether audit values should be stored in database. <code>True</code> by default if not changed by property.
      *
      * @return <code>true</code> if audit is enabled.
      */

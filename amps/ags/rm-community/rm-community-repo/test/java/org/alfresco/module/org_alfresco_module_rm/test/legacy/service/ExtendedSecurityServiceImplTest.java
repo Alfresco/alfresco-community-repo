@@ -334,7 +334,6 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         final String usera = createTestUser();
         final String userb = createTestUser();
         final String owner = createTestUser();
-        final int docCount = 10;
 
         extendedReaders.add(usera);
         extendedReaders.add(userb);
@@ -347,12 +346,13 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         NodeRef documentLib = createSite(new HashSet<>(), new HashSet<>());
 
         // Create records in the site document library
-        return createRecords(docCount, documentLib, owner);
+        return createRecords(concurrentThreads, documentLib, owner);
     }
 
     private NodeRef createSite(Set<String> readers, Set<String> writers)
     {
         return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
+            @Override
             public NodeRef execute() throws Throwable
             {
                 final String siteShortName = GUID.generate();
@@ -367,6 +367,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
     private Set<NodeRef> createRecords(int numRecords, NodeRef parent, String owner)
     {
         return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Set<NodeRef>>() {
+            @Override
             public Set<NodeRef> execute() throws Throwable
             {
                 int createdRecords = 0;
@@ -395,6 +396,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         }
 
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
             public Void execute() throws Throwable
             {
                 setExtendedSecurity(doc, readers, writers);
@@ -426,13 +428,14 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
             {
                 throw (ConcurrencyFailureException) cause;
             }
-            throw new RuntimeException("Error during parallel execution", cause);
+            throw new RuntimeException("Error during parallel execution", e);
         }
     }
 
     private void verifyCreatedGroups(Set<NodeRef> documents, boolean onlyDuplicatesValidation)
     {
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
             public Void execute() throws Throwable
             {
                 Set<String> expectedAuthorities = null;

@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.webscripts.ui.common.StringUtils;
 
 import org.alfresco.model.ContentModel;
@@ -649,8 +650,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         }
         catch (DuplicateChildNodeNameException ex)
         {
-            // the group was concurrently created
-            group = authorityService.getName(AuthorityType.GROUP, groupShortName);
+            // Rethrow as ConcurrencyFailureException so that is can be retried and linked to the group already beaing created by another transaction
+            throw new ConcurrencyFailureException("IPR group creation failed due to concurrent duplicate group name creation: " + groupShortName);
         }
 
         return group;

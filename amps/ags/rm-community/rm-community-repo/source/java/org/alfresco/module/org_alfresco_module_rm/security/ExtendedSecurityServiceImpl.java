@@ -650,7 +650,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         }
         catch (DuplicateChildNodeNameException ex)
         {
-            // Rethrow as ConcurrencyFailureException so that is can be retried and linked to the group already beaing created by another transaction
+            // Rethrow as ConcurrencyFailureException so that is can be retried and linked to the group created by the concurrent transaction
             throw new ConcurrencyFailureException("IPR group creation failed due to concurrent duplicate group name creation: " + groupShortName);
         }
 

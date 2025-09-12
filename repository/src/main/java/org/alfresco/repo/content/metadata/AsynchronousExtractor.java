@@ -461,7 +461,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         }
 
         // Remove well know entries from the map that drive how the real metadata is applied.
-        OverwritePolicy overwritePolicy = removeOverwritePolicy(metadata, "sys:overwritePolicy", OverwritePolicy.PRAGMATIC);
+        OverwritePolicy overwritePolicy = removeOverwritePolicy(metadata, "sys:overwritePolicy", OverwritePolicy.EAGER);
         Boolean enableStringTagging = removeBoolean(metadata, "sys:enableStringTagging", false);
         Boolean carryAspectProperties = removeBoolean(metadata, "sys:carryAspectProperties", true);
         List<String> stringTaggingSeparators = removeTaggingSeparators(metadata, "sys:stringTaggingSeparators",

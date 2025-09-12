@@ -83,9 +83,42 @@ function main()
        
         return;
     }
+    var nodeRefStr = toNodeRefString(persistedObject, itemId);
+    var node = search.findNode(nodeRefStr);
+    if (node && node.isDocument) {
+        var contentProp = repoFormData.getFieldData("prop_cm_content");
+        if (contentProp != null) {
+            // Content was part of the form data: run extraction
+            extractMetadata(node);
+        } else {
+            if (logger.isDebugLoggingEnabled()) {
+                logger.debug("Skipping metadata extraction: no content change detected");
+            }
+        }
+    }
     
     model.persistedObject = persistedObject.toString();
     model.message = "Successfully persisted form for item [" + itemKind + "]" + itemId;
 }
 
+function extractMetadata(file) {
+    var emAction = actions.create("extract-metadata");
+    if (emAction) {
+        // readOnly=false, newTransaction=false
+        emAction.execute(file, false, false);
+    }
+}
+
+function toNodeRefString(persistedObject, itemId) {
+    // Prefer the NodeRef returned by saveForm (when kind=node).
+    if (persistedObject instanceof Packages.org.alfresco.service.cmr.repository.NodeRef) {
+        return persistedObject.toString();
+    }
+    // If the client passed a full noderef, keep it.
+    if (itemId && itemId.indexOf("://") !== -1) {
+        return itemId;
+    }
+    // Otherwise assume SpacesStore UUID.
+    return "workspace://SpacesStore/" + itemId;
+}
 main();

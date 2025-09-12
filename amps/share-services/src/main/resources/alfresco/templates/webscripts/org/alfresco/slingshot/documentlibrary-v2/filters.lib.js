@@ -282,18 +282,18 @@ var Filters =
       return filterParams;
    },
 
-   getCategoryNodeRef : function getCategoryNodeRef(categoryName) {
-      var results = search.luceneSearch(
-          'PATH:"/cm:categoryRoot/cm:generalclassifiable//*" AND @cm\\:name:"' + categoryName + '"'
-      );
+    getCategoryNodeRef: function(categoryName) {
+        var results = search.luceneSearch(
+            'PATH:"/cm:categoryRoot/cm:generalclassifiable//*" AND @cm\\:name:"' + categoryName + '"'
+        );
 
-      if (results && results.length > 0) {
-         return results[0].nodeRef.toString();
-      } else {
-         logger.warn("Category not found: " + categoryName);
-         return null;
-      }
-   },
+        if (results && results.length > 0) {
+            return results[0].nodeRef.toString();
+        }
+
+        logger.warn("Category not found: " + categoryName);
+        return null;
+    },
 
    constructPathQuery: function(parsedArgs)
    {

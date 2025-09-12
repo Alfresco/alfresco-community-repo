@@ -877,6 +877,7 @@ public class AuditComponentTest extends TestCase
         auditModelRegistry.loadAuditModels();
 
         auditModelRegistry.setProperty("audit.enabled", "true");
+        auditModelRegistry.setProperty("audit.enabled.auditingToDatabase", "true");
 
         auditModelRegistry.setProperty("audit.app1.enabled", "true");
         auditModelRegistry.setProperty("audit.filter.app1.default.enabled", "true");

@@ -134,6 +134,25 @@ function doclist_main()
       logger.log("doclist.lib.js - NodeRef: " + parsedArgs.nodeRef + " Query: " + query);
 
    favourites = sanitizeJunkFavouriteKeys(favourites);
+   if(query === null)
+   {
+      return {
+         luceneQuery: "",
+         paging: {
+            totalRecords: 0,
+            startIndex: 0
+         },
+         container: parsedArgs.rootNode,
+         parent: null,
+         onlineEditing: utils.moduleInstalled("org.alfresco.module.vti"),
+         itemCount: {
+            folders: 0,
+            documents: 0
+         },
+         items: [],
+         customJSON: slingshotDocLib.getJSON()
+      };
+   }
 
    if(Object.keys(favourites).length === 0 && query === null)
    {

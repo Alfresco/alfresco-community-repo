@@ -565,9 +565,16 @@
          <title>AI Insights</title>
          <properties>
             <property name="cm:airesponse">
-                <title>AI Response</title>
+               <title>AI Response</title>
                <type>d:mltext</type>
+               <protected>true</protected>
                <mandatory>false</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>both</tokenised>
+                  <facetable>true</facetable>
+               </index>
             </property>
          </properties>
       </aspect>

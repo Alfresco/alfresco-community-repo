@@ -981,7 +981,7 @@
 
     <!-- GetChildren - with explicit prop filtering and/or sorting -->
     <select id="select_GetChildrenCannedQueryWithProps" parameterType="FilterSortNode" resultMap="result_FilterSortNode" flushCache="true">
-       select
+       select distinct
             childNode.id             as id,
             childNode.version        as version,
             childStore.id            as store_id,

@@ -2066,7 +2066,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         Node node = getNodeNotNull(nodeId, false);
         // Handle sys:referenceable
-        ReferenceablePropertiesEntity.addReferenceableProperties(node, props);
+        ReferenceablePropertiesEntity.addReferenceableProperties(node.getId(), node.getNodeRef(), props);
         // Handle sys:localized
         LocalizedPropertiesEntity.addLocalizedProperties(localeDAO, node, props);
         // Handle cm:auditable

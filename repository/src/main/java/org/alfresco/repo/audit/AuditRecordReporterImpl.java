@@ -30,7 +30,7 @@ public class AuditRecordReporterImpl implements AuditRecordReporter
     /**
      * This method intentionally has an empty implementation.
      * <p>
-     * This class provides a no-op implementation of {@link AuditRecordReporter}. Implement this method if audit record reporting is required in the future.
+     * This class provides a no-op implementation of {@link AuditRecordReporter}.
      */
     @Override
     public void reportAuditRecord(AuditRecord auditRecord)

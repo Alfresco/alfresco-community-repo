@@ -73,7 +73,7 @@ public interface AuditComponent
     /**
      * @param auditRecordReporter
      *            AuditRecordReporter
-     * @since 25.2
+     * @since 25.3
      */
     public void setAuditRecordReporter(AuditRecordReporter auditRecordReporter);
 

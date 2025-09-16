@@ -31,7 +31,7 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
-public class AuditRecordUtils
+public final class AuditRecordUtils
 {
     private AuditRecordUtils()
     {

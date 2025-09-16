@@ -932,14 +932,6 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Creates an AuditRecord from the provided audit data.
-     *
-     * @param auditData
-     *            the map containing audit data
-     * @param inTransaction
-     *            whether the record is created within a transaction
-     * @param applicationName
-     *            the name of the audit application
-     * @return a constructed AuditRecord instance
      */
     private AuditRecord createAuditRecord(Map<String, Serializable> auditData, boolean inTransaction, String username, Long entryId, String applicationName)
     {

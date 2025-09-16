@@ -997,9 +997,7 @@
             childNode.audit_created  as audit_created,
             childNode.audit_modifier as audit_modifier,
             childNode.audit_modified as audit_modified,
-            childNode.audit_accessed  as audit_accessed,
-            assoc.assoc_index        as assoc_index,
-            assoc.id                 as assoc_id
+            childNode.audit_accessed as audit_accessed
             <if test="prop1qnameId != null">
           , prop1.node_id            as prop1_node_id,
             prop1.qname_id           as prop1_qname_id,
@@ -1077,9 +1075,6 @@
                     #{item}
                 </foreach>
             </if>
-        <if test="prop1qnameId == null and auditableProps == false">
-            <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
-        </if>
     </select>
     
     <!-- GetChildren - with no explicit sorting (or prop filtering) - note: still filtered by child type (and optionally primary or secondary) -->

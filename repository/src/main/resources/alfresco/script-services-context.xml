@@ -109,7 +109,6 @@
         <property name="extensionName">
             <value>metadataExtractAction</value>
         </property>
-        <property name="nodeService" ref="NodeService" />
         <property name="contentService" ref="ContentService" />
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>

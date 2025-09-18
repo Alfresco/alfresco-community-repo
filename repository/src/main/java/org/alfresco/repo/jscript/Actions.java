@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.action.ActionService;
  * 
  * @author davidc
  */
-public final class Actions extends BaseScopableProcessorExtension
+public class Actions extends BaseScopableProcessorExtension
 {
     /** Repository Service Registry */
     private ServiceRegistry services;
@@ -76,9 +76,20 @@ public final class Actions extends BaseScopableProcessorExtension
      * 
      * @param actionName
      *            the action name
+     *            <p>
      * @return the action
+     *
+     *         <p>
+     *         By default the action context is not set on the action created.
+     *         </p>
      */
+
     public ScriptAction create(String actionName)
+    {
+        return create(actionName, false);
+    }
+
+    public ScriptAction create(String actionName, boolean setActionContext)
     {
         ScriptAction scriptAction = null;
         ActionService actionService = services.getActionService();
@@ -86,6 +97,10 @@ public final class Actions extends BaseScopableProcessorExtension
         if (actionDef != null)
         {
             Action action = actionService.createAction(actionName);
+            if (setActionContext)
+            {
+                action.setActionContext("scriptaction");
+            }
             scriptAction = new ScriptAction(this.services, action, actionDef);
             scriptAction.setScope(getScope());
         }

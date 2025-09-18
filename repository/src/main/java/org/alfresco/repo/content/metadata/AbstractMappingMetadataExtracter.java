@@ -1122,6 +1122,15 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * {@inheritDoc}
      */
     @Override
+    public Map<QName, Serializable> extract(NodeRef nodeRef, ContentReader reader, OverwritePolicy overwritePolicy, Map<QName, Serializable> destination)
+    {
+        return extract(nodeRef, reader, overwritePolicy, destination, mapping);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Map<QName, Serializable> extract(
             NodeRef nodeRef,
             ContentReader reader,
@@ -1154,7 +1163,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             // Check that the content has some meat
             if (reader.getSize() > 0 && reader.exists())
             {
-                rawMetadata = extractRaw(nodeRef, reader, getLimits(reader.getMimetype()));
+                rawMetadata = extractRaw(nodeRef, reader, getLimits(reader.getMimetype()), overwritePolicy);
             }
             else
             {
@@ -2002,7 +2011,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Exception wrapper to handle exceeded limits imposed by {@link MetadataExtracterLimits} {@link AbstractMappingMetadataExtracter#extractRaw(NodeRef, ContentReader, MetadataExtracterLimits)}
+     * Exception wrapper to handle exceeded limits imposed by {@link MetadataExtracterLimits} {@link AbstractMappingMetadataExtracter#extractRaw(NodeRef, ContentReader, MetadataExtracterLimits,OverwritePolicy)}
      */
     private class LimitExceededException extends Exception
     {
@@ -2032,7 +2041,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      *             All exception conditions can be handled.
      */
     private Map<String, Serializable> extractRaw(NodeRef nodeRef,
-            ContentReader reader, MetadataExtracterLimits limits) throws Throwable
+            ContentReader reader, MetadataExtracterLimits limits, OverwritePolicy overwritePolicy) throws Throwable
     {
         if (reader.getSize() > limits.getMaxDocumentSizeMB() * MEGABYTE_SIZE)
         {
@@ -2059,6 +2068,12 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             }
         }
 
+        return extractRawInThread(nodeRef, reader, limits, overwritePolicy);
+    }
+
+    protected Map<String, Serializable> extractRawInThread(NodeRef nodeRef, ContentReader reader, MetadataExtracterLimits limits, OverwritePolicy policy)
+            throws Throwable
+    {
         return extractRawInThread(nodeRef, reader, limits);
     }
 

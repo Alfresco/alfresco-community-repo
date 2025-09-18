@@ -405,6 +405,24 @@ public interface MetadataExtracter extends ContentWorker
     }
 
     /**
+     * Identical to {@link #extract(ContentReader, OverwritePolicy ,Map)} but with the addition of the {@code NodeRef} being acted on. By default, the method without the {@code NodeRef} is called.
+     *
+     * @param nodeRef
+     *            the node being acted on.
+     * @param reader
+     *            the source of the content
+     * @param destination
+     *            the map of properties to populate (essentially a return value)
+     * @return Returns a map of all properties on the destination map that were added or modified. If the return map is empty, then no properties were modified.
+     * @throws ContentIOException
+     *             if a detectable error occurs
+     */
+    public default Map<QName, Serializable> extract(NodeRef nodeRef, ContentReader reader, OverwritePolicy overwritePolicy, Map<QName, Serializable> destination)
+    {
+        return extract(reader, overwritePolicy, destination);
+    }
+
+    /**
      * Identical to {@link #extract(ContentReader, OverwritePolicy, Map, Map)} but with the addition of the {@code NodeRef} being acted on. By default, the method without the {@code NodeRef} is called.
      *
      * @param nodeRef

@@ -62,6 +62,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     private String tenantId;
     private Set<String> actionChain;
     private List<ActionCondition> actionConditions = new ArrayList<ActionCondition>();
+    private String actionContext;
 
     /**
      * When there is more than one instance of the action executing, both with the same ID, which one is this? This crops up most often with persisted actions, with two copies running, one on each of two different target nodes.
@@ -473,5 +474,20 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     public void setExecutionFailureMessage(String message)
     {
         this.executionFailureMessage = message;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setActionContext(String actionContext)
+    {
+        this.actionContext = actionContext;
+    }
+
+    @Override
+    public String getActionContext()
+    {
+        return actionContext;
     }
 }

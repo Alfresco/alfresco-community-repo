@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -403,6 +404,10 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             ((AbstractMappingMetadataExtracter) extracter).setEnableStringTagging(enableStringTagging);
         }
 
+        MetadataExtracter.OverwritePolicy overwritePolicy = Strings.CI.equals(ruleAction.getActionContext(), "scriptaction")
+                ? MetadataExtracter.OverwritePolicy.EAGER
+                : MetadataExtracter.OverwritePolicy.PRAGMATIC;
+
         // Get all the node's properties
         Map<QName, Serializable> nodeProperties = nodeService.getProperties(actionedUponNodeRef);
 
@@ -415,7 +420,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             modifiedProperties = extracter.extract(
                     actionedUponNodeRef,
                     reader,
-                    /* OverwritePolicy.PRAGMATIC, */
+                    overwritePolicy,
                     nodeProperties);
         }
         catch (Throwable e)

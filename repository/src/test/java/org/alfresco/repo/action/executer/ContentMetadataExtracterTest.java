@@ -303,7 +303,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     }
 
     /**
-     * Test execution of the pragmatic approach
+     * Test execution of the Eager approach
      */
     @Test
     public void testFromPartial() throws Exception
@@ -349,6 +349,6 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
                 assertEquals(QUICK_DESCRIPTION, nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
                 return null;
             }
-        });
+        }, false, true);
     }
 }

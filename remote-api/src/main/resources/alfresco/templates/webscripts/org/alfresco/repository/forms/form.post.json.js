@@ -51,6 +51,14 @@ function main()
         }
     }
 
+    var isContentChanged = false;
+    if (itemKind === "node") {
+        isContentChanged = metadataExtractAction.isContentChanged(itemId,repoFormData);
+    }
+    if(logger.isLoggingEnabled() && isContentChanged) {
+        logger.log("Metadata has been changed");
+    }
+
     var persistedObject = null;
     try
     {
@@ -85,24 +93,14 @@ function main()
     }
     var nodeRefStr = toNodeRefString(persistedObject, itemId);
     var node = search.findNode(nodeRefStr);
-    if (node && node.isDocument) {
-        var contentProp = repoFormData.getFieldData("prop_cm_content");
-        if (contentProp != null) {
-            // Content was part of the form data: run extraction
-            extractMetadata(node);
-        } else {
-            if (logger.isDebugLoggingEnabled()) {
-                logger.debug("Skipping metadata extraction: no content change detected");
-            }
-        }
-    }
+    extractMetadata(node, isContentChanged);
     
     model.persistedObject = persistedObject.toString();
     model.message = "Successfully persisted form for item [" + itemKind + "]" + itemId;
 }
 
-function extractMetadata(file) {
-    var emAction = actions.create("extract-metadata");
+function extractMetadata(file, isContentChanged) {
+    var emAction = metadataExtractAction.create(isContentChanged);
     if (emAction) {
         // readOnly=false, newTransaction=false
         emAction.execute(file, false, false);

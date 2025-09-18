@@ -270,4 +270,13 @@ public interface Action extends ParameterizedItem
      * @return The exception message, if the action has failed
      */
     String getExecutionFailureMessage();
+
+    /**
+     * Sets the action context. Used in extract-metadata action to determine if the action is executed in the context of a script or not.
+     * 
+     * @param actionContext
+     */
+    void setActionContext(String actionContext);
+
+    String getActionContext();
 }

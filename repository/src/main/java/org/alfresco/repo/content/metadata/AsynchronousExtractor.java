@@ -93,6 +93,9 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     private static final String METADATA = "metadata";
     private static final Map<String, Serializable> EMPTY_METADATA = Collections.emptyMap();
 
+    private static final OverwritePolicy defaultOverwritePolicy = OverwritePolicy.PRAGMATIC;
+    private OverwritePolicy extractOverwritePolicy = defaultOverwritePolicy;
+
     private final ObjectMapper jsonObjectMapper = new ObjectMapper();
 
     private NodeService nodeService;
@@ -260,9 +263,9 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     }
 
     @Override
-    protected Map<String, Serializable> extractRawInThread(NodeRef nodeRef, ContentReader reader, MetadataExtracterLimits limits)
-            throws Throwable
+    protected Map<String, Serializable> extractRawInThread(NodeRef nodeRef, ContentReader reader, MetadataExtracterLimits limits, OverwritePolicy overwritePolicy) throws Throwable
     {
+        this.extractOverwritePolicy = overwritePolicy != null ? overwritePolicy : defaultOverwritePolicy;
         Map<String, String> options = getExtractOptions(nodeRef, reader, limits);
         transformInBackground(nodeRef, reader, MIMETYPE_METADATA_EXTRACT, EXTRACT, options);
         return EMPTY_METADATA;
@@ -461,7 +464,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         }
 
         // Remove well know entries from the map that drive how the real metadata is applied.
-        OverwritePolicy overwritePolicy = removeOverwritePolicy(metadata, "sys:overwritePolicy", OverwritePolicy.EAGER);
+        OverwritePolicy overwritePolicy = removeOverwritePolicy(metadata, "sys:overwritePolicy", extractOverwritePolicy);
         Boolean enableStringTagging = removeBoolean(metadata, "sys:enableStringTagging", false);
         Boolean carryAspectProperties = removeBoolean(metadata, "sys:carryAspectProperties", true);
         List<String> stringTaggingSeparators = removeTaggingSeparators(metadata, "sys:stringTaggingSeparators",

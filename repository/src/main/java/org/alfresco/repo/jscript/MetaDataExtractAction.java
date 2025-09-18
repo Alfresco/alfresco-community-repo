@@ -96,49 +96,59 @@ public final class MetaDataExtractAction extends Actions
      */
     public boolean isContentChanged(String itemId, FormData formData)
     {
-        NodeRef nodeRef = null;
-        if (NodeRef.isNodeRef(itemId))
-        {
-            nodeRef = new NodeRef(itemId);
-        }
-        else
-        {
-            // split the string into the 3 required parts
-            String[] parts = itemId.split("/");
-            if (parts.length == 3)
-            {
-                try
-                {
-                    nodeRef = new NodeRef(parts[0], parts[1], parts[2]);
-                }
-                catch (IllegalArgumentException iae)
-                {
-                    // ignored for now, dealt with below
 
-                    if (logger.isDebugEnabled())
-                        logger.debug("NodeRef creation failed for: " + itemId, iae);
+        try
+        {
+            NodeRef nodeRef = null;
+            if (NodeRef.isNodeRef(itemId))
+            {
+                nodeRef = new NodeRef(itemId);
+            }
+            else
+            {
+                // split the string into the 3 required parts
+                String[] parts = itemId.split("/");
+                if (parts.length == 3)
+                {
+                    try
+                    {
+                        nodeRef = new NodeRef(parts[0], parts[1], parts[2]);
+                    }
+                    catch (IllegalArgumentException iae)
+                    {
+                        // ignored for now, dealt with below
+
+                        if (logger.isDebugEnabled())
+                            logger.debug("NodeRef creation failed for: " + itemId, iae);
+                    }
                 }
             }
-        }
-        if (nodeRef == null)
-        {
-            throw new FormNotFoundException(new Item("node", itemId), new IllegalArgumentException(itemId));
-        }
+            if (nodeRef == null)
+            {
+                throw new FormNotFoundException(new Item("node", itemId), new IllegalArgumentException(itemId));
+            }
 
-        ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-        String contentString = reader.getContentString();
-        FormData.FieldData fieldData = formData.getFieldData("prop_cm_content");
+            ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+            String contentString = reader.getContentString();
+            FormData.FieldData fieldData = formData.getFieldData("prop_cm_content");
 
-        if (fieldData == null || fieldData.getValue() == null)
+            if (fieldData == null || fieldData.getValue() == null)
+            {
+                // no content in form data, so content has not changed
+                return false;
+            }
+            else
+            {
+                String propCmContent = String.valueOf(fieldData.getValue());
+
+                return !Strings.CS.equals(contentString, propCmContent);
+            }
+        }
+        catch (Exception e)
         {
-            // no content in form data, so content has not changed
+            if (logger.isDebugEnabled())
+                logger.debug("Unable to determine if content has changed for node: " + itemId, e);
             return false;
-        }
-        else
-        {
-            String propCmContent = String.valueOf(fieldData.getValue());
-
-            return !Strings.CS.equals(contentString, propCmContent);
         }
     }
 }

@@ -48,6 +48,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.audit.UserAuditFilterTest.class,
         org.alfresco.repo.audit.AuditMethodInterceptorTest.class,
         org.alfresco.repo.audit.access.AccessAuditorTest.class,
+        org.alfresco.repo.audit.AuditRecordUtilsTest.class,
 
         // the following test will lock up the DB if run in the applicationContext_01 test suite
         org.alfresco.repo.activities.feed.FeedNotifierTest.class,

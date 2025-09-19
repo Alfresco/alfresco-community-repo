@@ -71,6 +71,13 @@ public interface AuditComponent
     public void setUserAuditFilter(UserAuditFilter userAuditFilter);
 
     /**
+     * @param auditRecordReporter
+     *            AuditRecordReporter
+     * @since 25.3
+     */
+    public void setAuditRecordReporter(AuditRecordReporter auditRecordReporter);
+
+    /**
      * Get all registered audit applications, whether active or not.
      *
      * @return Returns a map of registered audit applications keyed by name

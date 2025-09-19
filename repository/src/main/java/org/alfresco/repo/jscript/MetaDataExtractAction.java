@@ -60,7 +60,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public final class MetaDataExtractAction extends Actions
 {
-    private Log logger = LogFactory.getLog(getClass());
+    private static final Log LOG = LogFactory.getLog(MetaDataExtractAction.class);
 
     private final static String ACTION_NAME = "extract-metadata";
 
@@ -133,10 +133,7 @@ public final class MetaDataExtractAction extends Actions
         }
         catch (Exception e)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Unable to determine if content has changed for node: " + itemId, e);
-            }
+            LOG.debug("Unable to determine if content has changed for node: " + itemId, e);
             return false;
         }
     }

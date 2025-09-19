@@ -349,6 +349,6 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
                 assertEquals(QUICK_DESCRIPTION, nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
                 return null;
             }
-        }, false, true);
+        });
     }
 }

@@ -119,7 +119,9 @@ public final class MetaDataExtractAction extends Actions
                         // ignored for now, dealt with below
 
                         if (logger.isDebugEnabled())
+                        {
                             logger.debug("NodeRef creation failed for: " + itemId, iae);
+                        }
                     }
                 }
             }
@@ -147,7 +149,9 @@ public final class MetaDataExtractAction extends Actions
         catch (Exception e)
         {
             if (logger.isDebugEnabled())
+            {
                 logger.debug("Unable to determine if content has changed for node: " + itemId, e);
+            }
             return false;
         }
     }

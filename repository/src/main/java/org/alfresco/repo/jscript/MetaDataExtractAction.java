@@ -60,10 +60,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public final class MetaDataExtractAction extends Actions
 {
+    private Log logger = LogFactory.getLog(getClass());
 
-    private static final Log logger = LogFactory.getLog(MetaDataExtractAction.class);
-
-    private final String actionName = "extract-metadata";
+    private final static String ACTION_NAME = "extract-metadata";
 
     private ContentService contentService;
 
@@ -82,7 +81,7 @@ public final class MetaDataExtractAction extends Actions
 
     public ScriptAction create(boolean setActionContext)
     {
-        return create(actionName, setActionContext);
+        return create(ACTION_NAME, setActionContext);
     }
 
     /**
@@ -108,19 +107,7 @@ public final class MetaDataExtractAction extends Actions
                 String[] parts = itemId.split("/");
                 if (parts.length == 3)
                 {
-                    try
-                    {
-                        nodeRef = new NodeRef(parts[0], parts[1], parts[2]);
-                    }
-                    catch (IllegalArgumentException iae)
-                    {
-                        // ignored for now, dealt with below
-
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("NodeRef creation failed for: " + itemId, iae);
-                        }
-                    }
+                    nodeRef = new NodeRef(parts[0], parts[1], parts[2]);
                 }
             }
             if (nodeRef == null)

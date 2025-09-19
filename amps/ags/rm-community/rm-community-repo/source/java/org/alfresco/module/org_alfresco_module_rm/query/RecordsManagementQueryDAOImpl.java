@@ -39,6 +39,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -191,13 +192,19 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setContentUrl(contentUrl.toLowerCase());
 
+        Map<String, Object> params = new HashMap<>(4);
+        params.put("contentUrlShort", contentUrlEntity.getContentUrlShort());
+        params.put("contentUrlCrc", contentUrlEntity.getContentUrlCrc());
+        params.put("localName", ContentModel.PROP_CONTENT.getLocalName());
+        params.put("uri", ContentModel.PROP_CONTENT.getNamespaceURI());
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Executing query " + SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL);
         }
 
         // Get all the node ids which reference the given content url
-        List<Long> nodeIds = template.selectList(SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL, contentUrlEntity);
+        List<Long> nodeIds = template.selectList(SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL, params);
 
         if (logger.isDebugEnabled())
         {

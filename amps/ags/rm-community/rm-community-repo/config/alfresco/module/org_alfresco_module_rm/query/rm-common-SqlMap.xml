@@ -15,6 +15,13 @@
       <parameter property="end" jdbcType="BIGINT" javaType="java.lang.Long"/>
    </parameterMap>
 
+   <parameterMap id="parameter_NodeIdsWhichReferenceContentUrl" type="map">
+      <parameter property="contentUrlShort" jdbcType="VARCHAR" javaType="java.lang.String"/>
+      <parameter property="contentUrlCrc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <parameter property="localName" jdbcType="VARCHAR" javaType="java.lang.String"/>
+      <parameter property="uri" jdbcType="VARCHAR" javaType="java.lang.String"/>
+   </parameterMap>
+
    <resultMap id="result_NodeRefEntity" type="org.alfresco.module.org_alfresco_module_rm.query.NodeRefEntity">
       <result property="row" column="row" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <result property="protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -55,18 +62,21 @@
 
    <!-- Get list of node ids which reference given content url -->
    <select id="select_NodeIdsWhichReferenceContentUrl"
-           parameterType="ContentUrl"
+           parameterMap="parameter_NodeIdsWhichReferenceContentUrl"
            resultMap="result_NodeIds">
       select
          p.node_id
       from
          alf_content_url cu
-      LEFT OUTER JOIN alf_content_data cd ON (cd.content_url_id = cu.id)
-      LEFT OUTER JOIN alf_node_properties p ON (p.long_value = cd.id)
-      WHERE
-         content_url_short = #{contentUrlShort} and
-         content_url_crc = #{contentUrlCrc}
-
+         left outer join alf_content_data cd ON (cd.content_url_id = cu.id)
+         left outer join alf_node_properties p ON (p.long_value = cd.id)
+         left outer join alf_qname q ON (q.id = p.qname_id)
+         left outer join alf_namespace n ON (n.id = q.ns_id)
+      where
+         cu.content_url_short = ? and
+         cu.content_url_crc = ? and
+         q.local_name = ? and
+         n.uri = ?
    </select>
 
    <select id="select_RecordFoldersWithSchedules"

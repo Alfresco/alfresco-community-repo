@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Roy Wetherall
  */
+@SuppressWarnings("PMD.TooManyFields")
 public class ActionImpl extends ParameterizedItemImpl implements Action
 {
     private static final long serialVersionUID = 3258135760426186548L;

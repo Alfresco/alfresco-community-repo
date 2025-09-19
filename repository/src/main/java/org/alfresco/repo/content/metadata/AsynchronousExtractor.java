@@ -93,8 +93,8 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     private static final String METADATA = "metadata";
     private static final Map<String, Serializable> EMPTY_METADATA = Collections.emptyMap();
 
-    private static final OverwritePolicy defaultOverwritePolicy = OverwritePolicy.PRAGMATIC;
-    private OverwritePolicy extractOverwritePolicy = defaultOverwritePolicy;
+    private static final OverwritePolicy DEFAULT_OVERWRITE_POLICY = OverwritePolicy.PRAGMATIC;
+    private OverwritePolicy extractOverwritePolicy = DEFAULT_OVERWRITE_POLICY;
 
     private final ObjectMapper jsonObjectMapper = new ObjectMapper();
 
@@ -265,7 +265,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     @Override
     protected Map<String, Serializable> extractRawInThread(NodeRef nodeRef, ContentReader reader, MetadataExtracterLimits limits, OverwritePolicy overwritePolicy) throws Throwable
     {
-        this.extractOverwritePolicy = overwritePolicy != null ? overwritePolicy : defaultOverwritePolicy;
+        this.extractOverwritePolicy = overwritePolicy != null ? overwritePolicy : DEFAULT_OVERWRITE_POLICY;
         Map<String, String> options = getExtractOptions(nodeRef, reader, limits);
         transformInBackground(nodeRef, reader, MIMETYPE_METADATA_EXTRACT, EXTRACT, options);
         return EMPTY_METADATA;

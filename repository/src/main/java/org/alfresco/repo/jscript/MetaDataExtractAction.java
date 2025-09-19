@@ -49,8 +49,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.FormData;
-import org.alfresco.repo.forms.FormNotFoundException;
-import org.alfresco.repo.forms.Item;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -63,7 +61,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public final class MetaDataExtractAction extends Actions
 {
 
-    private static Log logger = LogFactory.getLog(MetaDataExtractAction.class);
+    private static final Log logger = LogFactory.getLog(MetaDataExtractAction.class);
 
     private final String actionName = "extract-metadata";
 
@@ -127,7 +125,7 @@ public final class MetaDataExtractAction extends Actions
             }
             if (nodeRef == null)
             {
-                throw new FormNotFoundException(new Item("node", itemId), new IllegalArgumentException(itemId));
+                return false;
             }
 
             ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);

@@ -417,7 +417,7 @@ public interface MetadataExtracter extends ContentWorker
      * @throws ContentIOException
      *             if a detectable error occurs
      */
-    public default Map<QName, Serializable> extract(NodeRef nodeRef, ContentReader reader, OverwritePolicy overwritePolicy, Map<QName, Serializable> destination)
+    default Map<QName, Serializable> extract(NodeRef nodeRef, ContentReader reader, OverwritePolicy overwritePolicy, Map<QName, Serializable> destination)
     {
         return extract(reader, overwritePolicy, destination);
     }

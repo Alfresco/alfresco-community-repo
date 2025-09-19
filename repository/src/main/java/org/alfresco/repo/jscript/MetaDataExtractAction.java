@@ -133,7 +133,10 @@ public final class MetaDataExtractAction extends Actions
         }
         catch (Exception e)
         {
-            LOG.debug("Unable to determine if content has changed for node: " + itemId, e);
+            if (LOG.isDebugEnabled())
+            {
+                LOG.debug("Unable to determine if content has changed for node: " + itemId, e);
+            }
             return false;
         }
     }

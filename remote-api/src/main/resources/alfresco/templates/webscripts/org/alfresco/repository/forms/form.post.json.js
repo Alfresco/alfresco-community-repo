@@ -91,13 +91,26 @@ function main()
        
         return;
     }
-    var nodeRefStr = toNodeRefString(persistedObject, itemId);
-    var node = search.findNode(nodeRefStr);
-    extractMetadata(node, isContentChanged);
+    if (itemKind === "node") {
+        checkAndExtractNodeMetadata(persistedObject, itemId, isContentChanged);
+    }
     
     model.persistedObject = persistedObject.toString();
     model.message = "Successfully persisted form for item [" + itemKind + "]" + itemId;
 }
+
+function checkAndExtractNodeMetadata(persistedObject, itemId, isContentChanged) {
+    var nodeRefStr = toNodeRefString(persistedObject, itemId);
+    var node = search.findNode(nodeRefStr);
+    if (node == null) {
+        if (logger.isLoggingEnabled()) {
+            logger.log("Node not found: " + nodeRefStr);
+        }
+    } else {
+        extractMetadata(node, isContentChanged);
+    }
+}
+
 
 function extractMetadata(file, isContentChanged) {
     var emAction = metadataExtractAction.create(isContentChanged);

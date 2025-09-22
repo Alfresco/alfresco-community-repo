@@ -102,6 +102,7 @@ import org.alfresco.service.namespace.QName;
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
+@SuppressWarnings("PMD.CyclomaticComplexity")
 @AlfrescoPublicApi
 abstract public class AbstractMappingMetadataExtracter implements MetadataExtracter, MetadataEmbedder, BeanNameAware, ApplicationContextAware
 {

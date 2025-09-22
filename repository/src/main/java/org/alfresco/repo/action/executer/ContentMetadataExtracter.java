@@ -404,9 +404,11 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             ((AbstractMappingMetadataExtracter) extracter).setEnableStringTagging(enableStringTagging);
         }
 
-        MetadataExtracter.OverwritePolicy overwritePolicy = Strings.CI.equals(ruleAction.getActionContext(), "scriptaction")
-                ? MetadataExtracter.OverwritePolicy.EAGER
-                : MetadataExtracter.OverwritePolicy.PRAGMATIC;
+        MetadataExtracter.OverwritePolicy overwritePolicy = MetadataExtracter.OverwritePolicy.PRAGMATIC;
+        if (Strings.CI.equals(ruleAction.getActionContext(), "scriptaction"))
+        {
+            overwritePolicy = MetadataExtracter.OverwritePolicy.EAGER;
+        }
 
         // Get all the node's properties
         Map<QName, Serializable> nodeProperties = nodeService.getProperties(actionedUponNodeRef);

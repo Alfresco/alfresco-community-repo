@@ -82,7 +82,7 @@
         <dependency.slf4j.version>2.0.16</dependency.slf4j.version>
         <dependency.log4j.version>2.25.1</dependency.log4j.version>
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
-        <dependency.tika.version>2.9.2</dependency.tika.version>
+        <dependency.tika.version>3.2.3</dependency.tika.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.4.0</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
@@ -170,6 +170,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- v1.10 has 0BSD license it must be consulted with Legal -->
+            <dependency>
+                <groupId>org.tukaani</groupId>
+                <artifactId>xz</artifactId>
+                <version>1.9</version>
+            </dependency>
             <!-- Jakarta... -->
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>

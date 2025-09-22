@@ -86,7 +86,7 @@ public final class MetaDataExtractAction extends Actions
 
     /**
      * Check if the metadata (title or description) has changed
-     * 
+     *
      * @param itemId
      * @param formData
      * @return true if title or description has changed, false otherwise
@@ -96,20 +96,7 @@ public final class MetaDataExtractAction extends Actions
 
         try
         {
-            NodeRef nodeRef = null;
-            if (NodeRef.isNodeRef(itemId))
-            {
-                nodeRef = new NodeRef(itemId);
-            }
-            else
-            {
-                // split the string into the 3 required parts
-                String[] parts = itemId.split("/");
-                if (parts.length == 3)
-                {
-                    nodeRef = new NodeRef(parts[0], parts[1], parts[2]);
-                }
-            }
+            NodeRef nodeRef = NodeRef.isNodeRef(itemId) ? new NodeRef(itemId) : parseNodeRef(itemId);
             if (nodeRef == null)
             {
                 return false;
@@ -121,15 +108,11 @@ public final class MetaDataExtractAction extends Actions
 
             if (fieldData == null || fieldData.getValue() == null)
             {
-                // no content in form data, so content has not changed
                 return false;
             }
-            else
-            {
-                String propCmContent = String.valueOf(fieldData.getValue());
 
-                return !Strings.CS.equals(contentString, propCmContent);
-            }
+            String propCmContent = String.valueOf(fieldData.getValue());
+            return !Strings.CS.equals(contentString, propCmContent);
         }
         catch (Exception e)
         {
@@ -140,4 +123,11 @@ public final class MetaDataExtractAction extends Actions
             return false;
         }
     }
+
+    private NodeRef parseNodeRef(String itemId)
+    {
+        String[] parts = itemId.split("/");
+        return (parts.length == 3) ? new NodeRef(parts[0], parts[1], parts[2]) : null;
+    }
+
 }

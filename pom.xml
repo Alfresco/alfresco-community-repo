@@ -78,7 +78,7 @@
         <dependency.log4j.version>2.19.0</dependency.log4j.version>
         <dependency.gytheio.version>0.18</dependency.gytheio.version>
         <dependency.groovy.version>3.0.16</dependency.groovy.version>
-        <dependency.tika.version>2.9.2</dependency.tika.version>
+        <dependency.tika.version>3.2.3</dependency.tika.version>
         <dependency.spring-security.version>5.8.11</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.5</dependency.poi.version>
@@ -167,6 +167,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- v1.10 has 0BSD license it must be consulted with Legal -->
+            <dependency>
+                <groupId>org.tukaani</groupId>
+                <artifactId>xz</artifactId>
+                <version>1.9</version>
+            </dependency>
             <!-- Jakarta... -->
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>

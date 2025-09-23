@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -36,8 +36,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Class holding properties associated with the <b>sys:referenceable</b> aspect.
- * This aspect is common enough to warrant direct inclusion on the <b>Node</b> entity.
+ * Class holding properties associated with the <b>sys:referenceable</b> aspect. This aspect is common enough to warrant direct inclusion on the <b>Node</b> entity.
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -53,15 +52,15 @@ public class ReferenceablePropertiesEntity
         REFERENCEABLE_PROP_QNAMES.add(ContentModel.PROP_NODE_UUID);
         REFERENCEABLE_PROP_QNAMES.add(ContentModel.PROP_NODE_DBID);
     }
-    
+
     /**
-     * @return          Returns <tt>true</tt> if the property belongs to the <b>sys:referenceable</b> aspect
+     * @return Returns <tt>true</tt> if the property belongs to the <b>sys:referenceable</b> aspect
      */
     public static boolean isReferenceableProperty(QName qname)
     {
         return REFERENCEABLE_PROP_QNAMES.contains(qname);
     }
-    
+
     /**
      * Remove all {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties
      */
@@ -75,7 +74,7 @@ public class ReferenceablePropertiesEntity
             properties.remove(ContentModel.PROP_NAME);
         }
     }
-    
+
     /**
      * Remove all {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties
      */
@@ -83,14 +82,12 @@ public class ReferenceablePropertiesEntity
     {
         propertyQNames.removeAll(REFERENCEABLE_PROP_QNAMES);
     }
-    
+
     /**
      * Adds all {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties.
      */
-    public static void addReferenceableProperties(Node node, Map<QName, Serializable> properties)
+    public static void addReferenceableProperties(Long nodeId, NodeRef nodeRef, Map<QName, Serializable> properties)
     {
-        Long nodeId = node.getId();
-        NodeRef nodeRef = node.getNodeRef();
         properties.put(ContentModel.PROP_STORE_PROTOCOL, nodeRef.getStoreRef().getProtocol());
         properties.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
         properties.put(ContentModel.PROP_NODE_UUID, nodeRef.getId());

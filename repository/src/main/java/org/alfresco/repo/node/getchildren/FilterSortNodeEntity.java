@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,8 +28,10 @@ package org.alfresco.repo.node.getchildren;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.domain.node.NodeEntity;
+import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.domain.node.NodePropertyEntity;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * Filterable/Sortable Node Entity
@@ -42,12 +44,17 @@ import org.alfresco.repo.domain.node.NodePropertyEntity;
 public class FilterSortNodeEntity
 {
     private Long id; // node id
-    
-    private NodeEntity node;
+    private String nodeUuid;
+    private Long typeQNameId;
+
+    private AuditablePropertiesEntity auditablePropertiesEntity;
     private NodePropertyEntity prop1;
     private NodePropertyEntity prop2;
     private NodePropertyEntity prop3;
-    
+
+    private String storeProtocol;
+    private String storeIdentifier;
+
     // Supplemental query-related parameters
     private Long parentNodeId;
     private Long prop1qnameId;
@@ -61,7 +68,7 @@ public class FilterSortNodeEntity
     private boolean nodeType;
 
     private Boolean isPrimary;
-    
+
     /**
      * Default constructor
      */
@@ -69,17 +76,37 @@ public class FilterSortNodeEntity
     {
         auditableProps = false;
     }
-    
+
     public Long getId()
     {
         return id;
     }
-    
+
     public void setId(Long id)
     {
         this.id = id;
     }
-    
+
+    public String getNodeUuid()
+    {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid)
+    {
+        this.nodeUuid = nodeUuid;
+    }
+
+    public Long getTypeQNameId()
+    {
+        return typeQNameId;
+    }
+
+    public void setTypeQNameId(Long typeQNameId)
+    {
+        this.typeQNameId = typeQNameId;
+    }
+
     public String getPattern()
     {
         return pattern;
@@ -93,22 +120,21 @@ public class FilterSortNodeEntity
         do
         {
             idx = s.indexOf(escapeChar, offset);
-            if(idx != -1)
+            if (idx != -1)
             {
                 sb.append(s.substring(offset, idx));
                 sb.append("\\");
                 sb.append(escapeChar);
                 offset = idx + 1;
             }
-        }
-        while(idx != -1);
+        } while (idx != -1);
         sb.append(s.substring(offset));
         return sb.toString();
     }
-    
+
     public void setPattern(String pattern)
     {
-        if(pattern != null)
+        if (pattern != null)
         {
             // escape the '%' character with '\' (standard SQL escape character)
             pattern = escape(pattern, '%');
@@ -121,7 +147,7 @@ public class FilterSortNodeEntity
     {
         this.assocTypeQNameIds = assocTypeQNameIds;
     }
-    
+
     public Set<Long> getAssocTypeQNameIds()
     {
         return assocTypeQNameIds;
@@ -137,113 +163,133 @@ public class FilterSortNodeEntity
         this.namePropertyQNameId = namePropertyQNameId;
     }
 
+    public AuditablePropertiesEntity getAuditablePropertiesEntity()
+    {
+        return auditablePropertiesEntity;
+    }
+
+    public void setAuditablePropertiesEntity(AuditablePropertiesEntity auditablePropertiesEntity)
+    {
+        this.auditablePropertiesEntity = auditablePropertiesEntity;
+    }
+
     public NodePropertyEntity getProp1()
     {
         return prop1;
     }
-    
+
     public void setProp1(NodePropertyEntity prop1)
     {
         this.prop1 = prop1;
     }
-    
+
     public NodePropertyEntity getProp2()
     {
         return prop2;
     }
-    
+
     public void setProp2(NodePropertyEntity prop2)
     {
         this.prop2 = prop2;
     }
-    
+
     public NodePropertyEntity getProp3()
     {
         return prop3;
     }
-    
+
     public void setProp3(NodePropertyEntity prop3)
     {
         this.prop3 = prop3;
     }
-    
-    public NodeEntity getNode()
+
+    public String getStoreProtocol()
     {
-        return node;
+        return storeProtocol;
     }
-    
-    public void setNode(NodeEntity childNode)
+
+    public void setStoreProtocol(String storeProtocol)
     {
-        this.node = childNode;
+        this.storeProtocol = storeProtocol;
     }
-    
+
+    public String getStoreIdentifier()
+    {
+        return storeIdentifier;
+    }
+
+    public void setStoreIdentifier(String storeIdentifier)
+    {
+        this.storeIdentifier = storeIdentifier;
+    }
+
     // Supplemental query-related parameters
-    
+
     public Long getParentNodeId()
     {
         return parentNodeId;
     }
-    
+
     public void setParentNodeId(Long parentNodeId)
     {
         this.parentNodeId = parentNodeId;
     }
-    
+
     public Long getProp1qnameId()
     {
         return prop1qnameId;
     }
-    
+
     public void setProp1qnameId(Long prop1qnameId)
     {
         this.prop1qnameId = prop1qnameId;
     }
-    
+
     public Long getProp2qnameId()
     {
         return prop2qnameId;
     }
-    
+
     public void setProp2qnameId(Long prop2qnameId)
     {
         this.prop2qnameId = prop2qnameId;
     }
-    
+
     public Long getProp3qnameId()
     {
         return prop3qnameId;
     }
-    
+
     public void setProp3qnameId(Long prop3qnameId)
     {
         this.prop3qnameId = prop3qnameId;
     }
-    
+
     public List<Long> getChildNodeTypeQNameIds()
     {
         return childNodeTypeQNameIds;
     }
-    
+
     public void setChildNodeTypeQNameIds(List<Long> childNodeTypeQNameIds)
     {
         this.childNodeTypeQNameIds = childNodeTypeQNameIds;
     }
-    
+
     public boolean isAuditableProps()
     {
         return auditableProps;
     }
-    
+
     public void setAuditableProps(boolean auditableProps)
     {
         this.auditableProps = auditableProps;
     }
-    
+
     public boolean isNodeType()
     {
         return nodeType;
     }
-    
+
     public void setNodeType(boolean nodeType)
     {
         this.nodeType = nodeType;
@@ -257,5 +303,10 @@ public class FilterSortNodeEntity
     public void setIsPrimary(Boolean isPrimary)
     {
         this.isPrimary = isPrimary;
+    }
+
+    public NodeRef createNodeRef()
+    {
+        return new NodeRef(new StoreRef(storeProtocol, storeIdentifier), nodeUuid);
     }
 }

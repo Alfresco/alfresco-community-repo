@@ -87,10 +87,8 @@ public class ReferenceablePropertiesEntity
     /**
      * Adds all {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties.
      */
-    public static void addReferenceableProperties(Node node, Map<QName, Serializable> properties)
+    public static void addReferenceableProperties(Long nodeId, NodeRef nodeRef, Map<QName, Serializable> properties)
     {
-        Long nodeId = node.getId();
-        NodeRef nodeRef = node.getNodeRef();
         properties.put(ContentModel.PROP_STORE_PROTOCOL, nodeRef.getStoreRef().getProtocol());
         properties.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
         properties.put(ContentModel.PROP_NODE_UUID, nodeRef.getId());

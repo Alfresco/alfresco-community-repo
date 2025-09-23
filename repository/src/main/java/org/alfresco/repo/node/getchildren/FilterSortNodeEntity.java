@@ -28,8 +28,10 @@ package org.alfresco.repo.node.getchildren;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.domain.node.NodeEntity;
+import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.domain.node.NodePropertyEntity;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * Filterable/Sortable Node Entity
@@ -42,12 +44,17 @@ import org.alfresco.repo.domain.node.NodePropertyEntity;
 public class FilterSortNodeEntity
 {
     private Long id; // node id
-    
-    private NodeEntity node;
+    private String nodeUuid;
+    private Long typeQNameId;
+
+    private AuditablePropertiesEntity auditablePropertiesEntity;
     private NodePropertyEntity prop1;
     private NodePropertyEntity prop2;
     private NodePropertyEntity prop3;
-    
+
+    private String storeProtocol;
+    private String storeIdentifier;
+
     // Supplemental query-related parameters
     private Long parentNodeId;
     private Long prop1qnameId;
@@ -79,7 +86,27 @@ public class FilterSortNodeEntity
     {
         this.id = id;
     }
-    
+
+    public String getNodeUuid()
+    {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid)
+    {
+        this.nodeUuid = nodeUuid;
+    }
+
+    public Long getTypeQNameId()
+    {
+        return typeQNameId;
+    }
+
+    public void setTypeQNameId(Long typeQNameId)
+    {
+        this.typeQNameId = typeQNameId;
+    }
+
     public String getPattern()
     {
         return pattern;
@@ -137,6 +164,16 @@ public class FilterSortNodeEntity
         this.namePropertyQNameId = namePropertyQNameId;
     }
 
+    public AuditablePropertiesEntity getAuditablePropertiesEntity()
+    {
+        return auditablePropertiesEntity;
+    }
+
+    public void setAuditablePropertiesEntity(AuditablePropertiesEntity auditablePropertiesEntity)
+    {
+        this.auditablePropertiesEntity = auditablePropertiesEntity;
+    }
+
     public NodePropertyEntity getProp1()
     {
         return prop1;
@@ -166,15 +203,25 @@ public class FilterSortNodeEntity
     {
         this.prop3 = prop3;
     }
-    
-    public NodeEntity getNode()
+
+    public String getStoreProtocol()
     {
-        return node;
+        return storeProtocol;
     }
-    
-    public void setNode(NodeEntity childNode)
+
+    public void setStoreProtocol(String storeProtocol)
     {
-        this.node = childNode;
+        this.storeProtocol = storeProtocol;
+    }
+
+    public String getStoreIdentifier()
+    {
+        return storeIdentifier;
+    }
+
+    public void setStoreIdentifier(String storeIdentifier)
+    {
+        this.storeIdentifier = storeIdentifier;
     }
     
     // Supplemental query-related parameters
@@ -257,5 +304,10 @@ public class FilterSortNodeEntity
     public void setIsPrimary(Boolean isPrimary)
     {
         this.isPrimary = isPrimary;
+    }
+
+    public NodeRef createNodeRef()
+    {
+        return new NodeRef(new StoreRef(storeProtocol, storeIdentifier), nodeUuid);
     }
 }

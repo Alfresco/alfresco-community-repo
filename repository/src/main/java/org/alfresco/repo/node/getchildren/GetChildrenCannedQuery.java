@@ -777,7 +777,8 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             if (results.size() >= BATCH_SIZE)
             {
                 // batch
-                preloadFilterSort();
+                preloadNodes();
+                filterSort();
             }
             
             results.add(result);
@@ -790,25 +791,28 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             if (results.size() >= 0)
             {
                 // finish batch
-                preloadFilterSort();
+                preloadNodes();
+                filterSort();
             }
         }
-        
-        private void preloadFilterSort()
+
+        private void preloadNodes()
         {
-        	List<NodeRef> nodeRefs = new ArrayList<>(results.size());
+            List<NodeRef> nodeRefs = new ArrayList<>(results.size());
             for (FilterSortNodeEntity result : results)
             {
-            	nodeRefs.add(result.getNode().getNodeRef());
+                nodeRefs.add(result.createNodeRef());
             }
-            
+
             preload(nodeRefs);
-            
+        }
+
+        private void filterSort()
+        {
             for (FilterSortNodeEntity result : results)
             {
-                Node node = result.getNode();
-                NodeRef nodeRef = node.getNodeRef();
-                
+                NodeRef nodeRef = result.createNodeRef();
+
                 Map<NodePropertyKey, NodePropertyValue> propertyValues = new HashMap<NodePropertyKey, NodePropertyValue>(3);
                 
                 NodePropertyEntity prop1 = result.getProp1();
@@ -832,7 +836,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 Map<QName, Serializable> propVals = nodePropertyHelper.convertToPublicProperties(propertyValues);
                 
                 // Add referenceable / spoofed properties (including spoofed name if null)
-                ReferenceablePropertiesEntity.addReferenceableProperties(node, propVals);
+                ReferenceablePropertiesEntity.addReferenceableProperties(result.getId(), nodeRef, propVals);
                 
                 // special cases
                 
@@ -854,7 +858,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 }
                 
                 // Auditable props (eg. cm:creator, cm:created, cm:modifier, cm:modified, ...)
-                AuditablePropertiesEntity auditableProps = node.getAuditableProperties();
+                AuditablePropertiesEntity auditableProps = result.getAuditablePropertiesEntity();
                 if (auditableProps != null)
                 {
                     for (Map.Entry<QName, Serializable> entry : auditableProps.getAuditableProperties().entrySet())
@@ -864,7 +868,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 }
                 
                 // Node type
-                Long nodeTypeQNameId = node.getTypeQNameId();
+                Long nodeTypeQNameId = result.getTypeQNameId();
                 if (nodeTypeQNameId != null)
                 {
                     Pair<Long, QName> pair = qnameDAO.getQName(nodeTypeQNameId);

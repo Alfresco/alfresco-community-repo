@@ -133,7 +133,15 @@
     <resultMap id="result_FilterSortNode" type="FilterSortNode">
         
         <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        
+        <result property="nodeUuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+
+        <result property="auditablePropertiesEntity.auditCreator" column="audit_creator" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="auditablePropertiesEntity.auditCreated" column="audit_created" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="auditablePropertiesEntity.auditModifier" column="audit_modifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="auditablePropertiesEntity.auditModified" column="audit_modified" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="auditablePropertiesEntity.auditAccessed" column="audit_accessed" jdbcType="VARCHAR" javaType="java.lang.String"/>
+
         <result property="prop1.nodeId" column="prop1_node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="prop1.key.qnameId" column="prop1_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="prop1.key.localeId" column="prop1_locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -169,9 +177,9 @@
         <result property="prop3.value.floatValue" column="prop3_float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
         <result property="prop3.value.doubleValue" column="prop3_double_value" jdbcType="FLOAT" javaType="java.lang.Double"/>
         <result property="prop3.value.stringValue" column="prop3_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        
-        <association property="node" resultMap="alfresco.node.result_Node"/>
-        
+
+        <result property="storeProtocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="storeIdentifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
     <resultMap id="result_ArchivedNodes" type="ArchivedNodes">
@@ -972,8 +980,8 @@
     </select>
 
     <!-- GetChildren - with explicit prop filtering and/or sorting -->
-    <select id="select_GetChildrenCannedQueryWithProps" parameterType="FilterSortNode" resultMap="result_FilterSortNode">
-       select
+    <select id="select_GetChildrenCannedQueryWithProps" parameterType="FilterSortNode" resultMap="result_FilterSortNode" flushCache="true">
+       select distinct
             childNode.id             as id,
             childNode.version        as version,
             childStore.id            as store_id,
@@ -989,7 +997,7 @@
             childNode.audit_created  as audit_created,
             childNode.audit_modifier as audit_modifier,
             childNode.audit_modified as audit_modified,
-            childNode.audit_accessed  as audit_accessed
+            childNode.audit_accessed as audit_accessed
             <if test="prop1qnameId != null">
           , prop1.node_id            as prop1_node_id,
             prop1.qname_id           as prop1_qname_id,
@@ -1067,9 +1075,6 @@
                     #{item}
                 </foreach>
             </if>
-        <if test="prop1qnameId == null and auditableProps == false">
-            <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
-        </if>
     </select>
     
     <!-- GetChildren - with no explicit sorting (or prop filtering) - note: still filtered by child type (and optionally primary or secondary) -->

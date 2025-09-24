@@ -303,7 +303,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     }
 
     /**
-     * Test execution of the Eager approach
+     * Test execution of the pragmatic approach
      */
     @Test
     public void testFromPartial() throws Exception

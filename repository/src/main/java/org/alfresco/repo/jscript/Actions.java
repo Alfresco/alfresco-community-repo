@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,8 +27,10 @@ package org.alfresco.repo.jscript;
 
 import java.util.List;
 
+import org.alfresco.repo.action.evaluator.ContentChangeConditionEvaluator;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 
@@ -89,7 +91,7 @@ public class Actions extends BaseScopableProcessorExtension
         return create(actionName, false);
     }
 
-    public ScriptAction create(String actionName, boolean setActionContext)
+    public ScriptAction create(String actionName, boolean isContentChanged)
     {
         ScriptAction scriptAction = null;
         ActionService actionService = services.getActionService();
@@ -97,10 +99,11 @@ public class Actions extends BaseScopableProcessorExtension
         if (actionDef != null)
         {
             Action action = actionService.createAction(actionName);
-            if (setActionContext)
-            {
-                action.setActionContext("scriptaction");
-            }
+
+            ActionCondition actionCondition = actionService.createActionCondition(ContentChangeConditionEvaluator.NAME);
+            actionCondition.setParameterValue(ContentChangeConditionEvaluator.PARAM_IS_CONTENT_CHANGED, isContentChanged);
+            action.addActionCondition(actionCondition);
+
             scriptAction = new ScriptAction(this.services, action, actionDef);
             scriptAction.setScope(getScope());
         }

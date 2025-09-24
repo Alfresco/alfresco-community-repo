@@ -237,6 +237,12 @@
     <bean id="no-condition" class="org.alfresco.repo.action.evaluator.NoConditionEvaluator" parent="action-condition-evaluator">
     </bean>
 
+    <bean id="compare-content" class="org.alfresco.repo.action.evaluator.ContentChangeConditionEvaluator" parent="action-condition-evaluator">
+        <property name="publicCondition">
+            <value>false</value>
+        </property>
+    </bean>
+
     <bean id="compare-property-value" class="org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator" parent="action-condition-evaluator">
         <property name="nodeService">
             <ref bean="nodeService" />

@@ -57,6 +57,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * JavaScript wrapper for the "extract-metadata" action.
  * <p>
  * This class provides a scriptable interface to trigger metadata extraction actions within the Alfresco repository. It is similar to {@link Actions} class but is dedicated to metadata extraction functionality.
+ *
+ * * @author Sayan Bhattacharya
  */
 public final class MetaDataExtractAction extends Actions
 {

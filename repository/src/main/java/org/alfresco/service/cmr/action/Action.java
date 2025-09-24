@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -270,13 +270,4 @@ public interface Action extends ParameterizedItem
      * @return The exception message, if the action has failed
      */
     String getExecutionFailureMessage();
-
-    /**
-     * Sets the action context. Used in extract-metadata action to determine if the action is executed in the context of a script or not.
-     * 
-     * @param actionContext
-     */
-    void setActionContext(String actionContext);
-
-    String getActionContext();
 }

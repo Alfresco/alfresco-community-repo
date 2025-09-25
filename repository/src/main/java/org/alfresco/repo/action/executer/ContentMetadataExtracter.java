@@ -58,7 +58,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.evaluator.ContentChangeConditionEvaluator;
+import org.alfresco.repo.action.evaluator.CompareContentConditionEvaluator;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
@@ -410,10 +410,10 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         List<ActionCondition> actionConditions = ruleAction.getActionConditions();
         if (actionConditions != null)
         {
-            actionConditions.stream().filter(e -> ContentChangeConditionEvaluator.NAME.equals(e.getActionConditionDefinitionName()))
+            actionConditions.stream().filter(e -> CompareContentConditionEvaluator.NAME.equals(e.getActionConditionDefinitionName()))
                     .findAny()
                     .ifPresent(e -> {
-                        Serializable contentChanged = e.getParameterValue(ContentChangeConditionEvaluator.PARAM_IS_CONTENT_CHANGED);
+                        Serializable contentChanged = e.getParameterValue(CompareContentConditionEvaluator.PARAM_IS_CONTENT_CHANGED);
                         if (contentChanged instanceof Boolean && ((Boolean) contentChanged))
                         {
                             overwritePolicy.set(MetadataExtracter.OverwritePolicy.EAGER);

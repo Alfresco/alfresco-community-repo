@@ -48,7 +48,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.evaluator.CompareContentConditionEvaluator;
 import org.alfresco.repo.forms.FormData;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,17 +62,33 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * JavaScript wrapper for the "extract-metadata" action.
  * <p>
- * This class provides a scriptable interface to trigger metadata extraction actions within the Alfresco repository. It is similar to {@link Actions} class but is dedicated to metadata extraction functionality.
+ * This class provides a scriptable interface to trigger metadata extraction actions within the Alfresco repository.</br>
+ * It is similar to {@link Actions} class but is dedicated to metadata extraction functionality.
  *
- * * @author Sayan Bhattacharya
+ * </br>
+ *
+ * @author Sayan Bhattacharya
  */
-public final class MetaDataExtractAction extends Actions
+public final class MetaDataExtractAction extends BaseScopableProcessorExtension
 {
     private static final Log LOG = LogFactory.getLog(MetaDataExtractAction.class);
 
     private final static String ACTION_NAME = "extract-metadata";
 
     private ContentService contentService;
+
+    private ServiceRegistry services;
+
+    /**
+     * Set the service registry
+     *
+     * @param serviceRegistry
+     *            the service registry
+     */
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.services = serviceRegistry;
+    }
 
     public void setContentService(ContentService contentService)
     {
@@ -81,13 +103,27 @@ public final class MetaDataExtractAction extends Actions
      * @return the newly created action
      */
 
-    public ScriptAction create(boolean setActionContext)
+    public ScriptAction create(boolean isContentChanged)
     {
-        return create(ACTION_NAME, setActionContext);
+        ScriptAction scriptAction = null;
+        ActionService actionService = services.getActionService();
+        ActionDefinition actionDef = actionService.getActionDefinition(ACTION_NAME);
+        if (actionDef != null)
+        {
+            Action action = actionService.createAction(ACTION_NAME);
+
+            ActionCondition actionCondition = actionService.createActionCondition(CompareContentConditionEvaluator.NAME);
+            actionCondition.setParameterValue(CompareContentConditionEvaluator.PARAM_IS_CONTENT_CHANGED, isContentChanged);
+            action.addActionCondition(actionCondition);
+
+            scriptAction = new ScriptAction(this.services, action, actionDef);
+            scriptAction.setScope(getScope());
+        }
+        return scriptAction;
     }
 
     /**
-     * Check if the metadata (title or description) has changed
+     * Check if the content has been updated in the form data compared to the existing content of the node.
      *
      * @param itemId
      * @param formData

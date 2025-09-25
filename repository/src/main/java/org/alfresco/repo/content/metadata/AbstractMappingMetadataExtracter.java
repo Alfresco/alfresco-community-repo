@@ -2012,7 +2012,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Exception wrapper to handle exceeded limits imposed by {@link MetadataExtracterLimits} {@link AbstractMappingMetadataExtracter#extractRaw(NodeRef, ContentReader, MetadataExtracterLimits,OverwritePolicy)}
+     * Exception wrapper to handle exceeded limits imposed by {@link MetadataExtracterLimits} {@link AbstractMappingMetadataExtracter#extractRaw(NodeRef, ContentReader, MetadataExtracterLimits, OverwritePolicy)}
      */
     private class LimitExceededException extends Exception
     {

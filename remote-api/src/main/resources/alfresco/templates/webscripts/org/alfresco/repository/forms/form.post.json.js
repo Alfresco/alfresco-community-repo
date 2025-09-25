@@ -102,12 +102,17 @@ function main()
 function checkAndExtractNodeMetadata(persistedObject, itemId, isContentChanged) {
     var nodeRefStr = toNodeRefString(persistedObject, itemId);
     var node = search.findNode(nodeRefStr);
+
     if (node == null) {
         if (logger.isLoggingEnabled()) {
             logger.log("Node not found: " + nodeRefStr);
         }
-    } else {
+    } else if(isContentChanged) {
         extractMetadata(node, isContentChanged);
+    } else {
+        if (logger.isLoggingEnabled()) {
+            logger.log("Content not changed, skipping metadata extraction for node: " + nodeRefStr);
+        }
     }
 }
 

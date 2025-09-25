@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -27,26 +27,24 @@ package org.alfresco.repo.jscript;
 
 import java.util.List;
 
-import org.alfresco.repo.action.evaluator.ContentChangeConditionEvaluator;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 
 /**
  * Scripted Action service for describing and executing actions against Nodes.
- * 
+ *
  * @author davidc
  */
-public class Actions extends BaseScopableProcessorExtension
+public final class Actions extends BaseScopableProcessorExtension
 {
     /** Repository Service Registry */
     private ServiceRegistry services;
 
     /**
      * Set the service registry
-     * 
+     *
      * @param serviceRegistry
      *            the service registry
      */
@@ -57,7 +55,7 @@ public class Actions extends BaseScopableProcessorExtension
 
     /**
      * Gets the list of registered action names
-     * 
+     *
      * @return the registered action names
      */
     public String[] getRegistered()
@@ -75,23 +73,12 @@ public class Actions extends BaseScopableProcessorExtension
 
     /**
      * Create an Action
-     * 
+     *
      * @param actionName
      *            the action name
-     *            <p>
      * @return the action
-     *
-     *         <p>
-     *         By default the action context is not set on the action created.
-     *         </p>
      */
-
     public ScriptAction create(String actionName)
-    {
-        return create(actionName, false);
-    }
-
-    public ScriptAction create(String actionName, boolean isContentChanged)
     {
         ScriptAction scriptAction = null;
         ActionService actionService = services.getActionService();
@@ -99,11 +86,6 @@ public class Actions extends BaseScopableProcessorExtension
         if (actionDef != null)
         {
             Action action = actionService.createAction(actionName);
-
-            ActionCondition actionCondition = actionService.createActionCondition(ContentChangeConditionEvaluator.NAME);
-            actionCondition.setParameterValue(ContentChangeConditionEvaluator.PARAM_IS_CONTENT_CHANGED, isContentChanged);
-            action.addActionCondition(actionCondition);
-
             scriptAction = new ScriptAction(this.services, action, actionDef);
             scriptAction.setScope(getScope());
         }

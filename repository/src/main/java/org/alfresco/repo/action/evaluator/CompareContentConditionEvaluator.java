@@ -32,12 +32,13 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Content change condition evaluator implementation. Required only in Scripted Actions to allow determination if content has changed. Usage in {@link org.alfresco.repo.jscript.Actions#create(String, boolean)}
+ * Content change condition evaluator implementation. Required only in Scripted Actions to allow determination if content has changed. <br>
+ * Usage in {@link org.alfresco.repo.jscript.MetaDataExtractAction#create(boolean)}
  *
  * @author Sayan Bhattacharya
  */
 
-public class ContentChangeConditionEvaluator extends ActionConditionEvaluatorAbstractBase
+public class CompareContentConditionEvaluator extends ActionConditionEvaluatorAbstractBase
 {
     /**
      * Evaluator constants
@@ -48,6 +49,7 @@ public class ContentChangeConditionEvaluator extends ActionConditionEvaluatorAbs
     /**
      * @see ActionConditionEvaluatorAbstractBase#evaluateImpl(ActionCondition, NodeRef)
      */
+    @Override
     public boolean evaluateImpl(ActionCondition ruleCondition, NodeRef actionedUponNodeRef)
     {
         return true;
@@ -58,6 +60,8 @@ public class ContentChangeConditionEvaluator extends ActionConditionEvaluatorAbs
      */
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {}
+    {
+        // No parameters to add
+    }
 
 }

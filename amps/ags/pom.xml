@@ -61,36 +61,26 @@
                <artifactId>license-maven-plugin</artifactId>
                <executions>
                   <execution>
-                     <id>first</id>
+                     <id>check-headers</id>
                      <goals>
-                        <goal>update-file-header</goal>
+                        <goal>check-file-header</goal>
                      </goals>
-                     <phase>none</phase>
+                     <phase>validate</phase>
                      <configuration>
+                        <licenseName>alfresco_community</licenseName>
                         <verbose>${license.verbose}</verbose>
                         <addSvnKeyWords>false</addSvnKeyWords>
                         <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-
-                        <!-- header configuration -->
                         <organizationName>Alfresco Software Limited</organizationName>
-                        <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+                        <descriptionTemplate>${project.basedir}/license/description.ftl</descriptionTemplate>
                         <canUpdateCopyright>true</canUpdateCopyright>
                         <canUpdateDescription>true</canUpdateDescription>
-
-                        <!-- license configuration -->
-                        <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
-
-                        <!-- dry run options -->
-                        <dryRun>${license.update.dryrun}</dryRun>
+                        <licenseResolver>file:${project.basedir}/license</licenseResolver>
                         <failOnMissingHeader>true</failOnMissingHeader>
                         <failOnNotUptodateHeader>${license.failOnNotUptodateHeader}</failOnNotUptodateHeader>
-
-                        <!-- default root -->
                         <roots>
-                            <root>src</root>
+                           <root>src</root>
                         </roots>
-
-                        <!-- exclusions -->
                         <excludes>
                            <exclude>**/package-info.java</exclude>
                            <exclude>**/*.properties</exclude>
@@ -100,10 +90,16 @@
                            <exclude>**/*.txt</exclude>
                            <exclude>**/*.html</exclude>
                         </excludes>
-
                      </configuration>
                   </execution>
                </executions>
+               <dependencies>
+                  <dependency>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>alfresco-license-headers</artifactId>
+                     <version>1.0</version>
+                  </dependency>
+               </dependencies>
             </plugin>
 
             <plugin>

@@ -56,7 +56,7 @@ function main()
         isContentChanged = metadataExtractAction.isContentChanged(itemId,repoFormData);
     }
     if(logger.isLoggingEnabled() && isContentChanged) {
-        logger.log("Metadata has been changed");
+        logger.log("Content has been changed");
     }
 
     var persistedObject = null;

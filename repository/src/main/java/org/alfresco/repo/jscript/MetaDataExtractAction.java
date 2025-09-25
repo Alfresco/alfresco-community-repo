@@ -127,7 +127,7 @@ public final class MetaDataExtractAction extends BaseScopableProcessorExtension
      *
      * @param itemId
      * @param formData
-     * @return true if title or description has changed, false otherwise
+     * @return true if content has changed, false otherwise
      */
     public boolean isContentChanged(String itemId, FormData formData)
     {

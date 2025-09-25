@@ -100,19 +100,18 @@ public abstract class EventConsolidator<REF extends EntityRef, RES extends Resou
     {
         final RepoEvent.Builder<DataAttributes<RES>> builder = RepoEvent.builder();
 
-        configureRepoEventBuilder(eventInfo);
+        configureRepoEventBuilder(builder, eventInfo);
 
         return builder.build();
     }
 
-    protected void configureRepoEventBuilder(EventInfo eventInfo)
+    protected void configureRepoEventBuilder(RepoEvent.Builder<DataAttributes<RES>> builder, EventInfo eventInfo)
     {
         EventType eventType = getDerivedEvent();
 
         DataAttributes<RES> eventData = buildEventData(eventInfo, resource, eventType);
 
-        RepoEvent.<DataAttributes<RES>> builder()
-                .setId(eventInfo.getId())
+        builder.setId(eventInfo.getId())
                 .setSource(eventInfo.getSource())
                 .setTime(eventInfo.getTimestamp())
                 .setType(eventType.getType())

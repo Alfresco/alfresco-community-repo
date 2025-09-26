@@ -39,8 +39,10 @@ import org.alfresco.service.namespace.QName;
 /**
  * Encapsulates events occurred in a single transaction.
  *
- * @param <REF> entity (e.g. node, child association, peer association) reference type
- * @param <RES> entity resource type
+ * @param <REF>
+ *            entity (e.g. node, child association, peer association) reference type
+ * @param <RES>
+ *            entity resource type
  */
 public abstract class EventConsolidator<REF extends EntityRef, RES extends Resource>
 {
@@ -90,7 +92,8 @@ public abstract class EventConsolidator<REF extends EntityRef, RES extends Resou
     /**
      * Builds and returns the {@link RepoEvent} instance.
      *
-     * @param eventInfo the object holding the event information
+     * @param eventInfo
+     *            the object holding the event information
      * @return the {@link RepoEvent} instance
      */
     public RepoEvent<DataAttributes<RES>> getRepoEvent(EventInfo eventInfo)
@@ -121,9 +124,9 @@ public abstract class EventConsolidator<REF extends EntityRef, RES extends Resou
      */
     protected DataAttributes<RES> buildEventData(EventInfo eventInfo, RES resource, EventType eventType)
     {
-        return EventData.<RES>builder()
-            .setEventGroupId(eventInfo.getTxnId())
-            .setResource(resource)
-            .build();
+        return EventData.<RES> builder()
+                .setEventGroupId(eventInfo.getTxnId())
+                .setResource(resource)
+                .build();
     }
 }

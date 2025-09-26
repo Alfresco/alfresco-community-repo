@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -98,18 +98,25 @@ public abstract class EventConsolidator<REF extends EntityRef, RES extends Resou
      */
     public RepoEvent<DataAttributes<RES>> getRepoEvent(EventInfo eventInfo)
     {
+        final RepoEvent.Builder<DataAttributes<RES>> builder = RepoEvent.builder();
+
+        configureRepoEventBuilder(builder, eventInfo);
+
+        return builder.build();
+    }
+
+    protected void configureRepoEventBuilder(RepoEvent.Builder<DataAttributes<RES>> builder, EventInfo eventInfo)
+    {
         EventType eventType = getDerivedEvent();
 
         DataAttributes<RES> eventData = buildEventData(eventInfo, resource, eventType);
 
-        return RepoEvent.<DataAttributes<RES>> builder()
-                .setId(eventInfo.getId())
+        builder.setId(eventInfo.getId())
                 .setSource(eventInfo.getSource())
                 .setTime(eventInfo.getTimestamp())
                 .setType(eventType.getType())
                 .setData(eventData)
-                .setDataschema(EventJSONSchema.getSchemaV1(eventType))
-                .build();
+                .setDataschema(EventJSONSchema.getSchemaV1(eventType));
     }
 
     /**

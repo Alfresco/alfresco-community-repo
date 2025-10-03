@@ -44,15 +44,7 @@
 package org.alfresco.repo.action.executer;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,7 +56,6 @@ import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -406,21 +397,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             ((AbstractMappingMetadataExtracter) extracter).setEnableStringTagging(enableStringTagging);
         }
 
-        var overwritePolicy = new AtomicReference<>(MetadataExtracter.OverwritePolicy.PRAGMATIC);
-        List<ActionCondition> actionConditions = ruleAction.getActionConditions();
-        if (actionConditions != null)
-        {
-            actionConditions.stream().filter(e -> CompareContentConditionEvaluator.NAME.equals(e.getActionConditionDefinitionName()))
-                    .findAny()
-                    .ifPresent(e -> {
-                        Serializable contentChanged = e.getParameterValue(CompareContentConditionEvaluator.PARAM_IS_CONTENT_CHANGED);
-                        if (contentChanged instanceof Boolean && ((Boolean) contentChanged))
-                        {
-                            overwritePolicy.set(MetadataExtracter.OverwritePolicy.EAGER);
-                        }
-                    });
-        }
-
+        MetadataExtracter.OverwritePolicy overwritePolicy = determineOverwritePolicy(ruleAction);
         // Get all the node's properties
         Map<QName, Serializable> nodeProperties = nodeService.getProperties(actionedUponNodeRef);
 
@@ -433,7 +410,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             modifiedProperties = extracter.extract(
                     actionedUponNodeRef,
                     reader,
-                    overwritePolicy.get(),
+                    overwritePolicy,
                     nodeProperties);
         }
         catch (Throwable e)
@@ -472,6 +449,21 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         addExtractedMetadataToNode(actionedUponNodeRef, nodeProperties, modifiedProperties,
                 nodeService, dictionaryService, taggingService, enableStringTagging, carryAspectProperties,
                 stringTaggingSeparators);
+    }
+
+    private MetadataExtracter.OverwritePolicy determineOverwritePolicy(Action ruleAction)
+    {
+        return Optional.ofNullable(ruleAction.getActionConditions())
+                .flatMap(conditions -> conditions.stream()
+                        .filter(e -> CompareContentConditionEvaluator.NAME.equals(e.getActionConditionDefinitionName()))
+                        .findAny()
+                        .map(e -> {
+                            Serializable contentChanged = e.getParameterValue(CompareContentConditionEvaluator.PARAM_IS_CONTENT_CHANGED);
+                            return Boolean.TRUE.equals(contentChanged)
+                                    ? MetadataExtracter.OverwritePolicy.EAGER
+                                    : MetadataExtracter.OverwritePolicy.PRAGMATIC;
+                        }))
+                .orElse(MetadataExtracter.OverwritePolicy.PRAGMATIC);
     }
 
     public static void addExtractedMetadataToNode(NodeRef actionedUponNodeRef, Map<QName, Serializable> nodeProperties,

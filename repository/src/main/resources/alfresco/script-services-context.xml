@@ -104,6 +104,17 @@
         </property>
     </bean>
 
+    <bean id="metadataExtractServiceScript" parent="baseJavaScriptExtension"
+          class="org.alfresco.repo.jscript.MetaDataExtractAction">
+        <property name="extensionName">
+            <value>metadataExtractAction</value>
+        </property>
+        <property name="contentService" ref="ContentService" />
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+
     <bean id="imapScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Imap">
         <property name="extensionName">
             <value>imap</value>

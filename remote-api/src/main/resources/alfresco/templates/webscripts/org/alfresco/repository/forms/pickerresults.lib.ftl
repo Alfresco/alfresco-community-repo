@@ -45,8 +45,12 @@
 				"parentType": "${row.item.parentTypeShort!""}",
 				"isContainer": ${row.item.isContainer?string},
 				<#if row.container??>"container": "${row.container!""}",</#if>
-				"name": "${row.item.properties.name!""}",
-				<#if row.item.aspects??>
+                <#if row.item.properties?? && row.item.properties.name??>
+                	"name": "${row.item.properties.name!""}",
+                <#else>
+                	"name": "${(row.item.name)!row.item?string!""}",
+                </#if>
+                <#if row.item.aspects??>
                  "aspects": [
                    <#list row.item.aspects as aspect>
                      "${shortQName(aspect)}"
@@ -54,10 +58,15 @@
                    </#list>
                    ],
                  </#if>
-				"title":<#if row.item.properties["lnk:title"]??>"${row.item.properties["lnk:title"]}",
-						<#elseif row.item.properties["ia:whatEvent"]??>"${row.item.properties["ia:whatEvent"]}",
-						<#else>"${row.item.properties.title!""}",</#if>
-				"description": "${row.item.properties.description!""}",
+                <#if row.item.properties??>
+					"title":<#if row.item.properties["lnk:title"]??>"${row.item.properties["lnk:title"]}",
+							<#elseif row.item.properties["ia:whatEvent"]??>"${row.item.properties["ia:whatEvent"]}",
+							<#else>"${row.item.properties.title!""}",</#if>
+					"description": "${row.item.properties.description!""}",
+                <#else>
+					"title": "${(row.item.name)!row.item?string!""}",
+					"description": "",
+                </#if>
 				<#if row.item.properties.modified??>"modified": "${xmldate(row.item.properties.modified)}",</#if>
 				<#if row.item.properties.modifier??>"modifier": "${row.item.properties.modifier}",</#if>
 				<#if row.item.siteShortName??>"site": "${row.item.siteShortName}",</#if>

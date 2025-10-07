@@ -51,11 +51,11 @@ function main()
         }
     }
 
-    var isContentChanged = false;
+    var contentChanged = false;
     if (itemKind === "node") {
-        isContentChanged = metadataExtractAction.isContentChanged(itemId,repoFormData);
+        contentChanged = metadataExtractAction.isContentChanged(itemId,repoFormData);
     }
-    if(logger.isLoggingEnabled() && isContentChanged) {
+    if(logger.isLoggingEnabled() && contentChanged) {
         logger.log("Content has been changed");
     }
 
@@ -92,7 +92,7 @@ function main()
         return;
     }
     if (itemKind === "node") {
-        checkAndExtractNodeMetadata(persistedObject, itemId, isContentChanged);
+        checkAndExtractNodeMetadata(persistedObject, itemId, contentChanged);
     }
     
     model.persistedObject = persistedObject.toString();

@@ -28,6 +28,7 @@ package org.alfresco.repo.action.executer;
 import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +47,8 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.repo.jscript.MetaDataExtractAction;
+import org.alfresco.repo.jscript.ScriptAction;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -74,6 +77,10 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     protected static final String QUICK_DESCRIPTION = "Pangram, fox, dog, Gym class featuring a brown fox and lazy dog";
     protected static final String QUICK_CREATOR = "Nevin Nollop";
 
+    protected static final String QUICK_UPDATED_TITLE = "The hot dog is eaten by the city fox";
+    protected static final String QUICK_UPDATED_DESCRIPTION = "Pangram, fox, dog, Gym class featuring only brown fox";
+    protected static final String QUICK_UPDATED_CREATOR = "Friday";
+
     private NodeService nodeService;
     private ContentService contentService;
     private MetadataExtracterRegistry registry;
@@ -83,6 +90,8 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     private NodeRef nodeRef;
 
     private ContentMetadataExtracter executer;
+
+    private MetaDataExtractAction extractAction;
 
     private final static String ID = GUID.generate();
 
@@ -116,6 +125,9 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
 
         // Get the executer instance
         this.executer = (ContentMetadataExtracter) this.applicationContext.getBean("extract-metadata");
+
+        // get the js script action
+        this.extractAction = (MetaDataExtractAction) this.applicationContext.getBean("metadataExtractServiceScript");
     }
 
     /**
@@ -347,6 +359,47 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
                 assertEquals(myCreator, nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHOR));
 
                 assertEquals(QUICK_DESCRIPTION, nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
+                return null;
+            }
+        });
+    }
+
+    @Test
+    public void testUsingScriptAction_WhenContentChanged() throws Exception
+    {
+
+        // update the content
+        ContentWriter cw = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        cw.setMimetype(MimetypeMap.MIMETYPE_PDF);
+        cw.putContent(AbstractContentTransformerTest.loadNamedQuickTestFile("quickupdated.pdf"));
+
+        // Make the nodeRef visible to other transactions as it will need to be in async requests
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
+        // Execute the action
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            public Void execute() throws Throwable
+            {
+                ScriptAction action = extractAction.create(true);
+                action.execute(nodeRef, false, false);
+                return null;
+            }
+        });
+
+        // Need to wait for the async extract
+        await().pollInSameThread()
+                .atMost(Duration.ofSeconds(100))
+                .until(() -> nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION), Objects::nonNull);
+
+        // Check that the properties have been preserved, but that description has been set
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            public Void execute() throws Throwable
+            {
+                assertEquals(QUICK_UPDATED_TITLE, nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+                assertEquals(QUICK_UPDATED_CREATOR, nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHOR));
+
+                assertEquals(QUICK_UPDATED_DESCRIPTION, nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
                 return null;
             }
         });

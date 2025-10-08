@@ -62,7 +62,7 @@ public class MetaDataExtractActionTest
 {
 
     @Test
-    public void testIsContentChanged_ReturnsTrue()
+    public void testIsContentChangedReturnsTrue()
     {
         MetaDataExtractAction action = new MetaDataExtractAction();
         ContentService contentService = Mockito.mock(ContentService.class);

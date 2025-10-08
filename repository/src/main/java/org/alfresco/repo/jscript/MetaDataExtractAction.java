@@ -24,7 +24,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  *
  * This file is part of Alfresco
  *

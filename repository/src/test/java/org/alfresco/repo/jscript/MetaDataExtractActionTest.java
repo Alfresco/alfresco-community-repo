@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -62,7 +62,7 @@ public class MetaDataExtractActionTest
 {
 
     @Test
-    public void testIsContentChanged_ReturnsTrue()
+    public void testIsContentChangedReturnsTrue()
     {
         MetaDataExtractAction action = new MetaDataExtractAction();
         ContentService contentService = Mockito.mock(ContentService.class);
@@ -83,7 +83,7 @@ public class MetaDataExtractActionTest
     }
 
     @Test
-    public void testIsContentChanged_ReturnsFalse()
+    public void testIsContentChangedReturnsFalse()
     {
         MetaDataExtractAction action = new MetaDataExtractAction();
         ContentService contentService = Mockito.mock(ContentService.class);
@@ -104,7 +104,7 @@ public class MetaDataExtractActionTest
     }
 
     @Test
-    public void testCreate_WhenContentChanged_ReturnsScriptAction()
+    public void testCreateWhenContentChangedReturnsScriptAction()
     {
         MetaDataExtractAction action = new MetaDataExtractAction();
 

@@ -104,7 +104,7 @@ public class MetaDataExtractActionTest
     }
 
     @Test
-    public void testCreate_WhenContentChanged_ReturnsScriptAction()
+    public void testCreateWhenContentChangedReturnsScriptAction()
     {
         MetaDataExtractAction action = new MetaDataExtractAction();
 

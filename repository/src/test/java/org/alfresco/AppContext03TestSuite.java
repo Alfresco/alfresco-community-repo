@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -66,6 +66,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.importer.FileImporterTest.class,
         org.alfresco.repo.importer.ImporterComponentTest.class,
         org.alfresco.repo.jscript.PeopleTest.class,
+        org.alfresco.repo.jscript.MetaDataExtractActionTest.class,
         org.alfresco.repo.jscript.RhinoScriptTest.class,
 
         // needs a clean DB to run

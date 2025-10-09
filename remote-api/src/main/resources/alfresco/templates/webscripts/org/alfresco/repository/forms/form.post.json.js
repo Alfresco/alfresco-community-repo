@@ -51,6 +51,14 @@ function main()
         }
     }
 
+    var contentChanged = false;
+    if (itemKind === "node") {
+        contentChanged = metadataExtractAction.isContentChanged(itemId,repoFormData);
+    }
+    if(logger.isLoggingEnabled() && contentChanged) {
+        logger.log("Content has been changed");
+    }
+
     var persistedObject = null;
     try
     {
@@ -83,9 +91,50 @@ function main()
        
         return;
     }
+    if (itemKind === "node") {
+        checkAndExtractNodeMetadata(persistedObject, itemId, contentChanged);
+    }
     
     model.persistedObject = persistedObject.toString();
     model.message = "Successfully persisted form for item [" + itemKind + "]" + itemId;
 }
 
+function checkAndExtractNodeMetadata(persistedObject, itemId, isContentChanged) {
+    var nodeRefStr = toNodeRefString(persistedObject, itemId);
+    var node = search.findNode(nodeRefStr);
+
+    if (node == null) {
+        if (logger.isLoggingEnabled()) {
+            logger.log("Node not found: " + nodeRefStr);
+        }
+    } else if(isContentChanged) {
+        extractMetadata(node, isContentChanged);
+    } else {
+        if (logger.isLoggingEnabled()) {
+            logger.log("Content not changed, skipping metadata extraction for node: " + nodeRefStr);
+        }
+    }
+}
+
+
+function extractMetadata(file, isContentChanged) {
+    var emAction = metadataExtractAction.create(isContentChanged);
+    if (emAction) {
+        // readOnly=false, newTransaction=false
+        emAction.execute(file, false, false);
+    }
+}
+
+function toNodeRefString(persistedObject, itemId) {
+    // Prefer the NodeRef returned by saveForm (when kind=node).
+    if (persistedObject instanceof Packages.org.alfresco.service.cmr.repository.NodeRef) {
+        return persistedObject.toString();
+    }
+    // If the client passed a full noderef, keep it.
+    if (itemId && itemId.indexOf("://") !== -1) {
+        return itemId;
+    }
+    // Otherwise assume SpacesStore UUID.
+    return "workspace://SpacesStore/" + itemId;
+}
 main();

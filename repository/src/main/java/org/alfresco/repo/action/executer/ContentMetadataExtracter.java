@@ -51,12 +51,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.evaluator.CompareContentConditionEvaluator;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
@@ -403,6 +405,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             ((AbstractMappingMetadataExtracter) extracter).setEnableStringTagging(enableStringTagging);
         }
 
+        MetadataExtracter.OverwritePolicy overwritePolicy = determineOverwritePolicy(ruleAction);
         // Get all the node's properties
         Map<QName, Serializable> nodeProperties = nodeService.getProperties(actionedUponNodeRef);
 
@@ -415,7 +418,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             modifiedProperties = extracter.extract(
                     actionedUponNodeRef,
                     reader,
-                    /* OverwritePolicy.PRAGMATIC, */
+                    overwritePolicy,
                     nodeProperties);
         }
         catch (Throwable e)
@@ -454,6 +457,21 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         addExtractedMetadataToNode(actionedUponNodeRef, nodeProperties, modifiedProperties,
                 nodeService, dictionaryService, taggingService, enableStringTagging, carryAspectProperties,
                 stringTaggingSeparators);
+    }
+
+    private MetadataExtracter.OverwritePolicy determineOverwritePolicy(Action ruleAction)
+    {
+        return Optional.ofNullable(ruleAction.getActionConditions())
+                .flatMap(conditions -> conditions.stream()
+                        .filter(e -> CompareContentConditionEvaluator.NAME.equals(e.getActionConditionDefinitionName()))
+                        .findAny()
+                        .map(e -> {
+                            Serializable contentChanged = e.getParameterValue(CompareContentConditionEvaluator.PARAM_IS_CONTENT_CHANGED);
+                            return Boolean.TRUE.equals(contentChanged)
+                                    ? MetadataExtracter.OverwritePolicy.EAGER
+                                    : MetadataExtracter.OverwritePolicy.PRAGMATIC;
+                        }))
+                .orElse(MetadataExtracter.OverwritePolicy.PRAGMATIC);
     }
 
     public static void addExtractedMetadataToNode(NodeRef actionedUponNodeRef, Map<QName, Serializable> nodeProperties,

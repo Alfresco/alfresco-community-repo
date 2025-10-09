@@ -2,7 +2,7 @@ function extractMetadata(file)
 {
    // Extract metadata - via repository action for now.
    // This should use the MetadataExtracter API to fetch properties, allowing for possible failures.
-   var emAction = actions.create("extract-metadata");
+   var emAction = metadataExtractAction.create(true);
    if (emAction != null)
    {
       // Call using readOnly = false, newTransaction = false

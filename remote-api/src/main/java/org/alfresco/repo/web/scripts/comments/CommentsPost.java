@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.json.simple.JSONObject;
+import org.owasp.html.PolicyFactory;
+import org.owasp.html.Sanitizers;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -66,6 +68,18 @@ public class CommentsPost extends AbstractCommentsWebScript
     {
         // get json object from request
         JSONObject json = parseJSON(req);
+
+        //Validating and Sanitizing comment content to prevent XSS
+        String commentContent = getOrNull(json, "content");
+        if(commentContent == null || commentContent.trim().isEmpty())
+        {
+            throw new IllegalArgumentException("Comment content must not be empty");
+        }
+        else{
+            PolicyFactory policy = Sanitizers.FORMATTING.and(Sanitizers.LINKS);
+            String safeContent = policy.sanitize(commentContent);
+            json.replace("content", safeContent);
+        }
 
         /* MNT-10231, MNT-9771 fix */
         this.behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);

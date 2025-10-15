@@ -69,13 +69,14 @@ public class CommentsPost extends AbstractCommentsWebScript
         // get json object from request
         JSONObject json = parseJSON(req);
 
-        //Validating and Sanitizing comment content to prevent XSS
+        // Validating and Sanitizing comment content to prevent XSS
         String commentContent = getOrNull(json, "content");
-        if(commentContent == null || commentContent.trim().isEmpty())
+        if (commentContent == null || commentContent.trim().isEmpty())
         {
             throw new IllegalArgumentException("Comment content must not be empty");
         }
-        else{
+        else
+        {
             PolicyFactory policy = Sanitizers.FORMATTING.and(Sanitizers.LINKS);
             String safeContent = policy.sanitize(commentContent);
             json.replace("content", safeContent);

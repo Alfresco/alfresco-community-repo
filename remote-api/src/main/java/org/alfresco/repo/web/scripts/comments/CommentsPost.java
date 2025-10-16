@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.owasp.html.PolicyFactory;
 import org.owasp.html.Sanitizers;
@@ -71,7 +72,7 @@ public class CommentsPost extends AbstractCommentsWebScript
 
         // Validating and Sanitizing comment content to prevent XSS
         String commentContent = getOrNull(json, "content");
-        if (commentContent == null || commentContent.trim().isEmpty())
+        if (commentContent == null || StringUtils.isBlank(commentContent))
         {
             throw new IllegalArgumentException("Comment content must not be empty");
         }

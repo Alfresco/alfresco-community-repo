@@ -83,7 +83,6 @@ public class CommentsPost extends AbstractCommentsWebScript
             json.replace("content", safeContent);
         }
 
-
         /* MNT-10231, MNT-9771 fix */
         this.behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
 

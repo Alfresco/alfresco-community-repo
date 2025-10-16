@@ -72,7 +72,7 @@ public class CommentsPost extends AbstractCommentsWebScript
 
         // Validating and Sanitizing comment content to prevent XSS
         String commentContent = getOrNull(json, "content");
-        if (commentContent == null || StringUtils.isBlank(commentContent))
+        if (StringUtils.isBlank(commentContent))
         {
             throw new IllegalArgumentException("Comment content must not be empty");
         }

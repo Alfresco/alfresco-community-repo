@@ -233,15 +233,15 @@ var Filters =
             filterParams.query = "+ID:\"" + parsedArgs.nodeRef + "\"";
             break;
 
-         case "tag":
-            // Remove any trailing "/" character
-            if (filterData.charAt(filterData.length - 1) == "/")
-            {
-               filterData = filterData.slice(0, -1);
-            }
-            filterQuery = this.constructPathQuery(parsedArgs);
-            filterParams.query = filterQuery + " +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(filterData) + "/member\"";
-            break;
+          case "tag":
+              // Remove any trailing "/" character
+              if (filterData.charAt(filterData.length - 1) == "/")
+              {
+                  filterData = filterData.slice(0, -1);
+              }
+              filterQuery = this.constructPathQuery(parsedArgs);
+              filterParams.query = filterQuery + " +TAG:\"" + search.ISO9075Encode(filterData) + "\"";
+              break;
 
          case "category":
             // Remove any trailing "/" character
@@ -249,8 +249,15 @@ var Filters =
             {
                filterData = filterData.slice(0, -1);
             }
-            filterQuery = this.constructPathQuery(parsedArgs);
-            filterParams.query = filterQuery + " +PATH:\"/cm:categoryRoot/cm:generalclassifiable" + Filters.iso9075EncodePath(filterData) + "/member\"";
+
+            var categoryNodeRef = this.getCategoryNodeRef(filterData);
+
+            if (categoryNodeRef && search.findNode(categoryNodeRef) != null) {
+               filterParams.query = filterQuery + ' +@cm\\:categories:"' + categoryNodeRef + '"';
+            } else {
+               logger.warn("category filter: skipping invalid category node : " + categoryNodeRef);
+            }
+            filterParams.language = "fts-alfresco";
             break;
 
          case "aspect":
@@ -271,11 +278,24 @@ var Filters =
       {
          filterParams.query += " " + (Filters.TYPE_MAP[parsedArgs.type] || "");
       }
-
+      logger.warn("Final Query : " + filterParams.query);
       return filterParams;
    },
-   
-   constructPathQuery: function constructPathQuery(parsedArgs)
+
+    getCategoryNodeRef: function(categoryName) {
+        var results = search.luceneSearch(
+            'PATH:"/cm:categoryRoot/cm:generalclassifiable//*" AND @cm\\:name:"' + categoryName + '"'
+        );
+
+        if (results && results.length > 0) {
+            return results[0].nodeRef.toString();
+        }
+
+        logger.warn("Category not found: " + categoryName);
+        return null;
+    },
+
+   constructPathQuery: function(parsedArgs)
    {
       var pathQuery = "";
       if (parsedArgs.libraryRoot != companyhome || parsedArgs.nodeRef != "alfresco://company/home")

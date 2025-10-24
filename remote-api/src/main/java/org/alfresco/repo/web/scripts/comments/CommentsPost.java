@@ -83,10 +83,17 @@ public class CommentsPost extends AbstractCommentsWebScript
                     .allowElements("ul", "ol", "li")
                     .allowElements("p", "br")
                     .allowElements("span", "div")
-                    .allowAttributes("style").onElements("span", "div", "p")
-                    .allowStyling()
+                    .allowAttributes("style").matching((elementName, attributeName, value) -> {
+                        String lowerValue = value.toLowerCase();
+                        if (lowerValue.matches("(?s).*(color\\s*:\\s*[^;]+).*") ||
+                                lowerValue.matches("(?s).*(background-color\\s*:\\s*[^;]+).*")) {
+                            return value;
+                        }
+                        return null;
+                    }).onElements("span", "div", "p")
                     .allowStandardUrlProtocols()
                     .toFactory();
+
             String safeContent = policy.sanitize(commentContent);
             json.replace("content", safeContent);
         }

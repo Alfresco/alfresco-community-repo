@@ -86,7 +86,8 @@ public class CommentsPost extends AbstractCommentsWebScript
                     .allowAttributes("style").matching((elementName, attributeName, value) -> {
                         String lowerValue = value.toLowerCase();
                         if (lowerValue.matches("(?s).*(color\\s*:\\s*[^;]+).*") ||
-                                lowerValue.matches("(?s).*(background-color\\s*:\\s*[^;]+).*")) {
+                                lowerValue.matches("(?s).*(background-color\\s*:\\s*[^;]+).*"))
+                        {
                             return value;
                         }
                         return null;

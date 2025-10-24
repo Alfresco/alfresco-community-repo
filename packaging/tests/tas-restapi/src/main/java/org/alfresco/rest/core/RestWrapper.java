@@ -675,6 +675,11 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         {
             returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
         }
+        else if (HttpMethod.PATCH.equals(httpMethod))
+        {
+            returnedResponse = onRequest().body(restRequest.getBody())
+                    .patch(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
         else
         {
             returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();

@@ -78,11 +78,11 @@ public class CommentsPost extends AbstractCommentsWebScript
         }
         else
         {
+            //Allowed HTML elements and attributes in comment content e.g. Text formatting ,Lists and Structure & Styling
+            String[] allowedElements = {"b", "i", "u", "strong", "em","ul", "ol", "li","p", "br", "span", "div"};
+
             PolicyFactory policy = new HtmlPolicyBuilder()
-                    .allowElements("b", "i", "u", "strong", "em")
-                    .allowElements("ul", "ol", "li")
-                    .allowElements("p", "br")
-                    .allowElements("span", "div")
+                    .allowElements(allowedElements)
                     .allowAttributes("style").matching((elementName, attributeName, value) -> {
                         String lowerValue = value.toLowerCase();
                         if (lowerValue.matches("(?s).*(color\\s*:\\s*[^;]+).*") ||

@@ -79,7 +79,7 @@ public class CommentsPost extends AbstractCommentsWebScript
         else
         {
             //Allowed HTML elements and attributes in comment content e.g. Text formatting ,Lists and Structure & Styling
-            String[] allowedElements = {"b", "i", "u", "strong", "em","ul", "ol", "li","p", "br", "span", "div"};
+            String[] allowedElements = {"b", "i", "u", "strong", "em", "ul", "ol", "li","p", "br", "span", "div"};
 
             PolicyFactory policy = new HtmlPolicyBuilder()
                     .allowElements(allowedElements)

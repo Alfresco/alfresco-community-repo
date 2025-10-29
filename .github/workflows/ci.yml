@@ -133,7 +133,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: reduced.war
-          path: temp-dir-for-sast/reduced.war
+          path: |
+            temp-dir-for-sast/reduced.war
+            packaging/war/target/alfresco.war
       - name: "Remove temporary directory"
         run: rm -rfv temp-dir-for-sast
       - name: "Clean Maven cache"

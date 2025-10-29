@@ -32,6 +32,7 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,8 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegist
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionScheduleImpl;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
@@ -73,6 +76,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
     protected NodeService nodeService;
     private RecordsManagementServiceRegistry service;
     private ApiNodesModelFactory nodesModelFactory;
+    private DispositionService dispositionService;
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
@@ -94,6 +98,11 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         this.service = service;
     }
 
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
+
     @Override
     @WebApiDescription(title = "Create a retention schedule step for the particular retention schedule using the 'retentionScheduleId'")
     public List<RetentionScheduleActionDefinition> create(String retentionScheduleId, List<RetentionScheduleActionDefinition> nodeInfos, Parameters parameters)
@@ -102,19 +111,28 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         mandatory("entity", nodeInfos);
         mandatory("parameters", parameters);
         NodeRef retentionScheduleNodeRef = apiUtils.lookupAndValidateNodeType(retentionScheduleId, RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE);
+
+        RetentionScheduleActionDefinition retentionScheduleActionDefinition = nodeInfos.get(0);
+
         // validation for the order of the step
-        retentionScheduleStepValidation(retentionScheduleNodeRef, nodeInfos.get(0));
+        retentionScheduleStepValidation(retentionScheduleNodeRef, retentionScheduleActionDefinition);
+
+        DispositionSchedule dispositionSchedule = new DispositionScheduleImpl(service, nodeService, retentionScheduleNodeRef);
+        boolean isRecordLevel = dispositionSchedule.isRecordLevelDisposition();
+
         // request property validation
-        retentionScheduleRequestValidation(nodeInfos.get(0));
+        retentionScheduleRequestValidation(retentionScheduleActionDefinition, isRecordLevel);
+
         // create the parameters for the action definition
-        Map<QName, Serializable> actionDefinitionParams = nodesModelFactory.createRetentionActionDefinitionParams(nodeInfos.get(0));
+        Map<QName, Serializable> actionDefinitionParams = nodesModelFactory.createRetentionActionDefinitionParams(retentionScheduleActionDefinition);
+
         // create the child association from the schedule to the action definition
         NodeRef actionNodeRef = this.nodeService.createNode(retentionScheduleNodeRef,
                 RecordsManagementModel.ASSOC_DISPOSITION_ACTION_DEFINITIONS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                        QName.createValidLocalName(nodeInfos.get(0).getName())),
+                        QName.createValidLocalName(retentionScheduleActionDefinition.getName())),
                 RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION, actionDefinitionParams).getChildRef();
-        DispositionSchedule dispositionSchedule = new DispositionScheduleImpl(service, nodeService, retentionScheduleNodeRef);
+
         DispositionActionDefinition dispositionActionDefinition = dispositionSchedule.getDispositionActionDefinition(actionNodeRef.getId());
         List<RetentionScheduleActionDefinition> responseActions = new ArrayList<>();
         if (dispositionActionDefinition != null)
@@ -195,7 +213,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
      * @param retentionScheduleActionDefinition
      *            retention schedule action definition
      */
-    private void retentionScheduleRequestValidation(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    private void retentionScheduleRequestValidation(RetentionScheduleActionDefinition retentionScheduleActionDefinition, boolean isRecordLevel)
     {
         // step name validation
         if (invalidStepNameCheck(retentionScheduleActionDefinition.getName()))
@@ -203,7 +221,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
             throw new InvalidArgumentException("name value is invalid : " + retentionScheduleActionDefinition.getName());
         }
 
-        validatePeriodAndPeriodProperty(retentionScheduleActionDefinition);
+        validatePeriodAndPeriodProperty(retentionScheduleActionDefinition, isRecordLevel);
 
         // event name validation
         if (invalidEventNameCheck(retentionScheduleActionDefinition.getEvents()))
@@ -222,7 +240,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         }
     }
 
-    private void validatePeriodAndPeriodProperty(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    private void validatePeriodAndPeriodProperty(RetentionScheduleActionDefinition retentionScheduleActionDefinition, boolean isRecordLevel)
     {
         // period value validation
         if (invalidPeriodCheck(retentionScheduleActionDefinition.getPeriod()))
@@ -231,8 +249,8 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         }
 
         // periodProperty validation
-        List<String> validPeriodProperties = Arrays.asList("cm:created", "rma:cutOffDate", "rma:dispositionAsOf");
-        if (validPeriodProperties.stream().noneMatch(retentionScheduleActionDefinition.getPeriodProperty()::equals))
+        Collection<DispositionProperty> validPeriodProperties = dispositionService.getDispositionProperties(isRecordLevel, retentionScheduleActionDefinition.getName());
+        if (validPeriodProperties.stream().map(dp -> dp.getQName().toPrefixString()).noneMatch(retentionScheduleActionDefinition.getPeriodProperty()::equals))
         {
             throw new InvalidArgumentException("periodProperty value is invalid: " + retentionScheduleActionDefinition.getPeriodProperty());
         }

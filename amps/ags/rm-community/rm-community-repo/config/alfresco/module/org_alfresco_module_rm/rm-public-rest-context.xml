@@ -166,6 +166,7 @@
         <property name="nodesModelFactory" ref="nodesModelFactory" />
         <property name="nodeService" ref="NodeService"/>
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
+        <property name="dispositionService" ref="DispositionService"/>
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.recordfolders.RecordFolderEntityResource">

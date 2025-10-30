@@ -2947,6 +2947,7 @@ public class NodesImpl implements Nodes
         Boolean versionMajor = null;
         String versionComment = null;
         String relativePath = null;
+        String aspectNames = null;
         String renditionNames = null;
         boolean versioningEnabled = true;
 
@@ -3002,6 +3003,10 @@ public class NodesImpl implements Nodes
                 relativePath = getStringOrNull(field.getValue());
                 break;
 
+            case "aspectnames":
+                aspectNames = getStringOrNull(field.getValue());
+                break;
+
             case "renditions":
                 renditionNames = getStringOrNull(field.getValue());
                 break;
@@ -3053,9 +3058,11 @@ public class NodesImpl implements Nodes
         // if requested, make (get or create) path
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
-        final Set<String> renditions = getRequestedRenditions(renditionNames);
+        final Set<String> renditions = getRequestedNames(renditionNames);
 
-        validateProperties(qnameStrProps, EXCLUDED_NS, Arrays.asList());
+        final Set<String> qnameStrAspects = getRequestedNames(aspectNames)
+        validateAspects(qnameStrAspects, EXCLUDED_NS, EXCLUDED_ASPECTS);
+        validateProperties(qnameStrProps, EXCLUDED_NS,  Arrays.asList());
         try
         {
             // Map the given properties, if any.
@@ -3099,6 +3106,8 @@ public class NodesImpl implements Nodes
 
             // Create a new file.
             NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, versionMajor, versionComment);
+
+            addCustomAspects(nodeRef, qnameStrAspects, EXCLUDED_ASPECTS);
 
             // Create the response
             final Node fileNode = getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters);
@@ -3181,25 +3190,25 @@ public class NodesImpl implements Nodes
         }
     }
 
-    static Set<String> getRequestedRenditions(String renditionsParam)
+    static Set<String> getRequestedNames(String namesParam)
     {
-        if (renditionsParam == null)
+        if (namesParam == null)
         {
             return null;
         }
 
-        String[] renditionNames = renditionsParam.split(",");
+        String[] namesArray = namesParam.split(",");
 
-        Set<String> renditions = new LinkedHashSet<>(renditionNames.length);
-        for (String name : renditionNames)
+        Set<String> names = new LinkedHashSet<>(namesArray.length);
+        for (String name : namesArray)
         {
             name = name.trim();
             if (!name.isEmpty())
             {
-                renditions.add(name.trim());
+                names.add(name.trim());
             }
         }
-        return renditions;
+        return names;
     }
 
     private void requestRenditions(Set<String> renditionNames, Node fileNode)

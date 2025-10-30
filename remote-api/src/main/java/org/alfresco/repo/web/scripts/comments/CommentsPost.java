@@ -83,15 +83,9 @@ public class CommentsPost extends AbstractCommentsWebScript
 
             PolicyFactory policy = new HtmlPolicyBuilder()
                     .allowElements(allowedElements)
-                    .allowAttributes("style").matching((elementName, attributeName, value) -> {
-                        String lowerValue = value.toLowerCase();
-                        if (lowerValue.matches("(?s).*(color\\s*:\\s*[^;]+).*") ||
-                                lowerValue.matches("(?s).*(background-color\\s*:\\s*[^;]+).*"))
-                        {
-                            return value;
-                        }
-                        return null;
-                    }).onElements("span", "div", "p")
+                    .allowAttributes("style")
+                    .onElements("span", "div", "p", "ul")
+                    .allowStyling()
                     .allowStandardUrlProtocols()
                     .toFactory();
 

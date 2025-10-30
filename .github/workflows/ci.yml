@@ -117,7 +117,7 @@ jobs:
           summary_output_file: results.json
           summary_display: true
           baseline_file: baseline.json
-          timeout: 10
+          timeout: 60
           debug: 1
       - name: Upload scan result
         if: success() || failure()
@@ -132,7 +132,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: reduced.war
+          name: wars
           path: |
             temp-dir-for-sast/reduced.war
             packaging/war/target/alfresco.war

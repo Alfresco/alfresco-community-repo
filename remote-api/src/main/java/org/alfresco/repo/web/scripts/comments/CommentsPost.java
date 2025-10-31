@@ -33,8 +33,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
+import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.PolicyFactory;
-import org.owasp.html.Sanitizers;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -78,7 +78,17 @@ public class CommentsPost extends AbstractCommentsWebScript
         }
         else
         {
-            PolicyFactory policy = Sanitizers.FORMATTING.and(Sanitizers.LINKS);
+            // Allowed HTML elements and attributes in comment content e.g. Text formatting ,Lists and Structure & Styling
+            String[] allowedElements = {"b", "i", "u", "strong", "em", "ul", "ol", "li", "p", "br", "span", "div"};
+
+            PolicyFactory policy = new HtmlPolicyBuilder()
+                    .allowElements(allowedElements)
+                    .allowAttributes("style")
+                    .onElements("span", "div", "p", "ul")
+                    .allowStyling()
+                    .allowStandardUrlProtocols()
+                    .toFactory();
+
             String safeContent = policy.sanitize(commentContent);
             json.replace("content", safeContent);
         }

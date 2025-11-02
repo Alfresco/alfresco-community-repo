@@ -28,9 +28,11 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.common.VersionUtil;
@@ -52,17 +54,16 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
      * The name of the spoofed root association
      */
     private static final QName rootAssocName = QName.createQName(Version2Model.NAMESPACE_URI, "versionedState");
-    
-    
+
     /**
      * Type translation for version store
      */
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
-    {   
+    {
         // frozen node type -> replaced by actual node type of the version node
-        return (QName)this.dbNodeService.getType(VersionUtil.convertNodeRef(nodeRef));
+        return (QName) this.dbNodeService.getType(VersionUtil.convertNodeRef(nodeRef));
     }
-    
+
     /**
      * Aspects translation for version store
      */
@@ -72,7 +73,28 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
         aspects.remove(Version2Model.ASPECT_VERSION);
         return aspects;
     }
-    
+
+    /**
+     * Translation for version store
+     */
+    public Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs) throws InvalidNodeRefException
+    {
+        Map<NodeRef, Set<QName>> result = new HashMap<>();
+
+        List<NodeRef> convertedNodeRefs = nodeRefs.stream()
+                .map(VersionUtil::convertNodeRef)
+                .collect(Collectors.toList());
+
+        Map<NodeRef, Set<QName>> aspects = this.dbNodeService.getAspects(convertedNodeRefs);
+
+        aspects.forEach((nodeRef, aspectSet) -> {
+            aspectSet.remove(Version2Model.ASPECT_VERSION);
+            result.put(nodeRef, aspectSet);
+        });
+
+        return result;
+    }
+
     /**
      * Properties translation for version store
      */
@@ -80,10 +102,10 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
     {
         Map<QName, Serializable> props = dbNodeService.getProperties(VersionUtil.convertNodeRef(nodeRef));
         VersionUtil.convertFrozenToOriginalProps(props);
-        
+
         return props;
     }
-    
+
     /**
      * Property translation for version store
      */
@@ -93,7 +115,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
         Map<QName, Serializable> properties = getProperties(VersionUtil.convertNodeRef(nodeRef));
         return properties.get(qname);
     }
-    
+
     /**
      * The node will appear to be attached to the root of the version store
      *
@@ -112,7 +134,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
         }
         return result;
     }
-    
+
     /**
      * Child Assocs translation for version store
      */
@@ -122,17 +144,17 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
         List<ChildAssociationRef> childAssocRefs = this.dbNodeService.getChildAssocs(
                 VersionUtil.convertNodeRef(nodeRef),
                 typeQNamePattern, qnamePattern);
-        
+
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>(childAssocRefs.size());
-        
+
         for (ChildAssociationRef childAssocRef : childAssocRefs)
         {
-            if (! childAssocRef.getTypeQName().equals(Version2Model.CHILD_QNAME_VERSIONED_ASSOCS))
+            if (!childAssocRef.getTypeQName().equals(Version2Model.CHILD_QNAME_VERSIONED_ASSOCS))
             {
                 // Get the child reference
                 NodeRef childRef = childAssocRef.getChildRef();
-                NodeRef referencedNode = (NodeRef)this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE);
-                
+                NodeRef referencedNode = (NodeRef) this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE);
+
                 if (this.dbNodeService.exists(referencedNode))
                 {
                     // Build a child assoc ref to add to the returned list
@@ -143,18 +165,18 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
                             referencedNode,
                             childAssocRef.isPrimary(),
                             childAssocRef.getNthSibling());
-                    
+
                     result.add(newChildAssocRef);
                 }
             }
         }
-        
+
         // sort the results so that the order appears to be exactly as it was originally
         Collections.sort(result);
-        
+
         return result;
     }
-    
+
     /**
      * Simulates the node begin attached to the root node of the version store.
      */
@@ -166,7 +188,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
                 rootAssocName,
                 nodeRef);
     }
-    
+
     /**
      * Assocs translation for version store
      * 
@@ -179,30 +201,30 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
         List<ChildAssociationRef> childAssocRefs = this.dbNodeService.getChildAssocs(
                 VersionUtil.convertNodeRef(sourceRef),
                 Version2Model.CHILD_QNAME_VERSIONED_ASSOCS, qnamePattern);
-        
+
         List<AssociationRef> result = new ArrayList<AssociationRef>(childAssocRefs.size());
-        
+
         for (ChildAssociationRef childAssocRef : childAssocRefs)
         {
             // Get the assoc reference
             NodeRef childRef = childAssocRef.getChildRef();
-            NodeRef referencedNode = (NodeRef)this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE);
-            
+            NodeRef referencedNode = (NodeRef) this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE);
+
             if (this.dbNodeService.exists(referencedNode))
             {
-                Long assocDbId = (Long)this.dbNodeService.getProperty(childRef, Version2Model.PROP_QNAME_ASSOC_DBID);
-                
+                Long assocDbId = (Long) this.dbNodeService.getProperty(childRef, Version2Model.PROP_QNAME_ASSOC_DBID);
+
                 // Build an assoc ref to add to the returned list
                 AssociationRef newAssocRef = new AssociationRef(
                         assocDbId,
                         sourceRef,
                         childAssocRef.getQName(),
                         referencedNode);
-                
+
                 result.add(newAssocRef);
-                }
+            }
         }
-        
+
         return result;
     }
 

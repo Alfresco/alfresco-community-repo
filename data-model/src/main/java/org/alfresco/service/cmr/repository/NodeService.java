@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -55,6 +55,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  *       &lt;/associations&gt;
  *    &lt;/type&gt;
  * </pre>
+ * 
  * When duplicates are not allowed, and the <b>cm:name</b> property of a node changes, then the {@link org.alfresco.service.cmr.repository.DuplicateChildNodeNameException} exception must be thrown. Client code can catch this exception and deal with itappropriately.
  * 
  * @author Derek Hulley
@@ -69,7 +70,7 @@ public interface NodeService
      */
     @Auditable
     public List<StoreRef> getStores();
-    
+
     /**
      * Create a new store for the given protocol and identifier. The implementation may create the store in any number of locations, including a database or Subversion.
      * 
@@ -127,7 +128,7 @@ public interface NodeService
      */
     @Auditable(parameters = {"nodeRef"})
     public NodeRef.Status getNodeStatus(NodeRef nodeRef);
-    
+
     /**
      * Get the node reference for a given node DB ID
      * 
@@ -147,7 +148,7 @@ public interface NodeService
      */
     @Auditable(parameters = {"nodeIds"})
     public List<NodeRef> getNodeRefs(List<Long> nodeIds);
-    
+
     /**
      * @param storeRef
      *            reference to an existing store
@@ -215,7 +216,7 @@ public interface NodeService
      * This involves changing the node's primary parent and possibly the name of the association referencing it.
      * <p>
      * If the new parent is in a different store from the original, then the entire node hierarchy is moved to the new store. Inter-store associations are not affected.
-     *  
+     * 
      * @param nodeToMoveRef
      *            the node to move
      * @param newParentRef
@@ -949,7 +950,7 @@ public interface NodeService
             throws InvalidNodeRefException;
 
     /**
-     * The root node has an entry in the path(s) returned.  For this reason, there will always be <b>at least one</b> path element in the returned path(s). The first element will have a null parent reference and qname.
+     * The root node has an entry in the path(s) returned. For this reason, there will always be <b>at least one</b> path element in the returned path(s). The first element will have a null parent reference and qname.
      * 
      * @param nodeRef
      *            NodeRef
@@ -997,7 +998,7 @@ public interface NodeService
      *            the primary association type name to use in the new location or <tt>null</tt> to use the original
      * @param assocQName
      *            the primary association name to use in the new location or <tt>null</tt> to use the original
-     * @return Returns the reference to the newly created node 
+     * @return Returns the reference to the newly created node
      */
     @Auditable(parameters = {"archivedNodeRef", "destinationParentNodeRef", "assocTypeQName", "assocQName"})
     public NodeRef restoreNode(
@@ -1020,7 +1021,7 @@ public interface NodeService
         private List<QName> nodeAspects;
         private boolean sortAscending;
         private int limit;
-        
+
         /**
          * Defaults:<br/>
          * <b>minNodeId:</b> null<br/>
@@ -1035,11 +1036,12 @@ public interface NodeService
             limit = 10000;
             sortAscending = true;
         }
-        
+
         public Long getMinNodeId()
         {
             return minNodeId;
         }
+
         /**
          * The lowest node ID (inclusive) to return
          * 
@@ -1108,7 +1110,7 @@ public interface NodeService
          * Set the node-ID sort order.
          * 
          * @param sortAscending
-         * <tt>true</tt> to retrieve the nodes in ascending ID order
+         *            <tt>true</tt> to retrieve the nodes in ascending ID order
          */
         public void setSortAscending(boolean sortAscending)
         {

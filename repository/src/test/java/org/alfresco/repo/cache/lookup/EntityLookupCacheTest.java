@@ -26,6 +26,8 @@
 package org.alfresco.repo.cache.lookup;
 
 import java.sql.Savepoint;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -266,6 +268,40 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals(0, cache.getKeys().size());                    // ... but cache must be empty
     }
 
+    public void testFindByKeys() throws Exception
+    {
+        // Put some values in the "database"
+        createValue(new TestValue("AAA"));
+        createValue(new TestValue("BBB"));
+        createValue(new TestValue("CCC"));
+
+        List<Long> keysToFind = new ArrayList<Long>(3);
+        keysToFind.add(1L);
+        keysToFind.add(3L);
+        keysToFind.add(100L); // non-existent key
+
+        List<Pair<Long, Object>> results = findByKeys(keysToFind);
+        assertNotNull(results);
+        assertEquals(2, results.size());
+    }
+
+    public void testFindByValuesNotFound() throws Exception
+    {
+        // Put some values in the "database"
+        createValue(new TestValue("AAA"));
+        createValue(new TestValue("BBB"));
+        createValue(new TestValue("CCC"));
+
+        List<Object> valuesToFind = new ArrayList<Object>(3);
+        valuesToFind.add(new TestValue("ZZZ"));
+        valuesToFind.add(new TestValue("AAA"));
+        valuesToFind.add(new TestValue("BBB"));
+
+        List<Pair<Long, Object>> results = findByValues(valuesToFind);
+        assertNotNull(results);
+        assertEquals(2, results.size());
+    }
+
     /**
      * Helper class to represent business object
      */
@@ -315,6 +351,27 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         return new Pair<Long, Object>(key, value);
     }
 
+    public List<Pair<Long, Object>> findByKeys(List<Long> keys)
+    {
+        assertNotNull(keys);
+        assertFalse(keys.isEmpty());
+
+        List<Pair<Long, Object>> results = new ArrayList<Pair<Long, Object>>(keys.size());
+
+        for (Long key : keys)
+        {
+            String dbValue = database.get(key);
+            if (dbValue != null)
+            {
+                // Make a value object
+                TestValue value = new TestValue(dbValue);
+                results.add(new Pair<Long, Object>(key, value));
+            }
+        }
+
+        return results;
+    }
+
     public Pair<Long, Object> findByValue(Object value)
     {
         assertTrue(value == null || value instanceof TestValue);
@@ -328,6 +385,30 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
             }
         }
         return null;
+    }
+
+    public List<Pair<Long, Object>> findByValues(List<Object> values)
+    {
+        assertNotNull(values);
+        assertFalse(values.isEmpty());
+
+        List<Pair<Long, Object>> results = new ArrayList<Pair<Long, Object>>(values.size());
+
+        for (Object value : values)
+        {
+            String dbValue = (value == null) ? null : ((TestValue) value).val;
+
+            for (Map.Entry<Long, String> entry : database.entrySet())
+            {
+                if (EqualsHelper.nullSafeEquals(entry.getValue(), dbValue))
+                {
+                    results.add(new Pair<Long, Object>(entry.getKey(), entry.getValue()));
+                    break;
+                }
+            }
+        }
+
+        return results;
     }
 
     /**

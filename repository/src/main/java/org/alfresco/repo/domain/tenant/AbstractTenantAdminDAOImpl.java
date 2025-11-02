@@ -224,6 +224,17 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
             TenantEntity entity = getTenantEntity(key);
             return convertEntityToPair(entity);
         }
+
+         /**
+         * Batch loading not supported for TenantEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<String, TenantEntity>> findByKeys(List<String> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for TenantEntity");
+        }
         
         @Override
         public Pair<String, TenantEntity> findByValue(TenantEntity value)
@@ -233,6 +244,16 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
                 throw new AlfrescoRuntimeException("Unexpected: TenantEntity / tenantDomain must not be null");
             }
             return convertEntityToPair(getTenantEntity(value.getTenantDomain()));
+        }
+
+        /**
+         * Batch loading not supported for TenantEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<String, TenantEntity>> findByValues(List<TenantEntity> values)
+        {
+            throw new UnsupportedOperationException("findByValues");
         }
         
         @Override

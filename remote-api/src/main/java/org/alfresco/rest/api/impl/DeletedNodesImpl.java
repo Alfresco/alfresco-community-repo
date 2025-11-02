@@ -118,6 +118,37 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
         aNode.setParentId(null);
     }
 
+    /**
+     * Sets archived information on the Node
+     * 
+     * @param aNode
+     * @param mapUserInfo
+     */
+    private void mapArchiveInfo(List<Node> nodes, Map<String, UserInfo> mapUserInfo)
+    {
+        if (mapUserInfo == null)
+        {
+            mapUserInfo = new HashMap<>();
+        }
+
+        List<NodeRef> nodeRefs = new ArrayList<>(nodes.size());
+        for (Node node : nodes)
+        {
+            nodeRefs.add(node.getNodeRef());
+        }
+
+        Map<NodeRef, Map<QName, Serializable>> nodeProps = nodeService.getPropertiesNodeMap(nodeRefs);
+
+        for (Node node : nodes)
+        {
+            node.setArchivedAt((Date) nodeProps.get(node.getNodeRef()).get(ContentModel.PROP_ARCHIVED_DATE));
+            node.setArchivedByUser(Node.lookupUserInfo((String) nodeProps.get(node.getNodeRef()).get(ContentModel.PROP_ARCHIVED_BY), mapUserInfo, personService));
+
+            // Don't show parent id
+            node.setParentId(null);
+        }
+    }
+
     @Override
     public CollectionWithPagingInfo<Node> listDeleted(Parameters parameters)
     {
@@ -167,6 +198,37 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
 
         if (foundNode != null) mapArchiveInfo(foundNode,null);
         return foundNode;
+    }
+    
+    @Override
+    public List<Node> getDeletedNodes(List<String> originalIds, Parameters parameters, boolean fullnode, Map<String, UserInfo> mapUserInfo)
+    {
+        // First check the nodes are valid and have been archived.
+        List<NodeRef> validatedNodeRefs = nodes.validateNodes(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, originalIds);
+
+        // Now get the Nodes
+        List<NodeRef> archivedNodeRefs = new ArrayList<>();
+        for (NodeRef validatedNodeRef : validatedNodeRefs)
+        {
+            NodeRef tempNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, validatedNodeRef.getId());
+            archivedNodeRefs.add(nodeArchiveService.getArchivedNode(tempNodeRef));
+        }
+
+        List<Node> foundNodes = new ArrayList<>();
+        if (fullnode)
+        {
+            foundNodes = nodes.getFoldersOrDocumentsFullInfo(archivedNodeRefs, parameters, mapUserInfo);
+        }
+        else
+        {
+            foundNodes = nodes.getFoldersOrDocuments(archivedNodeRefs, parameters.getInclude(), mapUserInfo);
+        }
+
+        if (!foundNodes.isEmpty())
+        {
+            mapArchiveInfo(foundNodes, null);
+        }
+        return foundNodes;
     }
 
     @Override

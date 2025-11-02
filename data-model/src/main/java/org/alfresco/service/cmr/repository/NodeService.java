@@ -108,6 +108,14 @@ public interface NodeService
      */
     @Auditable(parameters = {"nodeRef"})
     public boolean exists(NodeRef nodeRef);
+
+    /**
+     * @param nodeRefs
+     *            a reference list for the nodes to look for
+     * @return A list of the nodeRefs that exist f
+     */
+    @Auditable(parameters = {"nodeRefs"})
+    public List<NodeRef> exists(List<NodeRef> nodeRefs);
     
     /**
      * Gets the ID of the last transaction that caused the node to change.  This includes
@@ -128,6 +136,16 @@ public interface NodeService
      */
     @Auditable(parameters = {"nodeId"})
     public NodeRef getNodeRef(Long nodeId);
+
+    /**
+     * Get node references for a list of given node DB IDs
+     * 
+     * @param nodeIds
+     *            a list of node DB IDs
+     * @return the list of corresponding node references or an empty list if none are found
+     */
+    @Auditable(parameters = {"nodeIds"})
+    public List<NodeRef> getNodeRefs(List<Long> nodeIds);
     
     /**
      * @param storeRef a reference to an existing store
@@ -437,6 +455,16 @@ public interface NodeService
     @Auditable(parameters = {"nodeRef", "qname"})
     public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException;
     
+    /**
+     * @param nodeRefs
+     *            List of NodeRefs to get Properties for
+     * @return Returns all Nodes and their properties. NodeRef is the map key and properties are keyed by their qualified name
+     * @throws InvalidNodeRefException
+     *             if the node could not be found
+     */
+    @Auditable(parameters = {"nodeRefs"})
+    public Map<NodeRef, Map<QName, Serializable>> getPropertiesNodeMap(List<NodeRef> nodeRefs) throws InvalidNodeRefException;
+
     /**
      * Replace all current properties on the node with the given properties.
      * The properties given must still fulfill the requirements of the class and

@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.domain.encoding;
 
+import java.util.List;
+
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.util.Pair;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
@@ -107,6 +109,16 @@ public abstract class AbstractEncodingDAOImpl implements EncodingDAO
                 return new Pair<Long, String>(id, entity.getEncoding().toUpperCase());
             }
         }
+
+        /**
+         * Batch loading not supported for EncodingEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, String>> findByKeys(List<Long> ids)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for EncodingEntity");
+        }
         
         @Override
         public Pair<Long, String> findByValue(String encoding)
@@ -120,6 +132,17 @@ public abstract class AbstractEncodingDAOImpl implements EncodingDAO
             {
                 return new Pair<Long, String>(entity.getId(), encoding);
             }
+        }
+
+        /**
+         * Batch loading not supported for EncodingEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, String>> findByValues(List<String> encodings)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for EncodingEntity");
         }
         
         public Pair<Long, String> createValue(String encoding)

@@ -332,6 +332,16 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             AclEntity entity = getAclEntity(key);
             return convertEntityToPair(entity);
         }
+
+        /**
+         * Batch loading not supported for AclEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, AclEntity>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for AclEntity");
+        }
         
         public Pair<Long, AclEntity> findByValue(AclEntity value)
         {
@@ -340,6 +350,16 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
                 return findByKey(value.getId());
             }
             return null;
+        }
+
+        /**
+         * Batch loading not supported for AclEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, AclEntity>> findByValues(List<AclEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for AclEntity");
         }
         
         public int updateValue(Long key, AclEntity value)
@@ -818,6 +838,16 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             PermissionEntity entity = getPermissionEntity(key);
             return convertEntityToPair(entity);
         }
+
+        /**
+         * Batch loading not supported for PermissionEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, PermissionEntity>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PermissionEntity");
+        }
         
         public Pair<Long, PermissionEntity> findByValue(PermissionEntity value)
         {
@@ -826,6 +856,17 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
                 throw new AlfrescoRuntimeException("Unexpected: PermissionEntity / name / qnameId must not be null");
             }
             return convertEntityToPair(getPermissionEntity(value.getTypeQNameId(), value.getName()));
+        }
+
+        /**
+         *
+         * Batch loading by Values not supported for PermissionEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, PermissionEntity>> findByValues(List<PermissionEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch loading by Values not supported for PermissionEntity");
         }
         
         public int updateValue(Long key, PermissionEntity value)
@@ -997,6 +1038,16 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             AuthorityEntity entity = getAuthorityEntity(key);
             return convertEntityToPair(entity);
         }
+
+        /**
+         * Batch loading not supported for AuthorityEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, AuthorityEntity>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for AuthorityEntity");
+        }
         
         public Pair<Long, AuthorityEntity> findByValue(AuthorityEntity value)
         {
@@ -1005,6 +1056,16 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
                 throw new AlfrescoRuntimeException("Unexpected: AuthorityEntity / name must not be null");
             }
             return convertEntityToPair(getAuthorityEntity(value.getAuthority()));
+        }
+
+        /**
+         * Batch loading by Values not supported for AuthorityEntity. This should be implemented in a future version.
+         *
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, AuthorityEntity>> findByValues(List<AuthorityEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch loading by Values not supported for AuthorityEntity");
         }
         
         public int updateValue(Long key, AuthorityEntity value)

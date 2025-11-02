@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -176,6 +177,19 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Delegates to the <code>NodeService</code> used as the version store implementation
      */
+    public List<NodeRef> exists(List<NodeRef> nodeRefs)
+    {
+        List<NodeRef> convertedNodeRefs = new ArrayList<>(nodeRefs.size());
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            convertedNodeRefs.add(VersionUtil.convertNodeRef(nodeRef));
+        }
+        return dbNodeService.exists(convertedNodeRefs);
+    }
+
+    /**
+     * Delegates to the <code>NodeService</code> used as the version store implementation
+     */
     public Status getNodeStatus(NodeRef nodeRef)
     {
         return dbNodeService.getNodeStatus(nodeRef);
@@ -188,6 +202,15 @@ public class NodeServiceImpl implements NodeService, VersionModel
     public NodeRef getNodeRef(Long nodeId)
     {
         return dbNodeService.getNodeRef(nodeId);
+    }
+
+    /**
+     * Delegates to the <code>NodeService</code> used as the version store implementation
+     */
+    @Override
+    public List<NodeRef> getNodeRefs(List<Long> nodeIds)
+    {
+        return dbNodeService.getNodeRefs(nodeIds);
     }
 
     /**
@@ -435,6 +458,18 @@ public class NodeServiceImpl implements NodeService, VersionModel
         }
 
         return result;
+    }
+
+    public Map<NodeRef, Map<QName, Serializable>> getPropertiesNodeMap(List<NodeRef> nodeRefs) throws InvalidNodeRefException
+    {
+        if (nodeRefs == null || nodeRefs.isEmpty())
+        {
+            return Collections.emptyMap();
+        }
+
+        List<NodeRef> convertedNodeRefs = nodeRefs.stream().map(VersionUtil::convertNodeRef).collect(Collectors.toList());
+
+        return this.dbNodeService.getPropertiesNodeMap(convertedNodeRefs);
     }
 
     /**

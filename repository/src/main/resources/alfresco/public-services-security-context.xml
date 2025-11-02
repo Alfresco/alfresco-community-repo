@@ -405,6 +405,7 @@
                org.alfresco.service.cmr.repository.NodeService.removeSeconaryChildAssociation=ACL_PARENT.0.sys:base.DeleteChildren
                org.alfresco.service.cmr.repository.NodeService.removeSecondaryChildAssociation=ACL_PARENT.0.sys:base.DeleteChildren
                org.alfresco.service.cmr.repository.NodeService.getProperties=ACL_NODE.0.sys:base.ReadProperties
+               org.alfresco.service.cmr.repository.NodeService.getPropertiesNodeMap=ROLE_AUTHENTICATED
                org.alfresco.service.cmr.repository.NodeService.getProperty=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.setProperties=ACL_NODE.0.sys:base.WriteProperties,ACL_ITEM.0.cm:ownable.TakeOwnership
                org.alfresco.service.cmr.repository.NodeService.addProperties=ACL_NODE.0.sys:base.WriteProperties,ACL_ITEM.0.cm:ownable.TakeOwnership

@@ -318,6 +318,15 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             // Done
             return new Pair<Long, ContentData>(key, contentData);
         }
+        /**
+         * Batch lookup not supported for ContentData. It should be implemented in a future version if needed.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, ContentData>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for ContentData");
+        }
 
         @Override
         public int updateValue(Long key, ContentData value)
@@ -334,6 +343,17 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         public int deleteByKey(Long key)
         {
             return deleteContentDataEntity(key);
+        }
+
+        /**
+         * Batch lookup not supported for ContentData. It should be implemented in a future version if needed.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, ContentData>> findByValues(List<ContentData> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for ContentData");
         }
     }
 
@@ -369,6 +389,17 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             return (ret != null ? new Pair<Long, ContentUrlEntity>(ret.getId(), ret) : null);
         }
 
+        /**
+         * Batch lookup not supported for ContentUrlEntity. It should be implemented in a future version if needed.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, ContentUrlEntity>> findByValues(List<ContentUrlEntity> entity)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for ContentUrlEntity");
+        }
+
         public Pair<Long, ContentUrlEntity> createValue(ContentUrlEntity value)
         {
             ContentUrlEntity contentUrlEntity = createContentUrlEntity(value.getContentUrl(), value.getSize(), value.getContentUrlKey());
@@ -385,6 +416,16 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             }
             // Done
             return new Pair<Long, ContentUrlEntity>(contentUrlEntity.getId(), contentUrlEntity);
+        }
+
+        /**
+         * Batch lookup not supported for ContentUrlEntity. It should be implemented in a future version if needed.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, ContentUrlEntity>> findByKeys(List<Long> ids)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for ContentUrlEntity");
         }
 
         @Override

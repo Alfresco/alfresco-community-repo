@@ -418,6 +418,32 @@ public class NodesImpl implements Nodes
         return validateNode(nodeRef);
     }
 
+    public List<NodeRef> validateNodes(StoreRef storeRef, List<String> nodeIds)
+    {
+        List<NodeRef> nodeRefs = new ArrayList<>(nodeIds.size());
+
+        for (String nodeId : nodeIds)
+        {
+            String versionLabel = null;
+
+            int idx = nodeId.indexOf(";");
+            if (idx != -1)
+            {
+                versionLabel = nodeId.substring(idx + 1);
+                nodeId = nodeId.substring(0, idx);
+                if (versionLabel.equals("pwc"))
+                {
+                    continue; // skip pwc
+                }
+            }
+
+            NodeRef nodeRef = new NodeRef(storeRef, nodeId);
+            nodeRefs.add(nodeRef);
+        }
+
+        return validateNodes(nodeRefs);
+    }
+
     @Override
     public NodeRef validateNode(NodeRef nodeRef)
     {
@@ -427,6 +453,17 @@ public class NodesImpl implements Nodes
         }
 
         return nodeRef;
+    }
+
+    public List<NodeRef> validateNodes(List<NodeRef> nodeRefs)
+    {
+        List<NodeRef> nodes = nodeService.exists(nodeRefs);
+        if (nodes.isEmpty())
+        {
+            throw new EntityNotFoundException("None of the specified nodes were found.");
+        }
+
+        return nodes;
     }
 
     /*
@@ -849,6 +886,22 @@ public class NodesImpl implements Nodes
     }
 
     @Override
+    public List<Node> getFoldersOrDocumentsFullInfo(List<NodeRef> nodeRefs, Parameters parameters, Map<String, UserInfo> mapUserInfo)
+    {
+        List<String> includeParam = new ArrayList<>();
+        if (parameters != null)
+        {
+            includeParam.addAll(parameters.getInclude());
+        }
+
+        // Add basic info for single get (above & beyond minimal that is used for listing collections)
+        includeParam.add(PARAM_INCLUDE_ASPECTNAMES);
+        includeParam.add(PARAM_INCLUDE_PROPERTIES);
+
+        return getFoldersOrDocuments(nodeRefs, includeParam, mapUserInfo);
+    }
+
+    @Override
     public Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String, UserInfo> mapUserInfo)
     {
         if (mapUserInfo == null)
@@ -1054,6 +1107,225 @@ public class NodesImpl implements Nodes
         node.setPath(pathInfo);
 
         return node;
+    }
+
+
+    @Override
+    public List<Node> getFoldersOrDocuments(final List<NodeRef> nodeRefs, List<String> includeParam, Map<String, UserInfo> mapUserInfo)
+    {
+        List<Node> results = new ArrayList<>(nodeRefs.size());
+
+        if (mapUserInfo == null)
+        {
+            mapUserInfo = new HashMap<>(2);
+        }
+
+        if (includeParam == null)
+        {
+            includeParam = Collections.emptyList();
+        }
+
+        Map<NodeRef, Map<QName, Serializable>> properties = nodeService.getPropertiesNodeMap(nodeRefs);
+
+        for (NodeRef nodeRef : properties.keySet())
+        {
+            Node node;
+            Map<QName, Serializable> props = properties.get(nodeRef);
+
+            PathInfo pathInfo = null;
+            if (includeParam.contains(PARAM_INCLUDE_PATH))
+            {
+                ChildAssociationRef archivedParentAssoc = (ChildAssociationRef) properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+                pathInfo = lookupPathInfo(nodeRef, archivedParentAssoc);
+            }
+
+            QName nodeTypeQName = getNodeType(nodeRef);
+
+            NodeRef parentNodeRef = getParentNodeRef(nodeRef);
+
+            Type type = getType(nodeTypeQName, nodeRef);
+
+            if (type == null)
+            {
+                // not direct folder (or file) ...
+                // might be sub-type of cm:cmobject (or a cm:link pointing to cm:cmobject or possibly even another cm:link)
+                node = new Node(nodeRef, parentNodeRef, props, mapUserInfo, sr);
+                node.setIsFolder(false);
+                node.setIsFile(false);
+            }
+            else if (type.equals(Type.DOCUMENT))
+            {
+                node = new Document(nodeRef, parentNodeRef, props, mapUserInfo, sr);
+            }
+            else if (type.equals(Type.FOLDER))
+            {
+                node = new Folder(nodeRef, parentNodeRef, props, mapUserInfo, sr);
+            }
+            else
+            {
+                logger.info("Unexpected type for node: " + nodeRef + " type: " + type);
+                continue;
+            }
+
+            if (includeParam.size() > 0)
+            {
+                node.setProperties(mapFromNodeProperties(props, includeParam, mapUserInfo, EXCLUDED_NS, EXCLUDED_PROPS));
+            }
+
+            // TODO: Optimize to batch get aspects for all nodes
+            Set<QName> aspects = null;
+            if (includeParam.contains(PARAM_INCLUDE_ASPECTNAMES))
+            {
+                aspects = nodeService.getAspects(nodeRef);
+                node.setAspectNames(mapFromNodeAspects(aspects, EXCLUDED_NS, EXCLUDED_ASPECTS));
+            }
+
+            if (includeParam.contains(PARAM_INCLUDE_ISLINK))
+            {
+                boolean isLink = isSubClass(nodeTypeQName, ContentModel.TYPE_LINK);
+                node.setIsLink(isLink);
+            }
+
+            if (includeParam.contains(PARAM_INCLUDE_ISLOCKED))
+            {
+                boolean isLocked = isLocked(nodeRef, aspects);
+                node.setIsLocked(isLocked);
+            }
+
+            // TODO: Optimize to batch get favorites for all nodes
+            if (includeParam.contains(PARAM_INCLUDE_ISFAVORITE))
+            {
+                boolean isFavorite = isFavorite(nodeRef);
+                node.setIsFavorite(isFavorite);
+            }
+
+            // TODO: Optimize to batch get allowable operations for all nodes
+            if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
+            {
+                // note: refactor when requirements change
+                Map<String, String> mapPermsToOps = new HashMap<>(3);
+                mapPermsToOps.put(PermissionService.DELETE, OP_DELETE);
+                mapPermsToOps.put(PermissionService.ADD_CHILDREN, OP_CREATE);
+                mapPermsToOps.put(PermissionService.WRITE, OP_UPDATE);
+                mapPermsToOps.put(PermissionService.CHANGE_PERMISSIONS, OP_UPDATE_PERMISSIONS);
+
+                List<String> allowableOperations = new ArrayList<>(3);
+                for (Entry<String, String> kv : mapPermsToOps.entrySet())
+                {
+                    String perm = kv.getKey();
+                    String op = kv.getValue();
+
+                    if (perm.equals(PermissionService.ADD_CHILDREN) && Type.DOCUMENT.equals(type))
+                    {
+                        // special case: do not return "create" (as an allowable op) for file/content types - note: 'type' can be null
+                        continue;
+                    }
+                    else if (perm.equals(PermissionService.DELETE) && (isSpecialNode(nodeRef, nodeTypeQName)))
+                    {
+                        // special case: do not return "delete" (as an allowable op) for specific system nodes
+                        continue;
+                    }
+                    else if (permissionService.hasPermission(nodeRef, perm) == AccessStatus.ALLOWED)
+                    {
+                        allowableOperations.add(op);
+                    }
+                }
+
+                node.setAllowableOperations((allowableOperations.size() > 0) ? allowableOperations : null);
+            }
+
+            // TODO: Optimize to batch get permissions for all nodes
+            if (includeParam.contains(PARAM_INCLUDE_PERMISSIONS))
+            {
+                Boolean inherit = permissionService.getInheritParentPermissions(nodeRef);
+
+                List<NodePermissions.NodePermission> inheritedPerms = new ArrayList<>(5);
+                List<NodePermissions.NodePermission> setDirectlyPerms = new ArrayList<>(5);
+                Set<String> settablePerms = null;
+                boolean allowRetrievePermission = true;
+
+                try
+                {
+                    for (AccessPermission accessPerm : permissionService.getAllSetPermissions(nodeRef))
+                    {
+                        NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(accessPerm.getAuthority(), accessPerm.getPermission(), accessPerm.getAccessStatus().toString());
+                        if (accessPerm.isSetDirectly())
+                        {
+                            setDirectlyPerms.add(nodePerm);
+                        }
+                        else
+                        {
+                            inheritedPerms.add(nodePerm);
+                        }
+                    }
+
+                    settablePerms = permissionService.getSettablePermissions(nodeRef);
+                }
+                catch (AccessDeniedException ade)
+                {
+                    // ignore - ie. denied access to retrieve permissions, eg. non-admin on root (Company Home)
+                    allowRetrievePermission = false;
+                }
+
+                // If the user does not have read permissions at
+                // least on a special node then do not include permissions and
+                // returned only node info that he's allowed to see
+                if (allowRetrievePermission)
+                {
+                    NodePermissions nodePerms = new NodePermissions(inherit, inheritedPerms, setDirectlyPerms, settablePerms);
+                    node.setPermissions(nodePerms);
+                }
+            }
+
+            // TODO: Optimize to batch get associations for all nodes
+            if (includeParam.contains(PARAM_INCLUDE_ASSOCIATION))
+            {
+                // Ugh ... can we optimise this and return the actual assoc directly (via FileFolderService/GetChildrenCQ) ?
+                ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
+
+                // note: parentAssocRef.parentRef can be null for -root- node !
+                if ((parentAssocRef == null) || (parentAssocRef.getParentRef() == null) || (!parentAssocRef.getParentRef().equals(parentNodeRef)))
+                {
+                    List<ChildAssociationRef> parentAssocRefs = nodeService.getParentAssocs(nodeRef);
+                    for (ChildAssociationRef pAssocRef : parentAssocRefs)
+                    {
+                        if (pAssocRef.getParentRef().equals(parentNodeRef))
+                        {
+                            // for now, assume same parent/child cannot appear more than once (due to unique name)
+                            parentAssocRef = pAssocRef;
+                            break;
+                        }
+                    }
+                }
+
+                if (parentAssocRef != null)
+                {
+                    QName assocTypeQName = parentAssocRef.getTypeQName();
+                    if ((assocTypeQName != null) && (!EXCLUDED_NS.contains(assocTypeQName.getNamespaceURI())))
+                    {
+                        AssocChild childAssoc = new AssocChild(
+                                assocTypeQName.toPrefixString(namespaceService),
+                                parentAssocRef.isPrimary());
+
+                        node.setAssociation(childAssoc);
+                    }
+                }
+            }
+
+            // TODO: Optimize to batch get definitions for all nodes
+            if (includeParam.contains(PARAM_INCLUDE_DEFINITION))
+            {
+                ClassDefinition classDefinition = classDefinitionMapper.fromDictionaryClassDefinition(getTypeDefinition(nodeRef), dictionaryService);
+                node.setDefinition(classDefinition);
+            }
+
+            node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
+            node.setPath(pathInfo);
+
+            results.add(node);
+        }
+
+        return results;
     }
 
     private TypeDefinition getTypeDefinition(NodeRef nodeRef)

@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -193,6 +194,38 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return unchecked;
     }
 
+    /**
+     * Performs a null-safe get of a list of nodes
+     * 
+     * @param nodeRefs
+     *            the nodes to retrieve
+     * @return Returns a map of node entities (never null)
+     * @throws InvalidNodeRefException
+     *             if none of the referenced nodes could not be found
+     */
+    private List<Pair<Long, NodeRef>> getNodePairsNotNull(List<NodeRef> nodeRefs) throws InvalidNodeRefException
+    {
+        ParameterCheck.mandatory("nodeRefs", nodeRefs);
+
+        if (nodeRefs.isEmpty())
+        {
+            return Collections.emptyList();
+        }
+
+        List<Pair<Long, NodeRef>> unchecked = nodeDAO.getNodePairs(nodeRefs.get(0).getStoreRef(), nodeRefs);
+        if (unchecked.isEmpty())
+        {
+            for (NodeRef nodeRef : nodeRefs)
+            {
+                Status nodeStatus = nodeDAO.getNodeRefStatus(nodeRef);
+                logger.info("Node does not exist: " + nodeRef + " (status:" + nodeStatus + ")");
+            }
+            // None of the nodes exist. Now that we have logged their statuses, throw the exception.
+            throw new InvalidNodeRefException("Nodes do not exist: " + nodeRefs, null);
+        }
+        return unchecked;
+    }
+
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public boolean exists(StoreRef storeRef)
     {
@@ -204,6 +237,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         return nodeDAO.exists(nodeRef);
+    }
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    public List<NodeRef> exists(List<NodeRef> nodeRefs)
+    {
+        ParameterCheck.mandatory("nodeRefs", nodeRefs);
+        return nodeDAO.exists(nodeRefs);
     }
 
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
@@ -220,6 +260,24 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     {
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeId);
         return nodePair == null ? null : nodePair.getSecond();
+    }
+
+    @Override
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    public List<NodeRef> getNodeRefs(List<Long> nodeIds)
+    {
+        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(nodeIds.size());
+
+        List<Pair<Long, NodeRef>> nodePairs = nodeDAO.getNodePairs(nodeIds);
+        for (Pair<Long, NodeRef> nodePair : nodePairs)
+        {
+            // It should not be null but just in case...
+            if (nodePair != null)
+            {
+                nodeRefs.add(nodePair.getSecond());
+            }
+        }
+        return nodeRefs;
     }
 
     /**
@@ -1023,6 +1081,43 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return aspectQNames;
     }
 
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    public Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs) throws InvalidNodeRefException
+    {
+        List<Pair<Long, NodeRef>> nodePairs = getNodePairsNotNull(nodeRefs);
+        Map<Long, Set<QName>> aspectQNames = nodeDAO.getNodeAspects(getNodeIdsFromList(nodePairs));
+
+        for (Pair<Long, NodeRef> nodePair : nodePairs)
+        {
+            if (aspectQNames.containsKey(nodePair.getFirst()) && isPendingDelete(nodePair.getSecond()))
+            {
+                aspectQNames.computeIfPresent(nodePair.getFirst(), (k, v) -> {
+                    v.add(ContentModel.ASPECT_PENDING_DELETE);
+                    return v;
+                });
+            }
+        }
+
+        // Map back to NodeRef. Ignore nodes with no aspects.
+        Map<NodeRef, Set<QName>> results = nodePairs.stream()
+                .filter(pair -> aspectQNames.containsKey(pair.getFirst()))
+                .collect(Collectors.toMap(
+                        Pair::getSecond,
+                        pair -> aspectQNames.getOrDefault(pair.getFirst(), Collections.emptySet())));
+
+        return results;
+    }
+
+    private List<Long> getNodeIdsFromList(List<Pair<Long, NodeRef>> nodeRefPairs)
+    {
+        List<Long> nodeIds = new ArrayList<Long>(nodeRefPairs.size());
+        for (Pair<Long, NodeRef> nodePair : nodeRefPairs)
+        {
+            nodeIds.add(nodePair.getFirst());
+        }
+        return nodeIds;
+    }
+
     /**
      * @return Returns <tt>true</tt> if the node is being deleted
      * 
@@ -1540,6 +1635,59 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         Map<QName, Serializable> nodeProperties = nodeDAO.getNodeProperties(nodeId);
         // done
         return nodeProperties;
+    }
+
+    /**
+     * Gets, converts and adds the intrinsic properties for the current list of node's properties
+     */
+    private Map<Long, Map<QName, Serializable>> getPropertiesImpl(List<Pair<Long, NodeRef>> nodePairs) throws InvalidNodeRefException
+    {
+        List<Long> nodeIds = new ArrayList<Long>(nodePairs.size());
+
+        for (Pair<Long, NodeRef> nodePair : nodePairs)
+        {
+            nodeIds.add(nodePair.getFirst());
+        }
+
+        Map<Long, Map<QName, Serializable>> nodeProperties = nodeDAO.getNodeProperties(nodeIds);
+        // done
+        return nodeProperties;
+    }
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    public Map<NodeRef, Map<QName, Serializable>> getPropertiesNodeMap(List<NodeRef> nodeRefs) throws InvalidNodeRefException
+    {
+        if (nodeRefs == null || nodeRefs.size() == 0)
+        {
+            return Collections.emptyMap();
+        }
+
+        // make a copy so we can modify if needed
+        nodeRefs = new ArrayList<>(nodeRefs);
+
+        // check permissions per node (since we can't do this in config). Remove nodes that the user has no permission to see
+        nodeRefs.removeIf(nodeRef -> permissionService.hasPermission(nodeRef, PermissionService.READ_PROPERTIES) != AccessStatus.ALLOWED);
+        // if no nodes left, return empty map
+        if (nodeRefs.isEmpty())
+        {
+            return Collections.emptyMap();
+        }
+
+        StoreRef storeRef = nodeRefs.get(0).getStoreRef();
+
+        List<Pair<Long, NodeRef>> nodePairs = nodeDAO.getNodePairs(storeRef, nodeRefs);
+
+        Map<Long, Map<QName, Serializable>> propertiesMappedById = getPropertiesImpl(nodePairs);
+
+        Map<NodeRef, Map<QName, Serializable>> propertiesMappedByNodeRef = new HashMap<NodeRef, Map<QName, Serializable>>(nodePairs.size());
+        for (Pair<Long, NodeRef> nodePair : nodePairs)
+        {
+            Long nodeId = nodePair.getFirst();
+            NodeRef nodeRef = nodePair.getSecond();
+            propertiesMappedByNodeRef.put(nodeRef, propertiesMappedById.get(nodeId));
+        }
+
+        return propertiesMappedByNodeRef;
     }
 
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)

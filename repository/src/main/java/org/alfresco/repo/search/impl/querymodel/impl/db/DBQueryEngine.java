@@ -563,10 +563,31 @@ public class DBQueryEngine implements QueryEngine
             return null;
         }
 
+        /**
+         * Batch loading not supported for ReadonlyLocalCallbackDAO. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, Node>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for ReadonlyLocalCallbackDAO");
+        }
+
         @Override
         public NodeRef getValueKey(Node value)
         {
             return value.getNodeRef();
+        }
+
+        /**
+         * Batch loading not supported for ReadonlyLocalCallbackDAO. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, Node>> findByValues(List<Node> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for ReadonlyLocalCallbackDAO");
         }
     }
 

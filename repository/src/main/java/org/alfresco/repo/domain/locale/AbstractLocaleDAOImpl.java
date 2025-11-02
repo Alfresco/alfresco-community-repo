@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.domain.locale;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.alfresco.repo.cache.SimpleCache;
@@ -238,6 +239,17 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
                 return new Pair<Long, String>(id, entity.getLocaleStr());
             }
         }
+
+        /**
+         * This should be implemented as a batch lookup for performance in a future release
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, String>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for LocaleEntity.");
+        }
         
         @Override
         public Pair<Long, String> findByValue(String localeStr)
@@ -251,6 +263,17 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
             {
                 return new Pair<Long, String>(entity.getId(), localeStr);
             }
+        }
+
+        /**
+         * This should be implemented as a batch lookup for performance in a future release
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, String>> findByValues(List<String> localeStrs)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for LocaleEntity.");
         }
         
         public Pair<Long, String> createValue(String localeStr)

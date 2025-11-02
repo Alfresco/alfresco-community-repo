@@ -73,6 +73,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 
 /**
@@ -101,6 +102,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String DELETE_NODE_PROPS_BY_TXN_COMMIT_TIME = "alfresco.node.delete.delete_NodePropsByTxnCommitTime";
     private static final String SELECT_NODE_BY_ID = "alfresco.node.select_NodeById";
     private static final String SELECT_NODE_BY_NODEREF = "alfresco.node.select_NodeByNodeRef";
+    private static final String SELECT_NODES_BY_NODEREFS = "alfresco.node.select_NodesByNodeRefs";
     private static final String SELECT_NODES_BY_UUIDS = "alfresco.node.select_NodesByUuids";
     private static final String SELECT_NODES_BY_IDS = "alfresco.node.select_NodesByIds";
     private static final String SELECT_NODE_PROPERTIES = "alfresco.node.select_NodeProperties";
@@ -462,6 +464,21 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         node.setUuid(uuid);
 
         return template.selectOne(SELECT_NODE_BY_NODEREF, node);
+    }
+
+    @Override
+    protected List<Node> selectNodesByNodeRefs(List<NodeRef> nodeRefs)
+    {
+        NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
+
+        Pair<Long, StoreRef> storePair = getStore(nodeRefs.get(0).getStoreRef());
+
+        nodeBatchLoadEntity.setStoreId(storePair.getFirst());
+
+        List<String> uuids = nodeRefs.stream().map(NodeRef::getId).filter(uuid -> uuid.length() < 36).collect(Collectors.toList());
+        nodeBatchLoadEntity.setUuids(uuids);
+
+        return template.selectList(SELECT_NODES_BY_NODEREFS, nodeBatchLoadEntity);
     }
 
     @Override

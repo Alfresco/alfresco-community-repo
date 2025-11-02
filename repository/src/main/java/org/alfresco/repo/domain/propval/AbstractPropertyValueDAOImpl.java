@@ -365,10 +365,32 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return convertEntityToPair(entity);
         }
 
+        /**
+         * Batch loading not supported for PropertyClassEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         *             Stores must be created externally
+         */
+        public List<Pair<Long, Class<?>>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyClassEntity");
+        }
+
         public Pair<Long, Class<?>> findByValue(Class<?> value)
         {
             PropertyClassEntity entity = findClassByValue(value);
             return convertEntityToPair(entity);
+        }
+
+        /**
+         * Batch loading not supported for PropertyClassEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, Class<?>>> findByValues(List<Class<?>> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyClassEntity");
         }
     }
     
@@ -455,10 +477,31 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return convertEntityToPair(entity);
         }
 
+        /**
+         * Batch loading not supported for PropertyDateValueEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, Date>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyDateValueEntity");
+        }
+
         public Pair<Long, Date> findByValue(Date value)
         {
             PropertyDateValueEntity entity = findDateValueByValue(value);
             return convertEntityToPair(entity);
+        }
+
+        /**
+         * Batch loading not supported for PropertyDateValueEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, Date>> findByValues(List<Date> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyDateValueEntity");
         }
     }
     
@@ -552,6 +595,16 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
         }
 
+        /**
+         * Batch loading not supported for PropertyStringValueEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<Long, String>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyStringValueEntity");
+        }
+
         public Pair<Long, String> findByValue(String value)
         {
             Long key = findStringValueByValue(value);
@@ -563,6 +616,17 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             {
                 return new Pair<Long, String>(key, value);
             }
+        }
+
+        /**
+         * Batch loading not supported for PropertyStringValueEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, String>> findByValues(List<String> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyStringValueEntity");
         }
     }
     
@@ -642,10 +706,32 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return convertEntityToPair(entity);
         }
 
+        /**
+         * Batch loading not supported for PropertyDoubleValueEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         *             Stores must be created externally
+         */
+        public List<Pair<Long, Double>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyDoubleValueEntity");
+        }
+
         public Pair<Long, Double> findByValue(Double value)
         {
             PropertyDoubleValueEntity entity = findDoubleValueByValue(value);
             return convertEntityToPair(entity);
+        }
+
+        /**
+         * Batch loading not supported for PropertyDoubleValueEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, Double>> findByValues(List<Double> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyDoubleValueEntity");
         }
     }
     
@@ -708,6 +794,24 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             PropertySerializableValueEntity entity = findSerializableValueById(key);
             return convertEntityToPair(entity);
+        }
+
+        /**
+         * Batch loading not supported for PropertySerializableValueEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         *             Stores must be created externally
+         */
+        public List<Pair<Long, Serializable>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertySerializableValueEntity");
+        }
+
+        /* @throws UnsupportedOperationException */
+        @Override
+        public List<Pair<Long, Serializable>> findByValues(List<Serializable> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertySerializableValueEntity");
         }
     }
     
@@ -814,10 +918,32 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return convertEntityToPair(entity);
         }
 
+         /**
+         * Batch loading not supported for PropertyValueEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         *             Stores must be created externally
+         */
+        public List<Pair<Long, Serializable>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyValueEntity");
+        }
+
         public Pair<Long, Serializable> findByValue(Serializable value)
         {
             PropertyValueEntity entity = findPropertyValueByValue(value);
             return convertEntityToPair(entity);
+        }
+
+        /**
+         * Batch loading not supported for PropertyValueEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, Serializable>> findByValues(List<Serializable> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyValueEntity");
         }
 
         /**
@@ -912,6 +1038,28 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
             Serializable value = convertPropertyIdSearchRows(rows);
             return new Pair<Long, Serializable>(key, value);
+        }
+
+        /**
+         * Batch loading not supported for PropertyEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         *             Stores must be created externally
+         */
+        public List<Pair<Long, Serializable>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyEntity");
+        }
+
+        /**
+         * Batch loading not supported for PropertyEntity. This should be implemented in a future version.
+         * 
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public List<Pair<Long, Serializable>> findByValues(List<Serializable> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PropertyEntity");
         }
 
         /**

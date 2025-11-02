@@ -27,6 +27,10 @@ package org.alfresco.repo.cache.lookup;
 
 import java.io.Serializable;
 import java.sql.Savepoint;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.control.ControlDAO;
@@ -92,6 +96,15 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         Pair<K1, V1> findByKey(K1 key);
         
         /**
+         * Find entities for a given list of keys.
+         * 
+         * @param keys
+         *            the keys (IDs) used to identify the entities (never <tt>null</tt>)
+         * @return Return the entities or <tt>null</tt> if no entities exists for the IDs
+         */
+        List<Pair<K1, V1>> findByKeys(List<K1> keys);
+        
+        /**
          * Find and entity using the given value key.  The <code>equals</code> and <code>hashCode</code>
          * methods of the value object should respect case-sensitivity in the same way that this
          * lookup treats case-sensitivity i.e. if the <code>equals</code> method is <b>case-sensitive</b>
@@ -111,6 +124,19 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
          */
         Pair<K1, V1> findByValue(V1 value);
         
+        /**
+         * Find and entity using the given value key. The <code>equals</code> and <code>hashCode</code> methods of the value object should respect case-sensitivity in the same way that this lookup treats case-sensitivity i.e. if the <code>equals</code> method is <b>case-sensitive</b> then this method should look the entity up using a <b>case-sensitive</b> search.
+         * <p/>
+         * Since this is a cache backed by some sort of database, <tt>null</tt> values are allowed by the cache. The implementation of this method can throw an exception if <tt>null</tt> is not appropriate for the use-case.
+         * <p/>
+         * If the search is impossible or expensive, this method should just return <tt>null</tt>. This would usually be the case if the {@link #getValueKey(Object) getValueKey} method also returned <tt>null</tt> i.e. if it is difficult to look the value up in storage then it is probably difficult to generate a cache key from it, too.
+         * 
+         * @param value
+         *            the value (business object) used to identify the entity (<tt>null</tt> allowed).
+         * @return Return the entity or <tt>null</tt> if no entity matches the given value
+         */
+        List<Pair<K1, V1>> findByValues(List<V1> values);
+
         /**
          * Create an entity using the given values.  It is valid to assume that the entity does not exist
          * within the current transaction at least.
@@ -352,6 +378,91 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         // Done
         return entityPair;
     }
+
+    /**
+     * Find the entities associated with the given key list. The {@link EntityLookupCallbackDAO#findByKey(Serializable) entity callback} will be used if necessary.
+     * <p/>
+     * It is up to the client code to decide if a <tt>null</tt> return value indicates a concurrency violation or not; the former would normally result in a concurrency-related exception such as {@link ConcurrencyFailureException}.
+     * 
+     * @param keys
+     *            The entity keys, which may be valid or invalid (<tt>null</tt> not allowed)
+     * @return Returns a list of key-value pairs or <tt>null</tt> if no keys reference any entities
+     */
+    @SuppressWarnings("unchecked")
+    public List<Pair<K, V>> getByKeys(List<K> keys)
+    {
+        if (keys == null || keys.isEmpty())
+        {
+            throw new IllegalArgumentException("An entity lookup key list may not be null or empty");
+        }
+
+        // Remove any nulls for safety
+        keys.removeIf(k -> k == null);
+
+        // Handle missing cache
+        if (cache == null)
+        {
+            return entityLookup.findByKeys(keys);
+        }
+
+        List<Pair<K, V>> results = new ArrayList<>(keys.size());
+        Map<K, CacheRegionKey> keysToResolve = new HashMap<>();
+
+        for (K key : keys)
+        {
+            CacheRegionKey keyCacheKey = new CacheRegionKey(cacheRegion, key);
+            // Look in the cache
+            V value = (V) cache.get(keyCacheKey);
+            if (value != null)
+            {
+                if (value.equals(VALUE_NOT_FOUND))
+                {
+                    // We checked before.
+                    continue; // not costly...making it clear that we are moving to the next key
+                }
+                else if (value.equals(VALUE_NULL))
+                {
+                    results.add(new Pair<K, V>(key, null));
+                }
+                else
+                {
+                    results.add(new Pair<K, V>(key, value));
+                }
+            }
+            else
+            {
+                // Need to resolve this key
+                keysToResolve.put(key, keyCacheKey);
+            }
+        }
+
+        // Resolve any missing keys
+        List<Pair<K, V>> entityPairs = entityLookup.findByKeys(new ArrayList<>(keysToResolve.keySet()));
+
+        if (entityPairs != null && !entityPairs.isEmpty())
+        {
+            for (Pair<K, V> entityPair : entityPairs)
+            {
+                V value = entityPair.getSecond();
+                // Get the value key
+                VK valueKey = (value == null) ? (VK) VALUE_NULL : entityLookup.getValueKey(value);
+                // Check if the value has a good key
+                if (valueKey != null)
+                {
+                    CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
+                    // The key is good, so we can cache the value
+                    cache.put(valueCacheKey, entityPair.getFirst());
+                }
+                cache.put(
+                        new CacheRegionKey(cacheRegion, entityPair.getFirst()),
+                        (value == null ? VALUE_NULL : value));
+
+                results.add(entityPair);
+            }
+        }
+        // Done
+        return results;
+    }
     
     /**
      * Find the entity associated with the given value.
@@ -419,6 +530,104 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         }
         // Done
         return entityPair;
+    }
+
+    /**
+     * Find the entity associated with the given value. The {@link EntityLookupCallbackDAO#findByValue(Object) entity callback} will be used if no entry exists in the cache.
+     * <p/>
+     * It is up to the client code to decide if a <tt>null</tt> return value indicates a concurrency violation or not; the former would normally result in a concurrency-related exception such as {@link ConcurrencyFailureException}.
+     * 
+     * @param value
+     *            The entity value, which may be valid or invalid (<tt>null</tt> is allowed)
+     * @return Returns the key-value pair or <tt>null</tt> if the value doesn't reference an entity
+     */
+    @SuppressWarnings("unchecked")
+    public List<Pair<K, V>> getByValues(List<V> values)
+    {
+        // Handle missing cache
+        if (cache == null)
+        {
+            return entityLookup.findByValues(values);
+        }
+
+        List<Pair<K, V>> results = new ArrayList<>(values.size());
+        List<V> valuesToResolve = new ArrayList<>(values.size());
+        List<K> keysToResolve = new ArrayList<>();
+
+        // Get the value key.
+        for (V value : values)
+        {
+            // The cast to (VK) is counter-intuitive, but works because they're all just Serializable
+            // It's nasty, but hidden from the cache client code.
+            VK valueKey = (value == null) ? (VK) VALUE_NULL : entityLookup.getValueKey(value);
+
+            if (valueKey == null)
+            {
+                valuesToResolve.add(value);
+                continue;
+            }
+
+            // Look in the cache
+            CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
+
+            K key = (K) cache.get(valueCacheKey);
+
+            // Check if we have looked this up already
+            if (key != null)
+            {
+                // We checked before and ...
+                if (key.equals(VALUE_NOT_FOUND))
+                {
+                    // ... it didn't exist
+                    continue; // not costly...making it clear that we are moving to the next value
+                }
+                else
+                {
+                    // ... it did exist
+                    keysToResolve.add(key);
+                    continue;
+                }
+            }
+
+            valuesToResolve.add(value);
+        }
+
+        // Resolve it
+        if (!valuesToResolve.isEmpty())
+        {
+            List<Pair<K, V>> resolvedPairs = entityLookup.findByValues(valuesToResolve);
+            if (resolvedPairs != null && !resolvedPairs.isEmpty())
+            {
+                for (Pair<K, V> entityPair : resolvedPairs)
+                {
+                    V value = entityPair.getSecond();
+                    // Get the value key
+                    VK valueKey = (value == null) ? (VK) VALUE_NULL : entityLookup.getValueKey(value);
+                    // Check if the value has a good key
+                    if (valueKey != null)
+                    {
+                        CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
+                        // The key is good, so we can cache the value
+                        cache.put(valueCacheKey, entityPair.getFirst());
+                    }
+                    cache.put(
+                            new CacheRegionKey(cacheRegion, entityPair.getFirst()),
+                            (value == null ? VALUE_NULL : value));
+
+                    results.add(entityPair);
+                }
+            }
+        }
+
+        // Post processing
+        if (!keysToResolve.isEmpty())
+        {
+            List<Pair<K, V>> resolvedPairs = getByKeys(keysToResolve);
+            results.addAll(resolvedPairs);
+        }
+
+        // Done
+        return results;
     }
     
     /**

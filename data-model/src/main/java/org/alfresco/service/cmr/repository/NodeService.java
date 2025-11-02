@@ -353,6 +353,16 @@ public interface NodeService
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException;
 
     /**
+     * @param nodeRefs
+     *            List of NodeRefs
+     * @return Returns a map of NodeRefs to their corresponding set of aspects
+     * @throws InvalidNodeRefException
+     *             if any of the node references could not be found
+     */
+    @Auditable(parameters = {"nodeRefs"})
+    public Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs) throws InvalidNodeRefException;
+
+    /**
      * Deletes the given node.
      * <p>
      * All associations (both children and regular node associations) will be deleted, and where the given node is the primary parent, the children will also be cascade deleted.

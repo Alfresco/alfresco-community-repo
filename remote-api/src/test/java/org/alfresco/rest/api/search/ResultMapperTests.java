@@ -256,7 +256,7 @@ public class ResultMapperTests
     }
 
     @Test
-    @Ignore("Disabled MNT-25404 - needs rework to test new getAspects method")
+    @Ignore("Disabled MNT-25404 - Invalid test. Assumes multi-store search.")
     public void testToCollectionWithPagingInfo()
     {
         ResultSet results = mockResultSet(asList(514l), asList(566l, VERSIONED_ID));

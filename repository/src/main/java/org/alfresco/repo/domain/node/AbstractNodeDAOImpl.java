@@ -991,6 +991,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /**
      * Returns the subset (or all) of the given node references that exist.
      */
+    @Override
     public List<NodeRef> exists(List<NodeRef> nodeRefs)
     {
         List<Node> nodeRefsToCheck = new ArrayList<Node>(nodeRefs.size());

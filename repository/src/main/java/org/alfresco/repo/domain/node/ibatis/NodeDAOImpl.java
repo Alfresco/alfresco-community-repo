@@ -475,7 +475,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
         nodeBatchLoadEntity.setStoreId(storePair.getFirst());
 
-        List<String> uuids = nodeRefs.stream().map(NodeRef::getId).filter(uuid -> uuid.length() < 36).collect(Collectors.toList());
+        List<String> uuids = nodeRefs.stream().map(NodeRef::getId).filter(uuid -> uuid.length() == 36).collect(Collectors.toList());
         nodeBatchLoadEntity.setUuids(uuids);
 
         return template.selectList(SELECT_NODES_BY_NODEREFS, nodeBatchLoadEntity);

@@ -898,6 +898,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
          * @param nodeIds
          *            list of node IDs keys
          */
+        @Override
         public List<Pair<Long, Node>> findByKeys(List<Long> nodeIds)
         {
             if (nodeIds == null || nodeIds.size() == 0)

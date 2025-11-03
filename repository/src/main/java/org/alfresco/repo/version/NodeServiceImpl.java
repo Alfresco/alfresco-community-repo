@@ -136,6 +136,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Delegates to the <code>NodeService</code> used as the version store implementation
      */
+    @Override
     public List<StoreRef> getStores()
     {
         return dbNodeService.getStores();

@@ -203,10 +203,10 @@ public class ResultMapper
                             highlightEntries.add(new HighlightEntry(highlight.getFirst(), highlight.getSecond()));
                         }
                     }
-                    
+
                     aNode.setSearch(new SearchEntry(f, highlightEntries));
                 }
-                
+
                 noderesults.add(aNode);
             }
         }

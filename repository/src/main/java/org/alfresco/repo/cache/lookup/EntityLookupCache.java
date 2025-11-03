@@ -542,9 +542,9 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
      * <p/>
      * It is up to the client code to decide if a <tt>null</tt> return value indicates a concurrency violation or not; the former would normally result in a concurrency-related exception such as {@link ConcurrencyFailureException}.
      * 
-     * @param value
-     *            The entity value, which may be valid or invalid (<tt>null</tt> is allowed)
-     * @return Returns the key-value pair or <tt>null</tt> if the value doesn't reference an entity
+     * @param values
+     *            The entity values, which may be valid or invalid (<tt>null</tt> is allowed)
+     * @return Returns a list of key-value pairs
      */
     @SuppressWarnings("unchecked")
     public List<Pair<K, V>> getByValues(List<V> values)

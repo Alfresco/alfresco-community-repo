@@ -253,7 +253,7 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
          */
         public List<Pair<String, TenantEntity>> findByValues(List<TenantEntity> values)
         {
-            throw new UnsupportedOperationException("findByValues");
+            throw new UnsupportedOperationException("Batch loading not supported for TenantEntity");
         }
         
         @Override

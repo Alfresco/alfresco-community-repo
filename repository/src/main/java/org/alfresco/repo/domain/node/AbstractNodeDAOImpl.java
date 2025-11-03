@@ -2343,6 +2343,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     /* Batch Node Properties */
 
+    @Override
     public Map<Long, Map<QName, Serializable>> getNodeProperties(List<Long> nodeIds)
     {
         Map<Long, Map<QName, Serializable>> props = getNodePropertiesCached(nodeIds);

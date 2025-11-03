@@ -155,7 +155,7 @@ public interface NodeDAO extends NodeBulkLoader
     /**
      * Find out if a node exists. Unpurged deleted nodes do not count as they are the DAO's concern only.
      * 
-     * @param nodeRef
+     * @param nodeRefs
      *            the potentially valid node reference
      * @return Returns <tt>true</tt> if the node is present and undeleted
      */

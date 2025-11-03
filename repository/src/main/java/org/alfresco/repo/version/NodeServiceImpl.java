@@ -165,6 +165,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Delegates to the <code>NodeService</code> used as the version store implementation
      */
+    @Override
     public boolean exists(StoreRef storeRef)
     {
         return dbNodeService.exists(VersionUtil.convertStoreRef(storeRef));
@@ -173,6 +174,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Delegates to the <code>NodeService</code> used as the version store implementation
      */
+    @Override
     public boolean exists(NodeRef nodeRef)
     {
         return dbNodeService.exists(VersionUtil.convertNodeRef(nodeRef));
@@ -181,6 +183,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Delegates to the <code>NodeService</code> used as the version store implementation
      */
+    @Override
     public List<NodeRef> exists(List<NodeRef> nodeRefs)
     {
         List<NodeRef> convertedNodeRefs = new ArrayList<>(nodeRefs.size());
@@ -194,6 +197,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Delegates to the <code>NodeService</code> used as the version store implementation
      */
+    @Override
     public Status getNodeStatus(NodeRef nodeRef)
     {
         return dbNodeService.getNodeStatus(nodeRef);
@@ -220,6 +224,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Delegates to the <code>NodeService</code> used as the version store implementation
      */
+    @Override
     public NodeRef getRootNode(StoreRef storeRef)
     {
         return dbNodeService.getRootNode(storeRef);
@@ -238,6 +243,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public ChildAssociationRef createNode(
             NodeRef parentRef,
             QName assocTypeQName,
@@ -252,6 +258,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public ChildAssociationRef createNode(
             NodeRef parentRef,
             QName assocTypeQName,
@@ -267,6 +274,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
@@ -277,6 +285,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public ChildAssociationRef addChild(NodeRef parentRef,
             NodeRef childRef,
             QName assocTypeQName,
@@ -290,6 +299,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public List<ChildAssociationRef> addChild(Collection<NodeRef> parentRefs,
             NodeRef childRef,
             QName assocTypeQName,
@@ -303,6 +313,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
@@ -313,6 +324,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public boolean removeChildAssociation(ChildAssociationRef childAssocRef)
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -342,6 +354,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public ChildAssociationRef moveNode(NodeRef nodeToMoveRef, NodeRef newParentRef, QName assocTypeQName, QName assocQName) throws InvalidNodeRefException
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -351,6 +364,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void setChildAssociationIndex(ChildAssociationRef childAssocRef, int index) throws InvalidChildAssociationRefException
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -360,6 +374,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * Type translation for version store
      */
     @SuppressWarnings("deprecation")
+    @Override
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
     {
         return (QName) this.dbNodeService.getProperty(VersionUtil.convertNodeRef(nodeRef), PROP_QNAME_FROZEN_NODE_TYPE);
@@ -368,6 +383,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @see org.alfresco.service.cmr.repository.NodeService#setType(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
+    @Override
     public void setType(NodeRef nodeRef, QName typeQName) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
@@ -378,6 +394,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void addAspect(NodeRef nodeRef, QName aspectRef, Map<QName, Serializable> aspectProperties) throws InvalidNodeRefException, InvalidAspectException
     {
         // This operation is not supported for a version store
@@ -387,6 +404,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Translation for version store
      */
+    @Override
     public boolean hasAspect(NodeRef nodeRef, QName aspectRef) throws InvalidNodeRefException, InvalidAspectException
     {
         return getAspects(nodeRef).contains(aspectRef);
@@ -396,6 +414,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void removeAspect(NodeRef nodeRef, QName aspectRef) throws InvalidNodeRefException, InvalidAspectException
     {
         // This operation is not supported for a version store
@@ -405,6 +424,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Translation for version store
      */
+    @Override
     @SuppressWarnings({"unchecked", "deprecation"})
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
@@ -416,6 +436,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * Translation for version store
      */
     @SuppressWarnings({"unchecked", "deprecation"})
+    @Override
     public Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs) throws InvalidNodeRefException
     {
         Map<NodeRef, Set<QName>> result = new HashMap<>();
@@ -441,6 +462,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Property translation for version store
      */
+    @Override
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Map<QName, Serializable> result = new HashMap<QName, Serializable>();
@@ -502,6 +524,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
         return result;
     }
 
+    @Override
     public Map<NodeRef, Map<QName, Serializable>> getPropertiesNodeMap(List<NodeRef> nodeRefs) throws InvalidNodeRefException
     {
         if (nodeRefs == null || nodeRefs.isEmpty())
@@ -517,6 +540,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Property translation for version store
      */
+    @Override
     public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
         // TODO should be doing this with a search ...
@@ -529,6 +553,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
@@ -539,6 +564,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void addProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
@@ -549,6 +575,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void setProperty(NodeRef nodeRef, QName qame, Serializable value) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
@@ -559,6 +586,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
@@ -570,6 +598,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      *
      * @see NodeService#getParentAssocs(NodeRef)
      */
+    @Override
     public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef)
     {
         return getParentAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL);
@@ -580,6 +609,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      *
      * @see NodeService#getParentAssocs(NodeRef, QNamePattern, QNamePattern)
      */
+    @Override
     public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern)
     {
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
@@ -598,11 +628,13 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @see RegexQNamePattern#MATCH_ALL
      * @see #getChildAssocs(NodeRef, QNamePattern, QNamePattern)
      */
+    @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef) throws InvalidNodeRefException
     {
         return getChildAssocs(VersionUtil.convertNodeRef(nodeRef), RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL);
     }
 
+    @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
             QNamePattern qnamePattern, boolean preload) throws InvalidNodeRefException
     {
@@ -612,6 +644,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Performs conversion from version store properties to <i>real</i> associations
      */
+    @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern) throws InvalidNodeRefException
     {
         // Get the child assocs from the version store
@@ -672,6 +705,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypes)
     {
         // This operation is not supported for a version store
@@ -682,6 +716,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public List<ChildAssociationRef> getChildrenByName(NodeRef nodeRef, QName assocTypeQName, Collection<String> childNames)
     {
         // This operation is not supported for a version store
@@ -692,6 +727,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
     {
         // This operation is not supported for a version store
@@ -701,6 +737,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Simulates the node begin attached ot the root node of the version store.
      */
+    @Override
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException
     {
         return new ChildAssociationRef(
@@ -714,6 +751,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException, AssociationExistsException
     {
@@ -736,6 +774,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
     {
         // This operation is not supported for a version store
@@ -749,6 +788,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      *            the association id
      * @return the association, or <code>null</code> if it does not exist
      */
+    @Override
     public AssociationRef getAssoc(Long id)
     {
         return null;
@@ -758,6 +798,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
     {
         // Get the child assocs from the version store
@@ -802,6 +843,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public List<AssociationRef> getSourceAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
     {
         // This operation is not supported for a version store
@@ -812,6 +854,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public Path getPath(NodeRef nodeRef) throws InvalidNodeRefException
     {
         ChildAssociationRef childAssocRef = getPrimaryParent(nodeRef);
@@ -824,6 +867,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public List<Path> getPaths(NodeRef nodeRef, boolean primaryOnly) throws InvalidNodeRefException
     {
         List<Path> paths = new ArrayList<Path>(1);
@@ -835,6 +879,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public NodeRef getStoreArchiveNode(StoreRef storeRef)
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -844,6 +889,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef targetParentNodeRef, QName assocTypeQName, QName assocQName)
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -853,6 +899,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(NodeRef parent, QName assocTypeQName)
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -862,6 +909,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public List<String> findAssocsNotLinkedByTwoOtherAssocs(NodeRef parent)
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -870,6 +918,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Gets, converts and adds the intrinsic properties to the current node's properties
      */
+    @Override
     public Long getNodeAclId(NodeRef nodeRef) throws InvalidNodeRefException
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);

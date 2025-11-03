@@ -568,6 +568,7 @@ public class DBQueryEngine implements QueryEngine
          * 
          * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<Long, Node>> findByKeys(List<Long> keys)
         {
             throw new UnsupportedOperationException("Batch loading not supported for ReadonlyLocalCallbackDAO");

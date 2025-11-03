@@ -358,6 +358,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
          * 
          * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<Long, AclEntity>> findByValues(List<AclEntity> values)
         {
             throw new UnsupportedOperationException("Batch loading not supported for AclEntity");
@@ -845,6 +846,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
          * 
          * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<Long, PermissionEntity>> findByKeys(List<Long> keys)
         {
             throw new UnsupportedOperationException("Batch loading not supported for PermissionEntity");
@@ -865,6 +867,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
          * 
          * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<Long, PermissionEntity>> findByValues(List<PermissionEntity> values)
         {
             throw new UnsupportedOperationException("Batch loading by Values not supported for PermissionEntity");
@@ -1045,6 +1048,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
          * 
          * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<Long, AuthorityEntity>> findByKeys(List<Long> keys)
         {
             throw new UnsupportedOperationException("Batch loading not supported for AuthorityEntity");
@@ -1064,6 +1068,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
          *
          * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<Long, AuthorityEntity>> findByValues(List<AuthorityEntity> values)
         {
             throw new UnsupportedOperationException("Batch loading by Values not supported for AuthorityEntity");

@@ -58,6 +58,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
     /**
      * Type translation for version store
      */
+    @Override
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // frozen node type -> replaced by actual node type of the version node
@@ -67,6 +68,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
     /**
      * Aspects translation for version store
      */
+    @Override
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Set<QName> aspects = this.dbNodeService.getAspects(VersionUtil.convertNodeRef(nodeRef));
@@ -77,6 +79,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
     /**
      * Translation for version store
      */
+    @Override
     public Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs) throws InvalidNodeRefException
     {
         Map<NodeRef, Set<QName>> result = new HashMap<>();
@@ -98,6 +101,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
     /**
      * Properties translation for version store
      */
+    @Override
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Map<QName, Serializable> props = dbNodeService.getProperties(VersionUtil.convertNodeRef(nodeRef));
@@ -109,6 +113,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
     /**
      * Property translation for version store
      */
+    @Override
     public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
         // TODO optimise - get property directly and convert if needed
@@ -121,6 +126,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
      *
      * @see NodeService#getParentAssocs(NodeRef, QNamePattern, QNamePattern)
      */
+    @Override
     public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern)
     {
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
@@ -138,6 +144,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
     /**
      * Child Assocs translation for version store
      */
+    @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern) throws InvalidNodeRefException
     {
         // Get the child assoc references from the version store
@@ -180,6 +187,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
     /**
      * Simulates the node begin attached to the root node of the version store.
      */
+    @Override
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException
     {
         return new ChildAssociationRef(

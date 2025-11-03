@@ -422,8 +422,8 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         /**
          * Batch lookup not supported for ContentUrlEntity. It should be implemented in a future version if needed.
          * 
-         * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<Long, ContentUrlEntity>> findByKeys(List<Long> ids)
         {
             throw new UnsupportedOperationException("Batch lookup not supported for ContentUrlEntity");

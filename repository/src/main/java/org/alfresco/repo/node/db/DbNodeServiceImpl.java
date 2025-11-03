@@ -240,6 +240,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    @Override
     public List<NodeRef> exists(List<NodeRef> nodeRefs)
     {
         ParameterCheck.mandatory("nodeRefs", nodeRefs);
@@ -1082,6 +1083,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    @Override
     public Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs) throws InvalidNodeRefException
     {
         List<Pair<Long, NodeRef>> nodePairs = getNodePairsNotNull(nodeRefs);
@@ -1655,6 +1657,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    @Override
     public Map<NodeRef, Map<QName, Serializable>> getPropertiesNodeMap(List<NodeRef> nodeRefs) throws InvalidNodeRefException
     {
         if (nodeRefs == null || nodeRefs.size() == 0)

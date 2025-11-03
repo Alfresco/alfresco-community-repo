@@ -396,19 +396,24 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             throw new IllegalArgumentException("An entity lookup key list may not be null or empty");
         }
 
-        // Remove any nulls for safety
-        keys.removeIf(k -> k == null);
+        // Create a defensive copy and remove any nulls for safety
+        List<K> filteredKeys = new ArrayList<>(keys.size());
+        for (K k : keys) {
+            if (k != null) {
+                filteredKeys.add(k);
+            }
+        }
 
         // Handle missing cache
         if (cache == null)
         {
-            return entityLookup.findByKeys(keys);
+            return entityLookup.findByKeys(filteredKeys);
         }
 
-        List<Pair<K, V>> results = new ArrayList<>(keys.size());
+        List<Pair<K, V>> results = new ArrayList<>(filteredKeys.size());
         Map<K, CacheRegionKey> keysToResolve = new HashMap<>();
 
-        for (K key : keys)
+        for (K key : filteredKeys)
         {
             CacheRegionKey keyCacheKey = new CacheRegionKey(cacheRegion, key);
             // Look in the cache

@@ -123,7 +123,7 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     /**
      * Sets archived information on the Node
      * 
-     * @param aNode
+     * @param nodes
      * @param mapUserInfo
      */
     private void mapArchiveInfo(List<Node> nodes, Map<String, UserInfo> mapUserInfo)

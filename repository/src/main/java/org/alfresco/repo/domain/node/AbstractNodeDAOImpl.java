@@ -816,6 +816,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
          * @throws UnsupportedOperationException
          * 
          */
+        @Override
         public List<Pair<StoreRef, Node>> findByValues(List<Node> values)
         {
             throw new UnsupportedOperationException("Store root node lookup by values not supported");

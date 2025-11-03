@@ -115,6 +115,7 @@ public abstract class AbstractEncodingDAOImpl implements EncodingDAO
          * 
          * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<Long, String>> findByKeys(List<Long> ids)
         {
             throw new UnsupportedOperationException("Batch loading not supported for EncodingEntity");

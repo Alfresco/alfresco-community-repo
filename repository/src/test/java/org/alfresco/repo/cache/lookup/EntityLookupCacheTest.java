@@ -388,6 +388,7 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         return null;
     }
 
+    @Override
     public List<Pair<Long, Object>> findByValues(List<Object> values)
     {
         assertNotNull(values);

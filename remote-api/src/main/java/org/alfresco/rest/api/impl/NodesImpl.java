@@ -415,6 +415,7 @@ public class NodesImpl implements Nodes
         return validateNode(nodeRef);
     }
 
+    @Override
     public List<NodeRef> validateNodes(StoreRef storeRef, List<String> nodeIds)
     {
         List<NodeRef> nodeRefs = new ArrayList<>(nodeIds.size());

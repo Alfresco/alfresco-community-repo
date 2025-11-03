@@ -1456,6 +1456,7 @@ public class NodesImpl implements Nodes
         return nodeProps;
     }
 
+    @Override
     public Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String, UserInfo> mapUserInfo, List<String> excludedNS, List<QName> excludedProps)
     {
         List<QName> selectedProperties;

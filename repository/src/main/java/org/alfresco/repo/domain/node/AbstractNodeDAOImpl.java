@@ -3276,6 +3276,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
          * @throws UnsupportedOperationException
          * 
          */
+        @Override
         public List<Pair<NodeVersionKey, Set<QName>>> findByValues(List<Set<QName>> values)
         {
             throw new UnsupportedOperationException("Batch node aspects lookup by value is not supported");

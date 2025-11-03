@@ -153,6 +153,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException
      *             always
      */
+    @Override
     public void deleteStore(StoreRef storeRef)
     {
         // This operation is not supported for a version store

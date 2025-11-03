@@ -2355,7 +2355,7 @@ public class NodesImpl implements Nodes
         }, AuthenticationUtil.getSystemUserName());
 
         String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
-        if (siteId != null && !siteId.equals(""))
+        if (siteId != null && !siteId.isEmpty())
         {
             FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
             if (fileInfo != null)

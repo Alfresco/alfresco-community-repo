@@ -338,6 +338,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
          * 
          * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<Long, AclEntity>> findByKeys(List<Long> keys)
         {
             throw new UnsupportedOperationException("Batch loading not supported for AclEntity");

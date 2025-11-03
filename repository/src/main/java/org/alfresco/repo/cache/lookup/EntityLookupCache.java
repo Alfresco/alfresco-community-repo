@@ -131,9 +131,9 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
          * <p/>
          * If the search is impossible or expensive, this method should just return <tt>null</tt>. This would usually be the case if the {@link #getValueKey(Object) getValueKey} method also returned <tt>null</tt> i.e. if it is difficult to look the value up in storage then it is probably difficult to generate a cache key from it, too.
          * 
-         * @param value
-         *            the value (business object) used to identify the entity (<tt>null</tt> allowed).
-         * @return Return the entity or <tt>null</tt> if no entity matches the given value
+         * @param values
+         *            the values (business objects) used to identify the entities (<tt>null</tt> allowed).
+         * @return Return the entities or <tt>null</tt> if no entity matches the given values
          */
         List<Pair<K1, V1>> findByValues(List<V1> values);
 

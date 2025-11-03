@@ -323,6 +323,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
          * 
          * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<Long, ContentData>> findByKeys(List<Long> keys)
         {
             throw new UnsupportedOperationException("Batch lookup not supported for ContentData");

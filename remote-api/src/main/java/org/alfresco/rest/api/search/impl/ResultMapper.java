@@ -162,7 +162,11 @@ public class ResultMapper
     {
         List<Node> noderesults = new ArrayList<>();
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
-        Map<NodeRef, List<Pair<String, List<String>>>> highLighting = results.getHighlighting();
+        Map<NodeRef, List<Pair<String, List<String>>>> highLighting = Collections.emptyMap();
+        if (results != null)
+        {
+            highLighting = results.getHighlighting();
+        }
         final AtomicInteger unknownNodeRefsCount = new AtomicInteger();
         // This store was never implemented
         // boolean isHistory = searchRequestContext.getStores().contains(StoreMapper.HISTORY);
@@ -186,18 +190,23 @@ public class ResultMapper
                 }
 
                 float f = row.getScore();
-                List<HighlightEntry> highlightEntries = null;
-                List<Pair<String, List<String>>> high = highLighting.get(row.getNodeRef());
-
-                if (high != null && !high.isEmpty())
+                if (!highLighting.isEmpty())
                 {
-                    highlightEntries = new ArrayList<HighlightEntry>(high.size());
-                    for (Pair<String, List<String>> highlight : high)
+                    List<HighlightEntry> highlightEntries = null;
+                    List<Pair<String, List<String>>> high = highLighting.get(row.getNodeRef());
+
+                    if (high != null && !high.isEmpty())
                     {
-                        highlightEntries.add(new HighlightEntry(highlight.getFirst(), highlight.getSecond()));
+                        highlightEntries = new ArrayList<HighlightEntry>(high.size());
+                        for (Pair<String, List<String>> highlight : high)
+                        {
+                            highlightEntries.add(new HighlightEntry(highlight.getFirst(), highlight.getSecond()));
+                        }
                     }
+                    
+                    aNode.setSearch(new SearchEntry(f, highlightEntries));
                 }
-                aNode.setSearch(new SearchEntry(f, highlightEntries));
+                
                 noderesults.add(aNode);
             }
         }

@@ -1116,7 +1116,7 @@ public class NodesImpl implements Nodes
             PathInfo pathInfo = null;
             if (includeParam.contains(PARAM_INCLUDE_PATH))
             {
-                ChildAssociationRef archivedParentAssoc = (ChildAssociationRef) properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+                ChildAssociationRef archivedParentAssoc = (ChildAssociationRef) props.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
                 pathInfo = lookupPathInfo(nodeRef, archivedParentAssoc);
             }
 

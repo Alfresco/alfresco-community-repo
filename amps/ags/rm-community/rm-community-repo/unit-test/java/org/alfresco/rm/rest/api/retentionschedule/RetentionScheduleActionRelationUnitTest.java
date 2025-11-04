@@ -26,9 +26,13 @@
  */
 package org.alfresco.rm.rest.api.retentionschedule;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -71,16 +75,15 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
     private Parameters parameters;
 
     private RetentionScheduleActionRelation retentionScheduleActionRelation;
-    private DispositionService dispositionService;
 
-    private NodeRef retentionScheduleRecordLevelNodeRef = new NodeRef("workspace://SpacesStore/recordLevel");
-    private NodeRef retentionScheduleRecordFolderLevelNodeRef = new NodeRef("workspace://SpacesStore/recordFolderLevel");
+    private NodeRef rsRecordLevelNodeRef = new NodeRef("workspace://SpacesStore/recordLevel");
+    private NodeRef rsRecordFolderLevelNodeRef = new NodeRef("workspace://SpacesStore/recordFolderLevel");
 
     @Before
     public void setUp() {
 
         // Disposition Service
-        dispositionService = new DispositionServiceImpl();
+        DispositionService dispositionService = new DispositionServiceImpl();
 
         // Disposition Properties
         DispositionProperty publicationDate = createDispositionProperty("dod:publicationDate", false, true, Set.of());
@@ -120,23 +123,20 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
 
         // Retention step action
         String actionName = RetentionSteps.CUTOFF.stepName;
-        RetentionScheduleActionDefinition actionDef;
 
         // Cutoff - dod:publicationDate
-        actionDef = createAction(actionName, "dod:publicationDate");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "dod:publicationDate");
 
         // Cutoff - rma:dispositionAsOf
-        actionDef = createAction(actionName, "rma:dispositionAsOf");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "rma:dispositionAsOf");
 
         // Cutoff - rma:dateFiled
-        actionDef = createAction(actionName, "rma:dateFiled");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "rma:dateFiled");
 
         // Cutoff - cm:created
-        actionDef = createAction(actionName, "cm:created");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "cm:created");
+
+        verify(mockedNodeService, times(4)).createNode(any(), any(), any(), any(), any());
     }
 
     /**
@@ -147,7 +147,7 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
      * Invalid: rma:cutOffDate
      * </p>
      */
-    @Test(expected = InvalidArgumentException.class)
+    @Test
     public void testCreate_RetentionScheduleRecordLevel_Cutoff_Invalid() throws Exception {
 
         // Retention schedule with "record" level disposition
@@ -155,11 +155,11 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
 
         // Retention step action
         String actionName = RetentionSteps.CUTOFF.stepName;
-        RetentionScheduleActionDefinition actionDef;
 
         // Cutoff - rma:cutOffDate
-        actionDef = createAction(actionName, "rma:cutOffDate");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeInvalidStep(retentionScheduleId, actionName, "rma:cutOffDate");
+
+        verify(mockedNodeService, never()).createNode(any(), any(), any(), any(), any());
     }
 
     /**
@@ -178,15 +178,14 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
 
         // Retention step action
         String actionName = RetentionSteps.CUTOFF.stepName;
-        RetentionScheduleActionDefinition actionDef;
 
         // Cutoff - rma:dispositionAsOf
-        actionDef = createAction(actionName, "rma:dispositionAsOf");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "rma:dispositionAsOf");
 
         // Cutoff - cm:created
-        actionDef = createAction(actionName, "cm:created");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "cm:created");
+
+        verify(mockedNodeService, times(2)).createNode(any(), any(), any(), any(), any());
     }
 
     /**
@@ -197,7 +196,7 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
      * Invalid: dod:publicationDate, rma:cutOffDate and rma:dateFiled
      * </p>
      */
-    @Test(expected = InvalidArgumentException.class)
+    @Test
     public void testCreate_RetentionScheduleRecordFolderLevel_Cutoff_Invalid() throws Exception {
 
         // Retention schedule with "record folder" level disposition
@@ -205,19 +204,17 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
 
         // Retention step action
         String actionName = RetentionSteps.CUTOFF.stepName;
-        RetentionScheduleActionDefinition actionDef;
 
         // Cutoff - dod:publicationDate
-        actionDef = createAction(actionName, "dod:publicationDate");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeInvalidStep(retentionScheduleId, actionName, "dod:publicationDate");
 
         // Cutoff - rma:cutOffDate
-        actionDef = createAction(actionName, "rma:cutOffDate");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeInvalidStep(retentionScheduleId, actionName, "rma:cutOffDate");
 
         // Cutoff - rma:dateFiled
-        actionDef = createAction(actionName, "rma:dateFiled");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeInvalidStep(retentionScheduleId, actionName, "rma:dateFiled");
+
+        verify(mockedNodeService, never()).createNode(any(), any(), any(), any(), any());
     }
 
     /**
@@ -237,27 +234,23 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
 
         // Retention step action
         String actionName = RetentionSteps.TRANSFER.stepName;
-        RetentionScheduleActionDefinition actionDef;
 
         // Transfer - dod:publicationDate
-        actionDef = createAction(actionName, "dod:publicationDate");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "dod:publicationDate");
 
         // Transfer - rma:cutOffDate
-        actionDef = createAction(actionName, "rma:cutOffDate");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "rma:cutOffDate");
 
         // Transfer - rma:dispositionAsOf
-        actionDef = createAction(actionName, "rma:dispositionAsOf");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "rma:dispositionAsOf");
 
         // Transfer - rma:dateFiled
-        actionDef = createAction(actionName, "rma:dateFiled");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "rma:dateFiled");
 
         // Transfer - cm:created
-        actionDef = createAction(actionName, "cm:created");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "cm:created");
+
+        verify(mockedNodeService, times(5)).createNode(any(), any(), any(), any(), any());
     }
 
     /**
@@ -269,7 +262,7 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
      * rma:dispositionAsOf, rma:dateField and cm:created.
      * </p>
      */
-    @Test(expected = InvalidArgumentException.class)
+    @Test
     public void testCreate_RetentionScheduleRecordLevel_Transfer_Invalid() throws Exception {
 
         // Retention schedule with "record" level disposition
@@ -277,11 +270,11 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
 
         // Retention step action
         String actionName = RetentionSteps.TRANSFER.stepName;
-        RetentionScheduleActionDefinition actionDef;
 
         // Transfer - bad:property
-        actionDef = createAction(actionName, "bad:property");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeInvalidStep(retentionScheduleId, actionName, "bad:property");
+
+        verify(mockedNodeService, never()).createNode(any(), any(), any(), any(), any());
     }
 
     /**
@@ -300,19 +293,17 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
 
         // Retention step action
         String actionName = RetentionSteps.TRANSFER.stepName;
-        RetentionScheduleActionDefinition actionDef;
 
         // Transfer - rma:cutOffDate
-        actionDef = createAction(actionName, "rma:cutOffDate");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "rma:cutOffDate");
 
         // Transfer - rma:dispositionAsOf
-        actionDef = createAction(actionName, "rma:dispositionAsOf");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "rma:dispositionAsOf");
 
         // Transfer - cm:created
-        actionDef = createAction(actionName, "cm:created");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeValidStep(retentionScheduleId, actionName, "cm:created");
+
+        verify(mockedNodeService, times(3)).createNode(any(), any(), any(), any(), any());
     }
 
     /**
@@ -323,7 +314,7 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
      * Invalid: dod:publicationDate and rma:dateFiled
      * </p>
      */
-    @Test(expected = InvalidArgumentException.class)
+    @Test
     public void testCreate_RetentionScheduleRecordFolderLevel_Transfer_Invalid() throws Exception {
 
         // Retention schedule with "record" level disposition
@@ -331,37 +322,51 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
 
         // Retention step action
         String actionName = RetentionSteps.TRANSFER.stepName;
-        RetentionScheduleActionDefinition actionDef;
 
         // Transfer - dod:publicationDate
-        actionDef = createAction(actionName, "dod:publicationDate");
-        retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        executeInvalidStep(retentionScheduleId, actionName, "dod:publicationDate");
 
         // Transfer - rma:dateFiled
-        actionDef = createAction(actionName, "rma:dateFiled");
+        executeInvalidStep(retentionScheduleId, actionName, "rma:dateFiled");
+
+        verify(mockedNodeService, never()).createNode(any(), any(), any(), any(), any());
+    }
+
+    private void executeValidStep(String retentionScheduleId, String actionName, String periodProperty) throws Exception {
+        RetentionScheduleActionDefinition actionDef = createAction(actionName, periodProperty);
         retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
-    } 
+    }
+
+    private void executeInvalidStep(String retentionScheduleId, String actionName, String periodProperty) {
+        RetentionScheduleActionDefinition actionDef = createAction(actionName, periodProperty);
+        try {
+            retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
+        } catch (Exception e) {
+            assertTrue(e instanceof InvalidArgumentException);
+            assertTrue(e.getMessage().contains("periodProperty value is invalid: " + periodProperty));
+        }
+    }
 
     private String useRetentionScheduleWithRecordLevel(Boolean withRecordLevel, boolean hasCompletedActions) {
 
-        NodeRef retentionScheduleNodeRef = withRecordLevel ? 
-                retentionScheduleRecordLevelNodeRef
-                : retentionScheduleRecordFolderLevelNodeRef;
+        NodeRef retentionScheduleNodeRef = withRecordLevel ? rsRecordLevelNodeRef : rsRecordFolderLevelNodeRef;
 
         String retentionScheduleId = retentionScheduleNodeRef.getId();
 
         ChildAssociationRef retentionScheduleAssocRef = mock(ChildAssociationRef.class);
 
         NodeRef cutOffActionNodeRef = mock(NodeRef.class);
-        DispositionActionDefinition cutoffAction = new DispositionActionDefinitionImpl(mockedRecordsManagementEventService, mockedRecordsManagementActionService, mockedNodeService, cutOffActionNodeRef, 0);
-        List<DispositionActionDefinition> completedActions = hasCompletedActions ? Arrays.asList(cutoffAction) : Collections.emptyList();
+
+        DispositionActionDefinition cutoffAction = new DispositionActionDefinitionImpl(
+                mockedRecordsManagementEventService, mockedRecordsManagementActionService, mockedNodeService,
+                cutOffActionNodeRef, 0);
+
+        List<DispositionActionDefinition> completedActions = hasCompletedActions ? Arrays.asList(cutoffAction)
+                : Collections.emptyList();
 
         when(retentionScheduleAssocRef.getChildRef()).thenReturn(new NodeRef("workspace://SpacesStore/123"));
-
         when(apiUtils.lookupAndValidateNodeType(eq(retentionScheduleId), any(QName.class))).thenReturn(retentionScheduleNodeRef);
         when(mockedNodeService.getProperty(retentionScheduleNodeRef, RecordsManagementModel.PROP_RECORD_LEVEL_DISPOSITION)).thenReturn(withRecordLevel);
-
-
         when(nodesModelFactory.getRetentionActions(retentionScheduleNodeRef)).thenReturn(completedActions);
         when(mockedNodeService.createNode(any(), any(), any(), any(), any())).thenReturn(retentionScheduleAssocRef);
 

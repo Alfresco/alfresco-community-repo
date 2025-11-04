@@ -117,6 +117,7 @@ jobs:
           summary_output_file: results.json
           summary_display: true
           baseline_file: baseline.json
+          timeout: 15
       - name: Upload scan result
         if: success() || failure()
         run: zip readable_output.zip results.json

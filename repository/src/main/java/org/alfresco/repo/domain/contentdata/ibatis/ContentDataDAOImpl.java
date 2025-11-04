@@ -61,6 +61,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
 {
     private static final String SELECT_CONTENT_URL_BY_ID = "alfresco.content.select_ContentUrlById";
+    private static final String SELECT_CONTENT_URL_BY_IDS = "alfresco.content.select_ContentUrlByIds";
     private static final String SELECT_CONTENT_URL_BY_KEY = "alfresco.content.select_ContentUrlByKey";
     private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "alfresco.content.select_ContentUrlByKeyUnreferenced";
     private static final String SELECT_CONTENT_URLS_ORPHANED = "alfresco.content.select.select_ContentUrlsOrphaned";
@@ -266,6 +267,18 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         IdsEntity idsEntity = new IdsEntity();
         idsEntity.setIds(new ArrayList<Long>(nodeIds));
         return template.selectList(SELECT_CONTENT_DATA_BY_NODE_IDS, idsEntity);
+    }
+
+    protected List<ContentUrlEntity> getContentUrlEntitiesForNodes(Set<Long> contentUrlIds)
+    {
+        if (contentUrlIds.size() == 0)
+        {
+            // There will be no results
+            return Collections.emptyList();
+        }
+        IdsEntity idsEntity = new IdsEntity();
+        idsEntity.setIds(new ArrayList<Long>(contentUrlIds));
+        return template.selectList(SELECT_CONTENT_URL_BY_IDS, idsEntity);
     }
     
     @Override

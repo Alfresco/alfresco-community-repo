@@ -27,6 +27,7 @@ package org.alfresco.repo.domain.contentdata;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -243,7 +244,14 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
 
     public void cacheContentDataForNodes(Set<Long> nodeIds)
     {
-        for (ContentDataEntity entity : getContentDataEntitiesForNodes(nodeIds))
+        List<ContentDataEntity> entities = getContentDataEntitiesForNodes(nodeIds);
+
+        for (ContentUrlEntity contentUrlEnt : getContentUrlEntities(entities))
+        {
+            contentUrlCache.setValue(contentUrlEnt.getId(), contentUrlEnt);
+        }
+
+        for (ContentDataEntity entity : entities)
         {
             contentDataCache.setValue(entity.getId(), makeContentData(entity));
         }        
@@ -403,6 +411,20 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         {
             return deleteContentUrlEntity(id);
         }
+    }
+
+    private List<ContentUrlEntity> getContentUrlEntities(List<ContentDataEntity> contentDataEntities)
+    {
+        Set<Long> contentUrlIds = new HashSet<Long>();
+        for (ContentDataEntity contentDataEntity : contentDataEntities)
+        {
+            Long contentUrlId = contentDataEntity.getContentUrlId();
+            if (contentUrlId != null)
+            {
+                contentUrlIds.add(contentUrlId);
+            }
+        }
+        return getContentUrlEntitiesForNodes(contentUrlIds);
     }
 
     /**
@@ -687,7 +709,14 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * @param nodeIds       the node ID
      * @return              Returns the associated entities or <tt>null</tt> if none exist
      */
-    protected abstract List<ContentDataEntity> getContentDataEntitiesForNodes(Set<Long> nodeIds);    
+    protected abstract List<ContentDataEntity> getContentDataEntitiesForNodes(Set<Long> nodeIds);
+
+    /**
+     * @param contentUrlIds
+     *            the content URL IDs
+     * @return Returns the associated entities or <tt>null</tt> if none exist
+     */
+    protected abstract List<ContentUrlEntity> getContentUrlEntitiesForNodes(Set<Long> contentUrlIds);
 
     /**
      * Update an existing <b>alf_content_data</b> entity

@@ -332,7 +332,7 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
         verify(mockedNodeService, never()).createNode(any(), any(), any(), any(), any());
     }
 
-    private void executeValidStep(String retentionScheduleId, String actionName, String periodProperty) throws Exception {
+    private void executeValidStep(String retentionScheduleId, String actionName, String periodProperty) {
         RetentionScheduleActionDefinition actionDef = createAction(actionName, periodProperty);
         retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
     }
@@ -341,8 +341,7 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
         RetentionScheduleActionDefinition actionDef = createAction(actionName, periodProperty);
         try {
             retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
-        } catch (Exception e) {
-            assertTrue(e instanceof InvalidArgumentException);
+        } catch (InvalidArgumentException e) {
             assertTrue(e.getMessage().contains("periodProperty value is invalid: " + periodProperty));
         }
     }

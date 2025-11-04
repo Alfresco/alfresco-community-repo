@@ -104,7 +104,7 @@
         <dependency.jakarta-annotation-api.version>3.0.0</dependency.jakarta-annotation-api.version>
         <dependency.jakarta-transaction-api.version>2.0.1</dependency.jakarta-transaction-api.version>
         <dependency.jakarta-jws-api.version>3.0.0</dependency.jakarta-jws-api.version>
-        <dependency.jakarta-ee-mail.version>2.0.1</dependency.jakarta-ee-mail.version>
+        <dependency.jakarta-ee-mail.version>2.0.2</dependency.jakarta-ee-mail.version>
         <dependency.jakarta-ee-activation.version>2.0.1</dependency.jakarta-ee-activation.version>
         <dependency.jakarta-ee-jms.version>3.1.0</dependency.jakarta-ee-jms.version>
         <dependency.java-ee-activation.version>1.2.0</dependency.java-ee-activation.version>

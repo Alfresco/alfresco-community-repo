@@ -37,8 +37,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
 import javax.annotation.concurrent.NotThreadSafe;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.executor.result.DefaultResultContext;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+import org.mybatis.spring.SqlSessionTemplate;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.OptionalPatchApplicationCheckBootstrapBean;
@@ -74,13 +80,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.ibatis.executor.result.DefaultResultContext;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.RowBounds;
-import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * @author Andy
@@ -89,7 +88,7 @@ import org.mybatis.spring.SqlSessionTemplate;
 public class DBQueryEngine implements QueryEngine
 {
     protected static final Log logger = LogFactory.getLog(DBQueryEngine.class);
-    
+
     protected static final String SELECT_BY_DYNAMIC_QUERY = "alfresco.metadata.query.select_byDynamicQuery";
 
     private static final int DEFAULT_MIN_PAGING_BATCH_SIZE = 2500;
@@ -99,23 +98,23 @@ public class DBQueryEngine implements QueryEngine
     protected SqlSessionTemplate template;
 
     protected QNameDAO qnameDAO;
-    
+
     private NodeDAO nodeDAO;
 
     protected DictionaryService dictionaryService;
 
     protected NamespaceService namespaceService;
-    
+
     protected NodeService nodeService;
 
     private TenantService tenantService;
-    
+
     private OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2;
 
     protected PermissionService permissionService;
 
     private int maxPermissionChecks;
-    
+
     private long maxPermissionCheckTimeMillis;
 
     private boolean maxPermissionCheckEnabled;
@@ -129,7 +128,7 @@ public class DBQueryEngine implements QueryEngine
     protected EntityLookupCache<Long, Node, NodeRef> nodesCache;
 
     private List<Pair<Long, StoreRef>> stores;
-    
+
     AclCrudDAO aclCrudDAO;
 
     public void setAclCrudDAO(AclCrudDAO aclCrudDAO)
@@ -141,12 +140,12 @@ public class DBQueryEngine implements QueryEngine
     {
         this.maxPermissionChecks = maxPermissionChecks;
     }
-    
+
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
     {
         this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
     }
-    
+
     public void setMaxPermissionCheckEnabled(boolean maxPermissionCheckEnabled)
     {
         this.maxPermissionCheckEnabled = maxPermissionCheckEnabled;
@@ -162,27 +161,33 @@ public class DBQueryEngine implements QueryEngine
         this.permissionService = permissionService;
     }
 
-    public boolean isUsePagingQuery() {
+    public boolean isUsePagingQuery()
+    {
         return usePagingQuery;
     }
 
-    public void setUsePagingQuery(boolean usePagingQuery) {
+    public void setUsePagingQuery(boolean usePagingQuery)
+    {
         this.usePagingQuery = usePagingQuery;
     }
 
-    public int getMinPagingBatchSize() {
+    public int getMinPagingBatchSize()
+    {
         return minPagingBatchSize;
     }
 
-    public void setMinPagingBatchSize(int minPagingBatchSize) {
+    public void setMinPagingBatchSize(int minPagingBatchSize)
+    {
         this.minPagingBatchSize = minPagingBatchSize;
     }
 
-    public int getMaxPagingBatchSize() {
+    public int getMaxPagingBatchSize()
+    {
         return maxPagingBatchSize;
     }
 
-    public void setMaxPagingBatchSize(int maxPagingBatchSize) {
+    public void setMaxPagingBatchSize(int maxPagingBatchSize)
+    {
         this.maxPagingBatchSize = maxPagingBatchSize;
     }
 
@@ -190,7 +195,7 @@ public class DBQueryEngine implements QueryEngine
     {
         this.metadataIndexCheck2 = metadataIndexCheck2;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -227,9 +232,10 @@ public class DBQueryEngine implements QueryEngine
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -237,20 +243,17 @@ public class DBQueryEngine implements QueryEngine
     }
 
     /**
-     * @param nodeDAO the nodeDAO to set
+     * @param nodeDAO
+     *            the nodeDAO to set
      */
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.search.impl.querymodel.QueryEngine#executeQuery(org.alfresco.repo.search.impl.querymodel.Query,
-     * org.alfresco.repo.search.impl.querymodel.QueryOptions,
-     * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryEngine#executeQuery(org.alfresco.repo.search.impl.querymodel.Query, org.alfresco.repo.search.impl.querymodel.QueryOptions, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     @Override
     public QueryEngineResults executeQuery(Query query, QueryOptions options, FunctionEvaluationContext functionContext)
     {
@@ -279,13 +282,13 @@ public class DBQueryEngine implements QueryEngine
             selectorGroup = selectorGroups.get(0);
         }
 
-        DBQuery dbQuery = (DBQuery)query;
-        
+        DBQuery dbQuery = (DBQuery) query;
+
         if (options.getStores().size() > 1)
         {
             throw new QueryModelException("Multi-store queries are not supported");
         }
-        
+
         // MT
         StoreRef storeRef = options.getStores().get(0);
         storeRef = storeRef != null ? tenantService.getName(storeRef) : null;
@@ -293,7 +296,7 @@ public class DBQueryEngine implements QueryEngine
         Pair<Long, StoreRef> store = nodeDAO.getStore(storeRef);
         if (store == null)
         {
-        	  throw new QueryModelException("Unknown store: "+storeRef);
+            throw new QueryModelException("Unknown store: " + storeRef);
         }
         dbQuery.setStoreId(store.getFirst());
         Pair<Long, QName> sysDeletedType = qnameDAO.getQName(ContentModel.TYPE_DELETED);
@@ -305,7 +308,7 @@ public class DBQueryEngine implements QueryEngine
         {
             dbQuery.setSysDeletedType(sysDeletedType.getFirst());
         }
-        
+
         Long sinceTxId = options.getSinceTxId();
         if (sinceTxId == null)
         {
@@ -313,7 +316,7 @@ public class DBQueryEngine implements QueryEngine
             sinceTxId = -1L;
         }
         dbQuery.setSinceTxId(sinceTxId);
-        
+
         logger.debug("- query is being prepared");
         dbQuery.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup,
                 null, functionContext, metadataIndexCheck2.getPatchApplied());
@@ -323,11 +326,11 @@ public class DBQueryEngine implements QueryEngine
         if (logger.isDebugEnabled())
         {
             long ms = System.currentTimeMillis() - start;
-            logger.debug("Selected " + resultSet.length() + " nodes with permission resolution in "+ms+" ms");
+            logger.debug("Selected " + resultSet.length() + " nodes with permission resolution in " + ms + " ms");
         }
         return asQueryEngineResults(resultSet);
     }
-    
+
     protected String pickQueryTemplate(QueryOptions options, DBQuery dbQuery)
     {
         logger.debug("- using standard table for the query");
@@ -337,7 +340,7 @@ public class DBQueryEngine implements QueryEngine
     private ResultSet selectNodesWithPermissions(QueryOptions options, DBQuery dbQuery)
     {
         Authority authority = aclCrudDAO.getAuthority(AuthenticationUtil.getRunAsUser());
-        
+
         NodePermissionAssessor permissionAssessor = createAssessor(authority);
         int maxPermsChecks = options.getMaxPermissionChecks() < 0 ? maxPermissionChecks : options.getMaxPermissionChecks();
         long maxPermCheckTimeMillis = options.getMaxPermissionCheckTimeMillis() < 0
@@ -345,9 +348,9 @@ public class DBQueryEngine implements QueryEngine
                 : options.getMaxPermissionCheckTimeMillis();
         permissionAssessor.setMaxPermissionChecks(maxPermsChecks);
         permissionAssessor.setMaxPermissionCheckTimeMillis(maxPermCheckTimeMillis);
-        
+
         FilteringResultSet resultSet = acceleratedNodeSelection(options, dbQuery, permissionAssessor);
-        
+
         PagingLuceneResultSet plrs = new PagingLuceneResultSet(resultSet, options.getAsSearchParmeters(), nodeService);
         plrs.setTrimmedResultSet(true);
         return plrs;
@@ -365,10 +368,9 @@ public class DBQueryEngine implements QueryEngine
 
         List<Node> nodes = new ArrayList<>();
         int requiredNodes = computeRequiredNodesCount(options);
-        
+
         logger.debug("- query sent to the database");
-        performTmdqSelect(pickQueryTemplate(options, dbQuery), dbQuery, requiredNodes, new ResultHandler<Node>()
-        {
+        performTmdqSelect(pickQueryTemplate(options, dbQuery), dbQuery, requiredNodes, new ResultHandler<Node>() {
             @Override
             public void handleResult(ResultContext<? extends Node> context)
             {
@@ -377,21 +379,21 @@ public class DBQueryEngine implements QueryEngine
                     context.stop();
                     return;
                 }
-                
+
                 Node node = context.getResultObject();
                 addStoreInfo(node);
-                
+
                 boolean shouldCache = shouldCache(options, nodes, requiredNodes);
-                if(shouldCache)
+                if (shouldCache && !options.isBulkFetchEnabled())
                 {
-                    logger.debug("- selected node "+nodes.size()+": "+node.getUuid()+" "+node.getId());
+                    logger.debug("- selected node " + nodes.size() + ": " + node.getUuid() + " " + node.getId());
                     nodesCache.setValue(node.getId(), node);
                 }
                 else
                 {
-                    logger.debug("- skipped node "+nodes.size()+": "+node.getUuid()+" "+node.getId());
+                    logger.debug("- skipped node " + nodes.size() + ": " + node.getUuid() + " " + node.getId());
                 }
-                
+
                 if (permissionAssessor.isIncluded(node))
                 {
                     if (nodes.size() > requiredNodes)
@@ -403,7 +405,7 @@ public class DBQueryEngine implements QueryEngine
                         nodes.add(shouldCache ? node : null);
                     }
                 }
-                
+
                 if (permissionAssessor.shouldQuitChecks())
                 {
                     context.stop();
@@ -426,12 +428,27 @@ public class DBQueryEngine implements QueryEngine
 
         int numberFound = nodes.size();
         nodes.removeAll(Collections.singleton(null));
-        
-        DBResultSet rs =  createResultSet(options, nodes, numberFound);
+
+        DBResultSet rs = createResultSet(options, nodes, numberFound);
         FilteringResultSet frs = new FilteringResultSet(rs, formInclusionMask(nodes));
         frs.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, rs.getResultSetMetaData().getSearchParameters()));
- 
-        logger.debug("- query is completed, "+nodes.size()+" nodes loaded");
+
+        // Bulk Load
+        if (rs.getResultSetMetaData().getSearchParameters().isBulkFetchEnabled())
+        {
+            List<Long> rawDbids = new ArrayList<>();
+            for (Node node : nodes)
+            {
+                if (node != null)
+                {
+                    rawDbids.add(node.getId());
+                }
+            }
+            logger.debug("- bulk loading node data: " + rawDbids.size());
+            nodeDAO.cacheNodesById(rawDbids);
+        }
+
+        logger.debug("- query is completed, " + nodes.size() + " nodes loaded");
         return frs;
     }
 
@@ -497,21 +514,20 @@ public class DBQueryEngine implements QueryEngine
         {
             return Integer.MAX_VALUE;
         }
-        
+
         return maxItems + options.getSkipCount() + 1;
     }
 
     private BitSet formInclusionMask(List<Node> nodes)
     {
         BitSet inclusionMask = new BitSet(nodes.size());
-        for (int i=0; i < nodes.size(); i++)
+        for (int i = 0; i < nodes.size(); i++)
         {
             inclusionMask.set(i, true);
         }
         return inclusionMask;
     }
 
-    
     private QueryEngineResults asQueryEngineResults(ResultSet paged)
     {
         HashSet<String> key = new HashSet<>();
@@ -521,11 +537,10 @@ public class DBQueryEngine implements QueryEngine
 
         return new QueryEngineResults(answer);
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryEngine#getQueryModelFactory()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryEngine#getQueryModelFactory() */
     @Override
     public QueryModelFactory getQueryModelFactory()
     {
@@ -534,7 +549,9 @@ public class DBQueryEngine implements QueryEngine
 
     /**
      * Injection of nodes cache for clean-up and warm up when required
-     * @param cache The node cache to set
+     * 
+     * @param cache
+     *            The node cache to set
      */
     public void setNodesCache(SimpleCache<Serializable, Serializable> cache)
     {
@@ -544,11 +561,11 @@ public class DBQueryEngine implements QueryEngine
                 new ReadonlyLocalCallbackDAO());
     }
 
-    void setNodesCache(EntityLookupCache<Long, Node, NodeRef> nodesCache) 
+    void setNodesCache(EntityLookupCache<Long, Node, NodeRef> nodesCache)
     {
         this.nodesCache = nodesCache;
     }
-    
+
     private class ReadonlyLocalCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Node, NodeRef>
     {
         @Override

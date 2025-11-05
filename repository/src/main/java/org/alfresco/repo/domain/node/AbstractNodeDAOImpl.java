@@ -4993,7 +4993,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Map<NodePropertyKey, NodePropertyValue> propertyValues = entry.getValue();
             Map<QName, Serializable> props = nodePropertyHelper.convertToPublicProperties(propertyValues);
             setNodePropertiesCached(nodeId, props);
-        } // Rework the above .... it is not the best approach .... post processing approach is better
+        }
     }
 
     /**

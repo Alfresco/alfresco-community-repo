@@ -398,28 +398,6 @@
             and (np.actual_type_n = 3 or np.actual_type_n = 21)
     </select>
 
-    <!-- Get ContentData entities by Content Data -->
-    <select id="select_ContentDataByContentData" parameterType="ContentData" resultMap="result_ContentData">
-        select
-            cd.id as id,
-            cd.version as version,
-            cd.content_url_id as content_url_id,
-            cu.content_size as content_size,
-            cd.content_mimetype_id as content_mimetype_id,
-            cd.content_encoding_id as content_encoding_id,
-            cd.content_locale_id as content_locale_id
-        from
-            alf_content_data cd
-            join alf_node_properties np on (cd.id = np.long_value)
-            left join alf_content_url cu on (cd.content_url_id = cu.id)
-        where
-            cu.content_url in 
-            <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
-                #{item.contentUrl}
-            </foreach>
-            and (np.actual_type_n = 3 or np.actual_type_n = 21)
-    </select>
-
     <!-- Get the ContentData entity by Node and property QName -->
     <select id="select_ContentDataByNodeAndQName" parameterType="Ids" resultType="long">
         select

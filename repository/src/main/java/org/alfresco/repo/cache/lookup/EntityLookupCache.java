@@ -383,7 +383,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     }
 
     /**
-     * Find the entities associated with the given key list. The {@link EntityLookupCallbackDAO#findByKey(Serializable) entity callback} will be used if necessary.
+     * Find the entities associated with the given key list. The {@link EntityLookupCallbackDAO#findByKeys(Serializable) entity callback} will be used if necessary.
      * <p/>
      * It is up to the client code to decide if a returned empty list indicates a concurrency violation or not; the former would normally result in a concurrency-related exception such as {@link ConcurrencyFailureException}.
      * 

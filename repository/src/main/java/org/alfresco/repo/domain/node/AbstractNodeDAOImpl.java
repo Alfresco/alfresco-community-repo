@@ -143,7 +143,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private int cachingThreshold = 10;
     private int batchSize = 256;
     private boolean forceBatching = false;
-    private boolean preloadContentData = true;
 
     /**
      * Cache for the Store root nodes by StoreRef:<br/>
@@ -432,16 +431,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     public void setForceBatching(boolean forceBatching)
     {
         this.forceBatching = forceBatching;
-    }
-
-    /**
-     * Set whether to preload content data for properties when bulk loading properties
-     * 
-     * @param preloadContentData
-     */
-    public void setPreloadContentData(boolean preloadContentData)
-    {
-        this.preloadContentData = preloadContentData;
     }
 
     /* Initialize */
@@ -4955,7 +4944,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         // First ensure all content data are pre-cached, so we don't have to load them individually when converting properties
-        if (preloadContentData && !propertiesNodeIds.isEmpty())
+        if (!propertiesNodeIds.isEmpty())
         {
             contentDataDAO.cacheContentDataForNodes(propertiesNodeIds);
         }

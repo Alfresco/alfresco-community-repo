@@ -142,7 +142,6 @@
       <property name="cachingThreshold" value="${nodes.bulkLoad.cachingThreshold}"/>
       <property name="batchSize" value="${nodes.bulkLoad.batchSize:256}"/>
       <property name="forceBatching" value="${nodes.bulkLoad.forceBatching:false}"/>
-      <property name="preloadContentData" value="${nodes.bulkLoad.preloadContentData:true}"/>
    </bean>
 
    <bean id="nodeDAO.org.alfresco.repo.domain.dialect.Dialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" parent="nodeDAObase" />

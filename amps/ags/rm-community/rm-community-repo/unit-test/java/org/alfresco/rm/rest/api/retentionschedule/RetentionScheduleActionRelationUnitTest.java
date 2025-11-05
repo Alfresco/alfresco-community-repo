@@ -40,6 +40,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinitionImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -56,14 +60,12 @@ import org.alfresco.rm.rest.api.model.RetentionSteps;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
 
 /**
  * Unit tests for RetentionScheduleActionRelation
  */
-public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
+public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest
+{
 
     @Mock
     private FilePlanComponentsApiUtils apiUtils;
@@ -80,7 +82,8 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
     private NodeRef rsRecordFolderLevelNodeRef = new NodeRef("workspace://SpacesStore/recordFolderLevel");
 
     @Before
-    public void setUp() {
+    public void setUp()
+    {
 
         // Disposition Service
         DispositionService dispositionService = new DispositionServiceImpl();
@@ -108,15 +111,15 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
     }
 
     /**
-     * Create "cutoff" retention step for a retention schedule with "record" level
-     * disposition supplying only VALID disposition properties.
+     * Create "cutoff" retention step for a retention schedule with "record" level disposition supplying only VALID disposition properties.
      * 
      * <p>
      * Valid: dod:publicationDate, rma:dispositionAsOf, rma:dateField and cm:created
      * </p>
      */
     @Test
-    public void testCreate_RetentionScheduleRecordLevel_Cutoff_Valid() throws Exception {
+    public void testCreate_RetentionScheduleRecordLevel_Cutoff_Valid() throws Exception
+    {
 
         // Retention schedule with "record" level disposition
         String retentionScheduleId = useRetentionScheduleWithRecordLevel(true, false);
@@ -140,15 +143,15 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
     }
 
     /**
-     * Create "cutoff" retention step for a retention schedule with "record" level
-     * disposition supplying only INVALID disposition properties.
+     * Create "cutoff" retention step for a retention schedule with "record" level disposition supplying only INVALID disposition properties.
      * 
      * <p>
      * Invalid: rma:cutOffDate
      * </p>
      */
     @Test
-    public void testCreate_RetentionScheduleRecordLevel_Cutoff_Invalid() throws Exception {
+    public void testCreate_RetentionScheduleRecordLevel_Cutoff_Invalid() throws Exception
+    {
 
         // Retention schedule with "record" level disposition
         String retentionScheduleId = useRetentionScheduleWithRecordLevel(true, false);
@@ -163,15 +166,15 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
     }
 
     /**
-     * Create "cutoff" retention step for a retention schedule with "record folder"
-     * level disposition supplying only VALID disposition properties.
+     * Create "cutoff" retention step for a retention schedule with "record folder" level disposition supplying only VALID disposition properties.
      * 
      * <p>
      * Valid: rma:dispositionAsOf and cm:created
      * </p>
      */
     @Test
-    public void testCreate_RetentionScheduleRecordFolderLevel_Cutoff_Valid() throws Exception {
+    public void testCreate_RetentionScheduleRecordFolderLevel_Cutoff_Valid() throws Exception
+    {
 
         // Retention schedule with "record folder" level disposition
         String retentionScheduleId = useRetentionScheduleWithRecordLevel(false, false);
@@ -189,15 +192,15 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
     }
 
     /**
-     * Create "cutoff" retention step for a retention schedule with "record folder"
-     * level disposition supplying only INVALID disposition properties.
+     * Create "cutoff" retention step for a retention schedule with "record folder" level disposition supplying only INVALID disposition properties.
      * 
      * <p>
      * Invalid: dod:publicationDate, rma:cutOffDate and rma:dateFiled
      * </p>
      */
     @Test
-    public void testCreate_RetentionScheduleRecordFolderLevel_Cutoff_Invalid() throws Exception {
+    public void testCreate_RetentionScheduleRecordFolderLevel_Cutoff_Invalid() throws Exception
+    {
 
         // Retention schedule with "record folder" level disposition
         String retentionScheduleId = useRetentionScheduleWithRecordLevel(false, false);
@@ -218,16 +221,15 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
     }
 
     /**
-     * Create "transfer" retention step for a retention schedule with "record" level
-     * disposition supplying only VALID disposition properties.
+     * Create "transfer" retention step for a retention schedule with "record" level disposition supplying only VALID disposition properties.
      * 
      * <p>
-     * Valid: dod:publicationDate, rma:cutOffDate, rma:dispositionAsOf,
-     * rma:dateField and cm:created
+     * Valid: dod:publicationDate, rma:cutOffDate, rma:dispositionAsOf, rma:dateField and cm:created
      * </p>
      */
     @Test
-    public void testCreate_RetentionScheduleRecordLevel_Transfer_Valid() throws Exception {
+    public void testCreate_RetentionScheduleRecordLevel_Transfer_Valid() throws Exception
+    {
 
         // Retention schedule with "record" level disposition
         String retentionScheduleId = useRetentionScheduleWithRecordLevel(true, true);
@@ -254,16 +256,15 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
     }
 
     /**
-     * Create "transfer" retention step for a retention schedule with "record" level
-     * disposition supplying only INVALID disposition properties.
+     * Create "transfer" retention step for a retention schedule with "record" level disposition supplying only INVALID disposition properties.
      * 
      * <p>
-     * Invalid: any other property that is not dod:publicationDate, rma:cutOffDate,
-     * rma:dispositionAsOf, rma:dateField and cm:created.
+     * Invalid: any other property that is not dod:publicationDate, rma:cutOffDate, rma:dispositionAsOf, rma:dateField and cm:created.
      * </p>
      */
     @Test
-    public void testCreate_RetentionScheduleRecordLevel_Transfer_Invalid() throws Exception {
+    public void testCreate_RetentionScheduleRecordLevel_Transfer_Invalid() throws Exception
+    {
 
         // Retention schedule with "record" level disposition
         String retentionScheduleId = useRetentionScheduleWithRecordLevel(true, true);
@@ -278,15 +279,15 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
     }
 
     /**
-     * Create "transfer" retention step for a retention schedule with "record
-     * folder" level disposition supplying only VALID disposition properties.
+     * Create "transfer" retention step for a retention schedule with "record folder" level disposition supplying only VALID disposition properties.
      * 
      * <p>
      * Valid: rma:cutOffDate, rma:dispositionAsOf and cm:created
      * </p>
      */
     @Test
-    public void testCreate_RetentionScheduleRecordFolderLevel_Transfer_Valid() throws Exception {
+    public void testCreate_RetentionScheduleRecordFolderLevel_Transfer_Valid() throws Exception
+    {
 
         // Retention schedule with "record" level disposition
         String retentionScheduleId = useRetentionScheduleWithRecordLevel(false, true);
@@ -307,15 +308,15 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
     }
 
     /**
-     * Create "transfer" retention step for a retention schedule with "record
-     * folder" level disposition supplying only INVALID disposition properties.
+     * Create "transfer" retention step for a retention schedule with "record folder" level disposition supplying only INVALID disposition properties.
      * 
      * <p>
      * Invalid: dod:publicationDate and rma:dateFiled
      * </p>
      */
     @Test
-    public void testCreate_RetentionScheduleRecordFolderLevel_Transfer_Invalid() throws Exception {
+    public void testCreate_RetentionScheduleRecordFolderLevel_Transfer_Invalid() throws Exception
+    {
 
         // Retention schedule with "record" level disposition
         String retentionScheduleId = useRetentionScheduleWithRecordLevel(false, true);
@@ -332,21 +333,27 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
         verify(mockedNodeService, never()).createNode(any(), any(), any(), any(), any());
     }
 
-    private void executeValidStep(String retentionScheduleId, String actionName, String periodProperty) {
+    private void executeValidStep(String retentionScheduleId, String actionName, String periodProperty)
+    {
         RetentionScheduleActionDefinition actionDef = createAction(actionName, periodProperty);
         retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
     }
 
-    private void executeInvalidStep(String retentionScheduleId, String actionName, String periodProperty) {
+    private void executeInvalidStep(String retentionScheduleId, String actionName, String periodProperty)
+    {
         RetentionScheduleActionDefinition actionDef = createAction(actionName, periodProperty);
-        try {
+        try
+        {
             retentionScheduleActionRelation.create(retentionScheduleId, Arrays.asList(actionDef), parameters);
-        } catch (InvalidArgumentException e) {
+        }
+        catch (InvalidArgumentException e)
+        {
             assertTrue(e.getMessage().contains("periodProperty value is invalid: " + periodProperty));
         }
     }
 
-    private String useRetentionScheduleWithRecordLevel(Boolean withRecordLevel, boolean hasCompletedActions) {
+    private String useRetentionScheduleWithRecordLevel(Boolean withRecordLevel, boolean hasCompletedActions)
+    {
 
         NodeRef retentionScheduleNodeRef = withRecordLevel ? rsRecordLevelNodeRef : rsRecordFolderLevelNodeRef;
 
@@ -372,7 +379,8 @@ public class RetentionScheduleActionRelationUnitTest extends BaseUnitTest {
         return retentionScheduleId;
     }
 
-    private RetentionScheduleActionDefinition createAction(String name, String periodProperty) {
+    private RetentionScheduleActionDefinition createAction(String name, String periodProperty)
+    {
         RetentionScheduleActionDefinition actionDef = mock(RetentionScheduleActionDefinition.class);
         when(actionDef.getName()).thenReturn(name);
         when(actionDef.getPeriodProperty()).thenReturn(periodProperty);

@@ -104,7 +104,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
     }
 
     @Override
-    @WebApiDescription(title="Create a retention schedule step for the particular retention schedule using the 'retentionScheduleId'")
+    @WebApiDescription(title = "Create a retention schedule step for the particular retention schedule using the 'retentionScheduleId'")
     public List<RetentionScheduleActionDefinition> create(String retentionScheduleId, List<RetentionScheduleActionDefinition> nodeInfos, Parameters parameters)
     {
         checkNotBlank("retentionScheduleId", retentionScheduleId);
@@ -159,8 +159,11 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
 
     /**
      * this method is used to validate the order of the retention schedule step
-     * @param retentionScheduleNodeRef nodeRef
-     * @param retentionScheduleActionDefinition retention schedule action definition
+     * 
+     * @param retentionScheduleNodeRef
+     *            nodeRef
+     * @param retentionScheduleActionDefinition
+     *            retention schedule action definition
      */
     private void retentionScheduleStepValidation(NodeRef retentionScheduleNodeRef, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
@@ -206,14 +209,16 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
 
     /**
      * this method is used to validate the request of the retention schedule
-     * @param retentionScheduleActionDefinition retention schedule action definition
+     * 
+     * @param retentionScheduleActionDefinition
+     *            retention schedule action definition
      */
     private void retentionScheduleRequestValidation(RetentionScheduleActionDefinition retentionScheduleActionDefinition, boolean isRecordLevel)
     {
         // step name validation
         if (invalidStepNameCheck(retentionScheduleActionDefinition.getName()))
         {
-            throw new InvalidArgumentException("name value is invalid : " +retentionScheduleActionDefinition.getName());
+            throw new InvalidArgumentException("name value is invalid : " + retentionScheduleActionDefinition.getName());
         }
 
         validatePeriodAndPeriodProperty(retentionScheduleActionDefinition, isRecordLevel);
@@ -240,7 +245,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         // period value validation
         if (invalidPeriodCheck(retentionScheduleActionDefinition.getPeriod()))
         {
-            throw new InvalidArgumentException("period value is invalid : " +retentionScheduleActionDefinition.getPeriod());
+            throw new InvalidArgumentException("period value is invalid : " + retentionScheduleActionDefinition.getPeriod());
         }
 
         // periodProperty validation
@@ -261,7 +266,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
     {
         return retentionScheduleActionDefinition.getLocation() != null
                 && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.TRANSFER.stepName)
-                    && !retentionScheduleActionDefinition.getLocation().isEmpty();
+                && !retentionScheduleActionDefinition.getLocation().isEmpty();
     }
 
     private boolean checkStepAlreadyExists(Set<String> completedActions, String stepName)

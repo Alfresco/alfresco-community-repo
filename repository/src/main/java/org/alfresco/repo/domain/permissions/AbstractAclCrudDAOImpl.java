@@ -320,7 +320,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         {
             return null;
         }
-        
+
+        @Override
+        public List<Serializable> getValueKeys(List<AclEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for ACLs.");
+        }
+
         public Pair<Long, AclEntity> createValue(AclEntity value)
         {
             AclEntity entity = createAclEntity(value);
@@ -332,7 +338,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             AclEntity entity = getAclEntity(key);
             return convertEntityToPair(entity);
         }
-        
+
+        @Override
+        public List<Pair<Long, AclEntity>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for ACLs.");
+        }
+
         public Pair<Long, AclEntity> findByValue(AclEntity value)
         {
             if ((value != null) && (value.getId() != null))
@@ -806,7 +818,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         {
             return value;
         }
-        
+
+        @Override
+        public List<PermissionEntity> getValueKeys(List<PermissionEntity> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for permissions.");
+        }
+
         public Pair<Long, PermissionEntity> createValue(PermissionEntity value)
         {
             PermissionEntity entity = createPermissionEntity(value);
@@ -818,7 +836,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             PermissionEntity entity = getPermissionEntity(key);
             return convertEntityToPair(entity);
         }
-        
+
+        @Override
+        public List<Pair<Long, PermissionEntity>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for permissions.");
+        }
+
         public Pair<Long, PermissionEntity> findByValue(PermissionEntity value)
         {
             if ((value == null) || (value.getName() == null) || (value.getTypeQNameId() == null))
@@ -985,7 +1009,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         {
             return value.getAuthority();
         }
-        
+
+        @Override
+        public List<String> getValueKeys(List<AuthorityEntity> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for authorities.");
+        }
+
         public Pair<Long, AuthorityEntity> createValue(AuthorityEntity value)
         {
             AuthorityEntity entity = createAuthorityEntity(value);
@@ -997,7 +1027,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             AuthorityEntity entity = getAuthorityEntity(key);
             return convertEntityToPair(entity);
         }
-        
+
+        @Override
+        public List<Pair<Long, AuthorityEntity>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for authorities.");
+        }
+
         public Pair<Long, AuthorityEntity> findByValue(AuthorityEntity value)
         {
             if ((value == null) || (value.getAuthority() == null))

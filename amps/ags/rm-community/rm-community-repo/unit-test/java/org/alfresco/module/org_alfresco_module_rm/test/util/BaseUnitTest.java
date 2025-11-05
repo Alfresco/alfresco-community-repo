@@ -27,22 +27,32 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
-import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
@@ -85,20 +95,11 @@ import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.collections.CollectionUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Base unit test.
  * <p>
- * Contains core and records management service mocks ready for injection.  Helper methods
- * provide an easy way to build RM or Alfresco constructs for use in tests.
+ * Contains core and records management service mocks ready for injection. Helper methods provide an easy way to build RM or Alfresco constructs for use in tests.
  *
  * @author Roy Wetherall
  * @since 2.2
@@ -112,47 +113,85 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     protected NodeRef record;
 
     /** core service mocks */
-    @Mock(name="nodeService")                    protected NodeService                  mockedNodeService;
-    @Mock(name="dictionaryService")              protected DictionaryService            mockedDictionaryService;
-    @Mock(name="namespaceService")               protected NamespaceService             mockedNamespaceService;
-    @Mock(name="identifierService")              protected IdentifierService            mockedIdentifierService;
-    @Mock(name="permissionService")              protected PermissionService            mockedPermissionService;
-    @Mock(name="ownableService")                 protected OwnableService               mockedOwnableService;
-    @Mock(name="searchService")                  protected SearchService                mockedSearchService;
-    @Mock(name="retryingTransactionHelper")      protected RetryingTransactionHelper    mockedRetryingTransactionHelper;
-    @Mock(name="authorityService")               protected AuthorityService             mockedAuthorityService;
-    @Mock(name="policyComponent")                protected PolicyComponent              mockedPolicyComponent;
-    @Mock(name="copyService")                    protected CopyService                  mockedCopyService;
-    @Mock(name="fileFolderService")              protected FileFolderService            mockedFileFolderService;
-    @Mock(name="modelSecurityService")           protected ModelSecurityService         mockedModelSecurityService;
-    @Mock(name="ruleService")                    protected RuleService                  mockedRuleService;
-    @Mock(name="versionService")                 protected VersionService               mockedVersionService;
+    @Mock(name = "nodeService")
+    protected NodeService mockedNodeService;
+    @Mock(name = "dictionaryService")
+    protected DictionaryService mockedDictionaryService;
+    @Mock(name = "namespaceService")
+    protected NamespaceService mockedNamespaceService;
+    @Mock(name = "identifierService")
+    protected IdentifierService mockedIdentifierService;
+    @Mock(name = "permissionService")
+    protected PermissionService mockedPermissionService;
+    @Mock(name = "ownableService")
+    protected OwnableService mockedOwnableService;
+    @Mock(name = "searchService")
+    protected SearchService mockedSearchService;
+    @Mock(name = "retryingTransactionHelper")
+    protected RetryingTransactionHelper mockedRetryingTransactionHelper;
+    @Mock(name = "authorityService")
+    protected AuthorityService mockedAuthorityService;
+    @Mock(name = "policyComponent")
+    protected PolicyComponent mockedPolicyComponent;
+    @Mock(name = "copyService")
+    protected CopyService mockedCopyService;
+    @Mock(name = "fileFolderService")
+    protected FileFolderService mockedFileFolderService;
+    @Mock(name = "modelSecurityService")
+    protected ModelSecurityService mockedModelSecurityService;
+    @Mock(name = "ruleService")
+    protected RuleService mockedRuleService;
+    @Mock(name = "versionService")
+    protected VersionService mockedVersionService;
 
     /** rm service mocks */
-    @Mock(name="filePlanService")                protected FilePlanService              mockedFilePlanService;
-    @Mock(name="recordFolderService")            protected RecordFolderService          mockedRecordFolderService;
-    @Mock(name="recordService")                  protected RecordService                mockedRecordService;
-    @Mock(name="holdService")                    protected HoldService                  mockedHoldService;
-    @Mock(name="recordsManagementActionService") protected RecordsManagementActionService mockedRecordsManagementActionService;
-    @Mock(name="reportService")                  protected ReportService                mockedReportService;
-    @Mock(name="filePlanRoleService")            protected FilePlanRoleService          mockedFilePlanRoleService;
-    @Mock(name="recordsManagementAuditService")  protected RecordsManagementAuditService mockedRecordsManagementAuditService;
-    @Mock(name="policyBehaviourFilter")          protected BehaviourFilter              mockedBehaviourFilter;
-    @Mock(name="authenticationUtil")             protected AuthenticationUtil           mockedAuthenticationUtil;
-    @Mock(name="extendedPermissionService")      protected ExtendedPermissionService    mockedExtendedPermissionService;
-    @Mock(name="extendedSecurityService")        protected ExtendedSecurityService      mockedExtendedSecurityService;
-    @Mock(name="recordableVersionConfigService") protected RecordableVersionConfigService mockedRecordableVersionConfigService;
-    @Mock(name="cmObjectType")                   protected CmObjectType                 mockedCmObjectType;
-    @Mock(name="recordableVersionService")       protected RecordableVersionService     mockedRecordableVersionService;
-    @Mock(name="transactionalResourceHelper")    protected TransactionalResourceHelper  mockedTransactionalResourceHelper;
-    @Mock(name="alfrescoTransactionSupport")     protected AlfrescoTransactionSupport   mockedAlfrescoTransactionSupport;
-    @Mock(name="freezeService")                  protected FreezeService                mockedFreezeService;
-    @Mock(name="dispositionService")             protected DispositionService           mockedDispositionService;
+    @Mock(name = "filePlanService")
+    protected FilePlanService mockedFilePlanService;
+    @Mock(name = "recordFolderService")
+    protected RecordFolderService mockedRecordFolderService;
+    @Mock(name = "recordService")
+    protected RecordService mockedRecordService;
+    @Mock(name = "holdService")
+    protected HoldService mockedHoldService;
+    @Mock(name = "recordsManagementActionService")
+    protected RecordsManagementActionService mockedRecordsManagementActionService;
+    @Mock(name = "reportService")
+    protected ReportService mockedReportService;
+    @Mock(name = "filePlanRoleService")
+    protected FilePlanRoleService mockedFilePlanRoleService;
+    @Mock(name = "recordsManagementAuditService")
+    protected RecordsManagementAuditService mockedRecordsManagementAuditService;
+    @Mock(name = "policyBehaviourFilter")
+    protected BehaviourFilter mockedBehaviourFilter;
+    @Mock(name = "authenticationUtil")
+    protected AuthenticationUtil mockedAuthenticationUtil;
+    @Mock(name = "extendedPermissionService")
+    protected ExtendedPermissionService mockedExtendedPermissionService;
+    @Mock(name = "extendedSecurityService")
+    protected ExtendedSecurityService mockedExtendedSecurityService;
+    @Mock(name = "recordableVersionConfigService")
+    protected RecordableVersionConfigService mockedRecordableVersionConfigService;
+    @Mock(name = "cmObjectType")
+    protected CmObjectType mockedCmObjectType;
+    @Mock(name = "recordableVersionService")
+    protected RecordableVersionService mockedRecordableVersionService;
+    @Mock(name = "transactionalResourceHelper")
+    protected TransactionalResourceHelper mockedTransactionalResourceHelper;
+    @Mock(name = "alfrescoTransactionSupport")
+    protected AlfrescoTransactionSupport mockedAlfrescoTransactionSupport;
+    @Mock(name = "freezeService")
+    protected FreezeService mockedFreezeService;
+    @Mock(name = "dispositionService")
+    protected DispositionService mockedDispositionService;
+    @Mock(name = "recordsManagementEventService")
+    protected RecordsManagementEventService mockedRecordsManagementEventService;
 
     /** application context mock */
-    @Mock(name="applicationContext")             protected ApplicationContext           mockedApplicationContext;
+    @Mock(name = "applicationContext")
+    protected ApplicationContext mockedApplicationContext;
 
-    @Mock protected NodeTypeUtility mockedNodeTypeUtility;
+    @Mock
+    protected NodeTypeUtility mockedNodeTypeUtility;
 
     /** expected exception rule */
     @Rule
@@ -171,17 +210,16 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         lenient().doReturn(mockedNodeService).when(mockedApplicationContext).getBean("dbNodeService");
 
         // setup retrying transaction helper
-        Answer<Object> doInTransactionAnswer = new Answer<Object>()
-        {
+        Answer<Object> doInTransactionAnswer = new Answer<Object>() {
             @SuppressWarnings("rawtypes")
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable
             {
-                RetryingTransactionCallback callback = (RetryingTransactionCallback)invocation.getArguments()[0];
+                RetryingTransactionCallback callback = (RetryingTransactionCallback) invocation.getArguments()[0];
                 return callback.execute();
             }
         };
-        lenient().doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).<Object>doInTransaction(any(RetryingTransactionCallback.class));
+        lenient().doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).<Object> doInTransaction(any(RetryingTransactionCallback.class));
 
         // setup mocked authentication util
         MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil);
@@ -215,8 +253,9 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     /**
      * Helper method to generate hold reference
      *
-     * @param name                  hold name
-     * @return {@link NodeRef}      node reference that will behave like a hold
+     * @param name
+     *            hold name
+     * @return {@link NodeRef} node reference that will behave like a hold
      */
     protected NodeRef generateHoldNodeRef(String name)
     {
@@ -229,7 +268,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     /**
      * Helper method to generate record folder reference
      *
-     * @return  {@link NodeRef} node reference that will behave like a record folder
+     * @return {@link NodeRef} node reference that will behave like a record folder
      */
     protected NodeRef generateRecordFolder()
     {
@@ -242,7 +281,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     /**
      * Helper method to generate a record node reference.
      *
-     * @return  {@link NodeRef} node reference that will behave like a record or type cm:content
+     * @return {@link NodeRef} node reference that will behave like a record or type cm:content
      */
     protected NodeRef generateRecord()
     {
@@ -256,7 +295,8 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     /**
      * Helper method to setup a node reference as a file plan component.
      *
-     * @param nodeRef   {@link NodeRef} node reference that will now behave like a file plan component
+     * @param nodeRef
+     *            {@link NodeRef} node reference that will now behave like a file plan component
      */
     protected void setupAsFilePlanComponent(NodeRef nodeRef)
     {
@@ -269,7 +309,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     /**
      * Helper method to generate a node reference.
      *
-     * @return  {@link NodeRef} node reference that behaves like a node that exists in the spaces store
+     * @return {@link NodeRef} node reference that behaves like a node that exists in the spaces store
      */
     protected NodeRef generateNodeRef()
     {
@@ -279,9 +319,9 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     /**
      * Helper method to generate a node reference of a particular type.
      *
-     * @param type  content type qualified name
-     * @return {@link NodeRef}  node reference that behaves like a node that exists in the spaces store with
-     *                          the content type provided
+     * @param type
+     *            content type qualified name
+     * @return {@link NodeRef} node reference that behaves like a node that exists in the spaces store with the content type provided
      */
     protected NodeRef generateNodeRef(QName type)
     {
@@ -291,8 +331,9 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     /**
      * Helper method to generate a cm:content node reference with a given name.
      *
-     * @param name      content name
-     * @return NodeRef  node reference
+     * @param name
+     *            content name
+     * @return NodeRef node reference
      */
     protected NodeRef generateCmContent(String name)
     {
@@ -304,10 +345,11 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     /**
      * Helper method to generate a node reference of a particular type with a given existence characteristic.
      *
-     * @param type  content type qualified name
-     * @param exists indicates whether this node should behave like a node that exists or not
-     * @return {@link NodeRef}  node reference that behaves like a node that exists (or not) in the spaces store with
-     *                          the content type provided
+     * @param type
+     *            content type qualified name
+     * @param exists
+     *            indicates whether this node should behave like a node that exists or not
+     * @return {@link NodeRef} node reference that behaves like a node that exists (or not) in the spaces store with the content type provided
      */
     protected NodeRef generateNodeRef(QName type, boolean exists)
     {
@@ -324,9 +366,11 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     /**
      * Helper method to generate a mocked child association reference.
      *
-     * @param parent                        parent node (optional)
-     * @param child                         child node (optional)
-     * @return {@link ChildAssociationRef}  mocked to return the parent and child nodes
+     * @param parent
+     *            parent node (optional)
+     * @param child
+     *            child node (optional)
+     * @return {@link ChildAssociationRef} mocked to return the parent and child nodes
      */
     protected ChildAssociationRef generateChildAssociationRef(NodeRef parent, NodeRef child)
     {
@@ -357,17 +401,17 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     {
         makePrimaryParentOf(child, parent, ContentModel.ASSOC_CONTAINS, generateQName());
     }
-    
+
     protected void makePrimaryParentOf(NodeRef child, NodeRef parent, QName assocType, QName assocName)
     {
-        makePrimaryParentOf(child, parent, assocType, assocName, mockedNodeService); 
+        makePrimaryParentOf(child, parent, assocType, assocName, mockedNodeService);
     }
-    
+
     protected void makePrimaryParentOf(NodeRef child, NodeRef parent, QName assocType, QName assocName, NodeService mockedNodeService)
     {
         doReturn(new ChildAssociationRef(assocType, parent, assocName, child))
-            .when(mockedNodeService)
-            .getPrimaryParent(child);
+                .when(mockedNodeService)
+                .getPrimaryParent(child);
     }
 
     /**
@@ -378,7 +422,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
      * @param parent
      * @param children
      */
-    protected void makeChildrenOf(NodeRef parent, NodeRef ... children)
+    protected void makeChildrenOf(NodeRef parent, NodeRef... children)
     {
         List<ChildAssociationRef> assocs = new ArrayList<>(children.length);
         for (NodeRef child : children)
@@ -390,7 +434,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> List<T> buildList(T ... values)
+    protected <T> List<T> buildList(T... values)
     {
         List<T> result = new ArrayList<>(values.length);
         for (T value : values)

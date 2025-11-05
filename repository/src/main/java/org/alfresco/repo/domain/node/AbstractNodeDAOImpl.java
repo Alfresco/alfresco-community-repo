@@ -4955,7 +4955,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         // First ensure all content data are pre-cached, so we don't have to load them individually when converting properties
-        if (preloadContentData && !propertiesNodeIds.isEmpty())
+        if (preloadContentData &&!propertiesNodeIds.isEmpty())
         {
             contentDataDAO.cacheContentDataForNodes(propertiesNodeIds);
         }
@@ -4968,7 +4968,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Map<NodePropertyKey, NodePropertyValue> propertyValues = entry.getValue();
             Map<QName, Serializable> props = nodePropertyHelper.convertToPublicProperties(propertyValues);
             setNodePropertiesCached(nodeId, props);
-        } // Rework the above .... it is not the best approach .... post processing approach is better
+        }
     }
 
     /**

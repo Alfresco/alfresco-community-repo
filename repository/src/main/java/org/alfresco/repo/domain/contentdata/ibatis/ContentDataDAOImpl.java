@@ -70,7 +70,6 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     private static final String SELECT_CONTENT_DATA_BY_ID = "alfresco.content.select_ContentDataById";
     private static final String SELECT_CONTENT_DATA_BY_NODE_AND_QNAME = "alfresco.content.select_ContentDataByNodeAndQName";
     private static final String SELECT_CONTENT_DATA_BY_NODE_IDS = "alfresco.content.select_ContentDataByNodeIds";
-    private static final String SELECT_CONTENT_DATA_BY_CONTENT_DATA = "alfresco.content.select_ContentDataByContentData";
     private static final String INSERT_CONTENT_URL = "alfresco.content.insert.insert_ContentUrl";
     private static final String INSERT_CONTENT_DATA = "alfresco.content.insert.insert_ContentData";
     private static final String UPDATE_CONTENT_URL_ORPHAN_TIME = "alfresco.content.update_ContentUrlOrphanTime";
@@ -281,30 +280,6 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         IdsEntity idsEntity = new IdsEntity();
         idsEntity.setIds(new ArrayList<Long>(nodeIds));
         return template.selectList(SELECT_CONTENT_DATA_BY_NODE_IDS, idsEntity);
-    }
-
-    @Override
-    protected ContentDataEntity getContentDataEntity(ContentData contentData)
-    {
-        if (contentData == null)
-        {
-            return null;
-        }
-
-        return template.selectOne(SELECT_CONTENT_DATA_BY_CONTENT_DATA, contentData);
-        // Done
-    }
-
-    @Override
-    protected List<ContentDataEntity> getContentDataEntities(List<ContentData> contentDataList)
-    {
-        if (contentDataList != null && !contentDataList.isEmpty())
-        {
-            return template.selectList(SELECT_CONTENT_DATA_BY_CONTENT_DATA, contentDataList);
-        }
-
-        // There will be no results
-        return Collections.emptyList();
     }
 
     @Override

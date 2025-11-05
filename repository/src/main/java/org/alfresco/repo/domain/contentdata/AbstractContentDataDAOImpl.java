@@ -303,41 +303,6 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      */
     private class ContentDataCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, ContentData, Serializable>
     {
-        @Override
-        public Serializable getValueKey(ContentData value)
-        {
-            if (value == null)
-            {
-                throw new IllegalArgumentException("ContentData value cannot be null");
-            }
-
-            // It is a gross hack for now, but we need to find the entity based on the value
-            ContentDataEntity contentDataEntity = getContentDataEntities(Collections.singletonList(value)).stream().findFirst().orElse(null);
-            if (contentDataEntity == null)
-            {
-                return null;
-            }
-            return contentDataEntity.getId();
-        }
-
-        @Override
-        public List<Serializable> getValueKeys(List<ContentData> values)
-        {
-            if (values == null || values.isEmpty())
-            {
-                return Collections.emptyList();
-            }
-
-            List<ContentDataEntity> contentDataEntities = getContentDataEntities(values);
-
-            List<Serializable> result = new ArrayList<>(contentDataEntities.size());
-            for (ContentDataEntity contentDataEntity : contentDataEntities)
-            {
-                result.add(contentDataEntity.getId());
-            }
-            return result;
-        }
-
         public Pair<Long, ContentData> createValue(ContentData value)
         {
             value = sanitizeMimetype(value);
@@ -496,59 +461,17 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     {
         // Decode content URL
         Long contentUrlId = contentDataEntity.getContentUrlId();
-        Pair<Long, ContentUrlEntity> entityPair = null;
+        String contentUrl = null;
         if (contentUrlId != null)
         {
-            entityPair = contentUrlCache.getByKey(contentUrlId);
+            Pair<Long, ContentUrlEntity> entityPair = contentUrlCache.getByKey(contentUrlId);
+            if (entityPair == null)
+            {
+                throw new DataIntegrityViolationException("No ContentUrl value exists for ID " + contentUrlId);
+            }
+            ContentUrlEntity contentUrlEntity = entityPair.getSecond();
+            contentUrl = contentUrlEntity.getContentUrl();
         }
-
-        return processContentDataEntity(entityPair, contentDataEntity);
-    }
-
-    /**
-     * Translates these instances into an externally-usable <code>ContentData</code> instances.
-     */
-    private List<ContentData> makeContentData(List<ContentDataEntity> contentDataEntities)
-    {
-        List<ContentData> contentDataList = new ArrayList<>(contentDataEntities.size());
-        List<Long> contentUrlIds = new ArrayList<>();
-        List<Pair<Long, ContentUrlEntity>> entityPairs = new ArrayList<>(contentDataEntities.size());
-
-        for (ContentDataEntity contentDataEntity : contentDataEntities)
-        {
-            // Decode content URL
-            contentUrlIds.add(contentDataEntity.getContentUrlId());
-        }
-
-        if (!contentUrlIds.isEmpty())
-        {
-            entityPairs = contentUrlCache.getByKeys(contentUrlIds);
-        }
-
-        for (Pair<Long, ContentUrlEntity> pair : entityPairs)
-        {
-            ContentDataEntity contentDataEntity = contentDataEntities.stream()
-                    .filter(cde -> cde.getContentUrlId().equals(pair.getFirst()))
-                    .findFirst()
-                    .orElse(null);
-            ContentData contentData = processContentDataEntity(pair, contentDataEntity);
-            contentDataList.add(contentData);
-        }
-        return contentDataList;
-    }
-
-    private ContentData processContentDataEntity(Pair<Long, ContentUrlEntity> entityPair, ContentDataEntity contentDataEntity)
-    {
-        // Decode content URL
-        Long contentUrlId = contentDataEntity.getContentUrlId();
-        String contentUrl = null;
-
-        if (entityPair == null)
-        {
-            throw new DataIntegrityViolationException("No ContentUrl value exists for ID " + contentUrlId);
-        }
-        ContentUrlEntity contentUrlEntity = entityPair.getSecond();
-        contentUrl = contentUrlEntity.getContentUrl();
 
         long size = contentDataEntity.getSize() == null ? 0L : contentDataEntity.getSize().longValue();
 
@@ -835,20 +758,6 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * @return Returns the associated entities or <tt>null</tt> if none exist
      */
     protected abstract List<ContentDataEntity> getContentDataEntitiesForNodes(Set<Long> nodeIds);
-
-    /**
-     * @param contentData
-     *            the content data
-     * @return Returns the entity or <tt>null</tt> if it doesn't exist
-     */
-    protected abstract ContentDataEntity getContentDataEntity(ContentData contentData);
-
-    /**
-     * @param contentDataList
-     *            the list of content data
-     * @return Returns the list of entities or <tt>null</tt> if none exist
-     */
-    protected abstract List<ContentDataEntity> getContentDataEntities(List<ContentData> contentDataList);
 
     /**
      * Update an existing <b>alf_content_data</b> entity

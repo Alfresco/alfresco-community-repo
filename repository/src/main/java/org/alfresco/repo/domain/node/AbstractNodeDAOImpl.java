@@ -43,6 +43,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -140,6 +141,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private UsageDAO usageDAO;
 
     private int cachingThreshold = 10;
+    private int batchSize = 256;
+    private boolean forceBatching = false;
+    private boolean preloadContentData = true;
 
     /**
      * Cache for the Store root nodes by StoreRef:<br/>
@@ -408,6 +412,36 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     public void setChildByNameCache(SimpleCache<ChildByNameKey, ChildAssocEntity> childByNameCache)
     {
         this.childByNameCache = childByNameCache;
+    }
+
+    /**
+     * Set the batch size for batch operations
+     * 
+     * @param batchSize
+     */
+    public void setBatchSize(int batchSize)
+    {
+        this.batchSize = batchSize;
+    }
+
+    /**
+     * Set whether to force batching even for small sets
+     * 
+     * @param forceBatching
+     */
+    public void setForceBatching(boolean forceBatching)
+    {
+        this.forceBatching = forceBatching;
+    }
+
+    /**
+     * Set whether to preload content data for properties when bulk loading properties
+     * 
+     * @param preloadContentData
+     */
+    public void setPreloadContentData(boolean preloadContentData)
+    {
+        this.preloadContentData = preloadContentData;
     }
 
     /* Initialize */
@@ -831,6 +865,15 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             NodeEntity node = selectStoreRootNode(storeRef);
             return node == null ? null : new Pair<StoreRef, Node>(storeRef, node);
         }
+
+        /**
+         * @throws UnsupportedOperationException
+         *             Bulk root node lookup not supported
+         */
+        public List<Pair<StoreRef, Node>> findByKeys(List<StoreRef> storeRefs)
+        {
+            throw new UnsupportedOperationException("Bulk root node lookup not supported: " + storeRefs);
+        }
     }
 
     /* Nodes */
@@ -871,6 +914,37 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             {
                 return null;
             }
+        }
+
+        /**
+         * @param nodeIds
+         *            list of node IDs keys
+         */
+        @Override
+        public List<Pair<Long, Node>> findByKeys(List<Long> nodeIds)
+        {
+            if (nodeIds == null || nodeIds.size() == 0)
+            {
+                return new ArrayList<Pair<Long, Node>>(0);
+            }
+
+            List<Pair<Long, Node>> results = new ArrayList<Pair<Long, Node>>(nodeIds.size());
+
+            SortedSet<Long> uniqueNodeIds = new TreeSet<Long>(nodeIds);
+            List<Node> nodes = selectNodesByIds(uniqueNodeIds);
+
+            for (Node node : nodes)
+            {
+                // Shouldn't be null, but...
+                if (node != null)
+                {
+                    // Lock it to prevent 'accidental' modification
+                    node.lock();
+                    results.add(new Pair<Long, Node>(node.getId(), node));
+                }
+            }
+
+            return results;
         }
 
         /**
@@ -1149,6 +1223,71 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             return pair.getSecond();
         }
+    }
+
+    /**
+     * Get node instances regardless of whether they are considered <b>live</b> or <b>deleted</b>
+     * 
+     * @param nodeIds
+     *            the node IDs to look for
+     * @param liveOnly
+     *            <tt>true</tt> to ensure that only <b>live</b> nodes are retrieved
+     * @return nodes that will be <b>live</b> if requested. Nodes not found will be ignored.
+     */
+    private List<Node> getNodesNotNull(List<Long> nodeIds, boolean liveOnly)
+    {
+        List<Pair<Long, Node>> pairs = nodesCache.getByKeys(nodeIds);
+
+        if (pairs.isEmpty())
+        {
+            // The nodes have no entry in the database
+            List<NodeEntity> dbNodes = selectNodesByIds(nodeIds);
+            nodesCache.removeByKeys(nodeIds);
+            logger.debug(
+                    "No node rows exists: \n" +
+                            "   IDs:        " + nodeIds + "\n" +
+                            "   DB rows:    " + dbNodes);
+            return Collections.emptyList();
+        }
+
+        List<Long> deletedNodeIds = new ArrayList<>();
+        List<Node> liveNodes = new ArrayList<>();
+        for (Pair<Long, Node> pair : pairs)
+        {
+            // This might initially seem less performant but after the first iteration the qname will be cached if it is already not there
+            if (pair.getSecond().getDeleted(qnameDAO) && liveOnly)
+            {
+                deletedNodeIds.add(pair.getFirst());
+            }
+            else
+            {
+                // Keep the live node
+                liveNodes.add(pair.getSecond());
+            }
+        }
+
+        if (!deletedNodeIds.isEmpty())
+        {
+            // The node is not 'live' as was requested
+            List<NodeEntity> dbNode = selectNodesByIds(deletedNodeIds);
+            nodesCache.removeByKeys(deletedNodeIds);
+
+            // Now the pain of pruning dangling assocs for each deleted node...this could be slow if there are many deleted nodes
+            for (Long nodeId : deletedNodeIds)
+            {
+                pruneDanglingAssocs(nodeId);
+                // In the single node case we would force a retry on the transaction...we can't do that here so just log it
+                if (isDebugEnabled)
+                {
+                    logger.debug(
+                            "No node rows exists: \n" +
+                                    "   IDs:        " + nodeId + "\n" +
+                                    "   DB rows:    " + dbNode);
+                }
+            }
+        }
+
+        return liveNodes;
     }
 
     @Override
@@ -1666,7 +1805,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     public int touchNodes(Long txnId, List<Long> nodeIds)
     {
         // limit in clause to 1000 node ids
-        int batchSize = 1000;
+        var batchSize = 1000;
 
         int touched = 0;
         ArrayList<Long> batch = new ArrayList<Long>(batchSize);
@@ -2595,6 +2734,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // Done
             return new Pair<NodeVersionKey, Map<QName, Serializable>>(nodeVersionKey, Collections.unmodifiableMap(props));
         }
+
+        /**
+         * Batch lookup is not supported
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<NodeVersionKey, Map<QName, Serializable>>> findByKeys(List<NodeVersionKey> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for node properties.");
+        }
     }
 
     /* Aspects */
@@ -2832,6 +2981,24 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
 
     /**
+     * Update the node aspects cache. The incoming set will be wrapped to be unmodifiable.
+     */
+    private void setNodeAspectsCached(Map<Long, Set<QName>> nodeAspects)
+    {
+        List<Long> nodeIds = nodeAspects.keySet().stream().toList();
+
+        List<NodeVersionKey> nodeVersionKeys = getNodesNotNull(nodeIds, false).stream()
+                .map(Node::getNodeVersionKey)
+                .collect(Collectors.toList());
+
+        // Should have mimimal impact
+        for (NodeVersionKey nodeVersionKey : nodeVersionKeys)
+        {
+            aspectsCache.setValue(nodeVersionKey, Collections.unmodifiableSet(nodeAspects.get(nodeVersionKey.getNodeId())));
+        }
+    }
+
+    /**
      * Helper method to copy cache values from one key to another
      */
     private void copyNodeAspectsCached(NodeVersionKey from, NodeVersionKey to)
@@ -2881,6 +3048,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
             // Done
             return new Pair<NodeVersionKey, Set<QName>>(nodeVersionKey, Collections.unmodifiableSet(nodeAspectQNames));
+        }
+
+        /**
+         * Batch lookup is not supported
+         * 
+         * @throws UnsupportedOperationException
+         */
+        public List<Pair<NodeVersionKey, Set<QName>>> findByKeys(List<NodeVersionKey> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for node aspects.");
         }
     }
 
@@ -4558,12 +4735,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         int foundCacheEntryCount = 0;
         int missingCacheEntryCount = 0;
-        boolean forceBatch = false;
 
         List<Long> batchLoadNodeIds = new ArrayList<Long>(nodeIds.size());
         for (Long nodeId : nodeIds)
         {
-            if (!forceBatch)
+            if (!forceBatching)
             {
                 // Is this node in the cache?
                 if (nodesCache.getValue(nodeId) != null)
@@ -4578,7 +4754,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 if (foundCacheEntryCount + missingCacheEntryCount % 100 == 0)
                 {
                     // We force the batch if the number of hits drops below the number of misses
-                    forceBatch = foundCacheEntryCount < missingCacheEntryCount;
+                    forceBatching = foundCacheEntryCount < missingCacheEntryCount;
                 }
             }
 
@@ -4672,7 +4848,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         StoreEntity store = getStoreNotNull(storeRef);
         Long storeId = store.getId();
 
-        int batchSize = 256;
         SortedSet<String> batch = new TreeSet<String>();
         for (String uuid : uuids)
         {
@@ -4690,12 +4865,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             List<Node> nodes = selectNodesByUuids(storeId, batch);
             cacheNodesNoBatch(nodes);
+            logger.info("Batch size may be too small " + batch.size() + " nodes.");
         }
     }
 
     private void cacheNodesBatch(List<Long> nodeIds)
     {
-        int batchSize = 256;
         SortedSet<Long> batch = new TreeSet<Long>();
         for (Long nodeId : nodeIds)
         {
@@ -4713,6 +4888,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             List<Node> nodes = selectNodesByIds(batch);
             cacheNodesNoBatch(nodes);
+            logger.info("Batch size may be too small " + batch.size() + " nodes.");
         }
     }
 
@@ -4749,22 +4925,40 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         Map<NodeVersionKey, Set<QName>> nodeAspects = selectNodeAspects(aspectNodeIds);
+        Map<Long, Set<QName>> aspectsMappedByNodeId = new HashMap<Long, Set<QName>>(aspectNodeIds.size());
+        Map<Long, Set<QName>> nodesWithNoAspects = new HashMap<Long, Set<QName>>(aspectNodeIds.size());
+
         for (Map.Entry<NodeVersionKey, Set<QName>> entry : nodeAspects.entrySet())
         {
-            NodeVersionKey nodeVersionKeyFromDb = entry.getKey();
-            Long nodeId = nodeVersionKeyFromDb.getNodeId();
-            Set<QName> qnames = entry.getValue();
-            setNodeAspectsCached(nodeId, qnames);
-            aspectNodeIds.remove(nodeId);
+            NodeVersionKey oldKey = entry.getKey();
+            Long newKey = oldKey.getNodeId();
+            Set<QName> value = entry.getValue();
+            aspectsMappedByNodeId.put(newKey, value);
+            // Remove the nodeIds from the original Set
+            aspectNodeIds.remove(newKey);
         }
+
+        if (!aspectsMappedByNodeId.isEmpty())
+        {
+            setNodeAspectsCached(aspectsMappedByNodeId);
+        }
+
         // Cache the absence of aspects too!
         for (Long nodeId : aspectNodeIds)
         {
-            setNodeAspectsCached(nodeId, Collections.<QName> emptySet());
+            nodesWithNoAspects.put(nodeId, Collections.<QName> emptySet());
+        }
+
+        if (!nodesWithNoAspects.isEmpty())
+        {
+            setNodeAspectsCached(nodesWithNoAspects);
         }
 
         // First ensure all content data are pre-cached, so we don't have to load them individually when converting properties
-        contentDataDAO.cacheContentDataForNodes(propertiesNodeIds);
+        if (preloadContentData && !propertiesNodeIds.isEmpty())
+        {
+            contentDataDAO.cacheContentDataForNodes(propertiesNodeIds);
+        }
 
         // Now bulk load the properties
         Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> propsByNodeId = selectNodeProperties(propertiesNodeIds);
@@ -4774,7 +4968,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Map<NodePropertyKey, NodePropertyValue> propertyValues = entry.getValue();
             Map<QName, Serializable> props = nodePropertyHelper.convertToPublicProperties(propertyValues);
             setNodePropertiesCached(nodeId, props);
-        }
+        } // Rework the above .... it is not the best approach .... post processing approach is better
     }
 
     /**
@@ -4942,6 +5136,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int deleteNodesByCommitTime(long fromTxnCommitTimeMs, long toTxnCommitTimeMs);
 
     protected abstract NodeEntity selectNodeById(Long id);
+
+    protected abstract List<NodeEntity> selectNodesByIds(List<Long> ids);
 
     protected abstract NodeEntity selectNodeByNodeRef(NodeRef nodeRef);
 

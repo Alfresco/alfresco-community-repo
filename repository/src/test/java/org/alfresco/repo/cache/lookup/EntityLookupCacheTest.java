@@ -28,6 +28,8 @@ package org.alfresco.repo.cache.lookup;
 import static org.junit.Assert.*;
 
 import java.sql.Savepoint;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -332,6 +334,16 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         return dbValue;
     }
 
+    public List<String> getValueKeys(List<Object> values)
+    {
+        List<String> keys = new ArrayList<>(values.size());
+        for (Object value : values)
+        {
+            keys.add(getValueKey(value));
+        }
+        return keys;
+    }
+
     public Pair<Long, Object> findByKey(Long key)
     {
         assertNotNull(key);
@@ -344,6 +356,12 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         // Make a value object
         TestValue value = new TestValue(dbValue);
         return new Pair<Long, Object>(key, value);
+    }
+
+    @Override
+    public List<Pair<Long, Object>> findByKeys(List<Long> key)
+    {
+        throw new UnsupportedOperationException("Batch lookup not supported in test DAO.");
     }
 
     public Pair<Long, Object> findByValue(Object value)

@@ -211,6 +211,12 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         }
 
         @Override
+        public List<Serializable> getValueKeys(List<TenantEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for tenants.");
+        }
+
+        @Override
         public Pair<String, TenantEntity> createValue(TenantEntity value)
         {
             TenantEntity entity = createTenantEntity(value);
@@ -222,6 +228,12 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         {
             TenantEntity entity = getTenantEntity(key);
             return convertEntityToPair(entity);
+        }
+
+        @Override
+        public List<Pair<String, TenantEntity>> findByKeys(List<String> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for tenants.");
         }
 
         @Override

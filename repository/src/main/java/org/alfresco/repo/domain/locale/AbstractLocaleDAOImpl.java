@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.domain.locale;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -237,6 +238,12 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
             {
                 return new Pair<Long, String>(id, entity.getLocaleStr());
             }
+        }
+
+        @Override
+        public List<Pair<Long, String>> findByKeys(List<Long> ids)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for locales.");
         }
 
         @Override

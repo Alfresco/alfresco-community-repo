@@ -420,6 +420,19 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
+    protected List<NodeEntity> selectNodesByIds(List<Long> ids)
+    {
+        List<NodeEntity> nodes = new ArrayList<>();
+        ids.forEach(id -> {
+            NodeEntity node = new NodeEntity();
+            node.setId(id);
+            nodes.add(node);
+        });
+
+        return template.selectList(SELECT_NODES_BY_IDS, nodes);
+    }
+
+    @Override
     protected NodeEntity selectNodeByNodeRef(NodeRef nodeRef)
     {
         StoreEntity store = new StoreEntity();

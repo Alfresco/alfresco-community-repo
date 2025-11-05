@@ -4955,7 +4955,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         // First ensure all content data are pre-cached, so we don't have to load them individually when converting properties
-        if (preloadContentData &&!propertiesNodeIds.isEmpty())
+        if (preloadContentData && !propertiesNodeIds.isEmpty())
         {
             contentDataDAO.cacheContentDataForNodes(propertiesNodeIds);
         }

@@ -27,6 +27,7 @@ package org.alfresco.repo.domain.qname;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -190,6 +191,12 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
         }
 
         @Override
+        public List<Pair<Long, String>> findByKeys(List<Long> ids)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for namespaces.");
+        }
+
+        @Override
         public Pair<Long, String> findByValue(String uri)
         {
             NamespaceEntity entity = findNamespaceEntityByUri(uri);
@@ -344,6 +351,12 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
                 QName qname = QName.createQName(uri, localName);
                 return new Pair<Long, QName>(id, qname);
             }
+        }
+
+        @Override
+        public List<Pair<Long, QName>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for QNames.");
         }
 
         @Override

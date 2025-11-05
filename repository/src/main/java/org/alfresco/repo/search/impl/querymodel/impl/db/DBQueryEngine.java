@@ -564,6 +564,12 @@ public class DBQueryEngine implements QueryEngine
         }
 
         @Override
+        public List<Pair<Long, Node>> findByKeys(List<Long> nodeIds)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for Nodes.");
+        }
+
+        @Override
         public NodeRef getValueKey(Node value)
         {
             return value.getNodeRef();

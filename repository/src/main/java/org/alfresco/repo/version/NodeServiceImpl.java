@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -176,6 +177,20 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Delegates to the <code>NodeService</code> used as the version store implementation
      */
+    @Override
+    public List<NodeRef> exists(List<NodeRef> nodeRefs)
+    {
+        List<NodeRef> convertedNodeRefs = new ArrayList<>(nodeRefs.size());
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            convertedNodeRefs.add(VersionUtil.convertNodeRef(nodeRef));
+        }
+        return dbNodeService.exists(convertedNodeRefs);
+    }
+
+    /**
+     * Delegates to the <code>NodeService</code> used as the version store implementation
+     */
     public Status getNodeStatus(NodeRef nodeRef)
     {
         return dbNodeService.getNodeStatus(nodeRef);
@@ -188,6 +203,15 @@ public class NodeServiceImpl implements NodeService, VersionModel
     public NodeRef getNodeRef(Long nodeId)
     {
         return dbNodeService.getNodeRef(nodeId);
+    }
+
+    /**
+     * Delegates to the <code>NodeService</code> used as the version store implementation
+     */
+    @Override
+    public List<NodeRef> getNodeRefs(List<Long> nodeIds)
+    {
+        return dbNodeService.getNodeRefs(nodeIds);
     }
 
     /**
@@ -374,6 +398,33 @@ public class NodeServiceImpl implements NodeService, VersionModel
     }
 
     /**
+     * Translation for version store
+     */
+    @SuppressWarnings({"unchecked", "deprecation"})
+    @Override
+    public Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs) throws InvalidNodeRefException
+    {
+        Map<NodeRef, Set<QName>> result = new HashMap<>();
+
+        List<NodeRef> convertedNodeRefs = nodeRefs.stream()
+                .map(VersionUtil::convertNodeRef)
+                .collect(Collectors.toList());
+
+        for (NodeRef nodeRef : convertedNodeRefs)
+        {
+            if (!this.dbNodeService.exists(nodeRef))
+            {
+                throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);
+            }
+
+            Serializable aspect = this.dbNodeService.getProperty(nodeRef, PROP_QNAME_FROZEN_ASPECTS);
+            result.put(nodeRef, new HashSet<QName>((ArrayList<QName>) aspect));
+        }
+
+        return result;
+    }
+
+    /**
      * Property translation for version store
      */
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
@@ -435,6 +486,19 @@ public class NodeServiceImpl implements NodeService, VersionModel
         }
 
         return result;
+    }
+
+    @Override
+    public Map<NodeRef, Map<QName, Serializable>> getPropertiesForNodeRefs(List<NodeRef> nodeRefs) throws InvalidNodeRefException
+    {
+        if (nodeRefs == null || nodeRefs.isEmpty())
+        {
+            return Collections.emptyMap();
+        }
+
+        List<NodeRef> convertedNodeRefs = nodeRefs.stream().map(VersionUtil::convertNodeRef).collect(Collectors.toList());
+
+        return this.dbNodeService.getPropertiesForNodeRefs(convertedNodeRefs);
     }
 
     /**

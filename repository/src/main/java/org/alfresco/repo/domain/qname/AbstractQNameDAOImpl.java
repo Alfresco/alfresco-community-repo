@@ -210,6 +210,12 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
             }
         }
         
+        @Override
+        public List<Pair<Long, String>> findByValues(List<String> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for namespaces.");
+        }
+
         public Pair<Long, String> createValue(String uri)
         {
             NamespaceEntity entity = createNamespaceEntity(uri);
@@ -382,6 +388,12 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
             }
         }
         
+        @Override
+        public List<Pair<Long, QName>> findByValues(List<QName> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for QNames.");
+        }
+
         public Pair<Long, QName> createValue(QName qname)
         {
             String uri = qname.getNamespaceURI();

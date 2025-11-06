@@ -354,6 +354,12 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             return null;
         }
         
+        @Override
+        public List<Pair<Long, AclEntity>> findByValues(List<AclEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for ACLs.");
+        }
+
         public int updateValue(Long key, AclEntity value)
         {
             return updateAclEntity(value);
@@ -852,6 +858,12 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             return convertEntityToPair(getPermissionEntity(value.getTypeQNameId(), value.getName()));
         }
         
+        @Override
+        public List<Pair<Long, PermissionEntity>> findByValues(List<PermissionEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for PermissionEntity");
+        }
+
         public int updateValue(Long key, PermissionEntity value)
         {
             return updatePermissionEntity(value);
@@ -1043,6 +1055,12 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             return convertEntityToPair(getAuthorityEntity(value.getAuthority()));
         }
         
+        @Override
+        public List<Pair<Long, AuthorityEntity>> findByValues(List<AuthorityEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch loading not supported for AuthorityEntity");
+        }
+
         public int updateValue(Long key, AuthorityEntity value)
         {
             return updateAuthorityEntity(value);

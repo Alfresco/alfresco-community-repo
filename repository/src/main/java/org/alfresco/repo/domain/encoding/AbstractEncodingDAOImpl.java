@@ -131,6 +131,12 @@ public abstract class AbstractEncodingDAOImpl implements EncodingDAO
             }
         }
         
+        @Override
+        public List<Pair<Long, String>> findByValues(List<String> encodings)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for encodings.");
+        }
+
         public Pair<Long, String> createValue(String encoding)
         {
             EncodingEntity entity = createEncodingEntity(encoding);

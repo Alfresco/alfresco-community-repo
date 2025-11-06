@@ -248,6 +248,12 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         }
         
         @Override
+        public List<Pair<String, TenantEntity>> findByValues(List<TenantEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for tenants.");
+        }
+
+        @Override
         public int updateValue(String tenantDomain, TenantEntity value)
         {
             return updateTenantEntity(value);

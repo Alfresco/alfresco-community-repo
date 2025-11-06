@@ -138,8 +138,20 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         Pair<K1, V1> findByValue(V1 value);
         
         /**
-         * Create an entity using the given values.  It is valid to assume that the entity does not exist
-         * within the current transaction at least.
+         * Find entities using the given list of value keys. The <code>equals</code> and <code>hashCode</code> methods of the value object should respect case-sensitivity in the same way that this lookup treats case-sensitivity i.e. if the <code>equals</code> method is <b>case-sensitive</b> then this method should look the entity up using a <b>case-sensitive</b> search.
+         * <p/>
+         * Since this is a cache backed by some sort of database, <tt>null</tt> values are allowed by the cache. The implementation of this method can throw an exception if <tt>null</tt> is not appropriate for the use-case.
+         * <p/>
+         * If the search is impossible or expensive, this method should just return an empty list. This would usually be the case if the {@link #getValueKeys(Object) getValueKey} method also returned <tt>null</tt> i.e. if it is difficult to look the value up in storage then it is probably difficult to generate a cache key from it, too.
+         * 
+         * @param values
+         *            the values (business objects) used to identify the entities (<tt>null</tt> allowed).
+         * @return Return the entities or an empty list if no entity matches the given values
+         */
+        List<Pair<K1, V1>> findByValues(List<V1> values);
+
+        /**
+         * Create an entity using the given values. It is valid to assume that the entity does not exist within the current transaction at least.
          * <p/>
          * Since persistence mechanisms often allow <tt>null</tt> values, these can be expected here.  The
          * implementation  must throw an exception if <tt>null</tt> is not allowed for the specific use-case.
@@ -205,6 +217,16 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         public Pair<K2, V2> findByValue(V2 value)
         {
             return null;
+        }
+
+        /**
+         * This implementation never finds a value and is backed by {@link #getValueKey(Object)} returning an empty list.
+         * 
+         * @return Returns an empty list always
+         */
+        public List<Pair<K2, V2>> findByValues(V2 value)
+        {
+            return Collections.emptyList();
         }
 
         /**
@@ -549,6 +571,130 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         return entityPair;
     }
     
+    /**
+     * Find the entity associated with the given value. The {@link EntityLookupCallbackDAO#findByValue(Object) entity callback} will be used if no entry exists in the cache.
+     * <p/>
+     * It is up to the client code to decide if a <tt>null</tt> return value indicates a concurrency violation or not; the former would normally result in a concurrency-related exception such as {@link ConcurrencyFailureException}.
+     * 
+     * @param values
+     *            The entity values, which may be valid or invalid (<tt>null</tt> is allowed)
+     * @return Returns a list of key-value pairs
+     */
+    @SuppressWarnings("unchecked")
+    public List<Pair<K, V>> getByValues(List<V> values)
+    {
+        if (values == null || values.isEmpty())
+        {
+            throw new IllegalArgumentException("An entity lookup value list may not be null or empty");
+        }
+
+        // Create a defensive copy and remove any nulls for safety
+        List<V> filteredValues = new ArrayList<>(values.size());
+        for (V v : values)
+        {
+            if (v != null)
+            {
+                filteredValues.add(v);
+            }
+        }
+
+        // Handle missing cache
+        if (cache == null)
+        {
+            return entityLookup.findByValues(filteredValues);
+        }
+
+        List<Pair<K, V>> results = new ArrayList<>(filteredValues.size());
+        List<V> valuesToFind = new ArrayList<>(filteredValues.size());
+        List<Pair<VK, V>> lookInCache = new ArrayList<>(filteredValues.size());
+        List<V> valuesToResolve = new ArrayList<>(filteredValues.size());
+        List<K> keysToGet = new ArrayList<>(filteredValues.size());
+
+        // Get the value key.
+        for (V value : filteredValues)
+        {
+            // The cast to (VK) is counter-intuitive, but works because they're all just Serializable
+            // It's nasty, but hidden from the cache client code.
+            VK valueKey = (value == null) ? (VK) VALUE_NULL : entityLookup.getValueKey(value);
+
+            if (valueKey == null)
+            {
+                valuesToFind.add(value);
+                continue;
+            }
+            else
+            {
+                lookInCache.add(new Pair<VK, V>(valueKey, value));
+            }
+        }
+
+        if (!valuesToFind.isEmpty())
+        {
+            results.addAll(entityLookup.findByValues(valuesToFind));
+        }
+
+        for (Pair<VK, V> valuePair : lookInCache)
+        {
+            // Look in the cache
+            CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valuePair.getFirst());
+
+            K key = (K) cache.get(valueCacheKey);
+
+            // Check if we have looked this up already
+            if (key != null)
+            {
+                // We checked before and ...
+                if (key.equals(VALUE_NOT_FOUND))
+                {
+                    // ... it didn't exist
+                    continue; // not costly...making it clear that we are moving to the next value
+                }
+                else
+                {
+                    // ... it did exist
+                    keysToGet.add(key);
+                    continue;
+                }
+            }
+
+            valuesToResolve.add(valuePair.getSecond());
+        }
+
+        if (!keysToGet.isEmpty())
+        {
+            results.addAll(getByKeys(keysToGet));
+        }
+
+        // Resolve it
+        if (!valuesToResolve.isEmpty())
+        {
+            List<Pair<K, V>> entityPairs = entityLookup.findByValues(valuesToResolve);
+
+            for (Pair<K, V> entityPair : entityPairs)
+            {
+                if (entityPair == null)
+                {
+                    // Missing (null) should not make it back here since findByValues should not return any nulls
+                    continue;
+                }
+                else
+                {
+                    K key = entityPair.getFirst();
+                    // Cache the Key
+                    cache.put(new CacheRegionValueKey(cacheRegion, (VK) entityPair.getSecond()), key);
+                    cache.put(
+                            new CacheRegionKey(cacheRegion, key),
+                            (entityPair.getSecond() == null ? VALUE_NULL : entityPair.getSecond()));
+
+                    results.add(entityPair);
+                }
+            }
+        }
+
+        // Done
+        return results;
+    }
+
     /**
      * Attempt to create the entity and, failing that, look it up.<br/>
      * This method takes the opposite approach to {@link #getOrCreateByValue(Object)}, which assumes the entity's

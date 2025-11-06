@@ -361,6 +361,12 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         }
 
         @Override
+        public List<Pair<Long, ContentData>> findByValues(List<ContentData> values)
+        {
+            throw new UnsupportedOperationException("Batch findByValues for ContentData is not Supported");
+        }
+
+        @Override
         public int updateValue(Long key, ContentData value)
         {
             ContentDataEntity contentDataEntity = getContentDataEntity(key);
@@ -430,6 +436,12 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
                         + entity.getContentUrlShort() + "';'" + entity.getContentUrlCrc() + "')");
             }
             return (ret != null ? new Pair<Long, ContentUrlEntity>(ret.getId(), ret) : null);
+        }
+
+        @Override
+        public List<Pair<Long, ContentUrlEntity>> findByValues(List<ContentUrlEntity> entities)
+        {
+            throw new UnsupportedOperationException("Batch findByValues for ContentUrlEntity is not Supported");
         }
 
         public Pair<Long, ContentUrlEntity> createValue(ContentUrlEntity value)

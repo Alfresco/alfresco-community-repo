@@ -260,6 +260,12 @@ public abstract class AbstractLocaleDAOImpl implements LocaleDAO
             }
         }
         
+        @Override
+        public List<Pair<Long, String>> findByValues(List<String> localeStrs)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for locales.");
+        }
+
         public Pair<Long, String> createValue(String localeStr)
         {
             LocaleEntity entity = createLocaleEntity(localeStr);

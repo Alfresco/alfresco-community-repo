@@ -1083,30 +1083,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
-    // @Override
-    // public List<Status> getNodeRefStatus(List<NodeRef> nodeRef)
-    // {
-    // List<Pair<Long, Node>> nodePairs = nodesCache.getByValues(
-    // nodeRef.stream()
-    // .map(NodeEntity::new)
-    // .collect(Collectors.toList())
-    // );
-
-    // if (nodePairs == null || nodePairs.size() == 0)
-    // {
-    // return Collections.emptyList();
-    // }
-
-    // //The nodesCache gets both live and deleted nodes, but nulls should not be returned from getByValues
-    // List<Status> results = new ArrayList<>();
-    // for (Pair<Long, Node> pair : nodePairs) {
-    // if (pair != null) {
-    // results.add(pair.getSecond().getNodeStatus(qnameDAO));
-    // }
-    // }
-    // return results;
-    // }
-
     @Override
     public Status getNodeIdStatus(Long nodeId)
     {

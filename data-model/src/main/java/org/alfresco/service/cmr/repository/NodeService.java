@@ -112,6 +112,14 @@ public interface NodeService
     public boolean exists(NodeRef nodeRef);
 
     /**
+     * @param nodeRefs
+     *            a reference list for the nodes to look for
+     * @return A list of the nodeRefs that exist
+     */
+    @Auditable(parameters = {"nodeRefs"})
+    public List<NodeRef> exists(List<NodeRef> nodeRefs);
+
+    /**
      * Gets the ID of the last transaction that caused the node to change. This includes deletions, so it is possible that the node being referenced no longer exists. If the node never existed, then null is returned.
      * 
      * @param nodeRef
@@ -130,6 +138,16 @@ public interface NodeService
      */
     @Auditable(parameters = {"nodeId"})
     public NodeRef getNodeRef(Long nodeId);
+
+    /**
+     * Get node references for a list of given node DB IDs
+     * 
+     * @param nodeIds
+     *            a list of node DB IDs
+     * @return the list of corresponding node references or an empty list if none are found
+     */
+    @Auditable(parameters = {"nodeIds"})
+    public List<NodeRef> getNodeRefs(List<Long> nodeIds);
 
     /**
      * @param storeRef
@@ -335,6 +353,16 @@ public interface NodeService
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException;
 
     /**
+     * @param nodeRefs
+     *            List of NodeRefs
+     * @return Returns a map of NodeRefs to their corresponding set of aspects
+     * @throws InvalidNodeRefException
+     *             if any of the node references could not be found
+     */
+    @Auditable(parameters = {"nodeRefs"})
+    public Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs) throws InvalidNodeRefException;
+
+    /**
      * Deletes the given node.
      * <p>
      * All associations (both children and regular node associations) will be deleted, and where the given node is the primary parent, the children will also be cascade deleted.
@@ -482,6 +510,16 @@ public interface NodeService
      */
     @Auditable(parameters = {"nodeRef", "qname"})
     public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException;
+
+    /**
+     * @param nodeRefs
+     *            List of NodeRefs to get Properties for
+     * @return Returns all Nodes and their properties. NodeRef is the map key and properties are keyed by their qualified name
+     * @throws InvalidNodeRefException
+     *             if the node could not be found
+     */
+    @Auditable(parameters = {"nodeRefs"})
+    public Map<NodeRef, Map<QName, Serializable>> getPropertiesForNodeRefs(List<NodeRef> nodeRefs) throws InvalidNodeRefException;
 
     /**
      * Replace all current properties on the node with the given properties. The properties given must still fulfill the requirements of the class and aspects relevant to the node.

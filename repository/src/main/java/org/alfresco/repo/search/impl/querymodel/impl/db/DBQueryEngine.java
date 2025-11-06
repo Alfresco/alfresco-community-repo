@@ -576,6 +576,12 @@ public class DBQueryEngine implements QueryEngine
         {
             return value.getNodeRef();
         }
+
+        @Override
+        public List<Pair<Long, Node>> findByValues(List<Node> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for Nodes.");
+        }
     }
 
     private void addStoreInfo(Node node)

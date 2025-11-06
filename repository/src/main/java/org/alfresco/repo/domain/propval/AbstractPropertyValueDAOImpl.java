@@ -384,6 +384,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             PropertyClassEntity entity = findClassByValue(value);
             return convertEntityToPair(entity);
         }
+
+        @Override
+        public List<Pair<Long, Class<?>>> findByValues(List<Class<?>> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property classes.");
+        }
     }
 
     protected abstract PropertyClassEntity findClassById(Long id);
@@ -481,6 +487,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             PropertyDateValueEntity entity = findDateValueByValue(value);
             return convertEntityToPair(entity);
+        }
+
+        @Override
+        public List<Pair<Long, Date>> findByValues(List<Date> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property date values.");
         }
     }
 
@@ -596,6 +608,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 return new Pair<Long, String>(key, value);
             }
         }
+
+        @Override
+        public List<Pair<Long, String>> findByValues(List<String> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property string values.");
+        }
     }
 
     protected abstract String findStringValueById(Long id);
@@ -687,6 +705,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             PropertyDoubleValueEntity entity = findDoubleValueByValue(value);
             return convertEntityToPair(entity);
         }
+
+        @Override
+        public List<Pair<Long, Double>> findByValues(List<Double> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property double values.");
+        }
     }
 
     protected abstract PropertyDoubleValueEntity findDoubleValueById(Long id);
@@ -754,6 +778,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 
         @Override
         public List<Pair<Long, Serializable>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property serializable values.");
+        }
+
+        @Override
+        public List<Pair<Long, Serializable>> findByValues(List<Serializable> values)
         {
             throw new UnsupportedOperationException("Batch lookup not supported for property serializable values.");
         }
@@ -874,6 +904,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return convertEntityToPair(entity);
         }
 
+        @Override
+        public List<Pair<Long, Serializable>> findByValues(List<Serializable> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property values.");
+        }
+
         /**
          * No-op. This is implemented as we just want to update the cache.
          * 
@@ -976,6 +1012,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         public List<Pair<Long, Serializable>> findByKeys(List<Long> keys)
         {
             throw new UnsupportedOperationException("Batch lookup not supported for properties.");
+        }
+
+        @Override
+        public List<Pair<Long, Serializable>> findByValues(List<Serializable> values)
+        {
+            throw new UnsupportedOperationException("Lookup by value not supported for properties.");
         }
 
         /**

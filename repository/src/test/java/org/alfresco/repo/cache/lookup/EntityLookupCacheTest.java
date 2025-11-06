@@ -296,6 +296,23 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         assertNull(entityPairCacheCheck);
     }
 
+    public void testFindByValuesNotFound() throws Exception
+    {
+        // Put some values in the "database"
+        createValue(new TestValue("AAA"));
+        createValue(new TestValue("BBB"));
+        createValue(new TestValue("CCC"));
+
+        List<Object> valuesToFind = new ArrayList<Object>(3);
+        valuesToFind.add(new TestValue("ZZZ"));
+        valuesToFind.add(new TestValue("AAA"));
+        valuesToFind.add(new TestValue("BBB"));
+
+        List<Pair<Long, Object>> results = findByValues(valuesToFind);
+        assertNotNull(results);
+        assertEquals(2, results.size());
+    }
+
     /**
      * Helper class to represent business object
      */
@@ -377,6 +394,31 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
             }
         }
         return null;
+    }
+
+    @Override
+    public List<Pair<Long, Object>> findByValues(List<Object> values)
+    {
+        assertNotNull(values);
+        assertFalse(values.isEmpty());
+
+        List<Pair<Long, Object>> results = new ArrayList<Pair<Long, Object>>(values.size());
+
+        for (Object value : values)
+        {
+            String dbValue = (value == null) ? null : ((TestValue) value).val;
+
+            for (Map.Entry<Long, String> entry : database.entrySet())
+            {
+                if (EqualsHelper.nullSafeEquals(entry.getValue(), dbValue))
+                {
+                    results.add(new Pair<Long, Object>(entry.getKey(), entry.getValue()));
+                    break;
+                }
+            }
+        }
+
+        return results;
     }
 
     /**

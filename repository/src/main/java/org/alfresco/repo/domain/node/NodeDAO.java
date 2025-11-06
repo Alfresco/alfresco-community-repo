@@ -151,6 +151,15 @@ public interface NodeDAO extends NodeBulkLoader
     /**
      * Find out if a node exists. Unpurged deleted nodes do not count as they are the DAO's concern only.
      * 
+     * @param nodeRefs
+     *            the potentially valid node reference
+     * @return Returns <tt>true</tt> if the node is present and undeleted
+     */
+    public List<NodeRef> exists(List<NodeRef> nodeRefs);
+
+    /**
+     * Find out if a node exists. Unpurged deleted nodes do not count as they are the DAO's concern only.
+     * 
      * @param nodeId
      *            the potentially valid node ID
      * @return Returns <tt>true</tt> if the node is present and undeleted
@@ -184,7 +193,11 @@ public interface NodeDAO extends NodeBulkLoader
 
     public Pair<Long, NodeRef> getNodePair(NodeRef nodeRef);
 
+    public List<Pair<Long, NodeRef>> getNodePairs(StoreRef storeRef, List<NodeRef> nodeRefs);
+
     public Pair<Long, NodeRef> getNodePair(Long nodeId);
+
+    public List<Pair<Long, NodeRef>> getNodePairs(List<Long> nodeIds);
 
     public QName getNodeType(Long nodeId);
 
@@ -367,6 +380,8 @@ public interface NodeDAO extends NodeBulkLoader
 
     public Map<QName, Serializable> getNodeProperties(Long nodeId);
 
+    public Map<Long, Map<QName, Serializable>> getNodeProperties(List<Long> nodeIds);
+
     public boolean setNodeProperties(Long nodeId, Map<QName, Serializable> properties);
 
     public boolean addNodeProperty(Long nodeId, QName qname, Serializable value);
@@ -403,6 +418,8 @@ public interface NodeDAO extends NodeBulkLoader
     /* Aspects */
 
     public Set<QName> getNodeAspects(Long nodeId);
+
+    public Map<Long, Set<QName>> getNodeAspects(List<Long> nodeIds);
 
     public boolean hasNodeAspect(Long nodeId, QName aspectQName);
 

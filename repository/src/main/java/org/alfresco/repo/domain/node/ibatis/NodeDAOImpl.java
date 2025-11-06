@@ -145,6 +145,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_NODE_ASSOCS_OF_TYPE =
             "alfresco.node.select_ChildAssocsOfParentWithoutNodeAssocsOfType";
     private static final String SELECT_PARENT_ASSOCS_OF_CHILD = "alfresco.node.select_ParentAssocsOfChild";
+    private static final String SELECT_PARENT_ASSOCS_OF_CHILDREN = "alfresco.node.select_ParentAssocsOfChildren";
     private static final String UPDATE_PARENT_ASSOCS_OF_CHILD = "alfresco.node.update_ParentAssocsOfChild";
     private static final String DELETE_SUBSCRIPTIONS = "alfresco.node.delete_NodeSubscriptions";
     
@@ -1567,6 +1568,19 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setChildNode(childNode);
         
         return template.selectList(SELECT_PARENT_ASSOCS_OF_CHILD, assoc);
+    }
+
+    @Override
+    protected List<ChildAssocEntity> selectParentAssocsOfChildren(Set<Long> childrenNodeIds)
+    {
+        if (childrenNodeIds.size() == 0)
+        {
+            // There will be no results
+            return Collections.emptyList();
+        }
+        IdsEntity idsEntity = new IdsEntity();
+        idsEntity.setIds(new ArrayList<Long>(childrenNodeIds));
+        return template.selectList(SELECT_PARENT_ASSOCS_OF_CHILDREN, idsEntity);
     }
 
     @Override

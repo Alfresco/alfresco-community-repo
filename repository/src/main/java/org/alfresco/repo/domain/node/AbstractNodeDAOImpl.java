@@ -5277,6 +5277,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Get the nodes
         SortedSet<Long> aspectNodeIds = new TreeSet<Long>();
         SortedSet<Long> propertiesNodeIds = new TreeSet<Long>();
+        SortedSet<Long> childAssocsNodeIds = new TreeSet<Long>();
         Map<Long, NodeVersionKey> nodeVersionKeysFromCache = new HashMap<Long, NodeVersionKey>(nodes.size() * 2); // Keep for quick lookup
         for (Node node : nodes)
         {
@@ -5292,6 +5293,17 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             {
                 aspectNodeIds.add(nodeId);
             }
+
+            // Only worth caching if we are able to then retrieve the correct version later from the cache
+            if (node.getTransaction() != null)
+            {
+                Pair<Long, String> cacheKey = new Pair<Long, String>(nodeId, node.getTransaction().getChangeTxnId());
+                if (parentAssocsCache.get(cacheKey) == null)
+                {
+                    childAssocsNodeIds.add(nodeId);
+                }
+            }
+
             nodeVersionKeysFromCache.put(nodeId, nodeVersionKey);
         }
 
@@ -5345,6 +5357,28 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Map<NodePropertyKey, NodePropertyValue> propertyValues = entry.getValue();
             Map<QName, Serializable> props = nodePropertyHelper.convertToPublicProperties(propertyValues);
             setNodePropertiesCached(nodeId, props);
+        }
+
+        // Bulk load the parent associations
+        List<ChildAssocEntity> assocs = selectParentAssocsOfChildren(childAssocsNodeIds);
+
+        for (ChildAssocEntity assoc : assocs)
+        {
+            Long nodeId = assoc.getChildNode().getId();
+            Node childNode = getNodeNotNull(nodeId, false);
+            boolean isRoot = hasNodeAspect(nodeId, ContentModel.ASPECT_ROOT);
+            boolean isStoreRoot = getNodeType(nodeId).equals(ContentModel.TYPE_STOREROOT);
+            if (childNode.getTransaction() == null)
+            {
+                // Should not happen - skip
+                logger.warn("Child node " + childNode + " has no transaction - cannot cache parent associations");
+                continue;
+            }
+            Pair<Long, String> cacheKey = new Pair<Long, String>(nodeId, childNode.getTransaction().getChangeTxnId());
+
+            ParentAssocsInfo value = new ParentAssocsInfo(isRoot, isStoreRoot, assoc);
+            parentAssocsCache.put(cacheKey, value);
+
         }
     }
 
@@ -5667,6 +5701,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             ChildAssocRefQueryCallback resultsCallback);
 
     protected abstract List<ChildAssocEntity> selectParentAssocs(Long childNodeId);
+
+    protected abstract List<ChildAssocEntity> selectParentAssocsOfChildren(Set<Long> childrenNodeIds);
 
     /**
      * No DB constraint, so multiple returned

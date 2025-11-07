@@ -47,6 +47,13 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.Content;
+import org.springframework.extensions.webscripts.servlet.FormData;
+
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
@@ -164,21 +171,13 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.extensions.surf.util.Content;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * Centralises access to file/folder/node services and maps between representations.
  *
- * Note:
- * This class was originally used for returning some basic node info when listing Favourites.
+ * Note: This class was originally used for returning some basic node info when listing Favourites.
  *
- * It has now been re-purposed and extended to implement the new Nodes (RESTful) API for
- * managing files & folders, as well as custom node types.
+ * It has now been re-purposed and extended to implement the new Nodes (RESTful) API for managing files & folders, as well as custom node types.
  * 
  * @author steveglover
  * @author janv
@@ -237,14 +236,14 @@ public class NodesImpl implements Nodes
 
     private Set<QName> personLookupProperties = new HashSet<>();
 
-    private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, NodeRef> ddCache = new ConcurrentHashMap<>();
 
     // pre-configured allow list of media/mime types, eg. specific types of images & also pdf
-    private Set<String> nonAttachContentTypes = Collections.emptySet(); 
+    private Set<String> nonAttachContentTypes = Collections.emptySet();
 
     public void setNonAttachContentTypes(String nonAttachAllowListStr)
     {
-        if ((nonAttachAllowListStr != null) && (! nonAttachAllowListStr.isEmpty()))
+        if ((nonAttachAllowListStr != null) && (!nonAttachAllowListStr.isEmpty()))
         {
             nonAttachContentTypes = Set.of(nonAttachAllowListStr.trim().split("\\s*,\\s*"));
         }
@@ -272,7 +271,7 @@ public class NodesImpl implements Nodes
         this.authorityService = sr.getAuthorityService();
         this.thumbnailService = sr.getThumbnailService();
         this.renditionService2 = sr.getRenditionService2();
-        this.siteService =  sr.getSiteService();
+        this.siteService = sr.getSiteService();
         this.retryingTransactionHelper = sr.getRetryingTransactionHelper();
         this.lockService = sr.getLockService();
 
@@ -319,8 +318,9 @@ public class NodesImpl implements Nodes
         this.defaultIgnoreTypesAndAspects = ignoreTypesAndAspects;
     }
 
-    public void setPersonLookupProperties(Set<String> personLookupProperties) {
-      this.defaultPersonLookupProperties = personLookupProperties;
+    public void setPersonLookupProperties(Set<String> personLookupProperties)
+    {
+        this.defaultPersonLookupProperties = personLookupProperties;
     }
 
     public void setPoster(ActivityPoster poster)
@@ -332,7 +332,7 @@ public class NodesImpl implements Nodes
     {
         this.smartStore = smartStore;
     }
-    
+
     public void setClassDefinitionMapper(ClassDefinitionMapper classDefinitionMapper)
     {
         this.classDefinitionMapper = classDefinitionMapper;
@@ -358,10 +358,10 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_AUTO_VERSION_PROPS,
             ContentModel.PROP_AUTO_VERSION);
 
-    public final static Map<String,QName> PARAM_SYNONYMS_QNAME;
+    public final static Map<String, QName> PARAM_SYNONYMS_QNAME;
     static
     {
-        Map<String,QName> aMap = new HashMap<>(9);
+        Map<String, QName> aMap = new HashMap<>(9);
 
         aMap.put(PARAM_ISFOLDER, GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER);
         aMap.put(PARAM_NAME, ContentModel.PROP_NAME);
@@ -377,18 +377,15 @@ public class NodesImpl implements Nodes
     }
 
     // list children filtering (via where clause)
-    private final static Set<String> LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES =
-            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_ISFILE, PARAM_NODETYPE, PARAM_ISPRIMARY, PARAM_ASSOC_TYPE}));
+    private final static Set<String> LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[]{PARAM_ISFOLDER, PARAM_ISFILE, PARAM_NODETYPE, PARAM_ISPRIMARY, PARAM_ASSOC_TYPE}));
 
-    /*
-     * Validates that node exists.
+    /* Validates that node exists.
      *
-     * Note: assumes workspace://SpacesStore
-     */
+     * Note: assumes workspace://SpacesStore */
     @Override
     public NodeRef validateNode(String nodeId)
     {
-        //belts-and-braces
+        // belts-and-braces
         if (nodeId == null)
         {
             throw new InvalidArgumentException("Missing nodeId");
@@ -425,20 +422,21 @@ public class NodesImpl implements Nodes
 
         for (String nodeId : nodeIds)
         {
-            String versionLabel = null;
+            String versionLabel;
+            String id = nodeId;
 
-            int idx = nodeId.indexOf(";");
+            int idx = nodeId.indexOf(';');
             if (idx != -1)
             {
                 versionLabel = nodeId.substring(idx + 1);
-                nodeId = nodeId.substring(0, idx);
+                id = nodeId.substring(0, idx);
                 if (versionLabel.equals("pwc"))
                 {
                     continue; // skip pwc
                 }
             }
 
-            NodeRef nodeRef = new NodeRef(storeRef, nodeId);
+            NodeRef nodeRef = new NodeRef(storeRef, id);
             nodeRefs.add(nodeRef);
         }
 
@@ -486,7 +484,7 @@ public class NodesImpl implements Nodes
 
     private boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes, boolean existsCheck)
     {
-        if (existsCheck && (! nodeService.exists(nodeRef)))
+        if (existsCheck && (!nodeService.exists(nodeRef)))
         {
             throw new EntityNotFoundException(nodeRef.getId());
         }
@@ -507,7 +505,7 @@ public class NodesImpl implements Nodes
     protected boolean typeMatches(QName type, Set<QName> expectedTypes, Set<QName> excludedTypes)
     {
         if (((expectedTypes != null) && (expectedTypes.size() == 1)) &&
-            ((excludedTypes == null) || (excludedTypes.size() == 0)))
+                ((excludedTypes == null) || (excludedTypes.size() == 0)))
         {
             // use isSubClass if checking against single expected type (and no excluded types)
             return isSubClass(type, expectedTypes.iterator().next());
@@ -585,7 +583,7 @@ public class NodesImpl implements Nodes
                 return Type.DOCUMENT;
             }
 
-            NodeRef linkNodeRef = (NodeRef)nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION);
+            NodeRef linkNodeRef = (NodeRef) nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION);
             if (linkNodeRef != null)
             {
                 try
@@ -603,7 +601,7 @@ public class NodesImpl implements Nodes
 
         if (isSubClass(typeQName, ContentModel.TYPE_FOLDER))
         {
-            if (! isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER))
+            if (!isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER))
             {
                 return Type.FOLDER;
             }
@@ -643,17 +641,17 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            throw new InvalidArgumentException("Node is not a file: "+nodeRef.getId());
+            throw new InvalidArgumentException("Node is not a file: " + nodeRef.getId());
         }
     }
 
-    private void setCommonProps(Node node, NodeRef nodeRef, Map<QName,Serializable> properties)
+    private void setCommonProps(Node node, NodeRef nodeRef, Map<QName, Serializable> properties)
     {
         node.setGuid(nodeRef);
-        node.setTitle((String)properties.get(ContentModel.PROP_TITLE));
-        node.setDescription((String)properties.get(ContentModel.PROP_DESCRIPTION));
-        node.setModifiedBy((String)properties.get(ContentModel.PROP_MODIFIER));
-        node.setCreatedBy((String)properties.get(ContentModel.PROP_CREATOR));
+        node.setTitle((String) properties.get(ContentModel.PROP_TITLE));
+        node.setDescription((String) properties.get(ContentModel.PROP_DESCRIPTION));
+        node.setModifiedBy((String) properties.get(ContentModel.PROP_MODIFIER));
+        node.setCreatedBy((String) properties.get(ContentModel.PROP_CREATOR));
     }
 
     /**
@@ -673,7 +671,7 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            throw new InvalidArgumentException("Node is not a folder: "+nodeRef.getId());
+            throw new InvalidArgumentException("Node is not a folder: " + nodeRef.getId());
         }
     }
 
@@ -725,9 +723,9 @@ public class NodesImpl implements Nodes
         if (path != null)
         {
             // check that parent is a folder before resolving relative path
-            if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
+            if (!nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
             {
-                throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef.getId());
+                throw new InvalidArgumentException("NodeId of folder is expected: " + parentNodeRef.getId());
             }
 
             // resolve path relative to current nodeId
@@ -743,19 +741,7 @@ public class NodesImpl implements Nodes
 
         if (!pathElements.isEmpty() && checkForCompanyHome)
         {
-            /*
-            if (nodeService.getRootNode(parentNodeRef.getStoreRef()).equals(parentNodeRef))
-            {
-                // special case
-                NodeRef chNodeRef = repositoryHelper.getCompanyHome();
-                String chName = (String) nodeService.getProperty(chNodeRef, ContentModel.PROP_NAME);
-                if (chName.equals(pathElements.get(0)))
-                {
-                    pathElements = pathElements.subList(1, pathElements.size());
-                    parentNodeRef = chNodeRef;
-                }
-            }
-            */
+            /* if (nodeService.getRootNode(parentNodeRef.getStoreRef()).equals(parentNodeRef)) { // special case NodeRef chNodeRef = repositoryHelper.getCompanyHome(); String chName = (String) nodeService.getProperty(chNodeRef, ContentModel.PROP_NAME); if (chName.equals(pathElements.get(0))) { pathElements = pathElements.subList(1, pathElements.size()); parentNodeRef = chNodeRef; } } */
         }
 
         FileInfo fileInfo = null;
@@ -812,8 +798,7 @@ public class NodesImpl implements Nodes
             final NodeRef contextNodeRef = currentParentRef;
             // does it exist?
             // Navigation should not check permissions
-            NodeRef nodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-            {
+            NodeRef nodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
                 @Override
                 public NodeRef doWork() throws Exception
                 {
@@ -869,7 +854,7 @@ public class NodesImpl implements Nodes
     }
 
     @Override
-    public Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters, Map<String,UserInfo> mapUserInfo)
+    public Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters, Map<String, UserInfo> mapUserInfo)
     {
         List<String> includeParam = new ArrayList<>();
         if (parameters != null)
@@ -953,7 +938,7 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            throw new RuntimeException("Unexpected - should not reach here: "+type);
+            throw new RuntimeException("Unexpected - should not reach here: " + type);
         }
 
         if (includeParam.size() > 0)
@@ -994,7 +979,6 @@ public class NodesImpl implements Nodes
             mapPermsToOps.put(PermissionService.ADD_CHILDREN, OP_CREATE);
             mapPermsToOps.put(PermissionService.WRITE, OP_UPDATE);
             mapPermsToOps.put(PermissionService.CHANGE_PERMISSIONS, OP_UPDATE_PERMISSIONS);
-            
 
             List<String> allowableOperations = new ArrayList<>(3);
             for (Entry<String, String> kv : mapPermsToOps.entrySet())
@@ -1018,7 +1002,7 @@ public class NodesImpl implements Nodes
                 }
             }
 
-            node.setAllowableOperations((allowableOperations.size() > 0 )? allowableOperations : null);
+            node.setAllowableOperations((allowableOperations.size() > 0) ? allowableOperations : null);
         }
 
         if (includeParam.contains(PARAM_INCLUDE_PERMISSIONS))
@@ -1038,7 +1022,8 @@ public class NodesImpl implements Nodes
                     if (accessPerm.isSetDirectly())
                     {
                         setDirectlyPerms.add(nodePerm);
-                    } else
+                    }
+                    else
                     {
                         inheritedPerms.add(nodePerm);
                     }
@@ -1068,7 +1053,7 @@ public class NodesImpl implements Nodes
             ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
 
             // note: parentAssocRef.parentRef can be null for -root- node !
-            if ((parentAssocRef == null) || (parentAssocRef.getParentRef() == null) || (! parentAssocRef.getParentRef().equals(parentNodeRef)))
+            if ((parentAssocRef == null) || (parentAssocRef.getParentRef() == null) || (!parentAssocRef.getParentRef().equals(parentNodeRef)))
             {
                 List<ChildAssociationRef> parentAssocRefs = nodeService.getParentAssocs(nodeRef);
                 for (ChildAssociationRef pAssocRef : parentAssocRefs)
@@ -1085,7 +1070,7 @@ public class NodesImpl implements Nodes
             if (parentAssocRef != null)
             {
                 QName assocTypeQName = parentAssocRef.getTypeQName();
-                if ((assocTypeQName != null) && (! EXCLUDED_NS.contains(assocTypeQName.getNamespaceURI())))
+                if ((assocTypeQName != null) && (!EXCLUDED_NS.contains(assocTypeQName.getNamespaceURI())))
                 {
                     AssocChild childAssoc = new AssocChild(
                             assocTypeQName.toPrefixString(namespaceService),
@@ -1096,7 +1081,7 @@ public class NodesImpl implements Nodes
             }
         }
 
-        if (includeParam.contains(PARAM_INCLUDE_DEFINITION)) 
+        if (includeParam.contains(PARAM_INCLUDE_DEFINITION))
         {
             ClassDefinition classDefinition = classDefinitionMapper.fromDictionaryClassDefinition(getTypeDefinition(nodeRef), dictionaryService);
             node.setDefinition(classDefinition);
@@ -1165,7 +1150,7 @@ public class NodesImpl implements Nodes
                 continue;
             }
 
-            if (includeParam.size() > 0)
+            if (!includeParam.isEmpty())
             {
                 node.setProperties(mapFromNodeProperties(props, includeParam, mapUserInfo, EXCLUDED_NS, EXCLUDED_PROPS));
             }
@@ -1218,7 +1203,7 @@ public class NodesImpl implements Nodes
                         // special case: do not return "create" (as an allowable op) for file/content types - note: 'type' can be null
                         continue;
                     }
-                    else if (perm.equals(PermissionService.DELETE) && (isSpecialNode(nodeRef, nodeTypeQName)))
+                    else if (perm.equals(PermissionService.DELETE) && isSpecialNode(nodeRef, nodeTypeQName))
                     {
                         // special case: do not return "delete" (as an allowable op) for specific system nodes
                         continue;
@@ -1229,7 +1214,7 @@ public class NodesImpl implements Nodes
                     }
                 }
 
-                node.setAllowableOperations((allowableOperations.size() > 0) ? allowableOperations : null);
+                node.setAllowableOperations((!allowableOperations.isEmpty()) ? allowableOperations : null);
             }
 
             // TODO: Optimize to batch get permissions for all nodes
@@ -1353,7 +1338,7 @@ public class NodesImpl implements Nodes
             }
             else
             {
-                //We can't return a valid path
+                // We can't return a valid path
                 return null;
             }
         }
@@ -1422,7 +1407,7 @@ public class NodesImpl implements Nodes
             {
                 nodeAspects.add(aspectQName);
             }
-            else 
+            else
             {
                 throw new InvalidArgumentException("Unknown aspect: " + aspectName);
             }
@@ -1449,7 +1434,7 @@ public class NodesImpl implements Nodes
                     if (pd.getDataType().getName().equals(DataTypeDefinition.NODE_REF))
                     {
                         String nodeRefString = (String) entry.getValue();
-                        if (! NodeRef.isNodeRef(nodeRefString))
+                        if (!NodeRef.isNodeRef(nodeRefString))
                         {
                             value = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeRefString);
                         }
@@ -1460,20 +1445,20 @@ public class NodesImpl implements Nodes
                     }
                     else
                     {
-                        value = (Serializable)entry.getValue();
+                        value = (Serializable) entry.getValue();
                     }
                 }
                 nodeProps.put(propQName, value);
             }
-            else 
+            else
             {
                 throw new InvalidArgumentException("Unknown property: " + propName);
             }
         }
         return nodeProps;
     }
-    
-    public Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo, List<String> excludedNS, List<QName> excludedProps)
+
+    public Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String, UserInfo> mapUserInfo, List<String> excludedNS, List<QName> excludedProps)
     {
         List<QName> selectedProperties;
 
@@ -1483,7 +1468,7 @@ public class NodesImpl implements Nodes
             selectedProperties = new ArrayList<>(nodeProps.size());
             for (QName propQName : nodeProps.keySet())
             {
-                if ((! excludedNS.contains(propQName.getNamespaceURI())) && (! excludedProps.contains(propQName)))
+                if ((!excludedNS.contains(propQName.getNamespaceURI())) && (!excludedProps.contains(propQName)))
                 {
                     selectedProperties.add(propQName);
                 }
@@ -1536,7 +1521,7 @@ public class NodesImpl implements Nodes
 
         for (QName aspectQName : nodeAspects)
         {
-            if ((! excludedNS.contains(aspectQName.getNamespaceURI())) && (! excludedAspects.contains(aspectQName)))
+            if ((!excludedNS.contains(aspectQName.getNamespaceURI())) && (!excludedAspects.contains(aspectQName)))
             {
                 aspectNames.add(aspectQName.toPrefixString(namespaceService));
             }
@@ -1594,8 +1579,8 @@ public class NodesImpl implements Nodes
 
         // call GetChildrenCannedQuery (via FileFolderService)
         if (((filterProps == null) || (filterProps.size() == 0)) &&
-            ((assocTypeQNames == null) || (assocTypeQNames.size() == 0)) &&
-            (smartStore.isVirtual(parentNodeRef)|| (smartStore.canVirtualize(parentNodeRef))))
+                ((assocTypeQNames == null) || (assocTypeQNames.size() == 0)) &&
+                (smartStore.isVirtual(parentNodeRef) || (smartStore.canVirtualize(parentNodeRef))))
         {
             pagingResults = fileFolderService.list(parentNodeRef, searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
         }
@@ -1608,8 +1593,7 @@ public class NodesImpl implements Nodes
         final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
 
         final List<FileInfo> page = pagingResults.getPage();
-        List<Node> nodes = new AbstractList<Node>()
-        {
+        List<Node> nodes = new AbstractList<Node>() {
             @Override
             public Node get(int index)
             {
@@ -1655,8 +1639,8 @@ public class NodesImpl implements Nodes
                 }
 
                 catch (FileNotFoundException e)
-                {   
-                 // NOTE: return null as relativePath
+                {
+                    // NOTE: return null as relativePath
                 }
             }
 
@@ -1672,14 +1656,14 @@ public class NodesImpl implements Nodes
         {
             sourceEntity = getFolderOrDocumentFullInfo(parentNodeRef, null, null, null, mapUserInfo);
         }
- 
+
         return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst(), sourceEntity);
     }
 
     /**
      * Create query walker for <code>listChildren</code>.
      *
-     * @return The  created {@link MapBasedQueryWalker}.
+     * @return The created {@link MapBasedQueryWalker}.
      */
     private MapBasedQueryWalker createListChildrenQueryWalker()
     {
@@ -1687,12 +1671,12 @@ public class NodesImpl implements Nodes
     }
 
     /**
-     * <p>Returns a List of filter properties specified by request parameters.</p>
+     * <p>
+     * Returns a List of filter properties specified by request parameters.
+     * </p>
      *
-     * @param parameters The {@link Parameters} object to get the parameters passed into the request
-     *        including:
-     *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
-     *        - incFiles, incFolders (both true by default)
+     * @param parameters
+     *            The {@link Parameters} object to get the parameters passed into the request including: - filter, sort & paging params (where, orderBy, skipCount, maxItems) - incFiles, incFolders (both true by default)
      * @return The list of {@link FilterProp}. Can be null.
      */
     protected List<FilterProp> getListChildrenFilterProps(final Parameters parameters)
@@ -1716,14 +1700,13 @@ public class NodesImpl implements Nodes
     }
 
     /**
-     * <p>Returns a List of sort properties specified by the "sorting" request parameter.</p>
+     * <p>
+     * Returns a List of sort properties specified by the "sorting" request parameter.
+     * </p>
      *
-     * @param parameters The {@link Parameters} object to get the parameters passed into the request
-     *        including:
-     *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
-     *        - incFiles, incFolders (both true by default)
-     * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort properties. If no sort parameters are
-     *        found defaults to {@link #getListChildrenSortPropsDefault() getListChildrenSortPropsDefault}.
+     * @param parameters
+     *            The {@link Parameters} object to get the parameters passed into the request including: - filter, sort & paging params (where, orderBy, skipCount, maxItems) - incFiles, incFolders (both true by default)
+     * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort properties. If no sort parameters are found defaults to {@link #getListChildrenSortPropsDefault() getListChildrenSortPropsDefault}.
      */
     protected List<Pair<QName, Boolean>> getListChildrenSortProps(final Parameters parameters)
     {
@@ -1760,8 +1743,7 @@ public class NodesImpl implements Nodes
      * Returns the default sort order.
      * </p>
      *
-     * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort
-     *         properties.
+     * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort properties.
      */
     protected List<Pair<QName, Boolean>> getListChildrenSortPropsDefault()
     {
@@ -1770,7 +1752,7 @@ public class NodesImpl implements Nodes
         return sortProps;
     }
 
-    private Pair<QName,Boolean> parseNodeTypeFilter(String nodeTypeStr)
+    private Pair<QName, Boolean> parseNodeTypeFilter(String nodeTypeStr)
     {
         boolean filterIncludeSubTypes = false; // default nodeType filtering is without subTypes (unless nodeType value is suffixed with ' INCLUDESUBTYPES')
 
@@ -1778,7 +1760,7 @@ public class NodesImpl implements Nodes
         if (idx > 0)
         {
             String suffix = nodeTypeStr.substring(idx);
-            if (suffix.equalsIgnoreCase(" "+PARAM_INCLUDE_SUBTYPES))
+            if (suffix.equalsIgnoreCase(" " + PARAM_INCLUDE_SUBTYPES))
             {
                 filterIncludeSubTypes = true;
                 nodeTypeStr = nodeTypeStr.substring(0, idx);
@@ -1788,7 +1770,7 @@ public class NodesImpl implements Nodes
         QName filterNodeTypeQName = createQName(nodeTypeStr);
         if (dictionaryService.getType(filterNodeTypeQName) == null)
         {
-            throw new InvalidArgumentException("Unknown filter nodeType: "+nodeTypeStr);
+            throw new InvalidArgumentException("Unknown filter nodeType: " + nodeTypeStr);
         }
 
         return new Pair<>(filterNodeTypeQName, filterIncludeSubTypes);
@@ -1801,24 +1783,9 @@ public class NodesImpl implements Nodes
         {
             assocTypeQNames = Collections.singleton(assocTypeQName);
         }
-        /*
-        // TODO review - this works, but reduces from ~100 to ~96 (OOTB)
-        // maybe we could post filter (rather than join) - examples: sys:children, sys:lost_found, sys:archivedLink, sys:archiveUserLink
-        else
-        {
-            Collection<QName> qnames = dictionaryService.getAllAssociations();
-            assocTypeQNames = new HashSet<>(qnames.size());
-
-            // remove system assoc types
-            for (QName qname : qnames)
-            {
-                if ((!EXCLUDED_NS.contains(qname.getNamespaceURI())))
-                {
-                    assocTypeQNames.add(qname);
-                }
-            }
-        }
-        */
+        /* // TODO review - this works, but reduces from ~100 to ~96 (OOTB) // maybe we could post filter (rather than join) - examples: sys:children, sys:lost_found, sys:archivedLink, sys:archiveUserLink else { Collection<QName> qnames = dictionaryService.getAllAssociations(); assocTypeQNames = new HashSet<>(qnames.size());
+         * 
+         * // remove system assoc types for (QName qname : qnames) { if ((!EXCLUDED_NS.contains(qname.getNamespaceURI()))) { assocTypeQNames.add(qname); } } } */
         return assocTypeQNames;
     }
 
@@ -1946,7 +1913,7 @@ public class NodesImpl implements Nodes
             }
 
             String nodeTypeStr = propertyWalker.getProperty(PARAM_NODETYPE, WhereClauseParser.EQUALS, String.class);
-            if ((nodeTypeStr != null) && (! nodeTypeStr.isEmpty()))
+            if ((nodeTypeStr != null) && (!nodeTypeStr.isEmpty()))
             {
                 if ((isFile != null) || (isFolder != null))
                 {
@@ -1976,18 +1943,18 @@ public class NodesImpl implements Nodes
             }
             else if ((includeFiles != null) && (includeFolders != null))
             {
-                if ((! includeFiles) && (! includeFolders))
+                if ((!includeFiles) && (!includeFolders))
                 {
                     // no files or folders
                     filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
                 }
             }
-            else if ((includeFiles != null) && (! includeFiles))
+            else if ((includeFiles != null) && (!includeFiles))
             {
                 // no files
                 filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
             }
-            else if ((includeFolders != null) && (! includeFolders))
+            else if ((includeFolders != null) && (!includeFolders))
             {
                 // no folders
                 filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
@@ -2026,10 +1993,10 @@ public class NodesImpl implements Nodes
         if (permanentDelete == true)
         {
             boolean isAdmin = authorityService.hasAdminAuthority();
-            if (! isAdmin)
+            if (!isAdmin)
             {
                 String owner = ownableService.getOwner(nodeRef);
-                if (! AuthenticationUtil.getRunAsUser().equals(owner))
+                if (!AuthenticationUtil.getRunAsUser().equals(owner))
                 {
                     // non-owner/non-admin cannot permanently delete (even if they have delete permission)
                     throw new PermissionDeniedException("Non-owner/non-admin cannot permanently delete: " + nodeId);
@@ -2040,7 +2007,7 @@ public class NodesImpl implements Nodes
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
         }
 
-        final ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
+        final ActivityInfo activityInfo = getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
         postActivity(Activity_Type.DELETED, activityInfo, true);
 
         fileFolderService.delete(nodeRef);
@@ -2051,10 +2018,10 @@ public class NodesImpl implements Nodes
     {
         if (nodeInfo.getNodeRef() != null)
         {
-            throw new InvalidArgumentException("Unexpected id when trying to create a new node: "+nodeInfo.getNodeRef().getId());
+            throw new InvalidArgumentException("Unexpected id when trying to create a new node: " + nodeInfo.getNodeRef().getId());
         }
         validateAspects(nodeInfo.getAspectNames(), EXCLUDED_NS, EXCLUDED_ASPECTS);
-        validateProperties(nodeInfo.getProperties(), EXCLUDED_NS,  Arrays.asList());
+        validateProperties(nodeInfo.getProperties(), EXCLUDED_NS, Arrays.asList());
 
         // check that requested parent node exists and it's type is a (sub-)type of folder
         NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
@@ -2063,37 +2030,27 @@ public class NodesImpl implements Nodes
         String nodeName = nodeInfo.getName();
         if ((nodeName == null) || nodeName.isEmpty())
         {
-            throw new InvalidArgumentException("Node name is expected: "+parentNodeRef.getId());
+            throw new InvalidArgumentException("Node name is expected: " + parentNodeRef.getId());
         }
 
         // node type - check that requested type is a (sub-) type of cm:object
         String nodeType = nodeInfo.getNodeType();
         if ((nodeType == null) || nodeType.isEmpty())
         {
-            throw new InvalidArgumentException("Node type is expected: "+parentNodeRef.getId()+","+nodeName);
+            throw new InvalidArgumentException("Node type is expected: " + parentNodeRef.getId() + "," + nodeName);
         }
 
         QName nodeTypeQName = createQName(nodeType);
 
         boolean isContent = isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT);
-        if (! isContent)
+        if (!isContent)
         {
             validateCmObject(nodeTypeQName);
         }
 
-        /* RA-834: commented-out since not currently applicable for empty file
-        List<ThumbnailDefinition> thumbnailDefs = null;
-        String renditionsParam = parameters.getParameter(PARAM_RENDITIONS);
-        if (renditionsParam != null)
-        {
-            if (!isContent)
-            {
-                throw new InvalidArgumentException("Renditions ['"+renditionsParam+"'] only apply to content types: "+parentNodeRef.getId()+","+nodeName);
-            }
-
-            thumbnailDefs = getThumbnailDefs(renditionsParam);
-        }
-        */
+        /* RA-834: commented-out since not currently applicable for empty file List<ThumbnailDefinition> thumbnailDefs = null; String renditionsParam = parameters.getParameter(PARAM_RENDITIONS); if (renditionsParam != null) { if (!isContent) { throw new InvalidArgumentException("Renditions ['"+renditionsParam+"'] only apply to content types: "+parentNodeRef.getId()+","+nodeName); }
+         * 
+         * thumbnailDefs = getThumbnailDefs(renditionsParam); } */
 
         Map<QName, Serializable> props = new HashMap<>(1);
 
@@ -2124,7 +2081,7 @@ public class NodesImpl implements Nodes
         {
             assocTypeQName = getAssocType(nodeInfo.getAssociation().getAssocType());
         }
-        
+
         Boolean versionMajor = null;
         String str = parameters.getParameter(PARAM_VERSION_MAJOR);
         if (str != null)
@@ -2178,9 +2135,7 @@ public class NodesImpl implements Nodes
 
         Node newNode = getFolderOrDocument(nodeRef.getId(), parameters);
 
-        /* RA-834: commented-out since not currently applicable for empty file
-        requestRenditions(thumbnailDefs, newNode); // note: noop for folder
-        */
+        /* RA-834: commented-out since not currently applicable for empty file requestRenditions(thumbnailDefs, newNode); // note: noop for folder */
 
         return newNode;
     }
@@ -2241,7 +2196,7 @@ public class NodesImpl implements Nodes
             {
                 NodeRef childNodeRef = validateNode(childId);
 
-                String nodeName = (String)nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
+                String nodeName = (String) nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
                 QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
 
                 nodeService.addChild(parentNodeRef, childNodeRef, assocTypeQName, assocChildQName);
@@ -2284,12 +2239,12 @@ public class NodesImpl implements Nodes
             }
             catch (AssociationExistsException aee)
             {
-                throw new ConstraintViolatedException("Node association '"+assocTypeStr+"' already exists from "+sourceNodeId+" to "+targetNodeId);
+                throw new ConstraintViolatedException("Node association '" + assocTypeStr + "' already exists from " + sourceNodeId + " to " + targetNodeId);
             }
             catch (IllegalArgumentException iae)
             {
                 // note: for now, we assume it is invalid assocType - alternatively, we could attempt to pre-validate via dictionary.getAssociation
-                throw new InvalidArgumentException(sourceNodeId+","+assocTypeStr+","+targetNodeId);
+                throw new InvalidArgumentException(sourceNodeId + "," + assocTypeStr + "," + targetNodeId);
             }
 
             result.add(assoc);
@@ -2306,7 +2261,7 @@ public class NodesImpl implements Nodes
     {
         QName assocType = null;
 
-        if ((assocTypeQNameStr != null) && (! assocTypeQNameStr.isEmpty()))
+        if ((assocTypeQNameStr != null) && (!assocTypeQNameStr.isEmpty()))
         {
             assocType = createQName(assocTypeQNameStr);
             if (dictionaryService.getAssociation(assocType) == null)
@@ -2327,7 +2282,6 @@ public class NodesImpl implements Nodes
 
         return assocType;
     }
-
 
     private NodeRef createNodeImpl(NodeRef parentNodeRef, String nodeName, QName nodeTypeQName, Map<QName, Serializable> props, QName assocTypeQName)
     {
@@ -2351,22 +2305,22 @@ public class NodesImpl implements Nodes
             throw new ConstraintViolatedException(dcne.getMessage());
         }
 
-        ActivityInfo activityInfo =  getActivityInfo(parentNodeRef, newNode);
+        ActivityInfo activityInfo = getActivityInfo(parentNodeRef, newNode);
         postActivity(Activity_Type.ADDED, activityInfo, false);
         return newNode;
     }
 
     /**
-     * Posts activities based on the activity_type.
-     * If the method is called with aSync=true then a TransactionListener is used post the activity
-     * afterCommit.  Otherwise the activity posting is done synchronously.
+     * Posts activities based on the activity_type. If the method is called with aSync=true then a TransactionListener is used post the activity afterCommit. Otherwise the activity posting is done synchronously.
+     * 
      * @param activity_type
      * @param activityInfo
      * @param aSync
      */
     protected void postActivity(Activity_Type activity_type, ActivityInfo activityInfo, boolean aSync)
     {
-        if (activityInfo == null) return; //Nothing to do.
+        if (activityInfo == null)
+            return; // Nothing to do.
 
         String activityType = determineActivityType(activity_type, activityInfo.getFileInfo().isFolder());
         if (activityType != null)
@@ -2380,7 +2334,7 @@ public class NodesImpl implements Nodes
             }
             else
             {
-                    poster.postFileFolderActivity(activityType, null, TenantUtil.getCurrentDomain(),
+                poster.postFileFolderActivity(activityType, null, TenantUtil.getCurrentDomain(),
                         activityInfo.getSiteId(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(),
                         activityInfo.getFileName(), Activities.APP_TOOL, Activities.RESTAPI_CLIENT,
                         activityInfo.getFileInfo());
@@ -2392,8 +2346,7 @@ public class NodesImpl implements Nodes
     protected ActivityInfo getActivityInfo(NodeRef parentNodeRef, NodeRef nodeRef)
     {
         // runAs system, eg. user may not have permission see one or more parents (irrespective of whether in a site context of not)
-        SiteInfo siteInfo = AuthenticationUtil.runAs(new RunAsWork<SiteInfo>()
-        {
+        SiteInfo siteInfo = AuthenticationUtil.runAs(new RunAsWork<SiteInfo>() {
             @Override
             public SiteInfo doWork() throws Exception
             {
@@ -2402,7 +2355,7 @@ public class NodesImpl implements Nodes
         }, AuthenticationUtil.getSystemUserName());
 
         String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
-        if(siteId != null && !siteId.equals(""))
+        if (siteId != null && !siteId.equals(""))
         {
             FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
             if (fileInfo != null)
@@ -2429,16 +2382,18 @@ public class NodesImpl implements Nodes
     {
         switch (activity_type)
         {
-            case DELETED:
-                return isFolder ? ActivityType.FOLDER_DELETED:ActivityType.FILE_DELETED;
-            case ADDED:
-                return isFolder ? ActivityType.FOLDER_ADDED:ActivityType.FILE_ADDED;
-            case UPDATED:
-                if (!isFolder) return ActivityType.FILE_UPDATED;
-                break;
-            case DOWNLOADED:
-                if (!isFolder) return ActivityPoster.DOWNLOADED;
-                break;
+        case DELETED:
+            return isFolder ? ActivityType.FOLDER_DELETED : ActivityType.FILE_DELETED;
+        case ADDED:
+            return isFolder ? ActivityType.FOLDER_ADDED : ActivityType.FILE_ADDED;
+        case UPDATED:
+            if (!isFolder)
+                return ActivityType.FILE_UPDATED;
+            break;
+        case DOWNLOADED:
+            if (!isFolder)
+                return ActivityPoster.DOWNLOADED;
+            break;
         }
         return null;
     }
@@ -2446,7 +2401,7 @@ public class NodesImpl implements Nodes
     // check cm:cmobject (but *not* cm:systemfolder)
     private void validateCmObject(QName nodeTypeQName)
     {
-        if (! isSubClass(nodeTypeQName, ContentModel.TYPE_CMOBJECT))
+        if (!isSubClass(nodeTypeQName, ContentModel.TYPE_CMOBJECT))
         {
             throw new InvalidArgumentException("Invalid type: " + nodeTypeQName + " - expected (sub-)type of cm:cmobject");
         }
@@ -2460,21 +2415,19 @@ public class NodesImpl implements Nodes
     // special cases: additional validation of property values (if not done by underlying foundation services)
     private void validatePropValues(Map<QName, Serializable> props)
     {
-        String newOwner = (String)props.get(ContentModel.PROP_OWNER);
+        String newOwner = (String) props.get(ContentModel.PROP_OWNER);
         if (newOwner != null)
         {
             // validate that user exists
-            if (! personService.personExists(newOwner))
+            if (!personService.personExists(newOwner))
             {
-                throw new InvalidArgumentException("Unknown owner: "+newOwner);
+                throw new InvalidArgumentException("Unknown owner: " + newOwner);
             }
         }
     }
 
-
     /**
-     * Check for special case: additional node validation (pending common lower-level service support)
-     * for blacklist of system nodes that should not be deleted or locked, eg. Company Home, Sites, Data Dictionary
+     * Check for special case: additional node validation (pending common lower-level service support) for blacklist of system nodes that should not be deleted or locked, eg. Company Home, Sites, Data Dictionary
      *
      * @param nodeRef
      * @param type
@@ -2523,7 +2476,7 @@ public class NodesImpl implements Nodes
     {
         boolean locked = false;
         if (((aspects != null) && aspects.contains(ContentModel.ASPECT_LOCKABLE))
-           || nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+                || nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
             locked = lockService.isLocked(nodeRef);
         }
@@ -2534,21 +2487,19 @@ public class NodesImpl implements Nodes
     @Override
     public Node updateNode(String nodeId, Node nodeInfo, Parameters parameters)
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 NodeRef nodeRef = updateNodeImpl(nodeId, nodeInfo, parameters);
-                ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
+                ActivityInfo activityInfo = getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
                 postActivity(Activity_Type.UPDATED, activityInfo, false);
-                
+
                 return null;
             }
         }, false, true);
 
-        return retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Node>()
-        {
+        return retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Node>() {
             @Override
             public Node execute() throws Throwable
             {
@@ -2556,11 +2507,11 @@ public class NodesImpl implements Nodes
             }
         }, false, false);
     }
-    
+
     protected NodeRef updateNodeImpl(String nodeId, Node nodeInfo, Parameters parameters)
     {
         validateAspects(nodeInfo.getAspectNames(), EXCLUDED_NS, EXCLUDED_ASPECTS);
-        validateProperties(nodeInfo.getProperties(), EXCLUDED_NS,  Arrays.asList());
+        validateProperties(nodeInfo.getProperties(), EXCLUDED_NS, Arrays.asList());
 
         final NodeRef nodeRef = validateOrLookupNode(nodeId, null);
 
@@ -2576,27 +2527,27 @@ public class NodesImpl implements Nodes
         }
 
         String name = nodeInfo.getName();
-        if ((name != null) && (! name.isEmpty()))
+        if ((name != null) && (!name.isEmpty()))
         {
             // update node name if needed - note: if the name is different than existing then this is equivalent of a rename (within parent folder)
             props.put(ContentModel.PROP_NAME, name);
         }
 
         String nodeType = nodeInfo.getNodeType();
-        if ((nodeType != null) && (! nodeType.isEmpty()))
+        if ((nodeType != null) && (!nodeType.isEmpty()))
         {
             // update node type - ensure that we are performing a specialise (we do not support generalise)
             QName destNodeTypeQName = createQName(nodeType);
 
-            if ((! destNodeTypeQName.equals(nodeTypeQName)) &&
-                 isSubClass(destNodeTypeQName, nodeTypeQName) &&
-                 (! isSubClass(destNodeTypeQName, ContentModel.TYPE_SYSTEM_FOLDER)))
+            if ((!destNodeTypeQName.equals(nodeTypeQName)) &&
+                    isSubClass(destNodeTypeQName, nodeTypeQName) &&
+                    (!isSubClass(destNodeTypeQName, ContentModel.TYPE_SYSTEM_FOLDER)))
             {
                 nodeService.setType(nodeRef, destNodeTypeQName);
             }
-            else if (! destNodeTypeQName.equals(nodeTypeQName))
+            else if (!destNodeTypeQName.equals(nodeTypeQName))
             {
-                throw new InvalidArgumentException("Failed to change (specialise) node type - from "+nodeTypeQName+" to "+destNodeTypeQName);
+                throw new InvalidArgumentException("Failed to change (specialise) node type - from " + nodeTypeQName + " to " + destNodeTypeQName);
             }
         }
 
@@ -2610,10 +2561,10 @@ public class NodesImpl implements Nodes
                 throw new PermissionDeniedException();
             }
 
-            if (! currentParentNodeRef.equals(parentNodeRef))
+            if (!currentParentNodeRef.equals(parentNodeRef))
             {
-                //moveOrCopy(nodeRef, parentNodeRef, name, false); // not currently supported - client should use explicit POST /move operation instead
-                throw new InvalidArgumentException("Cannot update parentId of "+nodeId+" via PUT /nodes/{nodeId}. Please use explicit POST /nodes/{nodeId}/move operation instead");
+                // moveOrCopy(nodeRef, parentNodeRef, name, false); // not currently supported - client should use explicit POST /move operation instead
+                throw new InvalidArgumentException("Cannot update parentId of " + nodeId + " via PUT /nodes/{nodeId}. Please use explicit POST /nodes/{nodeId}/move operation instead");
             }
         }
 
@@ -2637,7 +2588,7 @@ public class NodesImpl implements Nodes
         }
 
         processNodePermissions(nodeRef, nodeInfo);
-        
+
         return nodeRef;
     }
 
@@ -2690,7 +2641,7 @@ public class NodesImpl implements Nodes
                 Set<AccessPermission> directPerms = new HashSet<>(5);
                 for (AccessPermission accessPerm : permissionService.getAllSetPermissions(nodeRef))
                 {
-                    if (accessPerm.isSetDirectly()) 
+                    if (accessPerm.isSetDirectly())
                     {
                         directPerms.add(accessPerm);
                     }
@@ -2707,7 +2658,7 @@ public class NodesImpl implements Nodes
                 {
                     throw new InvalidArgumentException("Duplicate node permissions, there is more than one permission with the same authority and name!");
                 }
-                
+
                 for (NodePermissions.NodePermission nodePerm : nodePerms.getLocallySet())
                 {
                     String permName = nodePerm.getName();
@@ -2801,7 +2752,7 @@ public class NodesImpl implements Nodes
         FileInfo fi = moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
         return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
     }
-    
+
     public void updateCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> excludedAspects)
     {
         if (aspectNames != null)
@@ -2822,7 +2773,7 @@ public class NodesImpl implements Nodes
                     continue; // ignore
                 }
 
-                if (! existingAspects.contains(aspectQName))
+                if (!existingAspects.contains(aspectQName))
                 {
                     aspectsToAdd.add(aspectQName);
                 }
@@ -2835,7 +2786,7 @@ public class NodesImpl implements Nodes
                     continue; // ignore
                 }
 
-                if (! aspectQNames.contains(existingAspect))
+                if (!aspectQNames.contains(existingAspect))
                 {
                     aspectsToRemove.add(existingAspect);
                 }
@@ -2847,7 +2798,7 @@ public class NodesImpl implements Nodes
             {
                 if (aQName.equals(QuickShareModel.ASPECT_QSHARE))
                 {
-                    String qSharedId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
+                    String qSharedId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
                     if (qSharedId != null)
                     {
                         // note: for now, go via QuickShareLinks (rather than QuickShareService) to ensure consistent permission checks
@@ -2913,9 +2864,9 @@ public class NodesImpl implements Nodes
             else
             {
                 // move
-                if ((! nodeRef.equals(parentNodeRef)) && isSpecialNode(nodeRef, getNodeType(nodeRef)))
+                if ((!nodeRef.equals(parentNodeRef)) && isSpecialNode(nodeRef, getNodeType(nodeRef)))
                 {
-                    throw new PermissionDeniedException("Cannot move: "+nodeRef.getId());
+                    throw new PermissionDeniedException("Cannot move: " + nodeRef.getId());
                 }
 
                 // updating "parentId" means moving primary parent !
@@ -2936,11 +2887,11 @@ public class NodesImpl implements Nodes
         catch (FileExistsException fee)
         {
             // duplicate - name clash
-            throw new ConstraintViolatedException("Name already exists in target parent: "+name);
+            throw new ConstraintViolatedException("Name already exists in target parent: " + name);
         }
         catch (FileFolderServiceImpl.InvalidTypeException ite)
         {
-            throw new InvalidArgumentException("Invalid type of target parent: "+targetParentId);
+            throw new InvalidArgumentException("Invalid type of target parent: " + targetParentId);
         }
     }
 
@@ -2985,7 +2936,7 @@ public class NodesImpl implements Nodes
                 }
                 else
                 {
-                    logger.warn("Ignored attachment=false for "+nodeRef.getId()+" since "+mimeType+" is not in the whitelist for non-attach content types");
+                    logger.warn("Ignored attachment=false for " + nodeRef.getId() + " since " + mimeType + " is not in the whitelist for non-attach content types");
                 }
             }
         }
@@ -3005,12 +2956,12 @@ public class NodesImpl implements Nodes
     {
         if (contentInfo.getMimeType().toLowerCase().startsWith("multipart"))
         {
-            throw new UnsupportedMediaTypeException("Cannot update using "+contentInfo.getMimeType());
+            throw new UnsupportedMediaTypeException("Cannot update using " + contentInfo.getMimeType());
         }
 
         final NodeRef nodeRef = validateNode(fileNodeId);
 
-        if (! nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
+        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
             throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
         }
@@ -3032,9 +2983,9 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
         }
-        
+
         return updateExistingFile(null, nodeRef, fileName, contentInfo, stream, parameters, versionMajor, versionComment);
     }
 
@@ -3075,7 +3026,7 @@ public class NodesImpl implements Nodes
         {
             writeContent(nodeRef, fileName, stream, true);
 
-            if ((isVersioned) || (versionMajor != null) || (versionComment != null) )
+            if ((isVersioned) || (versionMajor != null) || (versionComment != null))
             {
                 VersionType versionType = null;
                 if (versionMajor != null)
@@ -3085,7 +3036,7 @@ public class NodesImpl implements Nodes
                 else
                 {
                     // note: it is possible to have versionable aspect but no versions (=> no version label)
-                    if ((! isVersioned) || (nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL) == null))
+                    if ((!isVersioned) || (nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL) == null))
                     {
                         versionType = VersionType.MAJOR;
                     }
@@ -3098,7 +3049,7 @@ public class NodesImpl implements Nodes
                 createVersion(nodeRef, isVersioned, versionType, versionComment);
             }
 
-            ActivityInfo activityInfo =  getActivityInfo(parentNodeRef, nodeRef);
+            ActivityInfo activityInfo = getActivityInfo(parentNodeRef, nodeRef);
             postActivity(Activity_Type.UPDATED, activityInfo, false);
 
             extractMetadata(nodeRef);
@@ -3122,7 +3073,8 @@ public class NodesImpl implements Nodes
             {
                 // quick/weak guess based on file extension
                 writer.setMimetype(mimeType);
-            } else
+            }
+            else
             {
                 // stronger guess based on file stream
                 writer.guessMimetype(fileName);
@@ -3138,14 +3090,16 @@ public class NodesImpl implements Nodes
                 try
                 {
                     is.reset();
-                } catch (IOException ioe)
+                }
+                catch (IOException ioe)
                 {
                     if (logger.isWarnEnabled())
                     {
                         logger.warn("Failed to reset stream after trying to guess encoding: " + ioe.getMessage());
                     }
                 }
-            } else
+            }
+            else
             {
                 is = stream;
             }
@@ -3164,7 +3118,7 @@ public class NodesImpl implements Nodes
         {
             if (cioe.getCause() instanceof NodeLockedException)
             {
-                throw (NodeLockedException)cioe.getCause();
+                throw (NodeLockedException) cioe.getCause();
             }
             throw cioe;
         }
@@ -3223,7 +3177,7 @@ public class NodesImpl implements Nodes
     {
         if (formData == null || !formData.getIsMultiPart())
         {
-            throw new InvalidArgumentException("The request content-type is not multipart: "+parentFolderNodeId);
+            throw new InvalidArgumentException("The request content-type is not multipart: " + parentFolderNodeId);
         }
 
         NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
@@ -3251,83 +3205,83 @@ public class NodesImpl implements Nodes
         {
             switch (field.getName().toLowerCase())
             {
-                case "name":
-                    String str = getStringOrNull(field.getValue());
-                    if ((str != null) && (! str.isEmpty()))
-                    {
-                        fileName = str;
-                    }
-                    break;
-
-                case "filedata":
-                    if (field.getIsFile())
-                    {
-                        fileName = (fileName != null ? fileName : field.getFilename());
-                        content = field.getContent();
-                    }
-                    break;
-
-                case "autorename":
-                    autoRename = Boolean.valueOf(field.getValue());
-                    break;
-
-                case "nodetype":
-                    nodeTypeQName = createQName(getStringOrNull(field.getValue()));
-                    if (! isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT))
-                    {
-                        throw new InvalidArgumentException("Can only upload type of cm:content: " + nodeTypeQName);
-                    }
-                    break;
-
-                case "overwrite":
-                    overwrite = Boolean.valueOf(field.getValue());
-                    break;
-
-                case "majorversion":
-                    versionMajor = Boolean.valueOf(field.getValue());
-                    break;
-
-                case "comment":
-                    versionComment = getStringOrNull(field.getValue());
-                    break;
-
-                case "relativepath":
-                    relativePath = getStringOrNull(field.getValue());
-                    break;
-
-                case "renditions":
-                    renditionNames = getStringOrNull(field.getValue());
-                    break;
-                case "versioningenabled":
-                    String versioningEnabledStringValue = getStringOrNull(field.getValue());
-                    if (null != versioningEnabledStringValue)
-                    {
-                        // MNT-22036 versioningenabled parameter was added to disable versioning of newly created nodes.
-                        // The default API mechanism should not be changed/affected.
-                        // Versioning is enabled by default when creating a node using form-data.
-                        // To preserve this, versioningEnabled value must be 'true' for any given value typo/valuesNotSupported (except case-insensitive 'false')
-                        // .equalsIgnoreCase("false") will return true only when the input value is 'false'
-                        // !.equalsIgnoreCase("false") will return false only when the input value is 'false'
-                        versioningEnabled = !versioningEnabledStringValue.equalsIgnoreCase("false");
-                    }
-                    break;
-
-                default:
+            case "name":
+                String str = getStringOrNull(field.getValue());
+                if ((str != null) && (!str.isEmpty()))
                 {
-                    final String propName = field.getName();
-                    if (propName.indexOf(QName.NAMESPACE_PREFIX) > -1 && !qnameStrProps.containsKey(propName))
+                    fileName = str;
+                }
+                break;
+
+            case "filedata":
+                if (field.getIsFile())
+                {
+                    fileName = (fileName != null ? fileName : field.getFilename());
+                    content = field.getContent();
+                }
+                break;
+
+            case "autorename":
+                autoRename = Boolean.valueOf(field.getValue());
+                break;
+
+            case "nodetype":
+                nodeTypeQName = createQName(getStringOrNull(field.getValue()));
+                if (!isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT))
+                {
+                    throw new InvalidArgumentException("Can only upload type of cm:content: " + nodeTypeQName);
+                }
+                break;
+
+            case "overwrite":
+                overwrite = Boolean.valueOf(field.getValue());
+                break;
+
+            case "majorversion":
+                versionMajor = Boolean.valueOf(field.getValue());
+                break;
+
+            case "comment":
+                versionComment = getStringOrNull(field.getValue());
+                break;
+
+            case "relativepath":
+                relativePath = getStringOrNull(field.getValue());
+                break;
+
+            case "renditions":
+                renditionNames = getStringOrNull(field.getValue());
+                break;
+            case "versioningenabled":
+                String versioningEnabledStringValue = getStringOrNull(field.getValue());
+                if (null != versioningEnabledStringValue)
+                {
+                    // MNT-22036 versioningenabled parameter was added to disable versioning of newly created nodes.
+                    // The default API mechanism should not be changed/affected.
+                    // Versioning is enabled by default when creating a node using form-data.
+                    // To preserve this, versioningEnabled value must be 'true' for any given value typo/valuesNotSupported (except case-insensitive 'false')
+                    // .equalsIgnoreCase("false") will return true only when the input value is 'false'
+                    // !.equalsIgnoreCase("false") will return false only when the input value is 'false'
+                    versioningEnabled = !versioningEnabledStringValue.equalsIgnoreCase("false");
+                }
+                break;
+
+            default:
+            {
+                final String propName = field.getName();
+                if (propName.indexOf(QName.NAMESPACE_PREFIX) > -1 && !qnameStrProps.containsKey(propName))
+                {
+                    String[] fieldValue = formDataParameters.get(propName);
+                    if (fieldValue.length > 1)
                     {
-                        String[] fieldValue = formDataParameters.get(propName);
-                        if (fieldValue.length > 1)
-                        {
-                            qnameStrProps.put(propName, Arrays.asList(fieldValue));
-                        }
-                        else
-                        {
-                            qnameStrProps.put(propName, fieldValue[0]);
-                        }
+                        qnameStrProps.put(propName, Arrays.asList(fieldValue));
+                    }
+                    else
+                    {
+                        qnameStrProps.put(propName, fieldValue[0]);
                     }
                 }
+            }
             }
         }
 
@@ -3348,7 +3302,7 @@ public class NodesImpl implements Nodes
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
         final Set<String> renditions = getRequestedRenditions(renditionNames);
 
-        validateProperties(qnameStrProps, EXCLUDED_NS,  Arrays.asList());
+        validateProperties(qnameStrProps, EXCLUDED_NS, Arrays.asList());
         try
         {
             // Map the given properties, if any.
@@ -3357,9 +3311,7 @@ public class NodesImpl implements Nodes
                 properties = mapToNodeProperties(qnameStrProps);
             }
 
-            /*
-             * Existing file handling
-             */
+            /* Existing file handling */
             NodeRef existingFile = nodeService.getChildByName(parentNodeRef, assocTypeQName, fileName);
             if (existingFile != null)
             {
@@ -3394,7 +3346,7 @@ public class NodesImpl implements Nodes
 
             // Create a new file.
             NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, versionMajor, versionComment);
-            
+
             // Create the response
             final Node fileNode = getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters);
 
@@ -3411,18 +3363,14 @@ public class NodesImpl implements Nodes
             throw new PermissionDeniedException(ade.getMessage());
         }
 
-        /*
-         * NOTE: Do not clean formData temp files to allow for retries. It's
-         * possible for a temp file to remain if max retry attempts are
-         * made, but this is rare, so leave to usual temp file cleanup.
-         */
+        /* NOTE: Do not clean formData temp files to allow for retries. It's possible for a temp file to remain if max retry attempts are made, but this is rare, so leave to usual temp file cleanup. */
     }
 
     private NodeRef createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params,
-                                  Boolean versionMajor, String versionComment)
+            Boolean versionMajor, String versionComment)
     {
         NodeRef nodeRef = createNodeImpl(parentNodeRef, fileName, nodeType, props, assocTypeQName);
-        
+
         if (content == null)
         {
             // Write "empty" content
@@ -3541,7 +3489,7 @@ public class NodesImpl implements Nodes
     /**
      * Extracts the given node metadata asynchronously.
      *
-     *  The overwrite policy controls which if any parts of the document's properties are updated from this.
+     * The overwrite policy controls which if any parts of the document's properties are updated from this.
      */
     private void extractMetadata(NodeRef nodeRef)
     {
@@ -3555,11 +3503,12 @@ public class NodesImpl implements Nodes
     }
 
     /**
-     * Creates a unique file name, if the upload component was configured to
-     * find a new unique name for clashing filenames.
+     * Creates a unique file name, if the upload component was configured to find a new unique name for clashing filenames.
      *
-     * @param parentNodeRef the parent node
-     * @param fileName      the original fileName
+     * @param parentNodeRef
+     *            the parent node
+     * @param fileName
+     *            the original fileName
      * @return a new file name
      */
     private String findUniqueName(NodeRef parentNodeRef, String fileName)
@@ -3597,7 +3546,8 @@ public class NodesImpl implements Nodes
     /**
      * Helper to create a QName from either a fully qualified or short-name QName string
      *
-     * @param qnameStr Fully qualified or short-name QName string
+     * @param qnameStr
+     *            Fully qualified or short-name QName string
      * @return QName
      */
     public QName createQName(String qnameStr)
@@ -3629,13 +3579,14 @@ public class NodesImpl implements Nodes
     /**
      * Helper to create a QName from either a fully qualified or short-name QName string
      *
-     * @param qnameStrList list of fully qualified or short-name QName string
+     * @param qnameStrList
+     *            list of fully qualified or short-name QName string
      * @param excludedProps
      * @return a list of {@code QName} objects
      */
     protected List<QName> createQNames(List<String> qnameStrList, List<QName> excludedProps)
     {
-        String PREFIX = PARAM_INCLUDE_PROPERTIES +"/";
+        String PREFIX = PARAM_INCLUDE_PROPERTIES + "/";
 
         List<QName> result = new ArrayList<>(qnameStrList.size());
         for (String str : qnameStrList)
@@ -3727,6 +3678,7 @@ public class NodesImpl implements Nodes
 
     /**
      * Checks if same permission is sent more than once
+     * 
      * @param locallySetPermissions
      * @return
      */
@@ -3744,7 +3696,7 @@ public class NodesImpl implements Nodes
         }
         return duplicate;
     }
-    
+
     /**
      * 
      * @param node
@@ -3821,63 +3773,19 @@ public class NodesImpl implements Nodes
     /**
      * @author Jamal Kaabi-Mofrad
      */
-    /*
-    private static class ContentInfoWrapper implements BasicContentInfo
-    {
-        private String mimeType;
-        private String encoding;
-
-        public String getEncoding()
-        {
-            return encoding;
-        }
-
-        public String getMimeType()
-        {
-            return mimeType;
-        }
-
-        ContentInfoWrapper(BasicContentInfo basicContentInfo)
-        {
-            if (basicContentInfo != null)
-            {
-                this.mimeType = basicContentInfo.getMimeType();
-                this.encoding = basicContentInfo.getEncoding();
-            }
-        }
-
-        ContentInfoWrapper(ContentInfo contentInfo)
-        {
-            if (contentInfo != null)
-            {
-                this.mimeType = contentInfo.getMimeType();
-                this.encoding = contentInfo.getEncoding();
-            }
-        }
-
-        ContentInfoWrapper(Content content)
-        {
-            if (content != null && StringUtils.isNotEmpty(content.getMimetype()))
-            {
-                try
-                {
-                    // TODO I think it makes sense to push contentType parsing into org.springframework.extensions.webscripts.servlet.FormData
-                    MediaType media = MediaType.parseMediaType(content.getMimetype());
-                    this.mimeType = media.getType() + '/' + media.getSubtype();
-
-                    if (media.getCharSet() != null)
-                    {
-                        this.encoding = media.getCharSet().name();
-                    }
-                }
-                catch (InvalidMediaTypeException ime)
-                {
-                    throw new InvalidArgumentException(ime.getMessage());
-                }
-            }
-        }
-    }
-    */
+    /* private static class ContentInfoWrapper implements BasicContentInfo { private String mimeType; private String encoding;
+     * 
+     * public String getEncoding() { return encoding; }
+     * 
+     * public String getMimeType() { return mimeType; }
+     * 
+     * ContentInfoWrapper(BasicContentInfo basicContentInfo) { if (basicContentInfo != null) { this.mimeType = basicContentInfo.getMimeType(); this.encoding = basicContentInfo.getEncoding(); } }
+     * 
+     * ContentInfoWrapper(ContentInfo contentInfo) { if (contentInfo != null) { this.mimeType = contentInfo.getMimeType(); this.encoding = contentInfo.getEncoding(); } }
+     * 
+     * ContentInfoWrapper(Content content) { if (content != null && StringUtils.isNotEmpty(content.getMimetype())) { try { // TODO I think it makes sense to push contentType parsing into org.springframework.extensions.webscripts.servlet.FormData MediaType media = MediaType.parseMediaType(content.getMimetype()); this.mimeType = media.getType() + '/' + media.getSubtype();
+     * 
+     * if (media.getCharSet() != null) { this.encoding = media.getCharSet().name(); } } catch (InvalidMediaTypeException ime) { throw new InvalidArgumentException(ime.getMessage()); } } } } */
 
     protected NodeService getNodeService()
     {

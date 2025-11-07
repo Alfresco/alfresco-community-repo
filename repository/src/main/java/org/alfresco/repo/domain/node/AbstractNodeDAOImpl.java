@@ -421,6 +421,17 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     public void setBatchSize(int batchSize)
     {
         this.batchSize = batchSize;
+
+        if (batchSize < 1)
+        {
+            this.batchSize = 1;
+            logger.info("Batch size can not be set to a value less than 1.  The size is now set to 1.");
+        }
+        else if (batchSize >= 1000)
+        {
+            logger.info("Batch size is set to 1000 or greater.  Oracle databases have a hard limit of 1000 values allowed in an IN clause."
+                    + "The other supported databases have no specified limit.");
+        }
     }
 
     /**

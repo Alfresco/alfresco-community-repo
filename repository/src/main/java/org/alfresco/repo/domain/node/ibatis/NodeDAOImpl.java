@@ -1544,13 +1544,13 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     protected List<ChildAssocEntity> selectParentAssocsOfChildren(Set<Long> childrenNodeIds)
     {
-        if (childrenNodeIds.size() == 0)
+        if (childrenNodeIds.isEmpty())
         {
             // There will be no results
             return Collections.emptyList();
         }
         IdsEntity idsEntity = new IdsEntity();
-        idsEntity.setIds(new ArrayList<Long>(childrenNodeIds));
+        idsEntity.setIds(new ArrayList<>(childrenNodeIds));
         return template.selectList(SELECT_PARENT_ASSOCS_OF_CHILDREN, idsEntity);
     }
 

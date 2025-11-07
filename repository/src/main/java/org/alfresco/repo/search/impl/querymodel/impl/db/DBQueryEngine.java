@@ -444,11 +444,18 @@ public class DBQueryEngine implements QueryEngine
                     rawDbids.add(node.getId());
                 }
             }
-            logger.debug("- bulk loading node data: " + rawDbids.size());
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("- bulk loading node data: " + rawDbids.size());
+            }
             nodeDAO.cacheNodesById(rawDbids);
         }
 
-        logger.debug("- query is completed, " + nodes.size() + " nodes loaded");
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("- query is completed, " + nodes.size() + " nodes loaded");
+        }
+
         return frs;
     }
 

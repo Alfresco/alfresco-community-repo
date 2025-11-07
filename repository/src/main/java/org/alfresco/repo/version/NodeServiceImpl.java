@@ -431,7 +431,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
             }
 
             Serializable aspect = this.dbNodeService.getProperty(nodeRef, PROP_QNAME_FROZEN_ASPECTS);
-            result.put(nodeRef, new HashSet<QName>((ArrayList<QName>) aspect));
+            result.put(nodeRef, new HashSet<>((ArrayList<QName>) aspect));
         }
 
         return result;

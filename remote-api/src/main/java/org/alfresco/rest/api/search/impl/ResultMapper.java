@@ -184,7 +184,10 @@ public class ResultMapper
 
                 if (aNode == null)
                 {
-                    logger.debug("Unknown noderef returned from search results " + row.getNodeRef());
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Unknown noderef returned from search results " + row.getNodeRef());
+                    }
                     unknownNodeRefsCount.incrementAndGet();
                     continue;
                 }
@@ -197,7 +200,7 @@ public class ResultMapper
 
                     if (high != null && !high.isEmpty())
                     {
-                        highlightEntries = new ArrayList<HighlightEntry>(high.size());
+                        highlightEntries = new ArrayList<>(high.size());
                         for (Pair<String, List<String>> highlight : high)
                         {
                             highlightEntries.add(new HighlightEntry(highlight.getFirst(), highlight.getSecond()));
@@ -331,8 +334,8 @@ public class ResultMapper
 
                     for (Entry<NodeRef, Map<QName, Serializable>> entry : properties.entrySet())
                     {
-                        NodeRef frozenNodeRef = ((NodeRef) entry.getValue()
-                                .get(Version2Model.PROP_QNAME_FROZEN_NODE_REF));
+                        NodeRef frozenNodeRef = (NodeRef) entry.getValue()
+                                .get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
                         String versionLabelId = (String) entry.getValue()
                                 .get(Version2Model.PROP_QNAME_VERSION_LABEL);
 
@@ -362,8 +365,11 @@ public class ResultMapper
                         catch (EntityNotFoundException | InvalidNodeRefException e)
                         {
                             // Solr says there is a node but we can't find it
-                            logger.debug("Failed to find a versioned node with id of " + frozenNodeRef
-                                    + " this is probably because the original node has been deleted.");
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Failed to find a versioned node with id of " + frozenNodeRef
+                                        + " this is probably because the original node has been deleted.");
+                            }
                         }
 
                         if (version != null && aNode != null)
@@ -377,7 +383,7 @@ public class ResultMapper
                     }
                     break;
                 case DELETED:
-                    List<String> nodeIds = resultSet.getNodeRefs().stream().map(nr -> nr.getId()).collect(Collectors.toList());
+                    List<String> nodeIds = resultSet.getNodeRefs().stream().map(NodeRef::getId).collect(Collectors.toList());
                     try
                     {
                         results = deletedNodes.getDeletedNodes(nodeIds, params, false, mapUserInfo);
@@ -386,7 +392,10 @@ public class ResultMapper
                     {
                         // Solr says there is a deleted node but we can't find it, we want the rest of
                         // the search to return so lets ignore it.
-                        logger.debug("Failed to find a deleted nodes with ids of " + nodeIds.toString());
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Failed to find a deleted nodes with ids of " + nodeIds.toString());
+                        }
                     }
                     break;
                 }

@@ -893,6 +893,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return convertEntityToPair(entity);
         }
 
+        @Override
         public List<Pair<Long, Serializable>> findByKeys(List<Long> keys)
         {
             throw new UnsupportedOperationException("Batch lookup not supported for property values.");

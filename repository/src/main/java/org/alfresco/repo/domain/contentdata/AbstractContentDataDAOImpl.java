@@ -337,6 +337,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             return new Pair<Long, ContentData>(key, contentData);
         }
 
+        @Override
         public List<Pair<Long, ContentData>> findByKeys(List<Long> keys)
         {
             if (keys == null || keys.isEmpty())
@@ -355,7 +356,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             for (ContentDataEntity contentDataEntity : contentDataEntities)
             {
                 ContentData contentData = makeContentData(contentDataEntity);
-                result.add(new Pair<Long, ContentData>(contentDataEntity.getId(), contentData));
+                result.add(new Pair<>(contentDataEntity.getId(), contentData));
             }
             return result;
         }
@@ -415,7 +416,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             List<Pair<Long, ContentUrlEntity>> result = new ArrayList<>(contentUrlEntities.size());
             for (ContentUrlEntity contentUrlEntity : contentUrlEntities)
             {
-                result.add(new Pair<Long, ContentUrlEntity>(contentUrlEntity.getId(), contentUrlEntity));
+                result.add(new Pair<>(contentUrlEntity.getId(), contentUrlEntity));
             }
             return result;
         }

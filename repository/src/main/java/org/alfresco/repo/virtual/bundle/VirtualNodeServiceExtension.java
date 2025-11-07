@@ -172,7 +172,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     public Map<NodeRef, Map<QName, Serializable>> getPropertiesForNodeRefs(List<NodeRef> nodeRefs)
     {
 
-        Map<NodeRef, Map<QName, Serializable>> result = new HashMap<NodeRef, Map<QName, Serializable>>();
+        Map<NodeRef, Map<QName, Serializable>> result = new HashMap<>();
         for (NodeRef nodeRef : nodeRefs)
         {
             Reference reference = Reference.fromNodeRef(nodeRef);

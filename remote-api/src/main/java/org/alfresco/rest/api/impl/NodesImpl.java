@@ -428,20 +428,21 @@ public class NodesImpl implements Nodes
 
         for (String nodeId : nodeIds)
         {
-            String versionLabel = null;
+            String versionLabel;
+            String id = nodeId;
 
-            int idx = nodeId.indexOf(";");
+            int idx = nodeId.indexOf(';');
             if (idx != -1)
             {
                 versionLabel = nodeId.substring(idx + 1);
-                nodeId = nodeId.substring(0, idx);
+                id = nodeId.substring(0, idx);
                 if (versionLabel.equals("pwc"))
                 {
                     continue; // skip pwc
                 }
             }
 
-            NodeRef nodeRef = new NodeRef(storeRef, nodeId);
+            NodeRef nodeRef = new NodeRef(storeRef, id);
             nodeRefs.add(nodeRef);
         }
 
@@ -1155,7 +1156,7 @@ public class NodesImpl implements Nodes
                 continue;
             }
 
-            if (includeParam.size() > 0)
+            if (!includeParam.isEmpty())
             {
                 node.setProperties(mapFromNodeProperties(props, includeParam, mapUserInfo, EXCLUDED_NS, EXCLUDED_PROPS));
             }
@@ -1208,7 +1209,7 @@ public class NodesImpl implements Nodes
                         // special case: do not return "create" (as an allowable op) for file/content types - note: 'type' can be null
                         continue;
                     }
-                    else if (perm.equals(PermissionService.DELETE) && (isSpecialNode(nodeRef, nodeTypeQName)))
+                    else if (perm.equals(PermissionService.DELETE) && isSpecialNode(nodeRef, nodeTypeQName))
                     {
                         // special case: do not return "delete" (as an allowable op) for specific system nodes
                         continue;
@@ -1219,7 +1220,7 @@ public class NodesImpl implements Nodes
                     }
                 }
 
-                node.setAllowableOperations((allowableOperations.size() > 0) ? allowableOperations : null);
+                node.setAllowableOperations((!allowableOperations.isEmpty()) ? allowableOperations : null);
             }
 
             // TODO: Optimize to batch get permissions for all nodes

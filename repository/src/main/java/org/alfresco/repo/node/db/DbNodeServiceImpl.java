@@ -255,7 +255,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<NodeRef> getNodeRefs(List<Long> nodeIds)
     {
-        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(nodeIds.size());
+        List<NodeRef> nodeRefs = new ArrayList<>(nodeIds.size());
 
         List<Pair<Long, NodeRef>> nodePairs = nodeDAO.getNodePairs(nodeIds);
         for (Pair<Long, NodeRef> nodePair : nodePairs)
@@ -1109,7 +1109,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
     private List<Long> getNodeIdsFromList(List<Pair<Long, NodeRef>> nodeRefPairs)
     {
-        List<Long> nodeIds = new ArrayList<Long>(nodeRefPairs.size());
+        List<Long> nodeIds = new ArrayList<>(nodeRefPairs.size());
         for (Pair<Long, NodeRef> nodePair : nodeRefPairs)
         {
             nodeIds.add(nodePair.getFirst());
@@ -1641,7 +1641,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
      */
     private Map<Long, Map<QName, Serializable>> getPropertiesImpl(List<Pair<Long, NodeRef>> nodePairs) throws InvalidNodeRefException
     {
-        List<Long> nodeIds = new ArrayList<Long>(nodePairs.size());
+        List<Long> nodeIds = new ArrayList<>(nodePairs.size());
 
         for (Pair<Long, NodeRef> nodePair : nodePairs)
         {
@@ -1657,7 +1657,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     @Override
     public Map<NodeRef, Map<QName, Serializable>> getPropertiesForNodeRefs(List<NodeRef> nodeRefs) throws InvalidNodeRefException
     {
-        if (nodeRefs == null || nodeRefs.size() == 0)
+        if (nodeRefs == null || nodeRefs.isEmpty())
         {
             return Collections.emptyMap();
         }
@@ -1679,7 +1679,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         Map<Long, Map<QName, Serializable>> propertiesMappedById = getPropertiesImpl(nodePairs);
 
-        Map<NodeRef, Map<QName, Serializable>> propertiesMappedByNodeRef = new HashMap<NodeRef, Map<QName, Serializable>>(nodePairs.size());
+        Map<NodeRef, Map<QName, Serializable>> propertiesMappedByNodeRef = new HashMap<>(nodePairs.size());
         for (Pair<Long, NodeRef> nodePair : nodePairs)
         {
             Long nodeId = nodePair.getFirst();

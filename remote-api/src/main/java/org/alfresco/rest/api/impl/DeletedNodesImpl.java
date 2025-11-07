@@ -217,7 +217,7 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
             archivedNodeRefs.add(nodeArchiveService.getArchivedNode(tempNodeRef));
         }
 
-        List<Node> foundNodes = new ArrayList<>();
+        List<Node> foundNodes;
         if (fullnode)
         {
             foundNodes = nodes.getFoldersOrDocumentsFullInfo(archivedNodeRefs, parameters, mapUserInfo);

@@ -234,6 +234,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
          * 
          * @return Returns empty list always
          */
+        @Override
         public List<VK2> getValueKeys(List<V2> values)
         {
             return Collections.emptyList();
@@ -455,11 +456,11 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
                 }
                 else if (value.equals(VALUE_NULL))
                 {
-                    results.add(new Pair<K, V>(key, null));
+                    results.add(new Pair<>(key, null));
                 }
                 else
                 {
-                    results.add(new Pair<K, V>(key, value));
+                    results.add(new Pair<>(key, value));
                 }
             }
             else
@@ -488,7 +489,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
                 }
                 cache.put(
                         new CacheRegionKey(cacheRegion, entityPair.getFirst()),
-                        (value == null ? VALUE_NULL : value));
+                        value == null ? VALUE_NULL : value);
 
                 results.add(entityPair);
             }
@@ -616,7 +617,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             }
             else
             {
-                lookInCache.add(new Pair<VK, V>(valueKey, value));
+                lookInCache.add(new Pair<>(valueKey, value));
             }
         }
 
@@ -676,7 +677,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
                     cache.put(new CacheRegionValueKey(cacheRegion, (VK) entityPair.getSecond()), key);
                     cache.put(
                             new CacheRegionKey(cacheRegion, key),
-                            (entityPair.getSecond() == null ? VALUE_NULL : entityPair.getSecond()));
+                            entityPair.getSecond() == null ? VALUE_NULL : entityPair.getSecond());
 
                     results.add(entityPair);
                 }

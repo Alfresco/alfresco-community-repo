@@ -143,7 +143,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     private int cachingThreshold = 10;
     private int batchSize = 256;
-    private boolean forceBatching = false;
+    private boolean forceBatching;
 
     /**
      * Cache for the Store root nodes by StoreRef:<br/>
@@ -860,6 +860,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
          * @throws UnsupportedOperationException
          *             Bulk root node lookup not supported
          */
+        @Override
         public List<Pair<StoreRef, Node>> findByKeys(List<StoreRef> storeRefs)
         {
             throw new UnsupportedOperationException("Bulk root node lookup not supported: " + storeRefs);
@@ -923,14 +924,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         @Override
         public List<Pair<Long, Node>> findByKeys(List<Long> nodeIds)
         {
-            if (nodeIds == null || nodeIds.size() == 0)
+            if (nodeIds == null || nodeIds.isEmpty())
             {
-                return new ArrayList<Pair<Long, Node>>(0);
+                return new ArrayList<>(0);
             }
 
-            List<Pair<Long, Node>> results = new ArrayList<Pair<Long, Node>>(nodeIds.size());
+            List<Pair<Long, Node>> results = new ArrayList<>(nodeIds.size());
 
-            SortedSet<Long> uniqueNodeIds = new TreeSet<Long>(nodeIds);
+            SortedSet<Long> uniqueNodeIds = new TreeSet<>(nodeIds);
             List<Node> nodes = selectNodesByIds(uniqueNodeIds);
 
             for (Node node : nodes)
@@ -940,7 +941,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 {
                     // Lock it to prevent 'accidental' modification
                     node.lock();
-                    results.add(new Pair<Long, Node>(node.getId(), node));
+                    results.add(new Pair<>(node.getId(), node));
                 }
             }
 
@@ -982,7 +983,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         @Override
         public List<Pair<Long, Node>> findByValues(List<Node> values)
         {
-            List<Pair<Long, Node>> results = new ArrayList<Pair<Long, Node>>(values.size());
+            List<Pair<Long, Node>> results = new ArrayList<>(values.size());
 
             SortedSet<String> nodeRefs = values.stream()
                     .map(Node::getNodeRef)
@@ -994,7 +995,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // All nodes should be in the same store - so we can use the store id from the first one.
             StoreEntity storeEntity = values.stream()
                     .findFirst()
-                    .map(node -> node.getStore())
+                    .map(Node::getStore)
                     .orElse(null);
 
             List<Node> selectedNodes = selectNodesByUuids(storeEntity.getId(), nodeRefs);
@@ -1002,7 +1003,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // Lock it to prevent 'accidental' modification
             selectedNodes.forEach(node -> {
                 node.lock();
-                results.add(new Pair<Long, Node>(node.getId(), node));
+                results.add(new Pair<>(node.getId(), node));
             });
 
             return results;
@@ -1028,7 +1029,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     @Override
     public List<NodeRef> exists(List<NodeRef> nodeRefs)
     {
-        List<Node> nodeRefsToCheck = new ArrayList<Node>(nodeRefs.size());
+        List<Node> nodeRefsToCheck = new ArrayList<>(nodeRefs.size());
 
         for (NodeRef nodeRef : nodeRefs)
         {
@@ -1143,8 +1144,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     @Override
     public List<Pair<Long, NodeRef>> getNodePairs(StoreRef storeRef, List<NodeRef> nodeRefs)
     {
-        List<Pair<Long, NodeRef>> results = new ArrayList<Pair<Long, NodeRef>>(nodeRefs.size());
-        SortedSet<Long> uncachedNodeIds = new TreeSet<Long>();
+        List<Pair<Long, NodeRef>> results = new ArrayList<>(nodeRefs.size());
+        SortedSet<Long> uncachedNodeIds = new TreeSet<>();
 
         List<Pair<Long, Node>> nodePairs = nodesCache.getByValues(
                 nodeRefs.stream()
@@ -1326,8 +1327,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     @Override
     public List<Pair<Long, NodeRef>> getNodePairs(List<Long> nodeIds)
     {
-        List<Pair<Long, NodeRef>> results = new ArrayList<Pair<Long, NodeRef>>(nodeIds.size());
-        SortedSet<Long> uncachedNodeIds = new TreeSet<Long>();
+        List<Pair<Long, NodeRef>> results = new ArrayList<>(nodeIds.size());
+        SortedSet<Long> uncachedNodeIds = new TreeSet<>();
 
         for (Long nodeId : nodeIds)
         {
@@ -1440,10 +1441,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // The nodes have no entry in the database
             List<NodeEntity> dbNodes = selectNodesByIds(nodeIds);
             nodesCache.removeByKeys(nodeIds);
-            logger.debug(
-                    "No node rows exists: \n" +
-                            "   IDs:        " + nodeIds + "\n" +
-                            "   DB rows:    " + dbNodes);
+            if (isDebugEnabled)
+            {
+                logger.debug(
+                        "No node rows exists: \n" +
+                                "   IDs:        " + nodeIds + "\n" +
+                                "   DB rows:    " + dbNodes);
+            }
             return Collections.emptyList();
         }
 
@@ -2443,14 +2447,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Map<Long, Map<QName, Serializable>> props = getNodePropertiesCached(nodeIds);
 
         // Create a shallow copy to allow additions
-        props = new HashMap<Long, Map<QName, Serializable>>(props);
+        props = new HashMap<>(props);
 
         List<Node> nodes = getNodesNotNull(nodeIds, false);
 
         for (Node node : nodes)
         {
             // Handle sys:referenceable
-            Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>(props.get(node.getId()));
+            Map<QName, Serializable> nodeProps = new HashMap<>(props.get(node.getId()));
             ReferenceablePropertiesEntity.addReferenceableProperties(node.getId(), node.getNodeRef(), nodeProps);
 
             // TODO optimize sys:localized for batch processing
@@ -2470,7 +2474,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
             // Wrap to ensure that we only clone values if the client attempts to modify
             // the map or retrieve values that might, themselves, be mutable
-            nodeProps = new ValueProtectingMap<QName, Serializable>(nodeProps, NodePropertyValue.IMMUTABLE_CLASSES);
+            nodeProps = new ValueProtectingMap<>(nodeProps, NodePropertyValue.IMMUTABLE_CLASSES);
 
             // Done
             if (isDebugEnabled)
@@ -2938,10 +2942,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         List<Pair<NodeVersionKey, Map<QName, Serializable>>> cacheEntries = propertiesCache.getByKeys(nodeVersionKeys);
 
-        result = cacheEntries.stream()
+        result.putAll(cacheEntries.stream()
                 .collect(Collectors.toMap(
                         entry -> entry.getFirst().getNodeId(),
-                        Pair::getSecond));
+                        Pair::getSecond)));
 
         return result;
     }
@@ -3031,7 +3035,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 if (propsRaw == null)
                 {
                     // Didn't find a match. Is this because there are none?
-                    if (propsRawByNodeVersionKey.size() == 0)
+                    if (propsRawByNodeVersionKey.isEmpty())
                     {
                         // This is OK. The node has no properties
                         propsRaw = Collections.emptyMap();
@@ -3048,7 +3052,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 // Convert to public properties
                 Map<QName, Serializable> props = nodePropertyHelper.convertToPublicProperties(propsRaw);
                 // Done
-                results.add(new Pair<NodeVersionKey, Map<QName, Serializable>>(nodeVersionKey, Collections.unmodifiableMap(props)));
+                results.add(new Pair<>(nodeVersionKey, Collections.unmodifiableMap(props)));
             }
             return results;
         }
@@ -3340,7 +3344,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Map<Long, Set<QName>> result = new HashMap<>();
         for (Pair<NodeVersionKey, Set<QName>> cacheEntry : cacheEntries)
         {
-            result.put(cacheEntry.getFirst().getNodeId(), new HashSet<QName>(cacheEntry.getSecond()));
+            result.put(cacheEntry.getFirst().getNodeId(), new HashSet<>(cacheEntry.getSecond()));
         }
 
         return result;
@@ -3421,6 +3425,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
          * 
          * @throws UnsupportedOperationException
          */
+        @Override
         public List<Pair<NodeVersionKey, Set<QName>>> findByKeys(List<NodeVersionKey> keys)
         {
             throw new UnsupportedOperationException("Batch lookup not supported for node aspects.");
@@ -5275,10 +5280,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private void cacheNodesNoBatch(List<Node> nodes)
     {
         // Get the nodes
-        SortedSet<Long> aspectNodeIds = new TreeSet<Long>();
-        SortedSet<Long> propertiesNodeIds = new TreeSet<Long>();
-        SortedSet<Long> childAssocsNodeIds = new TreeSet<Long>();
-        Map<Long, NodeVersionKey> nodeVersionKeysFromCache = new HashMap<Long, NodeVersionKey>(nodes.size() * 2); // Keep for quick lookup
+        SortedSet<Long> aspectNodeIds = new TreeSet<>();
+        SortedSet<Long> propertiesNodeIds = new TreeSet<>();
+        SortedSet<Long> childAssocsNodeIds = new TreeSet<>();
+        Map<Long, NodeVersionKey> nodeVersionKeysFromCache = new HashMap<>(nodes.size() * 2); // Keep for quick lookup
         for (Node node : nodes)
         {
             Long nodeId = node.getId();
@@ -5297,7 +5302,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // Only worth caching if we are able to then retrieve the correct version later from the cache
             if (node.getTransaction() != null)
             {
-                Pair<Long, String> cacheKey = new Pair<Long, String>(nodeId, node.getTransaction().getChangeTxnId());
+                Pair<Long, String> cacheKey = new Pair<>(nodeId, node.getTransaction().getChangeTxnId());
                 if (parentAssocsCache.get(cacheKey) == null)
                 {
                     childAssocsNodeIds.add(nodeId);
@@ -5314,8 +5319,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         Map<NodeVersionKey, Set<QName>> nodeAspects = selectNodeAspects(aspectNodeIds);
-        Map<Long, Set<QName>> aspectsMappedByNodeId = new HashMap<Long, Set<QName>>(aspectNodeIds.size());
-        Map<Long, Set<QName>> nodesWithNoAspects = new HashMap<Long, Set<QName>>(aspectNodeIds.size());
+        Map<Long, Set<QName>> aspectsMappedByNodeId = new HashMap<>(aspectNodeIds.size());
+        Map<Long, Set<QName>> nodesWithNoAspects = new HashMap<>(aspectNodeIds.size());
 
         for (Map.Entry<NodeVersionKey, Set<QName>> entry : nodeAspects.entrySet())
         {
@@ -5374,7 +5379,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 logger.warn("Child node " + childNode + " has no transaction - cannot cache parent associations");
                 continue;
             }
-            Pair<Long, String> cacheKey = new Pair<Long, String>(nodeId, childNode.getTransaction().getChangeTxnId());
+            Pair<Long, String> cacheKey = new Pair<>(nodeId, childNode.getTransaction().getChangeTxnId());
 
             ParentAssocsInfo value = new ParentAssocsInfo(isRoot, isStoreRoot, assoc);
             parentAssocsCache.put(cacheKey, value);

@@ -117,7 +117,7 @@ public interface NodeService
      * @return A list of the nodeRefs that exist
      */
     @Auditable(parameters = {"nodeRefs"})
-    public List<NodeRef> exists(List<NodeRef> nodeRefs);
+    List<NodeRef> exists(List<NodeRef> nodeRefs);
 
     /**
      * Gets the ID of the last transaction that caused the node to change. This includes deletions, so it is possible that the node being referenced no longer exists. If the node never existed, then null is returned.
@@ -147,7 +147,7 @@ public interface NodeService
      * @return the list of corresponding node references or an empty list if none are found
      */
     @Auditable(parameters = {"nodeIds"})
-    public List<NodeRef> getNodeRefs(List<Long> nodeIds);
+    List<NodeRef> getNodeRefs(List<Long> nodeIds);
 
     /**
      * @param storeRef
@@ -360,7 +360,7 @@ public interface NodeService
      *             if any of the node references could not be found
      */
     @Auditable(parameters = {"nodeRefs"})
-    public Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs) throws InvalidNodeRefException;
+    Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs) throws InvalidNodeRefException;
 
     /**
      * Deletes the given node.
@@ -519,7 +519,7 @@ public interface NodeService
      *             if the node could not be found
      */
     @Auditable(parameters = {"nodeRefs"})
-    public Map<NodeRef, Map<QName, Serializable>> getPropertiesForNodeRefs(List<NodeRef> nodeRefs) throws InvalidNodeRefException;
+    Map<NodeRef, Map<QName, Serializable>> getPropertiesForNodeRefs(List<NodeRef> nodeRefs) throws InvalidNodeRefException;
 
     /**
      * Replace all current properties on the node with the given properties. The properties given must still fulfill the requirements of the class and aspects relevant to the node.

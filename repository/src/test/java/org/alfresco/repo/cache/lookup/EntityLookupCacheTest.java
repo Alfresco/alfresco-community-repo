@@ -296,14 +296,14 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         assertNull(entityPairCacheCheck);
     }
 
-    public void testFindByValuesNotFound() throws Exception
+    public void testFindByValuesNotFound()
     {
         // Put some values in the "database"
         createValue(new TestValue("AAA"));
         createValue(new TestValue("BBB"));
         createValue(new TestValue("CCC"));
 
-        List<Object> valuesToFind = new ArrayList<Object>(3);
+        List<Object> valuesToFind = new ArrayList<>(3);
         valuesToFind.add(new TestValue("ZZZ"));
         valuesToFind.add(new TestValue("AAA"));
         valuesToFind.add(new TestValue("BBB"));
@@ -351,6 +351,7 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         return dbValue;
     }
 
+    @Override
     public List<String> getValueKeys(List<Object> values)
     {
         List<String> keys = new ArrayList<>(values.size());
@@ -402,7 +403,7 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         assertNotNull(values);
         assertFalse(values.isEmpty());
 
-        List<Pair<Long, Object>> results = new ArrayList<Pair<Long, Object>>(values.size());
+        List<Pair<Long, Object>> results = new ArrayList<>(values.size());
 
         for (Object value : values)
         {
@@ -412,7 +413,7 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
             {
                 if (EqualsHelper.nullSafeEquals(entry.getValue(), dbValue))
                 {
-                    results.add(new Pair<Long, Object>(entry.getKey(), entry.getValue()));
+                    results.add(new Pair<>(entry.getKey(), entry.getValue()));
                     break;
                 }
             }

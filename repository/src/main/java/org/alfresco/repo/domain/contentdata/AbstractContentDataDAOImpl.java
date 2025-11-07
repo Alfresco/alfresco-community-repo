@@ -572,7 +572,15 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
 
         for (ContentDataEntity contentDataEntity : contentDataEntities)
         {
-            String contentUrl = contentUrlMap.get(contentDataEntity.getContentUrlId()).getContentUrl();
+            Long contentUrlId = contentDataEntity.getContentUrlId();
+
+            if (contentUrlId == null || !contentUrlMap.containsKey(contentUrlId))
+            {
+                // No content URL
+                continue;
+            }
+
+            String contentUrl = contentUrlMap.get(contentUrlId).getContentUrl();
 
             long size = contentDataEntity.getSize() == null ? 0L : contentDataEntity.getSize().longValue();
 

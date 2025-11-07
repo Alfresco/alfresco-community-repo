@@ -1602,7 +1602,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         int countTA = template.update(UPDATE_MOVE_TARGET_ASSOCS, params);
         int countP = template.update(UPDATE_MOVE_PROPERTIES, params);
         int countA = template.update(UPDATE_MOVE_ASPECTS, params);
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Moved node data: \n" +
@@ -1877,7 +1877,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         Iterator<Long> nodeIdIterator = this.selectDeletedNodesByCommitTime(maxCommitTime);
         ArrayList<Long> nodeIdList = new ArrayList<>();
         List<String> deleteResult = new ArrayList<>();
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("nodes selected for deletion, deleteBatchSize:" + deleteBatchSize);
         }
@@ -1886,7 +1886,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             if (deleteBatchSize == nodeIdList.size())
             {
                 int count = deleteSelectedNodesAndProperties(nodeIdList);
-                if (isDebugEnabled)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("nodes deleted:" + count);
                 }
@@ -1901,7 +1901,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         if (nodeIdList.size() > 0)
         {
             int count = deleteSelectedNodesAndProperties(nodeIdList);
-            if (isDebugEnabled)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("remaining nodes deleted:" + count);
             }
@@ -1917,7 +1917,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         Iterator<Long> transactionIdIterator = this.selectUnusedTransactionsByCommitTime(maxCommitTime);
         ArrayList<Long> transactionIdList = new ArrayList<>();
         List<String> deleteResult = new ArrayList<>();
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("transactions selected for deletion, deleteBatchSize:" + deleteBatchSize);
         }
@@ -1927,7 +1927,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             {
                 int count = deleteSelectedTransactions(transactionIdList);
                 deleteResult.add("Purged old transactions: " + count);
-                if (isDebugEnabled)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("transactions deleted:" + count);
                 }
@@ -1943,7 +1943,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             int count = deleteSelectedTransactions(transactionIdList);
             deleteResult.add("Purged old transactions: " + count);
-            if (isDebugEnabled)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("final batch of transactions deleted:" + count);
             }
@@ -1955,13 +1955,13 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private int deleteSelectedNodesAndProperties(List<Long> nodeIdList)
     {
         int cnt = template.delete(DELETE_NODE_PROPS_BY_NODE_ID, nodeIdList);
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("nodes props deleted:" + cnt);
         }
         // Finally, remove the nodes
         cnt = template.delete(DELETE_NODES_BY_ID, nodeIdList);
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("nodes  deleted:" + cnt);
         }

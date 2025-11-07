@@ -143,7 +143,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_ASSOCS_NOT_LINKED_BY_TWO_OTHER_ASSOCS = "alfresco.node.select_AssocsNotLinkedByTwoOtherAssocs";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_NODE_ASSOCS_OF_TYPE = "alfresco.node.select_ChildAssocsOfParentWithoutNodeAssocsOfType";
     private static final String SELECT_PARENT_ASSOCS_OF_CHILD = "alfresco.node.select_ParentAssocsOfChild";
-    private static final String SELECT_PARENT_ASSOCS_OF_CHILDREN = "alfresco.node.select_ParentAssocsOfChildren";
+    private static final String SELECT_PARENT_ASSOCS_OF_CHILDREN = "alfresco.node.select.children.select_ParentAssocsOfChildren";
     private static final String UPDATE_PARENT_ASSOCS_OF_CHILD = "alfresco.node.update_ParentAssocsOfChild";
     private static final String DELETE_SUBSCRIPTIONS = "alfresco.node.delete_NodeSubscriptions";
 

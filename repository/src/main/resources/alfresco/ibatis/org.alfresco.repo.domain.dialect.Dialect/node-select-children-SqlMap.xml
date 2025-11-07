@@ -15,7 +15,7 @@
         <include refid="alfresco.node.select_ChildNodeIds_Limited_Snippet"/>
     </select>
 
-    <select id="select_ParentAssocsOfChildren" parameterType="ChildAssoc" resultMap="result_ChildAssocTxnId">
+    <select id="select_ParentAssocsOfChildren" parameterType="ChildAssoc" resultMap="alfresco.node.result_ChildAssocTxnId">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
         where

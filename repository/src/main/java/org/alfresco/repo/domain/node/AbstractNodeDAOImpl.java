@@ -125,7 +125,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected Log logger = LogFactory.getLog(getClass());
     private Log loggerPaths = LogFactory.getLog(getClass().getName() + ".paths");
 
-    protected final boolean isDebugEnabled = logger.isDebugEnabled();
     private NodePropertyHelper nodePropertyHelper;
     private UpdateTransactionListener updateTransactionListener = new UpdateTransactionListener();
     private RetryingCallbackHelper childAssocRetryingHelper;
@@ -617,7 +616,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         String changeTxnId = AlfrescoTransactionSupport.getTransactionId();
         Long txnId = insertTransaction(changeTxnId, now);
         // Store it for later
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Create txn: " + txnId);
         }
@@ -793,7 +792,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Push the value into the caches
         rootNodesCache.setValue(storeRef, rootNode);
 
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Created store: \n" + "   " + store);
         }
@@ -822,7 +821,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         allRootNodesCache.remove(oldStoreRef);
         nodesCache.clear();
 
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Moved store: " + oldStoreRef + " --> " + newStoreRef);
         }
@@ -1035,7 +1034,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             nodeRefsToCheck.add(new NodeEntity(nodeRef));
         }
 
-        List<NodeRef> existingNodeRefs = new ArrayList<NodeRef>(nodeRefs.size());
+        List<NodeRef> existingNodeRefs = new ArrayList<>(nodeRefs.size());
 
         List<Pair<Long, Node>> nodes = nodesCache.getByValues(nodeRefsToCheck);
 
@@ -1126,7 +1125,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             else
             {
                 // The cache was wrong, possibly due to it caching negative results earlier.
-                if (isDebugEnabled)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Repairing stale cache entry for node: " + nodeRef);
                 }
@@ -1205,7 +1204,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 else
                 {
                     // The cache was wrong, possibly due to it caching negative results earlier.
-                    if (isDebugEnabled)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("Repairing stale cache entry for node: " + nodeId);
                     }
@@ -1307,7 +1306,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             else
             {
                 // The cache was wrong, possibly due to it caching negative results earlier.
-                if (isDebugEnabled)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Repairing stale cache entry for node: " + nodeId);
                 }
@@ -1363,7 +1362,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 else
                 {
                     // The cache was wrong, possibly due to it caching negative results earlier.
-                    if (isDebugEnabled)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("Repairing stale cache entry for node: " + nodeId);
                     }
@@ -1440,7 +1439,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // The nodes have no entry in the database
             List<NodeEntity> dbNodes = selectNodesByIds(nodeIds);
             nodesCache.removeByKeys(nodeIds);
-            if (isDebugEnabled)
+            if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "No node rows exists: \n" +
@@ -1485,7 +1484,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             {
                 pruneDanglingAssocs(nodeId);
                 // In the single node case we would force a retry on the transaction...we can't do that here so just log it
-                if (isDebugEnabled)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug(
                             "No node rows exists: \n" +
@@ -1603,7 +1602,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         ParentAssocsInfo parentAssocsInfo = new ParentAssocsInfo(isRoot, isStoreRoot, assoc);
         setParentAssocsCached(nodeId, parentAssocsInfo);
 
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Created new node: \n" +
@@ -1707,7 +1706,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         setNodeAspectsCached(id, nodeAspects);
         setNodePropertiesCached(id, Collections.<QName, Serializable> emptyMap());
 
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Created new node: \n" + "   " + node);
         }
@@ -1869,7 +1868,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Done
         Pair<Long, ChildAssociationRef> assocPair = getPrimaryParentAssoc(newChildNode.getId());
         Pair<Long, NodeRef> nodePair = newChildNode.getNodePair();
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Moved node: " + assocPair + " ... " + nodePair);
         }
@@ -2273,7 +2272,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         // Done
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Updated Node: \n" +
@@ -2431,7 +2430,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         props = new ValueProtectingMap<QName, Serializable>(props, NodePropertyValue.IMMUTABLE_CLASSES);
 
         // Done
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Fetched properties for Node: \n" +
                     "   Node:  " + nodeId + "\n" +
@@ -2476,7 +2475,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             nodeProps = new ValueProtectingMap<>(nodeProps, NodePropertyValue.IMMUTABLE_CLASSES);
 
             // Done
-            if (isDebugEnabled)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Fetched properties for Node: \n" +
                         "   Node:  " + node.getId() + "\n" +
@@ -2522,7 +2521,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             value = props.get(propertyQName);
         }
         // Done
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Fetched property for Node: \n" +
                     "   Node:  " + nodeId + "\n" +
@@ -2776,7 +2775,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         // Done
-        if (isDebugEnabled && updated)
+        if (logger.isDebugEnabled() && updated)
         {
             logger.debug(
                     "Modified node properties: " + nodeId + "\n" +
@@ -3483,7 +3482,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         catch (Throwable e)
         {
             controlDAO.rollbackToSavepoint(savepoint);
-            if (isDebugEnabled)
+            if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Failed to insert node association: \n" +
@@ -3747,7 +3746,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         // Done
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Created child association: " + assoc);
         }
@@ -3881,7 +3880,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             touchNode(childNodeId, null, null, false, false, true);
         }
 
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Updated cm:name to parent assocs: \n" +
@@ -4630,7 +4629,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Stack<Long> assocIdStack,
             boolean primaryOnly) throws CyclicChildRelationshipException
     {
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("\n" +
                     "Prepending paths: \n" +
@@ -4745,7 +4744,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 throw new CyclicChildRelationshipException("Node has been pasted into its own tree.", assocRef);
             }
 
-            if (isDebugEnabled)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("\n" +
                         "   Prepending path parent: \n" +

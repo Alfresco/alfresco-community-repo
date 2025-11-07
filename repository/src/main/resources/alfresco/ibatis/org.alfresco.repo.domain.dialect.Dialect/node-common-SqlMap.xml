@@ -754,13 +754,15 @@
             alf_node node
             join alf_node_aspects aspects on (aspects.node_id = node.id)
         <where>
-            <if test="nodeId != null">aspects.node_id = #{nodeId}</if>
-            <if test="nodeIds != null">
-                and aspects.node_id in 
+            <choose>
+                <when test="nodeId != null">aspects.node_id = #{nodeId}</when>
+                <when test="nodeIds != null">
+                    aspects.node_id in
                 <foreach item="item" index="index" collection="nodeIds" open="(" separator="," close=")">
                     #{item}
                 </foreach>
-            </if>
+                </when>
+            </choose>
         </where>
     </select>
     
@@ -1225,6 +1227,17 @@
             <if test="qnameNamespaceId != null">and assoc.qname_ns_id = #{qnameNamespaceId}</if>
             <if test="qnameLocalName != null">and assoc.qname_localname = #{qnameLocalName}</if>
             <if test="isPrimary != null">and assoc.is_primary = #{isPrimary}</if>
+    </select>
+
+    <select id="select_ParentAssocsOfChildren" parameterType="ChildAssoc" resultMap="result_ChildAssocTxnId">
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+        <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
+        where
+            childNode.id in
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            and assoc.is_primary = true
     </select>
 
     <select id="select_NodeMinId" resultType="java.lang.Long">

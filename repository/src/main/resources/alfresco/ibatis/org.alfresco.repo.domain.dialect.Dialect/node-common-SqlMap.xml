@@ -1237,7 +1237,7 @@
             <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
                 #{item}
             </foreach>
-            and assoc.is_primary = true
+            and assoc.is_primary = 1
     </select>
 
     <select id="select_NodeMinId" resultType="java.lang.Long">

@@ -235,6 +235,31 @@
             u.id = #{id}
     </select>
 
+    <!-- Get the content URL entities by IDs -->
+    <select id="select_ContentUrlsByIds" parameterType="list" resultMap="result_ContentUrl">
+        select
+            u.id as id,
+            u.content_url as content_url,
+            u.content_url_short as content_url_short,
+            u.content_url_crc as content_url_crc,
+            u.content_size as content_size,
+            u.orphan_time as orphan_time,
+            ce.algorithm as algorithm,
+            ce.key_size as key_size,
+            ce.encrypted_key as encrypted_key,
+            ce.master_keystore_id as master_keystore_id,
+            ce.master_key_alias as master_key_alias,
+            ce.unencrypted_file_size as unencrypted_file_size
+        from
+            alf_content_url u
+            left join alf_content_url_encryption ce on (u.id = ce.content_url_id)
+        where
+            u.id in
+            <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
+
     <!-- Get the content URL entity by unique key -->
     <select id="select_ContentUrlByKey" parameterType="ContentUrl" resultMap="result_ContentUrl">
         select

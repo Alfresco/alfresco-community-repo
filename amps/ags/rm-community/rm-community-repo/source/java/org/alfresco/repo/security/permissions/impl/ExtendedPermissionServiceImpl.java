@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.alfresco.repo.version.common.VersionUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEvent;
 
@@ -56,6 +55,7 @@ import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.processor.PermissionPostProcessor;
 import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
 import org.alfresco.repo.security.permissions.processor.PermissionProcessorRegistry;
+import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -501,8 +501,10 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         return new Pair<>(readers, modifiedWrtiers);
     }
 
-    private NodeRef convertVersionNodeRefIfNecessary(NodeRef nodeRef) {
-        if (nodeRef != null && isVersionNodeRef(nodeRef)) {
+    private NodeRef convertVersionNodeRefIfNecessary(NodeRef nodeRef)
+    {
+        if (nodeRef != null && isVersionNodeRef(nodeRef))
+        {
             NodeRef convertedNodeRef = convertVersionNodeRefToVersionedNodeRef(VersionUtil.convertNodeRef(nodeRef));
             return Optional.ofNullable(convertedNodeRef).orElse(nodeRef);
         }

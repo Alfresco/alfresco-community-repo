@@ -395,12 +395,12 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
             @Override
             public void when() throws Exception
             {
-                    permissionService.setInheritParentPermissions(dmDocument, false);
-                    Map<String, Serializable> versionProperties = new HashMap<>(4);
-                    versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
-                    versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
-                    versionService.createVersion(dmDocument, versionProperties);
-                    version1 = versionService.getVersionHistory(dmDocument).getVersion("1.0").getFrozenStateNodeRef();
+                permissionService.setInheritParentPermissions(dmDocument, false);
+                Map<String, Serializable> versionProperties = new HashMap<>(4);
+                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+                versionService.createVersion(dmDocument, versionProperties);
+                version1 = versionService.getVersionHistory(dmDocument).getVersion("1.0").getFrozenStateNodeRef();
             }
 
             @Override

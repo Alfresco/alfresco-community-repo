@@ -130,7 +130,7 @@
         <dependency.rest-assured.version>5.5.5</dependency.rest-assured.version>
         <dependency.tas-email.version>2.0.0</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.21</dependency.tas-webdav.version>
-        <dependency.tas-ftp.version>1.19</dependency.tas-ftp.version>
+        <dependency.tas-ftp.version>1.20</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
 
         <!-- AGS properties shared between community and enterprise -->

@@ -51,6 +51,7 @@ import org.alfresco.util.GUID;
  * @author Roy Wetherall
  * @since 2.3
  */
+@SuppressWarnings("PMD.UnitTestShouldUseTestAnnotation")
 public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
 {
     /** recordable version service */

@@ -4,7 +4,7 @@
 
 <mapper namespace="alfresco.node.select">
 
-    <select id="select_Deleted_NodesByTxnCommitTime" parameterType="TransactionQuery" fetchSize="-2147483648" resultType="java.lang.Long">
+    <select id="select_Deleted_NodesByTxnCommitTime" parameterType="TransactionQuery" fetchSize="100000" resultType="java.lang.Long">
         select
             node.id
         from
@@ -15,7 +15,7 @@
         <![CDATA[and commit_time_ms < #{maxCommitTime}]]>
     </select>
 
-    <select id="select_Txns_UnusedByTxnCommitTime" parameterType="TransactionQuery" fetchSize="-2147483648" resultType="java.lang.Long">
+    <select id="select_Txns_UnusedByTxnCommitTime" parameterType="TransactionQuery" fetchSize="100000" resultType="java.lang.Long">
         select
             id
         from alf_transaction

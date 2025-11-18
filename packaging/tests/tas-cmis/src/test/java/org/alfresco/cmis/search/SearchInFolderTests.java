@@ -228,4 +228,13 @@ public class SearchInFolderTests extends AbstractCmisE2ETest
         waitForIndexing(currentQuery, execution -> execution.isReturningValues("cmis:secondaryObjectTypeIds", expectedSecondaryObjectTypeIds, true));
         Assert.assertTrue(waitForIndexing(currentQuery, 1), String.format("Result count not as expected for query: %s", currentQuery));
     }
+
+    @Test
+    public void executeCMISQuery_joinTitledAspectByTitle()
+    {
+        String query = "SELECT * FROM cmis:document AS d JOIN cm:titled as a0 ON d.cmis:objectId = a0.cmis:objectId WHERE CONTAINS(a0, 'cm:title:\\\"fourthFileTitle\\\"')";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        waitForIndexing(currentQuery, subFile4);
+    }
 }

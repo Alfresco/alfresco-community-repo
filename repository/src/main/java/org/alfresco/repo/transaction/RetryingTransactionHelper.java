@@ -628,14 +628,8 @@ public class RetryingTransactionHelper
                 // We dig further into this
                 cause = retryCause.getCause();
                 // Check for SQL-related "deadlock" messages
-                if (retryCause.getMessage().toLowerCase().contains("deadlock"))
+                if (isRetryableUncategorizedSQLException((UncategorizedSQLException) retryCause))
                 {
-                    // The word "deadlock" is usually an indication that we need to resolve with a retry.
-                    return retryCause;
-                }
-                else if (retryCause.getMessage().toLowerCase().contains("constraint"))
-                {
-                    // The word "constraint" is also usually an indication or a concurrent update
                     return retryCause;
                 }
                 // Recurse
@@ -648,6 +642,64 @@ public class RetryingTransactionHelper
         }
         // A simple match
         return retryCause;
+    }
+
+    /**
+     * Determine if the UncategorizedSQLException is retryable based on SQLState and error codes. All supported databases are checked.
+     */
+    private static boolean isRetryableUncategorizedSQLException(UncategorizedSQLException ex)
+    {
+        String sqlState = ex.getSQLException().getSQLState();
+        int errorCode = ex.getSQLException().getErrorCode();
+
+        // Check Database specific codes here if needed
+        final String[] retryMessages = {"deadlock", "serialization failure", "lock wait timeout", "lock timeout"};
+        String message = ex.getSQLException().getMessage().toLowerCase();
+
+        // Check message for common deadlock/serialization keywords
+        for (String retryMessage : retryMessages)
+        {
+            if (message.contains(retryMessage))
+            {
+                return true;
+            }
+        }
+        return (sqlState != null) && (isRetryableSQLExceptionForANSIAndPostgresSQL(sqlState, errorCode) ||
+                isRetryableSQLExceptionForMySQLAndMariaDb(sqlState, errorCode) ||
+                isRetryableSQLExceptionForOracle(sqlState, errorCode) ||
+                isRetryableSQLExceptionForSQLServer(sqlState, errorCode));
+    }
+
+    // ANSI SQLState codes for serialization failures and deadlocks
+    private static boolean isRetryableSQLExceptionForANSIAndPostgresSQL(String sqlState, int errorCode)
+    {
+        return sqlState != null && (sqlState.startsWith("40"));
+    }
+
+    private static boolean isRetryableSQLExceptionForMySQLAndMariaDb(String sqlState, int errorCode)
+    {
+        return (sqlState != null && sqlState.startsWith("40")) || errorCode == 1205 || errorCode == 1213; // Lock wait timeout exceeded; Deadlock found; Serialization failure
+    }
+
+    private static boolean isRetryableSQLExceptionForOracle(String sqlState, int errorCode)
+    {
+
+        if (sqlState != null && sqlState.startsWith("40"))
+        {
+            return true; // Transaction rollback class
+        }
+
+        // Vendor-specific retryable codes
+        return errorCode == 60 // ORA-00060: Deadlock detected
+                || errorCode == 8177 // ORA-08177: Cannot serialize access
+                || errorCode == 4020 // ORA-04020: Deadlock detected while locking object
+                || errorCode == 54 // ORA-00054: Resource busy NOWAIT
+                || errorCode == 4021; // ORA-04021: Deadlock detected while waiting for resource
+    }
+
+    private static boolean isRetryableSQLExceptionForSQLServer(String sqlState, int errorCode)
+    {
+        return (sqlState != null && sqlState.startsWith("40")) || errorCode == 1205 || errorCode == 1222; // deadlock victim; lock request time out period exceeded
     }
 
     /**

@@ -56,7 +56,7 @@ public final class AuditRecordUtils
      *            is a length of key root.
      * @return a preloaded {@link AuditRecord.Builder}
      */
-    public static AuditRecord.Builder generateAuditRecordBuilder(Map<String, Serializable> data, int keyRootLength)
+    public static AuditRecord.Builder generateAuditRecordBuilder(Map data, int keyRootLength)
     {
         var auditRecordBuilder = AuditRecord.builder();
 
@@ -68,19 +68,25 @@ public final class AuditRecordUtils
     }
 
     @SuppressWarnings("unchecked")
-    private static HashMap<String, Serializable> createRootNode(Map<String, Serializable> data, int keyRootLength)
+    private static HashMap<String, Serializable> createRootNode(Map<Object, Serializable> data, int keyRootLength)
     {
         var rootNode = new HashMap<String, Serializable>();
 
         data.forEach((k, v) -> {
-            var keys = k.substring(keyRootLength).split("/");
-
-            var current = rootNode;
-            for (int i = 0; i < keys.length - 1; i++)
+            if (k instanceof String s)
             {
-                current = (HashMap<String, Serializable>) current.computeIfAbsent(keys[i], newMap -> new HashMap<String, Serializable>());
+                var keys = s.substring(keyRootLength).split("/");
+
+                var current = rootNode;
+                for (int i = 0; i < keys.length - 1; i++)
+                {
+                    current = (HashMap<String, Serializable>) current.computeIfAbsent(keys[i], newMap -> new HashMap<String, Serializable>());
+                }
+                current.put(keys[keys.length - 1], decodeValueByInstance(v));
             }
-            current.put(keys[keys.length - 1], decodeValueByInstance(v));
+            else {
+                rootNode.put(k.toString(), decodeValueByInstance(v));
+            }
         });
         return rootNode;
     }
@@ -90,7 +96,7 @@ public final class AuditRecordUtils
     {
         if (value instanceof HashMap<?, ?>)
         {
-            return createRootNode((HashMap<String, Serializable>) value, 0);
+            return createRootNode((HashMap<Object, Serializable>) value, 0);
         }
         else if (value instanceof NodeRef)
         {

@@ -226,9 +226,8 @@ function main()
                   }
                }
                catch (e){
-                  if(logger.isLoggingEnabled()){
-                     logger.log("Invalid node due to : " + e.message);
-                  }
+                  if(logger.isLoggingEnabled())
+                      logger.log("Invalid node due to : " + e.message);
                   validNode = false;
                }
                if(validNode){

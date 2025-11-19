@@ -218,26 +218,11 @@ function main()
          {
             for each (var result in categoryResults)
             {
-               var validNode = false;
-               try
-               {
-                  if(result.properties && result.properties.name){
-                     validNode = true;
-                  }
-               }
-               catch (e){
-                  if(logger.isLoggingEnabled()){
-                     logger.log("Invalid node due to : " + e.message);
-                  }
-                  validNode = false;
-               }
-               if(validNode){
-                  results.push(
-                      {
-                         item: result,
-                         selectable: true
-                      });
-               }
+               results.push(
+               { 
+                  item: result, 
+                  selectable: true 
+               });
             }
          }
       }

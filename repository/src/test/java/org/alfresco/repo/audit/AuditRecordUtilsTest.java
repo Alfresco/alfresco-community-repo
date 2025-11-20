@@ -126,7 +126,7 @@ public class AuditRecordUtilsTest
     public void testQnameAsAKeyInMap()
     {
         var testData = new HashMap<String, Serializable>();
-        var value =  new HashMap<QName, Serializable>();
+        var value = new HashMap<QName, Serializable>();
 
         value.put(QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "Parent Group"), "site_swsdp_SiteManager");
         value.put(QName.createQName("http://www.alfresco.org/model/content/1.0", "userName"), "admin");

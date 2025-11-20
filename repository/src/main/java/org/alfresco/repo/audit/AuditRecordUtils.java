@@ -56,11 +56,12 @@ public final class AuditRecordUtils
      *            is a length of key root.
      * @return a preloaded {@link AuditRecord.Builder}
      */
-    public static AuditRecord.Builder generateAuditRecordBuilder(Map data, int keyRootLength)
+    @SuppressWarnings("unchecked")
+    public static AuditRecord.Builder generateAuditRecordBuilder(Map<?, ?> data, int keyRootLength)
     {
         var auditRecordBuilder = AuditRecord.builder();
 
-        var rootNode = createRootNode(data, keyRootLength);
+        var rootNode = createRootNode((Map<Object, Serializable>) data, keyRootLength);
 
         auditRecordBuilder.setAuditRecordData(rootNode);
 
@@ -84,7 +85,8 @@ public final class AuditRecordUtils
                 }
                 current.put(keys[keys.length - 1], decodeValueByInstance(v));
             }
-            else {
+            else
+            {
                 rootNode.put(k.toString(), decodeValueByInstance(v));
             }
         });

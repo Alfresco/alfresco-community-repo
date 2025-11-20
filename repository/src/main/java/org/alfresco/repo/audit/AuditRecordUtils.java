@@ -29,10 +29,15 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public final class AuditRecordUtils
 {
+    private static final Log logger = LogFactory.getLog(AuditRecordUtils.class);
+
     private AuditRecordUtils()
     {
         // This is a utility class and cannot be instantiated.
@@ -56,12 +61,11 @@ public final class AuditRecordUtils
      *            is a length of key root.
      * @return a preloaded {@link AuditRecord.Builder}
      */
-    @SuppressWarnings("unchecked")
-    public static AuditRecord.Builder generateAuditRecordBuilder(Map<?, ?> data, int keyRootLength)
+    public static AuditRecord.Builder generateAuditRecordBuilder(Map<?, Serializable> data, int keyRootLength)
     {
         var auditRecordBuilder = AuditRecord.builder();
 
-        var rootNode = createRootNode((Map<Object, Serializable>) data, keyRootLength);
+        var rootNode = createRootNode(data, keyRootLength);
 
         auditRecordBuilder.setAuditRecordData(rootNode);
 
@@ -69,7 +73,7 @@ public final class AuditRecordUtils
     }
 
     @SuppressWarnings("unchecked")
-    private static HashMap<String, Serializable> createRootNode(Map<Object, Serializable> data, int keyRootLength)
+    private static HashMap<String, Serializable> createRootNode(Map<?, Serializable> data, int keyRootLength)
     {
         var rootNode = new HashMap<String, Serializable>();
 
@@ -96,9 +100,12 @@ public final class AuditRecordUtils
     @SuppressWarnings("unchecked")
     private static Serializable decodeValueByInstance(Serializable value)
     {
+        logger.debug("Decoding value by instance of " + value.getClass());
+        logger.trace("String value of the object: " + value);
+        // Only hashmaps could contains root node.
         if (value instanceof HashMap<?, ?>)
         {
-            return createRootNode((HashMap<Object, Serializable>) value, 0);
+            return createRootNode((HashMap<?, Serializable>) value, 0);
         }
         else if (value instanceof NodeRef)
         {

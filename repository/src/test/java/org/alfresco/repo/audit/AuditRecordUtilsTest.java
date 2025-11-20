@@ -120,4 +120,33 @@ public class AuditRecordUtilsTest
         assertEquals(expectedValue.get("objectId"), resultValue.get("objectId"));
 
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testQnameAsAKeyInMap()
+    {
+        var testData = new HashMap<String, Serializable>();
+        var value = new HashMap<QName, Serializable>();
+
+        value.put(QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "Parent Group"), "site_swsdp_SiteManager");
+        value.put(QName.createQName("http://www.alfresco.org/model/content/1.0", "userName"), "admin");
+
+        testData.put("/alfresco-access/path", value);
+
+        var builder = AuditRecordUtils.generateAuditRecordBuilder(testData, "/alfresco-access/".length());
+        builder.setAuditRecordType("alfresco-access");
+
+        var auditRecord = builder.build();
+
+        assertNotNull(auditRecord);
+        assertEquals("alfresco-access", auditRecord.getAuditApplicationId());
+        var auditData = auditRecord.getAuditData();
+        assertEquals(1, auditData.size());
+
+        var path = (HashMap<String, Object>) auditData.get("path");
+
+        assertNotNull(path);
+        assertEquals("site_swsdp_SiteManager", path.get("{http://www.alfresco.org/model/recordsmanagement/1.0}Parent Group"));
+        assertEquals("admin", path.get("{http://www.alfresco.org/model/content/1.0}userName"));
+    }
 }

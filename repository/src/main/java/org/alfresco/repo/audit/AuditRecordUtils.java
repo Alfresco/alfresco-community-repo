@@ -29,10 +29,15 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public final class AuditRecordUtils
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuditRecordUtils.class);
+
     private AuditRecordUtils()
     {
         // This is a utility class and cannot be instantiated.
@@ -56,7 +61,7 @@ public final class AuditRecordUtils
      *            is a length of key root.
      * @return a preloaded {@link AuditRecord.Builder}
      */
-    public static AuditRecord.Builder generateAuditRecordBuilder(Map<String, Serializable> data, int keyRootLength)
+    public static AuditRecord.Builder generateAuditRecordBuilder(Map<?, Serializable> data, int keyRootLength)
     {
         var auditRecordBuilder = AuditRecord.builder();
 
@@ -68,33 +73,50 @@ public final class AuditRecordUtils
     }
 
     @SuppressWarnings("unchecked")
-    private static HashMap<String, Serializable> createRootNode(Map<String, Serializable> data, int keyRootLength)
+    private static HashMap<String, Serializable> createRootNode(Map<?, Serializable> data, int keyRootLength)
     {
         var rootNode = new HashMap<String, Serializable>();
 
         data.forEach((k, v) -> {
-            var keys = k.substring(keyRootLength).split("/");
+            var keys = decodeKeys(k, keyRootLength);
+            var value = decodeValueByInstance(v);
 
             var current = rootNode;
             for (int i = 0; i < keys.length - 1; i++)
             {
                 current = (HashMap<String, Serializable>) current.computeIfAbsent(keys[i], newMap -> new HashMap<String, Serializable>());
             }
-            current.put(keys[keys.length - 1], decodeValueByInstance(v));
+            current.put(keys[keys.length - 1], value);
+
         });
         return rootNode;
+    }
+
+    private static String[] decodeKeys(Object key, int keyRootLength)
+    {
+        if (key instanceof String s)
+        {
+            return s.substring(keyRootLength).split("/");
+        }
+        else
+        {
+            return new String[]{key.toString()};
+        }
     }
 
     @SuppressWarnings("unchecked")
     private static Serializable decodeValueByInstance(Serializable value)
     {
+        LOGGER.debug("Decoding value by instance of {}", value.getClass());
+        LOGGER.trace("String value of the object: {}", value);
+        // Only hashmaps could contains root node.
         if (value instanceof HashMap<?, ?>)
         {
-            return createRootNode((HashMap<String, Serializable>) value, 0);
+            return createRootNode((HashMap<?, Serializable>) value, 0);
         }
-        else if (value instanceof NodeRef)
+        else if (value instanceof NodeRef nodeRef)
         {
-            return ((NodeRef) value).getId();
+            return nodeRef.getId();
         }
         else
         {

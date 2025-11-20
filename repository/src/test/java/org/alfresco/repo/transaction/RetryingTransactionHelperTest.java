@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.transaction;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -45,6 +46,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.jdbc.UncategorizedSQLException;
 
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
@@ -277,6 +279,69 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
         };
         long txnValue = txnHelper.doInTransaction(callback);
         assertEquals("Only one increment expected", 1, txnValue);
+    }
+
+    // @Test
+    public void testSuccessWithRetryableUncategorizedSQLException()
+    {
+        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>() {
+            private int maxCalls = 3;
+            private int callCount = 0;
+
+            public Long execute() throws Throwable
+            {
+                callCount++;
+                Long checkValue = incrementCheckValue();
+                if (callCount == maxCalls)
+                {
+                    return checkValue;
+                }
+                else
+                {
+                    throw buildUncategorizedSQLException("40001", 1213, "Deadlock found when trying to get lock; try restarting transaction");
+                }
+            }
+        };
+        long txnValue = txnHelper.doInTransaction(callback);
+        assertEquals("Only one increment expected", 1, txnValue);
+    }
+
+    @Test
+    public void testSuccessWithNonRetryableUncategorizedSQLException()
+    {
+        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>() {
+            public Long execute() throws Throwable
+            {
+                incrementCheckValue();
+                throw buildUncategorizedSQLException("42000", 1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use");
+            }
+        };
+        try
+        {
+            txnHelper.doInTransaction(callback);
+        }
+        catch (UncategorizedSQLException e)
+        {
+            // Expected
+        }
+        // Check that the value didn't change
+        long checkValue = getCheckValue();
+        assertEquals("Check value should not have changed", 0, checkValue);
+    }
+
+    /**
+     * Builds an UncategorizedSQLException for the given parameters.
+     */
+    private UncategorizedSQLException buildUncategorizedSQLException(String sqlState, int errorCode, String message)
+    {
+        SQLException sqlException = new SQLException(message, sqlState, errorCode);
+
+        // Build the UncategorizedSQLException
+        return new UncategorizedSQLException(
+                "Executing custom SQL", // Task description
+                "SELECT * FROM DUAL", // SQL query
+                sqlException // The underlying SQLException
+        );
     }
 
     /**

@@ -32,7 +32,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public final class AuditRecordUtils

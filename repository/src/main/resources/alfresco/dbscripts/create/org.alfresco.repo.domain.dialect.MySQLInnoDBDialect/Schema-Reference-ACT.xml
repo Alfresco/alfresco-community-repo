@@ -1548,7 +1548,7 @@
           <autoincrement>false</autoincrement>
         </column>
         <column name="EXCLUSIVE_" order="6">
-          <type>bit</type>
+          <type>boolean</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>

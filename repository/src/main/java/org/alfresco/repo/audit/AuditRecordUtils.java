@@ -78,23 +78,30 @@ public final class AuditRecordUtils
         var rootNode = new HashMap<String, Serializable>();
 
         data.forEach((k, v) -> {
-            if (k instanceof String s)
-            {
-                var keys = s.substring(keyRootLength).split("/");
+            var keys = decodeKeys(k, keyRootLength);
+            var value = decodeValueByInstance(v);
 
-                var current = rootNode;
-                for (int i = 0; i < keys.length - 1; i++)
-                {
-                    current = (HashMap<String, Serializable>) current.computeIfAbsent(keys[i], newMap -> new HashMap<String, Serializable>());
-                }
-                current.put(keys[keys.length - 1], decodeValueByInstance(v));
-            }
-            else
+            var current = rootNode;
+            for (int i = 0; i < keys.length - 1; i++)
             {
-                rootNode.put(k.toString(), decodeValueByInstance(v));
+                current = (HashMap<String, Serializable>) current.computeIfAbsent(keys[i], newMap -> new HashMap<String, Serializable>());
             }
+            current.put(keys[keys.length - 1], value);
+
         });
         return rootNode;
+    }
+
+    private static String[] decodeKeys(Object key, int keyRootLength)
+    {
+        if (key instanceof String s)
+        {
+            return s.substring(keyRootLength).split("/");
+        }
+        else
+        {
+            return new String[]{key.toString()};
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -107,9 +114,9 @@ public final class AuditRecordUtils
         {
             return createRootNode((HashMap<?, Serializable>) value, 0);
         }
-        else if (value instanceof NodeRef)
+        else if (value instanceof NodeRef nodeRef)
         {
-            return ((NodeRef) value).getId();
+            return nodeRef.getId();
         }
         else
         {

@@ -13,6 +13,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 
+@SuppressWarnings({"PMD.UnitTestShouldIncludeAssert", "PMD.MethodNamingConventions"})
 public class SearchInFolderTests extends AbstractCmisE2ETest
 {
     private FolderModel parentFolder, subFolder1, subFolder2, subFolder3;

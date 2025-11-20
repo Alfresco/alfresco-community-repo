@@ -29,14 +29,15 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public final class AuditRecordUtils
 {
-    private static final Log logger = LogFactory.getLog(AuditRecordUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuditRecordUtils.class);
 
     private AuditRecordUtils()
     {
@@ -100,8 +101,8 @@ public final class AuditRecordUtils
     @SuppressWarnings("unchecked")
     private static Serializable decodeValueByInstance(Serializable value)
     {
-        logger.debug("Decoding value by instance of " + value.getClass());
-        logger.trace("String value of the object: " + value);
+        LOGGER.debug("Decoding value by instance of {}", value.getClass());
+        LOGGER.trace("String value of the object: {}", value);
         // Only hashmaps could contains root node.
         if (value instanceof HashMap<?, ?>)
         {

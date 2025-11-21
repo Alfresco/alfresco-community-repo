@@ -63,7 +63,7 @@ public final class AuditRecordUtils
      */
     public static AuditRecord.Builder generateAuditRecordBuilder(Map<?, Serializable> data, int keyRootLength)
     {
-        LOGGER.debug("generating Audit Record from: \n {}", data );
+        LOGGER.debug("generating Audit Record from: \n {}", data);
 
         var auditRecordBuilder = AuditRecord.builder();
 

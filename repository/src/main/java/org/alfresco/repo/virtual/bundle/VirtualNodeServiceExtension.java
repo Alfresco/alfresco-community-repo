@@ -631,6 +631,49 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     }
 
     @Override
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+                                                    int skipResults, int maxResults, boolean preload)
+    {
+        NodeServiceTrait theTrait = getTrait();
+        boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
+        if (canVirtualize)
+        {
+            Reference reference = smartStore.virtualize(nodeRef);
+            List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
+                    typeQNamePattern,
+                    qnamePattern,
+                    skipResults,
+                    maxResults,
+                    preload);
+            List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
+
+            if (associations.size() < maxResults)
+            {
+                if (smartStore.canMaterialize(reference))
+                {
+                    NodeRef materialReference = smartStore.materialize(reference);
+                    List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
+                            typeQNamePattern,
+                            qnamePattern,
+                            maxResults - associations
+                                    .size(),
+                            preload);
+                    associations.addAll(actualAssociations);
+                }
+            }
+            return associations;
+        }
+        else
+        {
+            return theTrait.getChildAssocs(nodeRef,
+                    typeQNamePattern,
+                    qnamePattern,
+                    maxResults,
+                    preload);
+        }
+    }
+
+    @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
                 QNamePattern qnamePattern, int maxResults, boolean preload)
     {

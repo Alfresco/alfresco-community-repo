@@ -660,26 +660,6 @@ public interface NodeDAO extends NodeBulkLoader
             Boolean sameStore,
             ChildAssocRefQueryCallback resultsCallback);
 
-    /**
-     * Gets the first n child associations of a given parent node, optionally filtering on association <tt>QName</tt>
-     * and association type <tt>QName</tt>.
-     * <p/>
-     * This is an efficient query for node paths.
-     * 
-     * @param parentNodeId          the parent node ID
-     * @param assocTypeQName        the association type qname to filter on; <tt>null</tt> for no filtering
-     * @param assocQName            the association qname to filter on; <tt>null</tt> for no filtering
-     * @param maxResults            the maximum number of results to return. The query will be terminated efficiently
-     *                              after that number of results                             
-     * @param resultsCallback       the callback that will be called with the results
-     */
-    public void getChildAssocs(
-            Long parentNodeId,
-            QName assocTypeQName,
-            QName assocQName,
-            final int maxResults,
-            ChildAssocRefQueryCallback resultsCallback);
-    
    /**
      * Get the child associations of a given parent node, optionally filtering on type <tt>QName</tt>.
      * 

@@ -56,6 +56,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -119,7 +120,8 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
 
-        VersionHistory vh = versionService.getVersionHistory(nodeRef);
+        Paging paging = parameters.getPaging();
+        VersionHistory vh = versionService.getVersionHistory(nodeRef, paging.getSkipCount(), paging.getSkipCount());
 
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
         List<String> includeParam = parameters.getInclude();
@@ -136,7 +138,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             }
         }
         
-        return listPage(collection, parameters.getPaging());
+        return listPage(collection, paging);
     }
 
     private void mapVersionInfo(Version v, Node aNode)

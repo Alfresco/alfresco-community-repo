@@ -143,6 +143,27 @@ public interface VirtualStore
                 throws InvalidNodeRefException;
 
     /**
+     * Gets all child references associations where the pattern of the
+     * association qualified name is an exact match.
+     *
+     * @param parentReference the parent node - usually a <b>container</b>
+     * @param typeQNamePattern the qualified name of the association (
+     *            <tt>null</tt> to ignore)
+     * @param qnamePattern the path qualified name (<tt>null</tt> to ignore)
+     * @param skipResults the number of results to skip
+     * @param maxResults the number of results to get
+     * @param preload <tt>true</tt> if the nodes must be preloaded into the
+     *            cache
+     * @return Returns a list of <code>ChildAssociationRef</code> instances
+     * @throws InvalidNodeRefException if the node could not be found
+     * @see QName
+     */
+    List<ChildAssociationRef> getChildAssocs(Reference parentReference, final QNamePattern typeQNamePattern,
+                                             final QNamePattern qnamePattern, final int skipResults, final int maxResults,
+                                             final boolean preload)
+            throws InvalidNodeRefException;
+
+    /**
      * Retrieve the immediate children of a given node based on the value of a
      * property of those children.
      * <p>

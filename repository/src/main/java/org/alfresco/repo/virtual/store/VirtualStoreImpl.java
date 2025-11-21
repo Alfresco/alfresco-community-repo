@@ -294,6 +294,27 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     }
 
     @Override
+    public List<ChildAssociationRef> getChildAssocs(Reference parentReference, QNamePattern typeQNamePattern,
+                                                    QNamePattern qnamePattern, int skipResults, int maxResults,
+                                                    boolean preload) throws InvalidNodeRefException
+    {
+        if (typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
+        {
+            return parentReference.execute(new GetChildAssocsMethod(this,
+                    environment,
+                    preload,
+                    skipResults,
+                    maxResults,
+                    qnamePattern,
+                    typeQNamePattern));
+        }
+        else
+        {
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
     public List<ChildAssociationRef> getChildAssocs(Reference parentReference, Set<QName> childNodeTypeQNames)
     {
         List<ChildAssociationRef> allAssociations = getChildAssocs(parentReference,

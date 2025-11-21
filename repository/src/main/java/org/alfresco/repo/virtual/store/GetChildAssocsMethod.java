@@ -53,6 +53,8 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
 
     private boolean preload;
 
+    private int skipResults;
+
     private int maxResults;
 
     private QNamePattern qnamePattern;
@@ -60,12 +62,22 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
     private QNamePattern typeQNamePattern;
 
     public GetChildAssocsMethod(VirtualStore smartStore, ActualEnvironment environment, boolean preload,
-                int maxResults, QNamePattern qnamePattern, QNamePattern typeQNamePattern)
+                                int maxResults, QNamePattern qnamePattern, QNamePattern typeQNamePattern)
+    {
+        this(smartStore, environment, preload, 0, maxResults, qnamePattern, typeQNamePattern);
+    }
+
+    public GetChildAssocsMethod(VirtualStore smartStore, ActualEnvironment environment, boolean preload,
+                int skipResults, int maxResults, QNamePattern qnamePattern, QNamePattern typeQNamePattern)
     {
         super();
         this.smartStore = smartStore;
         this.environment = environment;
         this.preload = preload;
+        this.skipResults = skipResults;
+        if (skipResults < 0) {
+            throw new IllegalArgumentException("skipResults must be >= 0");
+        }
         this.maxResults = maxResults;
         this.qnamePattern = qnamePattern;
         this.typeQNamePattern = typeQNamePattern;
@@ -80,9 +92,14 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
             List<ChildAssociationRef> childAssocs = new LinkedList<>();
             List<Reference> children = smartStore.list(reference);
             NodeRef nodeRefReference = reference.toNodeRef();
+            int skipped = 0;
             int count = 0;
             for (Reference child : children)
             {
+                if (skipped < skipResults) {
+                    skipped++;
+                    continue;
+                }
                 if (count >= maxResults)
                 {
                     break;
@@ -127,6 +144,7 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
             List<ChildAssociationRef> actualAssociations = environment.getChildAssocs(actualNodeRef,
                                                                                       typeQNamePattern,
                                                                                       qnamePattern,
+                                                                                      skipResults,
                                                                                       maxResults,
                                                                                       preload);
 

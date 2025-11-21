@@ -1796,18 +1796,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return super.getParentAssocs(nodeRef);
     }
 
-    /**
-     * Filters out any associations if their qname is not a match to the given pattern.
-     */
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, final QNamePattern typeQNamePattern, final QNamePattern qnamePattern)
     {
         return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern, true);
     }
 
-    /**
-     * Filters out any associations if their qname is not a match to the given pattern.
-     */
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildAssocs(
             NodeRef nodeRef,
@@ -1818,14 +1812,22 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern, Integer.MAX_VALUE, preload);
     }
 
-    /**
-     * Fetches the first n child associations in an efficient manner
-     */
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildAssocs(
             NodeRef nodeRef,
             final QNamePattern typeQNamePattern,
             final QNamePattern qnamePattern,
+            final int maxResults,
+            final boolean preload){
+        return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern, 0, maxResults, preload);
+}
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    public List<ChildAssociationRef> getChildAssocs(
+            NodeRef nodeRef,
+            final QNamePattern typeQNamePattern,
+            final QNamePattern qnamePattern,
+            final int skipResults,
             final int maxResults,
             final boolean preload)
     {
@@ -1835,6 +1837,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // We have a callback handler to filter results
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
         ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback() {
+
+            int skipped = 0;
+
+            @Override
             public boolean preLoadNodes()
             {
                 return preload;
@@ -1846,6 +1852,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 return true;
             }
 
+            @Override
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -1859,10 +1866,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 {
                     return true;
                 }
-                results.add(childAssocPair.getSecond());
-                return true;
+                if (skipped < skipResults) {
+                    skipped++;
+                    return true;
+                }
+                if (results.size() < maxResults) {
+                    results.add(childAssocPair.getSecond());
+                    return true;
+                }
+                return false;
             }
 
+            @Override
             public void done()
             {}
         };
@@ -1870,7 +1885,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         QName typeQName = (typeQNamePattern instanceof QName) ? (QName) typeQNamePattern : null;
         QName qname = (qnamePattern instanceof QName) ? (QName) qnamePattern : null;
 
-        nodeDAO.getChildAssocs(nodePair.getFirst(), typeQName, qname, maxResults, callback);
+        nodeDAO.getChildAssocs(nodePair.getFirst(), null, typeQName, qname, null, null, callback);
         // Done
         return results;
     }

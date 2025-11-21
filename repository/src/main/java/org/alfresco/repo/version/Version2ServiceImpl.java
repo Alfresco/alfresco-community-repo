@@ -430,6 +430,27 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 
     @Override
     @Extend(extensionAPI=VersionServiceExtension.class,traitAPI=VersionServiceTrait.class)
+    public VersionHistory getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+
+        VersionHistory versionHistory = null;
+
+        // Get the version history regardless of whether the node is still 'live' or not
+        NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
+        if (versionHistoryRef != null)
+        {
+            versionHistory = buildVersionHistory(versionHistoryRef, skipVersions, maxVersions);
+        }
+        return versionHistory;
+    }
+
+    @Override
+    @Extend(extensionAPI=VersionServiceExtension.class,traitAPI=VersionServiceTrait.class)
     public Version getCurrentVersion(NodeRef nodeRef)
     {
         if (logger.isDebugEnabled())
@@ -721,67 +742,81 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     protected List<Version> getAllVersions(NodeRef versionHistoryRef)
     {
-        List<ChildAssociationRef> versionAssocs = getVersionAssocs(versionHistoryRef, true);
-        
-        List<Version> versions = new ArrayList<Version>(versionAssocs.size());
-        
+        return getVersions(versionHistoryRef, 0, Integer.MAX_VALUE);
+    }
+
+    protected List<Version> getVersions(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
+    {
+        List<ChildAssociationRef> versionAssocs = getVersionAssocs(versionHistoryRef, skipVersions, maxVersions, true);
+
+        List<Version> versions = new ArrayList<>(versionAssocs.size());
+
         for (ChildAssociationRef versionAssoc : versionAssocs)
         {
             versions.add(getVersion(versionAssoc.getChildRef()));
         }
-        
+
         return versions;
     }
-    
-    private List<ChildAssociationRef> getVersionAssocs(NodeRef versionHistoryRef, boolean preLoad)
+
+    private List<ChildAssociationRef> getVersionAssocs(NodeRef versionHistoryRef, int skipVersions, int maxVersions, boolean preLoad)
     {
         // note: resultant list is ordered by (a) explicit index and (b) association creation time
-        return dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL, preLoad);
+        return dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL,
+                skipVersions, maxVersions, preLoad);
     }
     
     /**
      * Builds a version history object from the version history reference.
-     * <p>
-     * The node ref is passed to enable the version history to be scoped to the
-     * appropriate branch in the version history.
      *
      * @param versionHistoryRef  the node ref for the version history
-     * @param nodeRef            the node reference
+     * @param unused             unused node ref
      * @return                   a constructed version history object
      */
     @Override
-    protected VersionHistory buildVersionHistory(NodeRef versionHistoryRef, NodeRef nodeRef)
+    protected VersionHistory buildVersionHistory(NodeRef versionHistoryRef, NodeRef unused)
     {
-        VersionHistory versionHistory = null;
-        
         // List of versions with current one last and root one first.
         List<Version> versions = getAllVersions(versionHistoryRef);
-        
+
+        return createVersionHistoryImpl(versions);
+    }
+
+    private VersionHistory buildVersionHistory(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
+    {
+        List<Version> versions = getVersions(versionHistoryRef, skipVersions, maxVersions);
+
+        return createVersionHistoryImpl(versions);
+    }
+
+    private VersionHistory createVersionHistoryImpl(List<Version> versions) {
+        VersionHistoryImpl versionHistory = null;
+
         if (versionComparatorDesc != null)
         {
-            Collections.sort(versions, Collections.reverseOrder(versionComparatorDesc));
+            versions.sort(Collections.reverseOrder(versionComparatorDesc));
         }
-        
+
         // Build the version history object
         boolean isRoot = true;
         Version preceeding = null;
         for (Version version : versions)
         {
-            if (isRoot == true)
+            if (isRoot)
             {
                 versionHistory = new VersionHistoryImpl(version, versionComparatorDesc);
                 isRoot = false;
             }
             else
             {
-                ((VersionHistoryImpl)versionHistory).addVersion(version, preceeding);
+                versionHistory.addVersion(version, preceeding);
             }
             preceeding = version;
         }
-        
+
         return versionHistory;
     }
-    
+
     /**
      * Constructs the a version object to contain the version information from the version node ref.
      *
@@ -899,7 +934,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         String versionLabel = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
         
         // Note: resultant list is ordered by (a) explicit index and (b) association creation time
-        List<ChildAssociationRef> versionAssocs = getVersionAssocs(versionHistoryRef, false);
+        List<ChildAssociationRef> versionAssocs = getVersionAssocs(versionHistoryRef, 0, Integer.MAX_VALUE, false);
         
         // Current version should be head version (since no branching)
         int versionCount = versionAssocs.size();

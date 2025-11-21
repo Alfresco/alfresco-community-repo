@@ -566,7 +566,7 @@ public interface NodeService
     /**
      * Gets all child associations where the pattern of the association qualified
      * name is an exact match.
-     * 
+     *
      * @param nodeRef           the parent node - usually a <b>container</b>
      * @param typeQNamePattern  the qualified name of the association (<tt>null</tt> to ignore)
      * @param qnamePattern      the path qualified name (<tt>null</tt> to ignore)
@@ -574,7 +574,7 @@ public interface NodeService
      * @param preload           <tt>true</tt> if the nodes must be preloaded into the cache
      * @return                  Returns a list of <code>ChildAssociationRef</code> instances
      * @throws InvalidNodeRefException if the node could not be found
-     * 
+     *
      * @see QName
      */
     @Auditable(parameters = {"nodeRef", "typeQNamePattern", "qnamePattern", "maxResults", "preload"})
@@ -585,7 +585,32 @@ public interface NodeService
             final int maxResults,
             final boolean preload)
             throws InvalidNodeRefException;
-    
+
+    /**
+     * Gets all child associations where the pattern of the association qualified
+     * name is an exact match.
+     *
+     * @param nodeRef           the parent node - usually a <b>container</b>
+     * @param typeQNamePattern  the qualified name of the association (<tt>null</tt> to ignore)
+     * @param qnamePattern      the path qualified name (<tt>null</tt> to ignore)
+     * @param skipResults       the number of results to skip
+     * @param maxResults        the number of results to get
+     * @param preload           <tt>true</tt> if the nodes must be preloaded into the cache
+     * @return                  Returns a list of <code>ChildAssociationRef</code> instances
+     * @throws InvalidNodeRefException if the node could not be found
+     *
+     * @see QName
+     */
+    @Auditable(parameters = {"nodeRef", "typeQNamePattern", "qnamePattern", "skipResults", "maxResults", "preload"})
+    public List<ChildAssociationRef> getChildAssocs(
+            NodeRef nodeRef,
+            final QNamePattern typeQNamePattern,
+            final QNamePattern qnamePattern,
+            final int skipResults,
+            final int maxResults,
+            final boolean preload)
+    throws InvalidNodeRefException;
+
     /**
      * Gets all child associations where the pattern of the association qualified
      * names match the patterns provided.

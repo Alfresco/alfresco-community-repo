@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,19 +25,23 @@
  */
 package org.alfresco.rest.api.search;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 
@@ -54,10 +58,15 @@ import org.alfresco.util.testing.category.RedundantTests;
 @Category({LuceneTests.class, RedundantTests.class})
 public class BasicSearchApiIntegrationTest extends AbstractSingleNetworkSiteTest
 {
-    private static final String URL_SEARCH = "search";
-    private static final String SEARCH_API_NAME = "search";
-    private static final String json = "{ \"query\": {\"query\": \"cm:name:king\",\"userQuery\": \"great\",\"language\": \"afts\"}, \"fields\" : [\"id\",\"name\", \"search\"]}";
-    private static final String bad_json = "{ \"query\": {\"qu\": \"cm:some nonsense \",\"userQuery\": \"great\",\"language\": \"afts\"}}";
+    private static final String JSON = "{ \"query\": {\"query\": \"cm:name:king\",\"userQuery\": \"great\",\"language\": \"afts\"}, \"fields\" : [\"id\",\"name\", \"search\"]}";
+    private static final String BAD_JSON = "{ \"query\": {\"qu\": \"cm:some nonsense \",\"userQuery\": \"great\",\"language\": \"afts\"}}";
+
+    @Before
+    public void setup() throws Exception
+    {
+        super.setup();
+        setRequestContext(user1);
+    }
 
     /**
      * Tests basic api for search
@@ -65,30 +74,27 @@ public class BasicSearchApiIntegrationTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testQuery() throws Exception
     {
-        setRequestContext(user1);
         String f1Id = null;
         try
         {
             // As user 1 ...
             // Try to get nodes with search term 'king*' - assume clean repo (ie. none to start with)
-            HttpResponse response = post(URL_SEARCH, json, null, null, SEARCH_API_NAME, 200);
+            HttpResponse response = post(JSON);
+            assertThat(response.getStatusCode()).isEqualTo(200);
+
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(0, nodes.size());
+            assertThat(nodes).isEmpty();
 
             String myFolderNodeId = getMyNodeId();
-
             f1Id = createFolder(myFolderNodeId, "king").getId();
 
-            response = post(URL_SEARCH, json, null, null, SEARCH_API_NAME, 200);
+            response = post(JSON);
+            assertThat(response.getStatusCode()).isEqualTo(200);
             ExpectedPaging paging = RestApiUtil.parsePaging(response.getJsonResponse());
-            assertEquals(1, paging.getTotalItems().intValue());
-            assertFalse(paging.getHasMoreItems());
+            assertThat(paging.getTotalItems().intValue()).isEqualTo(1);
+            assertThat(paging.getHasMoreItems()).isFalse();
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(1, nodes.size());
-
-            // Just happy if it doesn't error
-            response = post(URL_SEARCH, SerializerTestHelper.JSON, null, null, SEARCH_API_NAME, 200);
-
+            assertThat(nodes).hasSize(1);
         }
         finally
         {
@@ -101,10 +107,43 @@ public class BasicSearchApiIntegrationTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
+    public void testBodySerializedCorrectly() throws IOException
+    {
+        HttpResponse response = post(SerializerTestHelper.JSON);
+        assertThat(response.getStatusCode()).isEqualTo(200);
+    }
+
+    @Test
     public void testBadQuery() throws Exception
     {
-        setRequestContext(user1);
-        // Bad request
-        HttpResponse response = post(URL_SEARCH, bad_json, null, null, SEARCH_API_NAME, 400);
+        assertThat(post(BAD_JSON).getStatusCode()).isEqualTo(100);
+    }
+
+    @Test
+    public void testReadOnlyServerCanPerformSearch() throws Exception
+    {
+        TransactionServiceImpl transactionService = (TransactionServiceImpl) applicationContext.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
+        try
+        {
+            transactionService.setAllowWrite(false);
+
+            HttpResponse response = post(JSON);
+
+            assertThat(response.getStatusCode()).isEqualTo(200);
+        }
+        finally
+        {
+            transactionService.setAllowWrite(true);
+        }
+    }
+
+    private HttpResponse post(String body) throws IOException
+    {
+        PublicApiHttpClient.RequestBuilder requestBuilder = httpClient.new PostRequestBuilder().setBodyAsString(body)
+                .setRequestContext(publicApiClient.getRequestContext())
+                .setScope(getScope())
+                .setApiName("search")
+                .setEntityCollectionName("search");
+        return publicApiClient.execute(requestBuilder);
     }
 }

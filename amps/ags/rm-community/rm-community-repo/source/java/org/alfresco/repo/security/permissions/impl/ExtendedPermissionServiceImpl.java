@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +55,7 @@ import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.processor.PermissionPostProcessor;
 import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
 import org.alfresco.repo.security.permissions.processor.PermissionProcessorRegistry;
+import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -223,6 +225,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
         AccessStatus result = AccessStatus.UNDETERMINED;
+        nodeRef = convertVersionNodeRefIfNecessary(nodeRef);
         if (nodeService.exists(nodeRef))
         {
             // permission pre-processors
@@ -496,5 +499,15 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         }
 
         return new Pair<>(readers, modifiedWrtiers);
+    }
+
+    private NodeRef convertVersionNodeRefIfNecessary(NodeRef nodeRef)
+    {
+        if (nodeRef != null && isVersionNodeRef(nodeRef))
+        {
+            NodeRef convertedNodeRef = convertVersionNodeRefToVersionedNodeRef(VersionUtil.convertNodeRef(nodeRef));
+            return Optional.ofNullable(convertedNodeRef).orElse(nodeRef);
+        }
+        return nodeRef;
     }
 }

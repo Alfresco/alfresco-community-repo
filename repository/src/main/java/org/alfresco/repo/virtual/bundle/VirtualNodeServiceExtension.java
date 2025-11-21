@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -38,6 +38,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.repo.node.db.traitextender.NodeServiceExtension;
@@ -72,12 +76,9 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<NodeServiceExtension, NodeServiceTrait>
-            implements NodeServiceExtension
+        implements NodeServiceExtension
 {
     private static Log logger = LogFactory.getLog(VirtualNodeServiceExtension.class);
 
@@ -105,7 +106,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     @Override
     public boolean hasAspect(NodeRef nodeRef, QName aspectQName)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
+        Reference reference = Reference.fromNodeRef(nodeRef);
         if (reference != null)
         {
             boolean isNodeProtocol = reference.getProtocol().equals(Protocols.NODE.protocol);
@@ -121,20 +122,20 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             {
                 NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(environment));
                 return getTrait().hasAspect(actualNodeRef,
-                                            aspectQName);
+                        aspectQName);
             }
         }
         else
         {
             return getTrait().hasAspect(nodeRef,
-                                        aspectQName);
+                    aspectQName);
         }
     }
 
     @Override
     public QName getType(NodeRef nodeRef)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
+        Reference reference = Reference.fromNodeRef(nodeRef);
         if (reference != null)
         {
             QName type = smartStore.getType(reference);
@@ -154,7 +155,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     @Override
     public Map<QName, Serializable> getProperties(NodeRef nodeRef)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
+        Reference reference = Reference.fromNodeRef(nodeRef);
         if (reference != null)
         {
             return getVirtualProperties(reference);
@@ -169,15 +170,15 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     @Override
     public Serializable getProperty(NodeRef nodeRef, QName qname)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
-        if (reference!= null)
+        Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference != null)
         {
             return getVirtualProperties(reference).get(qname);
         }
         else
         {
             return getTrait().getProperty(nodeRef,
-                                          qname);
+                    qname);
         }
     }
 
@@ -189,7 +190,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         if (reference != null)
         {
             GetAspectsMethod method = new GetAspectsMethod(theTrait,
-                                                           environment);
+                    environment);
 
             return reference.execute(method);
         }
@@ -202,11 +203,11 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     @Override
     public Path getPath(NodeRef nodeRef)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
+        Reference reference = Reference.fromNodeRef(nodeRef);
         if (reference != null)
         {
             return reference.execute(new GetPathMethod(smartStore,
-                                                                            environment));
+                    environment));
         }
         else
         {
@@ -217,24 +218,24 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     @Override
     public List<Path> getPaths(NodeRef nodeRef, boolean primaryOnly)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
+        Reference reference = Reference.fromNodeRef(nodeRef);
         if (reference != null)
         {
             NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(environment));
             return getTrait().getPaths(actualNodeRef,
-                                       primaryOnly);
+                    primaryOnly);
         }
         else
         {
             return getTrait().getPaths(nodeRef,
-                                       primaryOnly);
+                    primaryOnly);
         }
     }
 
     @Override
     public boolean exists(NodeRef nodeRef)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
+        Reference reference = Reference.fromNodeRef(nodeRef);
         if (reference != null)
         {
             // For now references last forever (i.e. there is no expiration
@@ -249,39 +250,39 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
     @Override
     public ChildAssociationRef createNode(NodeRef parentRef, QName assocTypeQName, QName assocQName,
-                QName nodeTypeQName)
+            QName nodeTypeQName)
     {
-    	Reference parentReference = Reference.fromNodeRef(parentRef);
+        Reference parentReference = Reference.fromNodeRef(parentRef);
         if (parentReference != null)
         {
             return createNode(parentRef,
-                              assocTypeQName,
-                              assocQName,
-                              nodeTypeQName,
-                              Collections.<QName, Serializable> emptyMap());
+                    assocTypeQName,
+                    assocQName,
+                    nodeTypeQName,
+                    Collections.<QName, Serializable> emptyMap());
         }
         else
         {
             QName materialAssocQName = materializeAssocQName(assocQName);
             return getTrait().createNode(parentRef,
-                                         assocTypeQName,
-                                         materialAssocQName,
-                                         nodeTypeQName);
+                    assocTypeQName,
+                    materialAssocQName,
+                    nodeTypeQName);
         }
     }
 
     @Override
     public ChildAssociationRef createNode(NodeRef parentRef, QName assocTypeQName, QName assocQName,
-                QName nodeTypeQName, Map<QName, Serializable> properties)
+            QName nodeTypeQName, Map<QName, Serializable> properties)
     {
         NodeServiceTrait theTrait = getTrait();
         if ((Reference.fromNodeRef(parentRef) != null) && !isVirtualContextFolder(parentRef,
-                                                                        environment))
+                environment))
         {
             // CM-533 Suppress options to create folders in a virtual folder
             // (repo)
             if (environment.isSubClass(nodeTypeQName,
-                                       ContentModel.TYPE_FOLDER))
+                    ContentModel.TYPE_FOLDER))
             {
                 throw new VirtualizationException("The creation of folders within virtual folders is disabled.");
             }
@@ -290,10 +291,10 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             {
                 Reference parentReference = Reference.fromNodeRef(parentRef);
                 FilingData filingData = smartStore.createFilingData(parentReference,
-                                                                      assocTypeQName,
-                                                                      assocQName,
-                                                                      nodeTypeQName,
-                                                                      properties);
+                        assocTypeQName,
+                        assocQName,
+                        nodeTypeQName,
+                        properties);
 
                 NodeRef childParentNodeRef = filingData.getFilingNodeRef();
 
@@ -305,40 +306,40 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                     {
                         String fileName = (String) filingDataProperties.get(ContentModel.PROP_NAME);
                         String changedFileName = handleExistingFile(childParentNodeRef,
-                                                                    fileName);
+                                fileName);
                         if (!changedFileName.equals(fileName))
                         {
                             filingDataProperties.put(ContentModel.PROP_NAME,
-                                                     changedFileName);
+                                    changedFileName);
                             QName filingDataAssocQName = filingData.getAssocQName();
                             changedAssocQName = QName.createQName(filingDataAssocQName.getNamespaceURI(),
-                                                                  QName.createValidLocalName(changedFileName));
+                                    QName.createValidLocalName(changedFileName));
                         }
                     }
                     ChildAssociationRef actualChildAssocRef = theTrait.createNode(childParentNodeRef,
-                                                                                  filingData.getAssocTypeQName(),
-                                                                                  changedAssocQName == null
-                                                                                              ? filingData.getAssocQName()
-                                                                                              : changedAssocQName,
-                                                                                  filingData.getNodeTypeQName(),
-                                                                                  filingDataProperties);
+                            filingData.getAssocTypeQName(),
+                            changedAssocQName == null
+                                    ? filingData.getAssocQName()
+                                    : changedAssocQName,
+                            filingData.getNodeTypeQName(),
+                            filingDataProperties);
 
                     Reference nodeProtocolChildRef = NodeProtocol.newReference(actualChildAssocRef.getChildRef(),
-                                                                               parentReference);
+                            parentReference);
                     QName vChildAssocQName = QName
-                                .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
-                                                               actualChildAssocRef.getQName().getLocalName());
+                            .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
+                                    actualChildAssocRef.getQName().getLocalName());
                     ChildAssociationRef childAssocRef = new ChildAssociationRef(actualChildAssocRef.getTypeQName(),
-                                                                                parentRef,
-                                                                                vChildAssocQName,
-                                                                                nodeProtocolChildRef.toNodeRef());
+                            parentRef,
+                            vChildAssocQName,
+                            nodeProtocolChildRef.toNodeRef());
                     Set<QName> aspects = filingData.getAspects();
 
                     for (QName aspect : aspects)
                     {
                         theTrait.addAspect(actualChildAssocRef.getChildRef(),
-                                           aspect,
-                                           filingDataProperties);
+                                aspect,
+                                filingDataProperties);
                     }
 
                     return childAssocRef;
@@ -346,30 +347,30 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                 else
                 {
                     throw new InvalidNodeRefException("Can not create node using parent ",
-                                                      parentRef);
+                            parentRef);
                 }
 
             }
             catch (VirtualizationException e)
             {
                 throw new InvalidNodeRefException("Could not create node in virtual context.",
-                                                  parentRef,
-                                                  e);
+                        parentRef,
+                        e);
             }
         }
         else
         {
             QName materialAssocQName = materializeAssocQName(assocQName);
             if (isVirtualContextFolder(parentRef,
-                                       environment))
+                    environment))
             {
                 parentRef = smartStore.materializeIfPossible(parentRef);
             }
             return theTrait.createNode(parentRef,
-                                       assocTypeQName,
-                                       materialAssocQName,
-                                       nodeTypeQName,
-                                       properties);
+                    assocTypeQName,
+                    materialAssocQName,
+                    nodeTypeQName,
+                    properties);
         }
     }
 
@@ -382,12 +383,12 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             String lName = assocQName.getLocalName();
             NodeRef nrAssocQName = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                                               lName);
-            if (Reference.fromNodeRef(nrAssocQName)!= null)
+                    lName);
+            if (Reference.fromNodeRef(nrAssocQName) != null)
             {
                 nrAssocQName = smartStore.materializeIfPossible(nrAssocQName);
                 QName materialAssocQName = QName.createQName(assocQName.getNamespaceURI(),
-                                                             nrAssocQName.getId());
+                        nrAssocQName.getId());
                 return materialAssocQName;
             }
             else
@@ -402,7 +403,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             if (logger.isDebugEnabled())
             {
                 logger.debug("Defaulting on materializeAssocQName due to error.",
-                             e);
+                        e);
             }
             return assocQName;
         }
@@ -412,8 +413,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     {
         NodeServiceTrait actualNodeService = getTrait();
         NodeRef existingFile = actualNodeService.getChildByName(parentNodeRef,
-                                                                ContentModel.ASSOC_CONTAINS,
-                                                                fileName);
+                ContentModel.ASSOC_CONTAINS,
+                fileName);
         if (existingFile != null)
         {
             int counter = 1;
@@ -441,22 +442,22 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                         // does file have counter in it's name or it just
                         // contains -1
                         String originalFileName = fileName.substring(0,
-                                                                     beforeCounter)
-                                    + fileName.substring(dotIndex);
+                                beforeCounter)
+                                + fileName.substring(dotIndex);
                         boolean doesOriginalFileExist = actualNodeService.getChildByName(parentNodeRef,
-                                                                                         ContentModel.ASSOC_CONTAINS,
-                                                                                         originalFileName) != null;
+                                ContentModel.ASSOC_CONTAINS,
+                                originalFileName) != null;
                         if (doesOriginalFileExist)
                         {
                             String counterStr = fileName.substring(beforeCounter + 1,
-                                                                   dotIndex);
+                                    dotIndex);
                             try
                             {
                                 int parseInt = DefaultTypeConverter.INSTANCE.intValue(counterStr);
                                 counter = parseInt + 1;
                                 fileName = fileName.substring(0,
-                                                              beforeCounter)
-                                            + fileName.substring(dotIndex);
+                                        beforeCounter)
+                                        + fileName.substring(dotIndex);
                                 dotIndex = fileName.lastIndexOf(dot);
 
                             }
@@ -468,8 +469,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                         }
                     }
                     tmpFilename = fileName.substring(0,
-                                                     dotIndex)
-                                + hyphen + counter + fileName.substring(dotIndex);
+                            dotIndex)
+                            + hyphen + counter + fileName.substring(dotIndex);
                 }
                 else
                 {
@@ -477,8 +478,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                     tmpFilename = fileName + hyphen + counter;
                 }
                 existingFile = actualNodeService.getChildByName(parentNodeRef,
-                                                                ContentModel.ASSOC_CONTAINS,
-                                                                tmpFilename);
+                        ContentModel.ASSOC_CONTAINS,
+                        tmpFilename);
                 counter++;
             }
             fileName = tmpFilename;
@@ -490,11 +491,11 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     @Override
     public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef)
     {
-        if (Reference.fromNodeRef(nodeRef)!= null)
+        if (Reference.fromNodeRef(nodeRef) != null)
         {
             return getParentAssocs(nodeRef,
-                                   RegexQNamePattern.MATCH_ALL,
-                                   RegexQNamePattern.MATCH_ALL);
+                    RegexQNamePattern.MATCH_ALL,
+                    RegexQNamePattern.MATCH_ALL);
         }
         else
         {
@@ -504,7 +505,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
     @Override
     public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
-                QNamePattern qnamePattern)
+            QNamePattern qnamePattern)
     {
         NodeServiceTrait theTrait = getTrait();
         Reference reference = Reference.fromNodeRef(nodeRef);
@@ -514,8 +515,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             if (parent == null)
             {
                 return theTrait.getParentAssocs(reference.execute(new GetActualNodeRefMethod(environment)),
-                                                typeQNamePattern,
-                                                qnamePattern);
+                        typeQNamePattern,
+                        qnamePattern);
             }
             else
             {
@@ -534,14 +535,14 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                     Map<QName, Serializable> properties = smartStore.getProperties(reference);
                     Serializable name = properties.get(ContentModel.PROP_NAME);
                     QName assocChildName = QName
-                                .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
-                                                               name.toString());
+                            .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
+                                    name.toString());
                     if (qnamePattern.isMatch(assocChildName))
                     {
                         ChildAssociationRef assoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
-                                                                            parentNodeRef,
-                                                                            assocChildName,
-                                                                            referenceNodeRef);
+                                parentNodeRef,
+                                assocChildName,
+                                referenceNodeRef);
                         return Arrays.asList(assoc);
                     }
                     else
@@ -558,8 +559,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         else
         {
             return theTrait.getParentAssocs(nodeRef,
-                                            typeQNamePattern,
-                                            qnamePattern);
+                    typeQNamePattern,
+                    qnamePattern);
         }
     }
 
@@ -572,19 +573,19 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             Reference reference = smartStore.virtualize(nodeRef);
             List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
-                                                                                        RegexQNamePattern.MATCH_ALL,
-                                                                                        RegexQNamePattern.MATCH_ALL,
-                                                                                        Integer.MAX_VALUE,
-                                                                                        false);
+                    RegexQNamePattern.MATCH_ALL,
+                    RegexQNamePattern.MATCH_ALL,
+                    Integer.MAX_VALUE,
+                    false);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
             if (smartStore.canMaterialize(reference))
             {
                 NodeRef materialReference = smartStore.materialize(reference);
                 List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
-                                                                                       RegexQNamePattern.MATCH_ALL,
-                                                                                       RegexQNamePattern.MATCH_ALL,
-                                                                                       Integer.MAX_VALUE,
-                                                                                       false);
+                        RegexQNamePattern.MATCH_ALL,
+                        RegexQNamePattern.MATCH_ALL,
+                        Integer.MAX_VALUE,
+                        false);
                 associations.addAll(actualAssociations);
             }
 
@@ -598,7 +599,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
     @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
-                QNamePattern qnamePattern)
+            QNamePattern qnamePattern)
     {
         NodeServiceTrait theTrait = getTrait();
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
@@ -606,18 +607,18 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             Reference reference = smartStore.virtualize(nodeRef);
             List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
-                                                                                        typeQNamePattern,
-                                                                                        qnamePattern,
-                                                                                        Integer.MAX_VALUE,
-                                                                                        false);
+                    typeQNamePattern,
+                    qnamePattern,
+                    Integer.MAX_VALUE,
+                    false);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
 
             if (smartStore.canMaterialize(reference))
             {
                 NodeRef materialReference = smartStore.materialize(reference);
                 List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
-                                                                                       typeQNamePattern,
-                                                                                       qnamePattern);
+                        typeQNamePattern,
+                        qnamePattern);
                 associations.addAll(actualAssociations);
             }
             return associations;
@@ -625,14 +626,14 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         else
         {
             return theTrait.getChildAssocs(nodeRef,
-                                           typeQNamePattern,
-                                           qnamePattern);
+                    typeQNamePattern,
+                    qnamePattern);
         }
     }
 
     @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
-                                                    int skipResults, int maxResults, boolean preload)
+            int skipResults, int maxResults, boolean preload)
     {
         NodeServiceTrait theTrait = getTrait();
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
@@ -675,7 +676,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
     @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
-                QNamePattern qnamePattern, int maxResults, boolean preload)
+            QNamePattern qnamePattern, int maxResults, boolean preload)
     {
         NodeServiceTrait theTrait = getTrait();
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
@@ -683,10 +684,10 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             Reference reference = smartStore.virtualize(nodeRef);
             List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
-                                                                                        typeQNamePattern,
-                                                                                        qnamePattern,
-                                                                                        maxResults,
-                                                                                        preload);
+                    typeQNamePattern,
+                    qnamePattern,
+                    maxResults,
+                    preload);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
 
             if (associations.size() < maxResults)
@@ -695,11 +696,11 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                 {
                     NodeRef materialReference = smartStore.materialize(reference);
                     List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
-                                                                                           typeQNamePattern,
-                                                                                           qnamePattern,
-                                                                                           maxResults - associations
-                                                                                                       .size(),
-                                                                                           preload);
+                            typeQNamePattern,
+                            qnamePattern,
+                            maxResults - associations
+                                    .size(),
+                            preload);
                     associations.addAll(actualAssociations);
                 }
             }
@@ -708,10 +709,10 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         else
         {
             return theTrait.getChildAssocs(nodeRef,
-                                           typeQNamePattern,
-                                           qnamePattern,
-                                           maxResults,
-                                           preload);
+                    typeQNamePattern,
+                    qnamePattern,
+                    maxResults,
+                    preload);
         }
     }
 
@@ -723,7 +724,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
     @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
-                QNamePattern qnamePattern, boolean preload)
+            QNamePattern qnamePattern, boolean preload)
     {
         NodeServiceTrait theTrait = getTrait();
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
@@ -731,19 +732,19 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             Reference reference = smartStore.virtualize(nodeRef);
             List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
-                                                                                        typeQNamePattern,
-                                                                                        qnamePattern,
-                                                                                        Integer.MAX_VALUE,
-                                                                                        preload);
+                    typeQNamePattern,
+                    qnamePattern,
+                    Integer.MAX_VALUE,
+                    preload);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
 
             if (smartStore.canMaterialize(reference))
             {
                 NodeRef materialReference = smartStore.materialize(reference);
                 List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
-                                                                                       typeQNamePattern,
-                                                                                       qnamePattern,
-                                                                                       preload);
+                        typeQNamePattern,
+                        qnamePattern,
+                        preload);
                 associations.addAll(actualAssociations);
             }
             return associations;
@@ -751,9 +752,9 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         else
         {
             return theTrait.getChildAssocs(nodeRef,
-                                           typeQNamePattern,
-                                           qnamePattern,
-                                           preload);
+                    typeQNamePattern,
+                    qnamePattern,
+                    preload);
         }
     }
 
@@ -766,13 +767,13 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             Reference reference = smartStore.virtualize(nodeRef);
             List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
-                                                                                        childNodeTypeQNames);
+                    childNodeTypeQNames);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
             if (smartStore.canMaterialize(reference))
             {
                 NodeRef materialReference = smartStore.materialize(reference);
                 List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
-                                                                                       childNodeTypeQNames);
+                        childNodeTypeQNames);
                 associations.addAll(actualAssociations);
             }
 
@@ -781,13 +782,13 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         else
         {
             return theTrait.getChildAssocs(nodeRef,
-                                           childNodeTypeQNames);
+                    childNodeTypeQNames);
         }
     }
 
     @Override
     public List<ChildAssociationRef> getChildAssocsByPropertyValue(NodeRef nodeRef, QName propertyQName,
-                Serializable value)
+            Serializable value)
     {
         NodeServiceTrait theTrait = getTrait();
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
@@ -795,15 +796,15 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             Reference reference = smartStore.virtualize(nodeRef);
             List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocsByPropertyValue(reference,
-                                                                                                       propertyQName,
-                                                                                                       value);
+                    propertyQName,
+                    value);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
             if (smartStore.canMaterialize(reference))
             {
                 NodeRef materialReference = smartStore.materialize(reference);
                 List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocsByPropertyValue(materialReference,
-                                                                                                      propertyQName,
-                                                                                                      value);
+                        propertyQName,
+                        value);
                 associations.addAll(actualAssociations);
             }
 
@@ -812,8 +813,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         else
         {
             return theTrait.getChildAssocsByPropertyValue(nodeRef,
-                                                          propertyQName,
-                                                          value);
+                    propertyQName,
+                    value);
         }
     }
 
@@ -827,8 +828,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             Reference virtualNode = smartStore.virtualize(nodeRef);
 
             Reference theChild = smartStore.getChildByName(virtualNode,
-                                                             assocTypeQName,
-                                                             childName);
+                    assocTypeQName,
+                    childName);
 
             if (theChild != null)
             {
@@ -845,16 +846,16 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         // TODO: add virtualizable enabler
         nodeRef = materializeIfPossible(nodeRef);
         return getTrait().getChildByName(nodeRef,
-                                         assocTypeQName,
-                                         childName);
+                assocTypeQName,
+                childName);
     }
 
     @Override
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
+        Reference reference = Reference.fromNodeRef(nodeRef);
         if (reference != null)
-        {  
+        {
             Reference parent = reference.execute(new GetParentReferenceMethod());
             if (parent == null)
             {
@@ -875,14 +876,14 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                 Map<QName, Serializable> refProperties = smartStore.getProperties(reference);
                 Serializable childName = refProperties.get(ContentModel.PROP_NAME);
                 QName childAssocQName = QName
-                            .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
-                                                           childName.toString());
+                        .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
+                                childName.toString());
                 ChildAssociationRef assoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
-                                                                    parentNodeRef,
-                                                                    childAssocQName,
-                                                                    referenceNodeRef,
-                                                                    true,
-                                                                    -1);
+                        parentNodeRef,
+                        childAssocQName,
+                        referenceNodeRef,
+                        true,
+                        -1);
                 return assoc;
             }
         }
@@ -909,8 +910,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         String tempFileName = sourceNodeRef.getId();
 
         NodeRef tempFileNodeRef = environment.getChildByName(tempFolderNodeRef,
-                                                             ContentModel.ASSOC_CONTAINS,
-                                                             tempFileName);
+                ContentModel.ASSOC_CONTAINS,
+                tempFileName);
         if (tempFileNodeRef == null)
         {
             return;
@@ -934,20 +935,20 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             String tempFileName = sourceNodeRef.getId();
 
             NodeRef tempFileNodeRef = environment.getChildByName(tempFolderNodeRef,
-                                                                 ContentModel.ASSOC_CONTAINS,
-                                                                 tempFileName);
+                    ContentModel.ASSOC_CONTAINS,
+                    tempFileName);
             if (tempFileNodeRef == null)
             {
                 return result;
             }
             List<String> readLines = IOUtils.readLines(environment.openContentStream(tempFileNodeRef),
-                                                       StandardCharsets.UTF_8);
+                    StandardCharsets.UTF_8);
             for (String line : readLines)
             {
                 NodeRef targetRef = new NodeRef(line);
                 AssociationRef assocRef = new AssociationRef(sourceNodeRef,
-                                                             DownloadModel.ASSOC_REQUESTED_NODES,
-                                                             targetRef);
+                        DownloadModel.ASSOC_REQUESTED_NODES,
+                        targetRef);
                 result.add(assocRef);
             }
 
@@ -966,17 +967,17 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
         String tempFileName = sourceNodeRef.getId();
         NodeRef tempFileNodeRef = environment.getChildByName(tempFolderNodeRef,
-                                                             ContentModel.ASSOC_CONTAINS,
-                                                             tempFileName);
+                ContentModel.ASSOC_CONTAINS,
+                tempFileName);
         if (tempFileNodeRef == null)
         {
             FileInfo newTempFileInfo = environment.create(tempFolderNodeRef,
-                                                          tempFileName,
-                                                          ContentModel.TYPE_CONTENT);
+                    tempFileName,
+                    ContentModel.TYPE_CONTENT);
             tempFileNodeRef = newTempFileInfo.getNodeRef();
             ContentWriter writer = environment.getWriter(tempFileNodeRef,
-                                                         ContentModel.PROP_CONTENT,
-                                                         true);
+                    ContentModel.PROP_CONTENT,
+                    true);
             writer.setMimetype("text/plain");
             writer.putContent(targetRef.toString());
 
@@ -984,12 +985,12 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         else
         {
             ContentWriter writer = environment.getWriter(tempFileNodeRef,
-                                                         ContentModel.PROP_CONTENT,
-                                                         true);
+                    ContentModel.PROP_CONTENT,
+                    true);
             try
             {
                 List<String> readLines = IOUtils.readLines(environment.openContentStream(tempFileNodeRef),
-                                                           StandardCharsets.UTF_8);
+                        StandardCharsets.UTF_8);
 
                 String targetRefString = targetRef.toString();
                 if (!readLines.contains(targetRefString))
@@ -1033,7 +1034,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             {
                 NodeRef materializedReferece = smartStore.materialize(reference);
                 targetAssocs = theTrait.getTargetAssocs(materializedReferece,
-                                                        qnamePattern);
+                        qnamePattern);
             }
             else
             {
@@ -1043,7 +1044,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         else
         {
             targetAssocs = theTrait.getTargetAssocs(sourceRef,
-                                                    qnamePattern);
+                    qnamePattern);
         }
 
         List<AssociationRef> virtualizedIfNeededTargetAssocs = null;
@@ -1057,13 +1058,13 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             {
                 NodeRef targetNodeRef = associationRef.getTargetRef();
                 Reference targetReference = NodeProtocol.newReference(targetNodeRef,
-                                                                      sourceReference
-                                                                                  .execute(new GetParentReferenceMethod()));
+                        sourceReference
+                                .execute(new GetParentReferenceMethod()));
                 AssociationRef virtualAssocRef = new AssociationRef(associationRef.getId(),
-                                                                    sourceRef,
-                                                                    associationRef.getTypeQName(),
-                                                                    targetReference.toNodeRef(targetNodeRef
-                                                                                .getStoreRef()));
+                        sourceRef,
+                        associationRef.getTypeQName(),
+                        targetReference.toNodeRef(targetNodeRef
+                                .getStoreRef()));
                 virtualizedIfNeededTargetAssocs.add(virtualAssocRef);
             }
 
@@ -1099,17 +1100,17 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             if (smartStore.canMaterialize(reference))
             {
                 List<AssociationRef> sourceAssocs = theTrait.getSourceAssocs(smartStore.materialize(reference),
-                                                                             qnamePattern);
+                        qnamePattern);
                 for (AssociationRef associationRef : sourceAssocs)
                 {
                     NodeRef sourceRef = associationRef.getSourceRef();
                     Reference sourceReference = NodeProtocol.newReference(sourceRef,
-                                                                          reference
-                                                                                      .execute(new GetParentReferenceMethod()));
+                            reference
+                                    .execute(new GetParentReferenceMethod()));
                     AssociationRef virtualAssocRef = new AssociationRef(associationRef.getId(),
-                                                                        sourceReference.toNodeRef(),
-                                                                        associationRef.getTypeQName(),
-                                                                        targetRef);
+                            sourceReference.toNodeRef(),
+                            associationRef.getTypeQName(),
+                            targetRef);
                     materialAssocs.add(virtualAssocRef);
                 }
             }
@@ -1124,66 +1125,66 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         else
         {
             return theTrait.getSourceAssocs(targetRef,
-                                            qnamePattern);
+                    qnamePattern);
         }
     }
 
     @Override
     public ChildAssociationRef moveNode(NodeRef nodeToMoveRef, NodeRef newParentRef, QName assocTypeQName,
-                QName assocQName)
+            QName assocQName)
     {
-        if ((Reference.fromNodeRef(nodeToMoveRef) != null)|| (Reference.fromNodeRef(newParentRef) != null))
+        if ((Reference.fromNodeRef(nodeToMoveRef) != null) || (Reference.fromNodeRef(newParentRef) != null))
         {
             throw new UnsupportedOperationException("Unsuported operation for virtual source or destination");
         }
         else
         {
             return getTrait().moveNode(nodeToMoveRef,
-                                       newParentRef,
-                                       assocTypeQName,
-                                       assocQName);
+                    newParentRef,
+                    assocTypeQName,
+                    assocQName);
         }
     }
 
     @Override
     public void addProperties(NodeRef nodeRef, Map<QName, Serializable> properties)
     {
-    	Reference reference = Reference.fromNodeRef(nodeRef);
+        Reference reference = Reference.fromNodeRef(nodeRef);
         if (reference != null)
         {
             NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(null));
 
             getTrait().addProperties(actualNodeRef,
-                                     properties);
+                    properties);
         }
         else
         {
             getTrait().addProperties(nodeRef,
-                                     properties);
+                    properties);
         }
     }
 
     @Override
     public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
     {
-    	Reference targetReference = Reference.fromNodeRef(targetRef);
+        Reference targetReference = Reference.fromNodeRef(targetRef);
         if (targetReference != null
-                    && getTrait().getType(materializeIfPossible(sourceRef)).equals(DownloadModel.TYPE_DOWNLOAD))
+                && getTrait().getType(materializeIfPossible(sourceRef)).equals(DownloadModel.TYPE_DOWNLOAD))
         {
             // NOTE : this is enables downloads of virtual structures
             createDownloadAssociation(sourceRef,
-                                      targetRef);
+                    targetRef);
 
             AssociationRef assocRef = new AssociationRef(sourceRef,
-                                                         assocTypeQName,
-                                                         targetRef);
+                    assocTypeQName,
+                    targetRef);
             return assocRef;
         }
         else
         {
             return getTrait().createAssociation(materializeIfPossible(sourceRef),
-                                                materializeIfPossible(targetRef),
-                                                assocTypeQName);
+                    materializeIfPossible(targetRef),
+                    assocTypeQName);
         }
     }
 
@@ -1199,14 +1200,13 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     }
 
     /**
-     * @deprecated use {@link VirtualStore#materializeIfPossible(NodeRef)}
-     *             instead
+     * @deprecated use {@link VirtualStore#materializeIfPossible(NodeRef)} instead
      */
     private NodeRef materializeIfPossible(NodeRef nodeRef)
     {
-    	Reference ref = Reference.fromNodeRef(nodeRef);
+        Reference ref = Reference.fromNodeRef(nodeRef);
         if (ref != null)
-        { 
+        {
             if (smartStore.canMaterialize(ref))
             {
                 return smartStore.materialize(ref);
@@ -1226,7 +1226,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     public StoreRef createStore(String protocol, String identifier) throws StoreExistsException
     {
         return getTrait().createStore(protocol,
-                                      identifier);
+                identifier);
     }
 
     @Override
@@ -1267,34 +1267,34 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
     @Override
     public void setChildAssociationIndex(ChildAssociationRef childAssocRef, int index)
-                throws InvalidChildAssociationRefException
+            throws InvalidChildAssociationRefException
     {
         getTrait().setChildAssociationIndex(childAssocRef,
-                                            index);
+                index);
     }
 
     @Override
     public void setType(NodeRef nodeRef, QName typeQName) throws InvalidNodeRefException
     {
         getTrait().setType(materializeIfPossible(nodeRef),
-                           typeQName);
+                typeQName);
     }
 
     @Override
     public void addAspect(NodeRef nodeRef, QName aspectTypeQName, Map<QName, Serializable> aspectProperties)
-                throws InvalidNodeRefException, InvalidAspectException
+            throws InvalidNodeRefException, InvalidAspectException
     {
         getTrait().addAspect(materializeIfPossible(nodeRef),
-                             aspectTypeQName,
-                             aspectProperties);
+                aspectTypeQName,
+                aspectProperties);
     }
 
     @Override
     public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
-                throws InvalidNodeRefException, InvalidAspectException
+            throws InvalidNodeRefException, InvalidAspectException
     {
         getTrait().removeAspect(materializeIfPossible(nodeRef),
-                                aspectTypeQName);
+                aspectTypeQName);
     }
 
     @Override
@@ -1312,29 +1312,29 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
     @Override
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName qname)
-                throws InvalidNodeRefException
+            throws InvalidNodeRefException
     {
         return getTrait().addChild(materializeIfPossible(parentRef),
-                                   materializeIfPossible(childRef),
-                                   assocTypeQName,
-                                   qname);
+                materializeIfPossible(childRef),
+                assocTypeQName,
+                qname);
     }
 
     @Override
     public List<ChildAssociationRef> addChild(Collection<NodeRef> parentRefs, NodeRef childRef, QName assocTypeQName,
-                QName qname) throws InvalidNodeRefException
+            QName qname) throws InvalidNodeRefException
     {
         return getTrait().addChild(materializeIfPossible(parentRefs),
-                                   materializeIfPossible(childRef),
-                                   assocTypeQName,
-                                   qname);
+                materializeIfPossible(childRef),
+                assocTypeQName,
+                qname);
     }
 
     @Override
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
         getTrait().removeChild(materializeIfPossible(parentRef),
-                               materializeIfPossible(childRef));
+                materializeIfPossible(childRef));
     }
 
     @Override
@@ -1346,8 +1346,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         if (Reference.fromNodeRef(childRef) != null)
         {
             List<ChildAssociationRef> assocsToRemove = revertVirtualAssociation(childAssocRef,
-                                                                                theTrait,
-                                                                                childRef);
+                    theTrait,
+                    childRef);
             boolean removed = false;
             if (!assocsToRemove.isEmpty())
             {
@@ -1365,25 +1365,24 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     }
 
     private List<ChildAssociationRef> revertVirtualAssociation(ChildAssociationRef childAssocRef,
-                NodeServiceTrait theTrait, NodeRef childRef)
+            NodeServiceTrait theTrait, NodeRef childRef)
     {
         childRef = smartStore.materialize(Reference.fromNodeRef(childRef));
         ChildAssociationRef parent = theTrait.getPrimaryParent(childRef);
         final QName assocName = childAssocRef.getQName();
         List<ChildAssociationRef> assocsToRemove = theTrait.getChildAssocs(parent.getParentRef(),
-                                                                           childAssocRef.getTypeQName(),
-                                                                           new QNamePattern()
-                                                                           {
+                childAssocRef.getTypeQName(),
+                new QNamePattern() {
 
-                                                                               @Override
-                                                                               public boolean isMatch(QName qname)
-                                                                               {
-                                                                                   return assocName
-                                                                                               .getLocalName()
-                                                                                                   .equals(qname
-                                                                                                               .getLocalName());
-                                                                               }
-                                                                           });
+                    @Override
+                    public boolean isMatch(QName qname)
+                    {
+                        return assocName
+                                .getLocalName()
+                                .equals(qname
+                                        .getLocalName());
+                    }
+                });
         return assocsToRemove;
     }
 
@@ -1397,8 +1396,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         if (Reference.fromNodeRef(childRef) != null)
         {
             List<ChildAssociationRef> assocsToRemove = revertVirtualAssociation(childAssocRef,
-                                                                                theTrait,
-                                                                                childRef);
+                    theTrait,
+                    childRef);
             boolean removed = false;
             if (!assocsToRemove.isEmpty())
             {
@@ -1424,8 +1423,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         if (Reference.fromNodeRef(childRef) != null)
         {
             List<ChildAssociationRef> assocsToRemove = revertVirtualAssociation(childAssocRef,
-                                                                                theTrait,
-                                                                                childRef);
+                    theTrait,
+                    childRef);
             boolean removed = false;
             if (!assocsToRemove.isEmpty())
             {
@@ -1452,36 +1451,36 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
         getTrait().setProperties(materializeIfPossible(nodeRef),
-                                 properties);
+                properties);
     }
 
     @Override
     public void setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
     {
         getTrait().setProperty(materializeIfPossible(nodeRef),
-                               qname,
-                               value);
+                qname,
+                value);
     }
 
     @Override
     public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
         getTrait().removeProperty(materializeIfPossible(nodeRef),
-                                  qname);
+                qname);
     }
 
     @Override
     public List<ChildAssociationRef> getChildrenByName(NodeRef nodeRef, QName assocTypeQName,
-                Collection<String> childNames)
+            Collection<String> childNames)
     {
         return getTrait().getChildrenByName(materializeIfPossible(nodeRef),
-                                            assocTypeQName,
-                                            childNames);
+                assocTypeQName,
+                childNames);
     }
 
     @Override
     public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(NodeRef nodeRef,
-                QName assocTypeQName)
+            QName assocTypeQName)
     {
         NodeServiceTrait theTrait = getTrait();
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
@@ -1489,15 +1488,15 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             Reference reference = smartStore.virtualize(nodeRef);
             Collection<ChildAssociationRef> virtualAssociations = smartStore
-                        .getChildAssocsWithoutParentAssocsOfType(reference,
-                                                                 assocTypeQName);
+                    .getChildAssocsWithoutParentAssocsOfType(reference,
+                            assocTypeQName);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
             if (smartStore.canMaterialize(reference))
             {
                 NodeRef materialReference = smartStore.materialize(reference);
                 Collection<ChildAssociationRef> actualAssociations = theTrait
-                            .getChildAssocsWithoutParentAssocsOfType(materialReference,
-                                                                     assocTypeQName);
+                        .getChildAssocsWithoutParentAssocsOfType(materialReference,
+                                assocTypeQName);
                 associations.addAll(actualAssociations);
             }
 
@@ -1506,30 +1505,31 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         else
         {
             return theTrait.getChildAssocsWithoutParentAssocsOfType(nodeRef,
-                                                                    assocTypeQName);
+                    assocTypeQName);
         }
     }
 
     @Override
-    public List<String> findAssocsNotLinkedByTwoOtherAssocs(NodeRef nodeRef){
+    public List<String> findAssocsNotLinkedByTwoOtherAssocs(NodeRef nodeRef)
+    {
         return getTrait().findAssocsNotLinkedByTwoOtherAssocs(nodeRef);
     }
 
     @Override
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
-                throws InvalidNodeRefException
+            throws InvalidNodeRefException
     {
         getTrait().removeAssociation(materializeIfPossible(sourceRef),
-                                     materializeIfPossible(targetRef),
-                                     assocTypeQName);
+                materializeIfPossible(targetRef),
+                assocTypeQName);
     }
 
     @Override
     public void setAssociations(NodeRef sourceRef, QName assocTypeQName, List<NodeRef> targetRefs)
     {
         getTrait().setAssociations(materializeIfPossible(sourceRef),
-                                   assocTypeQName,
-                                   materializeIfPossible(targetRefs));
+                assocTypeQName,
+                materializeIfPossible(targetRefs));
     }
 
     @Override
@@ -1546,12 +1546,12 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
     @Override
     public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName,
-                QName assocQName)
+            QName assocQName)
     {
         return getTrait().restoreNode(materializeIfPossible(archivedNodeRef),
-                                      materializeIfPossible(destinationParentNodeRef),
-                                      assocTypeQName,
-                                      assocQName);
+                materializeIfPossible(destinationParentNodeRef),
+                assocTypeQName,
+                assocQName);
     }
 
     @Override
@@ -1564,17 +1564,17 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     public int countChildAssocs(NodeRef nodeRef, boolean isPrimary) throws InvalidNodeRefException
     {
         return getTrait().countChildAssocs(nodeRef,
-                                           isPrimary);
+                isPrimary);
     }
 
     @Override
     public List<AssociationRef> getTargetAssocsByPropertyValue(NodeRef sourceRef, QNamePattern qnamePattern,
-                QName propertyQName, Serializable propertyValue)
+            QName propertyQName, Serializable propertyValue)
     {
         return getTrait().getTargetAssocsByPropertyValue(sourceRef,
-                                                         qnamePattern,
-                                                         propertyQName,
-                                                         propertyValue);
+                qnamePattern,
+                propertyQName,
+                propertyValue);
     }
 
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -48,10 +48,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 
 /**
- * Dependency inversion facade of the Alfresco repository environment. It offers
- * an interface to Alfresco repository capabilities needed for virtualization.
- * Implementors should consider loose repository beans coupling when
- * implementing the environment operations.
+ * Dependency inversion facade of the Alfresco repository environment. It offers an interface to Alfresco repository capabilities needed for virtualization. Implementors should consider loose repository beans coupling when implementing the environment operations.
  * 
  * @author Bogdan Horje
  */
@@ -79,7 +76,7 @@ public interface ActualEnvironment
     ChildAssociationRef getPrimaryParent(NodeRef nodeRef);
 
     List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
-                int skipResults, int maxResults, boolean preload) throws InvalidNodeRefException;
+            int skipResults, int maxResults, boolean preload) throws InvalidNodeRefException;
 
     NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName);
 
@@ -110,10 +107,10 @@ public interface ActualEnvironment
     FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException;
 
     ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update) throws InvalidNodeRefException,
-                InvalidTypeException;
+            InvalidTypeException;
 
     void addAspect(NodeRef nodeRef, QName aspectTypeQName, Map<QName, Serializable> aspectProperties)
-                throws InvalidNodeRefException, InvalidAspectException;
+            throws InvalidNodeRefException, InvalidAspectException;
 
     boolean hasPermission(NodeRef nodeRef, String perm);
 }

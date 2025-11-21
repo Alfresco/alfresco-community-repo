@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1818,9 +1818,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             final QNamePattern typeQNamePattern,
             final QNamePattern qnamePattern,
             final int maxResults,
-            final boolean preload){
+            final boolean preload)
+    {
         return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern, 0, maxResults, preload);
-}
+    }
 
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildAssocs(
@@ -1866,11 +1867,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 {
                     return true;
                 }
-                if (skipped < skipResults) {
+                if (skipped < skipResults)
+                {
                     skipped++;
                     return true;
                 }
-                if (results.size() < maxResults) {
+                if (results.size() < maxResults)
+                {
                     results.add(childAssocPair.getSecond());
                     return true;
                 }

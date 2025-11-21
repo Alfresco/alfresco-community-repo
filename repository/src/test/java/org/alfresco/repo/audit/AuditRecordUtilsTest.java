@@ -28,6 +28,7 @@ package org.alfresco.repo.audit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -130,6 +131,7 @@ public class AuditRecordUtilsTest
 
         value.put(QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "Parent Group"), "site_swsdp_SiteManager");
         value.put(QName.createQName("http://www.alfresco.org/model/content/1.0", "userName"), "admin");
+        value.put(QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "Null qname value"), null);
 
         testData.put("/alfresco-access/path", value);
 
@@ -148,5 +150,35 @@ public class AuditRecordUtilsTest
         assertNotNull(path);
         assertEquals("site_swsdp_SiteManager", path.get("{http://www.alfresco.org/model/recordsmanagement/1.0}Parent Group"));
         assertEquals("admin", path.get("{http://www.alfresco.org/model/content/1.0}userName"));
+        assertNull(path.get("{http://www.alfresco.org/model/recordsmanagement/1.0}Null qname value"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testNullAsAValueInMap()
+    {
+        var testData = new HashMap<String, Serializable>();
+        var value = new HashMap<String, Serializable>();
+
+        value.put("KeyOne", null);
+        value.put("KeyTwo", null);
+
+        testData.put("/alfresco-access/path", value);
+
+        var builder = AuditRecordUtils.generateAuditRecordBuilder(testData, "/alfresco-access/".length());
+        builder.setAuditRecordType("alfresco-access");
+
+        var auditRecord = builder.build();
+
+        assertNotNull(auditRecord);
+        assertEquals("alfresco-access", auditRecord.getAuditApplicationId());
+        var auditData = auditRecord.getAuditData();
+        assertEquals(1, auditData.size());
+
+        var path = (HashMap<String, Object>) auditData.get("path");
+
+        assertNotNull(path);
+        assertNull(path.get("KeyOne"));
+        assertNull(path.get("KeyTwo"));
     }
 }

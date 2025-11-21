@@ -107,7 +107,6 @@ public final class AuditRecordUtils
     @SuppressWarnings("unchecked")
     private static Serializable decodeValueByInstance(Serializable value)
     {
-        LOGGER.debug("Decoding value by instance of {}", value.getClass());
         LOGGER.trace("String value of the object: {}", value);
         // Only hashmaps could contains root node.
         if (value instanceof HashMap<?, ?>)

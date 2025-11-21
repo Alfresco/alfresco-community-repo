@@ -75,7 +75,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Node Versions - version history
- * 
+ *
  * @author janv
  */
 @RelationshipResource(name = "versions", entityResource = NodesEntityResource.class, title = "Node Versions")
@@ -94,7 +94,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         this.directAccessUrlHelper = directAccessUrlHelper;
     }
-    
+
     @Override
     public void afterPropertiesSet()
     {
@@ -108,7 +108,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
+
     /**
      * List version history
      *
@@ -121,11 +121,11 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
 
         Paging paging = parameters.getPaging();
-        VersionHistory vh = versionService.getVersionHistory(nodeRef, paging.getSkipCount(), paging.getSkipCount());
+        VersionHistory vh = versionService.getVersionHistory(nodeRef, paging.getSkipCount(), paging.getMaxItems());
 
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
         List<String> includeParam = parameters.getInclude();
-        
+
         List<Node> collection = null;
         if (vh != null)
         {
@@ -137,7 +137,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
                 collection.add(node);
             }
         }
-        
+
         return listPage(collection, paging);
     }
 
@@ -272,7 +272,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             // attempt to delete last version - we do not yet support this (see REPO-835 & REPO-834)
             // note: alternatively, the client can remove the "cm:versionable" aspect (if permissions allow) to clear the version history and disable versioning
             throw new IntegrityException("Cannot delete last version (did you mean to disable versioning instead ?) ["+nodeId+","+versionId+"]", null);
-            
+
             /*
             if (props.get(ContentModel.PROP_VERSION_TYPE) != null)
             {
@@ -297,7 +297,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
         VersionHistory vh = versionService.getVersionHistory(nodeRef);
-        if (vh != null) 
+        if (vh != null)
         {
             return vh.getVersion(versionLabelId);
         }

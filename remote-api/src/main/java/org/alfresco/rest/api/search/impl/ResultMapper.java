@@ -175,7 +175,7 @@ public class ResultMapper
         {
             String store = searchQuery.getScope().getLocations().isEmpty() ? LIVE_NODES
                     : searchQuery.getScope().getLocations().get(0);
-            
+
             List<Node> nodes = getNodes(store, results, params, mapUserInfo);
 
             for (ResultSetRow row : results)

@@ -138,9 +138,10 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
                 mapVersionInfo(v, node);
                 collection.add(node);
             }
+            return listPage(collection, vh.getAllVersionsCount(), paging);
         }
 
-        return listPage(collection, vh.getAllVersionsCount(), paging);
+        return listPage(collection, paging);
     }
 
     private void mapVersionInfo(Version v, Node aNode)

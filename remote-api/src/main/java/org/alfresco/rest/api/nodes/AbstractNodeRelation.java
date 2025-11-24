@@ -152,7 +152,7 @@ public class AbstractNodeRelation implements InitializingBean
             }
         }
 
-        return listPage(collection, collection.size(), parameters.getPaging());
+        return listPage(collection, parameters.getPaging());
     }
 
     protected CollectionWithPagingInfo<Node> listNodeChildAssocs(List<ChildAssociationRef> childAssocRefs, Parameters parameters, Boolean isPrimary, boolean returnChild)
@@ -191,7 +191,16 @@ public class AbstractNodeRelation implements InitializingBean
             }
         }
 
-        return listPage(collection, collection.size(), parameters.getPaging());
+        return listPage(collection, parameters.getPaging());
+    }
+
+    protected CollectionWithPagingInfo listPage(List result, Paging paging)
+    {
+        if (result == null)
+        {
+            result = Collections.emptyList();
+        }
+        return listPage(result, result.size(), paging);
     }
 
     protected CollectionWithPagingInfo listPage(List result, int totalCount, Paging paging)

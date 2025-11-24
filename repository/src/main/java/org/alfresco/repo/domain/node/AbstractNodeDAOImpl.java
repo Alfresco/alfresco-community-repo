@@ -5184,7 +5184,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         int foundCacheEntryCount = 0;
         int missingCacheEntryCount = 0;
 
-
         // Group the nodes by store so that we don't *have* to eagerly join to store to get query performance
         Map<StoreRef, List<String>> uuidsByStore = new HashMap<StoreRef, List<String>>(3);
         for (NodeRef nodeRef : nodeRefs)

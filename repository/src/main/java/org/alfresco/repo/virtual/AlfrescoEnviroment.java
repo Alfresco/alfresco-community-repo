@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -32,10 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
@@ -59,6 +55,9 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 public class AlfrescoEnviroment implements ActualEnvironment
 {
@@ -102,7 +101,7 @@ public class AlfrescoEnviroment implements ActualEnvironment
     {
 
         return apiFacet.getScriptService().executeScript(new ClasspathScriptLocation(classpath.substring(1)),
-                model);
+                                                         model);
     }
 
     @Override
@@ -110,15 +109,15 @@ public class AlfrescoEnviroment implements ActualEnvironment
     {
 
         return apiFacet.getScriptService().executeScript(templateNodeRef,
-                null,
-                model);
+                                                         null,
+                                                         model);
     }
 
     @Override
     public boolean hasAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         return apiFacet.getNodeService().hasAspect(nodeRef,
-                aspectTypeQName);
+                                                   aspectTypeQName);
     }
 
     @Override
@@ -132,7 +131,7 @@ public class AlfrescoEnviroment implements ActualEnvironment
     public NodeRef getTargetAssocs(NodeRef nodeRef, QName associationQName)
     {
         List<AssociationRef> assocs = apiFacet.getNodeService().getTargetAssocs(nodeRef,
-                associationQName);
+                                                                                associationQName);
 
         if (assocs != null && assocs.size() >= 1)
         {
@@ -150,7 +149,7 @@ public class AlfrescoEnviroment implements ActualEnvironment
     public Serializable getProperty(NodeRef nodeRef, QName qname)
     {
         return apiFacet.getNodeService().getProperty(nodeRef,
-                qname);
+                                                     qname);
     }
 
     @Override
@@ -163,7 +162,7 @@ public class AlfrescoEnviroment implements ActualEnvironment
     public InputStream openContentStream(NodeRef nodeRef) throws ActualEnvironmentException
     {
         ContentReader contentReader = apiFacet.getContentService().getReader(nodeRef,
-                ContentModel.PROP_CONTENT);
+                                                                             ContentModel.PROP_CONTENT);
         return contentReader.getContentInputStream();
     }
 
@@ -183,7 +182,7 @@ public class AlfrescoEnviroment implements ActualEnvironment
     public Object createScriptVirtualContext(VirtualContext context) throws ActualEnvironmentException
     {
         return new AlfrescoScriptVirtualContext(context,
-                serviceRegistry);
+                                                serviceRegistry);
     }
 
     @Override
@@ -196,7 +195,7 @@ public class AlfrescoEnviroment implements ActualEnvironment
     public boolean isSubClass(QName className, QName ofClassName)
     {
         return apiFacet.getDictionaryService().isSubClass(className,
-                ofClassName);
+                                                          ofClassName);
     }
 
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
@@ -231,22 +230,22 @@ public class AlfrescoEnviroment implements ActualEnvironment
 
     @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
-            QNamePattern qnamePattern, int skipResults, int maxResults, boolean preload) throws InvalidNodeRefException
+                QNamePattern qnamePattern, int skipResults, int maxResults, boolean preload) throws InvalidNodeRefException
     {
         NodeService nodeService = apiFacet.getNodeService();
         return nodeService.getChildAssocs(nodeRef,
-                typeQNamePattern,
-                qnamePattern,
-                skipResults,
-                maxResults,
-                preload);
+                                          typeQNamePattern,
+                                          qnamePattern,
+                                          skipResults,
+                                          maxResults,
+                                          preload);
     }
 
     @Override
     public NodeRef findNodeRef(String referenceType, String[] reference)
     {
         return repositoryHelper.findNodeRef(referenceType,
-                reference);
+                                            reference);
     }
 
     @Override
@@ -259,8 +258,8 @@ public class AlfrescoEnviroment implements ActualEnvironment
     public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
     {
         return apiFacet.getNodeService().getChildByName(nodeRef,
-                assocTypeQName,
-                childName);
+                                                        assocTypeQName,
+                                                        childName);
     }
 
     @Override
@@ -273,26 +272,26 @@ public class AlfrescoEnviroment implements ActualEnvironment
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException
     {
         return apiFacet.getFileFolderService().create(parentNodeRef,
-                name,
-                typeQName);
+                                                      name,
+                                                      typeQName);
     }
 
     @Override
     public ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update)
-            throws InvalidNodeRefException, InvalidTypeException
+                throws InvalidNodeRefException, InvalidTypeException
     {
         return apiFacet.getContentService().getWriter(nodeRef,
-                propertyQName,
-                update);
+                                                      propertyQName,
+                                                      update);
     }
 
     @Override
     public void addAspect(NodeRef nodeRef, QName aspectTypeQName, Map<QName, Serializable> aspectProperties)
-            throws InvalidNodeRefException, InvalidAspectException
+                throws InvalidNodeRefException, InvalidAspectException
     {
         apiFacet.getNodeService().addAspect(nodeRef,
-                aspectTypeQName,
-                aspectProperties);
+                                            aspectTypeQName,
+                                            aspectProperties);
     }
 
     @Override
@@ -314,6 +313,6 @@ public class AlfrescoEnviroment implements ActualEnvironment
     public boolean hasPermission(NodeRef nodeRef, String perm)
     {
         return apiFacet.getPermissionService().hasPermission(nodeRef,
-                perm).equals(AccessStatus.ALLOWED);
+                                                             perm).equals(AccessStatus.ALLOWED);
     }
 }

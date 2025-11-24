@@ -76,6 +76,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 
 public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<NodeServiceExtension, NodeServiceTrait>
         implements NodeServiceExtension
@@ -668,6 +669,50 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             return theTrait.getChildAssocs(nodeRef,
                     typeQNamePattern,
                     qnamePattern,
+                    maxResults,
+                    preload);
+        }
+    }
+
+    @Override
+    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+            int skipResults, int maxResults, boolean preload)
+    {
+        NodeServiceTrait theTrait = getTrait();
+        boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
+        if (canVirtualize)
+        {
+            Reference reference = smartStore.virtualize(nodeRef);
+            List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
+                    typeQNamePattern,
+                    qnamePattern,
+                    skipResults,
+                    maxResults,
+                    preload);
+            List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
+
+            if (associations.size() < maxResults)
+            {
+                if (smartStore.canMaterialize(reference))
+                {
+                    NodeRef materialReference = smartStore.materialize(reference);
+                    List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
+                            typeQNamePattern,
+                            qnamePattern,
+                            maxResults - associations
+                                    .size(),
+                            preload);
+                    associations.addAll(actualAssociations);
+                }
+            }
+            return new Pair<>(associations, associations.size());
+        }
+        else
+        {
+            return theTrait.getChildAssocs(nodeRef,
+                    typeQNamePattern,
+                    qnamePattern,
+                    skipResults,
                     maxResults,
                     preload);
         }

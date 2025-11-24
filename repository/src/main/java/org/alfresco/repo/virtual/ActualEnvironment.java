@@ -76,7 +76,7 @@ public interface ActualEnvironment
     ChildAssociationRef getPrimaryParent(NodeRef nodeRef);
 
     List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
-            int maxResults, boolean preload) throws InvalidNodeRefException;
+            int skipResults, int maxResults, boolean preload) throws InvalidNodeRefException;
 
     NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName);
 

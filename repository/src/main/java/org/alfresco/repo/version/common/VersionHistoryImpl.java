@@ -69,6 +69,8 @@ public class VersionHistoryImpl implements VersionHistory
     /* Versions ordered by creation date (descending). */
     private Comparator<Version> versionComparatorDesc;
 
+    private Integer versionCount;
+
     /**
      * Constructor, ensures the root version is set.
      * 
@@ -78,6 +80,11 @@ public class VersionHistoryImpl implements VersionHistory
      *            optional comparator of versions.
      */
     public VersionHistoryImpl(Version rootVersion, Comparator<Version> versionComparatorDesc)
+    {
+        this(rootVersion, versionComparatorDesc, null);
+    }
+
+    public VersionHistoryImpl(Version rootVersion, Comparator<Version> versionComparatorDesc, Integer versionCount)
     {
         if (rootVersion == null)
         {
@@ -89,6 +96,7 @@ public class VersionHistoryImpl implements VersionHistory
         this.versionHistory = new HashMap<String, String>();
         this.versionsByLabel = new LinkedHashMap<String, Version>();
         this.versionComparatorDesc = versionComparatorDesc;
+        this.versionCount = versionCount;
 
         addVersion(rootVersion, null);
     }
@@ -123,6 +131,11 @@ public class VersionHistoryImpl implements VersionHistory
     public Collection<Version> getAllVersions()
     {
         return sortDescending(versionsByLabel.values());
+    }
+
+    public int getAllVersionsCount()
+    {
+        return versionCount != null ? versionCount : versionsByLabel.size();
     }
 
     /**

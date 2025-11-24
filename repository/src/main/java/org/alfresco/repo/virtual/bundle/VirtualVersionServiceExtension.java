@@ -99,6 +99,12 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         }
 
         @Override
+        public int getAllVersionsCount()
+        {
+            return actualHistory.getAllVersionsCount();
+        }
+
+        @Override
         public Version getPredecessor(Version version)
         {
             Version actualVersion = VirtualVersionServiceExtension.this.materializeVersionIfReference(version);
@@ -414,6 +420,33 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         {
             NodeRef materialNode = smartStore.materialize(reference);
             VersionHistory actualVersionHistory = theTrait.getVersionHistory(materialNode);
+            if (actualVersionHistory == null)
+            {
+                return null;
+            }
+            else
+            {
+                Reference versionedReference = Reference.fromNodeRef(nodeRef);
+
+                return new VirtualVersionHistory(versionedReference,
+                        actualVersionHistory);
+            }
+        }
+    }
+
+    @Override
+    public VersionHistory getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions) throws AspectMissingException
+    {
+        VersionServiceTrait theTrait = getTrait();
+        Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference == null)
+        {
+            return theTrait.getVersionHistory(nodeRef, skipVersions, maxVersions);
+        }
+        else
+        {
+            NodeRef materialNode = smartStore.materialize(reference);
+            VersionHistory actualVersionHistory = theTrait.getVersionHistory(materialNode, skipVersions, maxVersions);
             if (actualVersionHistory == null)
             {
                 return null;

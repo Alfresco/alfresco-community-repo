@@ -164,6 +164,27 @@ public interface VersionService
             throws AspectMissingException;
 
     /**
+     * Gets the version history information for a node.
+     * <p>
+     * If the node has not been versioned then null is returned.
+     * <p>
+     * If the node referenced does not or can not have the version aspect applied to it then an exception will be raised.
+     *
+     * @param nodeRef
+     *            a node reference
+     * @param skipVersions
+     *            number of versions to skip from the start of the version history
+     * @param maxVersions
+     *            maximum number of versions to return
+     * @return the version history information
+     * @throws AspectMissingException
+     *             thrown if the version aspect is missing
+     */
+    @Auditable(parameters = {"nodeRef", "skipVersions", "maxVersions"})
+    public VersionHistory getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions)
+            throws AspectMissingException;
+
+    /**
      * Gets the version object for the current version of the node reference passed.
      * <p>
      * Returns <code>null</code> if the node is not versionable or has not been versioned.

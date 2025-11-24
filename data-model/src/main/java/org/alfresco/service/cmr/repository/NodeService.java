@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 
 /**
  * Interface for public and internal <b>node</b> and <b>store</b> operations.
@@ -650,6 +651,36 @@ public interface NodeService
             final int maxResults,
             final boolean preload)
             throws InvalidNodeRefException;
+
+    /**
+     * Gets all child associations where the pattern of the association qualified name is an exact match.
+     *
+     * @param nodeRef
+     *            the parent node - usually a <b>container</b>
+     * @param typeQNamePattern
+     *            the qualified name of the association (<tt>null</tt> to ignore)
+     * @param qnamePattern
+     *            the path qualified name (<tt>null</tt> to ignore)
+     * @param skipResults
+     *            the number of results to skip
+     * @param maxResults
+     *            the number of results to get
+     * @param preload
+     *            <tt>true</tt> if the nodes must be preloaded into the cache
+     * @return Returns a pair that contains the list of <code>ChildAssociationRef</code> instances and total versions count
+     * @throws InvalidNodeRefException
+     *             if the node could not be found
+     *
+     * @see QName
+     */
+    @Auditable(parameters = {"nodeRef", "typeQNamePattern", "qnamePattern", "skipResults", "maxResults", "preload"})
+    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(
+            NodeRef nodeRef,
+            final QNamePattern typeQNamePattern,
+            final QNamePattern qnamePattern,
+            final int skipResults,
+            final int maxResults,
+            final boolean preload);
 
     /**
      * Gets all child associations where the pattern of the association qualified names match the patterns provided.

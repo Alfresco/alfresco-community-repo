@@ -1876,6 +1876,76 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(
+            NodeRef nodeRef,
+            final QNamePattern typeQNamePattern,
+            final QNamePattern qnamePattern,
+            final int skipResults,
+            final int maxResults,
+            final boolean preload)
+    {
+        // Get the node
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+
+        // We have a callback handler to filter results
+        final List<ChildAssociationRef> results = new ArrayList<>(10);
+        final int[] totalCount = {0};
+        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback() {
+            int skipped = 0;
+
+            @Override
+            public boolean preLoadNodes()
+            {
+                return preload;
+            }
+
+            @Override
+            public boolean orderResults()
+            {
+                return true;
+            }
+
+            @Override
+            public boolean handle(
+                    Pair<Long, ChildAssociationRef> childAssocPair,
+                    Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair)
+            {
+                if (typeQNamePattern != null && !typeQNamePattern.isMatch(childAssocPair.getSecond().getTypeQName()))
+                {
+                    return true;
+                }
+                if (qnamePattern != null && !qnamePattern.isMatch(childAssocPair.getSecond().getQName()))
+                {
+                    return true;
+                }
+                totalCount[0]++;
+                if (skipped < skipResults)
+                {
+                    skipped++;
+                    return true;
+                }
+                if (results.size() < maxResults)
+                {
+                    results.add(childAssocPair.getSecond());
+                    return true;
+                }
+                return true;
+            }
+
+            public void done()
+            {}
+        };
+        // Get the assocs pointing to it
+        QName typeQName = (typeQNamePattern instanceof QName) ? (QName) typeQNamePattern : null;
+        QName qname = (qnamePattern instanceof QName) ? (QName) qnamePattern : null;
+
+        nodeDAO.getChildAssocs(nodePair.getFirst(), null, typeQName, qname, null, null, callback);
+        // Done
+        return new Pair<>(results, totalCount[0]);
+    }
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypeQNames)
     {
         // Get the node

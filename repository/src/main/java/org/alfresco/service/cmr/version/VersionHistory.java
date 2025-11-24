@@ -63,6 +63,8 @@ public interface VersionHistory extends Serializable
      */
     public Collection<Version> getAllVersions();
 
+    public int getAllVersionsCount();
+
     /**
      * Gets the predecessor of a specified version
      * 

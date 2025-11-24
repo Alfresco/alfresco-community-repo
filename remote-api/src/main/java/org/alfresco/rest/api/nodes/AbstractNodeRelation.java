@@ -152,7 +152,7 @@ public class AbstractNodeRelation implements InitializingBean
             }
         }
 
-        return listPage(collection, parameters.getPaging());
+        return listPage(collection, collection.size(), parameters.getPaging());
     }
 
     protected CollectionWithPagingInfo<Node> listNodeChildAssocs(List<ChildAssociationRef> childAssocRefs, Parameters parameters, Boolean isPrimary, boolean returnChild)
@@ -191,10 +191,10 @@ public class AbstractNodeRelation implements InitializingBean
             }
         }
 
-        return listPage(collection, parameters.getPaging());
+        return listPage(collection, collection.size(), parameters.getPaging());
     }
 
-    protected CollectionWithPagingInfo listPage(List result, Paging paging)
+    protected CollectionWithPagingInfo listPage(List result, int totalCount, Paging paging)
     {
         // return 'page' of results (note: depends on in-built/natural sort order of results)
         int skipCount = paging.getSkipCount();
@@ -222,7 +222,6 @@ public class AbstractNodeRelation implements InitializingBean
             page.add(element);
         }
 
-        int totalCount = result.size();
         boolean hasMoreItems = ((skipCount + page.size()) < totalCount);
 
         return CollectionWithPagingInfo.asPaged(paging, page, hasMoreItems, totalCount);

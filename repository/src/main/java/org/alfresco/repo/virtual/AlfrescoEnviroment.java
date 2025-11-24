@@ -231,14 +231,16 @@ public class AlfrescoEnviroment implements ActualEnvironment
 
     @Override
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
-            QNamePattern qnamePattern, int maxResults, boolean preload) throws InvalidNodeRefException
+            QNamePattern qnamePattern, int skipResults, int maxResults, boolean preload) throws InvalidNodeRefException
     {
         NodeService nodeService = apiFacet.getNodeService();
         return nodeService.getChildAssocs(nodeRef,
                 typeQNamePattern,
                 qnamePattern,
+                skipResults,
                 maxResults,
-                preload);
+                preload)
+                .getFirst();
     }
 
     @Override

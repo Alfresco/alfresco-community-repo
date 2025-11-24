@@ -61,6 +61,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 
 /**
  * The light weight version store node service implementation.
@@ -550,10 +551,24 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern) throws InvalidNodeRefException
     {
+        return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern, Integer.MAX_VALUE, true);
+    }
+
+    @Override
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQName, QNamePattern qname, int maxResults,
+            boolean preload) throws InvalidNodeRefException
+    {
+        return getChildAssocs(nodeRef, typeQName, qname, 0, maxResults, preload).getFirst();
+    }
+
+    @Override
+    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern, int skipResults, int maxResults, boolean preload)
+    {
         // Get the child assocs from the version store
-        List<ChildAssociationRef> childAssocRefs = this.dbNodeService.getChildAssocs(
+        Pair<List<ChildAssociationRef>, Integer> childAssocsCount = this.dbNodeService.getChildAssocs(
                 VersionUtil.convertNodeRef(nodeRef),
-                RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSIONED_CHILD_ASSOCS);
+                RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSIONED_CHILD_ASSOCS, 0, Integer.MAX_VALUE, true);
+        List<ChildAssociationRef> childAssocRefs = childAssocsCount.getFirst();
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>(childAssocRefs.size());
         for (ChildAssociationRef childAssocRef : childAssocRefs)
         {
@@ -589,19 +604,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
         // sort the results so that the order appears to be exactly as it was originally
         Collections.sort(result);
 
-        return result;
-    }
-
-    @Override
-    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQName, QNamePattern qname, int maxResults,
-            boolean preload) throws InvalidNodeRefException
-    {
-        List<ChildAssociationRef> result = getChildAssocs(nodeRef, typeQName, qname);
-        if (result.size() > maxResults)
-        {
-            return result.subList(0, maxResults);
-        }
-        return result;
+        return new Pair<>(result, childAssocsCount.getSecond());
     }
 
     /**

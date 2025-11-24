@@ -3364,14 +3364,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private void setNodeAspectsCached(Map<Long, Set<QName>> nodeAspects)
     {
-        List<Long> nodeIds = new ArrayList<>();
-        for (Long nodeId : nodeAspects.keySet())
-        {
-            if (nodeId != null)
-            {
-                nodeIds.add(nodeId);
-            }
-        }
+        List<Long> nodeIds = nodeAspects.keySet().stream().collect(Collectors.toList());
 
         List<NodeVersionKey> nodeVersionKeys = getNodesNotNull(nodeIds, false).stream()
                 .map(Node::getNodeVersionKey)

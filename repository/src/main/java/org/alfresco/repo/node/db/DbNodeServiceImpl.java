@@ -206,7 +206,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     {
         ParameterCheck.mandatory("nodeRefs", nodeRefs);
 
-        List<Pair<Long, NodeRef>> unchecked = nodeDAO.getNodePairs(nodeRefs.get(0).getStoreRef(), nodeRefs);
+        // Force lookup across all stores to avoid accidentally missing nodes from different stores because the first node is not in the same store as all the others.
+        List<Pair<Long, NodeRef>> unchecked = nodeDAO.getNodePairs(null, nodeRefs);
         if (unchecked.isEmpty())
         {
             throw new InvalidNodeRefException("Nodes do not exist: " + nodeRefs, null);
@@ -1673,9 +1674,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             return Collections.emptyMap();
         }
 
-        StoreRef storeRef = nodeRefs.get(0).getStoreRef();
-
-        List<Pair<Long, NodeRef>> nodePairs = nodeDAO.getNodePairs(storeRef, nodeRefs);
+        // Force lookup of nodes across all stores to avoid issues with mixed store lists
+        List<Pair<Long, NodeRef>> nodePairs = nodeDAO.getNodePairs(null, nodeRefs);
 
         Map<Long, Map<QName, Serializable>> propertiesMappedById = getPropertiesImpl(nodePairs);
 

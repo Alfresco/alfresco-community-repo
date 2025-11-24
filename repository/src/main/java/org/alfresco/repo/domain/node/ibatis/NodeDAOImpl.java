@@ -136,6 +136,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String COUNT_CHILD_ASSOC_BY_PARENT_ID = "alfresco.node.count_ChildAssocByParentId";
     private static final String SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE = "alfresco.node.select_ChildAssocsByPropertyValue";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT = "alfresco.node.select_ChildAssocsOfParent";
+    private static final String SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED = "alfresco.node.select.children.select_ChildAssocsOfParent_Limited";
     private static final String SELECT_CHILD_ASSOC_OF_PARENT_BY_NAME = "alfresco.node.select_ChildAssocOfParentByName";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE =
             "alfresco.node.select_ChildAssocsOfParentWithoutParentAssocsOfType";
@@ -1202,6 +1203,57 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         template.select(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, resultHandler);
         
+        resultsCallback.done();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void selectChildAssocs(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            final int maxResults,
+            ChildAssocRefQueryCallback resultsCallback)
+    {
+        ChildAssocEntity assoc = new ChildAssocEntity();
+        // Parent
+        NodeEntity parentNode = new NodeEntity();
+        parentNode.setId(parentNodeId);
+        assoc.setParentNode(parentNode);
+
+        // Type QName
+        if (assocTypeQName != null)
+        {
+            if (!assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
+            {
+                resultsCallback.done();
+                return;                 // Shortcut
+            }
+        }
+        // QName
+        if (assocQName != null)
+        {
+            if (!assoc.setQNameAll(qnameDAO, assocQName, false))
+            {
+                resultsCallback.done();
+                return;                 // Shortcut
+            }
+        }
+        // Order
+        assoc.setOrdered(resultsCallback.orderResults());
+
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+
+        RowBounds rowBounds = new RowBounds(0, maxResults);
+        List<?> entities = template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED, assoc, rowBounds);
+        @SuppressWarnings("rawtypes")
+        final DefaultResultContext resultContext = new DefaultResultContext();
+        for (Object entity : entities)
+        {
+              resultContext.nextResultObject(entity);
+              resultHandler.handleResult(resultContext);
+        }
+
         resultsCallback.done();
     }
 

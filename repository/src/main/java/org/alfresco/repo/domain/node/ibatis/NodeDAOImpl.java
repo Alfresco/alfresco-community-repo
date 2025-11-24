@@ -1243,7 +1243,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setOrdered(resultsCallback.orderResults());
 
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
-
+        
         RowBounds rowBounds = new RowBounds(0, maxResults);
         List<?> entities = template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED, assoc, rowBounds);
         @SuppressWarnings("rawtypes")
@@ -1253,7 +1253,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
               resultContext.nextResultObject(entity);
               resultHandler.handleResult(resultContext);
         }
-
+        
         resultsCallback.done();
     }
 

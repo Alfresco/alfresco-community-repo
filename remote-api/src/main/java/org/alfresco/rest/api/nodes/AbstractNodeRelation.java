@@ -196,15 +196,6 @@ public class AbstractNodeRelation implements InitializingBean
 
     protected CollectionWithPagingInfo listPage(List result, Paging paging)
     {
-        if (result == null)
-        {
-            result = Collections.emptyList();
-        }
-        return listPage(result, result.size(), paging);
-    }
-
-    protected CollectionWithPagingInfo listPage(List result, int totalCount, Paging paging)
-    {
         // return 'page' of results (note: depends on in-built/natural sort order of results)
         int skipCount = paging.getSkipCount();
         int pageSize = paging.getMaxItems();
@@ -231,6 +222,7 @@ public class AbstractNodeRelation implements InitializingBean
             page.add(element);
         }
 
+        int totalCount = result.size();
         boolean hasMoreItems = ((skipCount + page.size()) < totalCount);
 
         return CollectionWithPagingInfo.asPaged(paging, page, hasMoreItems, totalCount);

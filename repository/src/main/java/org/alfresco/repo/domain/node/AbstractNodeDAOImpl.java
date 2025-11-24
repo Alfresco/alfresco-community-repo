@@ -5183,13 +5183,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         int foundCacheEntryCount = 0;
         int missingCacheEntryCount = 0;
-        boolean forceBatch = false;
+
 
         // Group the nodes by store so that we don't *have* to eagerly join to store to get query performance
         Map<StoreRef, List<String>> uuidsByStore = new HashMap<StoreRef, List<String>>(3);
         for (NodeRef nodeRef : nodeRefs)
         {
-            if (!forceBatch)
+            if (!forceBatching)
             {
                 // Is this node in the cache?
                 if (nodesCache.getKey(nodeRef) != null)
@@ -5204,7 +5204,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 if (foundCacheEntryCount + missingCacheEntryCount % 100 == 0)
                 {
                     // We force the batch if the number of hits drops below the number of misses
-                    forceBatch = foundCacheEntryCount < missingCacheEntryCount;
+                    forceBatching = foundCacheEntryCount < missingCacheEntryCount;
                 }
             }
 

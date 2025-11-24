@@ -173,7 +173,10 @@ public class ResultMapper
 
         if (results != null && results.getNumberFound() > 0)
         {
-            List<Node> nodes = getNodes(results, params, mapUserInfo);
+            String store = searchQuery.getScope().getLocations().isEmpty() ? LIVE_NODES
+                    : searchQuery.getScope().getLocations().get(0);
+            
+            List<Node> nodes = getNodes(store, results, params, mapUserInfo);
 
             for (ResultSetRow row : results)
             {
@@ -311,17 +314,15 @@ public class ResultMapper
      * @param mapUserInfo
      * @return The node object or null if the user does not have permission to view it.
      */
-    public List<Node> getNodes(ResultSet resultSet, Params params, Map<String, UserInfo> mapUserInfo)
+    public List<Node> getNodes(String store, ResultSet resultSet, Params params, Map<String, UserInfo> mapUserInfo)
     {
         List<Node> results = new ArrayList<>(resultSet.length());
 
         if (resultSet.length() > 0)
         {
-            final String nodeStore = storeMapper.getStore(resultSet.getNodeRef(0));
-
             try
             {
-                switch (nodeStore)
+                switch (store)
                 {
                 case LIVE_NODES:
                     results.addAll(nodes.getFoldersOrDocuments(resultSet.getNodeRefs(), params.getInclude(),
@@ -409,7 +410,7 @@ public class ResultMapper
             if (!results.isEmpty())
             {
 
-                results.forEach(aNode -> aNode.setLocation(nodeStore));
+                results.forEach(aNode -> aNode.setLocation(store));
             }
         }
 

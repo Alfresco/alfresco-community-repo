@@ -36,6 +36,7 @@ import java.util.List;
 public class NodeBatchLoadEntity
 {
     private Long storeId;
+    private List<Long> storeIds;
     private List<String> uuids;
     private List<Long> ids;
 
@@ -47,6 +48,16 @@ public class NodeBatchLoadEntity
     public void setStoreId(Long storeId)
     {
         this.storeId = storeId;
+    }
+
+    public List<Long> getStoreIds()
+    {
+        return storeIds;
+    }
+
+    public void setStoreIds(List<Long> storeIds)
+    {
+        this.storeIds = storeIds;
     }
 
     public List<String> getUuids()

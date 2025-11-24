@@ -193,6 +193,13 @@ public interface NodeDAO extends NodeBulkLoader
 
     public Pair<Long, NodeRef> getNodePair(NodeRef nodeRef);
 
+    /**
+     * Get the node ID-reference pairs for the given node references in the given store. If no store is given, all stores are searched.
+     * 
+     * @param storeRef
+     * @param nodeRefs
+     * @return
+     */
     List<Pair<Long, NodeRef>> getNodePairs(StoreRef storeRef, List<NodeRef> nodeRefs);
 
     public Pair<Long, NodeRef> getNodePair(Long nodeId);

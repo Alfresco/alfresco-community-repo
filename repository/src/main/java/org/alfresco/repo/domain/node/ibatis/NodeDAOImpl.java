@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.result.DefaultResultContext;
@@ -462,6 +463,18 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
         // Store ID
         nodeBatchLoadEntity.setStoreId(storeId);
+        // UUID
+        nodeBatchLoadEntity.setUuids(new ArrayList<String>(uuids));
+
+        return template.selectList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
+    }
+
+    @Override
+    protected List<Node> selectNodesByUuids(SortedSet<String> uuids)
+    {
+        NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
+        // Store IDs
+        nodeBatchLoadEntity.setStoreIds(getStores().stream().map(Pair::getFirst).collect(Collectors.toList()));
         // UUID
         nodeBatchLoadEntity.setUuids(new ArrayList<String>(uuids));
 

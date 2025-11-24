@@ -665,7 +665,15 @@
             join alf_store store on (store.id = node.store_id)
             join alf_transaction txn on (txn.id = node.transaction_id)
         where
-            node.store_id = #{storeId} and
+            <choose>
+                <when test="storeId != null">node.store_id = #{storeId} and</when>
+                <otherwise>
+                    node.store_id in
+                    <foreach item="item" index="index" collection="storeIds" open="(" separator="," close=") and">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
             node.uuid in 
             <foreach item="item" index="index" collection="uuids" open="(" separator="," close=")">
                 #{item}

@@ -1000,15 +1000,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     .map(NodeRef::getId)
                     .collect(Collectors.toCollection(() -> new TreeSet<String>()));
 
-            values.get(0).getStore().getId();
-
-            // All nodes should be in the same store - so we can use the store id from the first one.
-            StoreEntity storeEntity = values.stream()
-                    .findFirst()
-                    .map(Node::getStore)
-                    .orElse(null);
-
-            List<Node> selectedNodes = selectNodesByUuids(storeEntity.getId(), nodeRefs);
+            // Force lookup across all stores to avoid accidentally missing nodes from different stores because the first node is not in the same store as all the others.
+            List<Node> selectedNodes = selectNodesByUuids(null, nodeRefs);
 
             // Lock it to prevent 'accidental' modification
             selectedNodes.forEach(node -> {
@@ -1151,6 +1144,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return pair.getSecond().getNodePair();
     }
 
+    /**
+     * see {@link NodeDAO#getNodePairs(StoreRef, List)}
+     * 
+     */
     @Override
     public List<Pair<Long, NodeRef>> getNodePairs(StoreRef storeRef, List<NodeRef> nodeRefs)
     {
@@ -1192,8 +1189,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         if (!uncachedNodeIds.isEmpty())
         {
-            StoreEntity store = getStoreNotNull(storeRef);
-
             // The cache says that these nodes are not there or are deleted.
             // We double check by going to the DB
             List<Node> dbNodes = selectNodesByIds(uncachedNodeIds);
@@ -1201,7 +1196,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // Also check the missing UUIDs
             if (missingUuids != null && !missingUuids.isEmpty())
             {
-                dbNodes.addAll(selectNodesByUuids(store.getId(), missingUuids));
+                if (storeRef != null)
+                {
+                    StoreEntity store = getStoreNotNull(storeRef);
+
+                    dbNodes.addAll(selectNodesByUuids(store.getId(), missingUuids));
+                }
+                else
+                {
+                    dbNodes.addAll(selectNodesByUuids(missingUuids));
+                }
             }
 
             for (Node dbNode : dbNodes)
@@ -5567,6 +5571,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract NodeEntity selectNodeByNodeRef(NodeRef nodeRef);
 
     protected abstract List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids);
+
+    protected abstract List<Node> selectNodesByUuids(SortedSet<String> uuids);
 
     protected abstract List<Node> selectNodesByIds(SortedSet<Long> ids);
 

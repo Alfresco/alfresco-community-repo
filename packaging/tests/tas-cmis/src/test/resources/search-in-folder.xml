@@ -19,5 +19,6 @@
 		<query value="SELECT * FROM cmis:document where IN_FOLDER('%s') AND cmis:name NOT IN ('fourthFile', 'fifthFile.txt')" expectedResults="3" />
 		<query value="SELECT * FROM cmis:folder where IN_FOLDER('%s') AND cmis:name &lt;&gt; 'subFolder'" expectedResults="2" />
 		<query value="SELECT cmis:secondaryObjectTypeIds FROM cmis:folder where IN_FOLDER('%s') AND cmis:name = 'subFolder'" expectedResults="1" />
+		<query value="SELECT * FROM cmis:document AS d JOIN cm:titled as a0 ON d.cmis:objectId = a0.cmis:objectId WHERE CONTAINS(a0, 'cm:title:&quot;fourthFileTitle&quot;')" expectedResults="1" />
 	</queries>
 </testData> 

@@ -1243,7 +1243,7 @@ public class CMISTest
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         FileInfo parentFolder = null;
-        FileInfo childFolder1 = null;
+        FileInfo childFolder1;
 
         try
         {
@@ -2115,10 +2115,10 @@ public class CMISTest
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        final String TEST_NAME = "testItemRelations-";
-        final String FOLDER_NAME = TEST_NAME + "FOLDER" + GUID.generate();
-        final String DOCUMENT_NAME = TEST_NAME + "DOCUMENT" + GUID.generate();
-        final String CLIENT_NAME = "Some Test Client " + GUID.generate();
+        final String testName = "testItemRelations-";
+        final String folderName = testName + "FOLDER" + GUID.generate();
+        final String documentName = testName + "DOCUMENT" + GUID.generate();
+        final String clientName = "Some Test Client " + GUID.generate();
 
         try
         {
@@ -2130,14 +2130,14 @@ public class CMISTest
                             NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
 
                             /* Create folder within companyHome */
-                            FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, FOLDER_NAME, ContentModel.TYPE_FOLDER);
-                            nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, FOLDER_NAME);
+                            FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                            nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
                             assertNotNull(folderInfo);
 
                             // and document
-                            FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), DOCUMENT_NAME, ContentModel.TYPE_CONTENT);
+                            FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), documentName, ContentModel.TYPE_CONTENT);
                             assertNotNull(document);
-                            nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, DOCUMENT_NAME);
+                            nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, documentName);
 
                             return null;
                         }
@@ -2164,15 +2164,15 @@ public class CMISTest
                     // create cmis:item within test folder
                     PropertiesImpl properties = new PropertiesImpl();
                     properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, tpdfn.getId()));
-                    properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, CLIENT_NAME));
+                    properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, clientName));
                     properties.addProperty(new PropertyStringImpl("sctst:clientId", "id" + GUID.generate()));
-                    properties.addProperty(new PropertyStringImpl("sctst:clientName", CLIENT_NAME));
+                    properties.addProperty(new PropertyStringImpl("sctst:clientName", clientName));
 
-                    ObjectData folderData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER_NAME, null, null, null, null, null, null, null);
+                    ObjectData folderData = cmisService.getObjectByPath(repositoryId, "/" + folderName, null, null, null, null, null, null, null);
 
                     cmisService.createItem(repositoryId, properties, folderData.getId(), null, null, null, null);
 
-                    ObjectData contentData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER_NAME + "/" + DOCUMENT_NAME, null, null, null, null, null, null, null);
+                    ObjectData contentData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + documentName, null, null, null, null, null, null, null);
 
                     // add test aspect sctst:clientRelated to document
                     Properties props = cmisService.getProperties(repositoryId, contentData.getId(), null, null);
@@ -2190,7 +2190,7 @@ public class CMISTest
                     aspects = cmisService.getProperties(repositoryId, contentData.getId(), null, null).getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
                     assertTrue("P:sctst:clientRelated excpected", aspects.contains("P:sctst:clientRelated"));
 
-                    ObjectData itemData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER_NAME + "/" + CLIENT_NAME, null, null, null, null, null, null, null);
+                    ObjectData itemData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + clientName, null, null, null, null, null, null, null);
                     // create relationship between cmis:document and cmis:item
                     properties = new PropertiesImpl();
                     properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, "R:sctst:relatedClients"));
@@ -4085,7 +4085,7 @@ public class CMISTest
 
     private NodeRef createFolder(NodeRef parentNodeRef, String folderName, QName folderType) throws IOException
     {
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> properties = new HashMap<>();
         properties.put(ContentModel.PROP_NAME, folderName);
         NodeRef nodeRef = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, folderName);
         if (nodeRef != null)

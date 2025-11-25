@@ -173,7 +173,7 @@ public class ResultMapper
 
         if (results != null && results.getNumberFound() > 0)
         {
-            String store = searchQuery.getScope().getLocations().isEmpty() ? LIVE_NODES
+            String store = searchQuery.getScope() == null ? LIVE_NODES
                     : searchQuery.getScope().getLocations().get(0);
 
             List<Node> nodes = getNodes(store, results, params, mapUserInfo);

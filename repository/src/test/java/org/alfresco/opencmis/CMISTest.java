@@ -33,6 +33,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -110,6 +111,7 @@ import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.AuditComponentImpl;
 import org.alfresco.repo.audit.AuditServiceImpl;
@@ -145,11 +147,7 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
@@ -4100,4 +4098,116 @@ public class CMISTest
         return nodeRef;
     }
 
+    /**
+     * Test that metadata extraction is triggered when updating properties via CMIS.
+     */
+    @Test
+    public void testUpdatePropertiesTriggersMetadataExtraction() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        final String FOLDER = "testUpdatePropertiesMetadata-" + GUID.generate();
+        final String DOC = "document-" + GUID.generate() + ".xml";
+
+        // Create a spy of the ActionService to verify the action execution
+        final ActionService spyActionService = spy(actionService);
+        cmisConnector.setActionService(spyActionService);
+
+        try
+        {
+            final NodeRef docNodeRef = transactionService.getRetryingTransactionHelper()
+                    .doInTransaction(() -> {
+                        NodeRef folder = createFolder(repositoryHelper.getCompanyHome(), FOLDER, ContentModel.TYPE_FOLDER);
+                        return nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, DOC),
+                                ContentModel.TYPE_CONTENT).getChildRef();
+                    });
+
+            // Update properties via CMIS
+            withCmisService(cmisService -> {
+                String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
+                PropertiesImpl newProperties = new PropertiesImpl();
+                newProperties.addProperty(new PropertyStringImpl(PropertyIds.DESCRIPTION, "update property description"));
+                cmisService.updateProperties(repositoryId, new Holder<>(docNodeRef.toString()), null, newProperties, null);
+                return null;
+            });
+
+            // Wait for async action to complete
+            Thread.sleep(1000);
+
+            // VERIFY that executeAction was called with ContentMetadataExtracter action
+            verify(spyActionService, times(1)).executeAction(
+                    argThat(action -> ContentMetadataExtracter.EXECUTOR_NAME.equals(action.getActionDefinitionName())),
+                    eq(docNodeRef), eq(true), eq(true));
+        }
+        finally
+        {
+            // Restore original ActionService
+            cmisConnector.setActionService(actionService);
+            cleanupFolder(FOLDER);
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
+    /**
+     * Test that metadata extraction is triggered when setting content stream via CMIS.
+     */
+    @Test
+    public void testSetContentStreamTriggersMetadataExtraction() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        final String FOLDER = "testSetContentMetadata-" + GUID.generate();
+        final String DOC = "document-" + GUID.generate() + ".xml";
+
+        // Create a spy of the ActionService to verify the action execution
+        final ActionService spyActionService = spy(actionService);
+        cmisConnector.setActionService(spyActionService);
+
+        try
+        {
+            final NodeRef docNodeRef = transactionService.getRetryingTransactionHelper()
+                    .doInTransaction(() -> {
+                        NodeRef folder = createFolder(repositoryHelper.getCompanyHome(), FOLDER, ContentModel.TYPE_FOLDER);
+                        return nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, DOC),
+                                ContentModel.TYPE_CONTENT).getChildRef();
+                    });
+
+            // Set content stream via CMIS
+            withCmisService(cmisService -> {
+                String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
+                ContentStreamImpl contentStream = new ContentStreamImpl(DOC, MimetypeMap.MIMETYPE_XML, "<test>content</test>");
+                cmisService.setContentStream(repositoryId, new Holder<>(docNodeRef.toString()), true, null, contentStream, null);
+                return null;
+            });
+
+            // Wait for async action to complete
+            Thread.sleep(1000);
+
+            // VERIFY that executeAction was called with ContentMetadataExtracter action
+            verify(spyActionService, times(1)).executeAction(
+                    argThat(action -> ContentMetadataExtracter.EXECUTOR_NAME.equals(action.getActionDefinitionName())),
+                    eq(docNodeRef), eq(true), eq(true));
+        }
+        finally
+        {
+            // Restore original ActionService
+            cmisConnector.setActionService(actionService);
+            cleanupFolder(FOLDER);
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
+    private void cleanupFolder(String folderName)
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
+            NodeRef folderRef = nodeService.getChildByName(repositoryHelper.getCompanyHome(), ContentModel.ASSOC_CONTAINS, folderName);
+            if (folderRef != null)
+                nodeService.deleteNode(folderRef);
+            return null;
+        });
+    }
 }

@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.util.Pair;
 
 public class AlfrescoEnviroment implements ActualEnvironment
 {
@@ -230,8 +231,9 @@ public class AlfrescoEnviroment implements ActualEnvironment
     }
 
     @Override
-    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
-            QNamePattern qnamePattern, int skipResults, int maxResults, boolean preload) throws InvalidNodeRefException
+    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
+            QNamePattern qnamePattern, int skipResults, int maxResults,
+            boolean preload) throws InvalidNodeRefException
     {
         NodeService nodeService = apiFacet.getNodeService();
         return nodeService.getChildAssocs(nodeRef,
@@ -239,8 +241,7 @@ public class AlfrescoEnviroment implements ActualEnvironment
                 qnamePattern,
                 skipResults,
                 maxResults,
-                preload)
-                .getFirst();
+                preload);
     }
 
     @Override

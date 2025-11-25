@@ -682,27 +682,31 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
         if (canVirtualize)
         {
+            int total = 0;
             Reference reference = smartStore.virtualize(nodeRef);
-            List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
+            Pair<List<ChildAssociationRef>, Integer> childAssocsCount = smartStore.getChildAssocs(reference,
                     typeQNamePattern,
                     qnamePattern,
                     skipResults,
                     maxResults,
                     preload);
+            List<ChildAssociationRef> virtualAssociations = childAssocsCount.getFirst();
+            total += childAssocsCount.getSecond();
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
-
             if (associations.size() < maxResults && smartStore.canMaterialize(reference))
             {
                 NodeRef materialReference = smartStore.materialize(reference);
-                List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
+                childAssocsCount = theTrait.getChildAssocs(materialReference,
                         typeQNamePattern,
                         qnamePattern,
-                        maxResults - associations
-                                .size(),
+                        skipResults,
+                        maxResults - associations.size(),
                         preload);
+                List<ChildAssociationRef> actualAssociations = childAssocsCount.getFirst();
                 associations.addAll(actualAssociations);
+                total += childAssocsCount.getSecond();
             }
-            return new Pair<>(associations, associations.size());
+            return new Pair<>(associations, total);
         }
         else
         {

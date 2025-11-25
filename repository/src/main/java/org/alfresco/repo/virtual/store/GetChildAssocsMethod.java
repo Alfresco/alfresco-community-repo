@@ -44,8 +44,9 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.util.Pair;
 
-public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssociationRef>>
+public class GetChildAssocsMethod extends AbstractProtocolMethod<Pair<List<ChildAssociationRef>, Integer>>
 {
     private VirtualStore smartStore;
 
@@ -85,7 +86,7 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
     }
 
     @Override
-    public List<ChildAssociationRef> execute(VirtualProtocol virtualProtocol, Reference reference)
+    public Pair<List<ChildAssociationRef>, Integer> execute(VirtualProtocol virtualProtocol, Reference reference)
             throws ProtocolMethodException
     {
         if (typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
@@ -95,18 +96,9 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
             NodeRef nodeRefReference = reference.toNodeRef();
             int skipped = 0;
             int count = 0;
+            int total = 0;
             for (Reference child : children)
             {
-                if (skipped < skipResults)
-                {
-                    skipped++;
-                    continue;
-                }
-                if (count >= maxResults)
-                {
-                    break;
-                }
-
                 NodeRef childNodeRef = child.toNodeRef();
                 Serializable childName = environment.getProperty(childNodeRef,
                         ContentModel.PROP_NAME);
@@ -115,7 +107,16 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
                                 childName.toString());
                 if (qnamePattern.isMatch(childAssocQName))
                 {
-
+                    total++;
+                    if (skipped < skipResults)
+                    {
+                        skipped++;
+                        continue;
+                    }
+                    if (count >= maxResults)
+                    {
+                        continue;
+                    }
                     ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
                             nodeRefReference,
                             childAssocQName,
@@ -127,28 +128,30 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
                 }
             }
 
-            return childAssocs;
+            return new Pair<>(childAssocs, total);
         }
         else
         {
-            return Collections.emptyList();
+            return new Pair<>(Collections.emptyList(), 0);
         }
     }
 
     @Override
-    public List<ChildAssociationRef> execute(NodeProtocol protocol, Reference reference) throws ProtocolMethodException
+    public Pair<List<ChildAssociationRef>, Integer> execute(NodeProtocol protocol, Reference reference) throws ProtocolMethodException
     {
         NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(null));
         NodeRef nodeRefReference = reference.toNodeRef();
         List<ChildAssociationRef> referenceAssociations = new LinkedList<>();
         if (!environment.isSubClass(environment.getType(nodeRefReference), ContentModel.TYPE_FOLDER))
         {
-            List<ChildAssociationRef> actualAssociations = environment.getChildAssocs(actualNodeRef,
+            Pair<List<ChildAssociationRef>, Integer> childAssocsCount = environment.getChildAssocs(actualNodeRef,
                     typeQNamePattern,
                     qnamePattern,
                     skipResults,
                     maxResults,
                     preload);
+            List<ChildAssociationRef> actualAssociations = childAssocsCount.getFirst();
+            Integer totalCount = childAssocsCount.getSecond();
 
             for (ChildAssociationRef actualAssoc : actualAssociations)
             {
@@ -161,7 +164,8 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
 
                 referenceAssociations.add(referenceChildAssocRef);
             }
+            return new Pair<>(referenceAssociations, totalCount);
         }
-        return referenceAssociations;
+        return new Pair<>(referenceAssociations, 0);
     }
 }

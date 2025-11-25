@@ -286,7 +286,8 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
                     preload,
                     maxResults,
                     qnamePattern,
-                    typeQNamePattern));
+                    typeQNamePattern))
+                    .getFirst();
         }
         else
         {
@@ -295,7 +296,7 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     }
 
     @Override
-    public List<ChildAssociationRef> getChildAssocs(Reference parentReference, QNamePattern typeQNamePattern,
+    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(Reference parentReference, QNamePattern typeQNamePattern,
             QNamePattern qnamePattern, int skipResults, int maxResults,
             boolean preload) throws InvalidNodeRefException
     {
@@ -311,7 +312,7 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
         }
         else
         {
-            return Collections.emptyList();
+            return new Pair<>(Collections.emptyList(), 0);
         }
     }
 

@@ -567,7 +567,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
         // Get the child assocs from the version store
         Pair<List<ChildAssociationRef>, Integer> childAssocsCount = this.dbNodeService.getChildAssocs(
                 VersionUtil.convertNodeRef(nodeRef),
-                RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSIONED_CHILD_ASSOCS, 0, Integer.MAX_VALUE, true);
+                RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSIONED_CHILD_ASSOCS, skipResults, maxResults, true);
         List<ChildAssociationRef> childAssocRefs = childAssocsCount.getFirst();
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>(childAssocRefs.size());
         for (ChildAssociationRef childAssocRef : childAssocRefs)

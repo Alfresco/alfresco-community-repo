@@ -667,7 +667,7 @@ public interface NodeService
      *            the number of results to get
      * @param preload
      *            <tt>true</tt> if the nodes must be preloaded into the cache
-     * @return Returns a pair that contains the list of <code>ChildAssociationRef</code> instances and total versions count
+     * @return Returns a pair that contains the list of <code>ChildAssociationRef</code> instances and the total count of matching child associations
      * @throws InvalidNodeRefException
      *             if the node could not be found
      *

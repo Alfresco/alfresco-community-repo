@@ -133,6 +133,7 @@ public class VersionHistoryImpl implements VersionHistory
         return sortDescending(versionsByLabel.values());
     }
 
+    @Override
     public int getAllVersionsCount()
     {
         return versionCount != null ? versionCount : versionsByLabel.size();

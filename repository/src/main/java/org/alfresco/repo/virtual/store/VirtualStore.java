@@ -159,9 +159,8 @@ public interface VirtualStore
      *             if the node could not be found
      * @see QName
      */
-    List<ChildAssociationRef> getChildAssocs(Reference parentReference, final QNamePattern typeQNamePattern,
-            final QNamePattern qnamePattern, final int skipResults, final int maxResults,
-            final boolean preload)
+    List<ChildAssociationRef> getChildAssocs(Reference parentReference, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+            int skipResults, int maxResults, boolean preload)
             throws InvalidNodeRefException;
 
     /**

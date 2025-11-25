@@ -674,13 +674,13 @@ public interface NodeService
      * @see QName
      */
     @Auditable(parameters = {"nodeRef", "typeQNamePattern", "qnamePattern", "skipResults", "maxResults", "preload"})
-    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(
+    Pair<List<ChildAssociationRef>, Integer> getChildAssocs(
             NodeRef nodeRef,
-            final QNamePattern typeQNamePattern,
-            final QNamePattern qnamePattern,
-            final int skipResults,
-            final int maxResults,
-            final boolean preload);
+            QNamePattern typeQNamePattern,
+            QNamePattern qnamePattern,
+            int skipResults,
+            int maxResults,
+            boolean preload);
 
     /**
      * Gets all child associations where the pattern of the association qualified names match the patterns provided.

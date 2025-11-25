@@ -755,7 +755,22 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     protected List<Version> getAllVersions(NodeRef versionHistoryRef)
     {
-        return getVersions(versionHistoryRef, 0, Integer.MAX_VALUE).getFirst();
+        List<ChildAssociationRef> versionAssocs = getVersionAssocs(versionHistoryRef, true);
+
+        List<Version> versions = new ArrayList<Version>(versionAssocs.size());
+
+        for (ChildAssociationRef versionAssoc : versionAssocs)
+        {
+            versions.add(getVersion(versionAssoc.getChildRef()));
+        }
+
+        return versions;
+    }
+
+    private List<ChildAssociationRef> getVersionAssocs(NodeRef versionHistoryRef, boolean preLoad)
+    {
+        // note: resultant list is ordered by (a) explicit index and (b) association creation time
+        return dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL, preLoad);
     }
 
     protected Pair<List<Version>, Integer> getVersions(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
@@ -795,10 +810,11 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     @Override
     protected VersionHistory buildVersionHistory(NodeRef versionHistoryRef, NodeRef nodeRef)
     {
+        VersionHistoryImpl versionHistory = null;
+
         // List of versions with current one last and root one first.
         List<Version> versions = getAllVersions(versionHistoryRef);
 
-        VersionHistory versionHistory = null;
         if (versionComparatorDesc != null)
         {
             Collections.sort(versions, Collections.reverseOrder(versionComparatorDesc));
@@ -809,14 +825,14 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         Version preceeding = null;
         for (Version version : versions)
         {
-            if (isRoot == true)
+            if (isRoot)
             {
                 versionHistory = new VersionHistoryImpl(version, versionComparatorDesc);
                 isRoot = false;
             }
             else
             {
-                ((VersionHistoryImpl) versionHistory).addVersion(version, preceeding);
+                versionHistory.addVersion(version, preceeding);
             }
             preceeding = version;
         }
@@ -830,7 +846,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         List<Version> versions = versionsCount.getFirst();
         Integer versionCount = versionsCount.getSecond();
 
-        VersionHistory versionHistory = null;
+        VersionHistoryImpl versionHistory = null;
         if (versionComparatorDesc != null)
         {
             Collections.sort(versions, Collections.reverseOrder(versionComparatorDesc));
@@ -841,14 +857,14 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         Version preceeding = null;
         for (Version version : versions)
         {
-            if (isRoot == true)
+            if (isRoot)
             {
                 versionHistory = new VersionHistoryImpl(version, versionComparatorDesc, versionCount);
                 isRoot = false;
             }
             else
             {
-                ((VersionHistoryImpl) versionHistory).addVersion(version, preceeding);
+                versionHistory.addVersion(version, preceeding);
             }
             preceeding = version;
         }

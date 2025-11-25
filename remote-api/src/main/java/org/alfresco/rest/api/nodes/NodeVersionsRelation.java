@@ -143,7 +143,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
                 page.add(node);
             }
             int totalCount = vh.getAllVersionsCount();
-            boolean hasMoreItems = ((skipCount + page.size()) < totalCount);
+            boolean hasMoreItems = (skipCount + page.size()) < totalCount;
 
             return CollectionWithPagingInfo.asPaged(paging, page, hasMoreItems, totalCount);
         }

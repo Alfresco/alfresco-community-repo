@@ -1875,6 +1875,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return results;
     }
 
+    @Override
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(
             NodeRef nodeRef,
@@ -1891,7 +1892,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         final List<ChildAssociationRef> results = new ArrayList<>(10);
         final int[] totalCount = {0};
         ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback() {
-            int skipped = 0;
+            int skipped;
 
             @Override
             public boolean preLoadNodes()
@@ -1933,15 +1934,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 return true;
             }
 
+            @Override
             public void done()
-            {}
+            {
+                // nothing to do here
+            }
         };
         // Get the assocs pointing to it
         QName typeQName = (typeQNamePattern instanceof QName) ? (QName) typeQNamePattern : null;
         QName qname = (qnamePattern instanceof QName) ? (QName) qnamePattern : null;
 
         nodeDAO.getChildAssocs(nodePair.getFirst(), null, typeQName, qname, null, null, callback);
-        // Done
         return new Pair<>(results, totalCount[0]);
     }
 

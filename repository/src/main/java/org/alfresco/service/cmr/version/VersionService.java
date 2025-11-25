@@ -181,7 +181,7 @@ public interface VersionService
      *             thrown if the version aspect is missing
      */
     @Auditable(parameters = {"nodeRef", "skipVersions", "maxVersions"})
-    public VersionHistory getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions)
+    VersionHistory getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions)
             throws AspectMissingException;
 
     /**

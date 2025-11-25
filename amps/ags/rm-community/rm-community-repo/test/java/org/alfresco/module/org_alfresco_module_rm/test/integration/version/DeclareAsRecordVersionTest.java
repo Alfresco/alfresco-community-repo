@@ -35,8 +35,11 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
@@ -48,6 +51,7 @@ import org.alfresco.util.GUID;
  * @author Roy Wetherall
  * @since 2.3
  */
+@SuppressWarnings("PMD.UnitTestShouldUseTestAnnotation")
 public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
 {
     /** recordable version service */
@@ -384,4 +388,30 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
 
     }
 
+    public void testVersionPermissions()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
+            private NodeRef version1;
+
+            @Override
+            public void when() throws Exception
+            {
+                permissionService.setInheritParentPermissions(dmDocument, false);
+                Map<String, Serializable> versionProperties = new HashMap<>(4);
+                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+                versionService.createVersion(dmDocument, versionProperties);
+                version1 = versionService.getVersionHistory(dmDocument).getVersion("1.0").getFrozenStateNodeRef();
+            }
+
+            @Override
+            public void then()
+            {
+                AccessStatus accessStatus = AuthenticationUtil.runAs(
+                        () -> permissionService.hasPermission(version1, PermissionService.READ),
+                        dmConsumer);
+                assertEquals(AccessStatus.DENIED, accessStatus);
+            }
+        });
+    }
 }

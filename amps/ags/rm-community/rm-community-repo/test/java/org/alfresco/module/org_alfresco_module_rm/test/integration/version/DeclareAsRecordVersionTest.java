@@ -35,8 +35,11 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
@@ -48,6 +51,7 @@ import org.alfresco.util.GUID;
  * @author Roy Wetherall
  * @since 2.3
  */
+@SuppressWarnings("PMD.UnitTestShouldUseTestAnnotation")
 public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
 {
     /** recordable version service */
@@ -64,14 +68,11 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given versionable content with a non-recorded latest version 
-     * When I declare a version record 
-     * Then the latest version is recorded and a record is created
+     * Given versionable content with a non-recorded latest version When I declare a version record Then the latest version is recorded and a record is created
      */
     public void testDeclareLatestVersionAsRecord()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
             private NodeRef versionRecord;
             private Map<String, Serializable> versionProperties;
 
@@ -82,7 +83,7 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
 
-                //remove the content property as ContentPropertyRestrictionInterceptor will not allow update of
+                // remove the content property as ContentPropertyRestrictionInterceptor will not allow update of
                 // content property via NodeService.addProperties
                 nodeService.removeProperty(dmDocument, ContentModel.PROP_CONTENT);
 
@@ -115,15 +116,11 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given versionable content with a recorded latest version
-     * When I declare a version record
-     * Then nothing happens since the latest version is already recorded
-     * And a warning is logged
+     * Given versionable content with a recorded latest version When I declare a version record Then nothing happens since the latest version is already recorded And a warning is logged
      */
     public void testDeclareLatestVersionAsRecordButAlreadyRecorded()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
             private NodeRef versionRecord;
             private Map<String, Serializable> versionProperties;
 
@@ -164,16 +161,13 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given that a document is a specialized type 
-     * When version is declared as a record 
-     * Then the record is the same type as the source document
+     * Given that a document is a specialized type When version is declared as a record Then the record is the same type as the source document
      * 
      * @see https://issues.alfresco.com/jira/browse/RM-2194
      */
     public void testSpecializedContentType()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
             private NodeRef customDocument;
             private NodeRef versionRecord;
             private Map<String, Serializable> versionProperties;
@@ -188,7 +182,7 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 versionProperties = new HashMap<>(2);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-                //remove the content property as ContentPropertyRestrictionInterceptor will not allow update of
+                // remove the content property as ContentPropertyRestrictionInterceptor will not allow update of
                 // content property via NodeService.addProperties
                 nodeService.removeProperty(customDocument, PROP_CONTENT);
                 // create version
@@ -224,16 +218,13 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given versionable content with a recorded latest version and autoversion is true
-     * When I declare this version record and contains local modifications 
-     * Then a new minor version is created for document 
+     * Given versionable content with a recorded latest version and autoversion is true When I declare this version record and contains local modifications Then a new minor version is created for document
      * 
      * @see https://issues.alfresco.com/jira/browse/RM-2368
      */
     public void testCreateRecordFromLatestVersionAutoTrue()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
             private NodeRef myDocument;
             private NodeRef versionedRecord;
             private Map<String, Serializable> versionProperties;
@@ -311,20 +302,16 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
         });
 
     }
-    
-    
+
     /**
      * 
-     * Given versionable content with a recorded latest version and autoversion is false
-     * When I declare this version record and contains local modifications 
-     * Then a record is created from latest version
+     * Given versionable content with a recorded latest version and autoversion is false When I declare this version record and contains local modifications Then a record is created from latest version
      *
      * @see https://issues.alfresco.com/jira/browse/RM-2368
      */
     public void testCreateRecordFromLatestVersion()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
             private NodeRef myDocument;
             private NodeRef versionedRecord;
             private Map<String, Serializable> versionProperties;
@@ -394,13 +381,37 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 // record is created based on existing frozen, which does not contain any modification of node
                 assertTrue("Name is not modified: ", record_name.contains("initial_name"));
                 checkRecordedVersion(myDocument, DESCRIPTION, "1.0");
- 
+
             }
- 
 
         });
 
     }
 
+    public void testVersionPermissions()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
+            private NodeRef version1;
 
+            @Override
+            public void when() throws Exception
+            {
+                permissionService.setInheritParentPermissions(dmDocument, false);
+                Map<String, Serializable> versionProperties = new HashMap<>(4);
+                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+                versionService.createVersion(dmDocument, versionProperties);
+                version1 = versionService.getVersionHistory(dmDocument).getVersion("1.0").getFrozenStateNodeRef();
+            }
+
+            @Override
+            public void then()
+            {
+                AccessStatus accessStatus = AuthenticationUtil.runAs(
+                        () -> permissionService.hasPermission(version1, PermissionService.READ),
+                        dmConsumer);
+                assertEquals(AccessStatus.DENIED, accessStatus);
+            }
+        });
+    }
 }

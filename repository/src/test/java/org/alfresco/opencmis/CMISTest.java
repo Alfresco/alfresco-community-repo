@@ -4107,8 +4107,8 @@ public class CMISTest
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        final String FOLDER = "testUpdatePropertiesMetadata-" + GUID.generate();
-        final String DOC = "document-" + GUID.generate() + ".xml";
+        final String folderName = "testUpdatePropertiesMetadata-" + GUID.generate();
+        final String documentName = "document-" + GUID.generate() + ".xml";
 
         // Create a spy of the ActionService to verify the action execution
         final ActionService spyActionService = spy(actionService);
@@ -4118,9 +4118,9 @@ public class CMISTest
         {
             final NodeRef docNodeRef = transactionService.getRetryingTransactionHelper()
                     .doInTransaction(() -> {
-                        NodeRef folder = createFolder(repositoryHelper.getCompanyHome(), FOLDER, ContentModel.TYPE_FOLDER);
+                        NodeRef folder = createFolder(repositoryHelper.getCompanyHome(), folderName, ContentModel.TYPE_FOLDER);
                         return nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
-                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, DOC),
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, documentName),
                                 ContentModel.TYPE_CONTENT).getChildRef();
                     });
 
@@ -4145,7 +4145,7 @@ public class CMISTest
         {
             // Restore original ActionService
             cmisConnector.setActionService(actionService);
-            cleanupFolder(FOLDER);
+            cleanupFolder(folderName);
             AuthenticationUtil.popAuthentication();
         }
     }
@@ -4159,8 +4159,8 @@ public class CMISTest
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        final String FOLDER = "testSetContentMetadata-" + GUID.generate();
-        final String DOC = "document-" + GUID.generate() + ".xml";
+        final String folderName = "testSetContentMetadata-" + GUID.generate();
+        final String documentName = "document-" + GUID.generate() + ".xml";
 
         // Create a spy of the ActionService to verify the action execution
         final ActionService spyActionService = spy(actionService);
@@ -4170,16 +4170,16 @@ public class CMISTest
         {
             final NodeRef docNodeRef = transactionService.getRetryingTransactionHelper()
                     .doInTransaction(() -> {
-                        NodeRef folder = createFolder(repositoryHelper.getCompanyHome(), FOLDER, ContentModel.TYPE_FOLDER);
+                        NodeRef folder = createFolder(repositoryHelper.getCompanyHome(), folderName, ContentModel.TYPE_FOLDER);
                         return nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
-                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, DOC),
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, documentName),
                                 ContentModel.TYPE_CONTENT).getChildRef();
                     });
 
             // Set content stream via CMIS
             withCmisService(cmisService -> {
                 String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
-                ContentStreamImpl contentStream = new ContentStreamImpl(DOC, MimetypeMap.MIMETYPE_XML, "<test>content</test>");
+                ContentStreamImpl contentStream = new ContentStreamImpl(documentName, MimetypeMap.MIMETYPE_XML, "<test>content</test>");
                 cmisService.setContentStream(repositoryId, new Holder<>(docNodeRef.toString()), true, null, contentStream, null);
                 return null;
             });
@@ -4196,7 +4196,7 @@ public class CMISTest
         {
             // Restore original ActionService
             cmisConnector.setActionService(actionService);
-            cleanupFolder(FOLDER);
+            cleanupFolder(folderName);
             AuthenticationUtil.popAuthentication();
         }
     }
@@ -4206,7 +4206,9 @@ public class CMISTest
         transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
             NodeRef folderRef = nodeService.getChildByName(repositoryHelper.getCompanyHome(), ContentModel.ASSOC_CONTAINS, folderName);
             if (folderRef != null)
+            {
                 nodeService.deleteNode(folderRef);
+            }
             return null;
         });
     }

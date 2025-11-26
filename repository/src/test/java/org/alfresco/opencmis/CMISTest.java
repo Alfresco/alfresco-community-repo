@@ -27,6 +27,7 @@
 
 package org.alfresco.opencmis;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -55,6 +56,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
@@ -4116,13 +4118,7 @@ public class CMISTest
 
         try
         {
-            final NodeRef docNodeRef = transactionService.getRetryingTransactionHelper()
-                    .doInTransaction(() -> {
-                        NodeRef folder = createFolder(repositoryHelper.getCompanyHome(), folderName, ContentModel.TYPE_FOLDER);
-                        return nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
-                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, documentName),
-                                ContentModel.TYPE_CONTENT).getChildRef();
-                    });
+            final NodeRef docNodeRef = createDocumentInFolder(folderName, documentName);
 
             // Update properties via CMIS
             withCmisService(cmisService -> {
@@ -4133,13 +4129,10 @@ public class CMISTest
                 return null;
             });
 
-            // Wait for async action to complete
-            Thread.sleep(1000);
-
             // VERIFY that executeAction was called with ContentMetadataExtracter action
-            verify(spyActionService, times(1)).executeAction(
+            await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> verify(spyActionService, times(1)).executeAction(
                     argThat(action -> ContentMetadataExtracter.EXECUTOR_NAME.equals(action.getActionDefinitionName())),
-                    eq(docNodeRef), eq(true), eq(true));
+                    eq(docNodeRef), eq(true), eq(true)));
         }
         finally
         {
@@ -4168,13 +4161,7 @@ public class CMISTest
 
         try
         {
-            final NodeRef docNodeRef = transactionService.getRetryingTransactionHelper()
-                    .doInTransaction(() -> {
-                        NodeRef folder = createFolder(repositoryHelper.getCompanyHome(), folderName, ContentModel.TYPE_FOLDER);
-                        return nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
-                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, documentName),
-                                ContentModel.TYPE_CONTENT).getChildRef();
-                    });
+            final NodeRef docNodeRef = createDocumentInFolder(folderName, documentName);
 
             // Set content stream via CMIS
             withCmisService(cmisService -> {
@@ -4184,13 +4171,10 @@ public class CMISTest
                 return null;
             });
 
-            // Wait for async action to complete
-            Thread.sleep(1000);
-
             // VERIFY that executeAction was called with ContentMetadataExtracter action
-            verify(spyActionService, times(1)).executeAction(
+            await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> verify(spyActionService, times(1)).executeAction(
                     argThat(action -> ContentMetadataExtracter.EXECUTOR_NAME.equals(action.getActionDefinitionName())),
-                    eq(docNodeRef), eq(true), eq(true));
+                    eq(docNodeRef), eq(true), eq(true)));
         }
         finally
         {
@@ -4199,6 +4183,17 @@ public class CMISTest
             cleanupFolder(folderName);
             AuthenticationUtil.popAuthentication();
         }
+    }
+
+    private NodeRef createDocumentInFolder(String folderName, String documentName)
+    {
+        return transactionService.getRetryingTransactionHelper()
+                .doInTransaction(() -> {
+                    NodeRef folder = createFolder(repositoryHelper.getCompanyHome(), folderName, ContentModel.TYPE_FOLDER);
+                    return nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, documentName),
+                            ContentModel.TYPE_CONTENT).getChildRef();
+                });
     }
 
     private void cleanupFolder(String folderName)

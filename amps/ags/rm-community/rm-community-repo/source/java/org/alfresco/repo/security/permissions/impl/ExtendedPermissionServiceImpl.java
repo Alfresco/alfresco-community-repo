@@ -34,7 +34,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEvent;
 
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
@@ -50,6 +54,7 @@ import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.processor.PermissionPostProcessor;
 import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
 import org.alfresco.repo.security.permissions.processor.PermissionProcessorRegistry;
+import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -57,9 +62,6 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationEvent;
-
 
 /**
  * Extends the core permission service implementation allowing the consideration of the read records permission.
@@ -81,8 +83,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     /**
      * Configured Permission mapping.
      * <p>
-     * This string comes from alfresco-global.properties and allows fine tuning of the how permissions are mapped.
-     * This was added as a fix for MNT-16852 to enhance compatibility with our Outlook Integration.
+     * This string comes from alfresco-global.properties and allows fine tuning of the how permissions are mapped. This was added as a fix for MNT-16852 to enhance compatibility with our Outlook Integration.
      */
     protected List<String> configuredReadPermissions;
     /**
@@ -106,8 +107,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     public void init()
     {
         super.init();
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -131,7 +131,8 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     /**
      * Sets the file plan service
      *
-     * @param filePlanService the filePlanService to set
+     * @param filePlanService
+     *            the filePlanService to set
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -141,7 +142,8 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     /**
      * Sets the permission processor registry
      *
-     * @param permissionProcessorRegistry the permissions processor registry
+     * @param permissionProcessorRegistry
+     *            the permissions processor registry
      */
     public void setPermissionProcessorRegistry(PermissionProcessorRegistry permissionProcessorRegistry)
     {
@@ -151,7 +153,8 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     /**
      * Set the RM audit service.
      *
-     * @param recordsManagementAuditService The RM audit service.
+     * @param recordsManagementAuditService
+     *            The RM audit service.
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
     {
@@ -172,7 +175,8 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     }
 
     /**
-     * @param writersCache the writersCache to set
+     * @param writersCache
+     *            the writersCache to set
      */
     public void setWritersCache(SimpleCache<Serializable, Set<String>> writersCache)
     {
@@ -180,10 +184,10 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     }
 
     /**
-     * Maps the string from the properties file (rm.haspermissionmap.read)
-     * to the list used in the hasPermission method
+     * Maps the string from the properties file (rm.haspermissionmap.read) to the list used in the hasPermission method
      *
-     * @param readMapping the mapping of permissions to ReadRecord
+     * @param readMapping
+     *            the mapping of permissions to ReadRecord
      */
     public void setConfiguredReadPermissions(String readMapping)
     {
@@ -191,10 +195,10 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     }
 
     /**
-     * Maps the string set in the properties file (rm.haspermissionmap.write)
-     * to the list used in the hasPermission method
+     * Maps the string set in the properties file (rm.haspermissionmap.write) to the list used in the hasPermission method
      *
-     * @param fileMapping the mapping of permissions to FileRecord
+     * @param fileMapping
+     *            the mapping of permissions to FileRecord
      */
     public void setConfiguredFilePermissions(String fileMapping)
     {
@@ -212,16 +216,15 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     }
 
     /**
-     * Override to deal with the possibility of hard coded permission checks in core code. Note: Eventually we need to
-     * merge the RM permission model into the core to make this more robust.
+     * Override to deal with the possibility of hard coded permission checks in core code. Note: Eventually we need to merge the RM permission model into the core to make this more robust.
      *
-     * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#hasPermission(org.alfresco.service.cmr.repository.NodeRef,
-     *      java.lang.String)
+     * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#hasPermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     @Override
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
         AccessStatus result = AccessStatus.UNDETERMINED;
+        nodeRef = convertVersionNodeRefIfNecessary(nodeRef);
         if (nodeService.exists(nodeRef))
         {
             // permission pre-processors
@@ -232,7 +235,10 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
                 result = preProcessor.process(nodeRef, perm);
 
                 // veto if denied
-                if (AccessStatus.DENIED.equals(result)) { return result; }
+                if (AccessStatus.DENIED.equals(result))
+                {
+                    return result;
+                }
             }
 
             // evaluate permission
@@ -254,8 +260,10 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
      * <p>
      * Separation also convenient for unit testing.
      *
-     * @param nodeRef node reference
-     * @param perm permission
+     * @param nodeRef
+     *            node reference
+     * @param perm
+     *            permission
      * @return {@link AccessStatus} access status result
      */
     protected AccessStatus hasPermissionImpl(NodeRef nodeRef, String perm)
@@ -280,7 +288,10 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
 
             for (String auth : aclReadersDenied)
             {
-                if (authorities.contains(auth)) { return AccessStatus.DENIED; }
+                if (authorities.contains(auth))
+                {
+                    return AccessStatus.DENIED;
+                }
             }
 
         }
@@ -290,7 +301,10 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
 
         for (String auth : aclReaders)
         {
-            if (authorities.contains(auth)) { return AccessStatus.ALLOWED; }
+            if (authorities.contains(auth))
+            {
+                return AccessStatus.ALLOWED;
+            }
         }
 
         return AccessStatus.DENIED;
@@ -303,10 +317,16 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     public Set<String> getReaders(Long aclId)
     {
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
-        if (acl == null) { return Collections.emptySet(); }
+        if (acl == null)
+        {
+            return Collections.emptySet();
+        }
 
         Set<String> aclReaders = readersCache.get((Serializable) acl.getProperties());
-        if (aclReaders != null) { return aclReaders; }
+        if (aclReaders != null)
+        {
+            return aclReaders;
+        }
 
         HashSet<String> assigned = new HashSet<>();
         HashSet<String> readers = new HashSet<>();
@@ -320,7 +340,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         {
             UnconditionalAclTest test = new UnconditionalAclTest(getPermissionReference(PermissionService.READ));
             UnconditionalAclTest rmTest = new UnconditionalAclTest(
-                        getPermissionReference(RMPermissionModel.READ_RECORDS));
+                    getPermissionReference(RMPermissionModel.READ_RECORDS));
             if (test.evaluate(authority, aclId) || rmTest.evaluate(authority, aclId))
             {
                 readers.add(authority);
@@ -343,9 +363,15 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     {
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
 
-        if (acl == null) { return Collections.emptySet(); }
+        if (acl == null)
+        {
+            return Collections.emptySet();
+        }
         Set<String> denied = readersDeniedCache.get(aclId);
-        if (denied != null) { return denied; }
+        if (denied != null)
+        {
+            return denied;
+        }
         denied = new HashSet<>();
         Set<String> assigned = new HashSet<>();
 
@@ -357,9 +383,9 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         for (String authority : assigned)
         {
             UnconditionalDeniedAclTest test = new UnconditionalDeniedAclTest(
-                        getPermissionReference(PermissionService.READ));
+                    getPermissionReference(PermissionService.READ));
             UnconditionalDeniedAclTest rmTest = new UnconditionalDeniedAclTest(
-                        getPermissionReference(RMPermissionModel.READ_RECORDS));
+                    getPermissionReference(RMPermissionModel.READ_RECORDS));
             if (test.evaluate(authority, aclId) || rmTest.evaluate(authority, aclId))
             {
                 denied.add(authority);
@@ -378,10 +404,16 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     public Set<String> getWriters(Long aclId)
     {
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
-        if (acl == null) { return Collections.emptySet(); }
+        if (acl == null)
+        {
+            return Collections.emptySet();
+        }
 
         Set<String> aclWriters = writersCache.get((Serializable) acl.getProperties());
-        if (aclWriters != null) { return aclWriters; }
+        if (aclWriters != null)
+        {
+            return aclWriters;
+        }
 
         HashSet<String> assigned = new HashSet<>();
         HashSet<String> readers = new HashSet<>();
@@ -406,15 +438,14 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     }
 
     /**
-     * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setInheritParentPermissions(org.alfresco.service.cmr.repository.NodeRef,
-     *      boolean)
+     * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setInheritParentPermissions(org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
     @Override
     public void setInheritParentPermissions(final NodeRef nodeRef, boolean inheritParentPermissions)
     {
         final String adminRole = getAdminRole(nodeRef);
         if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) && isNotBlank(adminRole)
-                    && !inheritParentPermissions)
+                && !inheritParentPermissions)
         {
             setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
         }
@@ -429,8 +460,9 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     /**
      * Helper method to the RM admin role scoped by the correct file plan.
      *
-     * @param nodeRef   node reference
-     * @return String   RM admin role
+     * @param nodeRef
+     *            node reference
+     * @return String RM admin role
      */
     private String getAdminRole(NodeRef nodeRef)
     {
@@ -439,7 +471,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         if (filePlan != null)
         {
             adminRole = authorityService.getName(AuthorityType.GROUP,
-                        FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
+                    FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
         }
         return adminRole;
     }
@@ -459,12 +491,22 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         Set<String> modifiedWrtiers = new HashSet<>(writers);
         String owner = ownableService.getOwner(nodeRef);
         if (StringUtils.isNotBlank(owner) &&
-            !owner.equals(OwnableService.NO_OWNER) &&
-            authorityService.authorityExists(owner))
+                !owner.equals(OwnableService.NO_OWNER) &&
+                authorityService.authorityExists(owner))
         {
             modifiedWrtiers.add(owner);
         }
 
         return new Pair<>(readers, modifiedWrtiers);
+    }
+
+    private NodeRef convertVersionNodeRefIfNecessary(NodeRef nodeRef)
+    {
+        if (nodeRef != null && isVersionNodeRef(nodeRef))
+        {
+            NodeRef convertedNodeRef = convertVersionNodeRefToVersionedNodeRef(VersionUtil.convertNodeRef(nodeRef));
+            return Optional.ofNullable(convertedNodeRef).orElse(nodeRef);
+        }
+        return nodeRef;
     }
 }

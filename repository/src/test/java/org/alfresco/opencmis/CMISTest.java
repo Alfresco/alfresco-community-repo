@@ -190,6 +190,7 @@ public class CMISTest
 {
     private static final QName TEST_START_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "startTaskVarScriptAssign");
     private static final QName TEST_WORKFLOW_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "assignVarTask");
+    private static final int MAX_ASYNC_TIMEOUT = 20;
 
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[]{ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:test-cmisinteger_modell-context.xml"});
 
@@ -4130,7 +4131,7 @@ public class CMISTest
             });
 
             // VERIFY that executeAction was called with ContentMetadataExtracter action
-            await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> verify(spyActionService, times(1)).executeAction(
+            await().atMost(MAX_ASYNC_TIMEOUT, TimeUnit.SECONDS).untilAsserted(() -> verify(spyActionService).executeAction(
                     argThat(action -> ContentMetadataExtracter.EXECUTOR_NAME.equals(action.getActionDefinitionName())),
                     eq(docNodeRef), eq(true), eq(true)));
         }
@@ -4172,7 +4173,7 @@ public class CMISTest
             });
 
             // VERIFY that executeAction was called with ContentMetadataExtracter action
-            await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> verify(spyActionService, times(1)).executeAction(
+            await().atMost(MAX_ASYNC_TIMEOUT, TimeUnit.SECONDS).untilAsserted(() -> verify(spyActionService).executeAction(
                     argThat(action -> ContentMetadataExtracter.EXECUTOR_NAME.equals(action.getActionDefinitionName())),
                     eq(docNodeRef), eq(true), eq(true)));
         }

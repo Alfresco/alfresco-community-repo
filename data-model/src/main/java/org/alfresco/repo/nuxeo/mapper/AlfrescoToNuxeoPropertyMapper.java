@@ -159,6 +159,14 @@ public class AlfrescoToNuxeoPropertyMapper
 
     /**
      * Maps Alfresco property constraints to Nuxeo field constraints.
+     * 
+     * Note: This is a simplified implementation. M2Property stores constraints
+     * in a complex structure that would require additional parsing logic.
+     * In a production implementation, this should:
+     * - Extract LIST constraints and convert to allowed values
+     * - Extract REGEX constraints and convert to pattern validators
+     * - Extract MINMAX constraints and convert to range validators
+     * - Extract LENGTH constraints and convert to string length validators
      *
      * @param property Alfresco property
      * @return list of constraint descriptions
@@ -167,9 +175,9 @@ public class AlfrescoToNuxeoPropertyMapper
     {
         List<String> constraints = new ArrayList<>();
         
-        // Note: M2Property doesn't directly expose constraints in a simple way
-        // This would need to be enhanced based on actual constraint structure
-        // For now, return empty list
+        // TODO: Implement full constraint extraction from M2Property.getConstraints()
+        // This requires parsing M2Constraint objects which have complex structures
+        // For prototype purposes, constraints should be handled during full model parsing
         
         return constraints;
     }

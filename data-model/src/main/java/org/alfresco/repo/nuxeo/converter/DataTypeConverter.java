@@ -45,8 +45,11 @@ public class DataTypeConverter
         TYPE_MAPPINGS.put("d:mltext", "string"); // Multi-lingual text becomes string
         
         // Numeric types
+        // Note: d:int is mapped to long because Nuxeo uses long as its standard integer type
+        // This widening conversion is safe and prevents overflow issues
         TYPE_MAPPINGS.put("d:int", "long");
         TYPE_MAPPINGS.put("d:long", "long");
+        // Note: d:float is mapped to double for better precision in Nuxeo
         TYPE_MAPPINGS.put("d:float", "double");
         TYPE_MAPPINGS.put("d:double", "double");
         

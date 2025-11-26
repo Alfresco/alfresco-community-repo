@@ -182,6 +182,10 @@ public class NuxeoDataModelMapper
 
     /**
      * Generates a JSON representation of the mapped Nuxeo model.
+     * 
+     * Note: This is a simplified JSON generation for prototype purposes.
+     * Production implementation should use a proper JSON library (Jackson, Gson)
+     * for correct escaping and serialization.
      *
      * @param context mapping context
      * @return JSON string
@@ -204,8 +208,8 @@ public class NuxeoDataModelMapper
             if (!first) json.append(",\n");
             first = false;
             json.append("    {\n");
-            json.append("      \"name\": \"").append(docType.getName()).append("\",\n");
-            json.append("      \"parent\": \"").append(docType.getParent()).append("\",\n");
+            json.append("      \"name\": \"").append(escapeJSON(docType.getName())).append("\",\n");
+            json.append("      \"parent\": \"").append(escapeJSON(docType.getParent())).append("\",\n");
             json.append("      \"schemas\": ").append(toJSONArray(docType.getSchemas())).append(",\n");
             json.append("      \"facets\": ").append(toJSONArray(docType.getFacets())).append("\n");
             json.append("    }");
@@ -220,8 +224,8 @@ public class NuxeoDataModelMapper
             if (!first) json.append(",\n");
             first = false;
             json.append("    {\n");
-            json.append("      \"name\": \"").append(schema.getName()).append("\",\n");
-            json.append("      \"prefix\": \"").append(schema.getPrefix()).append("\",\n");
+            json.append("      \"name\": \"").append(escapeJSON(schema.getName())).append("\",\n");
+            json.append("      \"prefix\": \"").append(escapeJSON(schema.getPrefix())).append("\",\n");
             json.append("      \"fields\": ").append(schema.getFields().size()).append("\n");
             json.append("    }");
         }
@@ -235,7 +239,7 @@ public class NuxeoDataModelMapper
             if (!first) json.append(",\n");
             first = false;
             json.append("    {\n");
-            json.append("      \"name\": \"").append(facet.getName()).append("\",\n");
+            json.append("      \"name\": \"").append(escapeJSON(facet.getName())).append("\",\n");
             json.append("      \"schemas\": ").append(toJSONArray(facet.getSchemas())).append("\n");
             json.append("    }");
         }
@@ -246,6 +250,27 @@ public class NuxeoDataModelMapper
 
         json.append("}");
         return json.toString();
+    }
+
+    /**
+     * Escapes special characters for JSON output.
+     *
+     * @param value string to escape
+     * @return escaped string
+     */
+    private String escapeJSON(String value)
+    {
+        if (value == null)
+        {
+            return "";
+        }
+        
+        return value
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t");
     }
 
     /**
@@ -267,7 +292,7 @@ public class NuxeoDataModelMapper
         {
             if (!first) json.append(", ");
             first = false;
-            json.append("\"").append(item).append("\"");
+            json.append("\"").append(escapeJSON(item)).append("\"");
         }
         json.append("]");
         return json.toString();

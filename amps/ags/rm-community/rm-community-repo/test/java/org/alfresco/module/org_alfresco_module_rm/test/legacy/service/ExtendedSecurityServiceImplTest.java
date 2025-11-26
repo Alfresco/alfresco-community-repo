@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
 
+import static org.alfresco.service.cmr.security.PermissionService.GROUP_PREFIX;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -88,6 +90,17 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 String userName = GUID.generate();
                 createPerson(userName);
                 return userName;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+
+    private String createTestGroup()
+    {
+        return doTestInTransaction(new Test<String>() {
+            public String run()
+            {
+                String groupName = GUID.generate();
+                return authorityService.createAuthority(AuthorityType.GROUP, groupName);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
@@ -327,6 +340,57 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         verifyCreatedGroups(documents, true);
 
         AuthenticationUtil.clearCurrentSecurityContext();
+    }
+
+    public void testInexistentGroup()
+    {
+        Set<String> extendedReaders = new HashSet<>(2);
+        Set<String> extendedWriters = new HashSet<>(2);
+
+        final String existingGroup = createTestGroup();
+        final String owner = createTestUser();
+
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        extendedReaders.add(GROUP_PREFIX + "NON_EXISTENT");
+        extendedReaders.add(existingGroup);
+        extendedWriters.add(GROUP_PREFIX + "NON_EXISTENT");
+        extendedWriters.add(existingGroup);
+
+        // Create a site
+        NodeRef documentLib = createSite(new HashSet<>(), new HashSet<>());
+        Set<NodeRef> docs = createRecords(2, documentLib, owner);
+
+        for (NodeRef doc : docs)
+        {
+            setPermissionsAndExtendedSecurity(doc, extendedReaders, extendedWriters);
+        }
+
+        verifyCreatedGroups(docs, false);
+
+        AuthenticationUtil.clearCurrentSecurityContext();
+    }
+
+    private void setPermissionsAndExtendedSecurity(NodeRef doc, Set<String> extendedReaders, Set<String> extendedWriters)
+    {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                // First set basic permissions to avoid AccessDeniedException when setting extended security
+                for (String reader : extendedReaders)
+                {
+                    permissionService.setPermission(doc, reader, "Consumer", true);
+                }
+                for (String writer : extendedWriters)
+                {
+                    permissionService.setPermission(doc, writer, "Contributor", true);
+                }
+
+                // Now set extended security
+                extendedSecurityService.set(doc, extendedReaders, extendedWriters);
+                return null;
+            }
+        }, false, true);
     }
 
     private Set<NodeRef> setupConcurrentTestCase(int concurrentThreads, Set<String> extendedReaders, Set<String> extendedWriters)

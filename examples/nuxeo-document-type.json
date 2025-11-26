@@ -1,0 +1,226 @@
+{
+  "documentTypes": [
+    {
+      "name": "invoice:invoice",
+      "parent": "File",
+      "description": "An invoice document",
+      "schemas": [
+        "invoice_invoice",
+        "invoice_paymentInfo"
+      ],
+      "facets": [
+        "cm:versionable",
+        "invoice:paymentInfo",
+        "Versionable"
+      ]
+    },
+    {
+      "name": "invoice:purchaseOrder",
+      "parent": "File",
+      "description": "A purchase order document",
+      "schemas": [
+        "invoice_purchaseOrder"
+      ],
+      "facets": []
+    }
+  ],
+  "schemas": [
+    {
+      "name": "invoice_invoice",
+      "prefix": "invoice",
+      "description": "Schema for invoice:invoice",
+      "fields": [
+        {
+          "name": "invoiceNumber",
+          "type": "string",
+          "required": true,
+          "multiValued": false,
+          "indexed": true,
+          "description": "Invoice Number"
+        },
+        {
+          "name": "invoiceDate",
+          "type": "date",
+          "required": true,
+          "multiValued": false,
+          "description": "Invoice Date"
+        },
+        {
+          "name": "dueDate",
+          "type": "date",
+          "required": false,
+          "multiValued": false,
+          "description": "Due Date"
+        },
+        {
+          "name": "amount",
+          "type": "double",
+          "required": true,
+          "multiValued": false,
+          "description": "Total Amount"
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "required": true,
+          "multiValued": false,
+          "defaultValue": "USD",
+          "constraints": [
+            "LIST: USD, EUR, GBP, JPY"
+          ],
+          "description": "Currency"
+        },
+        {
+          "name": "customerName",
+          "type": "string",
+          "required": true,
+          "multiValued": false,
+          "description": "Customer Name"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": true,
+          "multiValued": false,
+          "defaultValue": "Draft",
+          "constraints": [
+            "LIST: Draft, Sent, Paid, Overdue, Cancelled"
+          ],
+          "description": "Invoice Status"
+        },
+        {
+          "name": "notes",
+          "type": "string[]",
+          "required": false,
+          "multiValued": true,
+          "description": "Notes"
+        }
+      ]
+    },
+    {
+      "name": "invoice_purchaseOrder",
+      "prefix": "invoice",
+      "description": "Schema for invoice:purchaseOrder",
+      "fields": [
+        {
+          "name": "poNumber",
+          "type": "string",
+          "required": true,
+          "multiValued": false,
+          "description": "PO Number"
+        },
+        {
+          "name": "poDate",
+          "type": "date",
+          "required": true,
+          "multiValued": false,
+          "description": "PO Date"
+        }
+      ]
+    },
+    {
+      "name": "invoice_paymentInfo",
+      "prefix": "invoice",
+      "description": "Schema for aspect invoice:paymentInfo",
+      "fields": [
+        {
+          "name": "paymentMethod",
+          "type": "string",
+          "required": false,
+          "multiValued": false,
+          "constraints": [
+            "LIST: Credit Card, Bank Transfer, Cash, Check"
+          ],
+          "description": "Payment Method"
+        },
+        {
+          "name": "paymentDate",
+          "type": "date",
+          "required": false,
+          "multiValued": false,
+          "description": "Payment Date"
+        },
+        {
+          "name": "paymentReference",
+          "type": "string",
+          "required": false,
+          "multiValued": false,
+          "description": "Payment Reference"
+        }
+      ]
+    },
+    {
+      "name": "invoice_approvable",
+      "prefix": "invoice",
+      "description": "Schema for aspect invoice:approvable",
+      "fields": [
+        {
+          "name": "approver",
+          "type": "string",
+          "required": false,
+          "multiValued": false,
+          "description": "Approver"
+        },
+        {
+          "name": "approvalDate",
+          "type": "date",
+          "required": false,
+          "multiValued": false,
+          "description": "Approval Date"
+        },
+        {
+          "name": "approved",
+          "type": "boolean",
+          "required": false,
+          "multiValued": false,
+          "defaultValue": "false",
+          "description": "Approved"
+        }
+      ]
+    }
+  ],
+  "facets": [
+    {
+      "name": "cm:versionable",
+      "schemas": [],
+      "description": "Versioning capability"
+    },
+    {
+      "name": "invoice:paymentInfo",
+      "schemas": [
+        "invoice_paymentInfo"
+      ],
+      "description": "Payment-related information for invoices"
+    },
+    {
+      "name": "invoice:approvable",
+      "schemas": [
+        "invoice_approvable"
+      ],
+      "description": "Approval workflow information"
+    }
+  ],
+  "relations": [
+    {
+      "name": "invoice_relatedDocuments_relation",
+      "source": "invoice:invoice",
+      "target": "cm:content",
+      "cardinality": "Many-to-Many (N:M)",
+      "description": "Related Documents association"
+    }
+  ],
+  "warnings": [
+    "Aspect 'invoice:paymentInfo': Nuxeo facets are less dynamic than Alfresco aspects. Consider pre-defining facets on document types.",
+    "Aspect 'invoice:approvable': Nuxeo facets are less dynamic than Alfresco aspects. Consider pre-defining facets on document types.",
+    "Peer association 'invoice:relatedDocuments': Nuxeo relations are implemented separately from document hierarchy. Querying may differ from Alfresco."
+  ],
+  "metadata": {
+    "mappingDate": "2025-11-26",
+    "alfrescoModelName": "custom:invoiceModel",
+    "alfrescoModelVersion": "1.0",
+    "typesCount": 2,
+    "aspectsCount": 2,
+    "schemasCount": 4,
+    "facetsCount": 3
+  }
+}

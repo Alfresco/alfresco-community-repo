@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model name="custom:invoiceModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+  
+  <description>Sample Invoice Content Model for Alfresco to Nuxeo Mapping</description>
+  <author>Alfresco Data Model Migration Team</author>
+  <version>1.0</version>
+  
+  <namespaces>
+    <namespace uri="http://example.com/model/invoice/1.0" prefix="invoice"/>
+  </namespaces>
+  
+  <imports>
+    <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+  </imports>
+  
+  <!-- Custom Types -->
+  <types>
+    
+    <!-- Invoice Document Type -->
+    <type name="invoice:invoice">
+      <title>Invoice</title>
+      <description>An invoice document</description>
+      <parent>cm:content</parent>
+      
+      <properties>
+        <property name="invoice:invoiceNumber">
+          <title>Invoice Number</title>
+          <type>d:text</type>
+          <mandatory>true</mandatory>
+          <index enabled="true">
+            <atomic>true</atomic>
+            <stored>false</stored>
+            <tokenised>false</tokenised>
+          </index>
+        </property>
+        
+        <property name="invoice:invoiceDate">
+          <title>Invoice Date</title>
+          <type>d:date</type>
+          <mandatory>true</mandatory>
+        </property>
+        
+        <property name="invoice:dueDate">
+          <title>Due Date</title>
+          <type>d:date</type>
+          <mandatory>false</mandatory>
+        </property>
+        
+        <property name="invoice:amount">
+          <title>Total Amount</title>
+          <type>d:double</type>
+          <mandatory>true</mandatory>
+        </property>
+        
+        <property name="invoice:currency">
+          <title>Currency</title>
+          <type>d:text</type>
+          <mandatory>true</mandatory>
+          <default>USD</default>
+          <constraints>
+            <constraint type="LIST">
+              <parameter name="allowedValues">
+                <list>
+                  <value>USD</value>
+                  <value>EUR</value>
+                  <value>GBP</value>
+                  <value>JPY</value>
+                </list>
+              </parameter>
+            </constraint>
+          </constraints>
+        </property>
+        
+        <property name="invoice:customerName">
+          <title>Customer Name</title>
+          <type>d:text</type>
+          <mandatory>true</mandatory>
+        </property>
+        
+        <property name="invoice:status">
+          <title>Invoice Status</title>
+          <type>d:text</type>
+          <mandatory>true</mandatory>
+          <default>Draft</default>
+          <constraints>
+            <constraint type="LIST">
+              <parameter name="allowedValues">
+                <list>
+                  <value>Draft</value>
+                  <value>Sent</value>
+                  <value>Paid</value>
+                  <value>Overdue</value>
+                  <value>Cancelled</value>
+                </list>
+              </parameter>
+            </constraint>
+          </constraints>
+        </property>
+        
+        <property name="invoice:notes">
+          <title>Notes</title>
+          <type>d:text</type>
+          <mandatory>false</mandatory>
+          <multiple>true</multiple>
+        </property>
+      </properties>
+      
+      <associations>
+        <association name="invoice:relatedDocuments">
+          <title>Related Documents</title>
+          <source>
+            <mandatory>false</mandatory>
+            <many>true</many>
+          </source>
+          <target>
+            <class>cm:content</class>
+            <mandatory>false</mandatory>
+            <many>true</many>
+          </target>
+        </association>
+      </associations>
+      
+      <mandatory-aspects>
+        <aspect>cm:versionable</aspect>
+        <aspect>invoice:paymentInfo</aspect>
+      </mandatory-aspects>
+    </type>
+    
+    <!-- Purchase Order Type -->
+    <type name="invoice:purchaseOrder">
+      <title>Purchase Order</title>
+      <description>A purchase order document</description>
+      <parent>cm:content</parent>
+      
+      <properties>
+        <property name="invoice:poNumber">
+          <title>PO Number</title>
+          <type>d:text</type>
+          <mandatory>true</mandatory>
+        </property>
+        
+        <property name="invoice:poDate">
+          <title>PO Date</title>
+          <type>d:date</type>
+          <mandatory>true</mandatory>
+        </property>
+      </properties>
+    </type>
+    
+  </types>
+  
+  <!-- Custom Aspects -->
+  <aspects>
+    
+    <!-- Payment Information Aspect -->
+    <aspect name="invoice:paymentInfo">
+      <title>Payment Information</title>
+      <description>Payment-related information for invoices</description>
+      
+      <properties>
+        <property name="invoice:paymentMethod">
+          <title>Payment Method</title>
+          <type>d:text</type>
+          <constraints>
+            <constraint type="LIST">
+              <parameter name="allowedValues">
+                <list>
+                  <value>Credit Card</value>
+                  <value>Bank Transfer</value>
+                  <value>Cash</value>
+                  <value>Check</value>
+                </list>
+              </parameter>
+            </constraint>
+          </constraints>
+        </property>
+        
+        <property name="invoice:paymentDate">
+          <title>Payment Date</title>
+          <type>d:datetime</type>
+          <mandatory>false</mandatory>
+        </property>
+        
+        <property name="invoice:paymentReference">
+          <title>Payment Reference</title>
+          <type>d:text</type>
+          <mandatory>false</mandatory>
+        </property>
+      </properties>
+    </aspect>
+    
+    <!-- Approval Aspect -->
+    <aspect name="invoice:approvable">
+      <title>Approvable</title>
+      <description>Approval workflow information</description>
+      
+      <properties>
+        <property name="invoice:approver">
+          <title>Approver</title>
+          <type>d:text</type>
+        </property>
+        
+        <property name="invoice:approvalDate">
+          <title>Approval Date</title>
+          <type>d:datetime</type>
+        </property>
+        
+        <property name="invoice:approved">
+          <title>Approved</title>
+          <type>d:boolean</type>
+          <default>false</default>
+        </property>
+      </properties>
+    </aspect>
+    
+  </aspects>
+  
+</model>

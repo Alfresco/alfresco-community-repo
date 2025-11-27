@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -748,7 +749,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 
     /**
      * Gets all versions in version history
-     *
+     * 
      * @param versionHistoryRef
      *            the version history nodeRef
      * @return list of all versions
@@ -775,24 +776,19 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 
     protected Pair<List<Version>, Integer> getVersions(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
     {
-        Pair<List<ChildAssociationRef>, Integer> versionAssocsCount = getVersionAssocs(versionHistoryRef, skipVersions, maxVersions, true);
-        List<ChildAssociationRef> versionAssocs = versionAssocsCount.getFirst();
+        Pair<List<ChildAssociationRef>, Integer> versionAssocsCount = getVersionAssocs(versionHistoryRef, skipVersions, maxVersions);
+        List<Version> versions = versionAssocsCount.getFirst().stream()
+                .map(ChildAssociationRef::getChildRef)
+                .map(this::getVersion)
+                .collect(Collectors.toCollection(ArrayList::new));
         Integer versionCount = versionAssocsCount.getSecond();
-
-        List<Version> versions = new ArrayList<>(versionAssocs.size());
-
-        for (ChildAssociationRef versionAssoc : versionAssocs)
-        {
-            versions.add(getVersion(versionAssoc.getChildRef()));
-        }
-
         return new Pair<>(versions, versionCount);
     }
 
-    private Pair<List<ChildAssociationRef>, Integer> getVersionAssocs(NodeRef versionHistoryRef, int skipVersions, int maxVersions, boolean preLoad)
+    private Pair<List<ChildAssociationRef>, Integer> getVersionAssocs(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
     {
         return dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL,
-                skipVersions, maxVersions, preLoad);
+                skipVersions, maxVersions, true);
     }
 
     /**

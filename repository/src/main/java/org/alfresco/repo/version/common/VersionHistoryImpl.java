@@ -69,7 +69,8 @@ public class VersionHistoryImpl implements VersionHistory
     /* Versions ordered by creation date (descending). */
     private Comparator<Version> versionComparatorDesc;
 
-    private Integer versionCount;
+    /* Needed in case the VersionHistory is created from a page of versions where the total count is known but not all versions are collected from database. */
+    private final Integer versionCountOverride;
 
     /**
      * Constructor, ensures the root version is set.
@@ -84,7 +85,7 @@ public class VersionHistoryImpl implements VersionHistory
         this(rootVersion, versionComparatorDesc, null);
     }
 
-    public VersionHistoryImpl(Version rootVersion, Comparator<Version> versionComparatorDesc, Integer versionCount)
+    public VersionHistoryImpl(Version rootVersion, Comparator<Version> versionComparatorDesc, Integer versionCountOverride)
     {
         if (rootVersion == null)
         {
@@ -96,7 +97,7 @@ public class VersionHistoryImpl implements VersionHistory
         this.versionHistory = new HashMap<String, String>();
         this.versionsByLabel = new LinkedHashMap<String, Version>();
         this.versionComparatorDesc = versionComparatorDesc;
-        this.versionCount = versionCount;
+        this.versionCountOverride = versionCountOverride;
 
         addVersion(rootVersion, null);
     }
@@ -136,7 +137,7 @@ public class VersionHistoryImpl implements VersionHistory
     @Override
     public int getAllVersionsCount()
     {
-        return versionCount != null ? versionCount : versionsByLabel.size();
+        return versionCountOverride != null ? versionCountOverride : versionsByLabel.size();
     }
 
     /**

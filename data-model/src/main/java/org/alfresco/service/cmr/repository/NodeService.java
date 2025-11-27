@@ -653,8 +653,8 @@ public interface NodeService
             throws InvalidNodeRefException;
 
     /**
-     * Gets all child associations where the pattern of the association qualified name is an exact match and a total count of matching child associations.
-     *
+     * Gets all child associations where the pattern of the association qualified name is an exact match and a total count of matching child associations. Allows skipping and limiting of results.
+     * 
      * @param nodeRef
      *            the parent node - usually a <b>container</b>
      * @param typeQNamePattern

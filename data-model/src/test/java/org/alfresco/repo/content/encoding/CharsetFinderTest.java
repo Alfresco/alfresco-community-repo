@@ -32,6 +32,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
 import org.alfresco.encoding.CharactersetFinder;
@@ -46,7 +47,7 @@ import org.alfresco.util.DataModelTestApplicationContextHelper;
  */
 public class CharsetFinderTest extends TestCase
 {
-    private static final ApplicationContext ctx = DataModelTestApplicationContextHelper.getApplicationContext();
+    private static ApplicationContext ctx = DataModelTestApplicationContextHelper.getApplicationContext();
 
     private ContentCharsetFinder charsetFinder;
 
@@ -137,6 +138,7 @@ public class CharsetFinderTest extends TestCase
     /**
      * Test blank file upload scenario - verifies fix for ACS-10408 Ensures blank files are not incorrectly detected.
      */
+    @Test
     public void testBlankFileCharsetDetection()
     {
         // Empty byte array simulating blank uploaded file

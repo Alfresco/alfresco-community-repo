@@ -132,4 +132,19 @@ public class CharsetFinderTest extends TestCase
         assertNotNull(charset);
         assertEquals("Shift_JIS", charset.displayName());
     }
+
+    /**
+     * Test blank file upload scenario - verifies fix for ACS-10408 Ensures blank files are not incorrectly detected.
+     */
+    public void testBlankFileCharsetDetection() throws Exception
+    {
+        // Empty byte array simulating blank uploaded file
+        byte[] blankContent = new byte[0];
+
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(blankContent));
+        Charset charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+
+        assertNotNull("Charset should not be null for blank files", charset);
+        assertEquals("UTF-8", charset.displayName());
+    }
 }

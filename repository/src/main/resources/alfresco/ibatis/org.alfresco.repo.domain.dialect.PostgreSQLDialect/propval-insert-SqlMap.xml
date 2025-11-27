@@ -14,7 +14,7 @@
 
     <insert id="insert_PropertyStringValue" parameterType="PropertyStringValue" >
         <selectKey resultType="long" keyProperty="id" order="BEFORE" >
-            select nextVal('alf_prop_string_value_seq')
+            select nextVal('alf_prop_string_value_seq_unified')
         </selectKey>
         <include refid="alfresco.propval.insert_PropertyStringValue_Sequence"/>
     </insert>
@@ -28,7 +28,7 @@
 
     <insert id="insert_PropertySerializableValue" parameterMap="alfresco.propval.parameter_IdPropertySerializableValue" >
         <selectKey resultType="long" keyProperty="id" order="BEFORE" >
-            select nextVal('alf_prop_serializable_value_seq')
+            select nextVal('alf_prop_string_value_seq_unified')
         </selectKey>
         <include refid="alfresco.propval.insert_PropertySerializableValue_Sequence"/>
     </insert>

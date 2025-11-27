@@ -45,7 +45,8 @@ CREATE TABLE alf_prop_double_value
 CREATE UNIQUE INDEX idx_alf_propd_val ON alf_prop_double_value(double_value);
 
 -- Stores unique, case-sensitive string values --
-CREATE SEQUENCE alf_prop_string_value_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE alf_prop_string_value_seq_unified START WITH 1 INCREMENT BY 1;
+
 CREATE TABLE alf_prop_string_value
 (
    id INT8 NOT NULL,
@@ -57,7 +58,6 @@ CREATE TABLE alf_prop_string_value
 CREATE INDEX idx_alf_props_str ON alf_prop_string_value(string_value);
 CREATE UNIQUE INDEX idx_alf_props_crc ON alf_prop_string_value(string_end_lower, string_crc);
 
-CREATE SEQUENCE alf_prop_serializable_value_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_prop_serializable_value
 (
    id INT8 NOT NULL,

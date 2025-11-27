@@ -699,7 +699,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                 childAssocsCount = theTrait.getChildAssocs(materialReference,
                         typeQNamePattern,
                         qnamePattern,
-                        skipResults,
+                        0, // skipping only applies to virtual store
                         maxResults - associations.size(),
                         preload);
                 List<ChildAssociationRef> actualAssociations = childAssocsCount.getFirst();

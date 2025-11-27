@@ -723,11 +723,11 @@ public interface NodeDAO extends NodeBulkLoader
      * @param resultsCallback
      *            the callback that will be called with the results
      */
-    public void getChildAssocsLimited(
+    void getChildAssocsLimited(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
-            final int maxResults,
+            int maxResults,
             ChildAssocRefQueryCallback resultsCallback);
 
     /**

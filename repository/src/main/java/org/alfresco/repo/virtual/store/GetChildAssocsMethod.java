@@ -76,10 +76,6 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<Pair<List<Child
         this.environment = environment;
         this.preload = preload;
         this.skipResults = skipResults;
-        if (skipResults < 0)
-        {
-            throw new IllegalArgumentException("skipResults must be >= 0");
-        }
         this.maxResults = maxResults;
         this.qnamePattern = qnamePattern;
         this.typeQNamePattern = typeQNamePattern;

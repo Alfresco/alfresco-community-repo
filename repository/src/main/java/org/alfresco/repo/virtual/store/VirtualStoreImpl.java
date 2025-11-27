@@ -300,20 +300,18 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
             QNamePattern qnamePattern, int skipResults, int maxResults,
             boolean preload) throws InvalidNodeRefException
     {
-        if (typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
-        {
-            return parentReference.execute(new GetChildAssocsMethod(this,
-                    environment,
-                    preload,
-                    skipResults,
-                    maxResults,
-                    qnamePattern,
-                    typeQNamePattern));
-        }
-        else
+        if (!typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
         {
             return new Pair<>(Collections.emptyList(), 0);
         }
+        return parentReference.execute(new GetChildAssocsMethod(this,
+                environment,
+                preload,
+                skipResults,
+                maxResults,
+                qnamePattern,
+                typeQNamePattern));
+
     }
 
     @Override

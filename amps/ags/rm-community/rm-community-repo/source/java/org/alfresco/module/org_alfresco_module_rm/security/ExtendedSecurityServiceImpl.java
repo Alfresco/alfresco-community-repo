@@ -78,16 +78,15 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         RecordsManagementModel,
         ApplicationListener<ContextRefreshedEvent>
 {
-    /** Logger */
-    private static final Log logger = LogFactory.getLog(ExtendedSecurityServiceImpl.class);
+    private static final Log LOGGER = LogFactory.getLog(ExtendedSecurityServiceImpl.class);
+
+    /** max page size for authority query */
+    private static final int MAX_ITEMS = 50;
 
     /** ipr group names */
     static final String ROOT_IPR_GROUP = "INPLACE_RECORD_MANAGEMENT";
     static final String READER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "R";
     static final String WRITER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "W";
-
-    /** max page size for authority query */
-    private static final int MAX_ITEMS = 50;
 
     /** File plan service */
     private FilePlanService filePlanService;
@@ -531,7 +530,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             {
                 if (!authorityService.authorityExists(authority))
                 {
-                    logger.warn("Authority " + authority + " does not exist and will not be considered for the extended security group");
+                    LOGGER.warn("Authority " + authority + " does not exist and will not be considered for the extended security group");
                     continue;
                 }
 
@@ -544,9 +543,12 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
 
         Set<String> contained = authorityService.getContainedAuthorities(null, group, true);
 
-        logger.trace("IPR Group True Match validation: "
-                + "incoming: " + String.join(",", plainAuthorities)
-                + "; in pre-existing group " + group + ": " + String.join(",", contained));
+        if (LOGGER.isTraceEnabled())
+        {
+            LOGGER.trace("IPR Group True Match validation: " + "incoming: " + String.join(",", plainAuthorities)
+                    + "; in pre-existing group " + group + ": " + String.join(",", contained));
+        }
+
         return contained.equals(plainAuthorities);
     }
 
@@ -667,7 +669,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 {
                     if (!authorityService.authorityExists(child))
                     {
-                        logger.warn("Authority " + child + " does not exist and will not be added to the extended security group");
+                        LOGGER.warn("Authority " + child + " does not exist and will not be added to the extended security group");
                         continue;
                     }
 

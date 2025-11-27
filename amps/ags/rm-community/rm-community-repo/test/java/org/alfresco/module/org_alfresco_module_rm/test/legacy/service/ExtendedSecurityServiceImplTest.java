@@ -239,6 +239,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
             public Void run() throws Exception
             {
                 AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    @Override
                     public Void doWork() throws Exception
                     {
                         // check permissions
@@ -249,6 +250,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 }, userNone);
 
                 AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    @Override
                     public Void doWork() throws Exception
                     {
                         // check permissions
@@ -259,6 +261,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 }, userRead);
 
                 AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    @Override
                     public Void doWork() throws Exception
                     {
                         // check permissions
@@ -269,6 +272,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 }, userWrite);
 
                 AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    @Override
                     public Void doWork() throws Exception
                     {
                         // check permissions
@@ -279,6 +283,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 }, userNone);
 
                 AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    @Override
                     public Void doWork() throws Exception
                     {
                         // check permissions
@@ -289,6 +294,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 }, userRead);
 
                 AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    @Override
                     public Void doWork() throws Exception
                     {
                         // check permissions

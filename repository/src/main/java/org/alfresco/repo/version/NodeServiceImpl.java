@@ -606,7 +606,8 @@ public class NodeServiceImpl implements NodeService, VersionModel
     }
 
     @Override
-    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern, int skipResults, int maxResults, boolean preload)
+    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+            int skipResults, int maxResults, boolean preload)
     {
         // Get the child assocs from the version store
         Pair<List<ChildAssociationRef>, Integer> childAssocsCount = this.dbNodeService.getChildAssocs(

@@ -723,17 +723,17 @@ public interface NodeDAO extends NodeBulkLoader
      * @param resultsCallback
      *            the callback that will be called with the results
      */
-    void getChildAssocsLimited(
+    public void getChildAssocs(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
-            int maxResults,
+            final int maxResults,
             ChildAssocRefQueryCallback resultsCallback);
 
     /**
      * Gets the child associations of a given parent node, optionally filtering on association <tt>QName</tt> and association type <tt>QName</tt>.
      * <p/>
-     *
+     * 
      * @param parentNodeId
      *            the parent node ID
      * @param assocTypeQName
@@ -745,7 +745,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @param resultsCallback
      *            the callback that will be called with the results
      */
-    void getChildAssocsLimited(
+    void getChildAssocs(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,

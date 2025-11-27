@@ -1180,7 +1180,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
     @SuppressWarnings("unchecked")
     @Override
-    public void selectChildAssocsLimited(
+    public void selectChildAssocs(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
@@ -1230,7 +1230,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    public void selectChildAssocsLimited(
+    public void selectChildAssocs(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,

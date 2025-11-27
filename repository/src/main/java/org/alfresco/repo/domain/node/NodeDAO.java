@@ -745,6 +745,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @param resultsCallback
      *            the callback that will be called with the results
      */
+    @SuppressWarnings("PMD.LinguisticNaming") // following the convention set by other methods
     void getChildAssocs(
             Long parentNodeId,
             QName assocTypeQName,

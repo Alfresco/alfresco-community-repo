@@ -1244,22 +1244,16 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setParentNode(parentNode);
 
         // Type QName
-        if (assocTypeQName != null)
+        if (assocTypeQName != null && !assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
         {
-            if (!assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
-            {
-                resultsCallback.done();
-                return; // Shortcut
-            }
+            resultsCallback.done();
+            return; // Shortcut
         }
         // QName
-        if (assocQName != null)
+        if (assocQName != null && !assoc.setQNameAll(qnameDAO, assocQName, false))
         {
-            if (!assoc.setQNameAll(qnameDAO, assocQName, false))
-            {
-                resultsCallback.done();
-                return; // Shortcut
-            }
+            resultsCallback.done();
+            return; // Shortcut
         }
         // Order
         assoc.setOrdered(resultsCallback.orderResults());

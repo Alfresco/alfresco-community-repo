@@ -1432,7 +1432,7 @@
         <property name="fixesToSchema"><value>21000</value></property>
         <property name="targetSchema"><value>21001</value></property>
         <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/25.3/merge-alf_prop-string-sequences.sql</value>
+            <value>classpath:alfresco/dbscripts/upgrade/25.3/${db.script.dialect}/merge-alf_prop_string-sequences.sql</value>
         </property>
     </bean>
 

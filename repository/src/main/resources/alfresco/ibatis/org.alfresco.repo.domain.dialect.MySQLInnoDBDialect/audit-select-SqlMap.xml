@@ -10,11 +10,11 @@
 
     <!-- Get audit entries -->
 
-    <select id="select_AuditEntriesWithoutValues" fetchSize="-2147483648" parameterType="AuditQueryParameters" resultMap="result_AuditQueryNoValues">
+    <select id="select_AuditEntriesWithoutValues" fetchSize="1" parameterType="AuditQueryParameters" resultMap="result_AuditQueryNoValues">
         <include refid="select_AuditEntriesWithoutValuesCommon"/>
     </select>
 
-    <select id="select_AuditEntriesWithValues" fetchSize="-2147483648" parameterType="AuditQueryParameters" resultMap="result_AuditQueryAllValues">
+    <select id="select_AuditEntriesWithValues" fetchSize="1" parameterType="AuditQueryParameters" resultMap="result_AuditQueryAllValues">
         <include refid="select_AuditEntriesWithValuesCommon"/>
     </select>
 

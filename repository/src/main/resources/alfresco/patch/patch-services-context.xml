@@ -1426,8 +1426,8 @@
     </bean>
 
     <bean id="patch.db-v25.3-merge-alf_prop_string-sequences" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-v25.3-merge-alf_prop-string-sequences</value></property>
-        <property name="description"><value>patch.db-v25.3-merge-alf_prop-string-sequence.description</value></property>
+        <property name="id"><value>patch.db-v25.3-merge-alf_prop_string-sequences</value></property>
+        <property name="description"><value>patch.db-v25.3-merge-alf_prop_string-sequences.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>21000</value></property>
         <property name="targetSchema"><value>21001</value></property>

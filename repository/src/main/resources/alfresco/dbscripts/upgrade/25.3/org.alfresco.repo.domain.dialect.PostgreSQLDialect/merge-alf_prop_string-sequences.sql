@@ -11,12 +11,13 @@
 CREATE SEQUENCE alf_prop_string_value_seq_unified START WITH 1 INCREMENT BY 1;
 
 -- Set sequence to start from maximum of both old sequences
--- SELECT setval('alf_prop_value_seq_merged', 
---   GREATEST(
---     (SELECT COALESCE(MAX(id), 0) FROM alf_prop_string_value_seq),
---     (SELECT COALESCE(MAX(id), 0) FROM alf_prop_serializable_value_seq)
---   ) + 1
--- );
+SELECT setval('alf_prop_string_value_seq_unified', 
+  GREATEST(
+    COALESCE((SELECT last_value FROM alf_prop_string_value_seq), 0),
+    COALESCE((SELECT last_value FROM alf_prop_serializable_value_seq), 0)
+  ) + 1,
+  false
+);
 
 -- Drop old sequences
 DROP SEQUENCE IF EXISTS alf_prop_string_value_seq;

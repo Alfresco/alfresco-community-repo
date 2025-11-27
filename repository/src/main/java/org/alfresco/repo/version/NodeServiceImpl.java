@@ -551,24 +551,10 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern) throws InvalidNodeRefException
     {
-        return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern, Integer.MAX_VALUE, true);
-    }
-
-    @Override
-    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQName, QNamePattern qname, int maxResults,
-            boolean preload) throws InvalidNodeRefException
-    {
-        return getChildAssocs(nodeRef, typeQName, qname, 0, maxResults, preload).getFirst();
-    }
-
-    @Override
-    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern, int skipResults, int maxResults, boolean preload)
-    {
         // Get the child assocs from the version store
-        Pair<List<ChildAssociationRef>, Integer> childAssocsCount = this.dbNodeService.getChildAssocs(
+        List<ChildAssociationRef> childAssocRefs = this.dbNodeService.getChildAssocs(
                 VersionUtil.convertNodeRef(nodeRef),
-                RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSIONED_CHILD_ASSOCS, skipResults, maxResults, true);
-        List<ChildAssociationRef> childAssocRefs = childAssocsCount.getFirst();
+                RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSIONED_CHILD_ASSOCS);
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>(childAssocRefs.size());
         for (ChildAssociationRef childAssocRef : childAssocRefs)
         {
@@ -582,6 +568,64 @@ public class NodeServiceImpl implements NodeService, VersionModel
                 QName qName = (QName) this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_QNAME);
 
                 if (qnamePattern.isMatch(qName) == true)
+                {
+                    // Retrieve the isPrimary and nthSibling values of the forzen child association
+                    QName assocType = (QName) this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_TYPE_QNAME);
+                    boolean isPrimary = ((Boolean) this.dbNodeService.getProperty(childRef, PROP_QNAME_IS_PRIMARY)).booleanValue();
+                    int nthSibling = ((Integer) this.dbNodeService.getProperty(childRef, PROP_QNAME_NTH_SIBLING)).intValue();
+
+                    // Build a child assoc ref to add to the returned list
+                    ChildAssociationRef newChildAssocRef = new ChildAssociationRef(
+                            assocType,
+                            nodeRef,
+                            qName,
+                            referencedNode,
+                            isPrimary,
+                            nthSibling);
+                    result.add(newChildAssocRef);
+                }
+            }
+        }
+
+        // sort the results so that the order appears to be exactly as it was originally
+        Collections.sort(result);
+
+        return result;
+    }
+
+    @Override
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQName, QNamePattern qname, int maxResults,
+            boolean preload) throws InvalidNodeRefException
+    {
+        List<ChildAssociationRef> result = getChildAssocs(nodeRef, typeQName, qname);
+        if (result.size() > maxResults)
+        {
+            return result.subList(0, maxResults);
+        }
+        return result;
+    }
+
+    @Override
+    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern, int skipResults, int maxResults, boolean preload)
+    {
+        // Get the child assocs from the version store
+        Pair<List<ChildAssociationRef>, Integer> childAssocsCount = this.dbNodeService.getChildAssocs(
+                VersionUtil.convertNodeRef(nodeRef),
+                RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSIONED_CHILD_ASSOCS, skipResults, maxResults, true);
+        List<ChildAssociationRef> childAssocRefs = childAssocsCount.getFirst();
+        List<ChildAssociationRef> result = new ArrayList<>(childAssocRefs.size());
+        for (ChildAssociationRef childAssocRef : childAssocRefs)
+        {
+            // Get the child reference
+            NodeRef childRef = childAssocRef.getChildRef();
+            NodeRef referencedNode = (NodeRef) this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE);
+
+            if (this.dbNodeService.exists(referencedNode))
+            {
+                // get the qualified name of the frozen child association and filter out unwanted names
+                QName qName = (QName) this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_QNAME);
+
+                if (qnamePattern.isMatch(qName))
                 {
                     // Retrieve the isPrimary and nthSibling values of the forzen child association
                     QName assocType = (QName) this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_TYPE_QNAME);

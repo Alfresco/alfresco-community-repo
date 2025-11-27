@@ -791,7 +791,6 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 
     private Pair<List<ChildAssociationRef>, Integer> getVersionAssocs(NodeRef versionHistoryRef, int skipVersions, int maxVersions, boolean preLoad)
     {
-        // note: resultant list is ordered by (a) explicit index and (b) association creation time
         return dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL,
                 skipVersions, maxVersions, preLoad);
     }
@@ -991,7 +990,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         String versionLabel = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
 
         // Note: resultant list is ordered by (a) explicit index and (b) association creation time
-        List<ChildAssociationRef> versionAssocs = getVersionAssocs(versionHistoryRef, 0, Integer.MAX_VALUE, false).getFirst();
+        List<ChildAssociationRef> versionAssocs = getVersionAssocs(versionHistoryRef, false);
 
         // Current version should be head version (since no branching)
         int versionCount = versionAssocs.size();

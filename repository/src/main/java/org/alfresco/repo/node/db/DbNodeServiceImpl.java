@@ -1870,7 +1870,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         QName typeQName = (typeQNamePattern instanceof QName) ? (QName) typeQNamePattern : null;
         QName qname = (qnamePattern instanceof QName) ? (QName) qnamePattern : null;
 
-        nodeDAO.getChildAssocs(nodePair.getFirst(), typeQName, qname, maxResults, callback);
+        nodeDAO.getChildAssocsLimited(nodePair.getFirst(), typeQName, qname, maxResults, callback);
         // Done
         return results;
     }
@@ -1937,14 +1937,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             @Override
             public void done()
             {
-                // nothing to do here
+                Collections.reverse(results);
             }
         };
         // Get the assocs pointing to it
         QName typeQName = (typeQNamePattern instanceof QName) ? (QName) typeQNamePattern : null;
         QName qname = (qnamePattern instanceof QName) ? (QName) qnamePattern : null;
 
-        nodeDAO.getChildAssocs(nodePair.getFirst(), null, typeQName, qname, null, null, callback);
+        nodeDAO.getChildAssocsLimited(nodePair.getFirst(), typeQName, qname, false, callback);
         return new Pair<>(results, totalCount[0]);
     }
 

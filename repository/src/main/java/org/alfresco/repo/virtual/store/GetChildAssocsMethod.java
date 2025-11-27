@@ -89,51 +89,46 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<Pair<List<Child
     public Pair<List<ChildAssociationRef>, Integer> execute(VirtualProtocol virtualProtocol, Reference reference)
             throws ProtocolMethodException
     {
-        if (typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
-        {
-            List<ChildAssociationRef> childAssocs = new LinkedList<>();
-            List<Reference> children = smartStore.list(reference);
-            NodeRef nodeRefReference = reference.toNodeRef();
-            int skipped = 0;
-            int count = 0;
-            int total = 0;
-            for (Reference child : children)
-            {
-                NodeRef childNodeRef = child.toNodeRef();
-                Serializable childName = environment.getProperty(childNodeRef,
-                        ContentModel.PROP_NAME);
-                QName childAssocQName = QName
-                        .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
-                                childName.toString());
-                if (qnamePattern.isMatch(childAssocQName))
-                {
-                    total++;
-                    if (skipped < skipResults)
-                    {
-                        skipped++;
-                        continue;
-                    }
-                    if (count >= maxResults)
-                    {
-                        continue;
-                    }
-                    ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
-                            nodeRefReference,
-                            childAssocQName,
-                            childNodeRef,
-                            true,
-                            -1);
-                    childAssocs.add(childAssoc);
-                    count++;
-                }
-            }
-
-            return new Pair<>(childAssocs, total);
-        }
-        else
+        if (!typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
         {
             return new Pair<>(Collections.emptyList(), 0);
         }
+        List<ChildAssociationRef> childAssocs = new LinkedList<>();
+        List<Reference> children = smartStore.list(reference);
+        NodeRef nodeRefReference = reference.toNodeRef();
+        int skipped = 0;
+        int total = 0;
+        for (Reference child : children)
+        {
+            NodeRef childNodeRef = child.toNodeRef();
+            Serializable childName = environment.getProperty(childNodeRef,
+                    ContentModel.PROP_NAME);
+            QName childAssocQName = QName
+                    .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
+                            childName.toString());
+            if (qnamePattern.isMatch(childAssocQName))
+            {
+                total++;
+                if (skipped < skipResults)
+                {
+                    skipped++;
+                    continue;
+                }
+                if (childAssocs.size() >= maxResults)
+                {
+                    continue;
+                }
+                ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
+                        nodeRefReference,
+                        childAssocQName,
+                        childNodeRef,
+                        true,
+                        -1);
+                childAssocs.add(childAssoc);
+            }
+        }
+
+        return new Pair<>(childAssocs, total);
     }
 
     @Override
@@ -142,30 +137,30 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<Pair<List<Child
         NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(null));
         NodeRef nodeRefReference = reference.toNodeRef();
         List<ChildAssociationRef> referenceAssociations = new LinkedList<>();
-        if (!environment.isSubClass(environment.getType(nodeRefReference), ContentModel.TYPE_FOLDER))
+        if (environment.isSubClass(environment.getType(nodeRefReference), ContentModel.TYPE_FOLDER))
         {
-            Pair<List<ChildAssociationRef>, Integer> childAssocsCount = environment.getChildAssocs(actualNodeRef,
-                    typeQNamePattern,
-                    qnamePattern,
-                    skipResults,
-                    maxResults,
-                    preload);
-            List<ChildAssociationRef> actualAssociations = childAssocsCount.getFirst();
-            Integer totalCount = childAssocsCount.getSecond();
-
-            for (ChildAssociationRef actualAssoc : actualAssociations)
-            {
-                ChildAssociationRef referenceChildAssocRef = new ChildAssociationRef(actualAssoc.getTypeQName(),
-                        nodeRefReference,
-                        actualAssoc.getQName(),
-                        actualAssoc.getChildRef(),
-                        actualAssoc.isPrimary(),
-                        actualAssoc.getNthSibling());
-
-                referenceAssociations.add(referenceChildAssocRef);
-            }
-            return new Pair<>(referenceAssociations, totalCount);
+            return new Pair<>(referenceAssociations, 0);
         }
-        return new Pair<>(referenceAssociations, 0);
+        Pair<List<ChildAssociationRef>, Integer> childAssocsCount = environment.getChildAssocs(actualNodeRef,
+                typeQNamePattern,
+                qnamePattern,
+                skipResults,
+                maxResults,
+                preload);
+        List<ChildAssociationRef> actualAssociations = childAssocsCount.getFirst();
+        Integer totalCount = childAssocsCount.getSecond();
+
+        for (ChildAssociationRef actualAssoc : actualAssociations)
+        {
+            ChildAssociationRef referenceChildAssocRef = new ChildAssociationRef(actualAssoc.getTypeQName(),
+                    nodeRefReference,
+                    actualAssoc.getQName(),
+                    actualAssoc.getChildRef(),
+                    actualAssoc.isPrimary(),
+                    actualAssoc.getNthSibling());
+
+            referenceAssociations.add(referenceChildAssocRef);
+        }
+        return new Pair<>(referenceAssociations, totalCount);
     }
 }

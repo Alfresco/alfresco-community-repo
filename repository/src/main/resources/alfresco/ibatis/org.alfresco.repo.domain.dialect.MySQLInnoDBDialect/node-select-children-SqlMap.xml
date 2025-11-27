@@ -11,7 +11,12 @@
         <include refid="alfresco.node.select_ChildAssocsOfParent_Snippet"/>
         and 1=1
         <if test="ordered == true">
-            <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
+            <if test="ascending == true">
+                <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
+            </if>
+            <if test="ascending == false">
+                <include refid="alfresco.node.select_ChildAssoc_OrderBy_Desc"/>
+            </if>
         </if>
     </select>
 

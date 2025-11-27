@@ -3541,18 +3541,34 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
 
     @Override
-    public void getChildAssocs(
+    public void getChildAssocsLimited(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
             int maxResults,
             ChildAssocRefQueryCallback resultsCallback)
     {
-        selectChildAssocs(
+        selectChildAssocsLimited(
                 parentNodeId,
                 assocTypeQName,
                 assocQName,
                 maxResults,
+                new ChildAssocRefBatchingQueryCallback(resultsCallback));
+    }
+
+    @Override
+    public void getChildAssocsLimited(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            boolean ascending,
+            ChildAssocRefQueryCallback resultsCallback)
+    {
+        selectChildAssocsLimited(
+                parentNodeId,
+                assocTypeQName,
+                assocQName,
+                ascending,
                 new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
 
@@ -5044,11 +5060,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Boolean sameStore,
             ChildAssocRefQueryCallback resultsCallback);
 
-    protected abstract void selectChildAssocs(
+    protected abstract void selectChildAssocsLimited(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
             int maxResults,
+            ChildAssocRefQueryCallback resultsCallback);
+
+    protected abstract void selectChildAssocsLimited(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            boolean ascending,
             ChildAssocRefQueryCallback resultsCallback);
 
     protected abstract void selectChildAssocs(

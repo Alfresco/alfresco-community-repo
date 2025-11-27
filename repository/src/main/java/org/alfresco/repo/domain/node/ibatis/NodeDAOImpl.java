@@ -1180,7 +1180,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
     @SuppressWarnings("unchecked")
     @Override
-    public void selectChildAssocs(
+    public void selectChildAssocsLimited(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
@@ -1225,6 +1225,49 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             resultContext.nextResultObject(entity);
             resultHandler.handleResult(resultContext);
         }
+
+        resultsCallback.done();
+    }
+
+    @Override
+    public void selectChildAssocsLimited(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            boolean ascending,
+            ChildAssocRefQueryCallback resultsCallback)
+    {
+        ChildAssocEntity assoc = new ChildAssocEntity();
+        // Parent
+        NodeEntity parentNode = new NodeEntity();
+        parentNode.setId(parentNodeId);
+        assoc.setParentNode(parentNode);
+
+        // Type QName
+        if (assocTypeQName != null)
+        {
+            if (!assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
+            {
+                resultsCallback.done();
+                return; // Shortcut
+            }
+        }
+        // QName
+        if (assocQName != null)
+        {
+            if (!assoc.setQNameAll(qnameDAO, assocQName, false))
+            {
+                resultsCallback.done();
+                return; // Shortcut
+            }
+        }
+        // Order
+        assoc.setOrdered(resultsCallback.orderResults());
+        assoc.setAscending(ascending);
+
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+
+        template.select(SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED, assoc, resultHandler);
 
         resultsCallback.done();
     }

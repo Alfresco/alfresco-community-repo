@@ -723,11 +723,33 @@ public interface NodeDAO extends NodeBulkLoader
      * @param resultsCallback
      *            the callback that will be called with the results
      */
-    public void getChildAssocs(
+    public void getChildAssocsLimited(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
             final int maxResults,
+            ChildAssocRefQueryCallback resultsCallback);
+
+    /**
+     * Gets the child associations of a given parent node, optionally filtering on association <tt>QName</tt> and association type <tt>QName</tt>.
+     * <p/>
+     *
+     * @param parentNodeId
+     *            the parent node ID
+     * @param assocTypeQName
+     *            the association type qname to filter on; <tt>null</tt> for no filtering
+     * @param assocQName
+     *            the association qname to filter on; <tt>null</tt> for no filtering
+     * @param ascending
+     *            if the results are to be ordered in ascending (true) or descending (false) order
+     * @param resultsCallback
+     *            the callback that will be called with the results
+     */
+    void getChildAssocsLimited(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            boolean ascending,
             ChildAssocRefQueryCallback resultsCallback);
 
     /**

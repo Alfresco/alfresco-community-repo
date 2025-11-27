@@ -29,6 +29,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import junit.framework.TestCase;
 import org.springframework.context.ApplicationContext;
@@ -45,7 +46,7 @@ import org.alfresco.util.DataModelTestApplicationContextHelper;
  */
 public class CharsetFinderTest extends TestCase
 {
-    private static ApplicationContext ctx = DataModelTestApplicationContextHelper.getApplicationContext();
+    private static final ApplicationContext ctx = DataModelTestApplicationContextHelper.getApplicationContext();
 
     private ContentCharsetFinder charsetFinder;
 
@@ -63,7 +64,7 @@ public class CharsetFinderTest extends TestCase
                 "براون وكس السريع يقفز فوق الكلب كسالي";
 
         // As UTF-8
-        InputStream is = new BufferedInputStream(new ByteArrayInputStream(test.getBytes("UTF-8")));
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(test.getBytes(StandardCharsets.UTF_8)));
         Charset charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertNotNull(charset);
         assertEquals("UTF-8", charset.displayName());
@@ -71,7 +72,7 @@ public class CharsetFinderTest extends TestCase
         // Now try with longer encodings
 
         // UTF-16 with byte order mark
-        is = new BufferedInputStream(new ByteArrayInputStream(test.getBytes("UTF-16")));
+        is = new BufferedInputStream(new ByteArrayInputStream(test.getBytes(StandardCharsets.UTF_16)));
         charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertNotNull(charset);
         assertEquals("UTF-16BE", charset.displayName());
@@ -102,7 +103,7 @@ public class CharsetFinderTest extends TestCase
         String for_iso_8859_7 = "Αυτό είναι στην ελληνική γλώσσα";
         String for_cp1251 = "Это в русском языке, который является кириллица";
 
-        InputStream is = new BufferedInputStream(new ByteArrayInputStream(for_iso_8859_1.getBytes("ISO-8859-1")));
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(for_iso_8859_1.getBytes(StandardCharsets.ISO_8859_1)));
         Charset charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertNotNull(charset);
         assertEquals("ISO-8859-1", charset.displayName());
@@ -136,15 +137,14 @@ public class CharsetFinderTest extends TestCase
     /**
      * Test blank file upload scenario - verifies fix for ACS-10408 Ensures blank files are not incorrectly detected.
      */
-    public void testBlankFileCharsetDetection() throws Exception
+    public void testBlankFileCharsetDetection()
     {
         // Empty byte array simulating blank uploaded file
         byte[] blankContent = new byte[0];
-
         InputStream is = new BufferedInputStream(new ByteArrayInputStream(blankContent));
         Charset charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
 
         assertNotNull("Charset should not be null for blank files", charset);
-        assertEquals("UTF-8", charset.displayName());
+        assertEquals(charset.displayName(), StandardCharsets.UTF_8.displayName());
     }
 }

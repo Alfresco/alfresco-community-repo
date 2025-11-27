@@ -234,6 +234,13 @@ jobs:
     name: Repository - MariaDB ${{ matrix.version }} tests
     runs-on: ubuntu-latest
     needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) &&
+      github.event_name != 'pull_request' &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
     strategy:
       fail-fast: false
       matrix:
@@ -250,7 +257,7 @@ jobs:
         env:
           MARIADB_VERSION: ${{ matrix.version }}
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8\&transformedBitIsBoolean=false -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -258,6 +265,13 @@ jobs:
     name: "Repository - MariaDB 10.11 tests"
     runs-on: ubuntu-latest
     needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[latest db]') ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -270,7 +284,7 @@ jobs:
         env:
           MARIADB_VERSION: 10.11
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8\&transformedBitIsBoolean=false -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -278,6 +292,13 @@ jobs:
     name: Repository - MySQL 8 tests
     runs-on: ubuntu-latest
     needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[latest db]') ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -298,6 +319,12 @@ jobs:
     name: "Repository - PostgreSQL 14.15 tests"
     runs-on: ubuntu-latest
     needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -318,6 +345,12 @@ jobs:
     name: "Repository - PostgreSQL 15.10 tests"
     runs-on: ubuntu-latest
     needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
+            !contains(github.event.head_commit.message, '[skip db]')) ||
+            contains(github.event.head_commit.message, '[db]')) &&
+            !contains(github.event.head_commit.message, '[skip tests]') &&
+            !contains(github.event.head_commit.message, '[force')
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -338,6 +371,12 @@ jobs:
     name: "Repository - PostgreSQL 16.6 tests"
     runs-on: ubuntu-latest
     needs: [prepare]
+    if: >
+      (!contains(github.event.head_commit.message, '[skip db]') ||
+      contains(github.event.head_commit.message, '[latest db]') ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -545,6 +584,12 @@ jobs:
     name: AGS Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      !contains(github.event.head_commit.message, '[skip ags]')) ||
+      contains(github.event.head_commit.message, '[ags]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
     strategy:
       fail-fast: false
       matrix:
@@ -571,6 +616,12 @@ jobs:
     name: AGS Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      !contains(github.event.head_commit.message, '[skip ags]')) ||
+      contains(github.event.head_commit.message, '[ags on MySQL]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
     strategy:
       fail-fast: false
       matrix:

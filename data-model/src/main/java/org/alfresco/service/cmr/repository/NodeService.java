@@ -38,7 +38,6 @@ import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.Pair;
 
 /**
  * Interface for public and internal <b>node</b> and <b>store</b> operations.
@@ -653,28 +652,31 @@ public interface NodeService
             throws InvalidNodeRefException;
 
     /**
-     * Gets all child associations where the pattern of the association qualified name is an exact match and a total count of matching child associations. Allows skipping and limiting of results.
-     * 
+     * Gets all child associations where the pattern of the association qualified name is an exact match and provides a total count of matching child associations.
+     * <p>
+     * This method supports pagination by allowing skipping and limiting of results, and returns both the current page of child associations and the total number of matches.
+     * </p>
+     *
      * @param nodeRef
-     *            the parent node - usually a <b>container</b>
+     *            the parent node
      * @param typeQNamePattern
-     *            the qualified name of the association (<tt>null</tt> to ignore)
+     *            the qualified name of the association to match (or <tt>null</tt> to ignore)
      * @param qnamePattern
-     *            the path qualified name (<tt>null</tt> to ignore)
+     *            the path qualified name to match (or <tt>null</tt> to ignore)
      * @param skipResults
-     *            the number of results to skip
+     *            the number of results to skip (for paging)
      * @param maxResults
-     *            the number of results to get
+     *            the maximum number of results to return (for paging)
      * @param preload
-     *            <tt>true</tt> if the nodes must be preloaded into the cache
-     * @return Returns a pair that contains the list of <code>ChildAssociationRef</code> instances and the total count of matching child associations
+     *            <tt>true</tt> if the nodes should be preloaded into the cache
+     * @return a {@link ChildAssocsTotalCount} object containing an unmodifiable list of matching {@link ChildAssociationRef} instances and the total count of matching child associations, regardless of paging
      * @throws InvalidNodeRefException
      *             if the node could not be found
      *
      * @see QName
      */
     @Auditable(parameters = {"nodeRef", "typeQNamePattern", "qnamePattern", "skipResults", "maxResults", "preload"})
-    Pair<List<ChildAssociationRef>, Integer> getChildAssocs(
+    ChildAssocsTotalCount getChildAssocs(
             NodeRef nodeRef,
             QNamePattern typeQNamePattern,
             QNamePattern qnamePattern,

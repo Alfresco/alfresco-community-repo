@@ -774,21 +774,17 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         return dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL, preLoad);
     }
 
-    protected Pair<List<Version>, Integer> getVersions(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
+    private Pair<List<Version>, Integer> getVersionsPage(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
     {
-        Pair<List<ChildAssociationRef>, Integer> versionAssocsCount = getVersionAssocs(versionHistoryRef, skipVersions, maxVersions);
-        List<Version> versions = versionAssocsCount.getFirst().stream()
+        var childAssocsTotalCount = dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL,
+                skipVersions, maxVersions, true);
+        List<ChildAssociationRef> childAssociationRefs = childAssocsTotalCount.childAssocs();
+        List<Version> versionsPage = childAssociationRefs.stream()
                 .map(ChildAssociationRef::getChildRef)
                 .map(this::getVersion)
                 .collect(Collectors.toCollection(ArrayList::new));
-        Integer versionCount = versionAssocsCount.getSecond();
-        return new Pair<>(versions, versionCount);
-    }
-
-    private Pair<List<ChildAssociationRef>, Integer> getVersionAssocs(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
-    {
-        return dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL,
-                skipVersions, maxVersions, true);
+        int totalVersionsCount = childAssocsTotalCount.totalCount();
+        return new Pair<>(versionsPage, totalVersionsCount);
     }
 
     /**
@@ -837,24 +833,24 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 
     private VersionHistory buildVersionHistory(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
     {
-        Pair<List<Version>, Integer> versionsCount = getVersions(versionHistoryRef, skipVersions, maxVersions);
-        List<Version> versions = versionsCount.getFirst();
-        Integer versionCount = versionsCount.getSecond();
+        Pair<List<Version>, Integer> versionsPageWithCount = getVersionsPage(versionHistoryRef, skipVersions, maxVersions);
+        List<Version> versionsPage = versionsPageWithCount.getFirst();
+        Integer versionsTotalCount = versionsPageWithCount.getSecond();
 
         VersionHistoryImpl versionHistory = null;
         if (versionComparatorDesc != null)
         {
-            Collections.sort(versions, Collections.reverseOrder(versionComparatorDesc));
+            Collections.sort(versionsPage, Collections.reverseOrder(versionComparatorDesc));
         }
 
         // Build the version history object
         boolean isRoot = true;
         Version preceeding = null;
-        for (Version version : versions)
+        for (Version version : versionsPage)
         {
             if (isRoot)
             {
-                versionHistory = new VersionHistoryImpl(version, versionComparatorDesc, versionCount);
+                versionHistory = new VersionHistoryImpl(version, versionComparatorDesc, versionsTotalCount);
                 isRoot = false;
             }
             else

@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -59,7 +60,6 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
-import org.alfresco.util.Pair;
 
 public class AlfrescoEnviroment implements ActualEnvironment
 {
@@ -231,7 +231,7 @@ public class AlfrescoEnviroment implements ActualEnvironment
     }
 
     @Override
-    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
+    public ChildAssocsTotalCount getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
             QNamePattern qnamePattern, int skipResults, int maxResults,
             boolean preload) throws InvalidNodeRefException
     {

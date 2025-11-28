@@ -28,7 +28,6 @@ package org.alfresco.repo.virtual;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,6 +36,7 @@ import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -46,7 +46,6 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
-import org.alfresco.util.Pair;
 
 /**
  * Dependency inversion facade of the Alfresco repository environment. It offers an interface to Alfresco repository capabilities needed for virtualization. Implementors should consider loose repository beans coupling when implementing the environment operations.
@@ -76,7 +75,7 @@ public interface ActualEnvironment
 
     ChildAssociationRef getPrimaryParent(NodeRef nodeRef);
 
-    Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+    ChildAssocsTotalCount getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
             int skipResults, int maxResults, boolean preload) throws InvalidNodeRefException;
 
     NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName);

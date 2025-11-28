@@ -63,6 +63,7 @@ import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -76,7 +77,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.Pair;
 
 public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<NodeServiceExtension, NodeServiceTrait>
         implements NodeServiceExtension
@@ -675,7 +675,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     }
 
     @Override
-    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+    public ChildAssocsTotalCount getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
             int skipResults, int maxResults, boolean preload)
     {
         NodeServiceTrait theTrait = getTrait();
@@ -684,29 +684,29 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             int total = 0;
             Reference reference = smartStore.virtualize(nodeRef);
-            Pair<List<ChildAssociationRef>, Integer> childAssocsCount = smartStore.getChildAssocs(reference,
+            var childAssocsTotalCount = smartStore.getChildAssocs(reference,
                     typeQNamePattern,
                     qnamePattern,
                     skipResults,
                     maxResults,
                     preload);
-            List<ChildAssociationRef> virtualAssociations = childAssocsCount.getFirst();
-            total += childAssocsCount.getSecond();
+            List<ChildAssociationRef> virtualAssociations = childAssocsTotalCount.childAssocs();
+            total += childAssocsTotalCount.totalCount();
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
             if (associations.size() < maxResults && smartStore.canMaterialize(reference))
             {
                 NodeRef materialReference = smartStore.materialize(reference);
-                childAssocsCount = theTrait.getChildAssocs(materialReference,
+                childAssocsTotalCount = theTrait.getChildAssocs(materialReference,
                         typeQNamePattern,
                         qnamePattern,
                         0, // skipping only applies to virtual store
                         maxResults - associations.size(),
                         preload);
-                List<ChildAssociationRef> actualAssociations = childAssocsCount.getFirst();
+                List<ChildAssociationRef> actualAssociations = childAssocsTotalCount.childAssocs();
                 associations.addAll(actualAssociations);
-                total += childAssocsCount.getSecond();
+                total += childAssocsTotalCount.totalCount();
             }
-            return new Pair<>(associations, total);
+            return new ChildAssocsTotalCount(associations, total);
         }
         else
         {

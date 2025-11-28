@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,7 +62,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.Pair;
 
 /**
  * The light weight version store node service implementation.
@@ -606,14 +606,13 @@ public class NodeServiceImpl implements NodeService, VersionModel
     }
 
     @Override
-    public Pair<List<ChildAssociationRef>, Integer> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+    public ChildAssocsTotalCount getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
             int skipResults, int maxResults, boolean preload)
     {
-        // Get the child assocs from the version store
-        Pair<List<ChildAssociationRef>, Integer> childAssocsCount = this.dbNodeService.getChildAssocs(
+        var childAssocsTotalCount = this.dbNodeService.getChildAssocs(
                 VersionUtil.convertNodeRef(nodeRef),
                 RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSIONED_CHILD_ASSOCS, skipResults, maxResults, true);
-        List<ChildAssociationRef> childAssocRefs = childAssocsCount.getFirst();
+        List<ChildAssociationRef> childAssocRefs = childAssocsTotalCount.childAssocs();
         List<ChildAssociationRef> result = new ArrayList<>(childAssocRefs.size());
         for (ChildAssociationRef childAssocRef : childAssocRefs)
         {
@@ -649,7 +648,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
         // sort the results so that the order appears to be exactly as it was originally
         Collections.sort(result);
 
-        return new Pair<>(result, childAssocsCount.getSecond());
+        return new ChildAssocsTotalCount(result, childAssocsTotalCount.totalCount());
     }
 
     /**

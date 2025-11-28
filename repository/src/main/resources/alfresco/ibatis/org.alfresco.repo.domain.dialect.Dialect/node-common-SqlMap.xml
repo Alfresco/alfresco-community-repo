@@ -908,6 +908,11 @@
             assoc.assoc_index ASC,
             assoc.id ASC
     </sql>
+    <sql id="select_ChildAssoc_OrderBy_Desc">
+        order by
+            assoc.assoc_index DESC,
+            assoc.id DESC
+    </sql>
     <sql id="select_ChildAssocsOfParent_Snippet">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>

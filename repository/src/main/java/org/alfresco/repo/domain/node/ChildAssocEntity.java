@@ -74,6 +74,7 @@ public class ChildAssocEntity implements Serializable
     private List<Long> childNodeTypeQNameIds;
     private Boolean sameStore;
     private boolean ordered;
+    private boolean ascending;
 
     /**
      * Find a CRC value for the full QName using UTF-8 conversion.
@@ -199,6 +200,7 @@ public class ChildAssocEntity implements Serializable
     public ChildAssocEntity()
     {
         ordered = false;
+        ascending = true;
     }
 
     @Override
@@ -529,5 +531,15 @@ public class ChildAssocEntity implements Serializable
     public void setOrdered(boolean ordered)
     {
         this.ordered = ordered;
+    }
+
+    public boolean isAscending()
+    {
+        return ascending;
+    }
+
+    public void setAscending(boolean ascending)
+    {
+        this.ascending = ascending;
     }
 }

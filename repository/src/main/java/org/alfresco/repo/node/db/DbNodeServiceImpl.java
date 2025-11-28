@@ -75,6 +75,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
@@ -1873,6 +1874,79 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         nodeDAO.getChildAssocs(nodePair.getFirst(), typeQName, qname, maxResults, callback);
         // Done
         return results;
+    }
+
+    @Override
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    public ChildAssocsTotalCount getChildAssocs(
+            NodeRef nodeRef,
+            final QNamePattern typeQNamePattern,
+            final QNamePattern qnamePattern,
+            final int skipResults,
+            final int maxResults,
+            final boolean preload)
+    {
+        // Get the node
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+
+        // We have a callback handler to filter results
+        final List<ChildAssociationRef> results = new ArrayList<>(10);
+        final int[] totalCount = {0};
+        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback() {
+            int skipped;
+
+            @Override
+            public boolean preLoadNodes()
+            {
+                return preload;
+            }
+
+            @Override
+            public boolean orderResults()
+            {
+                return true;
+            }
+
+            @Override
+            public boolean handle(
+                    Pair<Long, ChildAssociationRef> childAssocPair,
+                    Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair)
+            {
+                if (typeQNamePattern != null && !typeQNamePattern.isMatch(childAssocPair.getSecond().getTypeQName()))
+                {
+                    return true;
+                }
+                if (qnamePattern != null && !qnamePattern.isMatch(childAssocPair.getSecond().getQName()))
+                {
+                    return true;
+                }
+                totalCount[0]++;
+                if (skipped < skipResults)
+                {
+                    skipped++;
+                    return true;
+                }
+                if (results.size() < maxResults)
+                {
+                    results.add(childAssocPair.getSecond());
+                    return true;
+                }
+                return true;
+            }
+
+            @Override
+            public void done()
+            {
+                Collections.reverse(results);
+            }
+        };
+        // Get the assocs pointing to it
+        QName typeQName = (typeQNamePattern instanceof QName) ? (QName) typeQNamePattern : null;
+        QName qname = (qnamePattern instanceof QName) ? (QName) qnamePattern : null;
+
+        nodeDAO.getChildAssocs(nodePair.getFirst(), typeQName, qname, false, callback);
+        return new ChildAssocsTotalCount(results, totalCount[0]);
     }
 
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)

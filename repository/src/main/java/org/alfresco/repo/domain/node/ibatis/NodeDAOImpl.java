@@ -1230,6 +1230,43 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
+    public void selectChildAssocs(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            boolean ascending,
+            ChildAssocRefQueryCallback resultsCallback)
+    {
+        ChildAssocEntity assoc = new ChildAssocEntity();
+        // Parent
+        NodeEntity parentNode = new NodeEntity();
+        parentNode.setId(parentNodeId);
+        assoc.setParentNode(parentNode);
+
+        // Type QName
+        if (assocTypeQName != null && !assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
+        {
+            resultsCallback.done();
+            return; // Shortcut
+        }
+        // QName
+        if (assocQName != null && !assoc.setQNameAll(qnameDAO, assocQName, false))
+        {
+            resultsCallback.done();
+            return; // Shortcut
+        }
+        // Order
+        assoc.setOrdered(resultsCallback.orderResults());
+        assoc.setAscending(ascending);
+
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+
+        template.select(SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED, assoc, resultHandler);
+
+        resultsCallback.done();
+    }
+
+    @Override
     protected void selectChildAssocs(
             Long parentNodeId,
             Set<QName> assocTypeQNames,

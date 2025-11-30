@@ -57,6 +57,7 @@
                 <ref bean="patch.db-V6.0-change-set-indexes" />
                 <ref bean="patch.db-V6.3-add-indexes-node-transaction" />
                 <ref bean="patch.db-V7.1.0-remove-alf_server-table" />
+                <ref bean="patch.db-v25.3-merge-alf_prop_string-sequences" />
             </list>
         </property>
     </bean>

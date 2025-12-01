@@ -28,12 +28,16 @@ package org.alfresco.repo.virtual.bundle;
 
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.ref.GetActualNodeRefMethod;
 import org.alfresco.repo.virtual.ref.Reference;
@@ -43,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.version.VersionType;
 
 public class VirtualVersionServiceExtensionTest extends VirtualizationIntegrationTest
 {
@@ -86,22 +91,8 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
         Version newCurrentVersion = versionService.getCurrentVersion(contentWithVersionsNodeRef);
         assertNotNull(newCurrentVersion);
 
-        assertSameVersion(newVersion,
-                newCurrentVersion);
+        assertEquals(newVersion, newCurrentVersion);
 
-    }
-
-    private void assertSameVersion(Version expectedVersion, Version actualVersion)
-    {
-        assertEquals("FrozenStateNodeRefs are not the same",
-                expectedVersion.getFrozenStateNodeRef(),
-                actualVersion.getFrozenStateNodeRef());
-        assertEquals("VersionedNodeRefs are not the same",
-                expectedVersion.getVersionedNodeRef(),
-                actualVersion.getVersionedNodeRef());
-        assertEquals("Versionlabels are not the same",
-                expectedVersion.getVersionLabel(),
-                actualVersion.getVersionLabel());
     }
 
     @Test
@@ -240,5 +231,84 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
         assertEquals("0.1",
                 history.getHeadVersion().getVersionLabel());
 
+    }
+
+    @Test
+    public void testShouldReturnVersionHistoryWithTheSameValuesWhenVersionHistoryIsPagedButNothingIsSkippedOrLimited()
+    {
+        Map<String, Serializable> versionProperties = Map.of(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        ChildAssociationRef contentWithVersionsAssocRef = createContent(node2_1, "testingVersions");
+        NodeRef versionableNode = contentWithVersionsAssocRef.getChildRef();
+        versionService.createVersion(versionableNode, versionProperties); // 1.0
+        versionService.createVersion(versionableNode, versionProperties); // 2.0
+        versionService.createVersion(versionableNode, versionProperties); // 3.0
+
+        VersionHistory originalVersionHistory = this.versionService.getVersionHistory(versionableNode);
+        VersionHistory pagedVersionHistory = this.versionService.getVersionHistory(versionableNode, 0, Integer.MAX_VALUE);
+
+        assertNotNull(originalVersionHistory);
+        assertNotNull(pagedVersionHistory);
+        assertEquals(originalVersionHistory.getAllVersions(), pagedVersionHistory.getAllVersions());
+        assertEquals(originalVersionHistory.getAllVersionsCount(), pagedVersionHistory.getAllVersionsCount());
+    }
+
+    @Test
+    public void testShouldSkipVersion3AndReturnVersion2AndVersion1WhenVersionHistoryIsPaged()
+    {
+        Map<String, Serializable> versionProperties = Map.of(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        ChildAssociationRef contentWithVersionsAssocRef = createContent(node2_1, "testingVersions");
+        NodeRef versionableNode = contentWithVersionsAssocRef.getChildRef();
+        versionService.createVersion(versionableNode, versionProperties); // 1.0
+        versionService.createVersion(versionableNode, versionProperties); // 2.0
+        versionService.createVersion(versionableNode, versionProperties); // 3.0
+
+        VersionHistory vh = this.versionService.getVersionHistory(versionableNode, 1, 2);
+
+        assertNotNull(vh);
+        Collection<Version> versions = vh.getAllVersions();
+        assertEquals(2, versions.size());
+        List<String> versionLabels = getVersionLabels(versions);
+        assertEquals(List.of("2.0", "1.0"), versionLabels);
+        assertEquals(3, vh.getAllVersionsCount());
+    }
+
+    @Test
+    public void testShouldSkipVersion3AndVersion2AndReturnVersion1WhenVersionHistoryIsPaged()
+    {
+        Map<String, Serializable> versionProperties = Map.of(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        ChildAssociationRef contentWithVersionsAssocRef = createContent(node2_1, "testingVersions");
+        NodeRef versionableNode = contentWithVersionsAssocRef.getChildRef();
+        versionService.createVersion(versionableNode, versionProperties); // 1.0
+        versionService.createVersion(versionableNode, versionProperties); // 2.0
+        versionService.createVersion(versionableNode, versionProperties); // 3.0
+
+        VersionHistory vh = this.versionService.getVersionHistory(versionableNode, 2, 1);
+
+        assertNotNull(vh);
+        Collection<Version> versions = vh.getAllVersions();
+        assertEquals(1, versions.size());
+        List<String> versionLabels = getVersionLabels(versions);
+        assertEquals(List.of("1.0"), versionLabels);
+        assertEquals(3, vh.getAllVersionsCount());
+    }
+
+    @Test
+    public void testShouldReturnNullWhenVersionHistoryIsPagedAndAllVersionsAreSkipped()
+    {
+        Map<String, Serializable> versionProperties = Map.of(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        ChildAssociationRef contentWithVersionsAssocRef = createContent(node2_1, "testingVersions");
+        NodeRef versionableNode = contentWithVersionsAssocRef.getChildRef();
+        versionService.createVersion(versionableNode, versionProperties); // 1.0
+        versionService.createVersion(versionableNode, versionProperties); // 2.0
+        versionService.createVersion(versionableNode, versionProperties); // 3.0
+
+        VersionHistory vh = this.versionService.getVersionHistory(versionableNode, 3, Integer.MAX_VALUE);
+
+        assertNull(vh);
+    }
+
+    private static List<String> getVersionLabels(Collection<Version> versions)
+    {
+        return versions.stream().map(Version::getVersionLabel).toList();
     }
 }

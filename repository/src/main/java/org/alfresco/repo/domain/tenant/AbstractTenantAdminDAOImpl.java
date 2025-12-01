@@ -211,6 +211,12 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         }
 
         @Override
+        public List<Serializable> getValueKeys(List<TenantEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for tenants.");
+        }
+
+        @Override
         public Pair<String, TenantEntity> createValue(TenantEntity value)
         {
             TenantEntity entity = createTenantEntity(value);
@@ -225,6 +231,12 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         }
 
         @Override
+        public List<Pair<String, TenantEntity>> findByKeys(List<String> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for tenants.");
+        }
+
+        @Override
         public Pair<String, TenantEntity> findByValue(TenantEntity value)
         {
             if ((value == null) || (value.getTenantDomain() == null))
@@ -232,6 +244,12 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
                 throw new AlfrescoRuntimeException("Unexpected: TenantEntity / tenantDomain must not be null");
             }
             return convertEntityToPair(getTenantEntity(value.getTenantDomain()));
+        }
+
+        @Override
+        public List<Pair<String, TenantEntity>> findByValues(List<TenantEntity> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for tenants.");
         }
 
         @Override

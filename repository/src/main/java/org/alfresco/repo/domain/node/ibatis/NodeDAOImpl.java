@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.result.DefaultResultContext;
@@ -143,6 +144,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_ASSOCS_NOT_LINKED_BY_TWO_OTHER_ASSOCS = "alfresco.node.select_AssocsNotLinkedByTwoOtherAssocs";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_NODE_ASSOCS_OF_TYPE = "alfresco.node.select_ChildAssocsOfParentWithoutNodeAssocsOfType";
     private static final String SELECT_PARENT_ASSOCS_OF_CHILD = "alfresco.node.select_ParentAssocsOfChild";
+    private static final String SELECT_PARENT_ASSOCS_OF_CHILDREN = "alfresco.node.select_ParentAssocsOfChildren";
     private static final String UPDATE_PARENT_ASSOCS_OF_CHILD = "alfresco.node.update_ParentAssocsOfChild";
     private static final String DELETE_SUBSCRIPTIONS = "alfresco.node.delete_NodeSubscriptions";
 
@@ -420,6 +422,19 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
+    protected List<NodeEntity> selectNodesByIds(List<Long> ids)
+    {
+        List<NodeEntity> nodes = new ArrayList<>();
+        ids.forEach(id -> {
+            NodeEntity node = new NodeEntity();
+            node.setId(id);
+            nodes.add(node);
+        });
+
+        return template.selectList(SELECT_NODES_BY_IDS, nodes);
+    }
+
+    @Override
     protected NodeEntity selectNodeByNodeRef(NodeRef nodeRef)
     {
         StoreEntity store = new StoreEntity();
@@ -448,6 +463,18 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
         // Store ID
         nodeBatchLoadEntity.setStoreId(storeId);
+        // UUID
+        nodeBatchLoadEntity.setUuids(new ArrayList<String>(uuids));
+
+        return template.selectList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
+    }
+
+    @Override
+    protected List<Node> selectNodesByUuids(SortedSet<String> uuids)
+    {
+        NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
+        // Store IDs
+        nodeBatchLoadEntity.setStoreIds(getStores().stream().map(Pair::getFirst).collect(Collectors.toList()));
         // UUID
         nodeBatchLoadEntity.setUuids(new ArrayList<String>(uuids));
 
@@ -1528,6 +1555,19 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
+    protected List<ChildAssocEntity> selectParentAssocsOfChildren(Set<Long> childrenNodeIds)
+    {
+        if (childrenNodeIds.isEmpty())
+        {
+            // There will be no results
+            return Collections.emptyList();
+        }
+        IdsEntity idsEntity = new IdsEntity();
+        idsEntity.setIds(new ArrayList<>(childrenNodeIds));
+        return template.selectList(SELECT_PARENT_ASSOCS_OF_CHILDREN, idsEntity);
+    }
+
+    @Override
     protected int updatePrimaryParentAssocs(
             Long childNodeId,
             Long parentNodeId,
@@ -1575,7 +1615,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         int countTA = template.update(UPDATE_MOVE_TARGET_ASSOCS, params);
         int countP = template.update(UPDATE_MOVE_PROPERTIES, params);
         int countA = template.update(UPDATE_MOVE_ASPECTS, params);
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Moved node data: \n" +
@@ -1850,7 +1890,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         Iterator<Long> nodeIdIterator = this.selectDeletedNodesByCommitTime(maxCommitTime);
         ArrayList<Long> nodeIdList = new ArrayList<>();
         List<String> deleteResult = new ArrayList<>();
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("nodes selected for deletion, deleteBatchSize:" + deleteBatchSize);
         }
@@ -1859,7 +1899,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             if (deleteBatchSize == nodeIdList.size())
             {
                 int count = deleteSelectedNodesAndProperties(nodeIdList);
-                if (isDebugEnabled)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("nodes deleted:" + count);
                 }
@@ -1874,7 +1914,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         if (nodeIdList.size() > 0)
         {
             int count = deleteSelectedNodesAndProperties(nodeIdList);
-            if (isDebugEnabled)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("remaining nodes deleted:" + count);
             }
@@ -1890,7 +1930,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         Iterator<Long> transactionIdIterator = this.selectUnusedTransactionsByCommitTime(maxCommitTime);
         ArrayList<Long> transactionIdList = new ArrayList<>();
         List<String> deleteResult = new ArrayList<>();
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("transactions selected for deletion, deleteBatchSize:" + deleteBatchSize);
         }
@@ -1900,7 +1940,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             {
                 int count = deleteSelectedTransactions(transactionIdList);
                 deleteResult.add("Purged old transactions: " + count);
-                if (isDebugEnabled)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("transactions deleted:" + count);
                 }
@@ -1916,7 +1956,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             int count = deleteSelectedTransactions(transactionIdList);
             deleteResult.add("Purged old transactions: " + count);
-            if (isDebugEnabled)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("final batch of transactions deleted:" + count);
             }
@@ -1928,13 +1968,13 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private int deleteSelectedNodesAndProperties(List<Long> nodeIdList)
     {
         int cnt = template.delete(DELETE_NODE_PROPS_BY_NODE_ID, nodeIdList);
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("nodes props deleted:" + cnt);
         }
         // Finally, remove the nodes
         cnt = template.delete(DELETE_NODES_BY_ID, nodeIdList);
-        if (isDebugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("nodes  deleted:" + cnt);
         }

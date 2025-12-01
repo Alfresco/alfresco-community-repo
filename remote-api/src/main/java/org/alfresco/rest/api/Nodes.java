@@ -103,6 +103,8 @@ public interface Nodes
 
     Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters, Map<String, UserInfo> mapUserInfo);
 
+    List<Node> getFoldersOrDocumentsFullInfo(List<NodeRef> nodeRefs, Parameters parameters, Map<String, UserInfo> mapUserInfo);
+
     /**
      * Get the folder or document representation (as appropriate) for the given node.
      *
@@ -115,6 +117,17 @@ public interface Nodes
      * @return
      */
     Node getFolderOrDocument(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String, UserInfo> mapUserInfo);
+
+    /**
+     * Get the folder or document representation (as appropriate) for the given list of nodes.
+     *
+     * @param nodeRefs
+     *            A list of real Nodes
+     * @param includeParam
+     * @param mapUserInfo
+     * @return
+     */
+    List<Node> getFoldersOrDocuments(List<NodeRef> nodeRefs, List<String> includeParam, Map<String, UserInfo> mapUserInfo);
 
     /**
      * Get list of children of a parent folder.
@@ -218,6 +231,8 @@ public interface Nodes
     Node upload(String parentFolderNodeId, FormData formData, Parameters parameters);
 
     NodeRef validateNode(StoreRef storeRef, String nodeId);
+
+    List<NodeRef> validateNodes(StoreRef storeRef, List<String> nodeIds);
 
     NodeRef validateNode(String nodeId);
 

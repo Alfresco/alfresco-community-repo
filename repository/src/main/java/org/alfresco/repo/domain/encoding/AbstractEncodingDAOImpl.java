@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.domain.encoding;
 
+import java.util.List;
+
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 import org.alfresco.repo.cache.SimpleCache;
@@ -110,6 +112,12 @@ public abstract class AbstractEncodingDAOImpl implements EncodingDAO
         }
 
         @Override
+        public List<Pair<Long, String>> findByKeys(List<Long> ids)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for encodings.");
+        }
+
+        @Override
         public Pair<Long, String> findByValue(String encoding)
         {
             EncodingEntity entity = getEncodingEntity(encoding);
@@ -121,6 +129,12 @@ public abstract class AbstractEncodingDAOImpl implements EncodingDAO
             {
                 return new Pair<Long, String>(entity.getId(), encoding);
             }
+        }
+
+        @Override
+        public List<Pair<Long, String>> findByValues(List<String> encodings)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for encodings.");
         }
 
         public Pair<Long, String> createValue(String encoding)

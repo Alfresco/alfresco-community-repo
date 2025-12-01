@@ -28,6 +28,8 @@ package org.alfresco.repo.cache.lookup;
 import static org.junit.Assert.*;
 
 import java.sql.Savepoint;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -294,6 +296,23 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         assertNull(entityPairCacheCheck);
     }
 
+    public void testFindByValuesNotFound()
+    {
+        // Put some values in the "database"
+        createValue(new TestValue("AAA"));
+        createValue(new TestValue("BBB"));
+        createValue(new TestValue("CCC"));
+
+        List<Object> valuesToFind = new ArrayList<>(3);
+        valuesToFind.add(new TestValue("ZZZ"));
+        valuesToFind.add(new TestValue("AAA"));
+        valuesToFind.add(new TestValue("BBB"));
+
+        List<Pair<Long, Object>> results = findByValues(valuesToFind);
+        assertNotNull(results);
+        assertEquals(2, results.size());
+    }
+
     /**
      * Helper class to represent business object
      */
@@ -332,6 +351,17 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         return dbValue;
     }
 
+    @Override
+    public List<String> getValueKeys(List<Object> values)
+    {
+        List<String> keys = new ArrayList<>(values.size());
+        for (Object value : values)
+        {
+            keys.add(getValueKey(value));
+        }
+        return keys;
+    }
+
     public Pair<Long, Object> findByKey(Long key)
     {
         assertNotNull(key);
@@ -344,6 +374,12 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         // Make a value object
         TestValue value = new TestValue(dbValue);
         return new Pair<Long, Object>(key, value);
+    }
+
+    @Override
+    public List<Pair<Long, Object>> findByKeys(List<Long> key)
+    {
+        throw new UnsupportedOperationException("Batch lookup not supported in test DAO.");
     }
 
     public Pair<Long, Object> findByValue(Object value)
@@ -359,6 +395,31 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
             }
         }
         return null;
+    }
+
+    @Override
+    public List<Pair<Long, Object>> findByValues(List<Object> values)
+    {
+        assertNotNull(values);
+        assertFalse(values.isEmpty());
+
+        List<Pair<Long, Object>> results = new ArrayList<>(values.size());
+
+        for (Object value : values)
+        {
+            String dbValue = (value == null) ? null : ((TestValue) value).val;
+
+            for (Map.Entry<Long, String> entry : database.entrySet())
+            {
+                if (EqualsHelper.nullSafeEquals(entry.getValue(), dbValue))
+                {
+                    results.add(new Pair<>(entry.getKey(), entry.getValue()));
+                    break;
+                }
+            }
+        }
+
+        return results;
     }
 
     /**

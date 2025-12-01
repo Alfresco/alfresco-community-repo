@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api;
 
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.rest.api.model.Node;
@@ -62,6 +63,19 @@ public interface DeletedNodes
      * @return a deleted node
      */
     Node getDeletedNode(String originalId, Parameters parameters, boolean fullnode, Map<String, UserInfo> mapUserInfo);
+
+    /**
+     * Gets a list of deleted nodes by id.
+     * 
+     * @param list
+     *            of originalIds
+     * @param parameters
+     * @param fullnode
+     *            Should we return the full representation of the minimal one?
+     * @param mapUserInfo
+     * @return a deleted node
+     */
+    List<Node> getDeletedNodes(List<String> originalIds, Parameters parameters, boolean fullnode, Map<String, UserInfo> mapUserInfo);
 
     /**
      * Restores a deleted node and returns it.

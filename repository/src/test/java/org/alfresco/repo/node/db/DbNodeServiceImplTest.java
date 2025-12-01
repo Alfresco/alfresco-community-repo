@@ -62,6 +62,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -915,5 +916,67 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         {
             // ok
         }
+    }
+
+    @Test
+    public void testGetChildAssocsWithNoSkipAndNoLimit() throws Exception
+    {
+        buildNodeGraphAndValidateFirstLevelExists();
+
+        ChildAssocsTotalCount childAssocsTotalCount = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, 0, Integer.MAX_VALUE, false);
+
+        List<ChildAssociationRef> childAssociationRefs = childAssocsTotalCount.childAssocs();
+        assertEquals(2, childAssociationRefs.size());
+        assertEquals("root_p_n1", childAssociationRefs.get(0).getQName().getLocalName());
+        assertEquals("root_p_n2", childAssociationRefs.get(1).getQName().getLocalName());
+        assertEquals(2, childAssocsTotalCount.totalCount());
+    }
+
+    @Test
+    public void testGetChildAssocsWithSkip1AndNoLimit() throws Exception
+    {
+        buildNodeGraphAndValidateFirstLevelExists();
+
+        ChildAssocsTotalCount childAssocsTotalCount = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, 1, Integer.MAX_VALUE, false);
+
+        List<ChildAssociationRef> childAssociationRefs = childAssocsTotalCount.childAssocs();
+        assertEquals(1, childAssociationRefs.size());
+        assertEquals("root_p_n1", childAssociationRefs.get(0).getQName().getLocalName());
+        assertEquals(2, childAssocsTotalCount.totalCount());
+    }
+
+    @Test
+    public void testGetChildAssocsWithSkip2AndNoLimit() throws Exception
+    {
+        buildNodeGraphAndValidateFirstLevelExists();
+
+        ChildAssocsTotalCount childAssocsTotalCount = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, 2, Integer.MAX_VALUE, false);
+
+        List<ChildAssociationRef> childAssociationRefs = childAssocsTotalCount.childAssocs();
+        assertEquals(0, childAssociationRefs.size());
+        assertEquals(2, childAssocsTotalCount.totalCount());
+    }
+
+    @Test
+    public void testGetChildAssocsWithNoSkipAndLimit1() throws Exception
+    {
+        buildNodeGraphAndValidateFirstLevelExists();
+
+        ChildAssocsTotalCount childAssocsTotalCount = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, 0, 1, false);
+
+        List<ChildAssociationRef> childAssociationRefs = childAssocsTotalCount.childAssocs();
+        assertEquals(1, childAssociationRefs.size());
+        assertEquals("root_p_n2", childAssociationRefs.get(0).getQName().getLocalName());
+        assertEquals(2, childAssocsTotalCount.totalCount());
+    }
+
+    private void buildNodeGraphAndValidateFirstLevelExists() throws Exception
+    {
+        Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
+        ChildAssociationRef n1ChildAssocRef = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1"));
+        ChildAssociationRef n2ChildAssocRef = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n2"));
+        nodeService.exists(rootNodeRef);
+        nodeService.exists(n1ChildAssocRef.getChildRef());
+        nodeService.exists(n2ChildAssocRef.getChildRef());
     }
 }

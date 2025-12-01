@@ -3226,7 +3226,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     }
 
     @Test
-    public void shouldReturnVersionHistoryWithTheSameValuesWhenVersionHistoryIsPagedButNothingIsSkippedOrLimited()
+    public void testShouldReturnVersionHistoryWithTheSameValuesWhenVersionHistoryIsPagedButNothingIsSkippedOrLimited()
     {
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
         NodeRef versionableNode = createNewVersionableNode();
@@ -3244,7 +3244,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     }
 
     @Test
-    public void shouldSkipVersion3AndReturnVersion2AndVersion1WhenVersionHistoryIsPaged()
+    public void testShouldSkipVersion3AndReturnVersion2AndVersion1WhenVersionHistoryIsPaged()
     {
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
         NodeRef versionableNode = createNewVersionableNode();
@@ -3263,7 +3263,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     }
 
     @Test
-    public void shouldSkipVersion3AndVersion2AndReturnVersion1WhenVersionHistoryIsPaged()
+    public void testShouldSkipVersion3AndVersion2AndReturnVersion1WhenVersionHistoryIsPaged()
     {
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
         NodeRef versionableNode = createNewVersionableNode();
@@ -3282,7 +3282,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     }
 
     @Test
-    public void shouldReturnNullWhenVersionHistoryIsPagedAndAllVersionsAreSkipped()
+    public void testShouldReturnNullWhenVersionHistoryIsPagedAndAllVersionsAreSkipped()
     {
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
         NodeRef versionableNode = createNewVersionableNode();

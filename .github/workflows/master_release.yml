@@ -31,7 +31,7 @@ jobs:
       !contains(github.event.head_commit.message, '[no release]') &&
       github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -60,7 +60,7 @@ jobs:
       !contains(github.event.head_commit.message, '[no downstream]') &&
       github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1

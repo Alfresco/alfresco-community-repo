@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -427,7 +428,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 
     @Override
     @Extend(extensionAPI = VersionServiceExtension.class, traitAPI = VersionServiceTrait.class)
-    public VersionHistory getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions)
+    public Optional<VersionHistory> getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions)
     {
         if (logger.isDebugEnabled())
         {
@@ -435,15 +436,13 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
         }
 
-        VersionHistory versionHistory = null;
-
         // Get the version history regardless of whether the node is still 'live' or not
         NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
         if (versionHistoryRef != null)
         {
-            versionHistory = buildVersionHistory(versionHistoryRef, skipVersions, maxVersions);
+            return buildVersionHistory(versionHistoryRef, skipVersions, maxVersions);
         }
-        return versionHistory;
+        return Optional.empty();
     }
 
     @Override
@@ -774,7 +773,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         return dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL, preLoad);
     }
 
-    private Pair<List<Version>, Integer> getVersionsPage(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
+    private Pair<List<Version>, Integer> getVersionsPageWithTotalCount(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
     {
         var childAssocsSlice = dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL,
                 skipVersions, maxVersions, true);
@@ -831,25 +830,30 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         return versionHistory;
     }
 
-    private VersionHistory buildVersionHistory(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
+    private Optional<VersionHistory> buildVersionHistory(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
     {
-        Pair<List<Version>, Integer> versionsPageWithCount = getVersionsPage(versionHistoryRef, skipVersions, maxVersions);
-        List<Version> versionsPage = new ArrayList<>(versionsPageWithCount.getFirst());
-        Integer versionsTotalCount = versionsPageWithCount.getSecond();
+        Pair<List<Version>, Integer> versionsPageWithTotalCount = getVersionsPageWithTotalCount(versionHistoryRef, skipVersions, maxVersions);
+        List<Version> unmodifiableVersionsPage = versionsPageWithTotalCount.getFirst();
+        if (unmodifiableVersionsPage.isEmpty())
+        {
+            return Optional.empty();
+        }
+        List<Version> versionsPage = new ArrayList<>(unmodifiableVersionsPage);
 
-        VersionHistoryImpl versionHistory = null;
         if (versionComparatorDesc != null)
         {
-            Collections.sort(versionsPage, Collections.reverseOrder(versionComparatorDesc));
+            versionsPage.sort(Collections.reverseOrder(versionComparatorDesc));
         }
 
         // Build the version history object
+        VersionHistoryImpl versionHistory = null;
         boolean isRoot = true;
         Version preceeding = null;
         for (Version version : versionsPage)
         {
             if (isRoot)
             {
+                Integer versionsTotalCount = versionsPageWithTotalCount.getSecond();
                 versionHistory = new VersionHistoryImpl(version, versionComparatorDesc, versionsTotalCount);
                 isRoot = false;
             }
@@ -860,7 +864,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             preceeding = version;
         }
 
-        return versionHistory;
+        return Optional.ofNullable(versionHistory);
     }
 
     /**

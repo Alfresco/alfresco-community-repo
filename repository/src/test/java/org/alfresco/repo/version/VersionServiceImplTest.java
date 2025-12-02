@@ -3234,13 +3234,14 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         createVersion(versionableNode); // 2.0
         createVersion(versionableNode); // 3.0
 
-        VersionHistory originalVersionHistory = this.versionService.getVersionHistory(versionableNode);
-        VersionHistory pagedVersionHistory = this.versionService.getVersionHistory(versionableNode, 0, Integer.MAX_VALUE);
+        VersionHistory originalVersionHistory = versionService.getVersionHistory(versionableNode);
+        Optional<VersionHistory> pagedVersionHistory = versionService.getVersionHistory(versionableNode, 0, Integer.MAX_VALUE);
 
         assertNotNull(originalVersionHistory);
         assertNotNull(pagedVersionHistory);
-        VersionTestUtil.assertVersions(originalVersionHistory.getAllVersions(), pagedVersionHistory.getAllVersions());
-        assertEquals(originalVersionHistory.getAllVersionsCount(), pagedVersionHistory.getAllVersionsCount());
+        assertTrue(pagedVersionHistory.isPresent());
+        VersionTestUtil.assertVersions(originalVersionHistory.getAllVersions(), pagedVersionHistory.get().getAllVersions());
+        assertEquals(originalVersionHistory.getTotalVersionsCount(), pagedVersionHistory.get().getTotalVersionsCount());
     }
 
     @Test
@@ -3252,14 +3253,15 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         createVersion(versionableNode); // 2.0
         createVersion(versionableNode); // 3.0
 
-        VersionHistory vh = this.versionService.getVersionHistory(versionableNode, 1, 2);
+        Optional<VersionHistory> versionHistory = versionService.getVersionHistory(versionableNode, 1, 2);
 
-        assertNotNull(vh);
-        Collection<Version> versions = vh.getAllVersions();
+        assertNotNull(versionHistory);
+        assertTrue(versionHistory.isPresent());
+        Collection<Version> versions = versionHistory.get().getAllVersions();
         assertEquals(2, versions.size());
         List<String> versionLabels = getVersionLabels(versions);
         assertEquals(List.of("2.0", "1.0"), versionLabels);
-        assertEquals(3, vh.getAllVersionsCount());
+        assertEquals(3, versionHistory.get().getTotalVersionsCount());
     }
 
     @Test
@@ -3271,18 +3273,19 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         createVersion(versionableNode); // 2.0
         createVersion(versionableNode); // 3.0
 
-        VersionHistory vh = this.versionService.getVersionHistory(versionableNode, 2, 1);
+        Optional<VersionHistory> versionHistory = versionService.getVersionHistory(versionableNode, 2, 1);
 
-        assertNotNull(vh);
-        Collection<Version> versions = vh.getAllVersions();
+        assertNotNull(versionHistory);
+        assertTrue(versionHistory.isPresent());
+        Collection<Version> versions = versionHistory.get().getAllVersions();
         assertEquals(1, versions.size());
         List<String> versionLabels = getVersionLabels(versions);
         assertEquals(List.of("1.0"), versionLabels);
-        assertEquals(3, vh.getAllVersionsCount());
+        assertEquals(3, versionHistory.get().getTotalVersionsCount());
     }
 
     @Test
-    public void testShouldReturnNullWhenVersionHistoryIsPagedAndAllVersionsAreSkipped()
+    public void testShouldReturnEmptyWhenVersionHistoryIsPagedAndAllVersionsAreSkipped()
     {
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
         NodeRef versionableNode = createNewVersionableNode();
@@ -3290,9 +3293,10 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         createVersion(versionableNode); // 2.0
         createVersion(versionableNode); // 3.0
 
-        VersionHistory vh = this.versionService.getVersionHistory(versionableNode, 3, Integer.MAX_VALUE);
+        Optional<VersionHistory> versionHistory = versionService.getVersionHistory(versionableNode, 3, Integer.MAX_VALUE);
 
-        assertNull(vh);
+        assertNotNull(versionHistory);
+        assertTrue(versionHistory.isEmpty());
     }
 
     private static List<String> getVersionLabels(Collection<Version> versions)

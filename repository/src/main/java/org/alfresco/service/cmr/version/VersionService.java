@@ -28,6 +28,7 @@ package org.alfresco.service.cmr.version;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
@@ -181,7 +182,7 @@ public interface VersionService
      *             thrown if the version aspect is missing
      */
     @Auditable(parameters = {"nodeRef", "skipVersions", "maxVersions"})
-    VersionHistory getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions)
+    Optional<VersionHistory> getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions)
             throws AspectMissingException;
 
     /**

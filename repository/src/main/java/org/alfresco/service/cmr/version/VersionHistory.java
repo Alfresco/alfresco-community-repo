@@ -68,7 +68,7 @@ public interface VersionHistory extends Serializable
      *
      * @return the total number of versions in the database
      */
-    int getAllVersionsCount();
+    int getTotalVersionsCount();
 
     /**
      * Gets the predecessor of a specified version

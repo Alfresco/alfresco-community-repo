@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
 
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
@@ -99,9 +100,9 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         }
 
         @Override
-        public int getAllVersionsCount()
+        public int getTotalVersionsCount()
         {
-            return actualHistory.getAllVersionsCount();
+            return actualHistory.getTotalVersionsCount();
         }
 
         @Override
@@ -435,7 +436,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
     }
 
     @Override
-    public VersionHistory getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions) throws AspectMissingException
+    public Optional<VersionHistory> getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions) throws AspectMissingException
     {
         VersionServiceTrait theTrait = getTrait();
         Reference reference = Reference.fromNodeRef(nodeRef);
@@ -446,17 +447,18 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             NodeRef materialNode = smartStore.materialize(reference);
-            VersionHistory actualVersionHistory = theTrait.getVersionHistory(materialNode, skipVersions, maxVersions);
-            if (actualVersionHistory == null)
+            Optional<VersionHistory> actualVersionHistory = theTrait.getVersionHistory(materialNode, skipVersions, maxVersions);
+            if (actualVersionHistory.isEmpty())
             {
-                return null;
+                return Optional.empty();
             }
             else
             {
                 Reference versionedReference = Reference.fromNodeRef(nodeRef);
 
-                return new VirtualVersionHistory(versionedReference,
-                        actualVersionHistory);
+                VersionHistory actualHistory = actualVersionHistory.get();
+                VirtualVersionHistory virtualVersionHistory = new VirtualVersionHistory(versionedReference, actualHistory);
+                return Optional.of(virtualVersionHistory);
             }
         }
     }

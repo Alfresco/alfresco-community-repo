@@ -194,23 +194,23 @@ public class AbstractNodeRelation implements InitializingBean
         return listPage(collection, parameters.getPaging());
     }
 
-    protected CollectionWithPagingInfo listPage(List result, Paging paging)
+    protected <T> CollectionWithPagingInfo<T> listPage(List<T> result, Paging paging)
     {
         // return 'page' of results (note: depends on in-built/natural sort order of results)
         int skipCount = paging.getSkipCount();
         int pageSize = paging.getMaxItems();
         int pageEnd = skipCount + pageSize;
 
-        final List page = new ArrayList<>(pageSize);
+        final List<T> page = new ArrayList<>(pageSize);
         if (result == null)
         {
             result = Collections.emptyList();
         }
 
-        Iterator it = result.iterator();
+        Iterator<T> it = result.iterator();
         for (int counter = 0; counter < pageEnd && it.hasNext(); counter++)
         {
-            Object element = it.next();
+            T element = it.next();
             if (counter < skipCount)
             {
                 continue;

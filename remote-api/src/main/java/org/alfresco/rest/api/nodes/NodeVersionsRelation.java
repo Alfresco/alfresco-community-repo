@@ -28,9 +28,11 @@ package org.alfresco.rest.api.nodes;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -126,29 +128,26 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
         Paging paging = parameters.getPaging();
         int skipCount = paging.getSkipCount();
         int maxItems = paging.getMaxItems();
-        VersionHistory vh = versionService.getVersionHistory(nodeRef, skipCount, maxItems);
-
-        Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
-        List<String> includeParam = parameters.getInclude();
-
-        List<Node> page = null;
-        if (vh != null)
+        Optional<VersionHistory> optionalVersionHistory = versionService.getVersionHistory(nodeRef, skipCount, maxItems);
+        if (optionalVersionHistory.isEmpty())
         {
-            Collection<Version> versions = vh.getAllVersions();
-            page = new ArrayList<>(versions.size());
-            for (Version v : versions)
-            {
-                Node node = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, includeParam, mapUserInfo);
-                mapVersionInfo(v, node);
-                page.add(node);
-            }
-            int totalCount = vh.getAllVersionsCount();
-            boolean hasMoreItems = (skipCount + page.size()) < totalCount;
-
-            return CollectionWithPagingInfo.asPaged(paging, page, hasMoreItems, totalCount);
+            return listPage(Collections.emptyList(), paging);
         }
+        VersionHistory versionHistory = optionalVersionHistory.orElseThrow();
+        List<String> includeParam = parameters.getInclude();
+        Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
+        Collection<Version> versions = versionHistory.getAllVersions();
+        List<Node> page = new ArrayList<>(versions.size());
+        for (Version v : versions)
+        {
+            Node node = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, includeParam, mapUserInfo);
+            mapVersionInfo(v, node);
+            page.add(node);
+        }
+        int totalCount = versionHistory.getTotalVersionsCount();
+        boolean hasMoreItems = (skipCount + page.size()) < totalCount;
 
-        return listPage(page, paging);
+        return CollectionWithPagingInfo.asPaged(paging, page, hasMoreItems, totalCount);
     }
 
     private void mapVersionInfo(Version v, Node aNode)

@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionDoesNotExistException;
@@ -70,7 +71,7 @@ public class VersionHistoryImpl implements VersionHistory
     private Comparator<Version> versionComparatorDesc;
 
     /* Needed in case the VersionHistory is created from a page of versions where the total count is known but not all versions are collected from database. */
-    private final Integer versionCountOverride;
+    private final Optional<Integer> totalCount;
 
     /**
      * Constructor, ensures the root version is set.
@@ -85,7 +86,7 @@ public class VersionHistoryImpl implements VersionHistory
         this(rootVersion, versionComparatorDesc, null);
     }
 
-    public VersionHistoryImpl(Version rootVersion, Comparator<Version> versionComparatorDesc, Integer versionCountOverride)
+    public VersionHistoryImpl(Version rootVersion, Comparator<Version> versionComparatorDesc, Integer totalCount)
     {
         if (rootVersion == null)
         {
@@ -97,7 +98,7 @@ public class VersionHistoryImpl implements VersionHistory
         this.versionHistory = new HashMap<String, String>();
         this.versionsByLabel = new LinkedHashMap<String, Version>();
         this.versionComparatorDesc = versionComparatorDesc;
-        this.versionCountOverride = versionCountOverride;
+        this.totalCount = Optional.ofNullable(totalCount);
 
         addVersion(rootVersion, null);
     }
@@ -135,9 +136,9 @@ public class VersionHistoryImpl implements VersionHistory
     }
 
     @Override
-    public int getAllVersionsCount()
+    public int getTotalVersionsCount()
     {
-        return versionCountOverride != null ? versionCountOverride : versionsByLabel.size();
+        return totalCount.orElse(versionsByLabel.size());
     }
 
     /**

@@ -834,7 +834,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     private VersionHistory buildVersionHistory(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
     {
         Pair<List<Version>, Integer> versionsPageWithCount = getVersionsPage(versionHistoryRef, skipVersions, maxVersions);
-        List<Version> versionsPage = versionsPageWithCount.getFirst();
+        List<Version> versionsPage = new ArrayList<>(versionsPageWithCount.getFirst());
         Integer versionsTotalCount = versionsPageWithCount.getSecond();
 
         VersionHistoryImpl versionHistory = null;

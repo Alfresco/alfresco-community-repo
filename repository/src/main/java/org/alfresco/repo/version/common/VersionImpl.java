@@ -28,7 +28,6 @@ package org.alfresco.repo.version.common;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
-import java.util.Objects;
 
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionBaseModel;
@@ -218,20 +217,5 @@ public class VersionImpl implements Version
                     }
 
                 });
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (o == null || getClass() != o.getClass())
-            return false;
-        VersionImpl version = (VersionImpl) o;
-        return Objects.equals(versionProperties, version.versionProperties) && Objects.equals(nodeRef, version.nodeRef);
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(versionProperties, nodeRef);
     }
 }

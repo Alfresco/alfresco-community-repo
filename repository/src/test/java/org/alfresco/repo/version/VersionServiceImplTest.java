@@ -3239,7 +3239,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
 
         assertNotNull(originalVersionHistory);
         assertNotNull(pagedVersionHistory);
-        assertEquals(originalVersionHistory.getAllVersions(), pagedVersionHistory.getAllVersions());
+        VersionTestUtil.assertVersions(originalVersionHistory.getAllVersions(), pagedVersionHistory.getAllVersions());
         assertEquals(originalVersionHistory.getAllVersionsCount(), pagedVersionHistory.getAllVersionsCount());
     }
 

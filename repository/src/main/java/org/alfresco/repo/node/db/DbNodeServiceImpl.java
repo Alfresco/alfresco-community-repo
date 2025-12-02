@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1891,7 +1892,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         // We have a callback handler to filter results
         final List<ChildAssociationRef> results = new ArrayList<>(10);
-        final int[] totalCount = {0};
+        final AtomicInteger totalCount = new AtomicInteger(0);
         ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback() {
             int skipped;
 
@@ -1921,7 +1922,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 {
                     return true;
                 }
-                totalCount[0]++;
+                totalCount.incrementAndGet();
                 if (skipped < skipResults)
                 {
                     skipped++;
@@ -1946,7 +1947,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         QName qname = (qnamePattern instanceof QName) ? (QName) qnamePattern : null;
 
         nodeDAO.getChildAssocs(nodePair.getFirst(), typeQName, qname, false, callback);
-        return new ChildAssocsTotalCount(results, totalCount[0]);
+        return new ChildAssocsTotalCount(results, totalCount.get());
     }
 
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)

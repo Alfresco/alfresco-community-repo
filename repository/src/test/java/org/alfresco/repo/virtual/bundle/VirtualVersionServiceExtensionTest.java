@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.version.VersionTestUtil;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.ref.GetActualNodeRefMethod;
 import org.alfresco.repo.virtual.ref.Reference;
@@ -91,8 +92,7 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
         Version newCurrentVersion = versionService.getCurrentVersion(contentWithVersionsNodeRef);
         assertNotNull(newCurrentVersion);
 
-        assertEquals(newVersion, newCurrentVersion);
-
+        VersionTestUtil.assertVersions(newVersion, newCurrentVersion);
     }
 
     @Test
@@ -248,7 +248,7 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
 
         assertNotNull(originalVersionHistory);
         assertNotNull(pagedVersionHistory);
-        assertEquals(originalVersionHistory.getAllVersions(), pagedVersionHistory.getAllVersions());
+        VersionTestUtil.assertVersions(originalVersionHistory.getAllVersions(), pagedVersionHistory.getAllVersions());
         assertEquals(originalVersionHistory.getAllVersionsCount(), pagedVersionHistory.getAllVersionsCount());
     }
 

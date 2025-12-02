@@ -149,15 +149,15 @@ public interface VirtualStore
      * @param parentReference
      *            the parent reference, usually a container
      * @param typeQNamePattern
-     *            the qualified name of the association to match (or <tt>null</tt> to ignore)
+     *            the qualified name of the association to match (or {@code null} to ignore)
      * @param qnamePattern
-     *            the path qualified name to match (or <tt>null</tt> to ignore)
+     *            the path qualified name to match (or {@code null} to ignore)
      * @param skipResults
      *            the number of results to skip (for paging)
      * @param maxResults
      *            the maximum number of results to return (for paging)
      * @param preload
-     *            <tt>true</tt> if the nodes should be preloaded into the cache
+     *            {@code true} if the nodes should be preloaded into the cache
      * @return a {@link ChildAssocsTotalCount} object containing an unmodifiable list of matching {@link ChildAssociationRef} instances and the total count of matching child associations, regardless of paging
      * @throws InvalidNodeRefException
      *             if the node could not be found

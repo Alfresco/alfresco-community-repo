@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -71,6 +71,7 @@ import org.alfresco.util.testing.category.DBTests;
  * @author Derek Hulley
  * @since 3.2
  */
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 @Category({OwnJVMTestsCategory.class, DBTests.class})
 public class PropertyValueDAOTest
 {
@@ -484,7 +485,7 @@ public class PropertyValueDAOTest
     public void testLongStringPersistence() throws Exception
     {
         StringBuilder sb = new StringBuilder();
-        int lenOverLimit = Math.max(SchemaBootstrap.getMaxStringLength(), SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH) + 100;
+        int lenOverLimit = SchemaBootstrap.getMaxStringLength() + 100;
         for (int i = 0; i < lenOverLimit; i++)
         {
             sb.append("a");

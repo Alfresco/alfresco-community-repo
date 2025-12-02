@@ -780,7 +780,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 
             if (SerializableString.class.equals(actualType))
             {
-                return (Serializable) entity.getValue((Class) String.class, converter);
+                return entity.getValue((Class) String.class, converter);
             }
 
             final Serializable actualValue = entity.getValue(actualType, converter);

@@ -669,14 +669,14 @@ public interface NodeService
      *            the maximum number of results to return (for paging)
      * @param preload
      *            {@code true} if the nodes should be preloaded into the cache
-     * @return a {@link ChildAssocsTotalCount} object containing an unmodifiable list of matching {@link ChildAssociationRef} instances and the total count of matching child associations, regardless of paging
+     * @return a {@link ChildAssocsSlice} object containing an unmodifiable list of matching {@link ChildAssociationRef} instances and the total count of matching child associations, regardless of paging
      * @throws InvalidNodeRefException
      *             if the node could not be found
      *
      * @see QName
      */
     @Auditable(parameters = {"nodeRef", "typeQNamePattern", "qnamePattern", "skipResults", "maxResults", "preload"})
-    ChildAssocsTotalCount getChildAssocs(
+    ChildAssocsSlice getChildAssocs(
             NodeRef nodeRef,
             QNamePattern typeQNamePattern,
             QNamePattern qnamePattern,

@@ -15,11 +15,11 @@ import org.alfresco.api.AlfrescoPublicApi;
  *            the total number of child associations for the parent node, regardless of paging
  */
 @AlfrescoPublicApi
-public record ChildAssocsTotalCount(List<ChildAssociationRef> childAssocs, int totalCount) implements Serializable
+public record ChildAssocsSlice(List<ChildAssociationRef> childAssocs, int totalCount) implements Serializable
 {
-    public static final ChildAssocsTotalCount EMPTY = new ChildAssocsTotalCount(Collections.emptyList(), 0);
+    public static final ChildAssocsSlice EMPTY = new ChildAssocsSlice(Collections.emptyList(), 0);
 
-    public ChildAssocsTotalCount
+    public ChildAssocsSlice
     {
         childAssocs = Collections.unmodifiableList(childAssocs);
     }

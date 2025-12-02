@@ -76,7 +76,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
@@ -1879,7 +1879,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
     @Override
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
-    public ChildAssocsTotalCount getChildAssocs(
+    public ChildAssocsSlice getChildAssocs(
             NodeRef nodeRef,
             final QNamePattern typeQNamePattern,
             final QNamePattern qnamePattern,
@@ -1947,7 +1947,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         QName qname = (qnamePattern instanceof QName) ? (QName) qnamePattern : null;
 
         nodeDAO.getChildAssocs(nodePair.getFirst(), typeQName, qname, false, callback);
-        return new ChildAssocsTotalCount(results, totalCount.get());
+        return new ChildAssocsSlice(results, totalCount.get());
     }
 
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)

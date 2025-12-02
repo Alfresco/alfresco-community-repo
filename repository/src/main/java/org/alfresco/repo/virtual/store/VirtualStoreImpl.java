@@ -83,7 +83,7 @@ import org.alfresco.repo.virtual.template.VirtualQuery;
 import org.alfresco.repo.virtual.template.VirtualQueryConstraint;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -291,19 +291,18 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
                 maxResults,
                 qnamePattern,
                 typeQNamePattern);
-        var childAssocsTotalCount = parentReference.execute(getChildAssocsMethod);
-        return childAssocsTotalCount.childAssocs();
-
+        var childAssocsSlice = parentReference.execute(getChildAssocsMethod);
+        return childAssocsSlice.childAssocs();
     }
 
     @Override
-    public ChildAssocsTotalCount getChildAssocs(Reference parentReference, QNamePattern typeQNamePattern,
+    public ChildAssocsSlice getChildAssocs(Reference parentReference, QNamePattern typeQNamePattern,
             QNamePattern qnamePattern, int skipResults, int maxResults,
             boolean preload) throws InvalidNodeRefException
     {
         if (!typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
         {
-            return ChildAssocsTotalCount.EMPTY;
+            return ChildAssocsSlice.EMPTY;
         }
         var getChildAssocsMethod = new GetChildAssocsMethod(this,
                 environment,

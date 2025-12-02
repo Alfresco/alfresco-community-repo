@@ -776,15 +776,15 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 
     private Pair<List<Version>, Integer> getVersionsPage(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
     {
-        var childAssocsTotalCount = dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL,
+        var childAssocsSlice = dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL,
                 skipVersions, maxVersions, true);
-        List<ChildAssociationRef> childAssociationRefs = childAssocsTotalCount.childAssocs();
-        List<Version> versionsPage = childAssociationRefs.stream()
+        List<Version> versions = childAssocsSlice.childAssocs()
+                .stream()
                 .map(ChildAssociationRef::getChildRef)
                 .map(this::getVersion)
                 .collect(Collectors.toCollection(ArrayList::new));
-        int totalVersionsCount = childAssocsTotalCount.totalCount();
-        return new Pair<>(versionsPage, totalVersionsCount);
+        int totalCount = childAssocsSlice.totalCount();
+        return new Pair<>(versions, totalCount);
     }
 
     /**

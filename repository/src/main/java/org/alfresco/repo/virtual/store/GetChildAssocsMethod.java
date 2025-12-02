@@ -40,12 +40,12 @@ import org.alfresco.repo.virtual.ref.ProtocolMethodException;
 import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.repo.virtual.ref.VirtualProtocol;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 
-public class GetChildAssocsMethod extends AbstractProtocolMethod<ChildAssocsTotalCount>
+public class GetChildAssocsMethod extends AbstractProtocolMethod<ChildAssocsSlice>
 {
     private final VirtualStore smartStore;
     private final ActualEnvironment environment;
@@ -69,12 +69,12 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<ChildAssocsTota
     }
 
     @Override
-    public ChildAssocsTotalCount execute(VirtualProtocol virtualProtocol, Reference reference)
+    public ChildAssocsSlice execute(VirtualProtocol virtualProtocol, Reference reference)
             throws ProtocolMethodException
     {
         if (!typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
         {
-            return ChildAssocsTotalCount.EMPTY;
+            return ChildAssocsSlice.EMPTY;
         }
         List<ChildAssociationRef> childAssocs = new LinkedList<>();
         List<Reference> children = smartStore.list(reference);
@@ -107,27 +107,27 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<ChildAssocsTota
                 childAssocs.add(childAssoc);
             }
         }
-        return new ChildAssocsTotalCount(childAssocs, total);
+        return new ChildAssocsSlice(childAssocs, total);
     }
 
     @Override
-    public ChildAssocsTotalCount execute(NodeProtocol protocol, Reference reference) throws ProtocolMethodException
+    public ChildAssocsSlice execute(NodeProtocol protocol, Reference reference) throws ProtocolMethodException
     {
         NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(null));
         NodeRef nodeRefReference = reference.toNodeRef();
         List<ChildAssociationRef> referenceAssociations = new LinkedList<>();
         if (environment.isSubClass(environment.getType(nodeRefReference), ContentModel.TYPE_FOLDER))
         {
-            return ChildAssocsTotalCount.EMPTY;
+            return ChildAssocsSlice.EMPTY;
         }
-        var childAssocsTotalCount = environment.getChildAssocs(actualNodeRef,
+        var childAssocsSlice = environment.getChildAssocs(actualNodeRef,
                 typeQNamePattern,
                 qnamePattern,
                 skipResults,
                 maxResults,
                 preload);
-        List<ChildAssociationRef> actualAssociations = childAssocsTotalCount.childAssocs();
-        int totalCount = childAssocsTotalCount.totalCount();
+        List<ChildAssociationRef> actualAssociations = childAssocsSlice.childAssocs();
+        int totalCount = childAssocsSlice.totalCount();
 
         for (ChildAssociationRef actualAssoc : actualAssociations)
         {
@@ -140,6 +140,6 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<ChildAssocsTota
 
             referenceAssociations.add(referenceChildAssocRef);
         }
-        return new ChildAssocsTotalCount(referenceAssociations, totalCount);
+        return new ChildAssocsSlice(referenceAssociations, totalCount);
     }
 }

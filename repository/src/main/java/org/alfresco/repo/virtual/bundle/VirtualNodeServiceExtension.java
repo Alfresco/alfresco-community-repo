@@ -63,7 +63,7 @@ import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -675,38 +675,38 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     }
 
     @Override
-    public ChildAssocsTotalCount getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+    public ChildAssocsSlice getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
             int skipResults, int maxResults, boolean preload)
     {
         NodeServiceTrait theTrait = getTrait();
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
         if (canVirtualize)
         {
-            int total = 0;
+            int totalCount = 0;
             Reference reference = smartStore.virtualize(nodeRef);
-            var childAssocsTotalCount = smartStore.getChildAssocs(reference,
+            var childAssocsSlice = smartStore.getChildAssocs(reference,
                     typeQNamePattern,
                     qnamePattern,
                     skipResults,
                     maxResults,
                     preload);
-            List<ChildAssociationRef> virtualAssociations = childAssocsTotalCount.childAssocs();
-            total += childAssocsTotalCount.totalCount();
+            List<ChildAssociationRef> virtualAssociations = childAssocsSlice.childAssocs();
+            totalCount += childAssocsSlice.totalCount();
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
             if (associations.size() < maxResults && smartStore.canMaterialize(reference))
             {
                 NodeRef materialReference = smartStore.materialize(reference);
-                childAssocsTotalCount = theTrait.getChildAssocs(materialReference,
+                childAssocsSlice = theTrait.getChildAssocs(materialReference,
                         typeQNamePattern,
                         qnamePattern,
                         0, // skipping only applies to virtual store
                         maxResults - associations.size(),
                         preload);
-                List<ChildAssociationRef> actualAssociations = childAssocsTotalCount.childAssocs();
+                List<ChildAssociationRef> actualAssociations = childAssocsSlice.childAssocs();
                 associations.addAll(actualAssociations);
-                total += childAssocsTotalCount.totalCount();
+                totalCount += childAssocsSlice.totalCount();
             }
-            return new ChildAssocsTotalCount(associations, total);
+            return new ChildAssocsSlice(associations, totalCount);
         }
         else
         {

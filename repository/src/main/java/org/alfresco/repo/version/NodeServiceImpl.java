@@ -49,7 +49,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -606,13 +606,13 @@ public class NodeServiceImpl implements NodeService, VersionModel
     }
 
     @Override
-    public ChildAssocsTotalCount getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+    public ChildAssocsSlice getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
             int skipResults, int maxResults, boolean preload)
     {
-        var childAssocsTotalCount = this.dbNodeService.getChildAssocs(
+        var childAssocsSlice = this.dbNodeService.getChildAssocs(
                 VersionUtil.convertNodeRef(nodeRef),
                 RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSIONED_CHILD_ASSOCS, skipResults, maxResults, true);
-        List<ChildAssociationRef> childAssocRefs = childAssocsTotalCount.childAssocs();
+        List<ChildAssociationRef> childAssocRefs = childAssocsSlice.childAssocs();
         List<ChildAssociationRef> result = new ArrayList<>(childAssocRefs.size());
         for (ChildAssociationRef childAssocRef : childAssocRefs)
         {
@@ -648,7 +648,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
         // sort the results so that the order appears to be exactly as it was originally
         Collections.sort(result);
 
-        return new ChildAssocsTotalCount(result, childAssocsTotalCount.totalCount());
+        return new ChildAssocsSlice(result, childAssocsSlice.totalCount());
     }
 
     /**

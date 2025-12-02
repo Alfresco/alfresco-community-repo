@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssocsTotalCount;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -75,7 +75,7 @@ public interface ActualEnvironment
 
     ChildAssociationRef getPrimaryParent(NodeRef nodeRef);
 
-    ChildAssocsTotalCount getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+    ChildAssocsSlice getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
             int skipResults, int maxResults, boolean preload) throws InvalidNodeRefException;
 
     NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName);

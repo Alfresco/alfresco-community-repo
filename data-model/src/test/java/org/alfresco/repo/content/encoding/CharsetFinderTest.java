@@ -32,7 +32,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import junit.framework.TestCase;
-import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
 import org.alfresco.encoding.CharactersetFinder;

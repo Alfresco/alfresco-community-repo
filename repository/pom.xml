@@ -599,7 +599,7 @@
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-client-jakarta</artifactId>
+            <artifactId>activemq-client</artifactId>
             <version>${dependency.activemq.version}</version>
         </dependency>
 

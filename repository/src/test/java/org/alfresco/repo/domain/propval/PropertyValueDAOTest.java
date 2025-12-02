@@ -54,6 +54,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.MLText;
@@ -477,6 +478,23 @@ public class PropertyValueDAOTest
         {
             runPropertyValueTest(new String("Value-" + i + ".xyz"));
         }
+    }
+
+    @Test
+    public void testLongStringPersistence() throws Exception
+    {
+        StringBuilder sb = new StringBuilder();
+        int lenOverLimit = Math.max(SchemaBootstrap.getMaxStringLength(), SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH) + 100;
+        for (int i = 0; i < lenOverLimit; i++)
+        {
+            sb.append("a");
+        }
+
+        final String longString = sb.toString();
+        final String shortString = "Short string";
+
+        runPropertyValueTest(shortString);
+        runPropertyValueTest(longString, false);
     }
 
     @Test

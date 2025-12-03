@@ -27,9 +27,12 @@ package org.alfresco.rest.api.nodes;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -58,6 +61,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -121,24 +125,29 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
 
-        VersionHistory vh = versionService.getVersionHistory(nodeRef);
-
-        Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
-        List<String> includeParam = parameters.getInclude();
-
-        List<Node> collection = null;
-        if (vh != null)
+        Paging paging = parameters.getPaging();
+        int skipCount = paging.getSkipCount();
+        int maxItems = paging.getMaxItems();
+        Optional<VersionHistory> optionalVersionHistory = versionService.getVersionHistory(nodeRef, skipCount, maxItems);
+        if (optionalVersionHistory.isEmpty())
         {
-            collection = new ArrayList<>(vh.getAllVersions().size());
-            for (Version v : vh.getAllVersions())
-            {
-                Node node = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, includeParam, mapUserInfo);
-                mapVersionInfo(v, node);
-                collection.add(node);
-            }
+            return listPage(Collections.emptyList(), paging);
         }
+        VersionHistory versionHistory = optionalVersionHistory.orElseThrow();
+        List<String> includeParam = parameters.getInclude();
+        Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
+        Collection<Version> versions = versionHistory.getAllVersions();
+        List<Node> page = new ArrayList<>(versions.size());
+        for (Version v : versions)
+        {
+            Node node = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, includeParam, mapUserInfo);
+            mapVersionInfo(v, node);
+            page.add(node);
+        }
+        int totalCount = versionHistory.getTotalVersionsCount();
+        boolean hasMoreItems = (skipCount + page.size()) < totalCount;
 
-        return listPage(collection, parameters.getPaging());
+        return CollectionWithPagingInfo.asPaged(paging, page, hasMoreItems, totalCount);
     }
 
     private void mapVersionInfo(Version v, Node aNode)

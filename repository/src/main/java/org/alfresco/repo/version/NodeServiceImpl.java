@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -602,6 +603,52 @@ public class NodeServiceImpl implements NodeService, VersionModel
             return result.subList(0, maxResults);
         }
         return result;
+    }
+
+    @Override
+    public ChildAssocsSlice getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+            int skipResults, int maxResults, boolean preload)
+    {
+        var childAssocsSlice = this.dbNodeService.getChildAssocs(
+                VersionUtil.convertNodeRef(nodeRef),
+                RegexQNamePattern.MATCH_ALL, CHILD_QNAME_VERSIONED_CHILD_ASSOCS, skipResults, maxResults, true);
+        List<ChildAssociationRef> childAssocRefs = childAssocsSlice.childAssocs();
+        List<ChildAssociationRef> result = new ArrayList<>(childAssocRefs.size());
+        for (ChildAssociationRef childAssocRef : childAssocRefs)
+        {
+            // Get the child reference
+            NodeRef childRef = childAssocRef.getChildRef();
+            NodeRef referencedNode = (NodeRef) this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE);
+
+            if (this.dbNodeService.exists(referencedNode))
+            {
+                // get the qualified name of the frozen child association and filter out unwanted names
+                QName qName = (QName) this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_QNAME);
+
+                if (qnamePattern.isMatch(qName))
+                {
+                    // Retrieve the isPrimary and nthSibling values of the forzen child association
+                    QName assocType = (QName) this.dbNodeService.getProperty(childRef, PROP_QNAME_ASSOC_TYPE_QNAME);
+                    boolean isPrimary = ((Boolean) this.dbNodeService.getProperty(childRef, PROP_QNAME_IS_PRIMARY)).booleanValue();
+                    int nthSibling = ((Integer) this.dbNodeService.getProperty(childRef, PROP_QNAME_NTH_SIBLING)).intValue();
+
+                    // Build a child assoc ref to add to the returned list
+                    ChildAssociationRef newChildAssocRef = new ChildAssociationRef(
+                            assocType,
+                            nodeRef,
+                            qName,
+                            referencedNode,
+                            isPrimary,
+                            nthSibling);
+                    result.add(newChildAssocRef);
+                }
+            }
+        }
+
+        // sort the results so that the order appears to be exactly as it was originally
+        Collections.sort(result);
+
+        return new ChildAssocsSlice(result, childAssocsSlice.totalCount());
     }
 
     /**

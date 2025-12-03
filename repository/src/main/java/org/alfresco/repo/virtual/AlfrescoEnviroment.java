@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -230,13 +231,15 @@ public class AlfrescoEnviroment implements ActualEnvironment
     }
 
     @Override
-    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
-            QNamePattern qnamePattern, int maxResults, boolean preload) throws InvalidNodeRefException
+    public ChildAssocsSlice getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
+            QNamePattern qnamePattern, int skipResults, int maxResults,
+            boolean preload) throws InvalidNodeRefException
     {
         NodeService nodeService = apiFacet.getNodeService();
         return nodeService.getChildAssocs(nodeRef,
                 typeQNamePattern,
                 qnamePattern,
+                skipResults,
                 maxResults,
                 preload);
     }

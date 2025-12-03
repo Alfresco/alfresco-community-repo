@@ -3224,4 +3224,83 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             return null;
         }
     }
+
+    @Test
+    public void testShouldReturnVersionHistoryWithTheSameValuesWhenVersionHistoryIsPagedButNothingIsSkippedOrLimited()
+    {
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        NodeRef versionableNode = createNewVersionableNode();
+        createVersion(versionableNode); // 1.0
+        createVersion(versionableNode); // 2.0
+        createVersion(versionableNode); // 3.0
+
+        VersionHistory originalVersionHistory = versionService.getVersionHistory(versionableNode);
+        Optional<VersionHistory> pagedVersionHistory = versionService.getVersionHistory(versionableNode, 0, Integer.MAX_VALUE);
+
+        assertNotNull(originalVersionHistory);
+        assertNotNull(pagedVersionHistory);
+        assertTrue(pagedVersionHistory.isPresent());
+        VersionTestUtil.assertVersions(originalVersionHistory.getAllVersions(), pagedVersionHistory.get().getAllVersions());
+        assertEquals(originalVersionHistory.getTotalVersionsCount(), pagedVersionHistory.get().getTotalVersionsCount());
+    }
+
+    @Test
+    public void testShouldSkipVersion3AndReturnVersion2AndVersion1WhenVersionHistoryIsPaged()
+    {
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        NodeRef versionableNode = createNewVersionableNode();
+        createVersion(versionableNode); // 1.0
+        createVersion(versionableNode); // 2.0
+        createVersion(versionableNode); // 3.0
+
+        Optional<VersionHistory> versionHistory = versionService.getVersionHistory(versionableNode, 1, 2);
+
+        assertNotNull(versionHistory);
+        assertTrue(versionHistory.isPresent());
+        Collection<Version> versions = versionHistory.get().getAllVersions();
+        assertEquals(2, versions.size());
+        List<String> versionLabels = getVersionLabels(versions);
+        assertEquals(List.of("2.0", "1.0"), versionLabels);
+        assertEquals(3, versionHistory.get().getTotalVersionsCount());
+    }
+
+    @Test
+    public void testShouldSkipVersion3AndVersion2AndReturnVersion1WhenVersionHistoryIsPaged()
+    {
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        NodeRef versionableNode = createNewVersionableNode();
+        createVersion(versionableNode); // 1.0
+        createVersion(versionableNode); // 2.0
+        createVersion(versionableNode); // 3.0
+
+        Optional<VersionHistory> versionHistory = versionService.getVersionHistory(versionableNode, 2, 1);
+
+        assertNotNull(versionHistory);
+        assertTrue(versionHistory.isPresent());
+        Collection<Version> versions = versionHistory.get().getAllVersions();
+        assertEquals(1, versions.size());
+        List<String> versionLabels = getVersionLabels(versions);
+        assertEquals(List.of("1.0"), versionLabels);
+        assertEquals(3, versionHistory.get().getTotalVersionsCount());
+    }
+
+    @Test
+    public void testShouldReturnEmptyWhenVersionHistoryIsPagedAndAllVersionsAreSkipped()
+    {
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        NodeRef versionableNode = createNewVersionableNode();
+        createVersion(versionableNode); // 1.0
+        createVersion(versionableNode); // 2.0
+        createVersion(versionableNode); // 3.0
+
+        Optional<VersionHistory> versionHistory = versionService.getVersionHistory(versionableNode, 3, Integer.MAX_VALUE);
+
+        assertNotNull(versionHistory);
+        assertTrue(versionHistory.isEmpty());
+    }
+
+    private static List<String> getVersionLabels(Collection<Version> versions)
+    {
+        return versions.stream().map(Version::getVersionLabel).toList();
+    }
 }

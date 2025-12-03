@@ -42,6 +42,7 @@ import org.alfresco.repo.virtual.template.FilingData;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -137,6 +138,34 @@ public interface VirtualStore
      */
     List<ChildAssociationRef> getChildAssocs(Reference parentReference, final QNamePattern typeQNamePattern,
             final QNamePattern qnamePattern, final int maxResults, final boolean preload)
+            throws InvalidNodeRefException;
+
+    /**
+     * Gets all child associations where the pattern of the association qualified name is an exact match and provides a total count of matching child associations.
+     * <p>
+     * This method supports pagination by allowing skipping and limiting of results, and returns both the current page of child associations and the total number of matches.
+     * </p>
+     *
+     * @param parentReference
+     *            the parent reference, usually a container
+     * @param typeQNamePattern
+     *            the qualified name of the association to match (or {@code null} to ignore)
+     * @param qnamePattern
+     *            the path qualified name to match (or {@code null} to ignore)
+     * @param skipResults
+     *            the number of results to skip (for paging)
+     * @param maxResults
+     *            the maximum number of results to return (for paging)
+     * @param preload
+     *            {@code true} if the nodes should be preloaded into the cache
+     * @return a {@link ChildAssocsSlice} object containing an unmodifiable list of matching {@link ChildAssociationRef} instances and the total count of matching child associations, regardless of paging
+     * @throws InvalidNodeRefException
+     *             if the node could not be found
+     *
+     * @see QName
+     */
+    ChildAssocsSlice getChildAssocs(Reference parentReference, QNamePattern typeQNamePattern,
+            QNamePattern qnamePattern, int skipResults, int maxResults, boolean preload)
             throws InvalidNodeRefException;
 
     /**

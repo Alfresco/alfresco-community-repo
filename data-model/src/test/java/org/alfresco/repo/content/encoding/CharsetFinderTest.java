@@ -29,6 +29,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import junit.framework.TestCase;
 import org.springframework.context.ApplicationContext;
@@ -63,7 +64,7 @@ public class CharsetFinderTest extends TestCase
                 "براون وكس السريع يقفز فوق الكلب كسالي";
 
         // As UTF-8
-        InputStream is = new BufferedInputStream(new ByteArrayInputStream(test.getBytes("UTF-8")));
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(test.getBytes(StandardCharsets.UTF_8)));
         Charset charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertNotNull(charset);
         assertEquals("UTF-8", charset.displayName());
@@ -71,7 +72,7 @@ public class CharsetFinderTest extends TestCase
         // Now try with longer encodings
 
         // UTF-16 with byte order mark
-        is = new BufferedInputStream(new ByteArrayInputStream(test.getBytes("UTF-16")));
+        is = new BufferedInputStream(new ByteArrayInputStream(test.getBytes(StandardCharsets.UTF_16)));
         charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertNotNull(charset);
         assertEquals("UTF-16BE", charset.displayName());
@@ -98,21 +99,21 @@ public class CharsetFinderTest extends TestCase
      */
     public void test8BitText() throws Exception
     {
-        String for_iso_8859_1 = "En français où les choses sont accentués. En español, así";
-        String for_iso_8859_7 = "Αυτό είναι στην ελληνική γλώσσα";
-        String for_cp1251 = "Это в русском языке, который является кириллица";
+        String forIso88591 = "En français où les choses sont accentués. En español, así";
+        String forIso88597 = "Αυτό είναι στην ελληνική γλώσσα";
+        String forCp1251 = "Это в русском языке, который является кириллица";
 
-        InputStream is = new BufferedInputStream(new ByteArrayInputStream(for_iso_8859_1.getBytes("ISO-8859-1")));
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(forIso88591.getBytes(StandardCharsets.ISO_8859_1)));
         Charset charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertNotNull(charset);
         assertEquals("ISO-8859-1", charset.displayName());
 
-        is = new BufferedInputStream(new ByteArrayInputStream(for_iso_8859_7.getBytes("ISO-8859-7")));
+        is = new BufferedInputStream(new ByteArrayInputStream(forIso88597.getBytes("ISO-8859-7")));
         charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertNotNull(charset);
         assertEquals("ISO-8859-7", charset.displayName());
 
-        is = new BufferedInputStream(new ByteArrayInputStream(for_cp1251.getBytes("CP1251")));
+        is = new BufferedInputStream(new ByteArrayInputStream(forCp1251.getBytes("CP1251")));
         charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertNotNull(charset);
         assertEquals("windows-1251", charset.displayName()); // AKA CP1251
@@ -123,13 +124,27 @@ public class CharsetFinderTest extends TestCase
      */
     public void testShiftJSHtml() throws Exception
     {
-        String for_shift_js = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=Shift_JIS\">" +
+        String forShiftJs = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=Shift_JIS\">" +
                 "<title>確認した結果を添付しますので、確認してください</title>\r\n" +
                 "<h3>特許印紙の売りさばきに関する省令</h3></html>";
-        InputStream is = new BufferedInputStream(new ByteArrayInputStream(for_shift_js.getBytes("Shift_JIS")));
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(forShiftJs.getBytes("Shift_JIS")));
 
         Charset charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         assertNotNull(charset);
         assertEquals("Shift_JIS", charset.displayName());
+    }
+
+    /**
+     * Test blank file upload scenario - verifies fix for ACS-10408 Ensures blank files are not incorrectly detected.
+     */
+    public void testBlankFileCharsetDetection()
+    {
+        // Empty byte array simulating blank uploaded file
+        byte[] blankContent = new byte[0];
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(blankContent));
+        Charset charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+
+        assertNotNull("Charset should not be null for blank files", charset);
+        assertEquals(charset.displayName(), StandardCharsets.UTF_8.displayName());
     }
 }

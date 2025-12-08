@@ -80,8 +80,13 @@ public abstract class AbstractCharactersetFinder implements CharactersetFinder
             byte[] buffer = new byte[bufferSize];
             // Fill it
             int read = is.read(buffer);
+            // Handle empty stream or no bytes read
+            if (read <= 0)
+            {
+                buffer = new byte[0];
+            }
             // Create an appropriately sized buffer
-            if (read > -1 && read < buffer.length)
+            else if (read < buffer.length)
             {
                 byte[] copyBuffer = new byte[read];
                 System.arraycopy(buffer, 0, copyBuffer, 0, read);

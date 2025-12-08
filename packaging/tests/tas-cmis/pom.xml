@@ -16,7 +16,7 @@
     </organization>
 
     <properties>
-        <maven.build.sourceVersion>21</maven.build.sourceVersion>
+        <maven.build.sourceVersion>${java.version}</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <maven-release.version>2.5.3</maven-release.version>

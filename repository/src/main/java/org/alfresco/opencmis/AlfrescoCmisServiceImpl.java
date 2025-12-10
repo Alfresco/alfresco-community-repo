@@ -1610,6 +1610,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 writer.setEncoding(encoding);
                 writer.putContent(contentStream.getStream());
                 connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
+                // Extract metadata after content is written
+                connector.extractMetadata(nodeRef);
                 return null;
             }
         }, false, true);
@@ -1743,6 +1745,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             final NodeRef nodeRef = info.getNodeRef();
 
             connector.setProperties(nodeRef, info.getType(), properties, new String[0]);
+            connector.extractMetadata(nodeRef);
 
             objectId.setValue(connector.createObjectId(nodeRef));
 

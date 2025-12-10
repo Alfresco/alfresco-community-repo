@@ -9,6 +9,6 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-packaging</artifactId>
-        <version>23.7.0.9-SNAPSHOT</version>
+        <version>23.7.0.9</version>
     </parent>
 </project>

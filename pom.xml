@@ -52,8 +52,8 @@
         <dependency.alfresco-messaging-repo.version>1.2.20</dependency.alfresco-messaging-repo.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-core.version>5.1.5</dependency.alfresco-transform-core.version>
-        <dependency.alfresco-transform-service.version>4.1.5</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>5.2.5</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>4.2.4</dependency.alfresco-transform-service.version>
         <dependency.alfresco-greenmail.version>6.5</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.18</dependency.acs-event-model.version>
 

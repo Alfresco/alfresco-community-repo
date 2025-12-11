@@ -113,7 +113,7 @@
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
         <alfresco.googledrive.version>3.4.2</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.6.2</alfresco.aos-module.version>
+        <alfresco.aos-module.version>4.1.0</alfresco.aos-module.version>
         <alfresco.api-explorer.version>7.4.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>

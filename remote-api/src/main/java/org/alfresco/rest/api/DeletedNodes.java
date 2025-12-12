@@ -136,10 +136,14 @@ public interface DeletedNodes
     }
 
     /**
-     * @param archivedId The node id for which to obtain the direct access {@code URL}
-     * @param renditionId The rendition id for which to obtain the direct access {@code URL}
-     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
-     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @param archivedId
+     *            The node id for which to obtain the direct access {@code URL}
+     * @param renditionId
+     *            The rendition id for which to obtain the direct access {@code URL}
+     * @param attachment
+     *            {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
+     * @param validFor
+     *            The time at which the direct access {@code URL} will expire.
      * @return A direct access {@code URL} object for the content.
      */
     default DirectAccessUrl requestContentDirectUrl(String archivedId, String renditionId, boolean attachment, Long validFor)

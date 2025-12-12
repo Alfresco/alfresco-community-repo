@@ -29,6 +29,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import org.alfresco.repo.domain.propval.*;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
@@ -38,20 +40,6 @@ import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DuplicateKeyException;
 
 import org.alfresco.ibatis.RollupResultHandler;
-import org.alfresco.repo.domain.propval.AbstractPropertyValueDAOImpl;
-import org.alfresco.repo.domain.propval.PropertyClassEntity;
-import org.alfresco.repo.domain.propval.PropertyDateValueEntity;
-import org.alfresco.repo.domain.propval.PropertyDoubleValueEntity;
-import org.alfresco.repo.domain.propval.PropertyIdQueryParameter;
-import org.alfresco.repo.domain.propval.PropertyIdQueryResult;
-import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
-import org.alfresco.repo.domain.propval.PropertyLinkEntity;
-import org.alfresco.repo.domain.propval.PropertyRootEntity;
-import org.alfresco.repo.domain.propval.PropertySerializableValueEntity;
-import org.alfresco.repo.domain.propval.PropertyStringQueryEntity;
-import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
-import org.alfresco.repo.domain.propval.PropertyUniqueContextEntity;
-import org.alfresco.repo.domain.propval.PropertyValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.repo.domain.schema.script.ScriptBundleExecutor;
 import org.alfresco.util.Pair;
@@ -428,6 +416,12 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         // Get the actual type ID
         Class<?> clazz = (value == null ? Object.class : value.getClass());
+
+        // Check for long strings and use the marker interface to differentiate the type ID
+        if(value instanceof String && ((String) value).length() > SchemaBootstrap.getMaxStringLength()){
+            clazz = SerializableString.class;
+        }
+
         Pair<Long, Class<?>> clazzPair = getOrCreatePropertyClass(clazz);
         Long actualTypeId = clazzPair.getFirst();
 

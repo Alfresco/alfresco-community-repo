@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Random;
 import javax.naming.CompositeName;
 
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -70,6 +71,7 @@ import org.alfresco.util.testing.category.DBTests;
  * @author Derek Hulley
  * @since 3.2
  */
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 @Category({OwnJVMTestsCategory.class, DBTests.class})
 public class PropertyValueDAOTest
 {
@@ -477,6 +479,23 @@ public class PropertyValueDAOTest
         {
             runPropertyValueTest(new String("Value-" + i + ".xyz"));
         }
+    }
+
+    @Test
+    public void testLongStringPersistence() throws Exception
+    {
+        StringBuilder sb = new StringBuilder();
+        int lenOverLimit = SchemaBootstrap.getMaxStringLength() + 100;
+        for (int i = 0; i < lenOverLimit; i++)
+        {
+            sb.append("a");
+        }
+
+        final String longString = sb.toString();
+        final String shortString = "Short string";
+
+        runPropertyValueTest(shortString);
+        runPropertyValueTest(longString, false);
     }
 
     @Test

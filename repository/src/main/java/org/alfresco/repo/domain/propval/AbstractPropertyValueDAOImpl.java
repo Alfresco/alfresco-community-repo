@@ -38,6 +38,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
+
 import org.alfresco.repo.cache.NullCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
@@ -48,16 +53,11 @@ import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Abstract implementation for Property Value DAO.
  * <p>
- * This provides basic services such as caching, but defers to the underlying implementation
- * for CRUD operations. 
+ * This provides basic services such as caching, but defers to the underlying implementation for CRUD operations.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -71,12 +71,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     private static final String CACHE_REGION_PROPERTY_SERIALIZABLE_VALUE = "PropertySerializableValue";
     private static final String CACHE_REGION_PROPERTY_VALUE = "PropertyValue";
     private static final String CACHE_REGION_PROPERTY = "Property";
-    
+
     protected final Log logger = LogFactory.getLog(getClass());
-    
+
     protected PropertyTypeConverter converter;
     protected ControlDAO controlDAO;
-    
+
     private final PropertyClassCallbackDAO propertyClassDaoCallback;
     private final PropertyDateValueCallbackDAO propertyDateValueCallback;
     private final PropertyStringValueCallbackDAO propertyStringValueCallback;
@@ -116,7 +116,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      * Cache for the property Serializable value:<br/>
      * KEY: ID<br/>
      * VALUE: The Serializable instance<br/>
-     * VALUE KEY: none<br/>.  The cache is not used for value-based lookups.
+     * VALUE KEY: none<br/>
+     * . The cache is not used for value-based lookups.
      */
     private EntityLookupCache<Long, Serializable, Serializable> propertySerializableValueCache;
     /**
@@ -133,14 +134,14 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      * VALUE KEY: A value key based on the persisted type<br/>
      */
     private EntityLookupCache<Long, Serializable, Serializable> propertyCache;
-    
+
     private SimpleCache<CachePucKey, PropertyUniqueContextEntity> propertyUniqueContextCache; // cluster-aware
-    
+
     /**
      * Flag to throw exception if type of the key doesn't guarantee uniqueness, @see MNT-11895
      */
     private boolean uniquenessCheckEnabled = true;
-    
+
     /**
      * Setter for uniquenessCheckEnabled flag
      */
@@ -156,15 +157,13 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     {
         this.propertyUniqueContextCache = propertyUniqueContextCache;
     }
-    
-    
+
     /**
      * Default constructor.
      * <p>
-     * This sets up the DAO accessors to bypass any caching to handle the case where the caches are not
-     * supplied in the setters.
+     * This sets up the DAO accessors to bypass any caching to handle the case where the caches are not supplied in the setters.
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public AbstractPropertyValueDAOImpl()
     {
         this.propertyClassDaoCallback = new PropertyClassCallbackDAO();
@@ -174,7 +173,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         this.propertySerializableValueCallback = new PropertySerializableValueCallbackDAO();
         this.propertyValueCallback = new PropertyValueCallbackDAO();
         this.propertyCallback = new PropertyCallbackDAO();
-        
+
         this.propertyClassCache = new EntityLookupCache<Long, Class<?>, String>(propertyClassDaoCallback);
         this.propertyDateValueCache = new EntityLookupCache<Long, Date, Date>(propertyDateValueCallback);
         this.propertyStringValueCache = new EntityLookupCache<Long, String, Pair<String, Long>>(propertyStringValueCallback);
@@ -182,12 +181,13 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         this.propertySerializableValueCache = new EntityLookupCache<Long, Serializable, Serializable>(propertySerializableValueCallback);
         this.propertyValueCache = new EntityLookupCache<Long, Serializable, Serializable>(propertyValueCallback);
         this.propertyCache = new EntityLookupCache<Long, Serializable, Serializable>(propertyCallback);
-        
-        this.propertyUniqueContextCache = (SimpleCache<CachePucKey, PropertyUniqueContextEntity>)new NullCache();
+
+        this.propertyUniqueContextCache = (SimpleCache<CachePucKey, PropertyUniqueContextEntity>) new NullCache();
     }
 
     /**
-     * @param converter                     the converter that translates between external and persisted values
+     * @param converter
+     *            the converter that translates between external and persisted values
      */
     public void setConverter(PropertyTypeConverter converter)
     {
@@ -195,7 +195,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     }
 
     /**
-     * @param controlDAO                    the DAO that provides connection control
+     * @param controlDAO
+     *            the DAO that provides connection control
      */
     public void setControlDAO(ControlDAO controlDAO)
     {
@@ -205,7 +206,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     /**
      * Set the cache to use for <b>alf_prop_class</b> lookups (optional).
      * 
-     * @param propertyClassCache            the cache of IDs to property classes
+     * @param propertyClassCache
+     *            the cache of IDs to property classes
      */
     public void setPropertyClassCache(SimpleCache<Serializable, Object> propertyClassCache)
     {
@@ -214,11 +216,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 CACHE_REGION_PROPERTY_CLASS,
                 propertyClassDaoCallback);
     }
-    
+
     /**
      * Set the cache to use for <b>alf_prop_date_value</b> lookups (optional).
      * 
-     * @param propertyDateValueCache        the cache of IDs to property values
+     * @param propertyDateValueCache
+     *            the cache of IDs to property values
      */
     public void setPropertyDateValueCache(SimpleCache<Serializable, Object> propertyDateValueCache)
     {
@@ -227,11 +230,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 CACHE_REGION_PROPERTY_DATE_VALUE,
                 propertyDateValueCallback);
     }
-    
+
     /**
      * Set the cache to use for <b>alf_prop_string_value</b> lookups (optional).
      * 
-     * @param propertyStringValueCache      the cache of IDs to property string values
+     * @param propertyStringValueCache
+     *            the cache of IDs to property string values
      */
     public void setPropertyStringValueCache(SimpleCache<Serializable, Object> propertyStringValueCache)
     {
@@ -240,11 +244,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 CACHE_REGION_PROPERTY_STRING_VALUE,
                 propertyStringValueCallback);
     }
-    
+
     /**
      * Set the cache to use for <b>alf_prop_double_value</b> lookups (optional).
      * 
-     * @param propertyDoubleValueCache     the cache of IDs to property values
+     * @param propertyDoubleValueCache
+     *            the cache of IDs to property values
      */
     public void setPropertyDoubleValueCache(SimpleCache<Serializable, Object> propertyDoubleValueCache)
     {
@@ -253,11 +258,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 CACHE_REGION_PROPERTY_DOUBLE_VALUE,
                 propertyDoubleValueCallback);
     }
-    
+
     /**
      * Set the cache to use for <b>alf_prop_serializable_value</b> lookups (optional).
      * 
-     * @param propertySerializableValueCache     the cache of IDs to property values
+     * @param propertySerializableValueCache
+     *            the cache of IDs to property values
      */
     public void setPropertySerializableValueCache(SimpleCache<Serializable, Object> propertySerializableValueCache)
     {
@@ -266,11 +272,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 CACHE_REGION_PROPERTY_SERIALIZABLE_VALUE,
                 propertySerializableValueCallback);
     }
-    
+
     /**
      * Set the cache to use for <b>alf_prop_value</b> lookups (optional).
      * 
-     * @param propertyValueCache     the cache of IDs to property values
+     * @param propertyValueCache
+     *            the cache of IDs to property values
      */
     public void setPropertyValueCache(SimpleCache<Serializable, Object> propertyValueCache)
     {
@@ -279,11 +286,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 CACHE_REGION_PROPERTY_VALUE,
                 propertyValueCallback);
     }
-    
+
     /**
      * Set the cache to use for <b>alf_prop_root</b> lookups (optional).
      * 
-     * @param propertyCache     the cache of IDs to property values
+     * @param propertyCache
+     *            the cache of IDs to property values
      */
     public void setPropertyCache(SimpleCache<Serializable, Object> propertyCache)
     {
@@ -292,10 +300,10 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 CACHE_REGION_PROPERTY,
                 propertyCallback);
     }
-    
-    //================================
+
+    // ================================
     // 'alf_prop_class' accessors
-    //================================
+    // ================================
 
     public Pair<Long, Class<?>> getPropertyClassById(Long id)
     {
@@ -347,7 +355,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 return entity.getEntityPair();
             }
         }
-        
+
         public String getValueKey(Class<?> value)
         {
             return value.getName();
@@ -365,20 +373,34 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return convertEntityToPair(entity);
         }
 
+        @Override
+        public List<Pair<Long, Class<?>>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property classes.");
+        }
+
         public Pair<Long, Class<?>> findByValue(Class<?> value)
         {
             PropertyClassEntity entity = findClassByValue(value);
             return convertEntityToPair(entity);
         }
+
+        @Override
+        public List<Pair<Long, Class<?>>> findByValues(List<Class<?>> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property classes.");
+        }
     }
-    
+
     protected abstract PropertyClassEntity findClassById(Long id);
+
     protected abstract PropertyClassEntity findClassByValue(Class<?> value);
+
     protected abstract PropertyClassEntity createClass(Class<?> value);
-    
-    //================================
+
+    // ================================
     // 'alf_prop_date_value' accessors
-    //================================
+    // ================================
 
     public Pair<Long, Date> getPropertyDateValueById(Long id)
     {
@@ -432,7 +454,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 return entity.getEntityPair();
             }
         }
-        
+
         /**
          * {@inheritDoc}
          * <p/>
@@ -455,26 +477,42 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return convertEntityToPair(entity);
         }
 
+        @Override
+        public List<Pair<Long, Date>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property date values.");
+        }
+
         public Pair<Long, Date> findByValue(Date value)
         {
             PropertyDateValueEntity entity = findDateValueByValue(value);
             return convertEntityToPair(entity);
         }
+
+        @Override
+        public List<Pair<Long, Date>> findByValues(List<Date> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property date values.");
+        }
     }
-    
+
     protected abstract PropertyDateValueEntity findDateValueById(Long id);
+
     /**
-     * @param value             a date, accurate to the day
+     * @param value
+     *            a date, accurate to the day
      */
     protected abstract PropertyDateValueEntity findDateValueByValue(Date value);
+
     /**
-     * @param value             a date, accurate to the day
+     * @param value
+     *            a date, accurate to the day
      */
     protected abstract PropertyDateValueEntity createDateValue(Date value);
 
-    //================================
+    // ================================
     // 'alf_prop_string_value' accessors
-    //================================
+    // ================================
 
     public Pair<String, Long> getPropertyStringCaseSensitiveSearchParameters(String value)
     {
@@ -516,8 +554,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             throw new IllegalArgumentException(
                     "Persisted string values for 'alf_prop_string_value' cannot be longer than "
-                    + maxStringLen + " characters.  Increase the string column sizes and set property " +
-                    "'system.maximumStringLength' accordingly.");
+                            + maxStringLen + " characters.  Increase the string column sizes and set property " +
+                            "'system.maximumStringLength' accordingly.");
         }
         Pair<Long, String> entityPair = propertyStringValueCache.getOrCreateByValue(value);
         return entityPair;
@@ -552,6 +590,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
         }
 
+        @Override
+        public List<Pair<Long, String>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property string values.");
+        }
+
         public Pair<Long, String> findByValue(String value)
         {
             Long key = findStringValueByValue(value);
@@ -564,15 +608,23 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 return new Pair<Long, String>(key, value);
             }
         }
+
+        @Override
+        public List<Pair<Long, String>> findByValues(List<String> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property string values.");
+        }
     }
-    
+
     protected abstract String findStringValueById(Long id);
+
     protected abstract Long findStringValueByValue(String value);
+
     protected abstract Long createStringValue(String value);
 
-    //================================
+    // ================================
     // 'alf_prop_double_value' accessors
-    //================================
+    // ================================
 
     public Pair<Long, Double> getPropertyDoubleValueById(Long id)
     {
@@ -624,7 +676,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 return entity.getEntityPair();
             }
         }
-        
+
         public Double getValueKey(Double value)
         {
             return value;
@@ -642,20 +694,34 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return convertEntityToPair(entity);
         }
 
+        @Override
+        public List<Pair<Long, Double>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property double values.");
+        }
+
         public Pair<Long, Double> findByValue(Double value)
         {
             PropertyDoubleValueEntity entity = findDoubleValueByValue(value);
             return convertEntityToPair(entity);
         }
+
+        @Override
+        public List<Pair<Long, Double>> findByValues(List<Double> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property double values.");
+        }
     }
-    
+
     protected abstract PropertyDoubleValueEntity findDoubleValueById(Long id);
+
     protected abstract PropertyDoubleValueEntity findDoubleValueByValue(Double value);
+
     protected abstract PropertyDoubleValueEntity createDoubleValue(Double value);
 
-    //================================
+    // ================================
     // 'alf_prop_serializable_value' accessors
-    //================================
+    // ================================
 
     public Pair<Long, Serializable> getPropertySerializableValueById(Long id)
     {
@@ -697,7 +763,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 return entity.getEntityPair();
             }
         }
-        
+
         public Pair<Long, Serializable> createValue(Serializable value)
         {
             PropertySerializableValueEntity entity = createSerializableValue(value);
@@ -709,14 +775,27 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             PropertySerializableValueEntity entity = findSerializableValueById(key);
             return convertEntityToPair(entity);
         }
+
+        @Override
+        public List<Pair<Long, Serializable>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property serializable values.");
+        }
+
+        @Override
+        public List<Pair<Long, Serializable>> findByValues(List<Serializable> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property serializable values.");
+        }
     }
-    
+
     protected abstract PropertySerializableValueEntity findSerializableValueById(Long id);
+
     protected abstract PropertySerializableValueEntity createSerializableValue(Serializable value);
 
-    //================================
+    // ================================
     // 'alf_prop_value' accessors
-    //================================
+    // ================================
 
     public Pair<Long, Serializable> getPropertyValueById(Long id)
     {
@@ -762,7 +841,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             // Done
             return actualValue;
         }
-        
+
         private final Pair<Long, Serializable> convertEntityToPair(PropertyValueEntity entity)
         {
             if (entity == null)
@@ -774,7 +853,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             // Done
             return new Pair<Long, Serializable>(entityId, actualValue);
         }
-        
+
         public Serializable getValueKey(Serializable value)
         {
             PersistedType persistedType = PropertyValueEntity.getPersistedTypeEnum(value, converter);
@@ -792,7 +871,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
             else if (value instanceof String)
             {
-                return CrcHelper.getStringCrcPair((String)value, 128, true, true);
+                return CrcHelper.getStringCrcPair((String) value, 128, true, true);
             }
             else
             {
@@ -814,15 +893,28 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return convertEntityToPair(entity);
         }
 
+        @Override
+        public List<Pair<Long, Serializable>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property values.");
+        }
+
         public Pair<Long, Serializable> findByValue(Serializable value)
         {
             PropertyValueEntity entity = findPropertyValueByValue(value);
             return convertEntityToPair(entity);
         }
 
+        @Override
+        public List<Pair<Long, Serializable>> findByValues(List<Serializable> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for property values.");
+        }
+
         /**
-         * No-op.  This is implemented as we just want to update the cache.
-         * @return              Returns 0 always
+         * No-op. This is implemented as we just want to update the cache.
+         * 
+         * @return Returns 0 always
          */
         @Override
         public int updateValue(Long key, Serializable value)
@@ -830,14 +922,16 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return 0;
         }
     }
-    
+
     protected abstract PropertyValueEntity findPropertyValueById(Long id);
+
     protected abstract PropertyValueEntity findPropertyValueByValue(Serializable value);
+
     protected abstract PropertyValueEntity createPropertyValue(Serializable value);
 
-    //================================
+    // ================================
     // 'alf_prop_root' accessors
-    //================================
+    // ================================
 
     public Serializable getPropertyById(Long id)
     {
@@ -850,7 +944,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             // Remove from cache
             propertyCache.removeByKey(id);
-            
+
             throw new DataIntegrityViolationException("No property value exists for ID " + id);
         }
         return entityPair.getSecond();
@@ -863,6 +957,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 
     /**
      * {@inheritDoc}
+     * 
      * @see #createPropertyImpl(Long, long, long, Long, Serializable)
      */
     public Long createProperty(Serializable value)
@@ -870,7 +965,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Pair<Long, Serializable> entityPair = propertyCache.getOrCreateByValue(value);
         return entityPair.getFirst();
     }
-    
+
     public void updateProperty(Long rootPropId, Serializable value)
     {
         propertyCache.updateValue(rootPropId, value);
@@ -896,8 +991,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             {
                 logger.debug(
                         "Created property: \n" +
-                        "   ID: " + rootPropId + "\n" +
-                        "   Value: " + value);
+                                "   ID: " + rootPropId + "\n" +
+                                "   Value: " + value);
             }
             return new Pair<Long, Serializable>(rootPropId, value);
         }
@@ -914,11 +1009,22 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return new Pair<Long, Serializable>(key, value);
         }
 
+        @Override
+        public List<Pair<Long, Serializable>> findByKeys(List<Long> keys)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for properties.");
+        }
+
+        @Override
+        public List<Pair<Long, Serializable>> findByValues(List<Serializable> values)
+        {
+            throw new UnsupportedOperationException("Lookup by value not supported for properties.");
+        }
+
         /**
-         * Updates a property.  The <b>alf_prop_root</b> entity is updated
-         * to ensure concurrent modification is detected.
+         * Updates a property. The <b>alf_prop_root</b> entity is updated to ensure concurrent modification is detected.
          * 
-         * @return              Returns 1 always
+         * @return Returns 1 always
          */
         @Override
         public int updateValue(Long key, Serializable value)
@@ -940,8 +1046,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             {
                 logger.debug(
                         "Updated property: \n" +
-                        "   ID: " + key + "\n" +
-                        "   Value: " + value);
+                                "   ID: " + key + "\n" +
+                                "   Value: " + value);
             }
             return 1;
         }
@@ -955,14 +1061,15 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             {
                 logger.debug(
                         "Deleted property: \n" +
-                        "   ID: " + key);
+                                "   ID: " + key);
             }
             return 1;
         }
     }
 
     /**
-     * @param propIndex         a unique index within the context of the current property root
+     * @param propIndex
+     *            a unique index within the context of the current property root
      */
     @SuppressWarnings("unchecked")
     private long createPropertyImpl(
@@ -972,9 +1079,9 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             Long keyPropId,
             Serializable value)
     {
-        // Keep track of the index for this property.  It gets used later when making the link entry.
+        // Keep track of the index for this property. It gets used later when making the link entry.
         long thisPropIndex = propIndex;
-        
+
         Long valuePropId = null;
         if (value == null)
         {
@@ -1044,7 +1151,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             // The key and the value are the same
             valuePropId = getOrCreatePropertyValue(value).getFirst();
         }
-        
+
         // Create a link entry
         if (keyPropId == null)
         {
@@ -1052,20 +1159,19 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             keyPropId = valuePropId;
         }
         createPropertyLink(rootPropId, thisPropIndex, containedIn, keyPropId, valuePropId);
-        
+
         // Done
         return propIndex;
     }
-    
+
     private static final Serializable EMPTY_HASHMAP = new HashMap<Serializable, Serializable>();
     private static final Serializable EMPTY_LIST = new ArrayList<Serializable>();
     private static final Serializable EMPTY_SET = new HashSet<Serializable>();
 
     /**
-     * Returns a reconstructable instance 
+     * Returns a reconstructable instance
      * 
-     * @return          Returns an empty instance of the given container (map or collection), or
-     *                  <tt>null</tt> if it is not possible to do 
+     * @return Returns an empty instance of the given container (map or collection), or <tt>null</tt> if it is not possible to do
      */
     protected Serializable constructEmptyContainer(Class<?> clazz)
     {
@@ -1097,22 +1203,32 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             return null;
         }
     }
-    
+
     protected abstract List<PropertyIdSearchRow> findPropertyById(Long id);
+
     protected abstract void findPropertiesByIds(List<Long> ids, PropertyFinderCallback callback);
+
     protected abstract Long createPropertyRoot();
+
     protected abstract PropertyRootEntity getPropertyRoot(Long id);
+
     protected abstract PropertyRootEntity updatePropertyRoot(PropertyRootEntity entity);
+
     protected abstract void deletePropertyRoot(Long id);
-    
+
     /**
      * Create an entry for the map or collection link.
      * 
-     * @param rootPropId            the root (entry-point) property ID
-     * @param propIndex             the property number within the root property
-     * @param containedIn           the property that contains the current value
-     * @param keyPropId             the map key entity ID or collection position count
-     * @param valuePropId           the ID of the entity storing the value (may be another map or collection)
+     * @param rootPropId
+     *            the root (entry-point) property ID
+     * @param propIndex
+     *            the property number within the root property
+     * @param containedIn
+     *            the property that contains the current value
+     * @param keyPropId
+     *            the map key entity ID or collection position count
+     * @param valuePropId
+     *            the ID of the entity storing the value (may be another map or collection)
      */
     protected abstract void createPropertyLink(
             Long rootPropId,
@@ -1120,36 +1236,37 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             Long containedIn,
             Long keyPropId,
             Long valuePropId);
-    
+
     /**
      * Remove all property links for a given property root.
      * 
-     * @param rootPropId            the root (entry-point) property ID
+     * @param rootPropId
+     *            the root (entry-point) property ID
      */
     protected abstract int deletePropertyLinks(Long rootPropId);
-    
-    //================================
+
+    // ================================
     // 'alf_prop_unique_ctx' accessors
-    //================================
-    
+    // ================================
+
     private CachePucKey getPucKey(Long id1, Long id2, Long id3)
     {
         return new CachePucKey(id1, id2, id3);
     }
-    
+
     /**
      * Key for PropertyUniqueContext cache
      */
     public static class CachePucKey implements Serializable
     {
         private static final long serialVersionUID = -4294324585692613101L;
-        
+
         private final Long key1;
         private final Long key2;
         private final Long key3;
-        
+
         private final int hashCode;
-        
+
         private CachePucKey(Long key1, Long key2, Long key3)
         {
             this.key1 = key1;
@@ -1157,13 +1274,13 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             this.key3 = key3;
             this.hashCode = (key1 == null ? 0 : key1.hashCode()) + (key2 == null ? 0 : key2.hashCode()) + (key3 == null ? 0 : key3.hashCode());
         }
-        
+
         @Override
         public String toString()
         {
             return key1 + "." + key2 + "." + key3;
         }
-        
+
         @Override
         public boolean equals(Object obj)
         {
@@ -1176,18 +1293,18 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 return false;
             }
             CachePucKey that = (CachePucKey) obj;
-            return EqualsHelper.nullSafeEquals(this.key1, that.key1) && 
-                   EqualsHelper.nullSafeEquals(this.key2, that.key2) &&
-                   EqualsHelper.nullSafeEquals(this.key3, that.key3);
+            return EqualsHelper.nullSafeEquals(this.key1, that.key1) &&
+                    EqualsHelper.nullSafeEquals(this.key2, that.key2) &&
+                    EqualsHelper.nullSafeEquals(this.key3, that.key3);
         }
-        
+
         @Override
         public int hashCode()
         {
             return hashCode;
         }
     }
-    
+
     private void checkUniquenessGuarantee(Serializable... values)
     {
         for (int i = 0; i < values.length; i++)
@@ -1198,8 +1315,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 if (uniquenessCheckEnabled)
                 {
                     throw new IllegalArgumentException("Type of the KEY-" + i + " (" + values[i].getClass() + ") cannot guarantee uniqueness. " +
-                       "Please, see https://issues.alfresco.com/jira/browse/MNT-11895 for details. " +
-                       "Set system.propval.uniquenessCheck.enabled=false to not throw the exception.");
+                            "Please, see https://issues.alfresco.com/jira/browse/MNT-11895 for details. " +
+                            "Set system.propval.uniquenessCheck.enabled=false to not throw the exception.");
                 }
                 else
                 {
@@ -1210,17 +1327,15 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
         }
     }
-    
+
     public Pair<Long, Long> createPropertyUniqueContext(
             Serializable value1, Serializable value2, Serializable value3,
             Serializable propertyValue1)
     {
-        /*
-         * Use savepoints so that the PropertyUniqueConstraintViolation can be caught and handled in-transaction
-         */
+        /* Use savepoints so that the PropertyUniqueConstraintViolation can be caught and handled in-transaction */
         checkUniquenessGuarantee(value1, value2, value3);
-        
-        // Translate the properties.  Null values are acceptable
+
+        // Translate the properties. Null values are acceptable
         Long id1 = getOrCreatePropertyValue(value1).getFirst();
         Long id2 = getOrCreatePropertyValue(value2).getFirst();
         Long id3 = getOrCreatePropertyValue(value3).getFirst();
@@ -1229,44 +1344,44 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             property1Id = createProperty(propertyValue1);
         }
-        
+
         CachePucKey pucKey = getPucKey(id1, id2, id3);
-        
+
         Savepoint savepoint = controlDAO.createSavepoint("createPropertyUniqueContext");
         try
         {
             PropertyUniqueContextEntity entity = createPropertyUniqueContext(id1, id2, id3, property1Id);
             controlDAO.releaseSavepoint(savepoint);
-            
+
             // cache
             propertyUniqueContextCache.put(pucKey, entity);
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Created unique property context: \n" +
-                        "   Values: " + value1 + "-" + value2 + "-" + value3 + "\n" +
-                        "   Result: " + entity);
+                                "   Values: " + value1 + "-" + value2 + "-" + value3 + "\n" +
+                                "   Result: " + entity);
             }
-            
+
             return new Pair<Long, Long>(entity.getId(), property1Id);
         }
         catch (Exception e)
         {
-            // Remove from caches.  The individual values must also be removed in case they are incorrect.
+            // Remove from caches. The individual values must also be removed in case they are incorrect.
             propertyValueCache.removeByValue(value1);
             propertyValueCache.removeByValue(value2);
             propertyValueCache.removeByValue(value3);
             propertyUniqueContextCache.remove(pucKey);
-            
+
             controlDAO.rollbackToSavepoint(savepoint);
             throw new PropertyUniqueConstraintViolation(value1, value2, value3, e);
         }
     }
-    
+
     public Pair<Long, Long> getPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3)
     {
-        // Translate the properties.  Null values are quite acceptable
+        // Translate the properties. Null values are quite acceptable
         Pair<Long, Serializable> pair1 = getPropertyValue(value1);
         Pair<Long, Serializable> pair2 = getPropertyValue(value2);
         Pair<Long, Serializable> pair3 = getPropertyValue(value3);
@@ -1278,26 +1393,26 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Long id1 = pair1.getFirst();
         Long id2 = pair2.getFirst();
         Long id3 = pair3.getFirst();
-        
+
         CachePucKey pucKey = getPucKey(id1, id2, id3);
-        
+
         // check cache
         PropertyUniqueContextEntity entity = propertyUniqueContextCache.get(pucKey);
         if (entity == null)
         {
             // Remove from cache
             propertyUniqueContextCache.remove(pucKey);
-            
+
             // query DB
             entity = getPropertyUniqueContextByValues(id1, id2, id3);
-            
+
             if (entity != null)
             {
                 // cache
                 propertyUniqueContextCache.put(pucKey, entity);
             }
         }
-         
+
         if ((entity != null) && (entity.getPropertyId() != null))
         {
             try
@@ -1307,23 +1422,23 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
             catch (DataIntegrityViolationException dive)
             {
-            	// Remove from cache
+                // Remove from cache
                 propertyUniqueContextCache.remove(pucKey);
                 throw dive;
             }
         }
-        
+
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Searched for unique property context: \n" +
-                    "   Values: " + value1 + "-" + value2 + "-" + value3 + "\n" +
-                    "   Result: " + entity);
+                            "   Values: " + value1 + "-" + value2 + "-" + value3 + "\n" +
+                            "   Result: " + entity);
         }
         return entity == null ? null : new Pair<Long, Long>(entity.getId(), entity.getPropertyId());
     }
-    
+
     public void getPropertyUniqueContext(PropertyUniqueContextCallback callback, Serializable... values)
     {
         if (values.length < 1 || values.length > 3)
@@ -1341,36 +1456,31 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
             valueIds[i] = valuePair.getFirst();
         }
-        
+
         // not cached
         getPropertyUniqueContextByValues(callback, valueIds);
-        
+
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Searched for unique property context: \n" +
-                    "   Values: " + Arrays.toString(values));
+                            "   Values: " + Arrays.toString(values));
         }
     }
-    
-    /*
-     * Update PUC keys - retain current property value
-     * 
-     */
+
+    /* Update PUC keys - retain current property value */
     public void updatePropertyUniqueContextKeys(Long id, Serializable value1, Serializable value2, Serializable value3)
     {
-        /*
-         * Use savepoints so that the PropertyUniqueConstraintViolation can be caught and handled in-transactioin
-         */
-        
-        // Translate the properties.  Null values are acceptable
+        /* Use savepoints so that the PropertyUniqueConstraintViolation can be caught and handled in-transactioin */
+
+        // Translate the properties. Null values are acceptable
         Long id1 = getOrCreatePropertyValue(value1).getFirst();
         Long id2 = getOrCreatePropertyValue(value2).getFirst();
         Long id3 = getOrCreatePropertyValue(value3).getFirst();
-        
+
         CachePucKey pucKey = getPucKey(id1, id2, id3);
-        
+
         Savepoint savepoint = controlDAO.createSavepoint("updatePropertyUniqueContext");
         try
         {
@@ -1379,27 +1489,27 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             {
                 // Remove from cache
                 propertyUniqueContextCache.remove(pucKey);
-                
+
                 throw new DataIntegrityViolationException("No unique property context exists for id: " + id);
             }
             entity.setValue1PropId(id1);
             entity.setValue2PropId(id2);
             entity.setValue3PropId(id3);
-            
+
             entity = updatePropertyUniqueContext(entity);
-            
+
             controlDAO.releaseSavepoint(savepoint);
-            
+
             // cache
             propertyUniqueContextCache.put(pucKey, entity);
-            
+
             // Done
             if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Updated unique property context: \n" +
-                        "   ID: " + id + "\n" +
-                        "   Values: " + value1 + "-" + value2 + "-" + value3);
+                                "   ID: " + id + "\n" +
+                                "   Values: " + value1 + "-" + value2 + "-" + value3);
             }
             return;
         }
@@ -1407,24 +1517,22 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             // Remove from cache
             propertyUniqueContextCache.remove(pucKey);
-            
+
             controlDAO.rollbackToSavepoint(savepoint);
             throw new PropertyUniqueConstraintViolation(value1, value2, value3, e);
         }
     }
-    
-    /* 
-     * Update property value by keys
-     */
+
+    /* Update property value by keys */
     public void updatePropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3, Serializable propertyValue)
     {
-        // Translate the properties.  Null values are acceptable
+        // Translate the properties. Null values are acceptable
         Long id1 = getOrCreatePropertyValue(value1).getFirst();
         Long id2 = getOrCreatePropertyValue(value2).getFirst();
         Long id3 = getOrCreatePropertyValue(value3).getFirst();
-        
+
         CachePucKey pucKey = getPucKey(id1, id2, id3);
-        
+
         try
         {
             Pair<Long, Long> entityPair = getPropertyUniqueContext(value1, value2, value3);
@@ -1432,35 +1540,35 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             {
                 throw new DataIntegrityViolationException("No unique property context exists for values: " + value1 + "-" + value2 + "-" + value3);
             }
-            
+
             long id = entityPair.getFirst();
             PropertyUniqueContextEntity entity = getPropertyUniqueContextById(id);
             if (entity == null)
             {
                 throw new DataIntegrityViolationException("No unique property context exists for id: " + id);
             }
-            
+
             Long propertyId = null;
             if (propertyValue != null)
             {
                 propertyId = createProperty(propertyValue);
             }
-            
+
             // Create a new property
             entity.setPropertyId(propertyId);
-            
+
             entity = updatePropertyUniqueContext(entity);
-            
+
             // cache
             propertyUniqueContextCache.put(pucKey, entity);
-            
+
             // Done
             if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Updated unique property context: \n" +
-                        "   ID: " + id + "\n" +
-                        "   Property: " + propertyId);
+                                "   ID: " + id + "\n" +
+                                "   Property: " + propertyId);
             }
         }
         catch (DataIntegrityViolationException e)
@@ -1495,9 +1603,9 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             valueIds[i] = valuePair.getFirst();
         }
         int deleted = deletePropertyUniqueContexts(valueIds);
-        
+
         CachePucKey pucKey = getPucKey(valueIds[0], (values.length > 1 ? valueIds[1] : null), (values.length > 2 ? valueIds[2] : null));
-        
+
         if (values.length == 3)
         {
             propertyUniqueContextCache.remove(pucKey);
@@ -1507,28 +1615,33 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             // note: in future, if we need to support mass removal based on specific key grouping then we need to use more intelligent cache (removal)
             propertyUniqueContextCache.clear();
         }
-        
+
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Deleted " + deleted + " unique property contexts: \n" +
-                    "   Values: " + Arrays.toString(values) + "\n" +
-                    "   IDs:    " + Arrays.toString(valueIds));
+                            "   Values: " + Arrays.toString(values) + "\n" +
+                            "   IDs:    " + Arrays.toString(valueIds));
         }
         return deleted;
     }
 
     protected abstract PropertyUniqueContextEntity createPropertyUniqueContext(Long valueId1, Long valueId2, Long valueId3, Long propertyId);
-    protected abstract PropertyUniqueContextEntity getPropertyUniqueContextById(Long id);
-    protected abstract PropertyUniqueContextEntity getPropertyUniqueContextByValues(Long valueId1, Long valueId2, Long valueId3);
-    protected abstract void getPropertyUniqueContextByValues(PropertyUniqueContextCallback callback, Long... valueIds);
-    protected abstract PropertyUniqueContextEntity updatePropertyUniqueContext(PropertyUniqueContextEntity entity);
-    protected abstract int deletePropertyUniqueContexts(Long ... valueIds);
 
-    //================================
+    protected abstract PropertyUniqueContextEntity getPropertyUniqueContextById(Long id);
+
+    protected abstract PropertyUniqueContextEntity getPropertyUniqueContextByValues(Long valueId1, Long valueId2, Long valueId3);
+
+    protected abstract void getPropertyUniqueContextByValues(PropertyUniqueContextCallback callback, Long... valueIds);
+
+    protected abstract PropertyUniqueContextEntity updatePropertyUniqueContext(PropertyUniqueContextEntity entity);
+
+    protected abstract int deletePropertyUniqueContexts(Long... valueIds);
+
+    // ================================
     // Utility methods
-    //================================
+    // ================================
 
     @SuppressWarnings("unchecked")
     public Serializable convertPropertyIdSearchRows(List<PropertyIdSearchRow> rows)
@@ -1538,13 +1651,10 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             return null;
         }
-        /*
-         * The results all share the same root property.  Pass through the results and construct all
-         * instances, storing them ordered by prop_index.
-         */
+        /* The results all share the same root property. Pass through the results and construct all instances, storing them ordered by prop_index. */
         Map<Long, Serializable> valuesByPropIndex = new HashMap<Long, Serializable>(7);
         TreeMap<Long, PropertyLinkEntity> linkEntitiesByPropIndex = new TreeMap<Long, PropertyLinkEntity>();
-        Long rootPropId = null;                         // Keep this to ensure the root_prop_id is common
+        Long rootPropId = null; // Keep this to ensure the root_prop_id is common
         for (PropertyIdSearchRow row : rows)
         {
             // Check that we are handling a single root property
@@ -1556,9 +1666,9 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             {
                 throw new IllegalArgumentException(
                         "The root_prop_id for the property search rows must not change: \n" +
-                        "   Rows: " + rows);
+                                "   Rows: " + rows);
             }
-            
+
             PropertyLinkEntity linkEntity = row.getLinkEntity();
             Long propIndex = linkEntity.getPropIndex();
             Long valuePropId = linkEntity.getValuePropId();
@@ -1578,7 +1688,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             valuesByPropIndex.put(propIndex, value);
             linkEntitiesByPropIndex.put(propIndex, linkEntity);
         }
-        
+
         Serializable result = null;
         // Iterate again, adding values to the collections and looking for the root property
         for (Map.Entry<Long, PropertyLinkEntity> entry : linkEntitiesByPropIndex.entrySet())

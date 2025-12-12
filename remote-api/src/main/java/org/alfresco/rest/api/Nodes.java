@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.webscripts.servlet.FormData;
+
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.model.Document;
@@ -50,7 +52,6 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * File Folder (Nodes) API
@@ -65,44 +66,50 @@ public interface Nodes
     /**
      * Get the node representation for the given node.
      *
-     * @param nodeId String
+     * @param nodeId
+     *            String
      * @return Node
      */
     Node getNode(String nodeId);
-    
+
     /**
      * Get the document representation for the given node.
      *
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      * @return Document
      */
     Document getDocument(NodeRef nodeRef);
-    
+
     /**
      * Get the folder representation for the given node.
      *
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      * @return Folder
      */
     Folder getFolder(NodeRef nodeRef);
-    
+
     /**
      * Get the folder or document representation (as appropriate) for the given node.
      *
-     * @param nodeId String nodeId or well-known alias, eg. "-root-" or "-my-"
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
-     *        including:
-     *        - incPrimaryParent
+     * @param nodeId
+     *            String nodeId or well-known alias, eg. "-root-" or "-my-"
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request including: - incPrimaryParent
      * @return
      */
     Node getFolderOrDocument(String nodeId, Parameters parameters);
 
     Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters, Map<String, UserInfo> mapUserInfo);
 
+    List<Node> getFoldersOrDocumentsFullInfo(List<NodeRef> nodeRefs, Parameters parameters, Map<String, UserInfo> mapUserInfo);
+
     /**
      * Get the folder or document representation (as appropriate) for the given node.
      *
-     * @param nodeRef A real Node
+     * @param nodeRef
+     *            A real Node
      * @param parentNodeRef
      * @param nodeTypeQName
      * @param includeParam
@@ -112,23 +119,34 @@ public interface Nodes
     Node getFolderOrDocument(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String, UserInfo> mapUserInfo);
 
     /**
+     * Get the folder or document representation (as appropriate) for the given list of nodes.
+     *
+     * @param nodeRefs
+     *            A list of real Nodes
+     * @param includeParam
+     * @param mapUserInfo
+     * @return
+     */
+    List<Node> getFoldersOrDocuments(List<NodeRef> nodeRefs, List<String> includeParam, Map<String, UserInfo> mapUserInfo);
+
+    /**
      * Get list of children of a parent folder.
      *
-     * @param parentFolderNodeId String id of parent folder node or well-known alias, eg. "-root-" or "-my-"
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
-     *        including:
-     *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
-     *        - incFiles, incFolders (both true by default)
+     * @param parentFolderNodeId
+     *            String id of parent folder node or well-known alias, eg. "-root-" or "-my-"
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request including: - filter, sort & paging params (where, orderBy, skipCount, maxItems) - incFiles, incFolders (both true by default)
      * @return a paged list of {@code org.alfresco.rest.api.model.Node} objects
      */
     CollectionWithPagingInfo<Node> listChildren(String parentFolderNodeId, Parameters parameters);
-    
+
     /**
      * Delete the given node. Note: will cascade delete for a folder.
      *
-     * @param nodeId String id of node (folder or document)
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
-     *                   - permanent (default false)
+     * @param nodeId
+     *            String id of node (folder or document)
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request - permanent (default false)
      */
     void deleteNode(String nodeId, Parameters parameters);
 
@@ -168,7 +186,8 @@ public interface Nodes
      *
      * @param fileNodeId
      * @param parameters
-     * @param recordActivity true, if an activity post is required.
+     * @param recordActivity
+     *            true, if an activity post is required.
      * @return
      */
     BinaryResource getContent(String fileNodeId, Parameters parameters, boolean recordActivity);
@@ -176,9 +195,11 @@ public interface Nodes
     /**
      * Download file content.
      *
-     * @param nodeRef        the content nodeRef
+     * @param nodeRef
+     *            the content nodeRef
      * @param parameters
-     * @param recordActivity true, if an activity post is required.
+     * @param recordActivity
+     *            true, if an activity post is required.
      * @return
      */
     BinaryResource getContent(NodeRef nodeRef, Parameters parameters, boolean recordActivity);
@@ -199,30 +220,40 @@ public interface Nodes
     /**
      * Uploads file content and meta-data into the repository.
      *
-     * @param parentFolderNodeId String id of parent folder node or well-known alias, eg. "-root-" or "-my-"
-     * @param formData           the {@link FormData}
-     * @param parameters         the {@link Parameters} object to get the parameters passed into the request
+     * @param parentFolderNodeId
+     *            String id of parent folder node or well-known alias, eg. "-root-" or "-my-"
+     * @param formData
+     *            the {@link FormData}
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request
      * @return {@code Node} if successful
      */
     Node upload(String parentFolderNodeId, FormData formData, Parameters parameters);
-    
 
     NodeRef validateNode(StoreRef storeRef, String nodeId);
+
+    List<NodeRef> validateNodes(StoreRef storeRef, List<String> nodeIds);
+
     NodeRef validateNode(String nodeId);
+
     NodeRef validateNode(NodeRef nodeRef);
 
     /**
      * Check that the specified id refers to a valid node.
      *
-     * @param nodeId The node id to look up using SpacesStore or an alias like -root-.
+     * @param nodeId
+     *            The node id to look up using SpacesStore or an alias like -root-.
      * @return The node ref.
-     * @throws InvalidArgumentException if the specified node id is not a valid format.
-     * @throws EntityNotFoundException if the specified node was not found in the database.
+     * @throws InvalidArgumentException
+     *             if the specified node id is not a valid format.
+     * @throws EntityNotFoundException
+     *             if the specified node was not found in the database.
      */
     default NodeRef validateOrLookupNode(String nodeId)
     {
         return validateOrLookupNode(nodeId, null);
     }
+
     NodeRef validateOrLookupNode(String nodeId, String path);
 
     boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes);
@@ -230,9 +261,12 @@ public interface Nodes
     /**
      * Determines whether the type of the given nodeRef is a sub-class of another class or not.
      *
-     * @param nodeRef         source nodeRef
-     * @param ofClassQName    the class to test against
-     * @param validateNodeRef whether to validate the given source node or not
+     * @param nodeRef
+     *            source nodeRef
+     * @param ofClassQName
+     *            the class to test against
+     * @param validateNodeRef
+     *            whether to validate the given source node or not
      * @return true if the type of the given nodeRef is a sub-class of another class, otherwise false
      */
     boolean isSubClass(NodeRef nodeRef, QName ofClassQName, boolean validateNodeRef);
@@ -240,7 +274,8 @@ public interface Nodes
     /**
      * Helper to create a QName from either a fully qualified or short-name QName string
      *
-     * @param qnameStr Fully qualified or short-name QName string
+     * @param qnameStr
+     *            Fully qualified or short-name QName string
      * @return QName
      */
     QName createQName(String qnameStr);
@@ -267,6 +302,7 @@ public interface Nodes
 
     /**
      * Lock a node
+     * 
      * @param nodeId
      * @param lockInfo
      * @param parameters
@@ -276,6 +312,7 @@ public interface Nodes
 
     /**
      * Unlock a node
+     * 
      * @param nodeId
      * @param parameters
      * @return
@@ -284,8 +321,11 @@ public interface Nodes
 
     /**
      * Gets a presigned URL to directly access content.
-     * @param nodeId The node id for which to obtain the direct access {@code URL}
-     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * 
+     * @param nodeId
+     *            The node id for which to obtain the direct access {@code URL}
+     * @param attachment
+     *            {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
      * @return A direct access {@code URL} object for the content.
      */
     default DirectAccessUrl requestContentDirectUrl(String nodeId, boolean attachment)
@@ -295,8 +335,11 @@ public interface Nodes
 
     /**
      * Gets a presigned URL to directly access content.
-     * @param nodeRef The node reference for which to obtain the direct access {@code URL}
-     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * 
+     * @param nodeRef
+     *            The node reference for which to obtain the direct access {@code URL}
+     * @param attachment
+     *            {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
      * @return A direct access {@code URL} object for the content.
      */
     default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment)
@@ -306,9 +349,13 @@ public interface Nodes
 
     /**
      * Gets a presigned URL to directly access content.
-     * @param nodeId The node id for which to obtain the direct access {@code URL}
-     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
-     * @param validFor The time at which the direct access {@code URL} will expire.
+     * 
+     * @param nodeId
+     *            The node id for which to obtain the direct access {@code URL}
+     * @param attachment
+     *            {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor
+     *            The time at which the direct access {@code URL} will expire.
      * @return A direct access {@code URL} object for the content.
      */
     default DirectAccessUrl requestContentDirectUrl(String nodeId, boolean attachment, Long validFor)
@@ -318,9 +365,13 @@ public interface Nodes
 
     /**
      * Gets a presigned URL to directly access content.
-     * @param nodeRef The node reference for which to obtain the direct access {@code URL}
-     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
-     * @param validFor The time at which the direct access {@code URL} will expire.
+     * 
+     * @param nodeRef
+     *            The node reference for which to obtain the direct access {@code URL}
+     * @param attachment
+     *            {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor
+     *            The time at which the direct access {@code URL} will expire.
      * @return A direct access {@code URL} object for the content.
      */
     default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
@@ -330,18 +381,21 @@ public interface Nodes
 
     /**
      * Gets a presigned URL to directly access content.
-     * @param nodeRef The node reference for which to obtain the direct access {@code URL}
-     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
-     * @param validFor The time at which the direct access {@code URL} will expire.
-     * @param fileName Optional name for the file when downloaded
+     * 
+     * @param nodeRef
+     *            The node reference for which to obtain the direct access {@code URL}
+     * @param attachment
+     *            {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor
+     *            The time at which the direct access {@code URL} will expire.
+     * @param fileName
+     *            Optional name for the file when downloaded
      * @return A direct access {@code URL} object for the content.
      */
     DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor, String fileName);
 
     /**
-     * Convert from node properties (map of QName to Serializable) retrieved from
-     * the respository to a map of String to Object that can be formatted/expressed
-     * as required by the API JSON response for get nodes, get person etc.
+     * Convert from node properties (map of QName to Serializable) retrieved from the respository to a map of String to Object that can be formatted/expressed as required by the API JSON response for get nodes, get person etc.
      * <p>
      * Returns null if there are no properties to return, rather than an empty map.
      * 
@@ -352,11 +406,10 @@ public interface Nodes
      * @param excludedProps
      * @return The map of properties, or null if none to return.
      */
-    Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo, List<String> excludedNS, List<QName> excludedProps);
+    Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String, UserInfo> mapUserInfo, List<String> excludedNS, List<QName> excludedProps);
 
     /**
-     * Map from the JSON API format of properties (String to Object) to
-     * the typical node properties map used by the repository (QName to Serializable).
+     * Map from the JSON API format of properties (String to Object) to the typical node properties map used by the repository (QName to Serializable).
      * 
      * @param props
      * @return
@@ -366,25 +419,24 @@ public interface Nodes
     /**
      * Returns the path to the given nodeRef {@code nodeRefIn} or the archived nodeRef {@code archivedParentAssoc}.
      *
-     * @param nodeRefIn           the NodeRef
-     * @param archivedParentAssoc the ChildAssociationRef of the archived NodeRef
+     * @param nodeRefIn
+     *            the NodeRef
+     * @param archivedParentAssoc
+     *            the ChildAssociationRef of the archived NodeRef
      * @return the path to the given node
      */
     PathInfo lookupPathInfo(NodeRef nodeRefIn, ChildAssociationRef archivedParentAssoc);
 
     /**
-     * Map from a String representation of aspect names to a set
-     * of QName objects, as used by the repository.
+     * Map from a String representation of aspect names to a set of QName objects, as used by the repository.
      * 
      * @param aspectNames
      * @return
      */
     Set<QName> mapToNodeAspects(List<String> aspectNames);
-        
+
     /**
-     * Map from aspects (Set of QName) retrieved from the repository to a
-     * map List of String required that can be formatted/expressed as required
-     * by the API JSON response for get nodes, get person etc.
+     * Map from aspects (Set of QName) retrieved from the repository to a map List of String required that can be formatted/expressed as required by the API JSON response for get nodes, get person etc.
      * <p>
      * Returns null if there are no aspect names to return, rather than an empty list.
      * 
@@ -396,8 +448,7 @@ public interface Nodes
     List<String> mapFromNodeAspects(Set<QName> nodeAspects, List<String> excludedNS, List<QName> excludedAspects);
 
     /**
-     * Add aspects to the specified NodeRef. Aspects that appear in the exclusions list
-     * will be ignored.
+     * Add aspects to the specified NodeRef. Aspects that appear in the exclusions list will be ignored.
      * 
      * @param nodeRef
      * @param aspectNames
@@ -406,8 +457,7 @@ public interface Nodes
     void addCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> exclusions);
 
     /**
-     * Update aspects for the specified NodeRef. An empty list will result in
-     * aspects being <strong>removed</strong>.
+     * Update aspects for the specified NodeRef. An empty list will result in aspects being <strong>removed</strong>.
      * 
      * @param nodeRef
      * @param aspectNames
@@ -419,7 +469,6 @@ public interface Nodes
 
     void validateProperties(Map<String, Object> properties, List<String> excludedNS, List<QName> excludedProperties);
 
-    
     /**
      * API Constants - query parameters, etc
      */
@@ -471,4 +520,3 @@ public interface Nodes
     String PARAM_ISPRIMARY = "isPrimary";
     String PARAM_ASSOC_TYPE = "assocType";
 }
-

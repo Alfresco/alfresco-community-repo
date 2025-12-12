@@ -121,4 +121,21 @@ public class ReferenceablePropertiesEntity
         }
         throw new IllegalArgumentException("Not sys:referenceable property: " + qname);
     }
+
+    /**
+     * Adds all {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties.
+     */
+    public static void addReferenceableProperties(Long nodeId, NodeRef nodeRef, Map<QName, Serializable> properties)
+    {
+        properties.put(ContentModel.PROP_STORE_PROTOCOL, nodeRef.getStoreRef().getProtocol());
+        properties.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
+        properties.put(ContentModel.PROP_NODE_UUID, nodeRef.getId());
+        properties.put(ContentModel.PROP_NODE_DBID, nodeId);
+        // add the ID as the name, if required
+        String name = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_NAME));
+        if (name == null)
+        {
+            properties.put(ContentModel.PROP_NAME, nodeRef.getId());
+        }
+    }
 }

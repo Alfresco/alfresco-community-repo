@@ -29,8 +29,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.repo.domain.propval.*;
-import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
@@ -40,7 +38,9 @@ import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DuplicateKeyException;
 
 import org.alfresco.ibatis.RollupResultHandler;
+import org.alfresco.repo.domain.propval.*;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.domain.schema.script.ScriptBundleExecutor;
 import org.alfresco.util.Pair;
 
@@ -418,7 +418,8 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         Class<?> clazz = (value == null ? Object.class : value.getClass());
 
         // Check for long strings and use the marker interface to differentiate the type ID
-        if(value instanceof String && ((String) value).length() > SchemaBootstrap.getMaxStringLength()){
+        if (value instanceof String && ((String) value).length() > SchemaBootstrap.getMaxStringLength())
+        {
             clazz = SerializableString.class;
         }
 

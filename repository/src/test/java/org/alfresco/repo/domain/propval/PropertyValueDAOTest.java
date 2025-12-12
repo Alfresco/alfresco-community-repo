@@ -44,7 +44,6 @@ import java.util.Map;
 import java.util.Random;
 import javax.naming.CompositeName;
 
-import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -55,6 +54,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.MLText;

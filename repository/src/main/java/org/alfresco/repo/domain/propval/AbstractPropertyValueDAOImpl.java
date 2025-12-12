@@ -777,8 +777,9 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
             Long actualTypeId = entity.getActualTypeId();
             final Class<Serializable> actualType = (Class<Serializable>) getPropertyClassById(actualTypeId).getSecond();
-            if(SerializableString.class.equals(actualType)){
-                return entity.getValue((Class)String.class, converter);
+            if (SerializableString.class.equals(actualType))
+            {
+                return entity.getValue((Class) String.class, converter);
             }
             final Serializable actualValue = entity.getValue(actualType, converter);
             // Done

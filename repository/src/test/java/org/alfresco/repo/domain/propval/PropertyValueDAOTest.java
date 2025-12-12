@@ -25,6 +25,13 @@
  */
 package org.alfresco.repo.domain.propval;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,11 +42,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import javax.naming.CompositeName;
+
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.MLText;
@@ -49,20 +64,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @see PropertyValueDAO
@@ -70,6 +71,7 @@ import static org.junit.Assert.fail;
  * @author Derek Hulley
  * @since 3.2
  */
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 @Category({OwnJVMTestsCategory.class, DBTests.class})
 public class PropertyValueDAOTest
 {
@@ -78,35 +80,34 @@ public class PropertyValueDAOTest
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private PropertyValueDAO propertyValueDAO;
-    
+
     @Before
     public void setUp() throws Exception
     {
         transactionService = (TransactionService) ctx.getBean("TransactionService");
         txnHelper = transactionService.getRetryingTransactionHelper();
         txnHelper.setMaxRetries(0);
-        
+
         propertyValueDAO = (PropertyValueDAO) ctx.getBean("propertyValueDAO");
-        
+
         // Remove the caches to test all functionality
         removeCaches();
     }
-    
+
     private void removeCaches()
     {
-        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyClassCache(null);
-        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyDateValueCache(null);
-        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyDoubleValueCache(null);
-        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyStringValueCache(null);
-        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyValueCache(null);
+        ((AbstractPropertyValueDAOImpl) propertyValueDAO).setPropertyClassCache(null);
+        ((AbstractPropertyValueDAOImpl) propertyValueDAO).setPropertyDateValueCache(null);
+        ((AbstractPropertyValueDAOImpl) propertyValueDAO).setPropertyDoubleValueCache(null);
+        ((AbstractPropertyValueDAOImpl) propertyValueDAO).setPropertyStringValueCache(null);
+        ((AbstractPropertyValueDAOImpl) propertyValueDAO).setPropertyValueCache(null);
     }
-    
+
     @Test
     public void testPropertyClass() throws Exception
     {
         final Class<?> clazz = this.getClass();
-        RetryingTransactionCallback<Pair<Long, Class<?>>> createClassCallback = new RetryingTransactionCallback<Pair<Long, Class<?>>>()
-        {
+        RetryingTransactionCallback<Pair<Long, Class<?>>> createClassCallback = new RetryingTransactionCallback<Pair<Long, Class<?>>>() {
             public Pair<Long, Class<?>> execute() throws Throwable
             {
                 // Get the classes
@@ -118,8 +119,7 @@ public class PropertyValueDAOTest
         assertNotNull(clazzEntityPair.getFirst());
         assertEquals(clazz, clazzEntityPair.getSecond());
         // Now retrieve it
-        RetryingTransactionCallback<Void> getClassCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> getClassCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Pair<Long, Class<?>> checkPair1 = propertyValueDAO.getPropertyClassById(clazzEntityPair.getFirst());
@@ -130,10 +130,9 @@ public class PropertyValueDAOTest
             }
         };
         txnHelper.doInTransaction(getClassCallback, true);
-        
+
         // Test failure when requesting invalid ID
-        RetryingTransactionCallback<Void> badGetCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> badGetCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 propertyValueDAO.getPropertyClassById(Long.MIN_VALUE);
@@ -149,10 +148,9 @@ public class PropertyValueDAOTest
         {
             // Expected
         }
-        
+
         // Test null caching
-        RetryingTransactionCallback<Void> noHitCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> noHitCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 propertyValueDAO.getPropertyClass(this.getClass());
@@ -162,14 +160,13 @@ public class PropertyValueDAOTest
         };
         txnHelper.doInTransaction(noHitCallback, false);
     }
-    
+
     @Test
     public void testPropertyDateValue() throws Exception
     {
         final Date dateValue = ISO8601DateFormat.parse("1936-08-04T23:37:25.793Z");
         final Date dateValueBack = ISO8601DateFormat.parse("1936-08-04T00:00:00.000Z");
-        RetryingTransactionCallback<Pair<Long, Date>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Date>>()
-        {
+        RetryingTransactionCallback<Pair<Long, Date>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Date>>() {
             public Pair<Long, Date> execute() throws Throwable
             {
                 return propertyValueDAO.getOrCreatePropertyDateValue(dateValue);
@@ -178,9 +175,8 @@ public class PropertyValueDAOTest
         final Pair<Long, Date> entityPair = txnHelper.doInTransaction(createValueCallback, false);
         assertNotNull(entityPair);
         assertEquals(dateValueBack, entityPair.getSecond());
-        
-        RetryingTransactionCallback<Pair<Long, Date>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Date>>()
-        {
+
+        RetryingTransactionCallback<Pair<Long, Date>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Date>>() {
             public Pair<Long, Date> execute() throws Throwable
             {
                 return propertyValueDAO.getPropertyDateValue(dateValue);
@@ -190,15 +186,14 @@ public class PropertyValueDAOTest
         assertNotNull(entityPairCheck);
         assertEquals(entityPair, entityPairCheck);
     }
-    
+
     @Test
     public void testPropertyStringValue() throws Exception
     {
         final String stringValue = "One Two Three - àâæçéèêëîïôœùûüÿñ - " + System.currentTimeMillis();
         final String stringValueUpper = stringValue.toUpperCase();
         final String stringValueLower = stringValue.toLowerCase();
-        RetryingTransactionCallback<Pair<Long, String>> createStringCallback = new RetryingTransactionCallback<Pair<Long, String>>()
-        {
+        RetryingTransactionCallback<Pair<Long, String>> createStringCallback = new RetryingTransactionCallback<Pair<Long, String>>() {
             public Pair<Long, String> execute() throws Throwable
             {
                 return propertyValueDAO.getOrCreatePropertyStringValue(stringValue);
@@ -208,10 +203,9 @@ public class PropertyValueDAOTest
         assertNotNull(stringEntityPair);
         assertNotNull(stringEntityPair.getFirst());
         assertEquals(stringValue, stringEntityPair.getSecond());
-        
+
         // Check that the uppercase and lowercase strings don't have entries
-        RetryingTransactionCallback<Void> getStringCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> getStringCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Pair<Long, String> checkPair1 = propertyValueDAO.getPropertyStringValue(stringValue);
@@ -226,8 +220,7 @@ public class PropertyValueDAOTest
         };
         txnHelper.doInTransaction(getStringCallback, true);
 
-        RetryingTransactionCallback<Pair<Long, String>> createStringUpperCallback = new RetryingTransactionCallback<Pair<Long, String>>()
-        {
+        RetryingTransactionCallback<Pair<Long, String>> createStringUpperCallback = new RetryingTransactionCallback<Pair<Long, String>>() {
             public Pair<Long, String> execute() throws Throwable
             {
                 return propertyValueDAO.getOrCreatePropertyStringValue(stringValueUpper);
@@ -239,7 +232,7 @@ public class PropertyValueDAOTest
         assertEquals(stringValueUpper, stringUpperEntityPair.getSecond());
         assertNotSame("String IDs were not different", stringEntityPair.getFirst(), stringUpperEntityPair.getFirst());
     }
-    
+
     /**
      * Try to catch Oracle out
      */
@@ -247,8 +240,7 @@ public class PropertyValueDAOTest
     public void testPropertyStringValue_EmptyAndNull() throws Exception
     {
         // Check empty string
-        RetryingTransactionCallback<Void> emptyStringCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> emptyStringCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Pair<Long, String> emptyStringPair1 = propertyValueDAO.getOrCreatePropertyStringValue("");
@@ -262,13 +254,12 @@ public class PropertyValueDAOTest
         };
         txnHelper.doInTransaction(emptyStringCallback, false);
     }
-    
+
     @Test
     public void testPropertyDoubleValue() throws Exception
     {
         final Double doubleValue = Double.valueOf(1.7976931348623E+125);
-        RetryingTransactionCallback<Pair<Long, Double>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Double>>()
-        {
+        RetryingTransactionCallback<Pair<Long, Double>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Double>>() {
             public Pair<Long, Double> execute() throws Throwable
             {
                 return propertyValueDAO.getOrCreatePropertyDoubleValue(doubleValue);
@@ -277,9 +268,8 @@ public class PropertyValueDAOTest
         final Pair<Long, Double> entityPair = txnHelper.doInTransaction(createValueCallback, false);
         assertNotNull(entityPair);
         assertEquals(doubleValue, entityPair.getSecond());
-        
-        RetryingTransactionCallback<Pair<Long, Double>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Double>>()
-        {
+
+        RetryingTransactionCallback<Pair<Long, Double>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Double>>() {
             public Pair<Long, Double> execute() throws Throwable
             {
                 return propertyValueDAO.getPropertyDoubleValue(doubleValue);
@@ -289,13 +279,12 @@ public class PropertyValueDAOTest
         assertNotNull(entityPairCheck);
         assertEquals(entityPair, entityPairCheck);
     }
-    
+
     @Test
     public void testPropertySerializableValue() throws Exception
     {
         final Serializable serializableValue = new CompositeName("123");
-        RetryingTransactionCallback<Pair<Long, Serializable>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
-        {
+        RetryingTransactionCallback<Pair<Long, Serializable>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>() {
             public Pair<Long, Serializable> execute() throws Throwable
             {
                 return propertyValueDAO.createPropertySerializableValue(serializableValue);
@@ -304,9 +293,8 @@ public class PropertyValueDAOTest
         final Pair<Long, Serializable> entityPair = txnHelper.doInTransaction(createValueCallback, false);
         assertNotNull(entityPair);
         assertEquals(serializableValue, entityPair.getSecond());
-        
-        RetryingTransactionCallback<Pair<Long, Serializable>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
-        {
+
+        RetryingTransactionCallback<Pair<Long, Serializable>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>() {
             public Pair<Long, Serializable> execute() throws Throwable
             {
                 return propertyValueDAO.getPropertySerializableValueById(entityPair.getFirst());
@@ -316,24 +304,23 @@ public class PropertyValueDAOTest
         assertNotNull(entityPairCheck);
         assertEquals(entityPair.getFirst(), entityPairCheck.getFirst());
         assertEquals(entityPair, entityPairCheck);
-        
+
         // Check that we can persist and retrieve byte[] as a Serializable
-        final Serializable bytes = (Serializable) new byte[] {1, 2, 3};
-        RetryingTransactionCallback<Pair<Long, Void>> testBytesCallback = new RetryingTransactionCallback<Pair<Long, Void>>()
-        {
+        final Serializable bytes = (Serializable) new byte[]{1, 2, 3};
+        RetryingTransactionCallback<Pair<Long, Void>> testBytesCallback = new RetryingTransactionCallback<Pair<Long, Void>>() {
             public Pair<Long, Void> execute() throws Throwable
             {
                 Long id = propertyValueDAO.createPropertySerializableValue(bytes).getFirst();
                 Serializable check = propertyValueDAO.getPropertySerializableValueById(id).getSecond();
                 assertNotNull(check);
                 assertTrue(check instanceof byte[]);
-                Arrays.equals((byte[])bytes, (byte[])check);
+                Arrays.equals((byte[]) bytes, (byte[]) check);
                 return null;
             }
         };
         txnHelper.doInTransaction(testBytesCallback, false);
     }
-    
+
     /**
      * Tests that the given value can be persisted and retrieved with the same resulting ID
      */
@@ -341,14 +328,14 @@ public class PropertyValueDAOTest
     {
         runPropertyValueTest(value, true);
     }
+
     /**
      * Tests that the given value can be persisted and retrieved with the same resulting ID
      */
     private void runPropertyValueTest(final Serializable value, final boolean runValueRetrieval) throws Exception
     {
         // Create it (if it doesn't exist)
-        RetryingTransactionCallback<Pair<Long, Serializable>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
-        {
+        RetryingTransactionCallback<Pair<Long, Serializable>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>() {
             public Pair<Long, Serializable> execute() throws Throwable
             {
                 // Get the classes
@@ -358,12 +345,11 @@ public class PropertyValueDAOTest
         final Pair<Long, Serializable> entityPair = txnHelper.doInTransaction(createValueCallback, false);
         assertNotNull(entityPair);
         assertEquals(value, entityPair.getSecond());
-        
+
         if (runValueRetrieval)
         {
             // Retrieve it by value
-            RetryingTransactionCallback<Pair<Long, Serializable>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
-            {
+            RetryingTransactionCallback<Pair<Long, Serializable>> getValueCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>() {
                 public Pair<Long, Serializable> execute() throws Throwable
                 {
                     // Get the classes
@@ -376,8 +362,7 @@ public class PropertyValueDAOTest
         }
 
         // Retrieve it by ID
-        RetryingTransactionCallback<Pair<Long, Serializable>> getByIdCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
-        {
+        RetryingTransactionCallback<Pair<Long, Serializable>> getByIdCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>() {
             public Pair<Long, Serializable> execute() throws Throwable
             {
                 // Get the classes
@@ -399,43 +384,39 @@ public class PropertyValueDAOTest
     {
         HashMap emptyMap = new HashMap();
         // Set a real cache, the problem happens in the cache
-        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyValueCache(new DefaultSimpleCache<Serializable, Object>());
+        ((AbstractPropertyValueDAOImpl) propertyValueDAO).setPropertyValueCache(new DefaultSimpleCache<Serializable, Object>());
 
         // Create an empty property of type MLText, this will also cache the new property
-        Pair<Long, Serializable> emptyMLTextPair = txnHelper.doInTransaction(()
-                -> propertyValueDAO.getOrCreatePropertyValue(new MLText()), false);
+        Pair<Long, Serializable> emptyMLTextPair = txnHelper.doInTransaction(() -> propertyValueDAO.getOrCreatePropertyValue(new MLText()), false);
 
         // Create an empty HashMap property
-        Pair<Long, Serializable> emptyHashMapPair = txnHelper.doInTransaction(()
-                -> propertyValueDAO.getOrCreatePropertyValue(emptyMap), false);
+        Pair<Long, Serializable> emptyHashMapPair = txnHelper.doInTransaction(() -> propertyValueDAO.getOrCreatePropertyValue(emptyMap), false);
 
         // Check that the returned pair representing the empty HashMap is actually a HashMap
         assertEquals("Incorrect type persisted for an empty HashMap.", HashMap.class, emptyHashMapPair.getSecond().getClass());
 
         // Check again by retrieving the value by value
-        Pair<Long, Serializable> emptyHashMapPairRetrievedByValye = txnHelper.doInTransaction(()
-                -> propertyValueDAO.getPropertyValue(emptyMap), false);
+        Pair<Long, Serializable> emptyHashMapPairRetrievedByValye = txnHelper.doInTransaction(() -> propertyValueDAO.getPropertyValue(emptyMap), false);
         assertEquals("Incorrect type persisted for an empty HashMap.", HashMap.class, emptyHashMapPairRetrievedByValye.getSecond().getClass());
 
         // Check again by retrieving the value by id
-        Pair<Long, Serializable> emptyHashMapPairRetrievedByID = txnHelper.doInTransaction(()
-                -> propertyValueDAO.getPropertyValueById(emptyHashMapPair.getFirst()), false);
+        Pair<Long, Serializable> emptyHashMapPairRetrievedByID = txnHelper.doInTransaction(() -> propertyValueDAO.getPropertyValueById(emptyHashMapPair.getFirst()), false);
         assertEquals("Incorrect type persisted for an empty HashMap.", HashMap.class, emptyHashMapPairRetrievedByID.getSecond().getClass());
     }
-    
+
     @Test
     public void testPropertyValue_Null() throws Exception
     {
         runPropertyValueTest(null);
     }
-    
+
     @Test
     public void testPropertyValue_Boolean() throws Exception
     {
         runPropertyValueTest(Boolean.TRUE);
         runPropertyValueTest(Boolean.FALSE);
     }
-    
+
     @Test
     public void testPropertyValue_Short() throws Exception
     {
@@ -444,7 +425,7 @@ public class PropertyValueDAOTest
             runPropertyValueTest(Short.valueOf(i));
         }
     }
-    
+
     @Test
     public void testPropertyValue_Integer() throws Exception
     {
@@ -453,7 +434,7 @@ public class PropertyValueDAOTest
             runPropertyValueTest(Integer.valueOf(i));
         }
     }
-    
+
     @Test
     public void testPropertyValue_Long() throws Exception
     {
@@ -462,7 +443,7 @@ public class PropertyValueDAOTest
             runPropertyValueTest(Long.valueOf(i));
         }
     }
-    
+
     @Test
     public void testPropertyValue_Float() throws Exception
     {
@@ -471,7 +452,7 @@ public class PropertyValueDAOTest
             runPropertyValueTest(Float.valueOf((float) i + 0.01F));
         }
     }
-    
+
     @Test
     public void testPropertyValue_Double() throws Exception
     {
@@ -480,7 +461,7 @@ public class PropertyValueDAOTest
             runPropertyValueTest(Double.valueOf((double) i + 0.01D));
         }
     }
-    
+
     @Test
     public void testPropertyValue_Date() throws Exception
     {
@@ -490,7 +471,7 @@ public class PropertyValueDAOTest
             runPropertyValueTest(new Date(rand.nextLong()));
         }
     }
-    
+
     @Test
     public void testPropertyValue_String() throws Exception
     {
@@ -499,22 +480,39 @@ public class PropertyValueDAOTest
             runPropertyValueTest(new String("Value-" + i + ".xyz"));
         }
     }
-    
+
+    @Test
+    public void testLongStringPersistence() throws Exception
+    {
+        StringBuilder sb = new StringBuilder();
+        int lenOverLimit = SchemaBootstrap.getMaxStringLength() + 100;
+        for (int i = 0; i < lenOverLimit; i++)
+        {
+            sb.append("a");
+        }
+
+        final String longString = sb.toString();
+        final String shortString = "Short string";
+
+        runPropertyValueTest(shortString);
+        runPropertyValueTest(longString, false);
+    }
+
     @Test
     public void testPropertyValue_Serializable() throws Exception
     {
         for (int i = 0; i < 100; i++)
         {
             // Choose a type that implements equals and hashCode but will not be recognised
-            runPropertyValueTest(new CompositeName("Name-"+i), false);
+            runPropertyValueTest(new CompositeName("Name-" + i), false);
         }
     }
-    
+
     private static enum TEST_NUMBERS
     {
         ONE, TWO, THREE;
     }
-    
+
     @Test
     public void testPropertyValue_Enum() throws Exception
     {
@@ -524,28 +522,28 @@ public class PropertyValueDAOTest
             runPropertyValueTest(n);
         }
     }
-    
+
     @Test
     public void testPropertyValue_EmptyHashMap() throws Exception
     {
         final HashMap<String, String> map = new HashMap<String, String>(15);
         runPropertyValueTest(map, true);
     }
-    
+
     @Test
     public void testPropertyValue_EmptyArrayList() throws Exception
     {
         final ArrayList<String> list = new ArrayList<String>(20);
         runPropertyValueTest(list, true);
     }
-    
+
     @Test
     public void testPropertyValue_EmptyHashSet() throws Exception
     {
         final HashSet<String> set = new HashSet<String>(20);
         runPropertyValueTest(set, true);
     }
-    
+
     @Test
     public void testPropertyValue_MapOfStrings() throws Exception
     {
@@ -558,15 +556,14 @@ public class PropertyValueDAOTest
         }
         runPropertyValueTest(map, false);
     }
-    
+
     /**
      * Tests that the given value can be persisted and retrieved with the same resulting ID
      */
     private Long runPropertyTest(final Serializable value) throws Exception
     {
         // Create it
-        RetryingTransactionCallback<Long> createValueCallback = new RetryingTransactionCallback<Long>()
-        {
+        RetryingTransactionCallback<Long> createValueCallback = new RetryingTransactionCallback<Long>() {
             public Long execute() throws Throwable
             {
                 // Get the classes
@@ -575,10 +572,9 @@ public class PropertyValueDAOTest
         };
         final Long entityId = txnHelper.doInTransaction(createValueCallback, false);
         assertNotNull(entityId);
-        
+
         // Retrieve it by ID
-        RetryingTransactionCallback<Serializable> getByIdCallback = new RetryingTransactionCallback<Serializable>()
-        {
+        RetryingTransactionCallback<Serializable> getByIdCallback = new RetryingTransactionCallback<Serializable>() {
             public Serializable execute() throws Throwable
             {
                 // Get the classes
@@ -588,11 +584,10 @@ public class PropertyValueDAOTest
         final Serializable entityValueCheck = txnHelper.doInTransaction(getByIdCallback, false);
         assertNotNull(entityValueCheck);
         assertEquals(value, entityValueCheck);
-        
+
         // Test the callback for multiple IDs
         final Map<Long, Serializable> propsById = new HashMap<Long, Serializable>();
-        PropertyFinderCallback finderCallback = new PropertyFinderCallback()
-        {
+        PropertyFinderCallback finderCallback = new PropertyFinderCallback() {
             public void handleProperty(Long id, Serializable value)
             {
                 propsById.put(id, value);
@@ -600,11 +595,11 @@ public class PropertyValueDAOTest
         };
         List<Long> entityIds = Collections.singletonList(entityId);
         propertyValueDAO.getPropertiesByIds(entityIds, finderCallback);
-        
+
         assertEquals("Should be exactly one value in map", 1, propsById.size());
         assertTrue("Expected ID to be in map", propsById.containsKey(entityId));
         assertEquals("Value was not retrieved correctly", value, propsById.get(entityId));
-        
+
         // Done
         return entityId;
     }
@@ -621,7 +616,7 @@ public class PropertyValueDAOTest
         }
         runPropertyTest(map);
     }
-    
+
     @Test
     public void testProperty_MapOfMapOfSerializables() throws Exception
     {
@@ -640,7 +635,7 @@ public class PropertyValueDAOTest
         }
         runPropertyTest(mapOuter);
     }
-    
+
     @Test
     public void testProperty_MapOfMapOfStrings() throws Exception
     {
@@ -659,7 +654,7 @@ public class PropertyValueDAOTest
         }
         runPropertyTest(mapOuter);
     }
-    
+
     @Test
     public void testProperty_CollectionOfStrings() throws Exception
     {
@@ -671,7 +666,7 @@ public class PropertyValueDAOTest
         }
         runPropertyTest(list);
     }
-    
+
     @Test
     public void testProperty_UpdateCollection() throws Exception
     {
@@ -682,12 +677,11 @@ public class PropertyValueDAOTest
             list.add(value);
         }
         final Long propId = runPropertyTest(list);
-        
+
         // Now update it
         list.add("Additional value");
 
-        RetryingTransactionCallback<Serializable> updateAndGetCallback = new RetryingTransactionCallback<Serializable>()
-        {
+        RetryingTransactionCallback<Serializable> updateAndGetCallback = new RetryingTransactionCallback<Serializable>() {
             public Serializable execute() throws Throwable
             {
                 // Get the classes
@@ -700,39 +694,38 @@ public class PropertyValueDAOTest
         assertNotNull(entityValueCheck);
         assertEquals(list, entityValueCheck);
     }
-    
-//    public void testProperty_UpdateToVersionRollover() throws Exception
-//    {
-//        final List<String> list = Collections.emptyList();
-//        final Long propId = runPropertyTest((Serializable)list);
-//        
-//        // Do 1000 updates to a property
-//        RetryingTransactionCallback<Void> updateThousandsCallback = new RetryingTransactionCallback<Void>()
-//        {
-//            public Void execute() throws Throwable
-//            {
-//                for (int i = 0; i < 1000; i++)
-//                {
-//                    propertyValueDAO.updateProperty(propId, (Serializable)list);
-//                }
-//                return null;
-//            }
-//        };
-//        for (int i = 0; i < (Short.MAX_VALUE / 1000 + 1); i++)
-//        {
-//            txnHelper.doInTransaction(updateThousandsCallback, false);
-//        }
-//    }
-//
+
+    // public void testProperty_UpdateToVersionRollover() throws Exception
+    // {
+    // final List<String> list = Collections.emptyList();
+    // final Long propId = runPropertyTest((Serializable)list);
+    //
+    // // Do 1000 updates to a property
+    // RetryingTransactionCallback<Void> updateThousandsCallback = new RetryingTransactionCallback<Void>()
+    // {
+    // public Void execute() throws Throwable
+    // {
+    // for (int i = 0; i < 1000; i++)
+    // {
+    // propertyValueDAO.updateProperty(propId, (Serializable)list);
+    // }
+    // return null;
+    // }
+    // };
+    // for (int i = 0; i < (Short.MAX_VALUE / 1000 + 1); i++)
+    // {
+    // txnHelper.doInTransaction(updateThousandsCallback, false);
+    // }
+    // }
+    //
     @Test
     public void testProperty_Delete() throws Exception
     {
         final ArrayList<String> list = new ArrayList<String>(20);
         final Long propId = runPropertyTest(list);
-        
+
         // Now delete it
-        RetryingTransactionCallback<Serializable> deleteCallback = new RetryingTransactionCallback<Serializable>()
-        {
+        RetryingTransactionCallback<Serializable> deleteCallback = new RetryingTransactionCallback<Serializable>() {
             public Serializable execute() throws Throwable
             {
                 // Get the classes
@@ -742,8 +735,7 @@ public class PropertyValueDAOTest
         };
         txnHelper.doInTransaction(deleteCallback, false);
 
-        RetryingTransactionCallback<Serializable> failedGetCallback = new RetryingTransactionCallback<Serializable>()
-        {
+        RetryingTransactionCallback<Serializable> failedGetCallback = new RetryingTransactionCallback<Serializable>() {
             public Serializable execute() throws Throwable
             {
                 // Get it by the ID again
@@ -755,15 +747,13 @@ public class PropertyValueDAOTest
             final Serializable entityValueCheck = txnHelper.doInTransaction(failedGetCallback, false);
             fail("Deleted property should not be gettable.  Got: " + entityValueCheck);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             // Expected
         }
     }
-    
-    /*
-     * Switch off caches and rerun some of the tests
-     */
+
+    /* Switch off caches and rerun some of the tests */
     @Test
     public void testPropertyClass_NoCache() throws Exception
     {
@@ -777,7 +767,7 @@ public class PropertyValueDAOTest
         removeCaches();
         testPropertyDateValue();
     }
-    
+
     @Test
     public void testPropertyStringValue_NoCache() throws Exception
     {
@@ -798,16 +788,15 @@ public class PropertyValueDAOTest
         removeCaches();
         testPropertySerializableValue();
     }
-    
+
     @Test
     public void testPropertyUniqueContext() throws Exception
     {
         final String aaa = GUID.generate();
         final String bbb = GUID.generate();
-        
+
         // Check null-null-null context
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // Get the ID for nulls
@@ -831,8 +820,7 @@ public class PropertyValueDAOTest
             }
         }, false);
         // Create a well-known context ID
-        final Long id = txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-        {
+        final Long id = txnHelper.doInTransaction(new RetryingTransactionCallback<Long>() {
             public Long execute() throws Throwable
             {
                 return propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa, null).getFirst();
@@ -841,8 +829,7 @@ public class PropertyValueDAOTest
         // Check that duplicates are disallowed
         try
         {
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                 public Void execute() throws Throwable
                 {
                     propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa, null);
@@ -858,8 +845,7 @@ public class PropertyValueDAOTest
         // Check that updates work
         try
         {
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                 public Void execute() throws Throwable
                 {
                     // Now update it
@@ -877,32 +863,30 @@ public class PropertyValueDAOTest
         {
             // Expected
         }
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // Delete
                 propertyValueDAO.deletePropertyUniqueContext(id);
                 propertyValueDAO.createPropertyUniqueContext("A", "AA", bbb, null);
-                
+
                 return null;
             }
         }, false);
     }
-    
+
     @Test
     public void testPropertyUniqueContextValue() throws Exception
     {
         final String aaa = GUID.generate();
         final String bbb = GUID.generate();
         final String ccc = GUID.generate();
-        
+
         final String v1 = GUID.generate();
         final String v2 = GUID.generate();
-        
+
         // Create a well-known context ID
-        final Long id = txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-        {
+        final Long id = txnHelper.doInTransaction(new RetryingTransactionCallback<Long>() {
             public Long execute() throws Throwable
             {
                 return propertyValueDAO.createPropertyUniqueContext(aaa, bbb, ccc, null).getFirst();
@@ -911,13 +895,12 @@ public class PropertyValueDAOTest
         Pair<Long, Serializable> v0Pair = new Pair<Long, Serializable>(id, null);
         Pair<Long, Serializable> v1Pair = new Pair<Long, Serializable>(id, v1);
         Pair<Long, Serializable> v2Pair = new Pair<Long, Serializable>(id, v2);
-        
+
         // Check, assign value and recheck
         Pair<Long, Serializable> pair = null;
-        
+
         // Check that the property is correct
-        pair = txnHelper.doInTransaction(new RetryingTransactionCallback<Pair<Long, Serializable>>()
-        {
+        pair = txnHelper.doInTransaction(new RetryingTransactionCallback<Pair<Long, Serializable>>() {
             public Pair<Long, Serializable> execute() throws Throwable
             {
                 Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(aaa, bbb, ccc);
@@ -934,8 +917,7 @@ public class PropertyValueDAOTest
         }, true);
         assertEquals("ID-value pair incorrect", v0Pair, pair);
 
-        pair = txnHelper.doInTransaction(new RetryingTransactionCallback<Pair<Long, Serializable>>()
-        {
+        pair = txnHelper.doInTransaction(new RetryingTransactionCallback<Pair<Long, Serializable>>() {
             public Pair<Long, Serializable> execute() throws Throwable
             {
                 propertyValueDAO.updatePropertyUniqueContext(aaa, bbb, ccc, v1);
@@ -946,8 +928,7 @@ public class PropertyValueDAOTest
         }, false);
         assertEquals("ID-value pair incorrect", v1Pair, pair);
 
-        pair = txnHelper.doInTransaction(new RetryingTransactionCallback<Pair<Long, Serializable>>()
-        {
+        pair = txnHelper.doInTransaction(new RetryingTransactionCallback<Pair<Long, Serializable>>() {
             public Pair<Long, Serializable> execute() throws Throwable
             {
                 propertyValueDAO.updatePropertyUniqueContext(aaa, bbb, ccc, v2);
@@ -958,7 +939,7 @@ public class PropertyValueDAOTest
         }, false);
         assertEquals("ID-value pair incorrect", v2Pair, pair);
     }
-    
+
     /**
      * MNT-10067: use a script to delete the orphaned property values.
      */
@@ -967,7 +948,7 @@ public class PropertyValueDAOTest
     public void testScriptCanDeleteUnusedProps()
     {
         PropValGenerator valueGen = new PropValGenerator(propertyValueDAO);
-        
+
         // Find some values to use in the test that aren't already in the property tables.
         final String stringValue = valueGen.createUniqueString();
         final Double doubleValue = valueGen.createUniqueDouble();
@@ -975,9 +956,8 @@ public class PropertyValueDAOTest
         final Serializable serValue = valueGen.createUniqueSerializable();
         // We'll keep a list of the DB IDs of the persisted values so we can later check they've been deleted.
         final Map<Object, Long> persistedIDs = new HashMap<Object, Long>();
-        
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 persistedIDs.put(stringValue, propertyValueDAO.getOrCreatePropertyStringValue(stringValue).getFirst());
@@ -987,10 +967,9 @@ public class PropertyValueDAOTest
                 return null;
             }
         });
-        
+
         // Run the clean-up script.
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // Check there are some persisted values to delete.
@@ -1000,27 +979,26 @@ public class PropertyValueDAOTest
                 // Serializable values are the odd-one-out; we can't query for them by value
                 // and no de-duplication is used during storage.
                 assertEquals(serValue, propertyValueDAO.getPropertyValueById(persistedIDs.get(serValue)).getSecond());
-                
+
                 propertyValueDAO.cleanupUnusedValues();
                 return null;
             }
         });
 
         // Check all the properties have been deleted.
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {   
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
-            {                
+            {
                 assertPropDeleted(propertyValueDAO.getPropertyStringValue(stringValue));
                 assertPropDeleted(propertyValueDAO.getPropertyDoubleValue(doubleValue));
                 // TODO: fix date deletion, not currently handled by CleanAlfPropTables.sql
-//                assertPropDeleted(propertyValueDAO.getPropertyDateValue(dateValue));
+                // assertPropDeleted(propertyValueDAO.getPropertyDateValue(dateValue));
                 // Serializable values cannot be queried by value
                 try
                 {
                     propertyValueDAO.getPropertyValueById(persistedIDs.get(serValue));
                     fail(String.format("Persisted %s was not deleted, but should have been.",
-                                serValue.getClass().getSimpleName()));
+                            serValue.getClass().getSimpleName()));
                 }
                 catch (DataIntegrityViolationException e)
                 {
@@ -1030,13 +1008,13 @@ public class PropertyValueDAOTest
             }
         });
     }
-    
+
     private void assertPropDeleted(Pair<Long, ?> value)
     {
         if (value != null)
         {
             String msg = String.format("Property value [%s=%s] should have been deleted by cleanup script.",
-                        value.getSecond().getClass().getSimpleName(), value.getSecond());
+                    value.getSecond().getClass().getSimpleName(), value.getSecond());
             fail(msg);
         }
     }

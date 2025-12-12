@@ -15,4 +15,15 @@
         <include refid="alfresco.node.select_ChildNodeIds_Limited_Snippet"/>
     </select>
 
+    <select id="select_ParentAssocsOfChildren" parameterType="ChildAssoc" resultMap="alfresco.node.result_ChildAssocTxnId">
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+        <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
+        where
+            childNode.id in
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            and assoc.is_primary = true
+    </select>
+
 </mapper>

@@ -162,36 +162,64 @@ public class ResultMapper
     {
         List<Node> noderesults = new ArrayList<>();
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
-        Map<NodeRef, List<Pair<String, List<String>>>> highLighting = results.getHighlighting();
-        final AtomicInteger unknownNodeRefsCount = new AtomicInteger();
-        boolean isHistory = searchRequestContext.getStores().contains(StoreMapper.HISTORY);
-
-        for (ResultSetRow row : results)
+        Map<NodeRef, List<Pair<String, List<String>>>> highLighting = Collections.emptyMap();
+        if (results != null)
         {
-            Node aNode = getNode(row, params, mapUserInfo, isHistory);
+            highLighting = results.getHighlighting();
+        }
+        final AtomicInteger unknownNodeRefsCount = new AtomicInteger();
+        // The store was never implemented
+        // boolean isHistory = searchRequestContext.getStores().contains(StoreMapper.HISTORY);
 
-            if (aNode != null)
+        if (results != null && results.getNumberFound() > 0)
+        {
+            String store = searchQuery.getScope() == null ? LIVE_NODES
+                    : searchQuery.getScope().getLocations().get(0);
+
+            List<Node> nodes = getNodes(store, results, params, mapUserInfo);
+
+            for (ResultSetRow row : results)
             {
-                float f = row.getScore();
-                List<HighlightEntry> highlightEntries = null;
-                List<Pair<String, List<String>>> high = highLighting.get(row.getNodeRef());
+                Node aNode = nodes.stream()
+                        .filter(n -> n.getNodeRef().equals(row.getNodeRef()))
+                        .findFirst()
+                        .orElse(null);
 
-                if (high != null && !high.isEmpty())
+                if (aNode == null)
                 {
-                    highlightEntries = new ArrayList<HighlightEntry>(high.size());
-                    for (Pair<String, List<String>> highlight : high)
+                    if (logger.isDebugEnabled())
                     {
-                        highlightEntries.add(new HighlightEntry(highlight.getFirst(), highlight.getSecond()));
+                        logger.debug("Unknown noderef returned from search results " + row.getNodeRef());
                     }
+                    unknownNodeRefsCount.incrementAndGet();
+                    continue;
                 }
-                aNode.setSearch(new SearchEntry(f, highlightEntries));
+
+                float f = row.getScore();
+                if (!highLighting.isEmpty())
+                {
+                    List<HighlightEntry> highlightEntries = null;
+                    List<Pair<String, List<String>>> high = highLighting.get(row.getNodeRef());
+
+                    if (high != null && !high.isEmpty())
+                    {
+                        highlightEntries = new ArrayList<>(high.size());
+                        for (Pair<String, List<String>> highlight : high)
+                        {
+                            highlightEntries.add(new HighlightEntry(highlight.getFirst(), highlight.getSecond()));
+                        }
+                    }
+
+                    aNode.setSearch(new SearchEntry(f, highlightEntries));
+                }
+
                 noderesults.add(aNode);
             }
-            else
-            {
-                logger.debug("Unknown noderef returned from search results " + row.getNodeRef());
-                unknownNodeRefsCount.incrementAndGet();
-            }
+        }
+
+        if (unknownNodeRefsCount.get() > 0)
+        {
+            logger.warn("Search results contained " + unknownNodeRefsCount.get() + " unknown noderefs which were skipped.");
         }
 
         SearchContext context = toSearchEngineResultSet(results)
@@ -276,6 +304,117 @@ public class ResultMapper
             aNode.setLocation(nodeStore);
         }
         return aNode;
+    }
+
+    /**
+     * Builds node representation based on ResultSet;
+     *
+     * @param resultSet
+     * @param params
+     * @param mapUserInfo
+     * @return The node object or null if the user does not have permission to view it.
+     */
+    public List<Node> getNodes(String store, ResultSet resultSet, Params params, Map<String, UserInfo> mapUserInfo)
+    {
+        List<Node> results = new ArrayList<>(resultSet.length());
+
+        if (resultSet.length() > 0)
+        {
+            try
+            {
+                switch (store)
+                {
+                case LIVE_NODES:
+                    results.addAll(nodes.getFoldersOrDocuments(resultSet.getNodeRefs(), params.getInclude(),
+                            mapUserInfo));
+                    break;
+                case VERSIONS:
+                    Map<NodeRef, Map<QName, Serializable>> properties = serviceRegistry.getNodeService()
+                            .getPropertiesForNodeRefs(resultSet.getNodeRefs());
+                    Map<NodeRef, Pair<NodeRef, String>> frozenNodeRefs = new HashMap<>();
+
+                    for (Entry<NodeRef, Map<QName, Serializable>> entry : properties.entrySet())
+                    {
+                        NodeRef frozenNodeRef = (NodeRef) entry.getValue()
+                                .get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
+                        String versionLabelId = (String) entry.getValue()
+                                .get(Version2Model.PROP_QNAME_VERSION_LABEL);
+
+                        if (frozenNodeRef != null && versionLabelId != null)
+                        {
+                            frozenNodeRefs.put(entry.getKey(), new Pair<>(frozenNodeRef, versionLabelId));
+                        }
+                    }
+
+                    // This section falls back to the less performant way of doing things. The calls that are made need more thought into
+                    // how to approach this it. The changes required are a bit more significant than just passing a collection. Looking up
+                    // versioned nodes is a little less common than searching for "Live Nodes" so it should be ok for now :-(
+
+                    for (Entry<NodeRef, Pair<NodeRef, String>> entry : frozenNodeRefs.entrySet())
+                    {
+                        NodeRef frozenNodeRef = entry.getValue().getFirst();
+                        String versionLabelId = entry.getValue().getSecond();
+
+                        Version version = null;
+                        Node aNode = null;
+
+                        try
+                        {
+                            version = nodeVersions.findVersion(frozenNodeRef.getId(), versionLabelId);
+                            aNode = nodes.getFolderOrDocument(version.getFrozenStateNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                        }
+                        catch (EntityNotFoundException | InvalidNodeRefException e)
+                        {
+                            // Solr says there is a node but we can't find it
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Failed to find a versioned node with id of " + frozenNodeRef
+                                        + " this is probably because the original node has been deleted.");
+                            }
+                        }
+
+                        if (version != null && aNode != null)
+                        {
+                            nodeVersions.mapVersionInfo(version, aNode, entry.getKey());
+                            aNode.setNodeId(frozenNodeRef.getId());
+                            aNode.setVersionLabel(versionLabelId);
+
+                            results.add(aNode);
+                        }
+                    }
+                    break;
+                case DELETED:
+                    List<String> nodeIds = resultSet.getNodeRefs().stream().map(NodeRef::getId).collect(Collectors.toList());
+                    try
+                    {
+                        results = deletedNodes.getDeletedNodes(nodeIds, params, false, mapUserInfo);
+                    }
+                    catch (EntityNotFoundException enfe)
+                    {
+                        // Solr says there is a deleted node but we can't find it, we want the rest of
+                        // the search to return so lets ignore it.
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Failed to find a deleted nodes with ids of " + nodeIds.toString());
+                        }
+                    }
+                    break;
+                }
+            }
+            catch (PermissionDeniedException e)
+            {
+                // logger.debug("Unable to access nodes: " + resultSet.toString());
+                return null;
+            }
+
+            if (!results.isEmpty())
+            {
+
+                results.forEach(aNode -> aNode.setLocation(store));
+            }
+        }
+
+        return results;
     }
 
     /**

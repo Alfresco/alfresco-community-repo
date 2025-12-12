@@ -238,6 +238,22 @@ public interface Nodes
 
     NodeRef validateNode(NodeRef nodeRef);
 
+    /**
+     * Check that the specified id refers to a valid node.
+     *
+     * @param nodeId
+     *            The node id to look up using SpacesStore or an alias like -root-.
+     * @return The node ref.
+     * @throws InvalidArgumentException
+     *             if the specified node id is not a valid format.
+     * @throws EntityNotFoundException
+     *             if the specified node was not found in the database.
+     */
+    default NodeRef validateOrLookupNode(String nodeId)
+    {
+        return validateOrLookupNode(nodeId, null);
+    }
+
     NodeRef validateOrLookupNode(String nodeId, String path);
 
     boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes);
@@ -358,7 +374,25 @@ public interface Nodes
      *            The time at which the direct access {@code URL} will expire.
      * @return A direct access {@code URL} object for the content.
      */
-    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor);
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
+    {
+        return requestContentDirectUrl(nodeRef, attachment, validFor, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * 
+     * @param nodeRef
+     *            The node reference for which to obtain the direct access {@code URL}
+     * @param attachment
+     *            {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor
+     *            The time at which the direct access {@code URL} will expire.
+     * @param fileName
+     *            Optional name for the file when downloaded
+     * @return A direct access {@code URL} object for the content.
+     */
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor, String fileName);
 
     /**
      * Convert from node properties (map of QName to Serializable) retrieved from the respository to a map of String to Object that can be formatted/expressed as required by the API JSON response for get nodes, get person etc.

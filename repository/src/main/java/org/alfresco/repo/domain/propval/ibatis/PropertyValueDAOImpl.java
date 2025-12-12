@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,24 +29,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.ibatis.RollupResultHandler;
-import org.alfresco.repo.domain.propval.AbstractPropertyValueDAOImpl;
-import org.alfresco.repo.domain.propval.PropertyClassEntity;
-import org.alfresco.repo.domain.propval.PropertyDateValueEntity;
-import org.alfresco.repo.domain.propval.PropertyDoubleValueEntity;
-import org.alfresco.repo.domain.propval.PropertyIdQueryParameter;
-import org.alfresco.repo.domain.propval.PropertyIdQueryResult;
-import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
-import org.alfresco.repo.domain.propval.PropertyLinkEntity;
-import org.alfresco.repo.domain.propval.PropertyRootEntity;
-import org.alfresco.repo.domain.propval.PropertySerializableValueEntity;
-import org.alfresco.repo.domain.propval.PropertyStringQueryEntity;
-import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
-import org.alfresco.repo.domain.propval.PropertyUniqueContextEntity;
-import org.alfresco.repo.domain.propval.PropertyValueEntity;
-import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
-import org.alfresco.repo.domain.schema.script.ScriptBundleExecutor;
-import org.alfresco.util.Pair;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
@@ -54,6 +36,13 @@ import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DuplicateKeyException;
+
+import org.alfresco.ibatis.RollupResultHandler;
+import org.alfresco.repo.domain.propval.*;
+import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
+import org.alfresco.repo.domain.schema.script.ScriptBundleExecutor;
+import org.alfresco.util.Pair;
 
 /**
  * iBatis-specific implementation of the PropertyValue DAO.
@@ -66,64 +55,62 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     private static final String SELECT_PROPERTY_CLASS_BY_ID = "alfresco.propval.select_PropertyClassByID";
     private static final String SELECT_PROPERTY_CLASS_BY_NAME = "alfresco.propval.select_PropertyClassByName";
     private static final String INSERT_PROPERTY_CLASS = "alfresco.propval.insert.insert_PropertyClass";
-    
+
     private static final String SELECT_PROPERTY_DATE_VALUE_BY_ID = "alfresco.propval.select_PropertyDateValueByID";
     private static final String SELECT_PROPERTY_DATE_VALUE_BY_VALUE = "alfresco.propval.select_PropertyDateValueByValue";
     private static final String INSERT_PROPERTY_DATE_VALUE = "alfresco.propval.insert_PropertyDateValue";
-    
+
     private static final String SELECT_PROPERTY_STRING_VALUE_BY_ID = "alfresco.propval.select_PropertyStringValueByID";
     private static final String SELECT_PROPERTY_STRING_VALUE_BY_VALUE = "alfresco.propval.select_PropertyStringValueByValue";
     private static final String INSERT_PROPERTY_STRING_VALUE = "alfresco.propval.insert.insert_PropertyStringValue";
-    
+
     private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_ID = "alfresco.propval.select_PropertyDoubleValueByID";
     private static final String SELECT_PROPERTY_DOUBLE_VALUE_BY_VALUE = "alfresco.propval.select_PropertyDoubleValueByValue";
     private static final String INSERT_PROPERTY_DOUBLE_VALUE = "alfresco.propval.insert.insert_PropertyDoubleValue";
-    
+
     private static final String SELECT_PROPERTY_SERIALIZABLE_VALUE_BY_ID = "alfresco.propval.select_PropertySerializableValueByID";
     private static final String INSERT_PROPERTY_SERIALIZABLE_VALUE = "alfresco.propval.insert.insert_PropertySerializableValue";
-    
+
     private static final String SELECT_PROPERTY_VALUE_BY_ID = "alfresco.propval.select_PropertyValueById";
     private static final String SELECT_PROPERTY_VALUE_BY_LOCAL_VALUE = "alfresco.propval.select_PropertyValueByLocalValue";
     private static final String SELECT_PROPERTY_VALUE_BY_DOUBLE_VALUE = "alfresco.propval.select_PropertyValueByDoubleValue";
     private static final String SELECT_PROPERTY_VALUE_BY_STRING_VALUE = "alfresco.propval.select_PropertyValueByStringValue";
     private static final String INSERT_PROPERTY_VALUE = "alfresco.propval.insert.insert_PropertyValue";
-    
+
     private static final String SELECT_PROPERTY_BY_ID = "alfresco.propval.select_PropertyById";
     private static final String SELECT_PROPERTIES_BY_IDS = "alfresco.propval.select_PropertiesByIds";
     private static final String SELECT_PROPERTY_ROOT_BY_ID = "alfresco.propval.select_PropertyRootById";
     private static final String INSERT_PROPERTY_ROOT = "alfresco.propval.insert.insert_PropertyRoot";
     private static final String UPDATE_PROPERTY_ROOT = "alfresco.propval.update_PropertyRoot";
     private static final String DELETE_PROPERTY_ROOT_BY_ID = "alfresco.propval.delete_PropertyRootById";
-    
+
     private static final String SELECT_PROPERTY_UNIQUE_CTX_BY_ID = "alfresco.propval.select_PropertyUniqueContextById";
     private static final String SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES = "alfresco.propval.select_PropertyUniqueContextByValues";
     private static final String INSERT_PROPERTY_UNIQUE_CTX = "alfresco.propval.insert.insert_PropertyUniqueContext";
     private static final String UPDATE_PROPERTY_UNIQUE_CTX = "alfresco.propval.update_PropertyUniqueContext";
     private static final String DELETE_PROPERTY_UNIQUE_CTX_BY_ID = "alfresco.propval.delete_PropertyUniqueContextById";
     private static final String DELETE_PROPERTY_UNIQUE_CTX_BY_VALUES = "alfresco.propval.delete_PropertyUniqueContextByValues";
-    
+
     private static final String INSERT_PROPERTY_LINK = "alfresco.propval.insert_PropertyLink";
     private static final String DELETE_PROPERTY_LINKS_BY_ROOT_ID = "alfresco.propval.delete_PropertyLinksByRootId";
-    
-    
+
     private SqlSessionTemplate template;
-    
+
     private ScriptBundleExecutor scriptExecutor;
-    
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
-    
+
     public void setScriptExecutor(ScriptBundleExecutor scriptExecutor)
     {
         this.scriptExecutor = scriptExecutor;
     }
-    
-    
-    //================================
+
+    // ================================
     // 'alf_prop_class' accessors
-    //================================
+    // ================================
 
     @Override
     protected PropertyClassEntity findClassById(Long id)
@@ -159,9 +146,9 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return entity;
     }
 
-    //================================
+    // ================================
     // 'alf_prop_date_value' accessors
-    //================================
+    // ================================
 
     @Override
     protected PropertyDateValueEntity findDateValueById(Long id)
@@ -193,9 +180,9 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return entity;
     }
 
-    //================================
+    // ================================
     // 'alf_prop_string_value' accessors
-    //================================
+    // ================================
 
     @Override
     protected String findStringValueById(Long id)
@@ -218,7 +205,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
                 SELECT_PROPERTY_STRING_VALUE_BY_VALUE,
                 entity,
                 new RowBounds(0, 1));
-        // The CRC match prevents incorrect results from coming back.  Although there could be
+        // The CRC match prevents incorrect results from coming back. Although there could be
         // several matches, we are sure that the matches are case-sensitive.
         if (rows.size() > 0)
         {
@@ -240,9 +227,9 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return entity.getId();
     }
 
-    //================================
+    // ================================
     // 'alf_prop_double_value' accessors
-    //================================
+    // ================================
 
     @Override
     protected PropertyDoubleValueEntity findDoubleValueById(Long id)
@@ -276,7 +263,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             return null;
         }
     }
-    
+
     @Override
     protected PropertyDoubleValueEntity createDoubleValue(Double value)
     {
@@ -287,9 +274,9 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return entity;
     }
 
-    //================================
+    // ================================
     // 'alf_prop_serializable_value' accessors
-    //================================
+    // ================================
 
     @Override
     protected PropertySerializableValueEntity findSerializableValueById(Long id)
@@ -313,16 +300,16 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return entity;
     }
 
-    //================================
+    // ================================
     // 'alf_prop_value' accessors
-    //================================
+    // ================================
 
     @Override
     protected PropertyValueEntity findPropertyValueById(Long id)
     {
         PropertyValueEntity entity = new PropertyValueEntity();
         entity.setId(id);
-        List<PropertyValueEntity> results =  template.selectList(
+        List<PropertyValueEntity> results = template.selectList(
                 SELECT_PROPERTY_VALUE_BY_ID,
                 entity);
         // At most one of the results represents a real value
@@ -354,16 +341,16 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             return null;
         }
         Long actualTypeId = clazzPair.getFirst();
-        
+
         // Construct the search parameters
         PropertyValueEntity queryEntity = new PropertyValueEntity();
         queryEntity.setValue(value, converter);
         queryEntity.setActualTypeId(actualTypeId);
-        
+
         // How would it be persisted?
         PersistedType persistedType = queryEntity.getPersistedTypeEnum();
         Short persistedTypeId = queryEntity.getPersistedType();
-        
+
         // Query based on the the persistable value type
         String query = null;
         Object queryObject = queryEntity;
@@ -397,7 +384,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         default:
             throw new IllegalStateException("Unhandled PersistedType value: " + persistedType);
         }
-        
+
         // Now query
         PropertyValueEntity result = null;
         if (query != null)
@@ -405,11 +392,11 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             // Uniqueness is guaranteed by the tables, so we get one value only
             result = template.selectOne(query, queryObject);
         }
-        
+
         // Done
         return result;
     }
-    
+
     @Override
     protected PropertyValueEntity createPropertyValue(Serializable value)
     {
@@ -417,26 +404,32 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         {
             return createPropertyValueInternal(value);
         }
-        catch (DuplicateKeyException e )
+        catch (DuplicateKeyException e)
         {
-            //In very rare situation, it can fail. Just try one more time.
-            //See MNT-12770 for details
+            // In very rare situation, it can fail. Just try one more time.
+            // See MNT-12770 for details
             return createPropertyValueInternal(value);
         }
     }
-    
+
     private PropertyValueEntity createPropertyValueInternal(Serializable value)
     {
         // Get the actual type ID
         Class<?> clazz = (value == null ? Object.class : value.getClass());
+
+        // check for the longs strings and use marker interface to differentiate the type ID
+        if (value instanceof String && ((String) value).length() > SchemaBootstrap.getMaxStringLength())
+        {
+            clazz = SerializableString.class;
+        }
         Pair<Long, Class<?>> clazzPair = getOrCreatePropertyClass(clazz);
         Long actualTypeId = clazzPair.getFirst();
-        
+
         // Construct the insert entity
         PropertyValueEntity insertEntity = new PropertyValueEntity();
         insertEntity.setValue(value, converter);
         insertEntity.setActualTypeId(actualTypeId);
-        
+
         // Persist the persisted value
         switch (insertEntity.getPersistedTypeEnum())
         {
@@ -463,16 +456,16 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         default:
             throw new IllegalStateException("Unknown PersistedType enum: " + insertEntity.getPersistedTypeEnum());
         }
-        
+
         // Persist the entity
         template.insert(INSERT_PROPERTY_VALUE, insertEntity);
         // Done
         return insertEntity;
     }
 
-    //================================
+    // ================================
     // 'alf_prop_root' accessors
-    //================================
+    // ================================
 
     @Override
     protected List<PropertyIdSearchRow> findPropertyById(Long id)
@@ -485,12 +478,12 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return results;
     }
 
-    private static final String[] KEY_COLUMNS_FINDBYIDS = new String[] {"propId"};
+    private static final String[] KEY_COLUMNS_FINDBYIDS = new String[]{"propId"};
+
     @Override
     protected void findPropertiesByIds(List<Long> ids, final PropertyFinderCallback callback)
     {
-        ResultHandler valueResultHandler = new ResultHandler()
-        {
+        ResultHandler valueResultHandler = new ResultHandler() {
             public void handleResult(ResultContext context)
             {
                 PropertyIdQueryResult result = (PropertyIdQueryResult) context.getResultObject();
@@ -521,7 +514,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     protected Long createPropertyRoot()
     {
         PropertyRootEntity rootEntity = new PropertyRootEntity();
-        rootEntity.setVersion((short)0);
+        rootEntity.setVersion((short) 0);
         template.insert(INSERT_PROPERTY_ROOT, rootEntity);
         return rootEntity.getId();
     }
@@ -588,7 +581,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         entity = template.selectOne(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity);
         return entity;
     }
-    
+
     @Override
     protected void getPropertyUniqueContextByValues(final PropertyUniqueContextCallback callback, Long... valueIds)
     {
@@ -610,24 +603,23 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
                 throw new IllegalArgumentException("Only 3 ids allowed");
             }
         }
-        
-        ResultHandler valueResultHandler = new ResultHandler()
-        {
+
+        ResultHandler valueResultHandler = new ResultHandler() {
             public void handleResult(ResultContext context)
             {
                 PropertyUniqueContextEntity result = (PropertyUniqueContextEntity) context.getResultObject();
-                
+
                 Long id = result.getId();
                 Long propId = result.getPropertyId();
                 Serializable[] keys = new Serializable[3];
                 keys[0] = result.getValue1PropId();
                 keys[1] = result.getValue2PropId();
                 keys[2] = result.getValue3PropId();
-                
+
                 callback.handle(id, propId, keys);
             }
         };
-        
+
         template.select(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity, valueResultHandler);
         // Done
     }
@@ -728,7 +720,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         {
             try
             {
-                // execute clean up 
+                // execute clean up
                 scriptExecutor.exec(false, "alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTablesPostExec.sql");
             }
             catch (RuntimeException e)

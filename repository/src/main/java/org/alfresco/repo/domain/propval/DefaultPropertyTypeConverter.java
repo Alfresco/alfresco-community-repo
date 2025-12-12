@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
@@ -43,14 +45,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Default converter for handling data going to and from the persistence layer.
  * <p/>
- * Properties are stored as a set of well-defined types defined by the enumeration
- * {@link PersistedType}.  Ultimately, data can be persisted as BLOB data, but must
- * be the last resort.
+ * Properties are stored as a set of well-defined types defined by the enumeration {@link PersistedType}. Ultimately, data can be persisted as BLOB data, but must be the last resort.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -61,7 +60,7 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
      * An unmodifiable map of types and how they should be persisted
      */
     protected static final Map<Class<?>, PersistedType> defaultPersistedTypesByClass;
-    
+
     static
     {
         // Create the map of class-type
@@ -84,11 +83,11 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
         mapClass.put(SerializableString.class, PersistedType.SERIALIZABLE);
         // Everything else is just Serializable
         defaultPersistedTypesByClass = Collections.unmodifiableMap(mapClass);
-        
+
     }
-    
+
     private Map<Class<?>, PersistedType> persistenceMapping;
-    
+
     /**
      * Default constructor
      */
@@ -97,30 +96,28 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
         persistenceMapping = new HashMap<Class<?>, PersistedType>(
                 DefaultPropertyTypeConverter.defaultPersistedTypesByClass);
     }
-    
+
     /**
      * Allow subclasses to add further type mappings specific to the implementation
      * 
-     * @param clazz                 the class to be converted
-     * @param targetType            the target persisted type
+     * @param clazz
+     *            the class to be converted
+     * @param targetType
+     *            the target persisted type
      */
     protected void addTypeMapping(Class<?> clazz, PersistedType targetType)
     {
         this.persistenceMapping.put(clazz, targetType);
     }
-    
+
     /**
-     * Determines if the value can be adequately recreated (to equality) by creating
-     * a new instance.  For example, a <b>java.util.HashMap</b> is constructable provided
-     * that the map is empty.
+     * Determines if the value can be adequately recreated (to equality) by creating a new instance. For example, a <b>java.util.HashMap</b> is constructable provided that the map is empty.
      * <p>
-     * Subclasses can override this to handle any well-known types, and in conjunction with
-     * {@link #constructInstance(String)}, even choose to return <tt>true</tt> if it needs a
-     * non-default constructor.
+     * Subclasses can override this to handle any well-known types, and in conjunction with {@link #constructInstance(String)}, even choose to return <tt>true</tt> if it needs a non-default constructor.
      * 
-     * @param value             the value to check
-     * @return                  Returns <tt>true</tt> if the value can be reconstructed by
-     *                          instantiation using a default constructor
+     * @param value
+     *            the value to check
+     * @return Returns <tt>true</tt> if the value can be reconstructed by instantiation using a default constructor
      */
     protected boolean isConstructable(Serializable value)
     {
@@ -153,7 +150,7 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
             return false;
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -174,14 +171,14 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
             throw new AlfrescoRuntimeException("Unable to construct property for class: " + clazzName);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public PersistedType getPersistentType(Serializable value)
     {
         ParameterCheck.mandatory("value", value);
-        
+
         Class<?> clazz = value.getClass();
         PersistedType type = persistenceMapping.get(clazz);
         if (type != null)
@@ -223,12 +220,11 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
             return PersistedType.SERIALIZABLE;
         }
     }
-    
+
     /**
-     * Performs the conversion using {@link DefaultTypeConverter} but also adds
-     * special handling for {@link Enum enum types}.
+     * Performs the conversion using {@link DefaultTypeConverter} but also adds special handling for {@link Enum enum types}.
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T convert(Class<T> targetClass, Serializable value)
     {
         if (targetClass.isEnum() && value != null && value instanceof String)

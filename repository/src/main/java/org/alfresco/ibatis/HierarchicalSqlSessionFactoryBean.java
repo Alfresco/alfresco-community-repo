@@ -31,6 +31,7 @@ import static org.springframework.util.StringUtils.hasLength;
 import static org.springframework.util.StringUtils.tokenizeToStringArray;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.Properties;
 import javax.sql.DataSource;
 
@@ -384,6 +385,16 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
         if (sqlSessionFactoryBuilder instanceof AlfrescoSqlSessionFactoryBuilder)
         {
             ((AlfrescoSqlSessionFactoryBuilder) sqlSessionFactoryBuilder).setDbMetricsReporter(this.dbMetricsReporter);
+        }
+        if (configurationProperties == null)
+        {
+            configurationProperties = new Properties();
+        }
+        try (Connection con = dataSource.getConnection()) {
+            String driverName = con.getMetaData().getDriverName();
+            if (driverName.contains("MariaDB")) {
+                configurationProperties.setProperty("db.fetchsize", "1");
+            }
         }
         this.sqlSessionFactory = buildSqlSessionFactory();
     }

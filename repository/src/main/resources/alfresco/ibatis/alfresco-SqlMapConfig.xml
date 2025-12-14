@@ -4,6 +4,7 @@
 
 <configuration>
 
+    <properties resource="alfresco/repository.properties"/>
 <!--
 Inbound settings from iBatis
     <settings

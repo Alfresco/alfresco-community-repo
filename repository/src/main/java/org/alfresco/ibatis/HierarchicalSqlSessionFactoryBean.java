@@ -390,9 +390,11 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
         {
             configurationProperties = new Properties();
         }
-        try (Connection con = dataSource.getConnection()) {
+        try (Connection con = dataSource.getConnection())
+        {
             String driverName = con.getMetaData().getDriverName();
-            if (driverName.contains("MariaDB")) {
+            if (driverName.contains("MariaDB"))
+            {
                 configurationProperties.setProperty("db.fetchsize", "1");
             }
         }

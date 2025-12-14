@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-amps</artifactId>
-        <version>26.1.0.14</version>
+        <version>26.1.0.15-SNAPSHOT</version>
     </parent>
 
     <properties>

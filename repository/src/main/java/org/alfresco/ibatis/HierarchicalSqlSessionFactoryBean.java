@@ -399,7 +399,9 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
             {
                 configurationProperties.setProperty("db.fetchsize", "1");
             }
-        } finally {
+        }
+        finally
+        {
             if (con != null)
             {
                 con.close();

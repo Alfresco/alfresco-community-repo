@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-community-repo-amps</artifactId>
-      <version>26.1.0.12-SNAPSHOT</version>
+      <version>26.1.0.15-SNAPSHOT</version>
    </parent>
 
    <modules>
@@ -38,7 +38,7 @@
             <plugin>
                <artifactId>maven-surefire-plugin</artifactId>
                <configuration>
-                  <!-- Keeping illegal-access=permit for Java 11 compatibility, even though it has no effect on JDK 17 -->
+                  <!-- Keeping illegal-access=permit for Java 11 compatibility, even though it has no effect on JDK 21 -->
                   <argLine>
                      --illegal-access=permit
                      --add-opens=java.base/java.lang=ALL-UNNAMED
@@ -47,7 +47,7 @@
             </plugin>
             <plugin>
                <artifactId>maven-failsafe-plugin</artifactId>
-               <!-- Keeping illegal-access=permit for Java 11 compatibility, even though it has no effect on JDK 17 -->
+               <!-- Keeping illegal-access=permit for Java 11 compatibility, even though it has no effect on JDK 21 -->
                <configuration>
                   <argLine>
                      --illegal-access=permit

@@ -8,18 +8,18 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>26.1.0.12-SNAPSHOT</version>
+        <version>26.1.0.15-SNAPSHOT</version>
     </parent>
 
     <properties>
         <suiteXmlFile>${project.basedir}/src/test/resources/restapi-suite.xml</suiteXmlFile>
-        <maven.build.sourceVersion>17</maven.build.sourceVersion>
+        <maven.build.sourceVersion>${java.version}</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <rest.api.explorer.branch>master</rest.api.explorer.branch>
         <httpclient-osgi-version>4.5.6</httpclient-osgi-version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <scribejava-apis.version>8.3.3</scribejava-apis.version>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
     </properties>
 
     <profiles>

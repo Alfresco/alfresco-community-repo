@@ -15,6 +15,7 @@ on:
   workflow_dispatch:
 
 env:
+  JAVA_VERSION: '21'
   DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
@@ -44,6 +45,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v8.24.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -65,6 +68,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v8.24.1
@@ -88,6 +93,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v8.24.1
         with:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
@@ -145,6 +152,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - uses: Alfresco/ya-pmd-scan@v4.3.0
         with:
           classpath-build-command: "mvn test-compile -ntp -Pags -pl \"-:alfresco-community-repo-docker\""
@@ -178,6 +187,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run tests"
@@ -215,6 +226,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -250,6 +263,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: Run MariaDB ${{ matrix.version }} database
@@ -277,6 +292,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MariaDB 10.11 database"
@@ -304,6 +321,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MySQL 8 database"
@@ -330,6 +349,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 14.15 database"
@@ -356,6 +377,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 15.10 database"
@@ -382,6 +405,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 16.6 database"
@@ -406,6 +431,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run ActiveMQ"
@@ -462,6 +489,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
@@ -532,6 +561,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -571,6 +602,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run Postgres 16.6 database"
@@ -601,6 +634,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -633,6 +668,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -661,6 +698,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -707,6 +746,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |

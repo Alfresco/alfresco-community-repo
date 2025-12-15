@@ -83,6 +83,7 @@ import org.alfresco.repo.virtual.template.VirtualQuery;
 import org.alfresco.repo.virtual.template.VirtualQueryConstraint;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -279,19 +280,38 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     public List<ChildAssociationRef> getChildAssocs(Reference parentReference, QNamePattern typeQNamePattern,
             QNamePattern qnamePattern, int maxResults, boolean preload) throws InvalidNodeRefException
     {
-        if (typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
-        {
-            return parentReference.execute(new GetChildAssocsMethod(this,
-                    environment,
-                    preload,
-                    maxResults,
-                    qnamePattern,
-                    typeQNamePattern));
-        }
-        else
+        if (!typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
         {
             return Collections.emptyList();
         }
+        var getChildAssocsMethod = new GetChildAssocsMethod(this,
+                environment,
+                preload,
+                0,
+                maxResults,
+                qnamePattern,
+                typeQNamePattern);
+        var childAssocsSlice = parentReference.execute(getChildAssocsMethod);
+        return childAssocsSlice.childAssocs();
+    }
+
+    @Override
+    public ChildAssocsSlice getChildAssocs(Reference parentReference, QNamePattern typeQNamePattern,
+            QNamePattern qnamePattern, int skipResults, int maxResults,
+            boolean preload) throws InvalidNodeRefException
+    {
+        if (!typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
+        {
+            return ChildAssocsSlice.EMPTY;
+        }
+        var getChildAssocsMethod = new GetChildAssocsMethod(this,
+                environment,
+                preload,
+                skipResults,
+                maxResults,
+                qnamePattern,
+                typeQNamePattern);
+        return parentReference.execute(getChildAssocsMethod);
     }
 
     @Override

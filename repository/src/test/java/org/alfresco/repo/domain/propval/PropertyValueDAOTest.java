@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -54,6 +54,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.MLText;
@@ -70,6 +71,7 @@ import org.alfresco.util.testing.category.DBTests;
  * @author Derek Hulley
  * @since 3.2
  */
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 @Category({OwnJVMTestsCategory.class, DBTests.class})
 public class PropertyValueDAOTest
 {
@@ -477,6 +479,23 @@ public class PropertyValueDAOTest
         {
             runPropertyValueTest(new String("Value-" + i + ".xyz"));
         }
+    }
+
+    @Test
+    public void testLongStringPersistence() throws Exception
+    {
+        StringBuilder sb = new StringBuilder();
+        int lenOverLimit = SchemaBootstrap.getMaxStringLength() + 100;
+        for (int i = 0; i < lenOverLimit; i++)
+        {
+            sb.append("a");
+        }
+
+        final String longString = sb.toString();
+        final String shortString = "Short string";
+
+        runPropertyValueTest(shortString);
+        runPropertyValueTest(longString, false);
     }
 
     @Test

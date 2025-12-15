@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>26.1.0.4-SNAPSHOT</version>
+      <version>26.1.0.15-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -442,7 +442,7 @@
                            </run>
                         </image>
                         <image>
-                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}-jre17-rockylinux8</name>
+                           <name>alfresco/alfresco-activemq:5.18.3-jre17-rockylinux8</name>
                            <run>
                               <ports>
                                  <port>${activemq.port1}:${activemq.port1}</port>
@@ -513,7 +513,7 @@
                            </run>
                         </image>
                         <image>
-                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}-jre17-rockylinux8</name>
+                           <name>alfresco/alfresco-activemq:5.18.3-jre17-rockylinux8</name>
                            <run>
                               <ports>
                                  <port>${activemq.port1}:${activemq.port1}</port>

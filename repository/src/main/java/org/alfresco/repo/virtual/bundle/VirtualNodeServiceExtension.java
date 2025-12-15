@@ -63,6 +63,7 @@ import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssocsSlice;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -668,6 +669,51 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             return theTrait.getChildAssocs(nodeRef,
                     typeQNamePattern,
                     qnamePattern,
+                    maxResults,
+                    preload);
+        }
+    }
+
+    @Override
+    public ChildAssocsSlice getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern,
+            int skipResults, int maxResults, boolean preload)
+    {
+        NodeServiceTrait theTrait = getTrait();
+        boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
+        if (canVirtualize)
+        {
+            int totalCount = 0;
+            Reference reference = smartStore.virtualize(nodeRef);
+            var childAssocsSlice = smartStore.getChildAssocs(reference,
+                    typeQNamePattern,
+                    qnamePattern,
+                    skipResults,
+                    maxResults,
+                    preload);
+            List<ChildAssociationRef> virtualAssociations = childAssocsSlice.childAssocs();
+            totalCount += childAssocsSlice.totalCount();
+            List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
+            if (associations.size() < maxResults && smartStore.canMaterialize(reference))
+            {
+                NodeRef materialReference = smartStore.materialize(reference);
+                childAssocsSlice = theTrait.getChildAssocs(materialReference,
+                        typeQNamePattern,
+                        qnamePattern,
+                        0, // skipping only applies to virtual store
+                        maxResults - associations.size(),
+                        preload);
+                List<ChildAssociationRef> actualAssociations = childAssocsSlice.childAssocs();
+                associations.addAll(actualAssociations);
+                totalCount += childAssocsSlice.totalCount();
+            }
+            return new ChildAssocsSlice(associations, totalCount);
+        }
+        else
+        {
+            return theTrait.getChildAssocs(nodeRef,
+                    typeQNamePattern,
+                    qnamePattern,
+                    skipResults,
                     maxResults,
                     preload);
         }

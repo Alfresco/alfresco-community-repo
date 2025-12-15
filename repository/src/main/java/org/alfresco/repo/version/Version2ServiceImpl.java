@@ -34,7 +34,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -426,6 +428,25 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 
     @Override
     @Extend(extensionAPI = VersionServiceExtension.class, traitAPI = VersionServiceTrait.class)
+    public Optional<VersionHistory> getVersionHistory(NodeRef nodeRef, int skipVersions, int maxVersions)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+
+        // Get the version history regardless of whether the node is still 'live' or not
+        NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
+        if (versionHistoryRef != null)
+        {
+            return buildVersionHistory(versionHistoryRef, skipVersions, maxVersions);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    @Extend(extensionAPI = VersionServiceExtension.class, traitAPI = VersionServiceTrait.class)
     public Version getCurrentVersion(NodeRef nodeRef)
     {
         if (logger.isDebugEnabled())
@@ -752,6 +773,19 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         return dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL, preLoad);
     }
 
+    private Pair<List<Version>, Integer> getVersionsPageWithTotalCount(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
+    {
+        var childAssocsSlice = dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL,
+                skipVersions, maxVersions, true);
+        List<Version> versions = childAssocsSlice.childAssocs()
+                .stream()
+                .map(ChildAssociationRef::getChildRef)
+                .map(this::getVersion)
+                .collect(Collectors.toCollection(ArrayList::new));
+        int totalCount = childAssocsSlice.totalCount();
+        return new Pair<>(versions, totalCount);
+    }
+
     /**
      * Builds a version history object from the version history reference.
      * <p>
@@ -766,7 +800,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     @Override
     protected VersionHistory buildVersionHistory(NodeRef versionHistoryRef, NodeRef nodeRef)
     {
-        VersionHistory versionHistory = null;
+        VersionHistoryImpl versionHistory = null;
 
         // List of versions with current one last and root one first.
         List<Version> versions = getAllVersions(versionHistoryRef);
@@ -781,19 +815,56 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         Version preceeding = null;
         for (Version version : versions)
         {
-            if (isRoot == true)
+            if (isRoot)
             {
                 versionHistory = new VersionHistoryImpl(version, versionComparatorDesc);
                 isRoot = false;
             }
             else
             {
-                ((VersionHistoryImpl) versionHistory).addVersion(version, preceeding);
+                versionHistory.addVersion(version, preceeding);
             }
             preceeding = version;
         }
 
         return versionHistory;
+    }
+
+    private Optional<VersionHistory> buildVersionHistory(NodeRef versionHistoryRef, int skipVersions, int maxVersions)
+    {
+        Pair<List<Version>, Integer> versionsPageWithTotalCount = getVersionsPageWithTotalCount(versionHistoryRef, skipVersions, maxVersions);
+        List<Version> unmodifiableVersionsPage = versionsPageWithTotalCount.getFirst();
+        if (unmodifiableVersionsPage.isEmpty())
+        {
+            return Optional.empty();
+        }
+        List<Version> versionsPage = new ArrayList<>(unmodifiableVersionsPage);
+
+        if (versionComparatorDesc != null)
+        {
+            versionsPage.sort(Collections.reverseOrder(versionComparatorDesc));
+        }
+
+        // Build the version history object
+        VersionHistoryImpl versionHistory = null;
+        boolean isRoot = true;
+        Version preceeding = null;
+        for (Version version : versionsPage)
+        {
+            if (isRoot)
+            {
+                Integer versionsTotalCount = versionsPageWithTotalCount.getSecond();
+                versionHistory = new VersionHistoryImpl(version, versionComparatorDesc, versionsTotalCount);
+                isRoot = false;
+            }
+            else
+            {
+                versionHistory.addVersion(version, preceeding);
+            }
+            preceeding = version;
+        }
+
+        return Optional.ofNullable(versionHistory);
     }
 
     /**

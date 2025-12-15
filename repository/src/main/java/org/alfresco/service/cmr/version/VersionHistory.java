@@ -64,6 +64,13 @@ public interface VersionHistory extends Serializable
     public Collection<Version> getAllVersions();
 
     /**
+     * Represents the total number of versions available in the entire version history, not just the number of versions loaded in the current page (if pagination is used).
+     *
+     * @return the total number of versions in the database
+     */
+    int getTotalVersionsCount();
+
+    /**
      * Gets the predecessor of a specified version
      * 
      * @param version

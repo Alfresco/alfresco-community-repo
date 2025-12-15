@@ -32,6 +32,7 @@ import static org.springframework.util.StringUtils.tokenizeToStringArray;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Properties;
 import javax.sql.DataSource;
 
@@ -386,28 +387,32 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
         {
             ((AlfrescoSqlSessionFactoryBuilder) sqlSessionFactoryBuilder).setDbMetricsReporter(this.dbMetricsReporter);
         }
-        if (configurationProperties == null)
-        {
-            configurationProperties = new Properties();
-        }
+        setFetchSizeAtRuntimeForMariaDB();
+        this.sqlSessionFactory = buildSqlSessionFactory();
+    }
+
+    private void setFetchSizeAtRuntimeForMariaDB() throws SQLException {
         Connection con = null;
-        try
-        {
+        try {
             con = dataSource.getConnection();
-            String driverName = con.getMetaData().getDriverName();
-            if (driverName.contains("MariaDB"))
-            {
-                configurationProperties.setProperty("db.fetchsize", "1");
+            if(con != null) {
+                String driverName = con.getMetaData().getDriverName();
+                if (driverName.contains("MariaDB")) {
+                    if (configurationProperties == null)
+                    {
+                        configurationProperties = new Properties();
+                    }
+                    configurationProperties.setProperty("db.fetchsize", "1");
+                }
             }
         }
-        finally
-        {
-            if (con != null)
+        catch (Exception ignored) {}
+        finally {
+            if(con != null)
             {
                 con.close();
             }
         }
-        this.sqlSessionFactory = buildSqlSessionFactory();
     }
 
     /**

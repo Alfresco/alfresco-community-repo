@@ -397,7 +397,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
         try
         {
             con = dataSource.getConnection();
-            if(con != null)
+            if (con != null)
             {
                 String driverName = con.getMetaData().getDriverName();
                 if (driverName.contains("MariaDB"))

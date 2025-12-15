@@ -1174,7 +1174,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
          */
         public DefaultResolver()
         {
-            super("${", "}", ":", true);
+            super("${", "}", ":", null, true);
         }
 
         /**

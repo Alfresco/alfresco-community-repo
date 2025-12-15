@@ -414,7 +414,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
         {}
         finally
         {
-            if(con != null)
+            if (con != null)
             {
                 con.close();
             }

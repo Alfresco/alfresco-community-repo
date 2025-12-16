@@ -27,12 +27,14 @@
 
 package org.alfresco.opencmis;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -54,6 +56,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
@@ -110,6 +113,7 @@ import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.AuditComponentImpl;
 import org.alfresco.repo.audit.AuditServiceImpl;
@@ -190,6 +194,7 @@ public class CMISTest
 {
     private static final QName TEST_START_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "startTaskVarScriptAssign");
     private static final QName TEST_WORKFLOW_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "assignVarTask");
+    private static final int MAX_ASYNC_TIMEOUT = 20;
 
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[]{ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:test-cmisinteger_modell-context.xml"});
 
@@ -1245,7 +1250,7 @@ public class CMISTest
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         FileInfo parentFolder = null;
-        FileInfo childFolder1 = null;
+        FileInfo childFolder1;
 
         try
         {
@@ -2117,10 +2122,10 @@ public class CMISTest
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        final String TEST_NAME = "testItemRelations-";
-        final String FOLDER_NAME = TEST_NAME + "FOLDER" + GUID.generate();
-        final String DOCUMENT_NAME = TEST_NAME + "DOCUMENT" + GUID.generate();
-        final String CLIENT_NAME = "Some Test Client " + GUID.generate();
+        final String testName = "testItemRelations-";
+        final String folderName = testName + "FOLDER" + GUID.generate();
+        final String documentName = testName + "DOCUMENT" + GUID.generate();
+        final String clientName = "Some Test Client " + GUID.generate();
 
         try
         {
@@ -2132,14 +2137,14 @@ public class CMISTest
                             NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
 
                             /* Create folder within companyHome */
-                            FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, FOLDER_NAME, ContentModel.TYPE_FOLDER);
-                            nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, FOLDER_NAME);
+                            FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                            nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
                             assertNotNull(folderInfo);
 
                             // and document
-                            FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), DOCUMENT_NAME, ContentModel.TYPE_CONTENT);
+                            FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), documentName, ContentModel.TYPE_CONTENT);
                             assertNotNull(document);
-                            nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, DOCUMENT_NAME);
+                            nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, documentName);
 
                             return null;
                         }
@@ -2166,15 +2171,15 @@ public class CMISTest
                     // create cmis:item within test folder
                     PropertiesImpl properties = new PropertiesImpl();
                     properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, tpdfn.getId()));
-                    properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, CLIENT_NAME));
+                    properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, clientName));
                     properties.addProperty(new PropertyStringImpl("sctst:clientId", "id" + GUID.generate()));
-                    properties.addProperty(new PropertyStringImpl("sctst:clientName", CLIENT_NAME));
+                    properties.addProperty(new PropertyStringImpl("sctst:clientName", clientName));
 
-                    ObjectData folderData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER_NAME, null, null, null, null, null, null, null);
+                    ObjectData folderData = cmisService.getObjectByPath(repositoryId, "/" + folderName, null, null, null, null, null, null, null);
 
                     cmisService.createItem(repositoryId, properties, folderData.getId(), null, null, null, null);
 
-                    ObjectData contentData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER_NAME + "/" + DOCUMENT_NAME, null, null, null, null, null, null, null);
+                    ObjectData contentData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + documentName, null, null, null, null, null, null, null);
 
                     // add test aspect sctst:clientRelated to document
                     Properties props = cmisService.getProperties(repositoryId, contentData.getId(), null, null);
@@ -2192,7 +2197,7 @@ public class CMISTest
                     aspects = cmisService.getProperties(repositoryId, contentData.getId(), null, null).getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
                     assertTrue("P:sctst:clientRelated excpected", aspects.contains("P:sctst:clientRelated"));
 
-                    ObjectData itemData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER_NAME + "/" + CLIENT_NAME, null, null, null, null, null, null, null);
+                    ObjectData itemData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + clientName, null, null, null, null, null, null, null);
                     // create relationship between cmis:document and cmis:item
                     properties = new PropertiesImpl();
                     properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, "R:sctst:relatedClients"));
@@ -2534,7 +2539,7 @@ public class CMISTest
     }
 
     /**
-     * MNT-11726: Test that {@link CMISChangeEvent} contains objectId of node in short form (without StoreRef).
+     * MNT-11726: Test that {@linkCMISChangeEvent} contains objectId of node in short form (without StoreRef).
      */
     @Test
     public void testCMISChangeLogObjectIds() throws Exception
@@ -4087,7 +4092,7 @@ public class CMISTest
 
     private NodeRef createFolder(NodeRef parentNodeRef, String folderName, QName folderType) throws IOException
     {
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> properties = new HashMap<>();
         properties.put(ContentModel.PROP_NAME, folderName);
         NodeRef nodeRef = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, folderName);
         if (nodeRef != null)
@@ -4098,6 +4103,114 @@ public class CMISTest
         nodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, folderType, properties)
                 .getChildRef();
         return nodeRef;
+    }
+
+    /**
+     * Test that metadata extraction is triggered when updating properties via CMIS.
+     */
+    @Test
+    public void testUpdatePropertiesTriggersMetadataExtraction() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        final String folderName = "testUpdatePropertiesMetadata-" + GUID.generate();
+        final String documentName = "document-" + GUID.generate() + ".xml";
+
+        // Create a spy of the ActionService to verify the action execution
+        final ActionService spyActionService = spy(actionService);
+        cmisConnector.setActionService(spyActionService);
+
+        try
+        {
+            final NodeRef docNodeRef = createDocumentInFolder(folderName, documentName);
+
+            // Update properties via CMIS
+            withCmisService(cmisService -> {
+                String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
+                PropertiesImpl newProperties = new PropertiesImpl();
+                newProperties.addProperty(new PropertyStringImpl(PropertyIds.DESCRIPTION, "update property description"));
+                cmisService.updateProperties(repositoryId, new Holder<>(docNodeRef.toString()), null, newProperties, null);
+                return null;
+            });
+
+            // VERIFY that executeAction was called with ContentMetadataExtracter action
+            await().atMost(MAX_ASYNC_TIMEOUT, TimeUnit.SECONDS).untilAsserted(() -> verify(spyActionService).executeAction(
+                    argThat(action -> ContentMetadataExtracter.EXECUTOR_NAME.equals(action.getActionDefinitionName())),
+                    eq(docNodeRef), eq(true), eq(true)));
+        }
+        finally
+        {
+            // Restore original ActionService
+            cmisConnector.setActionService(actionService);
+            cleanupFolder(folderName);
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
+    /**
+     * Test that metadata extraction is triggered when setting content stream via CMIS.
+     */
+    @Test
+    public void testSetContentStreamTriggersMetadataExtraction() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        final String folderName = "testSetContentMetadata-" + GUID.generate();
+        final String documentName = "document-" + GUID.generate() + ".xml";
+
+        // Create a spy of the ActionService to verify the action execution
+        final ActionService spyActionService = spy(actionService);
+        cmisConnector.setActionService(spyActionService);
+
+        try
+        {
+            final NodeRef docNodeRef = createDocumentInFolder(folderName, documentName);
+
+            // Set content stream via CMIS
+            withCmisService(cmisService -> {
+                String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
+                ContentStreamImpl contentStream = new ContentStreamImpl(documentName, MimetypeMap.MIMETYPE_XML, "<test>content</test>");
+                cmisService.setContentStream(repositoryId, new Holder<>(docNodeRef.toString()), true, null, contentStream, null);
+                return null;
+            });
+
+            // VERIFY that executeAction was called with ContentMetadataExtracter action
+            await().atMost(MAX_ASYNC_TIMEOUT, TimeUnit.SECONDS).untilAsserted(() -> verify(spyActionService).executeAction(
+                    argThat(action -> ContentMetadataExtracter.EXECUTOR_NAME.equals(action.getActionDefinitionName())),
+                    eq(docNodeRef), eq(true), eq(true)));
+        }
+        finally
+        {
+            // Restore original ActionService
+            cmisConnector.setActionService(actionService);
+            cleanupFolder(folderName);
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
+    private NodeRef createDocumentInFolder(String folderName, String documentName)
+    {
+        return transactionService.getRetryingTransactionHelper()
+                .doInTransaction(() -> {
+                    NodeRef folder = createFolder(repositoryHelper.getCompanyHome(), folderName, ContentModel.TYPE_FOLDER);
+                    return nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, documentName),
+                            ContentModel.TYPE_CONTENT).getChildRef();
+                });
+    }
+
+    private void cleanupFolder(String folderName)
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
+            NodeRef folderRef = nodeService.getChildByName(repositoryHelper.getCompanyHome(), ContentModel.ASSOC_CONTAINS, folderName);
+            if (folderRef != null)
+            {
+                nodeService.deleteNode(folderRef);
+            }
+            return null;
+        });
     }
 
 }

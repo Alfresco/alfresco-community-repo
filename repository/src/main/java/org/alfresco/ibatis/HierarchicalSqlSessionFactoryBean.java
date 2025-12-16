@@ -391,33 +391,19 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
         this.sqlSessionFactory = buildSqlSessionFactory();
     }
 
-    private void setFetchSizeAtRuntimeForMariaDB() throws SQLException
+    private void setFetchSizeAtRuntimeForMariaDB()
     {
-        Connection con = null;
-        try
-        {
-            con = dataSource.getConnection();
-            if (con != null)
-            {
+        try (Connection con = dataSource.getConnection()) {
+            if (con != null) {
                 String driverName = con.getMetaData().getDriverName();
-                if (driverName.contains("MariaDB"))
-                {
-                    if (configurationProperties == null)
-                    {
+                if (driverName.contains("MariaDB")) {
+                    if (configurationProperties == null) {
                         configurationProperties = new Properties();
                     }
                     configurationProperties.setProperty("db.fetchsize", "1");
                 }
             }
-        }
-        catch (Exception ignored)
-        {}
-        finally
-        {
-            if (con != null)
-            {
-                con.close();
-            }
+        } catch (Exception ignored) {
         }
     }
 

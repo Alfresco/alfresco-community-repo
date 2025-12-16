@@ -393,11 +393,15 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
 
     private void setFetchSizeAtRuntimeForMariaDB()
     {
-        try (Connection con = dataSource.getConnection()) {
-            if (con != null) {
+        try (Connection con = dataSource.getConnection())
+        {
+            if (con != null)
+            {
                 String driverName = con.getMetaData().getDriverName();
-                if (driverName.contains("MariaDB")) {
-                    if (configurationProperties == null) {
+                if (driverName.contains("MariaDB"))
+                {
+                    if (configurationProperties == null)
+                    {
                         configurationProperties = new Properties();
                     }
                     configurationProperties.setProperty("db.fetchsize", "1");

@@ -32,7 +32,6 @@ import static org.springframework.util.StringUtils.tokenizeToStringArray;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Properties;
 import javax.sql.DataSource;
 
@@ -407,7 +406,8 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
                     configurationProperties.setProperty("db.fetchsize", "1");
                 }
             }
-        } catch (Exception ignored)
+        }
+        catch (Exception ignored)
         {}
     }
 

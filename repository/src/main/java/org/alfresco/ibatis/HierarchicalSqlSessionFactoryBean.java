@@ -407,8 +407,8 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
                     configurationProperties.setProperty("db.fetchsize", "1");
                 }
             }
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored)
+        {}
     }
 
     /**

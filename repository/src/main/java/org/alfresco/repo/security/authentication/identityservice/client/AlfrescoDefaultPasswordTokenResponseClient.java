@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -41,31 +41,21 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 /**
- * The default implementation of an {@link OAuth2AccessTokenResponseClient} for the {@link AuthorizationGrantType#PASSWORD password} grant. This implementation uses a {@link RestOperations} when requesting an access token credential at the Authorization Server's Token Endpoint.
+ * The Alfresco implementation of an {@link OAuth2AccessTokenResponseClient} for the {@link AuthorizationGrantType#PASSWORD password} grant. This implementation uses a {@link RestOperations} when requesting an access token credential at the Authorization Server's Token Endpoint.
  *
- * @author Joe Grandja
- * @since 5.2
- *
- *        Modified for Alfresco purposes - to add compatibility with Spring Framework 7
- *
- * @see OAuth2AccessTokenResponseClient
- * @see OAuth2PasswordGrantRequest
- * @see OAuth2AccessTokenResponse
  * @see <a target="_blank" href= "https://tools.ietf.org/html/rfc6749#section-4.3.2">Section 4.3.2 Access Token Request (Resource Owner Password Credentials Grant)</a>
  * @see <a target="_blank" href= "https://tools.ietf.org/html/rfc6749#section-4.3.3">Section 4.3.3 Access Token Response (Resource Owner Password Credentials Grant)</a>
- * @deprecated The OAuth 2.0 Security Best Current Practice disallows the use of the Resource Owner Password Credentials grant. See reference <a target="_blank" href= "https://datatracker.ietf.org/doc/html/rfc9700#section-2.4">OAuth 2.0 Security Best Current Practice.</a>
+ * @deprecated The OAuth 2.0 Security Best Current Practice disallows the use of the Resource Owner Password Credentials grant. See reference <a target="_blank" href= "https://datatracker.ietf.org/doc/html/rfc9700#section-2.4">OAuth 2.0 Security Best Current Practice.</a>. It was added as backward compatibility with Spring Framework 7. Meant to be removed in the future.
  */
 
-@Deprecated(since = "Spring 5.8")
-public final class AlfrescoDefaultPasswordTokenResponseClient
-        implements OAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest>
+@Deprecated(since = "Spring 5.8", forRemoval = true)
+public final class AlfrescoDefaultPasswordTokenResponseClient implements OAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest>
 {
-
     private static final String INVALID_TOKEN_RESPONSE_ERROR_CODE = "invalid_token_response";
 
     private Converter<OAuth2PasswordGrantRequest, RequestEntity<?>> requestEntityConverter = new OAuth2PasswordGrantRequestEntityConverter();
 
-    private RestOperations restOperations;
+    private final RestOperations restOperations;
 
     public AlfrescoDefaultPasswordTokenResponseClient(RestOperations restOperations)
     {
@@ -78,10 +68,9 @@ public final class AlfrescoDefaultPasswordTokenResponseClient
         Assert.notNull(passwordGrantRequest, "passwordGrantRequest cannot be null");
         RequestEntity<?> request = this.requestEntityConverter.convert(passwordGrantRequest);
         ResponseEntity<OAuth2AccessTokenResponse> response = getResponse(request);
-        // As per spec, in Section 5.1 Successful Access Token Response
-        // https://tools.ietf.org/html/rfc6749#section-5.1
-        // If AccessTokenResponse.scope is empty, then we assume all requested scopes were
-        // granted.
+
+        // As per spec, in Section 5.1 Successful Access Token Response https://tools.ietf.org/html/rfc6749#section-5.1
+        // If AccessTokenResponse.scope is empty, then we assume all requested scopes were granted.
         // However, we use the explicit scopes returned in the response (if any).
         return response.getBody();
     }
@@ -104,12 +93,11 @@ public final class AlfrescoDefaultPasswordTokenResponseClient
 
     /**
      * Sets the {@link Converter} used for converting the {@link OAuth2PasswordGrantRequest} to a {@link RequestEntity} representation of the OAuth 2.0 Access Token Request.
-     * 
+     *
      * @param requestEntityConverter
      *            the {@link Converter} used for converting to a {@link RequestEntity} representation of the Access Token Request
      */
-    public void setRequestEntityConverter(
-            Converter<OAuth2PasswordGrantRequest, RequestEntity<?>> requestEntityConverter)
+    public void setRequestEntityConverter(Converter<OAuth2PasswordGrantRequest, RequestEntity<?>> requestEntityConverter)
     {
         Assert.notNull(requestEntityConverter, "requestEntityConverter cannot be null");
         this.requestEntityConverter = requestEntityConverter;

@@ -1,5 +1,5 @@
 # More infos about this image: https://github.com/Alfresco/alfresco-docker-base-tomcat
-FROM alfresco/alfresco-base-tomcat:tomcat10-jre21-rockylinux9@sha256:4d3aaaec64518b0126bb7889a2574f1ed6e65231dca98a66d67a266fd1c3af92
+FROM alfresco/alfresco-base-tomcat:tomcat11-jre21-rockylinux9@sha256:9e76ad5868b5238fb56b825256ceb488a887bb59cb3b95bec2d9823af00a28b6
 # Set default docker_context.
 ARG resource_path=target
 
@@ -65,7 +65,7 @@ RUN sed -i -e "s_appender.rolling.fileName\=alfresco.log_appender.rolling.fileNa
 RUN yum install -y fontconfig-2.14.0-2.el9_1 && \
     yum clean all
 
-# The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges, 
+# The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges,
 # group only has restricted permissions and world has no permissions.
 RUN mkdir -p ${TOMCAT_DIR}/conf/Catalina/localhost && \
     mkdir -p ${TOMCAT_DIR}/alf_data && \

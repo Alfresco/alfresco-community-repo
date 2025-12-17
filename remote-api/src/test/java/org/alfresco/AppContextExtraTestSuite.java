@@ -59,6 +59,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.rest.api.search.SearchMapperTests.class,
         org.alfresco.rest.api.search.SearchQuerySerializerTests.class,
         org.alfresco.rest.api.search.StoreMapperTests.class,
+        org.alfresco.rest.api.search.SearchInReadOnlyModeTest.class,
         org.alfresco.rest.api.tests.ModulePackageTest.class,
         org.alfresco.rest.framework.resource.parameters.ArrayListPageTest.class,
         org.alfresco.rest.framework.tests.core.InspectorTests.class,

@@ -1,5 +1,3 @@
-package org.alfresco.repo.security.authentication.identityservice.client;
-
 /*
  * Copyright 2004-present the original author or authors.
  *
@@ -15,6 +13,8 @@ package org.alfresco.repo.security.authentication.identityservice.client;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.alfresco.repo.security.authentication.identityservice.client;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.RequestEntity;

@@ -36,9 +36,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -48,6 +48,7 @@ import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
@@ -84,7 +85,9 @@ public class FilePlanHoldsRelation implements
         checkNotBlank("filePlanId", filePlanId);
         mandatory("parameters", parameters);
 
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
+        QName filePlanNodeType = getFilePlanNodeTypeOrThrowException(filePlanId);
+
+        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, filePlanNodeType);
         List<NodeRef> holds = holdService.getHolds(parentNodeRef);
 
         List<HoldModel> page = holds.stream()
@@ -107,7 +110,9 @@ public class FilePlanHoldsRelation implements
         mandatory("holds", holds);
         mandatory("parameters", parameters);
 
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
+        QName filePlanNodeType = getFilePlanNodeTypeOrThrowException(filePlanId);
+
+        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, filePlanNodeType);
 
         RetryingTransactionCallback<List<NodeRef>> callback = () -> {
             List<NodeRef> createdNodes = new LinkedList<>();
@@ -152,5 +157,18 @@ public class FilePlanHoldsRelation implements
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    /**
+     * GET the file plan node type or throw EntityNotFoundException
+     */
+    private QName getFilePlanNodeTypeOrThrowException(String entityId)
+    {
+        QName filePlanType = apiUtils.getFilePlanType();
+        if (filePlanType == null)
+        {
+            throw new EntityNotFoundException(entityId);
+        }
+        return filePlanType;
     }
 }

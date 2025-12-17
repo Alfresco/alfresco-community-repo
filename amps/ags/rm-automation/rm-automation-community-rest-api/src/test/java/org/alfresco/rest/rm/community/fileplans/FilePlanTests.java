@@ -64,6 +64,8 @@ import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGE
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_SECURITY_OFFICER;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createDOD5015RMSiteModel;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 
@@ -525,29 +527,19 @@ public class FilePlanTests extends BaseRMRestTest
      * Then it is created
      * </pre>
      */
+
     @Test
-    public void createHolds()
+    public void createHoldForStandardRMSiteModel()
     {
-        String holdName = "Hold" + getRandomAlphanumeric();
-        String holdDescription = "Description" + getRandomAlphanumeric();
-        String holdReason = "Reason" + getRandomAlphanumeric();
+        createRMSite(createStandardRMSiteModel());
+        createHolds();
+    }
 
-        // Create the hold
-        Hold hold = Hold.builder()
-                .name(holdName)
-                .description(holdDescription)
-                .reason(holdReason)
-                .build();
-        Hold createdHold = getRestAPIFactory().getFilePlansAPI()
-                .createHold(hold, FILE_PLAN_ALIAS);
-
-        // Verify the status code
-        assertStatusCode(CREATED);
-
-        assertEquals(createdHold.getName(), holdName);
-        assertEquals(createdHold.getDescription(), holdDescription);
-        assertEquals(createdHold.getReason(), holdReason);
-        assertNotNull(createdHold.getId());
+    @Test
+    public void createHoldForDOD5015RMSiteModel()
+    {
+        createRMSite(createDOD5015RMSiteModel());
+        createHolds();
     }
 
     @Test
@@ -616,17 +608,17 @@ public class FilePlanTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    public void listFilePlanAllDefaultRoles()
+    public void listFilePlanAllDefaultRolesStandardType()
     {
-        List<String> defaultRolesDisplayNames = asList(IN_PLACE_READERS.displayName, ROLE_RM_ADMIN.displayName, ROLE_RM_MANAGER.displayName, ROLE_RM_POWER_USER.displayName, ROLE_RM_USER.displayName, IN_PLACE_WRITERS.displayName, ROLE_RM_SECURITY_OFFICER.displayName);
-        // Call to new API to get the roles and capabilities
-        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI().getFilePlanRoles(FILE_PLAN_ALIAS);
-        assertStatusCode(OK);
-        roleCollection.getEntries().forEach(roleModelEntry -> {
-            Role role = roleModelEntry.getEntry();
-            assertTrue(defaultRolesDisplayNames.contains(role.getDisplayLabel()));
-            assertNotNull(role.getCapabilities());
-        });
+        createRMSite(createStandardRMSiteModel());
+        listFilePlanAllDefaultRoles();
+    }
+
+    @Test
+    public void listFilePlanAllDefaultRolesForDOD5015Type()
+    {
+        createRMSite(createDOD5015RMSiteModel());
+        listFilePlanAllDefaultRoles();
     }
 
     /**
@@ -774,4 +766,41 @@ public class FilePlanTests extends BaseRMRestTest
         });
     }
 
+    private void createHolds()
+    {
+        String holdName = "Hold" + getRandomAlphanumeric();
+        String holdDescription = "Description" + getRandomAlphanumeric();
+        String holdReason = "Reason" + getRandomAlphanumeric();
+
+        // Create the hold
+        Hold hold = Hold.builder()
+                .name(holdName)
+                .description(holdDescription)
+                .reason(holdReason)
+                .build();
+        Hold createdHold = getRestAPIFactory().getFilePlansAPI()
+                .createHold(hold, FILE_PLAN_ALIAS);
+
+        // Verify the status code
+        assertStatusCode(CREATED);
+
+        assertEquals(createdHold.getName(), holdName);
+        assertEquals(createdHold.getDescription(), holdDescription);
+        assertEquals(createdHold.getReason(), holdReason);
+        assertNotNull(createdHold.getId());
+    }
+
+    private void listFilePlanAllDefaultRoles()
+    {
+        createRMSite(createDOD5015RMSiteModel());
+        List<String> defaultRolesDisplayNames = asList(IN_PLACE_READERS.displayName, ROLE_RM_ADMIN.displayName, ROLE_RM_MANAGER.displayName, ROLE_RM_POWER_USER.displayName, ROLE_RM_USER.displayName, IN_PLACE_WRITERS.displayName, ROLE_RM_SECURITY_OFFICER.displayName);
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI().getFilePlanRoles(FILE_PLAN_ALIAS);
+        assertStatusCode(OK);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertTrue(defaultRolesDisplayNames.contains(role.getDisplayLabel()));
+            assertNotNull(role.getCapabilities());
+        });
+    }
 }

@@ -170,12 +170,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- v1.10 has 0BSD license it must be consulted with Legal -->
-            <dependency>
-                <groupId>org.tukaani</groupId>
-                <artifactId>xz</artifactId>
-                <version>1.9</version>
-            </dependency>
             <!-- Jakarta... -->
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>

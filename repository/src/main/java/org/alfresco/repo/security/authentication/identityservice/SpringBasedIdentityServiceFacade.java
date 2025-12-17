@@ -40,7 +40,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.oauth2.client.endpoint.AbstractOAuth2AuthorizationGrantRequest;
-import org.springframework.security.oauth2.client.endpoint.DefaultPasswordTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.endpoint.OAuth2PasswordGrantRequest;
@@ -72,6 +71,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
+import org.alfresco.repo.security.authentication.identityservice.client.AlfrescoDefaultPasswordTokenResponseClient;
 import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
 import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
 
@@ -246,8 +246,8 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     private static OAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> createPasswordClient(RestOperations rest,
             ClientRegistration clientRegistration)
     {
-        final DefaultPasswordTokenResponseClient client = new DefaultPasswordTokenResponseClient();
-        client.setRestOperations(rest);
+        final AlfrescoDefaultPasswordTokenResponseClient client = new AlfrescoDefaultPasswordTokenResponseClient(rest);
+
         Optional.of(clientRegistration)
                 .map(ClientRegistration::getProviderDetails)
                 .map(ProviderDetails::getConfigurationMetadata)

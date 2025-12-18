@@ -55,11 +55,7 @@ RUN java -jar ${TOMCAT_DIR}/alfresco-mmt/alfresco-mmt*.jar install \
 RUN sed -i -e "s_appender.rolling.fileName\=alfresco.log_appender.rolling.fileName\=${TOMCAT_DIR}/logs\/alfresco.log_" \
         ${TOMCAT_DIR}/webapps/alfresco/WEB-INF/classes/log4j2.properties && \
     sed -i -e "s_appender.rolling.filePattern=alfresco.log.%d{yyyy-MM-dd}_appender.rolling.filePattern\=${TOMCAT_DIR}/logs\/alfresco.log.%d{yyyy-MM-dd}_" \
-        ${TOMCAT_DIR}/webapps/alfresco/WEB-INF/classes/log4j2.properties && \
-# Add catalina.policy to ROOT.war and alfresco.war
-# Grant all security permissions to alfresco webapp because of numerous permissions required in order to work properly.
-# Grant only deployXmlPermission to ROOT webapp.
-    sed -i -e "\$a\grant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/alfresco\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/_vti_bin\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/ROOT\/-\" \{\n\    permission org.apache.catalina.security.DeployXmlPermission \"ROOT\";\n\};" ${TOMCAT_DIR}/conf/catalina.policy
+        ${TOMCAT_DIR}/webapps/alfresco/WEB-INF/classes/log4j2.properties
 
 # fontconfig is required by Activiti worflow diagram generator
 RUN yum install -y fontconfig-2.14.0-2.el9_1 && \

@@ -475,7 +475,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .userNameAttributeName(usernameAttribute)
                     .scope(getSupportedScopes(metadata.getScopes()))
                     .providerConfigurationMetadata(createMetadata(metadata))
-                    .authorizationGrantType(AuthorizationGrantType.PASSWORD);
+                    .authorizationGrantType(AuthorizationGrantType.TOKEN_EXCHANGE);
         }
 
         private Map<String, Object> createMetadata(OIDCProviderMetadata metadata)

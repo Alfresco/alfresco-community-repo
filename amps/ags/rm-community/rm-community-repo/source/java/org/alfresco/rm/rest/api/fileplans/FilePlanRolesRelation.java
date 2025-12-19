@@ -40,7 +40,6 @@ import org.alfresco.rm.rest.api.RMRoles;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.RoleModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 @RelationshipResource(name = "roles", entityResource = FilePlanEntityResource.class, title = "Roles in a file plan")
 public class FilePlanRolesRelation implements RelationshipResourceAction.Read<RoleModel>, InitializingBean
@@ -71,8 +70,7 @@ public class FilePlanRolesRelation implements RelationshipResourceAction.Read<Ro
 
     private NodeRef getFilePlan(String filePlanId)
     {
-        QName filePlanType = getFilePlanNodeTypeOrThrowException(filePlanId);
-        NodeRef filePlanNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, filePlanType);
+        NodeRef filePlanNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId);
         if (!FilePlanComponentsApiUtils.FILE_PLAN_ALIAS.equals(filePlanId))
         {
             filePlanNodeRef = filePlanService.getFilePlan(filePlanNodeRef);
@@ -93,18 +91,5 @@ public class FilePlanRolesRelation implements RelationshipResourceAction.Read<Ro
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
-    }
-
-    /**
-     * GET the file plan node type or throw EntityNotFoundException
-     */
-    private QName getFilePlanNodeTypeOrThrowException(String entityId)
-    {
-        QName filePlanType = apiUtils.getFilePlanType();
-        if (filePlanType == null)
-        {
-            throw new EntityNotFoundException(entityId);
-        }
-        return filePlanType;
     }
 }

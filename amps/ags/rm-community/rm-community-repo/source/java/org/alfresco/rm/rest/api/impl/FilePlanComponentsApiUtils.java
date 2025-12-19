@@ -220,7 +220,7 @@ public class FilePlanComponentsApiUtils
      * @return
      * @throws EntityNotFoundException
      */
-    public NodeRef lookupAndValidateNodeType(String nodeId) throws EntityNotFoundException
+    public NodeRef lookupAndValidateFilePlan(String nodeId) throws EntityNotFoundException
     {
         QName filePlanType = getFilePlanType();
         if (filePlanType == null)

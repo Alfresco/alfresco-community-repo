@@ -84,6 +84,12 @@ RUN mkdir -p ${TOMCAT_DIR}/conf/Catalina/localhost && \
     find /licenses -type d -exec chmod 0755 {} \; && \
     find /licenses -type f -exec chmod 0644 {} \;
 
+# Copy Alfresco context configuration to trusted Tomcat location
+COPY ${resource_path}/war/alfresco/META-INF/context.xml \
+     ${TOMCAT_DIR}/conf/Catalina/localhost/alfresco.xml
+COPY ${resource_path}/war/ROOT/META-INF/context.xml \
+     ${TOMCAT_DIR}/conf/Catalina/localhost/ROOT.xml
+
 EXPOSE 10001
 
 # For remote debug

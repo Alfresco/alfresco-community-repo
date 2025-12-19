@@ -25,6 +25,18 @@ RUN mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/mimetypes && \
     mkdir ${TOMCAT_DIR}/alfresco-mmt && \
     touch ${TOMCAT_DIR}/shared/classes/alfresco-global.properties
 
+# Ensure Tomcat context directory exists
+RUN mkdir -p ${TOMCAT_DIR}/conf/Catalina/localhost
+
+# Copy Alfresco context configuration to trusted Tomcat location
+COPY ${resource_path}/war/alfresco/META-INF/context.xml \
+     ${TOMCAT_DIR}/conf/Catalina/localhost/alfresco.xml
+COPY ${resource_path}/war/ROOT/META-INF/context.xml \
+     ${TOMCAT_DIR}/conf/Catalina/localhost/ROOT.xml
+
+
+
+
 # You need to run `mvn clean install` in the root of this project to update the following dependencies
 # Copy the WAR files to the appropriate location for your application server
 # Copy the JDBC drivers for the database you are using to the lib/ directory.

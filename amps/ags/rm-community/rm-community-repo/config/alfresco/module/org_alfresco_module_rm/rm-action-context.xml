@@ -268,6 +268,7 @@
       <property name="ghostingEnabled">
          <value>${rm.ghosting.enabled}</value>
       </property>
+      <property name="auditedImmediately" value="true"/>
    </bean>
 
    <!-- retain -->

@@ -83,7 +83,7 @@ public class FilePlanHoldsRelation implements
         checkNotBlank("filePlanId", filePlanId);
         mandatory("parameters", parameters);
 
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
+        NodeRef parentNodeRef = apiUtils.lookupAndValidateFilePlan(filePlanId);
         List<NodeRef> holds = holdService.getHolds(parentNodeRef);
 
         List<HoldModel> page = holds.stream()
@@ -106,7 +106,7 @@ public class FilePlanHoldsRelation implements
         mandatory("holds", holds);
         mandatory("parameters", parameters);
 
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
+        NodeRef parentNodeRef = apiUtils.lookupAndValidateFilePlan(filePlanId);
 
         RetryingTransactionCallback<List<NodeRef>> callback = () -> {
             List<NodeRef> createdNodes = new LinkedList<>();

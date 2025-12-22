@@ -44,6 +44,8 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createDOD5015RMSiteModel;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -72,6 +74,7 @@ import org.alfresco.rest.rm.community.model.hold.HoldCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryProperties;
+import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.utility.constants.ContainerName;
 import org.alfresco.utility.model.UserModel;
@@ -108,6 +111,20 @@ public class FilePlanTests extends BaseRMRestTest
                 { CONTENT_TYPE },
                 { NON_ELECTRONIC_RECORD_TYPE},
                 { RECORD_FOLDER_TYPE}
+        };
+    }
+
+    /**
+     * Data Provider with: RM Site models
+     *
+     * @return file plan component alias
+     */
+    @DataProvider(name = "rmSiteModels")
+    public static Object[][] rmSiteModels()
+    {
+        return new Object[][]{
+            {"ddod", createDOD5015RMSiteModel()},
+            {"standard", createStandardRMSiteModel()}
         };
     }
 
@@ -524,9 +541,10 @@ public class FilePlanTests extends BaseRMRestTest
      * Then it is created
      * </pre>
      */
-    @Test
-    public void createHolds()
+    @Test(dataProvider = "rmSiteModels")
+    public void createHoldForRMSiteModel(String siteType, Object rmSiteModel)
     {
+        createRMSite((RMSite) rmSiteModel);
         String holdName = "Hold" + getRandomAlphanumeric();
         String holdDescription = "Description" + getRandomAlphanumeric();
         String holdReason = "Reason" + getRandomAlphanumeric();
@@ -549,13 +567,12 @@ public class FilePlanTests extends BaseRMRestTest
         assertNotNull(createdHold.getId());
     }
 
-
-    @Test
-    public void listHolds()
+    @Test(dataProvider = "rmSiteModels")
+    public void listHolds(String siteType, Object rmSiteModel)
     {
+        createRMSite((RMSite) rmSiteModel);
         // Delete all holds
-        getRestAPIFactory().getFilePlansAPI().getHolds(FILE_PLAN_ALIAS).getEntries().forEach(holdEntry ->
-            getRestAPIFactory().getHoldsAPI().deleteHold(holdEntry.getEntry().getId()));
+        getRestAPIFactory().getFilePlansAPI().getHolds(FILE_PLAN_ALIAS).getEntries().forEach(holdEntry -> getRestAPIFactory().getHoldsAPI().deleteHold(holdEntry.getEntry().getId()));
 
         // Add holds
         List<Hold> filePlanHolds = new ArrayList<>();
@@ -584,30 +601,29 @@ public class FilePlanTests extends BaseRMRestTest
         assertStatusCode(OK);
 
         // Check holds against created list
-        holdCollection.getEntries().forEach(c ->
+        holdCollection.getEntries().forEach(c -> {
+            Hold hold = c.getEntry();
+            String holdId = hold.getId();
+            assertNotNull(holdId);
+            logger.info("Checking hold " + holdId);
+
+            try
             {
-                Hold hold = c.getEntry();
-                String holdId = hold.getId();
-                assertNotNull(holdId);
-                logger.info("Checking hold " + holdId);
+                // Find this hold in created holds list
+                Hold createdHold = filePlanHolds.stream()
+                    .filter(child -> child.getId().equals(holdId))
+                    .findFirst()
+                    .orElseThrow();
 
-                try
-                {
-                    // Find this hold in created holds list
-                    Hold createdHold = filePlanHolds.stream()
-                        .filter(child -> child.getId().equals(holdId))
-                        .findFirst()
-                        .orElseThrow();
-
-                    assertEquals(createdHold.getName(), hold.getName());
-                    assertEquals(createdHold.getDescription(), hold.getDescription());
-                    assertEquals(createdHold.getReason(), hold.getReason());
-                }
-                catch (NoSuchElementException e)
-                {
-                    fail("No child element for " + hold);
-                }
+                assertEquals(createdHold.getName(), hold.getName());
+                assertEquals(createdHold.getDescription(), hold.getDescription());
+                assertEquals(createdHold.getReason(), hold.getReason());
             }
-                                                   );
+            catch (NoSuchElementException e)
+            {
+                fail("No child element for " + hold);
+            }
+        });
     }
+
 }

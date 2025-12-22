@@ -64,6 +64,8 @@ import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGE
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_SECURITY_OFFICER;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createDOD5015RMSiteModel;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 
@@ -87,6 +89,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryCollect
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryProperties;
 import org.alfresco.rest.rm.community.model.role.Role;
 import org.alfresco.rest.rm.community.model.role.RoleCollection;
+import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.model.user.UserCapabilities;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.utility.constants.ContainerName;
@@ -122,6 +125,20 @@ public class FilePlanTests extends BaseRMRestTest
                 {CONTENT_TYPE},
                 {NON_ELECTRONIC_RECORD_TYPE},
                 {RECORD_FOLDER_TYPE}
+        };
+    }
+
+    /**
+     * Data Provider with: RM Site models
+     * 
+     * @return file plan component alias
+     */
+    @DataProvider(name = "rmSiteModels")
+    public static Object[][] rmSiteModels()
+    {
+        return new Object[][]{
+                {"ddod", createDOD5015RMSiteModel()},
+                {"standard", createStandardRMSiteModel()}
         };
     }
 
@@ -525,9 +542,11 @@ public class FilePlanTests extends BaseRMRestTest
      * Then it is created
      * </pre>
      */
-    @Test
-    public void createHolds()
+
+    @Test(dataProvider = "rmSiteModels")
+    public void createHoldForRMSiteModel(String siteType, Object rmSiteModel)
     {
+        createRMSite((RMSite) rmSiteModel);
         String holdName = "Hold" + getRandomAlphanumeric();
         String holdDescription = "Description" + getRandomAlphanumeric();
         String holdReason = "Reason" + getRandomAlphanumeric();
@@ -550,9 +569,10 @@ public class FilePlanTests extends BaseRMRestTest
         assertNotNull(createdHold.getId());
     }
 
-    @Test
-    public void listHolds()
+    @Test(dataProvider = "rmSiteModels")
+    public void listHolds(String siteType, Object rmSiteModel)
     {
+        createRMSite((RMSite) rmSiteModel);
         // Delete all holds
         getRestAPIFactory().getFilePlansAPI().getHolds(FILE_PLAN_ALIAS).getEntries().forEach(holdEntry -> getRestAPIFactory().getHoldsAPI().deleteHold(holdEntry.getEntry().getId()));
 
@@ -615,9 +635,10 @@ public class FilePlanTests extends BaseRMRestTest
      * It provides list of all default roles
      * </pre>
      */
-    @Test
-    public void listFilePlanAllDefaultRoles()
+    @Test(dataProvider = "rmSiteModels")
+    public void listFilePlanAllDefaultRolesType(String siteType, Object rmSiteModel)
     {
+        createRMSite((RMSite) rmSiteModel);
         List<String> defaultRolesDisplayNames = asList(IN_PLACE_READERS.displayName, ROLE_RM_ADMIN.displayName, ROLE_RM_MANAGER.displayName, ROLE_RM_POWER_USER.displayName, ROLE_RM_USER.displayName, IN_PLACE_WRITERS.displayName, ROLE_RM_SECURITY_OFFICER.displayName);
         // Call to new API to get the roles and capabilities
         RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI().getFilePlanRoles(FILE_PLAN_ALIAS);
@@ -773,5 +794,4 @@ public class FilePlanTests extends BaseRMRestTest
             assertNotNull(role.getCapabilities());
         });
     }
-
 }

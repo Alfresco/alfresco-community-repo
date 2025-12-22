@@ -53,6 +53,8 @@ import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.alfresco.repo.domain.propval.PropertyUniqueContextEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
+import org.alfresco.repo.domain.propval.SerializableString;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.domain.schema.script.ScriptBundleExecutor;
 import org.alfresco.util.Pair;
 
@@ -428,6 +430,13 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         // Get the actual type ID
         Class<?> clazz = (value == null ? Object.class : value.getClass());
+
+        // Check for long strings and use the marker interface to differentiate the type ID
+        if (value instanceof String && ((String) value).length() > SchemaBootstrap.getMaxStringLength())
+        {
+            clazz = SerializableString.class;
+        }
+
         Pair<Long, Class<?>> clazzPair = getOrCreatePropertyClass(clazz);
         Long actualTypeId = clazzPair.getFirst();
 

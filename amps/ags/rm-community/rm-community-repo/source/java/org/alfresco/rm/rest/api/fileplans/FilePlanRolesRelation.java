@@ -31,7 +31,6 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -71,7 +70,7 @@ public class FilePlanRolesRelation implements RelationshipResourceAction.Read<Ro
 
     private NodeRef getFilePlan(String filePlanId)
     {
-        NodeRef filePlanNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
+        NodeRef filePlanNodeRef = apiUtils.lookupAndValidateFilePlan(filePlanId);
         if (!FilePlanComponentsApiUtils.FILE_PLAN_ALIAS.equals(filePlanId))
         {
             filePlanNodeRef = filePlanService.getFilePlan(filePlanNodeRef);

@@ -213,6 +213,23 @@ public class FilePlanComponentsApiUtils
     }
 
     /**
+     * lookup node and validate type based on the file plan type
+     *
+     * @param nodeId
+     * @return
+     * @throws EntityNotFoundException
+     */
+    public NodeRef lookupAndValidateFilePlan(String nodeId) throws EntityNotFoundException
+    {
+        QName filePlanType = getFilePlanType();
+        if (filePlanType == null)
+        {
+            throw new EntityNotFoundException(nodeId);
+        }
+        return lookupAndValidateNodeType(nodeId, filePlanType);
+    }
+
+    /**
      * lookup node and validate type
      *
      * @param nodeId

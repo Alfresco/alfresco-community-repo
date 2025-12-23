@@ -509,6 +509,11 @@ public class NodeServiceImpl implements NodeService, VersionModel
             return Collections.emptyMap();
         }
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting properties for " + nodeRefs.size() + " node refs from version store");
+        }
+
         List<NodeRef> convertedNodeRefs = nodeRefs.stream().map(VersionUtil::convertNodeRef).collect(Collectors.toList());
 
         return this.dbNodeService.getPropertiesForNodeRefs(convertedNodeRefs);

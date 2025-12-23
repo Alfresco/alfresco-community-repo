@@ -38,6 +38,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -50,22 +56,13 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Interceptor to filter out multilingual text properties from getter methods and
- * transform to multilingual text for setter methods.
+ * Interceptor to filter out multilingual text properties from getter methods and transform to multilingual text for setter methods.
  * <p>
- * This interceptor ensures that all multilingual (ML) text is transformed to the
- * locale chosen for the request
- * for getters and transformed to the default locale type for setters.
+ * This interceptor ensures that all multilingual (ML) text is transformed to the locale chosen for the request for getters and transformed to the default locale type for setters.
  * <p>
- * Where {@link org.alfresco.service.cmr.repository.MLText ML text} has been passed in, this
- * will be allowed to pass.
+ * Where {@link org.alfresco.service.cmr.repository.MLText ML text} has been passed in, this will be allowed to pass.
  * 
  * @see org.alfresco.service.cmr.repository.NodeService#getProperty(NodeRef, QName)
  * @see org.alfresco.service.cmr.repository.NodeService#getProperties(NodeRef)
@@ -78,27 +75,24 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class MLPropertyInterceptor implements MethodInterceptor
 {
     private static Log logger = LogFactory.getLog(MLPropertyInterceptor.class);
-    
+
     private static ThreadLocal<Boolean> mlAware = new ThreadLocal<Boolean>();
-    
+
     /** Direct access to the NodeService */
     private NodeService nodeService;
-    
+
     /** Direct access to the MultilingualContentService */
     private MultilingualContentService multilingualContentService;
-    
+
     /** Used to access property definitions */
     private DictionaryService dictionaryService;
-    
+
     /**
-     * Change the filtering behaviour of this interceptor on the curren thread.
-     * Use this to switch off the filtering and just pass out properties as
-     * handed out of the node service.
+     * Change the filtering behaviour of this interceptor on the curren thread. Use this to switch off the filtering and just pass out properties as handed out of the node service.
      * 
-     * @param mlAwareVal <tt>true</tt> if the current thread is able to handle
-     *      {@link MLText d:mltext} property types, otherwise <tt>false</tt>.
-     * @return
-     *      <tt>true</tt> if the current transaction is ML aware
+     * @param mlAwareVal
+     *            <tt>true</tt> if the current thread is able to handle {@link MLText d:mltext} property types, otherwise <tt>false</tt>.
+     * @return <tt>true</tt> if the current transaction is ML aware
      */
     static public boolean setMLAware(boolean mlAwareVal)
     {
@@ -106,10 +100,9 @@ public class MLPropertyInterceptor implements MethodInterceptor
         mlAware.set(Boolean.valueOf(mlAwareVal));
         return wasMLAware;
     }
-    
+
     /**
-     * @return Returns <tt>true</tt> if the current thread has marked itself
-     *      as being able to handle {@link MLText d:mltext} types properly.
+     * @return Returns <tt>true</tt> if the current thread has marked itself as being able to handle {@link MLText d:mltext} types properly.
      */
     static public boolean isMLAware()
     {
@@ -137,7 +130,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     @SuppressWarnings("unchecked")
     public Object invoke(final MethodInvocation invocation) throws Throwable
     {
@@ -145,29 +138,29 @@ public class MLPropertyInterceptor implements MethodInterceptor
         {
             logger.debug("Intercepting method " + invocation.getMethod().getName() + " using content filter " + I18NUtil.getContentLocale());
         }
-        
+
         // If isMLAware then no treatment is done, just return
         if (isMLAware())
-        {    
+        {
             // Don't interfere
             return invocation.proceed();
         }
-        
+
         Locale contentLangLocale = I18NUtil.getContentLocaleLang();
-        
+
         Object ret = null;
-        
+
         final String methodName = invocation.getMethod().getName();
         final Object[] args = invocation.getArguments();
-        
+
         if (methodName.equals("getProperty"))
         {
             NodeRef nodeRef = (NodeRef) args[0];
             QName propertyQName = (QName) args[1];
-            
+
             // Get the pivot translation, if appropriate
             NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
-            
+
             // What locale must be used for filtering - ALF-3756 fix, ignore the country and variant
             Serializable value = (Serializable) invocation.proceed();
             ret = convertOutboundProperty(nodeRef, pivotNodeRef, propertyQName, value);
@@ -175,10 +168,10 @@ public class MLPropertyInterceptor implements MethodInterceptor
         else if (methodName.equals("getProperties"))
         {
             NodeRef nodeRef = (NodeRef) args[0];
-            
+
             // Get the pivot translation, if appropriate
             NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
-            
+
             Map<QName, Serializable> properties = (Map<QName, Serializable>) invocation.proceed();
             Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(properties.size() * 2);
             // Check each return value type
@@ -196,26 +189,26 @@ public class MLPropertyInterceptor implements MethodInterceptor
             {
                 logger.debug(
                         "Converted getProperties return value: \n" +
-                        "   initial:   " + properties + "\n" +
-                        "   converted: " + convertedProperties);
+                                "   initial:   " + properties + "\n" +
+                                "   converted: " + convertedProperties);
             }
         }
-         else if (methodName.equals("getPropertiesForNodeRefs"))
+        else if (methodName.equals("getPropertiesForNodeRefs"))
         {
             List<NodeRef> nodeRefs = (List<NodeRef>) args[0];
-            
+
             Map<NodeRef, Map<QName, Serializable>> propertyMap = (Map<NodeRef, Map<QName, Serializable>>) invocation.proceed();
             Map<NodeRef, Map<QName, Serializable>> convertedPropertiesMap = new HashMap<>(propertyMap.size() * 2);
-            
+
             for (Map.Entry<NodeRef, Map<QName, Serializable>> entry : propertyMap.entrySet())
             {
                 NodeRef nodeRef = entry.getKey();
                 Map<QName, Serializable> properties = entry.getValue();
-                
+
                 NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
-                
+
                 Map<QName, Serializable> convertedPropsForNode = new HashMap<>(properties.size() * 2);
-            
+
                 for (Map.Entry<QName, Serializable> PropEntry : properties.entrySet())
                 {
                     QName propertyQName = PropEntry.getKey();
@@ -226,14 +219,14 @@ public class MLPropertyInterceptor implements MethodInterceptor
                 }
 
                 convertedPropertiesMap.put(nodeRef, convertedPropsForNode);
-                
+
                 // Done
                 if (logger.isDebugEnabled())
                 {
                     logger.debug(
                             "Converted getProperties return value: \n" +
-                            "   initial:   " + properties + "\n" +
-                            "   converted: " + convertedPropsForNode);
+                                    "   initial:   " + properties + "\n" +
+                                    "   converted: " + convertedPropsForNode);
                 }
             }
 
@@ -242,8 +235,8 @@ public class MLPropertyInterceptor implements MethodInterceptor
         else if (methodName.equals("setProperties"))
         {
             NodeRef nodeRef = (NodeRef) args[0];
-            Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[1];
-            
+            Map<QName, Serializable> newProperties = (Map<QName, Serializable>) args[1];
+
             // Get the pivot translation, if appropriate
             NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
 
@@ -263,8 +256,8 @@ public class MLPropertyInterceptor implements MethodInterceptor
         else if (methodName.equals("addProperties"))
         {
             NodeRef nodeRef = (NodeRef) args[0];
-            Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[1];
-            
+            Map<QName, Serializable> newProperties = (Map<QName, Serializable>) args[1];
+
             // Get the pivot translation, if appropriate
             NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
 
@@ -286,13 +279,13 @@ public class MLPropertyInterceptor implements MethodInterceptor
             NodeRef nodeRef = (NodeRef) args[0];
             QName propertyQName = (QName) args[1];
             Serializable inboundValue = (Serializable) args[2];
-            
+
             // Get the pivot translation, if appropriate
             NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
-            
+
             // Convert the property
             inboundValue = convertInboundProperty(contentLangLocale, nodeRef, pivotNodeRef, propertyQName, inboundValue, null);
-            
+
             // Pass this through to the node service
             nodeService.setProperty(nodeRef, propertyQName, inboundValue);
             // Done
@@ -303,13 +296,13 @@ public class MLPropertyInterceptor implements MethodInterceptor
             QName assocTypeQName = (QName) args[1];
             QName assocQName = (QName) args[2];
             QName nodeTypeQName = (QName) args[3];
-            Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[4];
+            Map<QName, Serializable> newProperties = (Map<QName, Serializable>) args[4];
             if (newProperties == null)
             {
                 newProperties = Collections.emptyMap();
             }
-            NodeRef nodeRef = null;                 // Not created yet
-            
+            NodeRef nodeRef = null; // Not created yet
+
             // No pivot
             NodeRef pivotNodeRef = null;
 
@@ -328,11 +321,11 @@ public class MLPropertyInterceptor implements MethodInterceptor
         {
             NodeRef nodeRef = (NodeRef) args[0];
             QName aspectTypeQName = (QName) args[1];
-            
+
             // Get the pivot translation, if appropriate
             NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
 
-            Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[2];
+            Map<QName, Serializable> newProperties = (Map<QName, Serializable>) args[2];
             // Get the current properties for the node
             Map<QName, Serializable> currentProperties = nodeService.getProperties(nodeRef);
             // Convert all properties
@@ -353,12 +346,11 @@ public class MLPropertyInterceptor implements MethodInterceptor
         // done
         return ret;
     }
-    
+
     /**
      * @param nodeRef
-     *      a potential empty translation
-     * @return
-     *      the pivot translation node or <tt>null</tt>
+     *            a potential empty translation
+     * @return the pivot translation node or <tt>null</tt>
      */
     private NodeRef getPivotNodeRef(NodeRef nodeRef)
     {
@@ -375,7 +367,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             return null;
         }
     }
-    
+
     /**
      * Ensure that content is spoofed for empty translations.
      */
@@ -388,7 +380,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
         Serializable ret = null;
         if (outboundValue == null)
         {
-           ret = null;
+            ret = null;
         }
         if (outboundValue instanceof MLText)
         {
@@ -396,49 +388,49 @@ public class MLPropertyInterceptor implements MethodInterceptor
             MLText mlText = (MLText) outboundValue;
             ret = getClosestValue(mlText);
         }
-        else if(isCollectionOfMLText(outboundValue))
+        else if (isCollectionOfMLText(outboundValue))
         {
-            Collection<?> col = (Collection<?>)outboundValue; 
+            Collection<?> col = (Collection<?>) outboundValue;
             ArrayList<String> answer = new ArrayList<String>(col.size());
             Locale closestLocale = getClosestLocale(col);
-            for(Object o : col)
+            for (Object o : col)
             {
                 MLText mlText = (MLText) o;
                 String value = mlText.get(closestLocale);
-                if(value != null)
+                if (value != null)
                 {
                     answer.add(value);
                 }
             }
             ret = answer;
         }
-        else if (pivotNodeRef != null)       // It is an empty translation
+        else if (pivotNodeRef != null) // It is an empty translation
         {
-           if (propertyQName.equals(ContentModel.PROP_MODIFIED))
-           {
-              // An empty translation's modified date must be the later of its own
-              // modified date and the pivot translation's modified date
-              Date emptyLastModified = (Date) outboundValue;
-              Date pivotLastModified = (Date) nodeService.getProperty(pivotNodeRef, ContentModel.PROP_MODIFIED);
-              if (emptyLastModified.compareTo(pivotLastModified) < 0)
-              {
-                 ret = pivotLastModified;
-              }
-              else
-              {
-                 ret = emptyLastModified;
-              }
-           }
-           else if (propertyQName.equals(ContentModel.PROP_CONTENT))
-           {
-              // An empty translation's cm:content must track the cm:content of the
-              // pivot translation.
-              ret = nodeService.getProperty(pivotNodeRef, ContentModel.PROP_CONTENT);
-           }
-           else
-           {
-              ret = outboundValue;
-           }
+            if (propertyQName.equals(ContentModel.PROP_MODIFIED))
+            {
+                // An empty translation's modified date must be the later of its own
+                // modified date and the pivot translation's modified date
+                Date emptyLastModified = (Date) outboundValue;
+                Date pivotLastModified = (Date) nodeService.getProperty(pivotNodeRef, ContentModel.PROP_MODIFIED);
+                if (emptyLastModified.compareTo(pivotLastModified) < 0)
+                {
+                    ret = pivotLastModified;
+                }
+                else
+                {
+                    ret = emptyLastModified;
+                }
+            }
+            else if (propertyQName.equals(ContentModel.PROP_CONTENT))
+            {
+                // An empty translation's cm:content must track the cm:content of the
+                // pivot translation.
+                ret = nodeService.getProperty(pivotNodeRef, ContentModel.PROP_CONTENT);
+            }
+            else
+            {
+                ret = outboundValue;
+            }
         }
         else
         {
@@ -449,14 +441,14 @@ public class MLPropertyInterceptor implements MethodInterceptor
         {
             logger.debug(
                     "Converted outbound property: \n" +
-                    "   NodeRef:        " + nodeRef + "\n" +
-                    "   Property:       " + propertyQName + "\n" +
-                    "   Before:         " + outboundValue + "\n" +
-                    "   After:          " + ret);
+                            "   NodeRef:        " + nodeRef + "\n" +
+                            "   Property:       " + propertyQName + "\n" +
+                            "   Before:         " + outboundValue + "\n" +
+                            "   After:          " + ret);
         }
         return ret;
     }
-    
+
     private Serializable getClosestValue(MLText mlText)
     {
         Set<Locale> locales = mlText.getLocales();
@@ -482,7 +474,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
         {
             logger.warn("contentLocaleLang is null in getClosestValue. This is not expected.");
         }
-        
+
         // Just return the default translation
         return mlText.getDefaultValue();
     }
@@ -495,9 +487,9 @@ public class MLPropertyInterceptor implements MethodInterceptor
         }
         // Use the available keys as options
         HashSet<Locale> locales = new HashSet<Locale>();
-        for(Object o : collection)
+        for (Object o : collection)
         {
-            MLText mlText = (MLText)o;
+            MLText mlText = (MLText) o;
             locales.addAll(mlText.keySet());
         }
         // Try the content locale
@@ -522,18 +514,19 @@ public class MLPropertyInterceptor implements MethodInterceptor
         }
         return match;
     }
-    
+
     /**
-     * @param outboundValue Serializable
+     * @param outboundValue
+     *            Serializable
      * @return boolean
      */
     private boolean isCollectionOfMLText(Serializable outboundValue)
     {
-        if(outboundValue instanceof Collection<?>)
+        if (outboundValue instanceof Collection<?>)
         {
-            for(Object o : (Collection<?>)outboundValue)
+            for (Object o : (Collection<?>) outboundValue)
             {
-                if(!(o instanceof MLText))
+                if (!(o instanceof MLText))
                 {
                     return false;
                 }
@@ -556,23 +549,25 @@ public class MLPropertyInterceptor implements MethodInterceptor
         Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(newProperties.size() * 2);
         for (Map.Entry<QName, Serializable> entry : newProperties.entrySet())
         {
-             QName propertyQName = entry.getKey();
-             Serializable inboundValue = entry.getValue();
-             // Get the current property value
-             Serializable currentValue = currentProperties == null ? null : currentProperties.get(propertyQName);
-             // Convert the inbound property value
-             inboundValue = convertInboundProperty(contentLocale, nodeRef, pivotNodeRef, propertyQName, inboundValue, currentValue);
-             // Put the value into the map
-             convertedProperties.put(propertyQName, inboundValue);
+            QName propertyQName = entry.getKey();
+            Serializable inboundValue = entry.getValue();
+            // Get the current property value
+            Serializable currentValue = currentProperties == null ? null : currentProperties.get(propertyQName);
+            // Convert the inbound property value
+            inboundValue = convertInboundProperty(contentLocale, nodeRef, pivotNodeRef, propertyQName, inboundValue, currentValue);
+            // Put the value into the map
+            convertedProperties.put(propertyQName, inboundValue);
         }
         return convertedProperties;
     }
-    
+
     /**
      * 
-     * @param inboundValue      The value that must be set
-     * @param currentValue      The current value of the property or <tt>null</tt> if not known
-     * @return                  Returns a potentially converted property that conforms to the model
+     * @param inboundValue
+     *            The value that must be set
+     * @param currentValue
+     *            The current value of the property or <tt>null</tt> if not known
+     * @return Returns a potentially converted property that conforms to the model
      */
     private Serializable convertInboundProperty(
             Locale contentLocale,
@@ -584,10 +579,10 @@ public class MLPropertyInterceptor implements MethodInterceptor
     {
         Serializable ret = null;
         PropertyDefinition propertyDef = this.dictionaryService.getProperty(propertyQName);
-        //if no type definition associated to the name then just proceed
+        // if no type definition associated to the name then just proceed
         if (propertyDef == null)
         {
-           ret = inboundValue;
+            ret = inboundValue;
         }
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
         {
@@ -596,10 +591,10 @@ public class MLPropertyInterceptor implements MethodInterceptor
             {
                 ret = inboundValue;
             }
-            else if(propertyDef.isMultiValued())
+            else if (propertyDef.isMultiValued())
             {
                 // leave collectios of ML text alone
-                if(isCollectionOfMLText(inboundValue))
+                if (isCollectionOfMLText(inboundValue))
                 {
                     ret = inboundValue;
                 }
@@ -613,29 +608,29 @@ public class MLPropertyInterceptor implements MethodInterceptor
                     ArrayList<MLText> returnMLList = new ArrayList<MLText>();
                     if (currentValue != null)
                     {
-                        Collection<MLText> currentCollection = DefaultTypeConverter.INSTANCE.getCollection(MLText.class, currentValue);  
+                        Collection<MLText> currentCollection = DefaultTypeConverter.INSTANCE.getCollection(MLText.class, currentValue);
                         returnMLList.addAll(currentCollection);
                     }
                     Collection<String> inboundCollection = DefaultTypeConverter.INSTANCE.getCollection(String.class, inboundValue);
                     int count = 0;
-                    for(String current : inboundCollection)
+                    for (String current : inboundCollection)
                     {
                         MLText newMLValue;
-                        if(count < returnMLList.size())
-                        { 
+                        if (count < returnMLList.size())
+                        {
                             MLText currentMLValue = returnMLList.get(count);
                             newMLValue = new MLText();
                             if (currentMLValue != null)
                             {
                                 newMLValue.putAll(currentMLValue);
-                            }                
+                            }
                         }
                         else
                         {
                             newMLValue = new MLText();
                         }
                         replaceTextForLanguage(contentLocale, current, newMLValue);
-                        if(count < returnMLList.size())
+                        if (count < returnMLList.size())
                         {
                             returnMLList.set(count, newMLValue);
                         }
@@ -646,7 +641,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                         count++;
                     }
                     // remove locale settings for anything after
-                    for(int i = count; i < returnMLList.size(); i++)
+                    for (int i = count; i < returnMLList.size(); i++)
                     {
                         MLText currentMLValue = returnMLList.get(i);
                         MLText newMLValue = new MLText();
@@ -659,9 +654,9 @@ public class MLPropertyInterceptor implements MethodInterceptor
                     }
                     // tidy up empty locales
                     ArrayList<MLText> tidy = new ArrayList<MLText>();
-                    for(MLText mlText : returnMLList)
+                    for (MLText mlText : returnMLList)
                     {
-                        if(mlText.keySet().size() > 0)
+                        if (mlText.keySet().size() > 0)
                         {
                             tidy.add(mlText);
                         }
@@ -681,7 +676,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                 if (currentValue != null)
                 {
                     MLText currentMLValue = DefaultTypeConverter.INSTANCE.convert(MLText.class, currentValue);
-                    returnMLValue.putAll(currentMLValue);                   
+                    returnMLValue.putAll(currentMLValue);
                 }
                 // Force the inbound value to be a String (it isn't MLText)
                 String inboundValueStr = DefaultTypeConverter.INSTANCE.convert(String.class, inboundValue);
@@ -693,21 +688,21 @@ public class MLPropertyInterceptor implements MethodInterceptor
         }
         else if (pivotNodeRef != null && propertyQName.equals(ContentModel.PROP_CONTENT))
         {
-           // It is an empty translation.  The content must not change if it matches
-           // the content of the pivot translation
-           ContentData pivotContentData = (ContentData) nodeService.getProperty(pivotNodeRef, ContentModel.PROP_CONTENT);
-           ContentData emptyContentData = (ContentData) inboundValue;
-           String pivotContentUrl = pivotContentData == null ? null : pivotContentData.getContentUrl();
-           String emptyContentUrl = emptyContentData == null ? null : emptyContentData.getContentUrl();
-           if (EqualsHelper.nullSafeEquals(pivotContentUrl, emptyContentUrl))
-           {
-              // They are a match.  So the empty translation must be reset to it's original value
-              ret = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-           }
-           else
-           {
-              ret = inboundValue;
-           }
+            // It is an empty translation. The content must not change if it matches
+            // the content of the pivot translation
+            ContentData pivotContentData = (ContentData) nodeService.getProperty(pivotNodeRef, ContentModel.PROP_CONTENT);
+            ContentData emptyContentData = (ContentData) inboundValue;
+            String pivotContentUrl = pivotContentData == null ? null : pivotContentData.getContentUrl();
+            String emptyContentUrl = emptyContentData == null ? null : emptyContentData.getContentUrl();
+            if (EqualsHelper.nullSafeEquals(pivotContentUrl, emptyContentUrl))
+            {
+                // They are a match. So the empty translation must be reset to it's original value
+                ret = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            }
+            else
+            {
+                ret = inboundValue;
+            }
         }
         else
         {
@@ -726,13 +721,14 @@ public class MLPropertyInterceptor implements MethodInterceptor
     }
 
     /**
-     * Replace any text in mlText having the same language (but any variant) as contentLocale
-     * with updatedText keyed by the language of contentLocale. This ensures that the mlText
-     * will have no more than one entry for the particular language.
+     * Replace any text in mlText having the same language (but any variant) as contentLocale with updatedText keyed by the language of contentLocale. This ensures that the mlText will have no more than one entry for the particular language.
      * 
-     * @param contentLocale Locale
-     * @param updatedText String
-     * @param mlText MLText
+     * @param contentLocale
+     *            Locale
+     * @param updatedText
+     *            String
+     * @param mlText
+     *            MLText
      */
     private void replaceTextForLanguage(Locale contentLocale, String updatedText, MLText mlText)
     {
@@ -748,7 +744,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                 locales.remove();
             }
         }
-        
+
         // Add the new value for the specific language
         mlText.addValue(new Locale(language), updatedText);
     }

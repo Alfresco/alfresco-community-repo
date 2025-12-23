@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.lock.traitextender.LockableAspectInterceptorExtension;
@@ -48,18 +51,12 @@ import org.alfresco.traitextender.Extend;
 import org.alfresco.traitextender.ExtendedTrait;
 import org.alfresco.traitextender.Extensible;
 import org.alfresco.traitextender.Trait;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * NodeService interceptor to spoof the cm:lockable aspect when reading a node that has
- * an ephemeral lock on it. LockService policies such as beforeDeleteNode that protect
- * locked nodes, would not fire for nodes with ephemeral locks on them unless
- * they are reported to have the cm:lockable aspect on them. As ephemeral locks are only held in memory
- * the nodes have not been marked with this aspect, so the aspect must be spoofed.
+ * NodeService interceptor to spoof the cm:lockable aspect when reading a node that has an ephemeral lock on it. LockService policies such as beforeDeleteNode that protect locked nodes, would not fire for nodes with ephemeral locks on them unless they are reported to have the cm:lockable aspect on them. As ephemeral locks are only held in memory the nodes have not been marked with this aspect, so the aspect must be spoofed.
  * <p>
  * This interceptor checks for EPHEMERAL lock directly - MNT-10477 fix.
- *  
+ * 
  * @author Matt Ward
  */
 public class LockableAspectInterceptor implements MethodInterceptor, Extensible
@@ -68,9 +65,9 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
     private AuthenticationService authenticationService;
     private NodeService nodeService;
     private LockService lockService;
-    
+
     private Set<String> methodsToCheck = new HashSet<String>();
-    
+
     private final ThreadLocal<Boolean> threadEnabled;
 
     private final ExtendedTrait<LockableAspectInterceptorTrait> lockableAspectInterceptorTrait;
@@ -80,8 +77,7 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
      */
     public LockableAspectInterceptor()
     {
-        threadEnabled = new ThreadLocal<Boolean>()
-        {
+        threadEnabled = new ThreadLocal<Boolean>() {
             @Override
             protected Boolean initialValue()
             {
@@ -89,9 +85,9 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
                 return Boolean.TRUE;
             }
         };
-        lockableAspectInterceptorTrait=new ExtendedTrait<LockableAspectInterceptorTrait>(createTrait());
+        lockableAspectInterceptorTrait = new ExtendedTrait<LockableAspectInterceptorTrait>(createTrait());
     }
-    
+
     public void init()
     {
         /* check for lock before following methods proceed - MNT-10477 */
@@ -113,15 +109,15 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
             // Interceptor is not enabled for this thread.
             return invocation.proceed();
         }
-        
+
         final String methodName = invocation.getMethod().getName();
         final Object[] args = invocation.getArguments();
-        
+
         if (methodName.equals("hasAspect"))
         {
             NodeRef nodeRef = (NodeRef) args[0];
             QName aspectTypeQName = (QName) args[1];
-            
+
             LockState lockState = getLockState(nodeRef);
             if (ContentModel.ASPECT_LOCKABLE.equals(aspectTypeQName) && isEphemeralLock(lockState))
             {
@@ -143,7 +139,7 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
         else if (methodName.equals("getProperties"))
         {
             NodeRef nodeRef = (NodeRef) args[0];
-            
+
             Map<QName, Serializable> properties = (Map<QName, Serializable>) invocation.proceed();
             LockState lockState = getLockState(nodeRef);
             if (isEphemeralLock(lockState))
@@ -167,7 +163,7 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
         else if (methodName.equals("getPropertiesForNodeRefs"))
         {
             List<NodeRef> nodeRefs = (List<NodeRef>) args[0];
-            
+
             Map<NodeRef, Map<QName, Serializable>> propertyMap = (Map<NodeRef, Map<QName, Serializable>>) invocation.proceed();
 
             for (Map.Entry<NodeRef, Map<QName, Serializable>> entry : propertyMap.entrySet())
@@ -175,7 +171,6 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
                 NodeRef nodeRef = entry.getKey();
                 Map<QName, Serializable> properties = entry.getValue();
 
-        
                 LockState lockState = getLockState(nodeRef);
                 if (isEphemeralLock(lockState))
                 {
@@ -201,7 +196,7 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
         {
             NodeRef nodeRef = (NodeRef) args[0];
             QName propQName = (QName) args[1];
-            
+
             // Avoid locking unless it is an interesting property.
             if (isLockProperty(propQName))
             {
@@ -233,7 +228,7 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
                         return Lifetime.PERSISTENT.toString();
                     }
                 }
-            } 
+            }
             return invocation.proceed();
         }
         else if (methodName.equals("setProperties"))
@@ -269,7 +264,7 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
             NodeRef nodeRef = (NodeRef) args[0];
             /* MNT-10477 fix */
             checkForLockIfEphemeral(nodeRef);
-            
+
             return invocation.proceed();
         }
         else
@@ -280,33 +275,32 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
     }
 
     /**
-     * Enables the interceptor for the current thread. This would normally be used in a finally
-     * block to re-enable the interceptor for a previously {@link #disableForThread() disabled} thread.
+     * Enables the interceptor for the current thread. This would normally be used in a finally block to re-enable the interceptor for a previously {@link #disableForThread() disabled} thread.
      */
     public void enableForThread()
     {
         threadEnabled.set(Boolean.TRUE);
     }
-    
+
     /**
-     * Disables the interceptor for the current thread. Follow with a try/finally block as described
-     * for {@link #enableForThread()}.
+     * Disables the interceptor for the current thread. Follow with a try/finally block as described for {@link #enableForThread()}.
      */
     public void disableForThread()
     {
         threadEnabled.set(Boolean.FALSE);
     }
-    
+
     /**
      * Given a set of properties, removes those where <code>isLockProperty(propQName) == true</code>.
      * 
-     * @param properties Map<QName, Serializable>
+     * @param properties
+     *            Map<QName, Serializable>
      * @return filtered properties.
      */
     private Map<QName, Serializable> filterLockProperties(Map<QName, Serializable> properties)
     {
         Map<QName, Serializable> filteredProps = new HashMap<QName, Serializable>(properties.size() * 2);
-        
+
         // Only add non-lock properties
         for (QName propQName : properties.keySet())
         {
@@ -317,28 +311,27 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
         }
         return filteredProps;
     }
-    
+
     /**
      * Return true if the specified property QName is for a lock-related property.
      */
     private boolean isLockProperty(QName propQName)
     {
-        boolean isLockProp =
-                    propQName.equals(ContentModel.PROP_LOCK_OWNER) ||
-                    propQName.equals(ContentModel.PROP_LOCK_TYPE) ||
-                    propQName.equals(ContentModel.PROP_LOCK_LIFETIME) ||
-                    propQName.equals(ContentModel.PROP_EXPIRY_DATE);
+        boolean isLockProp = propQName.equals(ContentModel.PROP_LOCK_OWNER) ||
+                propQName.equals(ContentModel.PROP_LOCK_TYPE) ||
+                propQName.equals(ContentModel.PROP_LOCK_LIFETIME) ||
+                propQName.equals(ContentModel.PROP_EXPIRY_DATE);
         return isLockProp;
     }
 
     private boolean isEphemeralLock(LockState lockState)
     {
         boolean ephemeral = lockState != null &&
-                            lockState.isLockInfo() &&
-                            lockState.getLifetime() == Lifetime.EPHEMERAL;
+                lockState.isLockInfo() &&
+                lockState.getLifetime() == Lifetime.EPHEMERAL;
         return ephemeral;
     }
-    
+
     private void checkForLockIfEphemeral(NodeRef nodeRef)
     {
         LockState lockState = getLockState(nodeRef);
@@ -363,11 +356,12 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
         this.nodeService = nodeService;
     }
 
-    public void setLockService(LockService lockService) {
+    public void setLockService(LockService lockService)
+    {
         this.lockService = lockService;
     }
 
-    @Extend(traitAPI=LockableAspectInterceptorTrait.class,extensionAPI=LockableAspectInterceptorExtension.class)
+    @Extend(traitAPI = LockableAspectInterceptorTrait.class, extensionAPI = LockableAspectInterceptorExtension.class)
     private LockState getLockState(NodeRef nodeRef)
     {
         LockState lockState = lockStore.get(nodeRef);
@@ -387,14 +381,12 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
 
     private LockableAspectInterceptorTrait createTrait()
     {
-        return new LockableAspectInterceptorTrait()
-        {
+        return new LockableAspectInterceptorTrait() {
 
             @Override
             public LockState traitImplOf_getLockState(final NodeRef nodeRef)
             {
-                return AJExtender.run(new AJExtender.ExtensionBypass<LockState>()
-                {
+                return AJExtender.run(new AJExtender.ExtensionBypass<LockState>() {
                     @Override
                     public LockState run()
                     {

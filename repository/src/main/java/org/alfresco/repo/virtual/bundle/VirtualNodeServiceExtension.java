@@ -171,16 +171,56 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     @Override
     public Map<NodeRef, Map<QName, Serializable>> getPropertiesForNodeRefs(List<NodeRef> nodeRefs)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting properties for " + nodeRefs.size() + " virtual node references.");
+        }
 
+        List<NodeRef> physicalNodeRefs = new ArrayList<>();
         Map<NodeRef, Map<QName, Serializable>> result = new HashMap<>();
         for (NodeRef nodeRef : nodeRefs)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("  Processing node reference: " + nodeRef);
+            }
             Reference reference = Reference.fromNodeRef(nodeRef);
             if (reference != null)
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    It is a virtual node reference.");
+                }
+                
                 result.put(nodeRef, getVirtualProperties(reference));
             }
+            else
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    It is a physical node reference.");
+                }
+
+                physicalNodeRefs.add(nodeRef);
+            }
         }
+
+        if (!physicalNodeRefs.isEmpty())
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Retrieving properties for " + physicalNodeRefs.size() + " physical node references.");
+            }
+            
+            Map<NodeRef, Map<QName, Serializable>> physicalProperties = getTrait().getPropertiesForNodeRefs(physicalNodeRefs);
+            result.putAll(physicalProperties);
+        }   
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Returning properties for " + result.size() + " node references.");
+        }
+
         return result;
     }
 

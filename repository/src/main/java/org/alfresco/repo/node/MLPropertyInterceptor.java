@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -198,6 +199,45 @@ public class MLPropertyInterceptor implements MethodInterceptor
                         "   initial:   " + properties + "\n" +
                         "   converted: " + convertedProperties);
             }
+        }
+         else if (methodName.equals("getPropertiesForNodeRefs"))
+        {
+            List<NodeRef> nodeRefs = (List<NodeRef>) args[0];
+            
+            Map<NodeRef, Map<QName, Serializable>> propertyMap = (Map<NodeRef, Map<QName, Serializable>>) invocation.proceed();
+            Map<NodeRef, Map<QName, Serializable>> convertedPropertiesMap = new HashMap<>(propertyMap.size() * 2);
+            
+            for (Map.Entry<NodeRef, Map<QName, Serializable>> entry : propertyMap.entrySet())
+            {
+                NodeRef nodeRef = entry.getKey();
+                Map<QName, Serializable> properties = entry.getValue();
+                
+                NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
+                
+                Map<QName, Serializable> convertedPropsForNode = new HashMap<>(properties.size() * 2);
+            
+                for (Map.Entry<QName, Serializable> PropEntry : properties.entrySet())
+                {
+                    QName propertyQName = PropEntry.getKey();
+                    Serializable value = PropEntry.getValue();
+                    Serializable convertedValue = convertOutboundProperty(nodeRef, pivotNodeRef, propertyQName, value);
+                    // Add it to the return map
+                    convertedPropsForNode.put(propertyQName, convertedValue);
+                }
+
+                convertedPropertiesMap.put(nodeRef, convertedPropsForNode);
+                
+                // Done
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "Converted getProperties return value: \n" +
+                            "   initial:   " + properties + "\n" +
+                            "   converted: " + convertedPropsForNode);
+                }
+            }
+
+            ret = convertedPropertiesMap;
         }
         else if (methodName.equals("setProperties"))
         {

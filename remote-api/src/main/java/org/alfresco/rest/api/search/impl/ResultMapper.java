@@ -175,6 +175,11 @@ public class ResultMapper
         {
             String store = searchQuery.getScope() == null ? LIVE_NODES
                     : searchQuery.getScope().getLocations().get(0);
+            
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("Fetching nodes for store: " + store);
+            }
 
             List<Node> nodes = getNodes(store, results, params, mapUserInfo);
 
@@ -322,13 +327,27 @@ public class ResultMapper
         {
             try
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Fetching nodes for store: " + store + " with " + resultSet.length() + " results.");
+                }
+
                 switch (store)
                 {
                 case LIVE_NODES:
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Fetching live nodes or folders.");
+                    }
                     results.addAll(nodes.getFoldersOrDocuments(resultSet.getNodeRefs(), params.getInclude(),
                             mapUserInfo));
                     break;
                 case VERSIONS:
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Fetching versioned nodes or folders.");
+                        
+                    }
                     Map<NodeRef, Map<QName, Serializable>> properties = serviceRegistry.getNodeService()
                             .getPropertiesForNodeRefs(resultSet.getNodeRefs());
                     Map<NodeRef, Pair<NodeRef, String>> frozenNodeRefs = new HashMap<>();
@@ -384,6 +403,11 @@ public class ResultMapper
                     }
                     break;
                 case DELETED:
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Fetching deleted nodes or folders.");
+                    }
+
                     List<String> nodeIds = resultSet.getNodeRefs().stream().map(NodeRef::getId).collect(Collectors.toList());
                     try
                     {
@@ -400,17 +424,35 @@ public class ResultMapper
                     }
                     break;
                 }
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Fetched " + results.size() + " nodes for store: " + store);
+                }   
             }
             catch (PermissionDeniedException e)
             {
-                // logger.debug("Unable to access nodes: " + resultSet.toString());
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Unable to access nodes: " + resultSet.toString());
+                }
                 return null;
             }
 
             if (!results.isEmpty())
             {
-
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("ResultSet contained " + results.size() + " nodes for store: " + store);
+                }
                 results.forEach(aNode -> aNode.setLocation(store));
+            }
+            else
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("ResultSet contained no nodes for store: " + store);
+                }
             }
         }
 

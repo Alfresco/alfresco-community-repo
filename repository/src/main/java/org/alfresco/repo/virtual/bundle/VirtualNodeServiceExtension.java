@@ -191,7 +191,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                 {
                     logger.debug("    It is a virtual node reference.");
                 }
-                
+
                 result.put(nodeRef, getVirtualProperties(reference));
             }
             else
@@ -211,10 +211,10 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             {
                 logger.debug("Retrieving properties for " + physicalNodeRefs.size() + " physical node references.");
             }
-            
+
             Map<NodeRef, Map<QName, Serializable>> physicalProperties = getTrait().getPropertiesForNodeRefs(physicalNodeRefs);
             result.putAll(physicalProperties);
-        }   
+        }
 
         if (logger.isDebugEnabled())
         {

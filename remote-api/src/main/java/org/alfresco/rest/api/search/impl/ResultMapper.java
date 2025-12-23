@@ -175,8 +175,8 @@ public class ResultMapper
         {
             String store = searchQuery.getScope() == null ? LIVE_NODES
                     : searchQuery.getScope().getLocations().get(0);
-            
-            if(logger.isDebugEnabled())
+
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Fetching nodes for store: " + store);
             }
@@ -346,7 +346,7 @@ public class ResultMapper
                     if (logger.isDebugEnabled())
                     {
                         logger.debug("Fetching versioned nodes or folders.");
-                        
+
                     }
                     Map<NodeRef, Map<QName, Serializable>> properties = serviceRegistry.getNodeService()
                             .getPropertiesForNodeRefs(resultSet.getNodeRefs());
@@ -428,7 +428,7 @@ public class ResultMapper
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Fetched " + results.size() + " nodes for store: " + store);
-                }   
+                }
             }
             catch (PermissionDeniedException e)
             {
@@ -449,7 +449,7 @@ public class ResultMapper
             }
             else
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("ResultSet contained no nodes for store: " + store);
                 }

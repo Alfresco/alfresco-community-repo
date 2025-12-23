@@ -386,29 +386,37 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
         {
             ((AlfrescoSqlSessionFactoryBuilder) sqlSessionFactoryBuilder).setDbMetricsReporter(this.dbMetricsReporter);
         }
-        setFetchSizeAtRuntimeForMariaDB();
+        configureFetchSizeForDriver();
         this.sqlSessionFactory = buildSqlSessionFactory();
     }
 
-    private void setFetchSizeAtRuntimeForMariaDB()
+    /**
+     * Configures the fetchSize property based on the database driver.
+     * MariaDB driver requires fetchSize = 1
+     * MySQL driver requires fetchSize = Integer.MIN_VALUE
+     */
+    private void configureFetchSizeForDriver()
     {
+        if (this.configurationProperties == null)
+        {
+            this.configurationProperties = new Properties();
+        }
+        // default fetch size for MySQL
+        String fetchsize = "-2147483648";
+
         try (Connection con = dataSource.getConnection())
         {
-            if (con != null)
+            String driverName = con.getMetaData().getDriverName();
+            if (driverName != null && driverName.toLowerCase().contains("mariadb"))
             {
-                String driverName = con.getMetaData().getDriverName();
-                if (driverName.contains("MariaDB"))
-                {
-                    if (configurationProperties == null)
-                    {
-                        configurationProperties = new Properties();
-                    }
-                    configurationProperties.setProperty("db.fetchsize", "1");
-                }
+                fetchsize = "1";
+                System.out.println("Detected MariaDB JDBC driver, setting default fetchSize to 1");
             }
         }
         catch (Exception ignored)
         {}
+
+        this.configurationProperties.setProperty("db.fetchsize", fetchsize);
     }
 
     /**

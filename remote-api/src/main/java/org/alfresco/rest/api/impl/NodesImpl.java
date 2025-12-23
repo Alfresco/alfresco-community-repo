@@ -1104,14 +1104,14 @@ public class NodesImpl implements Nodes
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Getting full info for nodes" );
+            logger.debug("Getting full info for nodes");
         }
-        
+
         List<Node> results = new ArrayList<>(nodeRefs.size());
 
         if (mapUserInfo == null)
         {
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("    No user info map provided, initializing empty map");
@@ -1134,7 +1134,7 @@ public class NodesImpl implements Nodes
         {
             logger.debug("    Retrieving properties for node references");
         }
-        
+
         Map<NodeRef, Map<QName, Serializable>> properties = nodeService.getPropertiesForNodeRefs(nodeRefs);
 
         if (logger.isDebugEnabled())
@@ -1148,7 +1148,7 @@ public class NodesImpl implements Nodes
             {
                 logger.debug("    Processing node: " + nodeRef);
             }
-            
+
             Node node;
             Map<QName, Serializable> props = properties.get(nodeRef);
 
@@ -1383,7 +1383,7 @@ public class NodesImpl implements Nodes
                 {
                     logger.debug("    Retrieving association for node: " + nodeRef);
                 }
-                
+
                 // Ugh ... can we optimise this and return the actual assoc directly (via FileFolderService/GetChildrenCQ) ?
                 ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
 
@@ -1608,7 +1608,7 @@ public class NodesImpl implements Nodes
             {
                 logger.debug("No specific properties selected, returning all properties except excluded ones.");
             }
-            
+
             // return all properties
             selectedProperties = new ArrayList<>(nodeProps.size());
             for (QName propQName : nodeProps.keySet())
@@ -1625,7 +1625,7 @@ public class NodesImpl implements Nodes
             {
                 logger.debug("Specific properties selected: " + selectParam);
             }
-            
+
             // return selected properties
             selectedProperties = createQNames(selectParam, excludedProps);
         }
@@ -1662,7 +1662,7 @@ public class NodesImpl implements Nodes
                 {
                     logger.debug("All selected properties were null or empty after processing, setting props to null");
                 }
-                
+
                 props = null; // set to null so it doesn't show up as an empty object in the JSON response.
             }
         }

@@ -34,30 +34,28 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.ServiceException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
+import org.alfresco.service.ServiceException;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
- * This factory provides component redirection based on Store or Node References
- * passed into the component.
+ * This factory provides component redirection based on Store or Node References passed into the component.
  * 
- * Redirection is driven by StoreRef and NodeRef parameters. If none are given
- * in the method call, the default component is called. Otherwise, the store
- * type is extracted from these parameters and the appropriate component called
- * for the store type.
+ * Redirection is driven by StoreRef and NodeRef parameters. If none are given in the method call, the default component is called. Otherwise, the store type is extracted from these parameters and the appropriate component called for the store type.
  * 
  * An error is thrown if multiple store types are found.
  * 
  * @author David Caruana
  * 
- * @param <I> The component interface class
+ * @param <I>
+ *            The component interface class
  */
 public class StoreRedirectorProxyFactory<I> implements FactoryBean, InitializingBean
 {
@@ -138,8 +136,8 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+     * 
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     @SuppressWarnings("unchecked")
     public void afterPropertiesSet() throws ServiceException
     {
@@ -147,46 +145,42 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
         ParameterCheck.mandatory("Default Binding", defaultBinding);
 
         // Setup the redirector proxy
-        this.redirectorProxy = (I)Proxy.newProxyInstance(proxyInterface.getClassLoader(), new Class[] { proxyInterface, StoreRedirector.class }, new RedirectorInvocationHandler());
+        this.redirectorProxy = (I) Proxy.newProxyInstance(proxyInterface.getClassLoader(), new Class[]{proxyInterface, StoreRedirector.class}, new RedirectorInvocationHandler());
     }
 
-    
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.FactoryBean#getObject()
-     */
+     * 
+     * @see org.springframework.beans.factory.FactoryBean#getObject() */
     public I getObject()
     {
         return redirectorProxy;
     }
 
-    
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-     */
+     * 
+     * @see org.springframework.beans.factory.FactoryBean#getObjectType() */
     public Class getObjectType()
     {
         return proxyInterface;
     }
 
-    
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-     */
+     * 
+     * @see org.springframework.beans.factory.FactoryBean#isSingleton() */
     public boolean isSingleton()
     {
         return true;
     }
 
-    
     /**
      * Invocation handler that redirects based on store type
      */
     /* package */class RedirectorInvocationHandler implements InvocationHandler, StoreRedirector
     {
-        
+
         /* (non-Javadoc)
-         * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
-         */
+         * 
+         * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[]) */
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
         {
             // Handle StoreRedirector Interface
@@ -239,7 +233,7 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
                 {
                     logger.debug("Invoking method " + method + " on binding " + AopProxyUtils.ultimateTargetClass(binding).getName());
                 }
-                
+
                 // Invoke the appropriate binding
                 return method.invoke(binding, args);
             }
@@ -252,12 +246,12 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
                 throw e.getTargetException();
             }
         }
-        
 
         /**
          * Determine store type from array of method arguments
          * 
-         * @param args the method arguments
+         * @param args
+         *            the method arguments
          * @return the store type (or null, if one is not specified)
          */
         private StoreRef getStoreRef(Class[] argTypes, Object[] args)
@@ -268,7 +262,7 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
             {
                 return null;
             }
-            
+
             for (int i = 0; i < argTypes.length; i++)
             {
                 // Extract store type from argument, if store type provided
@@ -290,31 +284,29 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
                 {
                     // TODO: put some thought into the ramifications of allowing cross-store moves
                     // TODO: The test here would only have checked storerefs adjacent to each other
-//                    if (storeRef != null && !storeRef.equals(argStoreRef))
-//                    {
-//                        throw new ServiceException("Multiple store types are not supported - types " + storeRef + " and " + argStoreRef + " passed");
-//                    }
-//                    storeRef = argStoreRef;
+                    // if (storeRef != null && !storeRef.equals(argStoreRef))
+                    // {
+                    // throw new ServiceException("Multiple store types are not supported - types " + storeRef + " and " + argStoreRef + " passed");
+                    // }
+                    // storeRef = argStoreRef;
                     return argStoreRef;
                 }
             }
 
             return storeRef;
         }
-        
 
         /* (non-Javadoc)
-         * @see org.alfresco.repo.service.StoreRedirector#getSupportedStoreProtocols()
-         */
+         * 
+         * @see org.alfresco.repo.service.StoreRedirector#getSupportedStoreProtocols() */
         public Collection<String> getSupportedStoreProtocols()
         {
             return Collections.unmodifiableCollection(StoreRedirectorProxyFactory.this.redirectedProtocolBindings.keySet());
         }
 
-        
         /* (non-Javadoc)
-         * @see org.alfresco.repo.service.StoreRedirector#getSupportedStores()
-         */
+         * 
+         * @see org.alfresco.repo.service.StoreRedirector#getSupportedStores() */
         public Collection<StoreRef> getSupportedStores()
         {
             return Collections.unmodifiableCollection(StoreRedirectorProxyFactory.this.redirectedStoreBindings.keySet());

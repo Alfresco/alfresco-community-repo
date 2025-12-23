@@ -1642,6 +1642,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
      */
     private Map<Long, Map<QName, Serializable>> getPropertiesImpl(List<Pair<Long, NodeRef>> nodePairs) throws InvalidNodeRefException
     {
+        if (nodePairs == null || nodePairs.isEmpty())
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getPropertiesImpl: No node pairs provided, returning empty map");
+            }
+
+            return Collections.emptyMap();
+        }
+        
         List<Long> nodeIds = new ArrayList<>(nodePairs.size());
 
         for (Pair<Long, NodeRef> nodePair : nodePairs)
@@ -1650,6 +1660,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
 
         Map<Long, Map<QName, Serializable>> nodeProperties = nodeDAO.getNodeProperties(nodeIds);
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getPropertiesImpl: Retrieved properties for " + nodeProperties.size() + " nodes");
+        }
+
         // done
         return nodeProperties;
     }
@@ -1658,26 +1674,57 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     @Override
     public Map<NodeRef, Map<QName, Serializable>> getPropertiesForNodeRefs(List<NodeRef> nodeRefs) throws InvalidNodeRefException
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getPropertiesForNodeRefs: Called with " + (nodeRefs == null ? 0 : nodeRefs.size()) + " nodeRefs");
+        }
+        
         if (nodeRefs == null || nodeRefs.isEmpty())
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getPropertiesForNodeRefs: No nodeRefs provided, returning empty map");
+            }
+
             return Collections.emptyMap();
         }
 
         // make a copy so we can modify if needed
         nodeRefs = new ArrayList<>(nodeRefs);
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getPropertiesForNodeRefs: Checking permissions for " + nodeRefs.size() + " nodeRefs");
+        }
+
         // check permissions per node (since we can't do this in config). Remove nodes that the user has no permission to see
         nodeRefs.removeIf(nodeRef -> permissionService.hasPermission(nodeRef, PermissionService.READ_PROPERTIES) != AccessStatus.ALLOWED);
+      
         // if no nodes left, return empty map
         if (nodeRefs.isEmpty())
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getPropertiesForNodeRefs: No nodeRefs remain after permission check, returning empty map");
+            }
+
             return Collections.emptyMap();
         }
 
         // Force lookup of nodes across all stores to avoid issues with mixed store lists
         List<Pair<Long, NodeRef>> nodePairs = nodeDAO.getNodePairs(null, nodeRefs);
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getPropertiesForNodeRefs: Retrieved " + nodePairs.size() + " node pairs after permission check");
+        }
+
         Map<Long, Map<QName, Serializable>> propertiesMappedById = getPropertiesImpl(nodePairs);
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getPropertiesForNodeRefs: Retrieved properties for " + propertiesMappedById.size() + " nodes");
+        }
 
         Map<NodeRef, Map<QName, Serializable>> propertiesMappedByNodeRef = new HashMap<>(nodePairs.size());
         for (Pair<Long, NodeRef> nodePair : nodePairs)
@@ -1685,6 +1732,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             Long nodeId = nodePair.getFirst();
             NodeRef nodeRef = nodePair.getSecond();
             propertiesMappedByNodeRef.put(nodeRef, propertiesMappedById.get(nodeId));
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getPropertiesForNodeRefs: Mapped properties to NodeRefs for " + propertiesMappedByNodeRef.size() + " nodes");
         }
 
         return propertiesMappedByNodeRef;

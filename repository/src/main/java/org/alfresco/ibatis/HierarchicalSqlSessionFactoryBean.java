@@ -391,9 +391,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
     }
 
     /**
-     * Configures the fetchSize property based on the database driver.
-     * MariaDB driver requires fetchSize = 1
-     * MySQL driver requires fetchSize = Integer.MIN_VALUE
+     * Configures the fetchSize property based on the database driver.MariaDB driver requires fetchSize = 1, MySQL driver requires fetchSize = Integer.MIN_VALUE
      */
     private void configureFetchSizeForDriver()
     {

@@ -1102,37 +1102,93 @@ public class NodesImpl implements Nodes
     @Override
     public List<Node> getFoldersOrDocuments(final List<NodeRef> nodeRefs, List<String> includeParam, Map<String, UserInfo> mapUserInfo)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting full info for nodes" );
+        }
+        
         List<Node> results = new ArrayList<>(nodeRefs.size());
 
         if (mapUserInfo == null)
         {
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("    No user info map provided, initializing empty map");
+            }
+
             mapUserInfo = new HashMap<>(2);
         }
 
         if (includeParam == null)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("    No included parameters specified, defaulting to empty list");
+            }
+
             includeParam = Collections.emptyList();
         }
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("    Retrieving properties for node references");
+        }
+        
         Map<NodeRef, Map<QName, Serializable>> properties = nodeService.getPropertiesForNodeRefs(nodeRefs);
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("    Retrieved properties for node references, processing each node." + properties.size() + " nodes found.");
+        }
 
         for (NodeRef nodeRef : properties.keySet())
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("    Processing node: " + nodeRef);
+            }
+            
             Node node;
             Map<QName, Serializable> props = properties.get(nodeRef);
+
+            if (logger.isDebugEnabled() && (props != null && !props.isEmpty()))
+            {
+                logger.debug("    Retrieved properties for node");
+            }
 
             PathInfo pathInfo = null;
             if (includeParam.contains(PARAM_INCLUDE_PATH))
             {
                 ChildAssociationRef archivedParentAssoc = (ChildAssociationRef) props.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
                 pathInfo = lookupPathInfo(nodeRef, archivedParentAssoc);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include path info for node. PathInfo: " + pathInfo);
+                }
             }
 
             QName nodeTypeQName = getNodeType(nodeRef);
 
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("    Node type for node is: " + nodeTypeQName);
+            }
+
             NodeRef parentNodeRef = getParentNodeRef(nodeRef);
 
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("    Parent node ref for node is: " + parentNodeRef);
+            }
+
             Type type = getType(nodeTypeQName, nodeRef);
+
+            if (logger.isDebugEnabled() && type != null)
+            {
+                logger.debug("    Determined type for node is: " + type);
+            }
 
             if (type == null)
             {
@@ -1141,14 +1197,29 @@ public class NodesImpl implements Nodes
                 node = new Node(nodeRef, parentNodeRef, props, mapUserInfo, sr);
                 node.setIsFolder(false);
                 node.setIsFile(false);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Generic Node for node: " + nodeRef + " as type is unknown");
+                }
             }
             else if (type.equals(Type.DOCUMENT))
             {
                 node = new Document(nodeRef, parentNodeRef, props, mapUserInfo, sr);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Document node: " + nodeRef);
+                }
             }
             else if (type.equals(Type.FOLDER))
             {
                 node = new Folder(nodeRef, parentNodeRef, props, mapUserInfo, sr);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Folder node: " + nodeRef);
+                }
             }
             else
             {
@@ -1167,18 +1238,33 @@ public class NodesImpl implements Nodes
             {
                 aspects = nodeService.getAspects(nodeRef);
                 node.setAspectNames(mapFromNodeAspects(aspects, EXCLUDED_NS, EXCLUDED_ASPECTS));
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include aspect names for node: " + nodeRef);
+                }
             }
 
             if (includeParam.contains(PARAM_INCLUDE_ISLINK))
             {
                 boolean isLink = isSubClass(nodeTypeQName, ContentModel.TYPE_LINK);
                 node.setIsLink(isLink);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include isLink=" + isLink + " for node: " + nodeRef);
+                }
             }
 
             if (includeParam.contains(PARAM_INCLUDE_ISLOCKED))
             {
                 boolean isLocked = isLocked(nodeRef, aspects);
                 node.setIsLocked(isLocked);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include isLocked=" + isLocked + " for node: " + nodeRef);
+                }
             }
 
             // TODO: Optimize to batch get favorites for all nodes
@@ -1186,11 +1272,20 @@ public class NodesImpl implements Nodes
             {
                 boolean isFavorite = isFavorite(nodeRef);
                 node.setIsFavorite(isFavorite);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include isFavorite=" + isFavorite + " for node: " + nodeRef);
+                }
             }
 
             // TODO: Optimize to batch get allowable operations for all nodes
             if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Calculating allowable operations for node: " + nodeRef);
+                }
                 // note: refactor when requirements change
                 Map<String, String> mapPermsToOps = new HashMap<>(3);
                 mapPermsToOps.put(PermissionService.DELETE, OP_DELETE);
@@ -1226,6 +1321,11 @@ public class NodesImpl implements Nodes
             // TODO: Optimize to batch get permissions for all nodes
             if (includeParam.contains(PARAM_INCLUDE_PERMISSIONS))
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Retrieving permissions for node: " + nodeRef);
+                }
+
                 Boolean inherit = permissionService.getInheritParentPermissions(nodeRef);
 
                 List<NodePermissions.NodePermission> inheritedPerms = new ArrayList<>(5);
@@ -1253,6 +1353,11 @@ public class NodesImpl implements Nodes
                 catch (AccessDeniedException ade)
                 {
                     // ignore - ie. denied access to retrieve permissions, eg. non-admin on root (Company Home)
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("    AccessDeniedException while retrieving permissions for node: " + nodeRef);
+                    }
+
                     allowRetrievePermission = false;
                 }
 
@@ -1263,12 +1368,22 @@ public class NodesImpl implements Nodes
                 {
                     NodePermissions nodePerms = new NodePermissions(inherit, inheritedPerms, setDirectlyPerms, settablePerms);
                     node.setPermissions(nodePerms);
+
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("    Added permissions for node: " + nodeRef);
+                    }
                 }
             }
 
             // TODO: Optimize to batch get associations for all nodes
             if (includeParam.contains(PARAM_INCLUDE_ASSOCIATION))
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Retrieving association for node: " + nodeRef);
+                }
+                
                 // Ugh ... can we optimise this and return the actual assoc directly (via FileFolderService/GetChildrenCQ) ?
                 ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
 
@@ -1304,6 +1419,10 @@ public class NodesImpl implements Nodes
             // TODO: Optimize to batch get definitions for all nodes
             if (includeParam.contains(PARAM_INCLUDE_DEFINITION))
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include definition for node: " + nodeRef);
+                }
                 ClassDefinition classDefinition = classDefinitionMapper.fromDictionaryClassDefinition(getTypeDefinition(nodeRef), dictionaryService);
                 node.setDefinition(classDefinition);
             }
@@ -1311,7 +1430,22 @@ public class NodesImpl implements Nodes
             node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
             node.setPath(pathInfo);
 
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Set node type and path info for node: " + nodeRef + " NodeType: " + nodeTypeQName.toPrefixString(namespaceService) + " PathInfo: " + pathInfo);
+            }
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Completed processing for node: " + nodeRef);
+            }
+
             results.add(node);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Completed getting full info for nodes. " + results.size() + " nodes processed.");
         }
 
         return results;
@@ -1470,6 +1604,11 @@ public class NodesImpl implements Nodes
 
         if ((selectParam.size() == 0) || selectParam.contains(PARAM_INCLUDE_PROPERTIES))
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No specific properties selected, returning all properties except excluded ones.");
+            }
+            
             // return all properties
             selectedProperties = new ArrayList<>(nodeProps.size());
             for (QName propQName : nodeProps.keySet())
@@ -1482,6 +1621,11 @@ public class NodesImpl implements Nodes
         }
         else
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Specific properties selected: " + selectParam);
+            }
+            
             // return selected properties
             selectedProperties = createQNames(selectParam, excludedProps);
         }
@@ -1514,6 +1658,11 @@ public class NodesImpl implements Nodes
             }
             if (props.isEmpty())
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("All selected properties were null or empty after processing, setting props to null");
+                }
+                
                 props = null; // set to null so it doesn't show up as an empty object in the JSON response.
             }
         }

@@ -122,8 +122,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private static final String KEY_LOST_NODE_PAIRS = AbstractNodeDAOImpl.class.getName() + ".lostNodePairs";
     private static final String KEY_DELETED_ASSOCS = AbstractNodeDAOImpl.class.getName() + ".deletedAssocs";
 
-    protected Log logger = LogFactory.getLog(getClass());
-    private Log loggerPaths = LogFactory.getLog(getClass().getName() + ".paths");
+    protected Log logger = LogFactory.getLog(AbstractNodeDAOImpl.class);
+    private Log loggerPaths = LogFactory.getLog(AbstractNodeDAOImpl.class.getName() + ".paths");
 
     private NodePropertyHelper nodePropertyHelper;
     private UpdateTransactionListener updateTransactionListener = new UpdateTransactionListener();
@@ -1150,6 +1150,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     @Override
     public List<Pair<Long, NodeRef>> getNodePairs(StoreRef storeRef, List<NodeRef> nodeRefs)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting node pairs for " + nodeRefs.size() + " nodeRefs" +
+                    (storeRef != null ? " in store " + storeRef : ""));
+        }
+
         List<Pair<Long, NodeRef>> results = new ArrayList<>(nodeRefs.size());
         SortedSet<Long> uncachedNodeIds = new TreeSet<>();
 
@@ -1158,17 +1164,32 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                         .map(NodeEntity::new)
                         .collect(Collectors.toList()));
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Cache lookup returned " + nodePairs.size() + " node pairs");
+        }
+
         for (Pair<Long, Node> nodePair : nodePairs)
         {
             // Check it
             if (nodePair != null && nodePair.getSecond().getDeleted(qnameDAO))
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Node " + nodePair.getFirst() + " is marked deleted in cache");
+                }
+
                 // If the nodeRef is truly missing/deleted from the db
                 // it will be filtered out when we query against the uncachedNodeIds later
                 uncachedNodeIds.add(nodePair.getFirst());
             }
             else if (nodePair != null)
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Node " + nodePair.getFirst() + " found in cache");
+                }
+
                 results.add(nodePair.getSecond().getNodePair());
             }
         }
@@ -1181,37 +1202,82 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Existing UUIDs from cache: " + existingUuids.size());
+        }
+
         SortedSet<String> missingUuids = nodeRefs.stream()
                 .map(NodeRef::getId)
                 .filter(refId -> !existingUuids.contains(refId))
                 .collect(Collectors.toCollection(TreeSet::new));
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Missing UUIDs to check in DB: " + missingUuids.size());
+        }
+
         if (!uncachedNodeIds.isEmpty())
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Checking " + uncachedNodeIds.size() + " uncached node IDs in DB");
+            }
+
             // The cache says that these nodes are not there or are deleted.
             // We double check by going to the DB
             List<Node> dbNodes = selectNodesByIds(uncachedNodeIds);
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("DB lookup returned " + dbNodes.size() + " nodes");
+            }
 
             // Also check the missing UUIDs
             if (missingUuids != null && !missingUuids.isEmpty())
             {
                 if (storeRef != null)
                 {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Also checking " + missingUuids.size() + " missing UUIDs in store " + storeRef);
+                    }
+
                     StoreEntity store = getStoreNotNull(storeRef);
 
                     dbNodes.addAll(selectNodesByUuids(store.getId(), missingUuids));
                 }
                 else
                 {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Also checking " + missingUuids.size() + " missing UUIDs across all stores");
+                    }
+
                     dbNodes.addAll(selectNodesByUuids(missingUuids));
                 }
             }
 
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Total DB lookup returned " + dbNodes.size() + " nodes after UUID check");
+            }
+
             for (Node dbNode : dbNodes)
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Processing DB node: " + dbNode);
+                }
+
                 Long nodeId = dbNode.getId();
                 if (dbNode.getDeleted(qnameDAO))
                 {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Node " + nodeId + " is marked deleted in DB");
+                    }
+
                     // We may have reached this deleted node via an invalid association; trigger a post transaction prune of
                     // any associations that point to this deleted one
                     pruneDanglingAssocs(nodeId);
@@ -1223,12 +1289,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     {
                         logger.debug("Repairing stale cache entry for node: " + nodeId);
                     }
+
                     invalidateNodeCaches(nodeId);
                     dbNode.lock(); // Prevent unexpected edits of values going into the cache
                     nodesCache.setValue(nodeId, dbNode);
                     results.add(dbNode.getNodePair());
                 }
             }
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Returning " + results.size() + " node pairs");
         }
 
         return results;
@@ -2459,10 +2531,24 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     {
         Map<Long, Map<QName, Serializable>> props = getNodePropertiesCached(nodeIds);
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Fetched cached properties for Nodes: \n" +
+                    "   Node Ids: " + nodeIds + "\n" +
+                    "   Props:    " + props);
+        }
+
         // Create a shallow copy to allow additions
         props = new HashMap<>(props);
 
         List<Node> nodes = getNodesNotNull(nodeIds, false);
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Fetched nodes for Nodes: \n" +
+                    "   Node Ids: " + nodeIds + "\n" +
+                    "   Nodes:    " + nodes);
+        }
 
         for (Node node : nodes)
         {
@@ -2496,6 +2582,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                         "   Node:  " + node.getId() + "\n" +
                         "   Props: " + nodeProps);
             }
+
             props.put(node.getId(), nodeProps);
         }
 

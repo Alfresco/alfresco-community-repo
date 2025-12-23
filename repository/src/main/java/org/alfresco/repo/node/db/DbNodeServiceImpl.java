@@ -1651,7 +1651,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
             return Collections.emptyMap();
         }
-        
+
         List<Long> nodeIds = new ArrayList<>(nodePairs.size());
 
         for (Pair<Long, NodeRef> nodePair : nodePairs)
@@ -1678,7 +1678,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             logger.debug("getPropertiesForNodeRefs: Called with " + (nodeRefs == null ? 0 : nodeRefs.size()) + " nodeRefs");
         }
-        
+
         if (nodeRefs == null || nodeRefs.isEmpty())
         {
             if (logger.isDebugEnabled())
@@ -1699,7 +1699,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         // check permissions per node (since we can't do this in config). Remove nodes that the user has no permission to see
         nodeRefs.removeIf(nodeRef -> permissionService.hasPermission(nodeRef, PermissionService.READ_PROPERTIES) != AccessStatus.ALLOWED);
-      
+
         // if no nodes left, return empty map
         if (nodeRefs.isEmpty())
         {

@@ -33,6 +33,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -43,23 +48,16 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * A method interceptor to clean up node ref properties as they are passed in and out of the node service. For
- * getProperty and getProperies calls invalid node refs are removed from the returned set (they appear to have be
- * cleaned up). For setProperty and setProperties calls invalid node refs are removed and thus not set. It only
- * considers properties of type d:noderef.
+ * A method interceptor to clean up node ref properties as they are passed in and out of the node service. For getProperty and getProperies calls invalid node refs are removed from the returned set (they appear to have be cleaned up). For setProperty and setProperties calls invalid node refs are removed and thus not set. It only considers properties of type d:noderef.
  * 
  * @author andyh
  */
 public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
 {
     private static final Log logger = LogFactory.getLog(NodeRefPropertyMethodInterceptor.class);
-    
+
     private boolean filterOnGet = true;
 
     private boolean filterOnSet = true;
@@ -241,23 +239,23 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
             {
                 if (filterOnGet)
                 {
-                    //Not sure why this is here but it is refereced in the original code
+                    // Not sure why this is here but it is refereced in the original code
                     List<NodeRef> nodeRefs = (List<NodeRef>) args[0];
 
                     Map<NodeRef, Map<QName, Serializable>> propertyMap = (Map<NodeRef, Map<QName, Serializable>>) invocation.proceed();
-                    
+
                     if (propertyMap == null)
                     {
                         return null;
                     }
-                    
+
                     Map<NodeRef, Map<QName, Serializable>> convertedProperties = new HashMap<>(propertyMap.size() * 2);
-                    
+
                     for (Map.Entry<NodeRef, Map<QName, Serializable>> entry : propertyMap.entrySet())
                     {
                         NodeRef nodeRef = entry.getKey();
                         Map<QName, Serializable> properties = entry.getValue();
-                        
+
                         Map<QName, Serializable> convertedNodeProperties = new HashMap<>(properties.size() * 2);
                         for (Map.Entry<QName, Serializable> propEntry : properties.entrySet())
                         {
@@ -341,11 +339,12 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
     }
 
     /**
-     * Remove unknown node ref values Remove unknowen categories - the node will be removed if it does exist and it is
-     * not a category
+     * Remove unknown node ref values Remove unknowen categories - the node will be removed if it does exist and it is not a category
      * 
-     * @param propertyQName QName
-     * @param inboundValue Serializable
+     * @param propertyQName
+     *            QName
+     * @param inboundValue
+     *            Serializable
      * @return Serializable
      */
     private Serializable getValue(QName propertyQName, Serializable inboundValue)

@@ -47,6 +47,7 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import org.alfresco.util.resource.HierarchicalResourceLoader;
 
 /**

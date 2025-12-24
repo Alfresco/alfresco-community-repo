@@ -405,10 +405,9 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
         try (Connection con = dataSource.getConnection())
         {
             String driverName = con.getMetaData().getDriverName();
-            if (driverName != null && driverName.toLowerCase().contains("mariadb"))
+            if (driverName != null && driverName.contains("MariaDB"))
             {
                 fetchsize = "1";
-                System.out.println("Detected MariaDB JDBC driver, setting default fetchSize to 1");
             }
         }
         catch (Exception ignored)

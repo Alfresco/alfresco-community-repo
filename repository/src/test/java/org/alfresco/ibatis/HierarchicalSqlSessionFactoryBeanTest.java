@@ -25,22 +25,28 @@
  */
 package org.alfresco.ibatis;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.util.AbstractCollection;
-import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.AbstractList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.TreeSet;
-
+import java.util.Properties;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import org.alfresco.util.resource.HierarchicalResourceLoader;
+import javax.sql.DataSource;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @see HierarchicalSqlSessionFactoryBean
@@ -192,6 +198,49 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         {
             // Expected
         }
+    }
+
+    public void testConfigureFetchSizeForMariaDB() throws Exception
+    {
+        DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+        HierarchicalSqlSessionFactoryBean bean = createBeanWithMocks(metaData);
+
+        when(metaData.getDriverName()).thenReturn("MariaDB Connector/J");
+        Properties props = new Properties();
+        bean.setConfigurationProperties(props);
+
+        bean.afterPropertiesSet();
+
+        assertEquals("1", props.getProperty("db.fetchsize"));
+    }
+
+    public void testConfigureFetchSizeForMySQL() throws Exception
+    {
+        DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+        HierarchicalSqlSessionFactoryBean bean = createBeanWithMocks(metaData);
+
+        when(metaData.getDriverName()).thenReturn("MySQL Connector/J");
+        Properties props = new Properties();
+        bean.setConfigurationProperties(props);
+
+        bean.afterPropertiesSet();
+
+        assertEquals("-2147483648", props.getProperty("db.fetchsize"));
+    }
+
+    private HierarchicalSqlSessionFactoryBean createBeanWithMocks(DatabaseMetaData metaData) throws Exception
+    {
+        HierarchicalSqlSessionFactoryBean bean = new HierarchicalSqlSessionFactoryBean();
+        DataSource dataSource = mock(DataSource.class);
+        Connection connection = mock(Connection.class);
+
+        bean.setDataSource(dataSource);
+        bean.setResourceLoader(mock(HierarchicalResourceLoader.class));
+        bean.setSqlSessionFactoryBuilder(mock(SqlSessionFactoryBuilder.class));
+
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.getMetaData()).thenReturn(metaData);
+        return bean;
     }
 
     /**

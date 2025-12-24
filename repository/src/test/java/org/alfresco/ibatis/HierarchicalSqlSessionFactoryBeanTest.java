@@ -25,15 +25,20 @@
  */
 package org.alfresco.ibatis;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.AbstractCollection;
-import java.util.ArrayList;
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.TreeSet;
 import java.util.Properties;
+import java.util.TreeSet;
+import javax.sql.DataSource;
+
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,10 +48,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.alfresco.util.resource.HierarchicalResourceLoader;
-import javax.sql.DataSource;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @see HierarchicalSqlSessionFactoryBean

@@ -45,6 +45,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -65,12 +67,12 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
     private static final String QUERY_ABSTRACTLIST = "org.alfresco.ibatis.abstractlist." + AbstractList.class.getName().replace(".", "_");
     private static final String QUERY_TREESET = "org.alfresco.ibatis.treeset." + TreeSet.class.getName().replace(".", "_");
 
-    private static final Log logger = LogFactory.getLog(HierarchicalSqlSessionFactoryBeanTest.class);
+    private static final Log LOGGER = LogFactory.getLog(HierarchicalSqlSessionFactoryBeanTest.class);
 
     private ClassPathXmlApplicationContext ctx;
     private TestDAO testDao;
 
-    @Override
+    @Before
     public void setUp() throws Exception
     {
         testDao = new TestDAO();
@@ -79,7 +81,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         testDao.setPropTwo("prop-two");
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception
     {
         try
@@ -91,7 +93,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         }
         catch (Throwable e)
         {
-            logger.error("Failed to neatly close application context", e);
+            LOGGER.error("Failed to neatly close application context", e);
         }
     }
 
@@ -111,7 +113,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
             }
             catch (Throwable e)
             {
-                logger.error("Failed to neatly close application context", e);
+                LOGGER.error("Failed to neatly close application context", e);
             }
         }
         ctx = new ClassPathXmlApplicationContext("ibatis/hierarchy-test/hierarchy-test-context.xml");

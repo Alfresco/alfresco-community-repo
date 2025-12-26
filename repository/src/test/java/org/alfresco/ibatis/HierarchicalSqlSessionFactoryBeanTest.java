@@ -25,6 +25,9 @@
  */
 package org.alfresco.ibatis;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.AbstractCollection;
@@ -46,8 +49,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import org.alfresco.util.resource.HierarchicalResourceLoader;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @see HierarchicalSqlSessionFactoryBean
@@ -202,9 +203,10 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
     }
 
     /**
-    * Test that MariaDB driver is detected and fetch size is set to 1
-    */
-    public void testConfigureFetchSizeForMariaDBDriver () throws Exception {
+     * Test that MariaDB driver is detected and fetch size is set to 1
+     */
+    public void testConfigureFetchSizeForMariaDBDriver () throws Exception
+    {
         // create mock objects
         DataSource mockDataSource = mock(DataSource.class);
         Connection mockConnection = mock(Connection.class);
@@ -237,7 +239,8 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
     /**
      * Test that MySQL driver is detected and fetch size is set to Integer.MIN_VALUE
      */
-    public void testConfigureFetchSizeForMySQLDriver () throws Exception {
+    public void testConfigureFetchSizeForMySQLDriver () throws Exception
+    {
         // create mock objects
         DataSource mockDataSource = mock(DataSource.class);
         Connection mockConnection = mock(Connection.class);
@@ -270,7 +273,8 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
     /**
      * Test that existing properties are preserved when setting fetchsize
      */
-    public void testConfigureFetchSizePreservesExistingProperties () throws Exception {
+    public void testConfigureFetchSizePreservesExistingProperties () throws Exception
+    {
         // create mock objects
         DataSource mockDataSource = mock(DataSource.class);
         Connection mockConnection = mock(Connection.class);

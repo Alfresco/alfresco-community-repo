@@ -25,9 +25,6 @@
  */
 package org.alfresco.ibatis;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.AbstractCollection;
@@ -45,10 +42,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import org.alfresco.util.resource.HierarchicalResourceLoader;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @see HierarchicalSqlSessionFactoryBean
@@ -202,47 +201,111 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         }
     }
 
-    public void testConfigureFetchSizeForMariaDB() throws Exception
-    {
-        DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-        HierarchicalSqlSessionFactoryBean bean = createBeanWithMocks(metaData);
+    /**
+    * Test that MariaDB driver is detected and fetch size is set to 1
+    */
+    public void testConfigureFetchSizeForMariaDBDriver () throws Exception {
+        // create mock objects
+        DataSource mockDataSource = mock(DataSource.class);
+        Connection mockConnection = mock(Connection.class);
+        DatabaseMetaData mockMetaData = mock(DatabaseMetaData.class);
 
-        when(metaData.getDriverName()).thenReturn("MariaDB Connector/J");
-        Properties props = new Properties();
-        bean.setConfigurationProperties(props);
+        // Setup mock behaviour
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.getMetaData()).thenReturn(mockMetaData);
+        when(mockMetaData.getDriverName()).thenReturn("MariaDB Connector/J");
 
-        bean.afterPropertiesSet();
-
-        assertEquals("1", props.getProperty("db.fetchsize"));
-    }
-
-    public void testConfigureFetchSizeForMySQL() throws Exception
-    {
-        DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-        HierarchicalSqlSessionFactoryBean bean = createBeanWithMocks(metaData);
-
-        when(metaData.getDriverName()).thenReturn("MySQL Connector/J");
-        Properties props = new Properties();
-        bean.setConfigurationProperties(props);
-
-        bean.afterPropertiesSet();
-
-        assertEquals("-2147483648", props.getProperty("db.fetchsize"));
-    }
-
-    private HierarchicalSqlSessionFactoryBean createBeanWithMocks(DatabaseMetaData metaData) throws Exception
-    {
+        // Create bean set datasource
         HierarchicalSqlSessionFactoryBean bean = new HierarchicalSqlSessionFactoryBean();
-        DataSource dataSource = mock(DataSource.class);
-        Connection connection = mock(Connection.class);
+        bean.setDataSource(mockDataSource);
 
-        bean.setDataSource(dataSource);
-        bean.setResourceLoader(mock(HierarchicalResourceLoader.class));
-        bean.setSqlSessionFactoryBuilder(mock(SqlSessionFactoryBuilder.class));
+        // Use reflection to call configureFetchSizeForDriver method
+        java.lang.reflect.Method method = HierarchicalSqlSessionFactoryBean.class.getDeclaredMethod("configureFetchSizeForDriver");
+        method.setAccessible(true);
+        method.invoke(bean);
 
-        when(dataSource.getConnection()).thenReturn(connection);
-        when(connection.getMetaData()).thenReturn(metaData);
-        return bean;
+        // Get configuration properties using reflection
+        java.lang.reflect.Field field = HierarchicalSqlSessionFactoryBean.class.getDeclaredField("configurationProperties");
+        field.setAccessible(true);
+        Properties props = (Properties) field.get(bean);
+
+        // Verify fetchSize is set to 1 for MariaDB driver
+        assertNotNull(props);
+        assertEquals("Fetch size for MariaDB driver should be 1", "1", props.getProperty("db.fetchsize"));
+    }
+
+    /**
+     * Test that MySQL driver is detected and fetch size is set to Integer.MIN_VALUE
+     */
+    public void testConfigureFetchSizeForMySQLDriver () throws Exception {
+        // create mock objects
+        DataSource mockDataSource = mock(DataSource.class);
+        Connection mockConnection = mock(Connection.class);
+        DatabaseMetaData mockMetaData = mock(DatabaseMetaData.class);
+
+        // Setup mock behaviour
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.getMetaData()).thenReturn(mockMetaData);
+        when(mockMetaData.getDriverName()).thenReturn("MySQL Connector/J");
+
+        // Create bean set datasource
+        HierarchicalSqlSessionFactoryBean bean = new HierarchicalSqlSessionFactoryBean();
+        bean.setDataSource(mockDataSource);
+
+        // Use reflection to call configureFetchSizeForDriver method
+        java.lang.reflect.Method method = HierarchicalSqlSessionFactoryBean.class.getDeclaredMethod("configureFetchSizeForDriver");
+        method.setAccessible(true);
+        method.invoke(bean);
+
+        // Get configuration properties using reflection
+        java.lang.reflect.Field field = HierarchicalSqlSessionFactoryBean.class.getDeclaredField("configurationProperties");
+        field.setAccessible(true);
+        Properties props = (Properties) field.get(bean);
+
+        // Verify fetchSize is set to Integer.MIN_VALUE for MySQL driver
+        assertNotNull(props);
+        assertEquals("Fetch size for MySQL driver should be Integer.MIN_VALUE", String.valueOf(Integer.MIN_VALUE), props.getProperty("db.fetchsize"));
+    }
+
+    /**
+     * Test that existing properties are preserved when setting fetchsize
+     */
+    public void testConfigureFetchSizePreservesExistingProperties () throws Exception {
+        // create mock objects
+        DataSource mockDataSource = mock(DataSource.class);
+        Connection mockConnection = mock(Connection.class);
+        DatabaseMetaData mockMetaData = mock(DatabaseMetaData.class);
+
+        // Setup mock behaviour
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.getMetaData()).thenReturn(mockMetaData);
+        when(mockMetaData.getDriverName()).thenReturn("MariaDB Connector/J");
+
+        // Create bean set datasource
+        HierarchicalSqlSessionFactoryBean bean = new HierarchicalSqlSessionFactoryBean();
+        bean.setDataSource(mockDataSource);
+
+        // Set Existing properties
+        Properties existingProps = new Properties();
+        existingProps.setProperty("existing.property", "existing.value");
+        existingProps.setProperty("another.property", "another.value");
+        bean.setConfigurationProperties(existingProps);
+
+        // Use reflection to call configureFetchSizeForDriver method
+        java.lang.reflect.Method method = HierarchicalSqlSessionFactoryBean.class.getDeclaredMethod("configureFetchSizeForDriver");
+        method.setAccessible(true);
+        method.invoke(bean);
+
+        // Get configuration properties using reflection
+        java.lang.reflect.Field field = HierarchicalSqlSessionFactoryBean.class.getDeclaredField("configurationProperties");
+        field.setAccessible(true);
+        Properties props = (Properties) field.get(bean);
+
+        // Verify existing properties are preserved
+        assertNotNull(props);
+        assertEquals("existing.value", props.getProperty("existing.property"));
+        assertEquals("another.value", props.getProperty("another.property"));
+        assertEquals("FetchSize for MariaDB driver should be 1", "1", props.getProperty("db.fetchsize"));
     }
 
     /**

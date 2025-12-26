@@ -268,6 +268,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         assertNotNull(props);
         assertEquals("Fetch size for MySQL driver should be Integer.MIN_VALUE", String.valueOf(Integer.MIN_VALUE), props.getProperty("db.fetchsize"));
     }
+
     /**
      * Helper class that iBatis will use in the test mappings
      * 

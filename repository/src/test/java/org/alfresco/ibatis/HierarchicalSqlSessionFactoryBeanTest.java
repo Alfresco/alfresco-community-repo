@@ -205,7 +205,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
     /**
      * Test that MariaDB driver is detected and fetch size is set to 1
      */
-    public void testConfigureFetchSizeForMariaDBDriver () throws Exception
+    public void testConfigureFetchSizeForMariaDBDriver() throws Exception
     {
         // create mock objects
         DataSource mockDataSource = mock(DataSource.class);
@@ -239,7 +239,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
     /**
      * Test that MySQL driver is detected and fetch size is set to Integer.MIN_VALUE
      */
-    public void testConfigureFetchSizeForMySQLDriver () throws Exception
+    public void testConfigureFetchSizeForMySQLDriver() throws Exception
     {
         // create mock objects
         DataSource mockDataSource = mock(DataSource.class);
@@ -273,7 +273,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
     /**
      * Test that existing properties are preserved when setting fetchsize
      */
-    public void testConfigureFetchSizePreservesExistingProperties () throws Exception
+    public void testConfigureFetchSizePreservesExistingProperties() throws Exception
     {
         // create mock objects
         DataSource mockDataSource = mock(DataSource.class);

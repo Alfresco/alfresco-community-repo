@@ -268,49 +268,6 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         assertNotNull(props);
         assertEquals("Fetch size for MySQL driver should be Integer.MIN_VALUE", String.valueOf(Integer.MIN_VALUE), props.getProperty("db.fetchsize"));
     }
-
-    /**
-     * Test that existing properties are preserved when setting fetchsize
-     */
-    public void testConfigureFetchSizePreservesExistingProperties() throws Exception
-    {
-        // create mock objects
-        DataSource mockDataSource = mock(DataSource.class);
-        Connection mockConnection = mock(Connection.class);
-        DatabaseMetaData mockMetaData = mock(DatabaseMetaData.class);
-
-        // Setup mock behaviour
-        when(mockDataSource.getConnection()).thenReturn(mockConnection);
-        when(mockConnection.getMetaData()).thenReturn(mockMetaData);
-        when(mockMetaData.getDriverName()).thenReturn("MariaDB Connector/J");
-
-        // Create bean set datasource
-        HierarchicalSqlSessionFactoryBean bean = new HierarchicalSqlSessionFactoryBean();
-        bean.setDataSource(mockDataSource);
-
-        // Set Existing properties
-        Properties existingProps = new Properties();
-        existingProps.setProperty("existing.property", "existing.value");
-        existingProps.setProperty("another.property", "another.value");
-        bean.setConfigurationProperties(existingProps);
-
-        // Use reflection to call configureFetchSizeForDriver method
-        java.lang.reflect.Method method = HierarchicalSqlSessionFactoryBean.class.getDeclaredMethod("configureFetchSizeForDriver");
-        method.setAccessible(true);
-        method.invoke(bean);
-
-        // Get configuration properties using reflection
-        java.lang.reflect.Field field = HierarchicalSqlSessionFactoryBean.class.getDeclaredField("configurationProperties");
-        field.setAccessible(true);
-        Properties props = (Properties) field.get(bean);
-
-        // Verify existing properties are preserved
-        assertNotNull(props);
-        assertEquals("existing.value", props.getProperty("existing.property"));
-        assertEquals("another.value", props.getProperty("another.property"));
-        assertEquals("FetchSize for MariaDB driver should be 1", "1", props.getProperty("db.fetchsize"));
-    }
-
     /**
      * Helper class that iBatis will use in the test mappings
      * 

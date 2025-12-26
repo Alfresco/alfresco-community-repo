@@ -25,7 +25,7 @@
     <bean id="activitiesSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>
-    
+
     <!-- MyBatis config for Alfresco (using common datasource) -->
     <bean id="repoSqlSessionFactory" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
         <property name="resourceLoader" ref="dialectResourceLoader"/>

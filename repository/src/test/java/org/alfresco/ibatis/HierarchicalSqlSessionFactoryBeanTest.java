@@ -25,12 +25,19 @@
  */
 package org.alfresco.ibatis;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.util.AbstractCollection;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.TreeSet;
+import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
@@ -38,6 +45,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import org.alfresco.util.resource.HierarchicalResourceLoader;
@@ -57,12 +67,12 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
     private static final String QUERY_ABSTRACTLIST = "org.alfresco.ibatis.abstractlist." + AbstractList.class.getName().replace(".", "_");
     private static final String QUERY_TREESET = "org.alfresco.ibatis.treeset." + TreeSet.class.getName().replace(".", "_");
 
-    private static Log logger = LogFactory.getLog(HierarchicalSqlSessionFactoryBeanTest.class);
+    private static final Log LOGGER = LogFactory.getLog(HierarchicalSqlSessionFactoryBeanTest.class);
 
     private ClassPathXmlApplicationContext ctx;
     private TestDAO testDao;
 
-    @Override
+    @Before
     public void setUp() throws Exception
     {
         testDao = new TestDAO();
@@ -71,7 +81,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         testDao.setPropTwo("prop-two");
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception
     {
         try
@@ -83,7 +93,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         }
         catch (Throwable e)
         {
-            logger.error("Failed to neatly close application context", e);
+            LOGGER.error("Failed to neatly close application context", e);
         }
     }
 
@@ -103,7 +113,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
             }
             catch (Throwable e)
             {
-                logger.error("Failed to neatly close application context", e);
+                LOGGER.error("Failed to neatly close application context", e);
             }
         }
         ctx = new ClassPathXmlApplicationContext("ibatis/hierarchy-test/hierarchy-test-context.xml");
@@ -192,6 +202,74 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         {
             // Expected
         }
+    }
+
+    /**
+     * Test that MariaDB driver is detected and fetch size is set to 1
+     */
+    @Test
+    @SuppressWarnings("PMD.CloseResource")
+    public void testConfigureFetchSizeForMariaDBDriver() throws Exception
+    {
+        // create mock objects
+        DataSource mockDataSource = mock(DataSource.class);
+        Connection mockConnection = mock(Connection.class);
+        DatabaseMetaData mockMetaData = mock(DatabaseMetaData.class);
+        HierarchicalResourceLoader mockResourceLoader = mock(HierarchicalResourceLoader.class);
+
+        // Setup mock behaviour
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.getMetaData()).thenReturn(mockMetaData);
+        when(mockMetaData.getDriverName()).thenReturn("MariaDB Connector/J");
+
+        // Create bean set datasource
+        HierarchicalSqlSessionFactoryBean bean = new HierarchicalSqlSessionFactoryBean();
+        bean.setDataSource(mockDataSource);
+        bean.setResourceLoader(mockResourceLoader);
+
+        // Call afterPropertiesSet to trigger configuration
+        bean.afterPropertiesSet();
+
+        // Get configuration properties
+        Properties props = bean.getObject().getConfiguration().getVariables();
+
+        // Verify fetchSize is set to 1 for MariaDB driver
+        assertNotNull(props);
+        assertEquals("Fetch size for MariaDB driver should be 1", "1", props.getProperty("db.fetchsize"));
+    }
+
+    /**
+     * Test that MySQL driver is detected and fetch size is set to Integer.MIN_VALUE
+     */
+    @Test
+    @SuppressWarnings("PMD.CloseResource")
+    public void testConfigureFetchSizeForMySQLDriver() throws Exception
+    {
+        // create mock objects
+        DataSource mockDataSource = mock(DataSource.class);
+        Connection mockConnection = mock(Connection.class);
+        DatabaseMetaData mockMetaData = mock(DatabaseMetaData.class);
+        HierarchicalResourceLoader mockResourceLoader = mock(HierarchicalResourceLoader.class);
+
+        // Setup mock behaviour
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.getMetaData()).thenReturn(mockMetaData);
+        when(mockMetaData.getDriverName()).thenReturn("MySQL Connector/J");
+
+        // Create bean set datasource
+        HierarchicalSqlSessionFactoryBean bean = new HierarchicalSqlSessionFactoryBean();
+        bean.setDataSource(mockDataSource);
+        bean.setResourceLoader(mockResourceLoader);
+
+        // Call afterPropertiesSet to trigger configuration
+        bean.afterPropertiesSet();
+
+        // Get configuration properties
+        Properties props = bean.getObject().getConfiguration().getVariables();
+
+        // Verify fetchSize is set to Integer.MIN_VALUE for MySQL driver
+        assertNotNull(props);
+        assertEquals("Fetch size for MySQL driver should be Integer.MIN_VALUE", String.valueOf(Integer.MIN_VALUE), props.getProperty("db.fetchsize"));
     }
 
     /**

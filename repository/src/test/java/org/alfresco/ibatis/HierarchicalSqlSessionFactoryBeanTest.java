@@ -45,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import org.alfresco.util.resource.HierarchicalResourceLoader;
@@ -204,6 +205,8 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
     /**
      * Test that MariaDB driver is detected and fetch size is set to 1
      */
+    @Test
+    @SuppressWarnings("PMD.CloseResource")
     public void testConfigureFetchSizeForMariaDBDriver() throws Exception
     {
         // create mock objects
@@ -236,6 +239,8 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
     /**
      * Test that MySQL driver is detected and fetch size is set to Integer.MIN_VALUE
      */
+    @Test
+    @SuppressWarnings("PMD.CloseResource")
     public void testConfigureFetchSizeForMySQLDriver() throws Exception
     {
         // create mock objects

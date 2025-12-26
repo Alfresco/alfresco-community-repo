@@ -49,7 +49,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import org.alfresco.util.resource.HierarchicalResourceLoader;
 
-
 /**
  * @see HierarchicalSqlSessionFactoryBean
  * @see HierarchicalXMLConfigBuilder

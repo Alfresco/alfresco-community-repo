@@ -39,8 +39,7 @@
     <sequence name="alf_prop_class_seq"/>
     <sequence name="alf_prop_double_value_seq"/>
     <sequence name="alf_prop_root_seq"/>
-    <sequence name="alf_prop_serializable_value_seq"/>
-    <sequence name="alf_prop_string_value_seq"/>
+    <sequence name="alf_prop_string_value_seq_unified"/>
     <sequence name="alf_prop_unique_ctx_seq"/>
     <sequence name="alf_prop_value_seq"/>
     <sequence name="alf_qname_seq"/>

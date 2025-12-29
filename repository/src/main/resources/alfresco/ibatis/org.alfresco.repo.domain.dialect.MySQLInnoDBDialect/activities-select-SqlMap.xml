@@ -13,7 +13,7 @@
     <!--                -->
     
    <!-- user feed - all sites - everyone -->
-   <select id="select_activity_feed_for_feeduser" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+   <select id="select_activity_feed_for_feeduser" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="${db.fetchsize}">
       select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #{feedUserId}
@@ -22,7 +22,7 @@
    </select>
    
    <!-- user feed - all sites - others (not me) -->
-   <select id="select_activity_feed_for_feeduser_others" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+   <select id="select_activity_feed_for_feeduser_others" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="${db.fetchsize}">
       select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #{feedUserId}
@@ -32,7 +32,7 @@
    </select>
 
    <!-- user feed - all sites - me only (not others) -->
-   <select id="select_activity_feed_for_feeduser_me" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+   <select id="select_activity_feed_for_feeduser_me" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="${db.fetchsize}">
       select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #{feedUserId}
@@ -42,7 +42,7 @@
    </select>
    
    <!-- user feed - given site - everyone -->
-   <select id="select_activity_feed_for_feeduser_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+   <select id="select_activity_feed_for_feeduser_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="${db.fetchsize}">
       select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #{feedUserId}
@@ -52,7 +52,7 @@
    </select>
 
    <!-- user feed - given site - others (not me) -->
-   <select id="select_activity_feed_for_feeduser_others_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+   <select id="select_activity_feed_for_feeduser_others_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="${db.fetchsize}">
       select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #{feedUserId}
@@ -63,7 +63,7 @@
    </select>
    
    <!-- user feed - given site - me only (not others) -->
-   <select id="select_activity_feed_for_feeduser_me_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+   <select id="select_activity_feed_for_feeduser_me_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="${db.fetchsize}">
       select id as id, activity_type as activityType, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
       where feed_user_id = #{feedUserId}
@@ -74,7 +74,7 @@
    </select>
 
    <!-- site feed - given site -->
-   <select id="select_activity_feed_for_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+   <select id="select_activity_feed_for_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="${db.fetchsize}">
       <![CDATA[
       select id as id, activity_type as activityType, activity_summary as activitySummary, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed

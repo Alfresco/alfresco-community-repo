@@ -56,13 +56,12 @@ public class SpringBasedIdentityServiceFacadeUnitTest
         final RestTemplate restTemplate = mock(RestTemplate.class);
         when(restTemplate.getErrorHandler()).thenReturn(new DefaultResponseErrorHandler());
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
-        when(restTemplate.exchange(any(), any(Class.class))).thenThrow(new RuntimeException("Expected"));
 
         final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restTemplate, testRegistration(), jwtDecoder);
 
         assertThatExceptionOfType(AuthorizationException.class)
                 .isThrownBy(() -> facade.authorize(AuthorizationGrant.password(USER_NAME, PASSWORD)))
-                .havingCause().withNoCause().withMessage("Expected");
+                .withMessageContaining("Failed to obtain access token");
     }
 
     @Test

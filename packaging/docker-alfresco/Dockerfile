@@ -1,5 +1,5 @@
 # More infos about this image: https://github.com/Alfresco/alfresco-docker-base-tomcat
-FROM alfresco/alfresco-base-tomcat:tomcat10-jre21-rockylinux9@sha256:4d3aaaec64518b0126bb7889a2574f1ed6e65231dca98a66d67a266fd1c3af92
+FROM alfresco/alfresco-base-tomcat:tomcat11-jre21-rockylinux9@sha256:9e76ad5868b5238fb56b825256ceb488a887bb59cb3b95bec2d9823af00a28b6
 # Set default docker_context.
 ARG resource_path=target
 
@@ -55,17 +55,13 @@ RUN java -jar ${TOMCAT_DIR}/alfresco-mmt/alfresco-mmt*.jar install \
 RUN sed -i -e "s_appender.rolling.fileName\=alfresco.log_appender.rolling.fileName\=${TOMCAT_DIR}/logs\/alfresco.log_" \
         ${TOMCAT_DIR}/webapps/alfresco/WEB-INF/classes/log4j2.properties && \
     sed -i -e "s_appender.rolling.filePattern=alfresco.log.%d{yyyy-MM-dd}_appender.rolling.filePattern\=${TOMCAT_DIR}/logs\/alfresco.log.%d{yyyy-MM-dd}_" \
-        ${TOMCAT_DIR}/webapps/alfresco/WEB-INF/classes/log4j2.properties && \
-# Add catalina.policy to ROOT.war and alfresco.war
-# Grant all security permissions to alfresco webapp because of numerous permissions required in order to work properly.
-# Grant only deployXmlPermission to ROOT webapp.
-    sed -i -e "\$a\grant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/alfresco\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/_vti_bin\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/ROOT\/-\" \{\n\    permission org.apache.catalina.security.DeployXmlPermission \"ROOT\";\n\};" ${TOMCAT_DIR}/conf/catalina.policy
+        ${TOMCAT_DIR}/webapps/alfresco/WEB-INF/classes/log4j2.properties
 
 # fontconfig is required by Activiti worflow diagram generator
 RUN yum install -y fontconfig-2.14.0-2.el9_1 && \
     yum clean all
 
-# The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges, 
+# The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges,
 # group only has restricted permissions and world has no permissions.
 RUN mkdir -p ${TOMCAT_DIR}/conf/Catalina/localhost && \
     mkdir -p ${TOMCAT_DIR}/alf_data && \
@@ -87,6 +83,12 @@ RUN mkdir -p ${TOMCAT_DIR}/conf/Catalina/localhost && \
     chmod 664 ${TOMCAT_DIR}/alfresco-mmt/alfresco-mmt-*.jar && \
     find /licenses -type d -exec chmod 0755 {} \; && \
     find /licenses -type f -exec chmod 0644 {} \;
+
+# Copy Alfresco context configuration to trusted Tomcat location
+COPY ${resource_path}/war/alfresco/META-INF/context.xml \
+     ${TOMCAT_DIR}/conf/Catalina/localhost/alfresco.xml
+COPY ${resource_path}/war/ROOT/META-INF/context.xml \
+     ${TOMCAT_DIR}/conf/Catalina/localhost/ROOT.xml
 
 EXPOSE 10001
 

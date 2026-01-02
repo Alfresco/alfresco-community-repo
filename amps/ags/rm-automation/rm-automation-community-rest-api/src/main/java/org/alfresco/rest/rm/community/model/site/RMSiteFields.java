@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,7 +28,7 @@ package org.alfresco.rest.rm.community.model.site;
 
 /**
  * RM Site properties from the RM Model Schema "entry": { "id": "string", "guid": "string", "title": "string", "description": "string", "visibility": "{@link org.springframework.social.alfresco.api.entities.Site.Visibility}", "compliance": "{@link RMSiteCompliance}", "role": "{@link org.alfresco.utility.constants.UserRole}" }
- * 
+ *
  * @author Tuna Aksoy
  * @author Rodica Sutu
  * @since 2.6

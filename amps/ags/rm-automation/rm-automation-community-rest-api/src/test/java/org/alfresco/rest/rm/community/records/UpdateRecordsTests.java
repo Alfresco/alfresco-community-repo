@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -79,7 +79,7 @@ import org.alfresco.utility.report.Bug;
  * Update records tests <br>
  * These tests only test the update of electronic and non-electronic tests
  * <p>
- * 
+ *
  * @author Kristijan Conkas
  * @since 2.6
  */
@@ -322,7 +322,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
 
     /**
      * Helper method to generate modified property value based on original value
-     * 
+     *
      * @param originalValue
      *            original value
      * @return modified value

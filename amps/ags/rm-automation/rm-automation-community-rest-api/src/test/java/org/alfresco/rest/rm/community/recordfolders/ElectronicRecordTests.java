@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -91,7 +91,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * 
+     *
      * @param container
      *            The parent container
      */
@@ -144,9 +144,9 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * 
+     *
      * and
-     * 
+     *
      * <pre>
      *
      *
@@ -156,7 +156,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * 
+     *
      * @param folderId
      *            The folder, which the record will be created in
      * @param type
@@ -212,9 +212,9 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then the electronic record is created
      * And the details of the new record are returned
      * </pre>
-     * 
+     *
      * and
-     * 
+     *
      * <pre>
      *
      * Given a parent container that is an unfiled record folder or the root unfiled record container
@@ -222,7 +222,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then the electronic record is created
      * And the details of the new record are returned
      * </pre>
-     * 
+     *
      * @param folderId
      *            The folder, which the record will be created in
      * @param type
@@ -281,7 +281,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * When I create an electronic record
      * Then the record name defaults to filed file name.
      * </pre>
-     * 
+     *
      * @param folderId
      *            The folder, which the record will be created in
      * @param type
@@ -334,7 +334,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
     /**
      * <pre>
      * Given that I want to create an electronic record in one unfiled record folder When I use the path relative to the one unfiled record folder Then the containers in the relativePath that don't exist are created before creating the electronic record
-     * 
+     *
      * <pre>
      */
     @Test

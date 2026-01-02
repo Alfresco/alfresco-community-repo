@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -219,7 +219,7 @@ public class AddToHoldsTests extends BaseRMRestTest
 
     /**
      * Data provider with user without correct permission to add to hold and the node ref to be added to hold
-     * 
+     *
      * @return object with user model and the node ref to be added to hold
      */
     @DataProvider(name = "userWithoutPermissionForAddToHold")

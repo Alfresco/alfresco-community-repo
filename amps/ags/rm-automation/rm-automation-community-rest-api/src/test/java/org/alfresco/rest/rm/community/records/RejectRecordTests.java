@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -59,7 +59,7 @@ import org.alfresco.utility.model.SiteModel;
 
 /**
  * API tests for rejecting records
- * 
+ *
  * @author Ross Gale
  * @since 3.1
  */

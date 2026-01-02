@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -227,7 +227,7 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
 
     /**
      * Helper method to create a sub-category with a folder, an incomplete electronic record and a complete electronic record
-     * 
+     *
      * @return
      */
     private RecordCategoryChild createSubCategoryWithRecords()

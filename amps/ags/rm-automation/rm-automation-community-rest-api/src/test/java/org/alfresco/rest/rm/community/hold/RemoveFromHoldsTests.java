@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -193,7 +193,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
 
     /**
      * Data provider with user without right permission or capability to remove from hold a specific node
-     * 
+     *
      * @return user model and the node ref to be removed from hold
      */
     @DataProvider(name = "userWithoutPermissionForRemoveFromHold")
@@ -243,7 +243,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
 
     /**
      * Given node on hold in a single hold location And the user does not have sufficient permissions or capabilities to remove the node from the hold When the user tries to remove the node from the hold Then it's unsuccessful
-     * 
+     *
      * @throws Exception
      */
     @Test(dataProvider = "userWithoutPermissionForRemoveFromHold")

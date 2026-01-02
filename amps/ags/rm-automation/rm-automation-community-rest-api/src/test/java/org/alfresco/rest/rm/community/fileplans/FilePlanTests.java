@@ -283,7 +283,7 @@ public class FilePlanTests extends BaseRMRestTest
      * When I ask the API to create a root record category
      * Then it is created as a root record category
      * </pre>
-     * 
+     *
      * <pre>
      * Given that a file plan exists
      * When I use the API to create a folder (cm:folder type) into the fileplan
@@ -331,7 +331,7 @@ public class FilePlanTests extends BaseRMRestTest
      * When I ask the API to create a root category having the same name
      * Then  the response code received is 409 - name clashes with an existing node
      * </pre>
-     * 
+     *
      * <pre>
      * Given a root category
      * When I ask the API to create a root category having the same name  with autoRename parameter on true

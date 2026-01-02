@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,17 +26,16 @@
  */
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
+import static io.restassured.RestAssured.basic;
+import static io.restassured.RestAssured.given;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.google.gson.JsonObject;
-
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import static io.restassured.RestAssured.basic;
-import static io.restassured.RestAssured.given;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
@@ -59,7 +58,8 @@ import org.alfresco.utility.model.UserModel;
 public class RMUserAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper RM REST Wrapper
+     * @param rmRestWrapper
+     *            RM REST Wrapper
      */
     public RMUserAPI(RMRestWrapper rmRestWrapper)
     {
@@ -68,6 +68,7 @@ public class RMUserAPI extends RMModelRequest
 
     /**
      * Helper method to obtain {@link AlfrescoHttpClient}
+     * 
      * @return Initialized {@link AlfrescoHttpClient} instance
      */
     private AlfrescoHttpClient getAlfrescoHttpClient()
@@ -85,9 +86,12 @@ public class RMUserAPI extends RMModelRequest
     /**
      * Assign RM role to user
      *
-     * @param userName User's username
-     * @param userRole User's RM role, one of {@link UserRoles} roles
-     * @throws RuntimeException for failed requests
+     * @param userName
+     *            User's username
+     * @param userRole
+     *            User's RM role, one of {@link UserRoles} roles
+     * @throws RuntimeException
+     *             for failed requests
      */
     public void assignRoleToUser(String userName, String userRole)
     {
@@ -118,9 +122,13 @@ public class RMUserAPI extends RMModelRequest
 
     /**
      * Helper method to add permission on a component to user
-     * @param filePlanComponentId The id of the file plan component on which permission should be given
-     * @param user {@link UserModel} for a user to be granted permission
-     * @param permission {@link UserPermissions} to be granted
+     * 
+     * @param filePlanComponentId
+     *            The id of the file plan component on which permission should be given
+     * @param user
+     *            {@link UserModel} for a user to be granted permission
+     * @param permission
+     *            {@link UserPermissions} to be granted
      */
     public void addUserPermission(String filePlanComponentId, UserModel user, UserPermissions permission)
     {
@@ -161,9 +169,10 @@ public class RMUserAPI extends RMModelRequest
     /**
      * Helper method to set permission inheritance on a file plan component
      *
-     * @param filePlanComponentId The id of the file plan component on which inherited permission should be set
-     * @param isInherited          true if the permission is inherited
-     *                             false if the permission inheritance is disabled
+     * @param filePlanComponentId
+     *            The id of the file plan component on which inherited permission should be set
+     * @param isInherited
+     *            true if the permission is inherited false if the permission inheritance is disabled
      */
     public void setUserPermissionInheritance(String filePlanComponentId, Boolean isInherited)
     {
@@ -199,13 +208,15 @@ public class RMUserAPI extends RMModelRequest
         getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
 
-
     /**
      * Creates a user with the given name using the old APIs
      *
-     * @param userName The user name
-     * @param userPassword The user's password
-     * @param userEmail The user's e-mail address
+     * @param userName
+     *            The user name
+     * @param userPassword
+     *            The user's password
+     * @param userEmail
+     *            The user's e-mail address
      * @return <code>true</code> if the user was created successfully, <code>false</code> otherwise.
      */
     public boolean createUser(String userName, String userPassword, String userEmail)
@@ -214,29 +225,29 @@ public class RMUserAPI extends RMModelRequest
         final AlfrescoHttpClient client = getAlfrescoHttpClient();
 
         JsonObject body = buildObject()
-            .add("userName", userName)
-            .add("firstName", userName)
-            .add("lastName", userName)
-            .add("password", userPassword)
-            .add("email", userEmail)
-            .getJson();
+                .add("userName", userName)
+                .add("firstName", userName)
+                .add("lastName", userName)
+                .add("password", userPassword)
+                .add("email", userEmail)
+                .getJson();
 
         final RequestSpecification spec = new RequestSpecBuilder()
-            .setBaseUri(client.getApiUrl())
-            .setBasePath("/")
-            .setAuth(basic(adminUser.getUsername(), adminUser.getPassword()))
-            .setContentType(ContentType.JSON)
-            .setBody(body.toString())
-            .build();
+                .setBaseUri(client.getApiUrl())
+                .setBasePath("/")
+                .setAuth(basic(adminUser.getUsername(), adminUser.getPassword()))
+                .setContentType(ContentType.JSON)
+                .setBody(body.toString())
+                .build();
 
         // create POST request to "people" endpoint
         Response response = given()
-            .spec(spec)
-            .log().all()
-        .when()
-            .post("people")
-            .prettyPeek()
-            .andReturn();
+                .spec(spec)
+                .log().all()
+                .when()
+                .post("people")
+                .prettyPeek()
+                .andReturn();
 
         return (response.getStatusCode() == OK.value());
     }

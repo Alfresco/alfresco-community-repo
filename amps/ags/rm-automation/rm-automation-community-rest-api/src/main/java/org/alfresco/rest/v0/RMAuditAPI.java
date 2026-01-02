@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,15 +34,16 @@ import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.List;
 
-import org.alfresco.rest.core.v0.BaseAPI;
-import org.alfresco.rest.rm.community.model.audit.AuditEntry;
-import org.alfresco.rest.rm.community.util.PojoUtility;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import org.alfresco.rest.core.v0.BaseAPI;
+import org.alfresco.rest.rm.community.model.audit.AuditEntry;
+import org.alfresco.rest.rm.community.util.PojoUtility;
 
 /**
  * The v0 REST API for rm audit logs
@@ -65,10 +66,14 @@ public class RMAuditAPI extends BaseAPI
     /**
      * Returns a list of rm audit entries .
      *
-     * @param user     The username of the user to use.
-     * @param password The password of the user.
-     * @param size     Maximum number of log entries to return
-     * @param event    The name of audit event to be retrieved
+     * @param user
+     *            The username of the user to use.
+     * @param password
+     *            The password of the user.
+     * @param size
+     *            Maximum number of log entries to return
+     * @param event
+     *            The name of audit event to be retrieved
      * @return return Only return log entries matching this event
      */
     public List<AuditEntry> getRMAuditLog(String user, String password, final int size, final String event)
@@ -76,14 +81,14 @@ public class RMAuditAPI extends BaseAPI
         String parameters = null;
         try
         {
-            parameters = "size=" + size + (event != null ? "&event=" + URLEncoder.encode(event, "UTF-8"):"");
+            parameters = "size=" + size + (event != null ? "&event=" + URLEncoder.encode(event, "UTF-8") : "");
         }
         catch (UnsupportedEncodingException e)
         {
             LOGGER.error("Unable to encode the event name {}", e.getMessage());
         }
-        JSONArray auditEntries =  doGetRequest(user, password,
-                MessageFormat.format(RM_AUDIT_LOG_API,"{0}", parameters)).getJSONObject("data").getJSONArray("entries");
+        JSONArray auditEntries = doGetRequest(user, password,
+                MessageFormat.format(RM_AUDIT_LOG_API, "{0}", parameters)).getJSONObject("data").getJSONArray("entries");
 
         return PojoUtility.jsonToObject(auditEntries, AuditEntry.class);
     }
@@ -91,47 +96,60 @@ public class RMAuditAPI extends BaseAPI
     /**
      * Returns a list of rm audit entries .
      *
-     * @param user     The username of the user to use.
-     * @param password The password of the user.
-     * @param size     Maximum number of log entries to return
+     * @param user
+     *            The username of the user to use.
+     * @param password
+     *            The password of the user.
+     * @param size
+     *            Maximum number of log entries to return
      * @return return All return log entries
      */
-    public List<AuditEntry> getRMAuditLogAll(String user, String password, final int size) {
+    public List<AuditEntry> getRMAuditLogAll(String user, String password, final int size)
+    {
         String parameters = "size=" + size;
-        JSONArray auditEntries =  doGetRequest(user, password,
-            MessageFormat.format(RM_AUDIT_LOG_API,"{0}", parameters)).getJSONObject("data").getJSONArray("entries");
+        JSONArray auditEntries = doGetRequest(user, password,
+                MessageFormat.format(RM_AUDIT_LOG_API, "{0}", parameters)).getJSONObject("data").getJSONArray("entries");
         return PojoUtility.jsonToObject(auditEntries, AuditEntry.class);
     }
 
     /**
      * Clear the list of audit entries.
      *
-     * @param username The username of the user to use.
-     * @param password The password of the user.
-     * @throws AssertionError If the API call didn't clear the audit log.
+     * @param username
+     *            The username of the user to use.
+     * @param password
+     *            The password of the user.
+     * @throws AssertionError
+     *             If the API call didn't clear the audit log.
      */
     public void clearAuditLog(String username, String password)
     {
         JSONObject deleteStatus = doDeleteRequest(username, password, RM_AUDIT_API);
 
         assertTrue(deleteStatus != null
-                //audit clear and login events are returned
+                // audit clear and login events are returned
                 && getRMAuditLog(username, password, 100, null).size() == 2);
     }
 
     /**
      * Logs the Audit Log as Record.
      *
-     * @param username The username of the user to use.
-     * @param password The password of the user.
-     * @param recNodeRef The Record Node reference for which Audit log should be created as record
-     * @param destinationNodeRef The Folder id Node reference where the html file should be placed
-     * @throws AssertionError If the API call didn't create the Audit Log as Record.
+     * @param username
+     *            The username of the user to use.
+     * @param password
+     *            The password of the user.
+     * @param recNodeRef
+     *            The Record Node reference for which Audit log should be created as record
+     * @param destinationNodeRef
+     *            The Folder id Node reference where the html file should be placed
+     * @throws AssertionError
+     *             If the API call didn't create the Audit Log as Record.
      */
-    public HttpResponse logsAuditLogAsRecord(String username, String password, String recNodeRef, String destinationNodeRef) {
+    public HttpResponse logsAuditLogAsRecord(String username, String password, String recNodeRef, String destinationNodeRef)
+    {
         JSONObject requestParams = new JSONObject();
         requestParams.put("destination", destinationNodeRef);
-        return doPostJsonRequest(username, password, SC_OK, requestParams, RM_AUDIT_LOG_AS_RECORD,recNodeRef);
+        return doPostJsonRequest(username, password, SC_OK, requestParams, RM_AUDIT_LOG_AS_RECORD, recNodeRef);
     }
 
 }

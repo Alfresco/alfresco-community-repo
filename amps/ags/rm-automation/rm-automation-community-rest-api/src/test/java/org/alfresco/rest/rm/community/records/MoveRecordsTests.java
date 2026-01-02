@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,17 +26,19 @@
  */
 package org.alfresco.rest.rm.community.records;
 
+import static org.springframework.http.HttpStatus.OK;
+import static org.testng.Assert.assertTrue;
+
 import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.RECORD_SEARCH_ASPECT;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.springframework.http.HttpStatus.OK;
-import static org.testng.Assert.assertTrue;
+
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.test.AlfrescoTest;
-import org.testng.annotations.Test;
 
 /**
  * Move records tests
@@ -46,8 +48,8 @@ import org.testng.annotations.Test;
  */
 public class MoveRecordsTests extends BaseRMRestTest
 {
-    @Test (description = "rma:recordSearch aspect is reapplied after record move")
-    @AlfrescoTest (jira = "RM-7060")
+    @Test(description = "rma:recordSearch aspect is reapplied after record move")
+    @AlfrescoTest(jira = "RM-7060")
     public void moveRecord() throws Exception
     {
         String parentFolderId = createCategoryFolderInFilePlan().getId();

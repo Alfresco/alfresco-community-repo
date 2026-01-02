@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,12 +26,12 @@
  */
 package org.alfresco.rest.core.v0;
 
-import jakarta.json.Json;
-import jakarta.json.JsonReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonReader;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
@@ -52,20 +52,20 @@ public class APIUtils
 {
     /** Logger for this class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(APIUtils.class);
-    /** The ISO instant formatter that formats or parses an instant in UTC, such as '2011-12-03T10:15:305Z'
-     * similar with {@link DateTimeFormatter#ISO_INSTANT}, but with only 3 nanoseconds*/
-    public static final DateTimeFormatter ISO_INSTANT_FORMATTER =
-            new DateTimeFormatterBuilder().appendInstant(3).toFormatter();
+    /**
+     * The ISO instant formatter that formats or parses an instant in UTC, such as '2011-12-03T10:15:305Z' similar with {@link DateTimeFormatter#ISO_INSTANT}, but with only 3 nanoseconds
+     */
+    public static final DateTimeFormatter ISO_INSTANT_FORMATTER = new DateTimeFormatterBuilder().appendInstant(3).toFormatter();
 
     /** Private constructor for helper class. */
     private APIUtils()
-    {
-    }
+    {}
 
     /**
      * Extract the body of a HTTP response as a JSON object.
      *
-     * @param httpResponse The HTTP response.
+     * @param httpResponse
+     *            The HTTP response.
      * @return A JSON representation of the object.
      */
     public static JSONObject convertHTTPResponseToJSON(HttpResponse httpResponse)
@@ -86,7 +86,8 @@ public class APIUtils
     /**
      * Util method to extract the message string from the HTTP response
      *
-     * @param httpResponse http response
+     * @param httpResponse
+     *            http response
      * @return error message from the http response
      */
     public static String extractErrorMessageFromHttpResponse(HttpResponse httpResponse)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,12 +32,13 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import org.alfresco.rest.core.v0.BaseAPI;
 
 /**
  * Methods to make API requests using v0 API on record categories
@@ -57,9 +58,12 @@ public class RecordCategoriesAPI extends BaseAPI
     /**
      * Creates a retention schedule for the category given as parameter
      *
-     * @param user         the user creating the disposition schedule
-     * @param password     the user's password
-     * @param categoryName the category name to create the retention schedule for
+     * @param user
+     *            the user creating the disposition schedule
+     * @param password
+     *            the user's password
+     * @param categoryName
+     *            the category name to create the retention schedule for
      * @return The HTTP Response.
      */
     public HttpResponse createRetentionSchedule(String user, String password, String categoryName)
@@ -91,9 +95,12 @@ public class RecordCategoriesAPI extends BaseAPI
     /**
      * Sets retention schedule authority and instructions, also if it is applied to records or folders
      *
-     * @param user             the user creating the disposition schedule
-     * @param password         the user's password
-     * @param retentionNodeRef the retention nodeRef
+     * @param user
+     *            the user creating the disposition schedule
+     * @param password
+     *            the user's password
+     * @param retentionNodeRef
+     *            the retention nodeRef
      * @return The HTTP Response.
      */
     public HttpResponse setRetentionScheduleGeneralFields(String user, String password, String retentionNodeRef, Map<RETENTION_SCHEDULE, String> retentionProperties, Boolean appliedToRecords)
@@ -110,9 +117,12 @@ public class RecordCategoriesAPI extends BaseAPI
     /**
      * Creates a retention schedule steps for the category given as parameter
      *
-     * @param user         the user creating the disposition schedule
-     * @param password     the user's password
-     * @param categoryName the category name to create the retention schedule for
+     * @param user
+     *            the user creating the disposition schedule
+     * @param password
+     *            the user's password
+     * @param categoryName
+     *            the category name to create the retention schedule for
      * @return The HTTP Response.
      */
     public HttpResponse addDispositionScheduleSteps(String user, String password, String categoryName, Map<RETENTION_SCHEDULE, String> properties)
@@ -127,7 +137,7 @@ public class RecordCategoriesAPI extends BaseAPI
         addPropertyToRequest(requestParams, "periodProperty", properties, RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY);
         addPropertyToRequest(requestParams, "location", properties, RETENTION_SCHEDULE.RETENTION_LOCATION);
         String events = getPropertyValue(properties, RETENTION_SCHEDULE.RETENTION_EVENTS);
-        if(!events.equals(""))
+        if (!events.equals(""))
         {
             requestParams.append("events", events);
         }
@@ -140,10 +150,14 @@ public class RecordCategoriesAPI extends BaseAPI
     /**
      * Delete a category
      *
-     * @param username     user's username
-     * @param password     its password
-     * @param categoryName the name of the category
-     * @throws AssertionError if the delete was unsuccessful.
+     * @param username
+     *            user's username
+     * @param password
+     *            its password
+     * @param categoryName
+     *            the name of the category
+     * @throws AssertionError
+     *             if the delete was unsuccessful.
      */
     public void deleteCategory(String username, String password, String categoryName)
     {
@@ -153,10 +167,14 @@ public class RecordCategoriesAPI extends BaseAPI
     /**
      * Delete a sub-category
      *
-     * @param username     user's username
-     * @param password     its password
-     * @param categoryName the name of the sub-category
-     * @throws AssertionError if the deletion was unsuccessful.
+     * @param username
+     *            user's username
+     * @param password
+     *            its password
+     * @param categoryName
+     *            the name of the sub-category
+     * @throws AssertionError
+     *             if the deletion was unsuccessful.
      */
     public void deleteSubCategory(String username, String password, String categoryName, String subCategoryName)
     {
@@ -166,11 +184,16 @@ public class RecordCategoriesAPI extends BaseAPI
     /**
      * Delete a folder inside a container in RM site
      *
-     * @param username      user's username
-     * @param password      its password
-     * @param folderName    folder name
-     * @param containerName the name of the category or container sin which the folder is
-     * @throws AssertionError if the deletion was unsuccessful.
+     * @param username
+     *            user's username
+     * @param password
+     *            its password
+     * @param folderName
+     *            folder name
+     * @param containerName
+     *            the name of the category or container sin which the folder is
+     * @throws AssertionError
+     *             if the deletion was unsuccessful.
      */
     public void deleteFolderInContainer(String username, String password, String folderName, String containerName)
     {
@@ -180,8 +203,10 @@ public class RecordCategoriesAPI extends BaseAPI
     /**
      * Returns a map of retention properties
      *
-     * @param authority    retention authority
-     * @param instructions retention authority
+     * @param authority
+     *            retention authority
+     * @param instructions
+     *            retention authority
      * @return the map
      */
     public Map<RETENTION_SCHEDULE, String> getRetentionProperties(String authority, String instructions)

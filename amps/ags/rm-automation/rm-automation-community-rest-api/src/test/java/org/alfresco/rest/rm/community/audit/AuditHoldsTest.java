@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,14 +28,6 @@ package org.alfresco.rest.rm.community.audit;
 
 import static java.util.Arrays.asList;
 
-import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
-import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
-import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_HOLD;
-import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM_HOLD;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -44,7 +36,22 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 
+import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
+import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
+import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_HOLD;
+import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM_HOLD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -62,12 +69,9 @@ import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-public class AuditHoldsTest extends BaseRMRestTest {
+
+public class AuditHoldsTest extends BaseRMRestTest
+{
     private final String PREFIX = generateTestPrefix(AuditAddToHoldTests.class);
     private final String HOLD1 = PREFIX + "hold1";
     private SiteModel publicSite;
@@ -78,10 +82,11 @@ public class AuditHoldsTest extends BaseRMRestTest {
     private RoleService roleService;
     private UserModel rmAdmin;
     private RecordCategory recordCategory;
-    private RecordCategoryChild recordFolder1,recordFolder2;
+    private RecordCategoryChild recordFolder1, recordFolder2;
     private List<AuditEntry> auditEntries;
     private String hold1NodeRef;
     public static final String RECORD_FOLDER_THREE = "record-folder-three";
+
     @BeforeClass(alwaysRun = true)
     public void preconditionForAuditAddToHoldTests()
     {
@@ -109,7 +114,7 @@ public class AuditHoldsTest extends BaseRMRestTest {
         STEP("Add some items to the hold, then remove them from the hold");
         final List<String> itemsList = asList(testFile.getNodeRefWithoutVersion(), recordToBeAdded.getId(), recordFolder2.getId());
         getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(recordToBeAdded.getId()).build(), hold1NodeRef);
-        for(String childId : itemsList)
+        for (String childId : itemsList)
         {
             getRestAPIFactory().getHoldsAPI(rmAdmin).deleteHoldChild(hold1NodeRef, childId);
         }
@@ -121,31 +126,35 @@ public class AuditHoldsTest extends BaseRMRestTest {
         RecordFolder recordFolder = RecordFolder.builder().name(RECORD_FOLDER_THREE).build();
         getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolder, recordFolder1.getId());
     }
+
     /**
      * Data provider with hold events that have links to held items
      *
      * @return the hold events
      */
-    @DataProvider (name = "holdsEvents")
+    @DataProvider(name = "holdsEvents")
     public Object[][] getHoldEvents()
     {
-        return new AuditEvents[][]
-            {
-                { ADD_TO_HOLD },
-                { REMOVE_FROM_HOLD }
-            };
+        return new AuditEvents[][]{
+                {ADD_TO_HOLD},
+                {REMOVE_FROM_HOLD}
+        };
     }
-    @Test (dataProvider = "holdsEvents")
-    public void checkItemPathLink(AuditEvents event) {
+
+    @Test(dataProvider = "holdsEvents")
+    public void checkItemPathLink(AuditEvents event)
+    {
         auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), event);
-        assertFalse("Audit results should not be empty",auditEntries.size()==0);
+        assertFalse("Audit results should not be empty", auditEntries.size() == 0);
         final String auditedEvent = event + " - " + testFile.getName();
-        assertTrue("Audit results should contain one " + auditedEvent + " event",auditEntries.stream().anyMatch(e -> e.getEvent().startsWith(event.eventDisplayName)));
+        assertTrue("Audit results should contain one " + auditedEvent + " event", auditEntries.stream().anyMatch(e -> e.getEvent().startsWith(event.eventDisplayName)));
         STEP("Check the audit log contains only an entry for add to hold.");
         assertThat(auditEntries, is(not(empty())));
     }
+
     @AfterClass(alwaysRun = true)
-    private void cleanup() {
+    private void cleanup()
+    {
         dataSite.usingAdmin().deleteSite(publicSite);
         deleteRecordFolder(recordFolder1.getId());
         deleteRecordFolder(recordFolder2.getId());

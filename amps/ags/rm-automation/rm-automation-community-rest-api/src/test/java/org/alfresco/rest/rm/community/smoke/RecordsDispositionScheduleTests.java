@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,6 +27,21 @@
 
 package org.alfresco.rest.rm.community.smoke;
 
+import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
+import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import java.io.IOException;
+import java.time.Instant;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.core.v0.RMEvents;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -38,26 +53,16 @@ import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.Test;
-import java.io.IOException;
-import java.time.Instant;
-import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.utility.report.log.Step.STEP;
 
 /**
  * Contains recordsDispositionScheduleWithoutGhosting test which checks disposition schedule cut off, transfer and destroy without maintaining metadata steps applied to records
  * <p/>
  * Precondition:
  * <p/>
- * RM site created, contains an empty category "RM-2801 disposition for records". <p/>
- * RM user has RM admin role. <p/>
+ * RM site created, contains an empty category "RM-2801 disposition for records".
+ * <p/>
+ * RM user has RM admin role.
+ * <p/>
  * A transfer location named "transferred files" is created to which RM user has access
  * <p/>
  * <img src="doc-files/Disposition Schedule without ghosting.png" alt="Records Disposition Schedule without ghosting" />
@@ -65,7 +70,8 @@ import static org.alfresco.utility.report.log.Step.STEP;
  * @author Kavit Shah
  */
 
-public class RecordsDispositionScheduleTests extends BaseRMRestTest {
+public class RecordsDispositionScheduleTests extends BaseRMRestTest
+{
 
     /** data prep 6services */
     @Autowired
@@ -83,8 +89,9 @@ public class RecordsDispositionScheduleTests extends BaseRMRestTest {
     private final String folderDisposition = TEST_PREFIX + "RM-2801 folder";
 
     @Test
-    @AlfrescoTest(jira="RM-2801")
-    public void recordsDispositionScheduleWithoutGhosting() {
+    @AlfrescoTest(jira = "RM-2801")
+    public void recordsDispositionScheduleWithoutGhosting()
+    {
 
         // create test precondition
         createTestPrecondition(recordsCategory);
@@ -96,13 +103,13 @@ public class RecordsDispositionScheduleTests extends BaseRMRestTest {
         dispositionScheduleService.addCutOffImmediatelyStep(Category1.getName());
 
         // add transfer step
-        dispositionScheduleService.addTransferAfterEventStep(Category1.getName(),"transferred records","all_allowances_granted_are_terminated");
+        dispositionScheduleService.addTransferAfterEventStep(Category1.getName(), "transferred records", "all_allowances_granted_are_terminated");
 
         // add destroy step without retaining metadata
         dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(Category1.getName(), "day|1", CUT_OFF_DATE);
 
         // create a folder and an electronic and a non-electronic record in it
-        RecordCategoryChild FOLDER_DESTROY = createFolder(getAdminUser(),Category1.getId(),folderDisposition);
+        RecordCategoryChild FOLDER_DESTROY = createFolder(getAdminUser(), Category1.getId(), folderDisposition);
 
         String electronicRecord = "RM-2801 electronic record";
         Record elRecord = createElectronicRecord(FOLDER_DESTROY.getId(), electronicRecord);
@@ -111,92 +118,97 @@ public class RecordsDispositionScheduleTests extends BaseRMRestTest {
 
         // complete records and cut them off
         String nonElRecordName = recordsAPI.getRecordFullName(getAdminUser().getUsername(),
-            getAdminUser().getPassword(), folderDisposition, nonElectronicRecord);
+                getAdminUser().getPassword(), folderDisposition, nonElectronicRecord);
         String elRecordName = recordsAPI.getRecordFullName(getAdminUser().getUsername(),
-            getAdminUser().getPassword(), folderDisposition, electronicRecord);
+                getAdminUser().getPassword(), folderDisposition, electronicRecord);
 
         // complete records and cut them off
         completeRecord(elRecord.getId());
         completeRecord(nonElRecord.getId());
 
         String nonElRecordNameNodeRef = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), nonElRecordName, "/" + Category1.getName() + "/" + folderDisposition);
+                getDataUser().usingAdmin().getAdminUser().getPassword(), nonElRecordName, "/" + Category1.getName() + "/" + folderDisposition);
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),nonElRecordNameNodeRef);
+                getAdminUser().getPassword(), new JSONObject().put("name", "cutoff"), nonElRecordNameNodeRef);
 
         String elRecordNameNodeRef = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordName, "/" + Category1.getName() + "/" + folderDisposition);
+                getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordName, "/" + Category1.getName() + "/" + folderDisposition);
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),elRecordNameNodeRef);
+                getAdminUser().getPassword(), new JSONObject().put("name", "cutoff"), elRecordNameNodeRef);
 
         // ensure the complete event action is displayed for both events
         rmRolesAndActionsAPI.completeEvent(getAdminUser().getUsername(),
-               getAdminUser().getPassword(), nonElRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
+                getAdminUser().getPassword(), nonElRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
         rmRolesAndActionsAPI.completeEvent(getAdminUser().getUsername(),
-            getAdminUser().getPassword(), elRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
+                getAdminUser().getPassword(), elRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
 
         // Create and Complete transfer
         HttpResponse nonElRecordNameHttpResponse = recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","transfer"),recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
-                getDataUser().usingAdmin().getAdminUser().getPassword(), nonElRecordName, "/" + Category1.getName() + "/" + folderDisposition));
+                getAdminUser().getPassword(), new JSONObject().put("name", "transfer"), recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+                        getDataUser().usingAdmin().getAdminUser().getPassword(), nonElRecordName, "/" + Category1.getName() + "/" + folderDisposition));
 
-        String nonElRecordNameTransferId = getTransferId(nonElRecordNameHttpResponse,nonElRecordNameNodeRef);
+        String nonElRecordNameTransferId = getTransferId(nonElRecordNameHttpResponse, nonElRecordNameNodeRef);
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","transferComplete"),nonElRecordNameTransferId);
+                getAdminUser().getPassword(), new JSONObject().put("name", "transferComplete"), nonElRecordNameTransferId);
 
         HttpResponse elRecordNameHttpResponse = recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","transfer"),recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
-                getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordName, "/" + Category1.getName() + "/" + folderDisposition));
+                getAdminUser().getPassword(), new JSONObject().put("name", "transfer"), recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+                        getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordName, "/" + Category1.getName() + "/" + folderDisposition));
 
-        String elRecordNameTransferId = getTransferId(elRecordNameHttpResponse,elRecordNameNodeRef);
+        String elRecordNameTransferId = getTransferId(elRecordNameHttpResponse, elRecordNameNodeRef);
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","transferComplete"),elRecordNameTransferId);
+                getAdminUser().getPassword(), new JSONObject().put("name", "transferComplete"), elRecordNameTransferId);
 
         // edit the disposition schedule date to current date
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),nonElRecordNameNodeRef);
+                getAdminUser().getPassword(), editDispositionDateJson(), nonElRecordNameNodeRef);
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRef);
+                getAdminUser().getPassword(), editDispositionDateJson(), elRecordNameNodeRef);
 
-        Utility.waitToLoopTime(5,"Waiting for Edit Disposition to be processed");
+        Utility.waitToLoopTime(5, "Waiting for Edit Disposition to be processed");
 
         // destroy records
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),nonElRecordNameNodeRef);
+                getAdminUser().getPassword(), new JSONObject().put("name", "destroy"), nonElRecordNameNodeRef);
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),elRecordNameNodeRef);
+                getAdminUser().getPassword(), new JSONObject().put("name", "destroy"), elRecordNameNodeRef);
 
         // delete category
         deleteRecordCategory(Category1.getId());
     }
 
-    private void createTestPrecondition(String categoryName) {
+    private void createTestPrecondition(String categoryName)
+    {
         createRMSiteIfNotExists();
 
         // create "rm admin" user if it does not exist and assign it to RM Administrator role
         rmRolesAndActionsAPI.createUserAndAssignToRole(
-            getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(),
-            RM_ADMIN, DEFAULT_PASSWORD, "Administrator");
+                getDataUser().usingAdmin().getAdminUser().getUsername(),
+                getDataUser().usingAdmin().getAdminUser().getPassword(),
+                RM_ADMIN, DEFAULT_PASSWORD, "Administrator");
 
         // create category
         STEP("Create two category");
-        Category1 = createRootCategory(categoryName,"Title");
+        Category1 = createRootCategory(categoryName, "Title");
     }
 
-    private String getTransferId(HttpResponse httpResponse,String nodeRef) {
+    private String getTransferId(HttpResponse httpResponse, String nodeRef)
+    {
         HttpEntity entity = httpResponse.getEntity();
         String responseString = null;
-        try {
+        try
+        {
             responseString = EntityUtils.toString(entity, "UTF-8");
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             throw new RuntimeException(e);
         }
         JSONObject result = new JSONObject(responseString);
         return result
-            .getJSONObject("results")
-            .get(nodeRef)
-            .toString();
+                .getJSONObject("results")
+                .get(nodeRef)
+                .toString();
 
     }
 }

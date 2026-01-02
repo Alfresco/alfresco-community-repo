@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,14 +27,15 @@
 
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.PUT;
+
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.PUT;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.transfer.TransferCollection;
@@ -50,7 +51,8 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
 public class TransferContainerAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper RM REST Wrapper
+     * @param rmRestWrapper
+     *            RM REST Wrapper
      */
     public TransferContainerAPI(RMRestWrapper rmRestWrapper)
     {
@@ -70,16 +72,19 @@ public class TransferContainerAPI extends RMModelRequest
     /**
      * Gets a transfer container.
      *
-     * @param transferContainerId The identifier of a transfer container
-     * @param parameters The URL parameters to add
+     * @param transferContainerId
+     *            The identifier of a transfer container
+     * @param parameters
+     *            The URL parameters to add
      * @return The {@link TransferContainer} for the given {@code transferContainerId}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code transferContainerId} is not a valid format</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code transferContainerId}</li>
-     *  <li>{@code transferContainerId} does not exist</li>
-     * </ul>
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>{@code transferContainerId} is not a valid format</li>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to read {@code transferContainerId}</li>
+     *             <li>{@code transferContainerId} does not exist</li>
+     *             </ul>
      */
     public TransferContainer getTransferContainer(String transferContainerId, String parameters)
     {
@@ -89,8 +94,7 @@ public class TransferContainerAPI extends RMModelRequest
                 GET,
                 "/transfer-containers/{transferContainerId}?{parameters}",
                 transferContainerId,
-                parameters
-        ));
+                parameters));
     }
 
     /**
@@ -107,19 +111,24 @@ public class TransferContainerAPI extends RMModelRequest
     /**
      * Updates a transfer container.
      *
-     * @param transferContainerModel The transfer container model which holds the information
-     * @param transferContainerId The identifier of a transfer container
-     * @param parameters The URL parameters to add
-     * @param returns The updated {@link TransferContainer}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>the update request is invalid or {@code transferContainerId} is not a valid format or {@code transferContainerModel} is invalid</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to update {@code transferContainerId}</li>
-     *  <li>{@code transferContainerId} does not exist</li>
-     *  <li>the updated name clashes with an existing transfer container in the current file plan</li>
-     *  <li>model integrity exception, including transfer container name with invalid characters</li>
-     * </ul>
+     * @param transferContainerModel
+     *            The transfer container model which holds the information
+     * @param transferContainerId
+     *            The identifier of a transfer container
+     * @param parameters
+     *            The URL parameters to add
+     * @param returns
+     *            The updated {@link TransferContainer}
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>the update request is invalid or {@code transferContainerId} is not a valid format or {@code transferContainerModel} is invalid</li>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to update {@code transferContainerId}</li>
+     *             <li>{@code transferContainerId} does not exist</li>
+     *             <li>the updated name clashes with an existing transfer container in the current file plan</li>
+     *             <li>model integrity exception, including transfer container name with invalid characters</li>
+     *             </ul>
      */
     public TransferContainer updateTransferContainer(TransferContainer transferContainerModel, String transferContainerId, String parameters)
     {
@@ -131,8 +140,7 @@ public class TransferContainerAPI extends RMModelRequest
                 toJson(transferContainerModel),
                 "transfer-containers/{transferContainerId}?{parameters}",
                 transferContainerId,
-                parameters
-        ));
+                parameters));
     }
 
     /**
@@ -148,25 +156,27 @@ public class TransferContainerAPI extends RMModelRequest
     /**
      * Gets the children (transfers) of a transfer container.
      *
-     * @param transferContainerId The identifier of a transfer container
-     * @param parameters The URL parameters to add
+     * @param transferContainerId
+     *            The identifier of a transfer container
+     * @param parameters
+     *            The URL parameters to add
      * @return The {@link TransferCollection} for the given {@code transferContainerId}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code transferContainerId}</li>
-     *  <li>{@code filePlanId} does not exist</li>
-     *</ul>
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to read {@code transferContainerId}</li>
+     *             <li>{@code filePlanId} does not exist</li>
+     *             </ul>
      */
     public TransferCollection getTransfers(String transferContainerId, String parameters)
     {
         mandatoryString("transferContainerId", transferContainerId);
 
         return getRmRestWrapper().processModels(TransferCollection.class, simpleRequest(
-            GET,
-            "transfer-containers/{filePlanId}/transfers?{parameters}",
-            transferContainerId,
-            parameters
-        ));
+                GET,
+                "transfer-containers/{filePlanId}/transfers?{parameters}",
+                transferContainerId,
+                parameters));
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,23 +26,24 @@
  */
 package org.alfresco.rest.rm.community.recordcategories;
 
+import static org.testng.Assert.assertTrue;
+
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.CUT_OFF_ASPECT;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.testng.Assert.assertTrue;
 
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.Test;
 
 public class AutomaticDispositionTest extends BaseRMRestTest
 {
@@ -52,9 +53,7 @@ public class AutomaticDispositionTest extends BaseRMRestTest
     private RecordCategory categoryWithRSOnRecords;
 
     /**
-     * Given there is a complete record eligible for cut off
-     * When the correct duration of time passes
-     * Then the record will be automatically cut off
+     * Given there is a complete record eligible for cut off When the correct duration of time passes Then the record will be automatically cut off
      */
     @Test(enabled = false)
     public void testAutomaticCutOff() throws Exception
@@ -67,8 +66,7 @@ public class AutomaticDispositionTest extends BaseRMRestTest
         dispositionScheduleService.addCutOffImmediatelyStep(categoryWithRSOnRecords.getName());
 
         STEP("Create a record folder with a record");
-        RecordCategoryChild recordFolder = createRecordFolder(categoryWithRSOnRecords.getId(), getRandomName
-                ("recordFolder"));
+        RecordCategoryChild recordFolder = createRecordFolder(categoryWithRSOnRecords.getId(), getRandomName("recordFolder"));
         Record record = createElectronicRecord(recordFolder.getId(), getRandomName("elRecord"));
 
         STEP("Complete the record and wait upon to 5 minutes for automatic job to execute");
@@ -87,7 +85,7 @@ public class AutomaticDispositionTest extends BaseRMRestTest
         assertTrue(aspects.contains(CUT_OFF_ASPECT), "Record should now be cut off");
     }
 
-    @AfterClass (alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void deleteCategory()
     {
         deleteRecordCategory(categoryWithRSOnRecords.getId());

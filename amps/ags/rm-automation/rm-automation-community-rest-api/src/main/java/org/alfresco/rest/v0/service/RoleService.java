@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,6 +33,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import org.alfresco.rest.core.RestAPIFactory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
@@ -42,8 +45,6 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Produces processed results from roles API calls
@@ -55,21 +56,22 @@ import org.springframework.stereotype.Service;
 public class RoleService
 {
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private DataUserAIS dataUser;
 
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private RestAPIFactory restAPIFactory;
 
     /**
      * Get the capabilities for a role
      *
-     * @param roleName the role name
+     * @param roleName
+     *            the role name
      * @return the list of capabilities
      */
     public Set<String> getRoleCapabilities(String roleName)
@@ -81,8 +83,10 @@ public class RoleService
     /**
      * Add capabilities to a role
      *
-     * @param role         role to be updated
-     * @param capabilities list of capabilities to be added
+     * @param role
+     *            role to be updated
+     * @param capabilities
+     *            list of capabilities to be added
      */
     public void addCapabilitiesToRole(UserRoles role, Set<String> capabilities)
     {
@@ -96,8 +100,10 @@ public class RoleService
     /**
      * Remove capabilities from a role
      *
-     * @param role         role to be updated
-     * @param capabilities list of capabilities to be removed
+     * @param role
+     *            role to be updated
+     * @param capabilities
+     *            list of capabilities to be removed
      */
     public void removeCapabilitiesFromRole(UserRoles role, Set<String> capabilities)
     {
@@ -110,13 +116,17 @@ public class RoleService
     /**
      * Assign permission on a record category and give the user RM role
      *
-     * @param user           the user to assign rm role and permissions
-     * @param categoryId     the id of the category to assign permissions for
-     * @param userPermission the permissions to be assigned to the user
-     * @param userRole       the rm role to be assigned to the user
+     * @param user
+     *            the user to assign rm role and permissions
+     * @param categoryId
+     *            the id of the category to assign permissions for
+     * @param userPermission
+     *            the permissions to be assigned to the user
+     * @param userRole
+     *            the rm role to be assigned to the user
      */
     public void assignUserPermissionsOnCategoryAndRMRole(UserModel user, String categoryId, UserPermissions userPermission,
-                                                         String userRole)
+            String userRole)
     {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
         getRmRolesAndActionsAPI().assignRoleToUser(getDataUser().getAdminUser().getUsername(), getDataUser().getAdminUser().getPassword(),
@@ -126,7 +136,8 @@ public class RoleService
     /**
      * Helper method to create a test user with rm role
      *
-     * @param userRole the rm role
+     * @param userRole
+     *            the rm role
      * @return the created user model
      */
     public UserModel createUserWithRMRole(String userRole)
@@ -140,13 +151,16 @@ public class RoleService
     /**
      * Helper method to create a test user with rm role and permissions over the record category
      *
-     * @param userRole       the rm role
-     * @param userPermission the permissions over the record category
-     * @param recordCategory the category on which user has permissions
+     * @param userRole
+     *            the rm role
+     * @param userPermission
+     *            the permissions over the record category
+     * @param recordCategory
+     *            the category on which user has permissions
      * @return the created user model
      */
     public UserModel createUserWithRMRoleAndCategoryPermission(String userRole, RecordCategory recordCategory,
-                                                                  UserPermissions userPermission)
+            UserPermissions userPermission)
     {
         return createUserWithRMRoleAndRMNodePermission(userRole, recordCategory.getId(), userPermission);
     }
@@ -154,13 +168,16 @@ public class RoleService
     /**
      * Helper method to create a user with rm role and permissions on the node ref
      *
-     * @param userRole       the rm role
-     * @param userPermission the permissions over the rm node
-     * @param componentId the node id to grant rm permission
+     * @param userRole
+     *            the rm role
+     * @param userPermission
+     *            the permissions over the rm node
+     * @param componentId
+     *            the node id to grant rm permission
      * @return the created user model
      */
     public UserModel createUserWithRMRoleAndRMNodePermission(String userRole, String componentId,
-                                                               UserPermissions userPermission)
+            UserPermissions userPermission)
     {
         final UserModel rmUser = createUserWithRMRole(userRole);
         getRestAPIFactory().getRMUserAPI().addUserPermission(componentId, rmUser, userPermission);
@@ -169,36 +186,43 @@ public class RoleService
     }
 
     /**
-     * Helper method to create a  user with rm role and permissions over the recordCategory and collaborator role
-     * in collaboration site
+     * Helper method to create a user with rm role and permissions over the recordCategory and collaborator role in collaboration site
      *
-     * @param siteModel collaboration site
-     * @param recordCategory  the category  on which permission should be given
-     * @param userRole       the rm role
-     * @param userPermission the permissions over the recordCategory
+     * @param siteModel
+     *            collaboration site
+     * @param recordCategory
+     *            the category on which permission should be given
+     * @param userRole
+     *            the rm role
+     * @param userPermission
+     *            the permissions over the recordCategory
      * @return the created user model
      */
     public UserModel createCollaboratorWithRMRoleAndPermission(SiteModel siteModel, RecordCategory recordCategory,
-                                                                UserRoles userRole, UserPermissions userPermission)
+            UserRoles userRole, UserPermissions userPermission)
     {
         return createUserWithSiteRoleRMRoleAndPermission(siteModel, UserRole.SiteCollaborator, recordCategory.getId(),
-                                                        userRole, userPermission);
+                userRole, userPermission);
     }
 
     /**
-     * Helper method to create a test user with a rm role and permissions over a rm component and a role
-     * in collaboration site
+     * Helper method to create a test user with a rm role and permissions over a rm component and a role in collaboration site
      *
-     * @param siteModel      collaboration site
-     * @param userSiteRole   user role in the collaboration site
-     * @param rmNodeId       rm node id to grant rm permission
-     * @param userRole       the rm role
-     * @param userPermission the permissions over the rmNodeId
+     * @param siteModel
+     *            collaboration site
+     * @param userSiteRole
+     *            user role in the collaboration site
+     * @param rmNodeId
+     *            rm node id to grant rm permission
+     * @param userRole
+     *            the rm role
+     * @param userPermission
+     *            the permissions over the rmNodeId
      * @return the created user model
      */
     public UserModel createUserWithSiteRoleRMRoleAndPermission(SiteModel siteModel, UserRole userSiteRole,
-                                                               String rmNodeId, UserRoles userRole,
-                                                               UserPermissions userPermission)
+            String rmNodeId, UserRoles userRole,
+            UserPermissions userPermission)
     {
         final UserModel rmUser = createUserWithRMRoleAndRMNodePermission(userRole.roleId, rmNodeId,
                 userPermission);

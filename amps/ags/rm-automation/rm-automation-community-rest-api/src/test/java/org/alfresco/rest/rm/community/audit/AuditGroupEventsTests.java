@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,15 +37,15 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import java.util.Collections;
 
 import com.google.common.collect.ImmutableMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.GroupModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * This class contains the tests that check the group events are audited
@@ -53,7 +53,7 @@ import org.testng.annotations.Test;
  * @author Claudia Agache
  * @since 2.7
  */
-@AlfrescoTest (jira = "RM-5236")
+@AlfrescoTest(jira = "RM-5236")
 public class AuditGroupEventsTests extends BaseRMRestTest
 {
     @Autowired
@@ -61,16 +61,14 @@ public class AuditGroupEventsTests extends BaseRMRestTest
     private GroupModel testGroup;
     private UserModel testUser;
 
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void cleanAuditLogs()
     {
         rmAuditService.clearAuditLog();
     }
 
     /**
-     * Given I have created a new group
-     * When I view the RM audit
-     * Then there is an entry showing that I created a group
+     * Given I have created a new group When I view the RM audit Then there is an entry showing that I created a group
      */
     @Test
     public void createGroupEventIsAudited()
@@ -84,9 +82,7 @@ public class AuditGroupEventsTests extends BaseRMRestTest
     }
 
     /**
-     * Given I have added a user to a group
-     * When I view the RM audit
-     * Then there is an entry showing that I have added a user to a group
+     * Given I have added a user to a group When I view the RM audit Then there is an entry showing that I have added a user to a group
      */
     @Test
     public void addUserToGroupEventIsAudited()
@@ -102,9 +98,7 @@ public class AuditGroupEventsTests extends BaseRMRestTest
     }
 
     /**
-     * Given I have removed a user from a group
-     * When I view the RM audit
-     * Then there is an entry showing that I have removed a user from a group
+     * Given I have removed a user from a group When I view the RM audit Then there is an entry showing that I have removed a user from a group
      */
     @Test
     public void removeUserFromGroupEventIsAudited()
@@ -117,13 +111,11 @@ public class AuditGroupEventsTests extends BaseRMRestTest
         STEP("Check the audit log contains the entry for the remove user from group event.");
         rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_USER_GROUP, getAdminUser(), testGroup.getGroupIdentifier(),
                 asList(ImmutableMap.of("new", "", "previous", testUser.getUsername(), "name", "User Name"),
-                        ImmutableMap.of("new", "","previous", testGroup.getGroupIdentifier(), "name", "Parent Group")));
+                        ImmutableMap.of("new", "", "previous", testGroup.getGroupIdentifier(), "name", "Parent Group")));
     }
 
     /**
-     * Given I have deleted a group
-     * When I view the RM audit
-     * Then there is an entry showing that I have deleted a group
+     * Given I have deleted a group When I view the RM audit Then there is an entry showing that I have deleted a group
      */
     @Test
     public void deleteGroupEventIsAudited()

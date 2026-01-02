@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,14 +33,14 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import java.util.Collections;
 
 import com.google.common.collect.ImmutableMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.Test;
 
 /**
  * This class contains the tests that check the user events are audited
@@ -56,9 +56,7 @@ public class AuditUserEventsTests extends BaseRMRestTest
     private RMAuditService rmAuditService;
 
     /**
-     * Given I have created a new user
-     * When I view the RM audit
-     * Then there is an entry showing that I created a user
+     * Given I have created a new user When I view the RM audit Then there is an entry showing that I created a user
      */
     @Test
     @AlfrescoTest(jira = "RM-6223")
@@ -74,10 +72,10 @@ public class AuditUserEventsTests extends BaseRMRestTest
                 Collections.singletonList(ImmutableMap.of("new", userName, "previous", "", "name", "User Name")));
     }
 
-    @AfterClass (alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void cleanUp()
     {
-        //delete the created user
+        // delete the created user
         getDataUser().deleteUser(createUser);
     }
 }

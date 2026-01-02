@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,23 +27,22 @@
 
 package org.alfresco.rest.rm.community.model.transfer;
 
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ACCESSION_INDICATOR;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IDENTIFIER;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_OWNER;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_PDF_INDICATOR;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TRANSFER_LOCATION;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ACCESSION_INDICATOR;
-
-import org.alfresco.rest.rm.community.model.common.Owner;
-import org.alfresco.utility.model.TestModel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.rest.rm.community.model.common.Owner;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for Transfer properties
@@ -61,24 +60,24 @@ public class TransferProperties extends TestModel
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
+    @JsonProperty(required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 
     /************************/
     /** Optional parameters */
     /************************/
-    @JsonProperty (PROPERTIES_ROOT_NODE_REF)
+    @JsonProperty(PROPERTIES_ROOT_NODE_REF)
     private String rootNodeRef;
 
-    @JsonProperty (PROPERTIES_OWNER)
+    @JsonProperty(PROPERTIES_OWNER)
     private Owner owner;
 
-    @JsonProperty (PROPERTIES_PDF_INDICATOR)
+    @JsonProperty(PROPERTIES_PDF_INDICATOR)
     private Boolean pdfIndicator;
 
-    @JsonProperty (PROPERTIES_TRANSFER_LOCATION)
+    @JsonProperty(PROPERTIES_TRANSFER_LOCATION)
     private String transferLocation;
 
-    @JsonProperty (PROPERTIES_ACCESSION_INDICATOR)
+    @JsonProperty(PROPERTIES_ACCESSION_INDICATOR)
     private Boolean accessionIndicator;
 }

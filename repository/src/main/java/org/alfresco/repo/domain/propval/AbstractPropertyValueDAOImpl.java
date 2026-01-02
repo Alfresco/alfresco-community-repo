@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -777,6 +777,10 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
             Long actualTypeId = entity.getActualTypeId();
             final Class<Serializable> actualType = (Class<Serializable>) getPropertyClassById(actualTypeId).getSecond();
+            if (SerializableString.class.equals(actualType))
+            {
+                return entity.getValue((Class) String.class, converter);
+            }
             final Serializable actualValue = entity.getValue(actualType, converter);
             // Done
             return actualValue;

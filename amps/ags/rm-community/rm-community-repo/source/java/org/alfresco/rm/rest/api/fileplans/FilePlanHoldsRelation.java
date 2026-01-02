@@ -33,8 +33,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
@@ -47,7 +48,6 @@ import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * File plan holds relation
@@ -56,9 +56,9 @@ import org.springframework.beans.factory.InitializingBean;
  */
 @RelationshipResource(name = "holds", entityResource = FilePlanEntityResource.class, title = "Holds in a file plan")
 public class FilePlanHoldsRelation implements
-    RelationshipResourceAction.Create<HoldModel>,
-    RelationshipResourceAction.Read<HoldModel>,
-    InitializingBean
+        RelationshipResourceAction.Create<HoldModel>,
+        RelationshipResourceAction.Read<HoldModel>,
+        InitializingBean
 {
     private FilePlanComponentsApiUtils apiUtils;
     private ApiNodesModelFactory nodesModelFactory;
@@ -87,11 +87,11 @@ public class FilePlanHoldsRelation implements
         List<NodeRef> holds = holdService.getHolds(parentNodeRef);
 
         List<HoldModel> page = holds.stream()
-            .map(hold -> fileFolderService.getFileInfo(hold))
-            .map(nodesModelFactory::createHoldModel)
-            .skip(parameters.getPaging().getSkipCount())
-            .limit(parameters.getPaging().getMaxItems())
-            .collect(Collectors.toCollection(LinkedList::new));
+                .map(hold -> fileFolderService.getFileInfo(hold))
+                .map(nodesModelFactory::createHoldModel)
+                .skip(parameters.getPaging().getSkipCount())
+                .limit(parameters.getPaging().getMaxItems())
+                .collect(Collectors.toCollection(LinkedList::new));
 
         int totalItems = holds.size();
         boolean hasMore = parameters.getPaging().getSkipCount() + parameters.getPaging().getMaxItems() < totalItems;
@@ -113,19 +113,19 @@ public class FilePlanHoldsRelation implements
             for (HoldModel nodeInfo : holds)
             {
                 NodeRef newNodeRef = holdService.createHold(parentNodeRef, nodeInfo.name(), nodeInfo.reason(),
-                    nodeInfo.description());
+                        nodeInfo.description());
                 createdNodes.add(newNodeRef);
             }
             return createdNodes;
         };
 
         List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper()
-            .doInTransaction(callback, false, true);
+                .doInTransaction(callback, false, true);
 
         return createdNodes.stream()
-            .map(hold -> fileFolderService.getFileInfo(hold))
-            .map(nodesModelFactory::createHoldModel)
-            .collect(Collectors.toCollection(LinkedList::new));
+                .map(hold -> fileFolderService.getFileInfo(hold))
+                .map(nodesModelFactory::createHoldModel)
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)

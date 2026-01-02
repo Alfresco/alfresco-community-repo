@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -251,7 +251,7 @@ public class RecordCategoryTests extends BaseRMRestTest
      * When I use the API to create children of type record folder
      * Then  a record folder it is created within the record category
      * </pre>
-     * 
+     *
      * <pre>
      * Given that a record category exists
      * When I use the API to create children of type folder (cm:folder type)
@@ -333,7 +333,7 @@ public class RecordCategoryTests extends BaseRMRestTest
      * When I ask the API to get me the children of the record category
      * Then I am returned the contained record categories and record folders and their details
      * </pre>
-     * 
+     *
      * <pre>
      * Given that a record category with a disposition schedule exists
      * And contains a number of record categories and record folders

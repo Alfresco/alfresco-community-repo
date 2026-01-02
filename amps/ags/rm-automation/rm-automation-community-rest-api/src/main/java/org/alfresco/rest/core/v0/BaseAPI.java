@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -268,7 +268,7 @@ public abstract class BaseAPI
 
     /**
      * Helper method for GET requests
-     * 
+     *
      * @param adminUser
      *            user with administrative privileges
      * @param adminPassword
@@ -302,7 +302,7 @@ public abstract class BaseAPI
 
     /**
      * Helper method for Delete requests
-     * 
+     *
      * @param adminUser
      *            user with administrative privileges
      * @param adminPassword
@@ -336,7 +336,7 @@ public abstract class BaseAPI
 
     /**
      * Helper method for PUT requests
-     * 
+     *
      * @param adminUser
      *            user with administrative privileges
      * @param adminPassword
@@ -462,7 +462,7 @@ public abstract class BaseAPI
 
     /**
      * Helper method for POST requests
-     * 
+     *
      * @param adminUser
      *            user with administrative privileges
      * @param adminPassword
@@ -627,7 +627,7 @@ public abstract class BaseAPI
 
     /**
      * Helper method for handling generic HTTP requests
-     * 
+     *
      * @param requestType
      *            request type (a subclass of {@link HttpRequestBase})
      * @param requestUrl

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -153,7 +153,7 @@ public class RMRestWrapper
 
     /**
      * You can handle the request sent to server by calling this method. If for example you want to sent multipart form data you can use:
-     * 
+     *
      * <pre>
      * restClient.configureRequestSpec()
      *         .addMultiPart("filedata", Utility.getResourceTestDataFile("restapi-resource"))
@@ -162,7 +162,7 @@ public class RMRestWrapper
      *
      * restClient.withCoreAPI().usingNode(ContentModel.my()).createNode();
      * </pre>
-     * 
+     *
      * This will create the node using the multipart data defined.
      */
     public RequestSpecBuilder configureRequestSpec()

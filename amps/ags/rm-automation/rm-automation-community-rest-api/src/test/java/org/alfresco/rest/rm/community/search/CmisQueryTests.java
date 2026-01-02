@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -80,7 +80,7 @@ public class CmisQueryTests extends BaseRMRestTest
 
     /**
      * Create some test data:
-     * 
+     *
      * <pre>
      *     - a collaboration site with documents
      *     - in place records

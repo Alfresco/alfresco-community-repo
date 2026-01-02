@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,11 +27,6 @@
 package org.alfresco.rest.core;
 
 import io.restassured.builder.RequestSpecBuilder;
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 
 import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.model.RestErrorModel;
@@ -43,6 +38,12 @@ import org.alfresco.rest.requests.search.SearchAPI;
 import org.alfresco.rest.rm.community.requests.gscore.GSCoreAPI;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import lombok.Getter;
 
 /**
  * Extends {@link RestWrapper} in order to call GS APIs with our own properties
@@ -152,18 +153,15 @@ public class RMRestWrapper
     }
 
     /**
-     * You can handle the request sent to server by calling this method. If for example you want to sent multipart form data you can use:
-     * 
-     * <pre>
+     * You can handle the request sent to server by calling this method.
+     * If for example you want to sent multipart form data you can use: <pre>
      * restClient.configureRequestSpec()
-     *         .addMultiPart("filedata", Utility.getResourceTestDataFile("restapi-resource"))
-     *         .addFormParam("renditions", "doclib")
-     *         .addFormParam("autoRename", true);
+     *              .addMultiPart("filedata", Utility.getResourceTestDataFile("restapi-resource"))
+     *              .addFormParam("renditions", "doclib")
+     *              .addFormParam("autoRename", true);
      *
      * restClient.withCoreAPI().usingNode(ContentModel.my()).createNode();
-     * </pre>
-     * 
-     * This will create the node using the multipart data defined.
+     * </pre> This will create the node using the multipart data defined.
      */
     public RequestSpecBuilder configureRequestSpec()
     {
@@ -173,8 +171,7 @@ public class RMRestWrapper
     /**
      * Process a response that returns a html
      *
-     * @throws EmptyJsonResponseException
-     *             If there is no response from the server.
+     * @throws EmptyJsonResponseException If there is no response from the server.
      */
     public RestHtmlResponse processHtmlResponse(RestRequest simpleRequest)
     {

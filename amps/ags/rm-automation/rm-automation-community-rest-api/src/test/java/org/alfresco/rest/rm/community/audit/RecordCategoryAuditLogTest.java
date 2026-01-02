@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,20 +26,6 @@
  */
 package org.alfresco.rest.rm.community.audit;
 
-import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.test.util.AssertionErrors.assertTrue;
-
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-import static org.alfresco.utility.report.log.Step.STEP;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
@@ -47,9 +33,19 @@ import org.alfresco.rest.v0.RMAuditAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-public class RecordCategoryAuditLogTest extends BaseRMRestTest
-{
+import java.util.List;
+import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.test.util.AssertionErrors.assertTrue;
+
+public class RecordCategoryAuditLogTest extends BaseRMRestTest {
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
     @Autowired
@@ -61,21 +57,19 @@ public class RecordCategoryAuditLogTest extends BaseRMRestTest
     private RecordCategory recordCategoryAudit;
 
     @BeforeClass(alwaysRun = true)
-    public void recordCategoryAuditLogSetup()
-    {
+    public void recordCategoryAuditLogSetup() {
         STEP("Create RM Site");
         createRMSiteIfNotExists();
 
         STEP("Create RM Admin user");
         rmRolesAndActionsAPI.createUserAndAssignToRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_ADMIN,
-                getAdminUser().getPassword(),
-                "Administrator");
+            getAdminUser().getPassword(),
+            "Administrator");
     }
 
     @Test
     @AlfrescoTest(jira = "RM-2768")
-    public void recordCategoryAudit() throws Exception
-    {
+    public void recordCategoryAudit() throws Exception {
         STEP("Create root level category");
         recordCategoryAudit = createRootCategory(AUDIT_CATEGORY);
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
@@ -86,22 +80,24 @@ public class RecordCategoryAuditLogTest extends BaseRMRestTest
         assertTrue("Updated metadata Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Updated Metadata")));
     }
 
-    @Test(
+    @Test
+        (
             dependsOnMethods = "recordCategoryAudit",
-            description = "Viewing audit log is itself an auditable event")
-    @AlfrescoTest(jira = "RM-4303")
-    public void recordCategoryAuditIsEvent()
-    {
+            description = "Viewing audit log is itself an auditable event"
+        )
+    @AlfrescoTest(jira="RM-4303")
+    public void recordCategoryAuditIsEvent() {
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
         assertTrue("Audit View Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Audit View")));
     }
 
-    @Test(
+    @Test
+        (
             dependsOnMethods = "recordCategoryAuditIsEvent",
-            description = "Record category rename is an edit metadata event")
-    @AlfrescoTest(jira = "RM-4303")
-    public void renameRecordCategory()
-    {
+            description = "Record category rename is an edit metadata event"
+        )
+    @AlfrescoTest(jira="RM-4303")
+    public void renameRecordCategory() {
         String categoryName = "Category name " + getRandomAlphanumeric();
         RecordCategory rootRecordCategory = createRootCategory(categoryName);
         String newCategoryName = "Rename " + categoryName;
@@ -113,13 +109,12 @@ public class RecordCategoryAuditLogTest extends BaseRMRestTest
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
         assertTrue("Updated metadata Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Updated Metadata")));
     }
-
     @AfterClass(alwaysRun = true)
-    private void electronicRecordAuditLogCleanup()
-    {
+    private void electronicRecordAuditLogCleanup() {
         deleteRecordCategory(recordCategoryAudit.getId());
         dataUser.deleteUser(new UserModel(RM_ADMIN,
-                getAdminUser().getPassword()));
+            getAdminUser().getPassword()));
         auditLog.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
     }
 }
+

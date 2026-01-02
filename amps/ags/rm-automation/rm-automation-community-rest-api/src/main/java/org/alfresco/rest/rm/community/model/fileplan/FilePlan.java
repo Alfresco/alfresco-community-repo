@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,15 +29,16 @@ package org.alfresco.rest.rm.community.model.fileplan;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.model.RestByUserModel;
+import org.alfresco.rest.rm.community.model.common.Path;
+import org.alfresco.utility.model.TestModel;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import org.alfresco.rest.model.RestByUserModel;
-import org.alfresco.rest.rm.community.model.common.Path;
-import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for file plan
@@ -57,34 +58,34 @@ public class FilePlan extends TestModel
     /** Mandatory parameters */
     /*************************/
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private RestByUserModel createdByUser;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String modifiedAt;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String nodeType;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String parentId;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private List<String> aspectNames;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String createdAt;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private RestByUserModel modifiedByUser;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String name;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String id;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private FilePlanProperties properties;
 
     /************************/

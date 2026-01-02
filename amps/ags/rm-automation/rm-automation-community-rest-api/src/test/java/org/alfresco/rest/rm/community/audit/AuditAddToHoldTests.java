@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,10 +28,6 @@ package org.alfresco.rest.rm.community.audit;
 
 import static java.util.Arrays.asList;
 
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
-
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_HOLD;
@@ -42,16 +38,14 @@ import static org.alfresco.utility.Utility.buildPath;
 import static org.alfresco.utility.Utility.removeLastSlash;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -70,6 +64,11 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
  * This class contains the tests that check the add to hold event is audited
@@ -77,7 +76,7 @@ import org.alfresco.utility.model.UserModel;
  * @author Claudia Agache
  * @since 3.3
  */
-@AlfrescoTest(jira = "RM-6859")
+@AlfrescoTest (jira = "RM-6859")
 public class AuditAddToHoldTests extends BaseRMRestTest
 {
     private final String PREFIX = generateTestPrefix(AuditAddToHoldTests.class);
@@ -98,18 +97,18 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     private String hold1NodeRef;
     private String hold2NodeRef;
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void preconditionForAuditAddToHoldTests()
     {
         STEP("Create 2 holds.");
         hold1NodeRef = getRestAPIFactory()
-                .getFilePlansAPI(rmAdmin)
-                .createHold(Hold.builder().name(HOLD1).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
-                .getId();
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(HOLD1).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .getId();
         hold2NodeRef = getRestAPIFactory()
-                .getFilePlansAPI(rmAdmin)
-                .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
-                .getId();
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .getId();
         holdsListRef = asList(hold1NodeRef, hold2NodeRef);
 
         STEP("Create a new record category with a record folder.");
@@ -134,11 +133,11 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      *
      * @return the node id, the node name and the node path
      */
-    @DataProvider(name = "validNodesForAddToHold")
+    @DataProvider (name = "validNodesForAddToHold")
     public Object[][] getValidNodesForAddToHold()
     {
         FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                                                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         RecordCategoryChild recordFolderToBeAdded = createRecordFolder(recordCategory.getId(), PREFIX + "recFolderToBeAdded");
         Record recordToBeAdded = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
         String recordFolderPath = removeLastSlash(buildPath(FILE_PLAN_PATH, recordCategory.getName(),
@@ -147,26 +146,35 @@ public class AuditAddToHoldTests extends BaseRMRestTest
                 recordFolder.getName(), recordToBeAdded.getName()));
         String contentPath = "/Company Home" + contentToBeAdded.getCmisLocation();
 
-        return new String[][]{
-                // a record folder
-                {recordFolderToBeAdded.getId(), recordFolderToBeAdded.getName(), recordFolderPath},
-                // a record
-                {recordToBeAdded.getId(), recordToBeAdded.getName(), recordPath},
-                // an active content,
-                {contentToBeAdded.getNodeRefWithoutVersion(), contentToBeAdded.getName(), contentPath}
+        return new String[][]
+        {
+            // a record folder
+            { recordFolderToBeAdded.getId(), recordFolderToBeAdded.getName(), recordFolderPath },
+            // a record
+            { recordToBeAdded.getId(), recordToBeAdded.getName(), recordPath },
+            //an active content,
+            { contentToBeAdded.getNodeRefWithoutVersion(), contentToBeAdded.getName(), contentPath }
         };
     }
 
     /**
-     * Given a document/record/record folder is added to a hold When I view the audit log Then an entry has been created in the audit log that contains the following: name of the hold name of the document/record/record folder added user who added the content date the content was added path of the node
+     * Given a document/record/record folder is added to a hold
+     * When I view the audit log
+     * Then an entry has been created in the audit log that contains the following:
+     *      name of the hold
+     *      name of the document/record/record folder added
+     *      user who added the content
+     *      date the content was added
+     *      path of the node
      */
-    @Test(dataProvider = "validNodesForAddToHold")
+    @Test (dataProvider = "validNodesForAddToHold")
     public void addToHoldEventIsAudited(String nodeId, String nodeName, String nodePath)
     {
         rmAuditService.clearAuditLog();
 
         STEP("Add node to hold.");
         getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(nodeId).build(), hold1NodeRef);
+
 
         STEP("Check the audit log contains the entry for the add to hold event.");
         rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_HOLD, rmAdmin, nodeName, nodePath,
@@ -175,7 +183,9 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given an unsuccessful add to hold action When I view the audit log Then the add to hold event isn't audited
+     * Given an unsuccessful add to hold action
+     * When I view the audit log
+     * Then the add to hold event isn't audited
      */
     @Test
     public void unsuccessfulAddToHoldIsNotAudited()
@@ -195,7 +205,9 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a not empty record folder is added to a hold When I view the audit log Then only an entry has been created in the audit log for the record folder added
+     * Given a not empty record folder is added to a hold
+     * When I view the audit log
+     * Then only an entry has been created in the audit log for the record folder added
      */
     @Test
     public void addToHoldIsNotAuditedForRecordFolderChildren()
@@ -218,7 +230,9 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a record is added to multiple holds When I view the audit log Then multiple entries have been created in the audit log for each add to hold event
+     * Given a record is added to multiple holds
+     * When I view the audit log
+     * Then multiple entries have been created in the audit log for each add to hold event
      */
     @Test
     public void addToHoldIsAuditedInBulkAddition()
@@ -231,6 +245,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         STEP("Add record to multiple holds.");
         getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(recordToBeAdded.getId()).build(), hold1NodeRef);
         getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(recordToBeAdded.getId()).build(), hold2NodeRef);
+
 
         auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD);
 
@@ -245,14 +260,16 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a document is added to a hold When I view the audit log as an user with no Read permissions over the document Then the add to hold entry isn't visible
+     * Given a document is added to a hold
+     * When I view the audit log as an user with no Read permissions over the document
+     * Then the add to hold entry isn't visible
      */
     @Test
     public void addToHoldAuditEntryNotVisible()
     {
         STEP("Create a new file");
         FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                                                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         rmAuditService.clearAuditLog();
 
         STEP("Add file to hold.");
@@ -260,18 +277,20 @@ public class AuditAddToHoldTests extends BaseRMRestTest
 
         STEP("Check that an user with no Read permissions can't see the entry for the add to hold event.");
         assertTrue("The list of events should not contain Add to Hold entry ",
-                rmAuditService.getAuditEntriesFilteredByEvent(rmManagerNoReadOnNode, ADD_TO_HOLD).isEmpty());
+            rmAuditService.getAuditEntriesFilteredByEvent(rmManagerNoReadOnNode, ADD_TO_HOLD).isEmpty());
     }
 
     /**
-     * Given a document is added to a hold When I view the audit log as an user with no Read permissions over the hold Then the the hold name is replaced in the add to hold entry
+     * Given a document is added to a hold
+     * When I view the audit log as an user with no Read permissions over the hold
+     * Then the the hold name is replaced in the add to hold entry
      */
     @Test
     public void addToHoldAuditEntryHoldNameNotVisible()
     {
         STEP("Create a new file");
         FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                                                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         rmAuditService.clearAuditLog();
 
         STEP("Add file to hold.");
@@ -283,11 +302,11 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         String replacementHoldName = "You don't have permission to view this hold.";
         assertEquals("The list of events should contain the Add to Hold entry", 1, auditEntries.size());
         assertTrue("The hold name should not be visible in the Add to Hold entry ",
-                auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
-                        ImmutableMap.of("new", replacementHoldName, "previous", "", "name", "Hold Name"))));
+            auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
+                ImmutableMap.of("new", replacementHoldName, "previous", "", "name", "Hold Name"))));
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void cleanUpAuditAddToHoldTests()
     {
         holdsListRef.forEach(holdRef -> getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(holdRef));

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,18 +26,17 @@
  */
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpMethod.PUT;
-import static org.testng.Assert.fail;
-
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
+import static org.testng.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +44,7 @@ import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 
@@ -65,8 +65,7 @@ import org.alfresco.rest.rm.community.util.UnfiledContainerChildMixin;
 public class UnfiledContainerAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper
-     *            RM REST Wrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public UnfiledContainerAPI(RMRestWrapper rmRestWrapper)
     {
@@ -86,19 +85,16 @@ public class UnfiledContainerAPI extends RMModelRequest
     /**
      * Gets an unfiled record container.
      *
-     * @param unfiledContainerId
-     *            The identifier of a unfiled record container
-     * @param parameters
-     *            The URL parameters to add
+     * @param unfiledContainerId The identifier of a unfiled record container
+     * @param parameters The URL parameters to add
      * @return The {@link UnfiledContainer} for the given {@code unfiledContainerId}
-     * @throws RuntimeException
-     *             for the following cases:
-     *             <ul>
-     *             <li>{@code unfiledContainerId} is not a valid format</li>
-     *             <li>authentication fails</li>
-     *             <li>current user does not have permission to read {@code unfiledContainerId}</li>
-     *             <li>{@code unfiledContainerId} does not exist</li>
-     *             </ul>
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code unfiledContainerId} is not a valid format</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code unfiledContainerId}</li>
+     *  <li>{@code unfiledContainerId} does not exist</li>
+     * </ul>
      */
     public UnfiledContainer getUnfiledContainer(String unfiledContainerId, String parameters)
     {
@@ -108,7 +104,8 @@ public class UnfiledContainerAPI extends RMModelRequest
                 GET,
                 "unfiled-containers/{unfiledContainerId}?{parameters}",
                 unfiledContainerId,
-                parameters));
+                parameters
+        ));
     }
 
     /**
@@ -124,28 +121,26 @@ public class UnfiledContainerAPI extends RMModelRequest
     /**
      * Gets the children of an unfiled records container
      *
-     * @param unfiledContainerId
-     *            The identifier of an unfiled records container
-     * @param parameters
-     *            The URL parameters to add
+     * @param unfiledContainerId The identifier of an unfiled records container
+     * @param parameters The URL parameters to add
      * @return The {@link UnfiledContainerChildCollection} for the given {@code unfiledContainerId}
-     * @throws RuntimeException
-     *             for the following cases:
-     *             <ul>
-     *             <li>authentication fails</li>
-     *             <li>current user does not have permission to read {@code unfiledContainerId}</li>
-     *             <li>{@code unfiledContainerId} does not exist</li>
-     *             </ul>
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code unfiledContainerId}</li>
+     *  <li>{@code unfiledContainerId} does not exist</li>
+     *</ul>
      */
     public UnfiledContainerChildCollection getUnfiledContainerChildren(String unfiledContainerId, String parameters)
     {
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
         return getRmRestWrapper().processModels(UnfiledContainerChildCollection.class, simpleRequest(
-                GET,
-                "unfiled-containers/{unfiledContainerId}/children?{parameters}",
-                unfiledContainerId,
-                parameters));
+            GET,
+            "unfiled-containers/{unfiledContainerId}/children?{parameters}",
+            unfiledContainerId,
+            parameters
+        ));
     }
 
     /**
@@ -162,23 +157,19 @@ public class UnfiledContainerAPI extends RMModelRequest
     /**
      * Creates an unfiled container child. Can be a record or an unfiled record folder.
      *
-     * @param unfiledContainerChildModel
-     *            The unfiled container child model which holds the information
-     * @param unfiledContainerId
-     *            The identifier of an unfiled container
-     * @param parameters
-     *            The URL parameters to add
+     * @param unfiledContainerChildModel The unfiled container child model which holds the information
+     * @param unfiledContainerId The identifier of an unfiled container
+     * @param parameters The URL parameters to add
      * @return The created {@link UnfiledContainerChild}
-     * @throws RuntimeException
-     *             for the following cases:
-     *             <ul>
-     *             <li>{@code unfiledContainerId} is not a valid format or {@code unfiledContainerChildModel} is invalid</li>
-     *             <li>authentication fails</li>
-     *             <li>current user does not have permission to add children to {@code unfiledContainerId}</li>
-     *             <li>{@code unfiledContainerId} does not exist</li>
-     *             <li>new name clashes with an existing node in the current parent container</li>
-     *             <li>model integrity exception, including node name with invalid characters</li>
-     *             </ul>
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code unfiledContainerId} is not a valid format or {@code unfiledContainerChildModel} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to add children to {@code unfiledContainerId}</li>
+     *  <li>{@code unfiledContainerId} does not exist</li>
+     *  <li>new name clashes with an existing node in the current parent container</li>
+     *  <li>model integrity exception, including node name with invalid characters</li>
+     * </ul>
      */
     public UnfiledContainerChild createUnfiledContainerChild(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId, String parameters)
     {
@@ -190,21 +181,18 @@ public class UnfiledContainerAPI extends RMModelRequest
                 toJson(unfiledContainerChildModel),
                 "unfiled-containers/{unfiledContainerId}/children?{parameters}",
                 unfiledContainerId,
-                parameters));
+                parameters
+        ));
     }
 
     /**
      * Create a record from file resource
      *
-     * @param unfiledContainerChildModel
-     *            {@link UnfiledContainerChild} for electronic record to be created
-     * @param unfiledContainerChildContent
-     *            {@link File} pointing to the content of the electronic record to be created
-     * @param unfiledContainerId
-     *            The identifier of a unfiled container
+     * @param unfiledContainerChildModel {@link UnfiledContainerChild} for electronic record to be created
+     * @param unfiledContainerChildContent {@link File} pointing to the content of the electronic record to be created
+     * @param unfiledContainerId The identifier of a unfiled container
      * @return newly created {@link UnfiledContainerChild}
-     * @throws RuntimeException
-     *             for invalid recordModel JSON strings
+     * @throws RuntimeException for invalid recordModel JSON strings
      */
     public UnfiledContainerChild uploadRecord(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId, File unfiledContainerChildContent)
     {
@@ -217,7 +205,10 @@ public class UnfiledContainerAPI extends RMModelRequest
             fail("Only electronic records are supported");
         }
 
-        /* For file uploads nodeBodyCreate is ignored hence can't be used. Append all Record fields to the request. */
+        /*
+         * For file uploads nodeBodyCreate is ignored hence can't be used. Append all Record fields
+         * to the request.
+         */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
         JsonNode root;
         try
@@ -255,24 +246,19 @@ public class UnfiledContainerAPI extends RMModelRequest
     /**
      * Updates an unfiled record container
      *
-     * @param unfiledContainerModel
-     *            The unfiled record container model which holds the information
-     * @param unfiledContainerId
-     *            The identifier of an unfiled record container
-     * @param parameters
-     *            The URL parameters to add
-     * @param returns
-     *            The updated {@link UnfiledContainer}
-     * @throws RuntimeException
-     *             for the following cases:
-     *             <ul>
-     *             <li>the update request is invalid or {@code unfiledContainerId} is not a valid format or {@code unfiledContainerModel} is invalid</li>
-     *             <li>authentication fails</li>
-     *             <li>current user does not have permission to update {@code unfiledContainerId}</li>
-     *             <li>{@code unfiledContainerId} does not exist</li>
-     *             <li>the updated name clashes with an existing root category of special container in the current fileplan</li>
-     *             <li>model integrity exception, including file name with invalid characters</li>
-     *             </ul>
+     * @param unfiledContainerModel The unfiled record container model which holds the information
+     * @param unfiledContainerId The identifier of an unfiled record container
+     * @param parameters The URL parameters to add
+     * @param returns The updated {@link UnfiledContainer}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>the update request is invalid or {@code unfiledContainerId} is not a valid format or {@code unfiledContainerModel} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to update {@code unfiledContainerId}</li>
+     *  <li>{@code unfiledContainerId} does not exist</li>
+     *  <li>the updated name clashes with an existing root category of special container in the current fileplan</li>
+     *  <li>model integrity exception, including file name with invalid characters</li>
+     * </ul>
      */
     public UnfiledContainer updateUnfiledContainer(UnfiledContainer unfiledContainerModel, String unfiledContainerId, String parameters)
     {
@@ -284,7 +270,8 @@ public class UnfiledContainerAPI extends RMModelRequest
                 toJson(unfiledContainerModel),
                 "unfiled-containers/{unfiledContainerId}?{parameters}",
                 unfiledContainerId,
-                parameters));
+                parameters
+        ));
     }
 
 }

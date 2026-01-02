@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,28 +27,6 @@
 
 package org.alfresco.rest.rm.community.records;
 
-import static org.springframework.http.HttpStatus.CREATED;
-
-import static org.alfresco.rest.core.v0.APIUtils.convertHTTPResponseToJSON;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
-import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
-import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.chemistry.opencmis.client.api.CmisObject;
-import org.apache.http.HttpResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.model.RestNodeModel;
@@ -65,9 +43,28 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.apache.chemistry.opencmis.client.api.CmisObject;
+import org.apache.http.HttpResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-public class FileUnfiledRecordsTests extends BaseRMRestTest
-{
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.alfresco.rest.core.v0.APIUtils.convertHTTPResponseToJSON;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
+import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CREATED;
+
+public class FileUnfiledRecordsTests extends BaseRMRestTest {
 
     private final String TEST_PREFIX = generateTestPrefix(FileUnfiledRecordsTests.class);
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
@@ -90,16 +87,15 @@ public class FileUnfiledRecordsTests extends BaseRMRestTest
     private RecordsAPI recordsAPI;
 
     @BeforeClass(alwaysRun = true)
-    public void preConditions()
-    {
+    public void preConditions() {
 
         STEP("Create RM Site");
         createRMSiteIfNotExists();
 
         STEP("Create RM Admin user");
         rmRolesAndActionsAPI.createUserAndAssignToRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_ADMIN,
-                getAdminUser().getPassword(),
-                "Administrator");
+            getAdminUser().getPassword(),
+            "Administrator");
 
         RmAdminUser = new UserModel(RM_ADMIN, getAdminUser().getPassword());
 
@@ -113,18 +109,17 @@ public class FileUnfiledRecordsTests extends BaseRMRestTest
 
     @Test
     @AlfrescoTest(jira = "RM-2790")
-    public void fileUnfiledRecords() throws Exception
-    {
+    public void fileUnfiledRecords() throws Exception {
 
         STEP("Upload the document to test site and then make it reacord");
         // Upload document in a folder in a collaboration site
         FileModel uploadedDocbyCollabUser = dataContent.usingSite(testSite)
-                .usingUser(testUser)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            .usingUser(testUser)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         // declare uploadedDocument as record
         Record uploadedDocRecordbyCollabUser = getRestAPIFactory().getFilesAPI(testUser)
-                .declareAsRecord(uploadedDocbyCollabUser.getNodeRefWithoutVersion());
+            .declareAsRecord(uploadedDocbyCollabUser.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         STEP("Create root level category");
@@ -146,7 +141,7 @@ public class FileUnfiledRecordsTests extends BaseRMRestTest
         non_electronic_records_properties.put(BaseAPI.RMProperty.FILE, "");
 
         HttpResponse nonElectronicRecordHttpResponse = recordsAPI.createNonElectronicRecord(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), non_electronic_records_properties, rootCategory.getName(), recordFolder.getName());
+            getAdminUser().getPassword(), non_electronic_records_properties, rootCategory.getName(), recordFolder.getName());
 
         String nonElectronicRecordId = getNodeRef(nonElectronicRecordHttpResponse);
 
@@ -159,10 +154,10 @@ public class FileUnfiledRecordsTests extends BaseRMRestTest
         electronic_records_properties.put(BaseAPI.RMProperty.NAME, recordName);
 
         recordsAPI.uploadElectronicRecord(RmAdminUser.getUsername(),
-                RmAdminUser.getPassword(), electronic_records_properties, recordFolder.getName(), CMISUtil.DocumentType.TEXT_PLAIN);
+            RmAdminUser.getPassword(), electronic_records_properties, recordFolder.getName(), CMISUtil.DocumentType.TEXT_PLAIN);
 
         CmisObject electronicRecord = recordsAPI.getRecord(RmAdminUser.getUsername(),
-                RmAdminUser.getPassword(), recordFolder.getName(), electronic_records_properties.get(BaseAPI.RMProperty.NAME));
+            RmAdminUser.getPassword(),recordFolder.getName(), electronic_records_properties.get(BaseAPI.RMProperty.NAME));
 
         STEP("Check the electronic record has been created");
         assertStatusCode(CREATED);
@@ -172,30 +167,30 @@ public class FileUnfiledRecordsTests extends BaseRMRestTest
 
         STEP("Move all the Unfiled Records to unFiledFolder");
         RestNodeModel uploadDocRestNodeModel = getRestAPIFactory()
-                .getNodeAPI(toContentModel(uploadedDocRecordbyCollabUser.getId()))
-                .move(createBodyForMoveCopy(unFiledFolder));
+            .getNodeAPI(toContentModel(uploadedDocRecordbyCollabUser.getId()))
+            .move(createBodyForMoveCopy(unFiledFolder));
 
         RestNodeModel nonElectronicDocRestNodeModel = getRestAPIFactory()
-                .getNodeAPI(toContentModel(nonElectronicRecordId))
-                .move(createBodyForMoveCopy(unFiledFolder));
+            .getNodeAPI(toContentModel(nonElectronicRecordId))
+            .move(createBodyForMoveCopy(unFiledFolder));
 
         RestNodeModel electronicDocRestNodeModel = getRestAPIFactory()
-                .getNodeAPI(toContentModel(electronicRecord.getId()))
-                .move(createBodyForMoveCopy(unFiledFolder));
+            .getNodeAPI(toContentModel(electronicRecord.getId()))
+            .move(createBodyForMoveCopy(unFiledFolder));
 
         STEP("Move all the Record present in the unFiledFolder to Folder inside Root Category");
 
         getRestAPIFactory()
-                .getNodeAPI(toContentModel(uploadDocRestNodeModel.getId()))
-                .move(createBodyForMoveCopy(recordFolder.getId()));
+            .getNodeAPI(toContentModel(uploadDocRestNodeModel.getId()))
+            .move(createBodyForMoveCopy(recordFolder.getId()));
 
         getRestAPIFactory()
-                .getNodeAPI(toContentModel(nonElectronicDocRestNodeModel.getId()))
-                .move(createBodyForMoveCopy(recordFolder.getId()));
+            .getNodeAPI(toContentModel(nonElectronicDocRestNodeModel.getId()))
+            .move(createBodyForMoveCopy(recordFolder.getId()));
 
         getRestAPIFactory()
-                .getNodeAPI(toContentModel(electronicDocRestNodeModel.getId()))
-                .move(createBodyForMoveCopy(recordFolder.getId()));
+            .getNodeAPI(toContentModel(electronicDocRestNodeModel.getId()))
+            .move(createBodyForMoveCopy(recordFolder.getId()));
 
         getRestAPIFactory().getRecordsAPI().deleteRecord(uploadDocRestNodeModel.getId());
         getRestAPIFactory().getRecordsAPI().deleteRecord(nonElectronicDocRestNodeModel.getId());
@@ -209,25 +204,23 @@ public class FileUnfiledRecordsTests extends BaseRMRestTest
         recordFolderAPI.deleteRecordFolder(recordFolderId);
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void deletePreConditions()
     {
         STEP("Delete the created rootCategory along with corresponding record folders/records present in it");
         getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(rootCategory.getId());
     }
 
-    private String createUnFileFolder()
-    {
+    private String createUnFileFolder() {
         String categoryName = "RM-2790 record Category name " + getRandomAlphanumeric();
 
         unfiledRecordFolderId = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
-                categoryName + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId();
+            categoryName + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId();
         return unfiledRecordFolderId;
     }
 
-    private String getNodeRef(HttpResponse httpResponse)
-    {
-        return convertHTTPResponseToJSON(httpResponse).getString("persistedObject")
+    private String getNodeRef(HttpResponse httpResponse) {
+            return convertHTTPResponseToJSON(httpResponse).getString("persistedObject")
                 .replace(NODE_REF_WORKSPACE_SPACES_STORE, "");
     }
 }

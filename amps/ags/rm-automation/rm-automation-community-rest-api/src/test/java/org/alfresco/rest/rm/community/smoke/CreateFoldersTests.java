@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,19 +26,6 @@
  */
 package org.alfresco.rest.rm.community.smoke;
 
-import static org.springframework.http.HttpStatus.*;
-
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
-import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
-import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
@@ -49,9 +36,19 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.test.AlfrescoTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-public class CreateFoldersTests extends BaseRMRestTest
-{
+import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
+import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.*;
+
+public class CreateFoldersTests extends BaseRMRestTest {
 
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
@@ -63,15 +60,14 @@ public class CreateFoldersTests extends BaseRMRestTest
     private RecordCategoryChild recordCategoryChild;
 
     @BeforeClass(alwaysRun = true)
-    public void preconditionForCreateFolderTests()
-    {
+    public void preconditionForCreateFolderTests() {
         STEP("Create the RM site if doesn't exist");
         createRMSiteIfNotExists();
 
         STEP("Create RM Admin user");
         rmRolesAndActionsAPI.createUserAndAssignToRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_ADMIN,
-                getAdminUser().getPassword(),
-                "Administrator");
+            getAdminUser().getPassword(),
+            "Administrator");
 
         STEP("Create two category");
         Category1 = createRootCategory(getRandomName("Category1"));
@@ -85,26 +81,25 @@ public class CreateFoldersTests extends BaseRMRestTest
 
     @Test
     @AlfrescoTest(jira = "RM-2757")
-    public void createFolders() throws Exception
-    {
+    public void createFolders() throws Exception {
 
         // Create record category first
         String folderDescription = "The folder description is updated" + getRandomAlphanumeric();
         String folderName = "The folder name is updated" + getRandomAlphanumeric();
         String folderTitle = "Update title " + getRandomAlphanumeric();
-        String location = "Location " + getRandomAlphanumeric();
+        String location = "Location "+ getRandomAlphanumeric();
 
         // Create the record folder properties to update
         RecordFolder recordFolder = RecordFolder.builder()
-                .name(folderName)
-                .properties(RecordFolderProperties.builder()
-                        .title(folderTitle)
-                        .description(folderDescription)
-                        .vitalRecordIndicator(true)
-                        .reviewPeriod(new ReviewPeriod("month", "1"))
-                        .location(location)
-                        .build())
-                .build();
+            .name(folderName)
+            .properties(RecordFolderProperties.builder()
+                .title(folderTitle)
+                .description(folderDescription)
+                .vitalRecordIndicator(true)
+                .reviewPeriod(new ReviewPeriod("month","1"))
+                .location(location)
+                .build())
+            .build();
 
         // Update the record folder
         RecordFolder updatedRecordFolder = getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolder, recordCategoryChild.getId());
@@ -114,9 +109,10 @@ public class CreateFoldersTests extends BaseRMRestTest
 
         STEP("copy updated Record in category 1 and category 2");
         getRestAPIFactory().getNodeAPI(toContentModel(updatedRecordFolder.getId())).copy(createBodyForMoveCopy(Category1.getId()));
-        // assertStatusCode(OK);
+        //assertStatusCode(OK);
         getRestAPIFactory().getNodeAPI(toContentModel(updatedRecordFolder.getId())).copy(createBodyForMoveCopy(Category2.getId()));
-        // assertStatusCode(OK);
+        //assertStatusCode(OK);
+
 
         // Delete the Updated folder
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();

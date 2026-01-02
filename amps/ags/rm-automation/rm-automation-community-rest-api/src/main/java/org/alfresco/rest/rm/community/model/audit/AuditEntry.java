@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,11 +30,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import org.alfresco.utility.model.TestModel;
 
 /**
@@ -47,43 +47,43 @@ import org.alfresco.utility.model.TestModel;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties (ignoreUnknown = true)
 public class AuditEntry extends TestModel
 {
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String nodeName;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private List<Object> changedValues;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String identifier;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String path;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String nodeRef;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String fullName;
 
     @JsonProperty
     private String createPerson;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String userName;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String userRole;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String nodeType;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String event;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String timestamp;
 
 }

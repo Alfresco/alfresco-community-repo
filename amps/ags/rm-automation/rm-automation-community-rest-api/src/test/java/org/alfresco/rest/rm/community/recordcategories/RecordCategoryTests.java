@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,6 +28,17 @@ package org.alfresco.rest.rm.community.recordcategories;
 
 import static java.time.LocalDateTime.now;
 
+import static org.alfresco.rest.rm.community.base.TestData.RECORD_FOLDER_NAME;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PATH;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.TITLE_PREFIX;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -42,26 +53,10 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import static org.alfresco.rest.rm.community.base.TestData.RECORD_FOLDER_NAME;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PATH;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.TITLE_PREFIX;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
-import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 import org.alfresco.rest.core.v0.BaseAPI.RETENTION_SCHEDULE;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -77,6 +72,9 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.v0.RecordCategoriesAPI;
 import org.alfresco.utility.report.Bug;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
  * Record category related API tests
@@ -97,19 +95,19 @@ public class RecordCategoryTests extends BaseRMRestTest
     private RecordCategoriesAPI recordCategoriesAPI;
 
     /**
-     * Invalid containers that cannot be deleted with record category end-point
+     * Invalid  containers that cannot be deleted with record category end-point
      */
-    @DataProvider(name = "invalidContainersToDelete")
+    @DataProvider (name = "invalidContainersToDelete")
     public Object[][] getNodesToDelete()
     {
-        return new String[][]{
-                {FILE_PLAN_ALIAS},
-                {UNFILED_RECORDS_CONTAINER_ALIAS},
-                {TRANSFERS_ALIAS},
+        return new String[][] {
+                { FILE_PLAN_ALIAS },
+                { UNFILED_RECORDS_CONTAINER_ALIAS },
+                { TRANSFERS_ALIAS },
                 // an arbitrary record category
-                {createCategoryFolderInFilePlan(getAdminUser()).getId()},
+                { createCategoryFolderInFilePlan(getAdminUser()).getId() },
                 // an arbitrary unfiled records folder
-                {createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId()}
+                { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId() }
         };
     }
 
@@ -120,8 +118,10 @@ public class RecordCategoryTests extends BaseRMRestTest
      * Then the details of the record category are updated
      * </pre>
      */
-    @Test(
-            description = "Rename root category")
+    @Test
+    (
+        description = "Rename root category"
+    )
     public void renameCategory()
     {
         // Create record category first
@@ -159,8 +159,10 @@ public class RecordCategoryTests extends BaseRMRestTest
      * Then the record category and all its contents are deleted
      * </pre>
      */
-    @Test(
-            description = "Delete category")
+    @Test
+    (
+        description = "Delete category"
+    )
     public void deleteCategory()
     {
         // Create record category first
@@ -170,7 +172,7 @@ public class RecordCategoryTests extends BaseRMRestTest
         // Create the root record category
         RecordCategory rootRecordCategory = createRootCategory(categoryName, categoryTitle);
 
-        int totalEntries = getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getPagination().getTotalItems();
+        int totalEntries= getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getPagination().getTotalItems();
         // Delete the record category
         RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
         String recordCategoryId = rootRecordCategory.getId();
@@ -182,9 +184,9 @@ public class RecordCategoryTests extends BaseRMRestTest
         // Deleted component should no longer be retrievable
         recordCategoryAPI.getRecordCategory(recordCategoryId);
         assertStatusCode(NOT_FOUND);
-        // check the number of entries after delete
+        //check the number of entries after delete
         int totalEntriesAfterDelete = getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getPagination().getTotalItems();
-        assertEquals(totalEntriesAfterDelete, (totalEntries - 1));
+        assertEquals(totalEntriesAfterDelete,(totalEntries-1));
     }
 
     /**
@@ -194,9 +196,11 @@ public class RecordCategoryTests extends BaseRMRestTest
      * Then the request fails
      * </pre>
      */
-    @Test(
-            description = "Delete invalid nodes with delete category endpoint",
-            dataProvider = "invalidContainersToDelete")
+    @Test
+    (
+        description = "Delete invalid nodes with delete category endpoint",
+        dataProvider = "invalidContainersToDelete"
+    )
     public void deleteInvalidNodes(String nodeId)
     {
 
@@ -216,8 +220,10 @@ public class RecordCategoryTests extends BaseRMRestTest
      * Then it is created within the record category
      * </pre>
      */
-    @Test(
-            description = "Create child category")
+    @Test
+    (
+        description = "Create child category"
+    )
     public void createSubcategory()
     {
         // Create root level category
@@ -236,8 +242,9 @@ public class RecordCategoryTests extends BaseRMRestTest
         assertFalse(recordCategory.getIsRecordFolder());
         assertEquals(recordCategory.getNodeType(), RECORD_CATEGORY_TYPE);
 
-        // get the sub-category
-        RecordCategory subCategory = getRestAPIFactory().getRecordCategoryAPI().getRecordCategory(recordCategory.getId(), "include=isRecordCategory,isRecordFolder");
+
+        //get the sub-category
+        RecordCategory subCategory = getRestAPIFactory().getRecordCategoryAPI().getRecordCategory(recordCategory.getId(),"include=isRecordCategory,isRecordFolder");
         // Verify child category
         assertEquals(subCategory.getParentId(), rootCategory.getId());
         assertEquals(subCategory.getNodeType(), RECORD_CATEGORY_TYPE);
@@ -251,7 +258,6 @@ public class RecordCategoryTests extends BaseRMRestTest
      * When I use the API to create children of type record folder
      * Then  a record folder it is created within the record category
      * </pre>
-     * 
      * <pre>
      * Given that a record category exists
      * When I use the API to create children of type folder (cm:folder type)
@@ -259,11 +265,13 @@ public class RecordCategoryTests extends BaseRMRestTest
      * (see RM-4572 comments)
      * </pre>
      */
-    @Test(
-            description = "Create a record folder into a record category.",
-            dataProviderClass = DataProviderClass.class,
-            dataProvider = "folderTypes")
-    @Bug(id = "RM-4572")
+    @Test
+    (
+        description = "Create a record folder into a record category.",
+        dataProviderClass = DataProviderClass.class,
+        dataProvider = "folderTypes"
+    )
+    @Bug (id = "RM-4572")
     public void createFolderTest(String folderType)
     {
         // Authenticate with admin user
@@ -290,10 +298,11 @@ public class RecordCategoryTests extends BaseRMRestTest
         assertEquals(folderProperties.getTitle(), TITLE_PREFIX + RECORD_FOLDER_NAME);
         assertNotNull(folderProperties.getIdentifier());
     }
-
-    @Test(
-            dataProviderClass = DataProviderClass.class,
-            dataProvider = "categoryChild")
+    @Test
+    (
+        dataProviderClass = DataProviderClass.class,
+        dataProvider = "categoryChild"
+    )
     @Bug(id = "RM-5116")
     public void createdDuplicateChild(String childType)
     {
@@ -303,24 +312,24 @@ public class RecordCategoryTests extends BaseRMRestTest
         // Create the record category child
         RecordCategoryChild recordFolder = createRecordCategoryChild(rootRecordCategory, RECORD_FOLDER_NAME, childType);
 
-        // check the response code
+        // check the response  code
         assertStatusCode(CREATED);
         assertEquals(recordFolder.getName(), RECORD_FOLDER_NAME);
 
         // Create a record category child with the same name as the exiting one
 
         RecordCategoryChild recordFolderDuplicate = getRestAPIFactory().getRecordCategoryAPI().createRecordCategoryChild(
-                createRecordCategoryChildModel(RECORD_FOLDER_NAME, childType), rootRecordCategory);
+                    createRecordCategoryChildModel(RECORD_FOLDER_NAME, childType), rootRecordCategory);
 
-        // check the response code
+        // check the response  code
         assertStatusCode(CONFLICT);
 
         // Create a record folder with the same name as the exiting one and with the autoRename parameter on true
         recordFolderDuplicate = getRestAPIFactory().getRecordCategoryAPI()
-                .createRecordCategoryChild(createRecordCategoryChildModel(RECORD_FOLDER_NAME,
-                        childType),
-                        rootRecordCategory, "autoRename=true");
-        // check the response code
+                                                   .createRecordCategoryChild(createRecordCategoryChildModel(RECORD_FOLDER_NAME,
+                                                               childType),
+                                                    rootRecordCategory, "autoRename=true");
+        // check the response  code
         assertStatusCode(CREATED);
         assertNotEquals(recordFolderDuplicate.getName(), RECORD_FOLDER_NAME);
         assertTrue(recordFolderDuplicate.getName().contains(RECORD_FOLDER_NAME));
@@ -333,7 +342,6 @@ public class RecordCategoryTests extends BaseRMRestTest
      * When I ask the API to get me the children of the record category
      * Then I am returned the contained record categories and record folders and their details
      * </pre>
-     * 
      * <pre>
      * Given that a record category with a disposition schedule exists
      * And contains a number of record categories and record folders
@@ -341,9 +349,11 @@ public class RecordCategoryTests extends BaseRMRestTest
      * Then I am returned the contained record categories and record folders but not the disposition schedule
      * </pre>
      */
-    @Test(
-            description = "Get children of a record category excluding the disposition schedule")
-    @Bug(id = "RM-5115")
+    @Test
+        (
+            description = "Get children of a record category excluding the disposition schedule"
+        )
+    @Bug (id="RM-5115")
     public void getRecordCategoryChildren()
     {
         // Create root level category
@@ -365,26 +375,27 @@ public class RecordCategoryTests extends BaseRMRestTest
 
         // Add record category children
         List<RecordCategoryChild> children = new ArrayList<>();
-        for (int i = 0; i < NUMBER_OF_CHILDREN; i++)
+        for (int i=0; i < NUMBER_OF_CHILDREN; i++)
         {
             // Create a record category child
             RecordCategoryChild child = createRecordCategoryChild(rootRecordCategory.getId(),
-                    getRandomAlphanumeric(),
-                    // half of the children should be sub-categories, the other sub-folders
-                    (i <= NUMBER_OF_CHILDREN / 2) ? RECORD_CATEGORY_TYPE : RECORD_FOLDER_TYPE);
+                getRandomAlphanumeric(),
+                // half of the children should be sub-categories, the other sub-folders
+                (i <= NUMBER_OF_CHILDREN / 2) ? RECORD_CATEGORY_TYPE : RECORD_FOLDER_TYPE);
             assertNotNull(child.getId());
             children.add(child);
         }
 
         // Get children from API
-        RecordCategoryChildCollection recordCategoryChildren = getRestAPIFactory().getRecordCategoryAPI().getRecordCategoryChildren(rootRecordCategory.getId(), "include=isRecordCategory,isRecordFolder");
+        RecordCategoryChildCollection recordCategoryChildren = getRestAPIFactory().getRecordCategoryAPI().getRecordCategoryChildren(rootRecordCategory.getId(),"include=isRecordCategory,isRecordFolder");
 
         // Check status code
         assertStatusCode(OK);
         logger.info("Parent: " + rootRecordCategory.getId());
 
         // Check listed children against created list
-        recordCategoryChildren.getEntries().forEach(c -> {
+        recordCategoryChildren.getEntries().forEach(c ->
+        {
             RecordCategoryChild recordCategoryChild = c.getEntry();
             String recordCategoryChildId = recordCategoryChild.getId();
 
@@ -395,9 +406,9 @@ public class RecordCategoryTests extends BaseRMRestTest
             {
                 // Find this child in created children list
                 RecordCategoryChild createdComponent = children.stream()
-                        .filter(child -> child.getId().equals(recordCategoryChildId))
-                        .findFirst()
-                        .orElseThrow();
+                    .filter(child -> child.getId().equals(recordCategoryChildId))
+                    .findFirst()
+                    .orElseThrow();
 
                 // Created by
                 assertEquals(recordCategoryChild.getCreatedByUser().getId(), getAdminUser().getUsername());
@@ -439,11 +450,13 @@ public class RecordCategoryTests extends BaseRMRestTest
      * Then the children are not created and the 422 response code is returned
      * </pre>
      */
-    @Test(
-            description = "Create node types not allowed inside a category",
-            dataProviderClass = DataProviderClass.class,
-            dataProvider = "childrenNotAllowedForCategory")
-    @Bug(id = "RM-4367, RM-4572")
+    @Test
+    (
+        description = "Create node types not allowed inside a category",
+        dataProviderClass = DataProviderClass.class,
+        dataProvider = "childrenNotAllowedForCategory"
+    )
+    @Bug (id="RM-4367, RM-4572")
     public void createTypesNotAllowedInCategory(String nodeType)
     {
         String componentName = "Component" + getRandomAlphanumeric();
@@ -464,8 +477,10 @@ public class RecordCategoryTests extends BaseRMRestTest
      * Then I am provided with a list of the contained record category children and their details
      * </pre>
      */
-    @Test(
-            description = "Get children of a record category")
+    @Test
+    (
+        description = "Get children of a record category"
+    )
     public void getFolders()
     {
         // Authenticate with admin user
@@ -488,39 +503,40 @@ public class RecordCategoryTests extends BaseRMRestTest
         assertStatusCode(OK);
 
         // Check children against created list
-        recordCategoryChildren.getEntries().forEach(c -> {
-            RecordCategoryChild recordCategoryChild = c.getEntry();
-            String recordCategoryChildId = recordCategoryChild.getId();
-            assertNotNull(recordCategoryChildId);
-            logger.info("Checking child " + recordCategoryChildId);
+        recordCategoryChildren.getEntries().forEach(c ->
+                {
+                    RecordCategoryChild recordCategoryChild = c.getEntry();
+                    String recordCategoryChildId = recordCategoryChild.getId();
+                    assertNotNull(recordCategoryChildId);
+                    logger.info("Checking child " + recordCategoryChildId);
 
-            try
-            {
-                // Find this child in created children list
-                RecordCategoryChild createdComponent = children.stream()
-                        .filter(child -> child.getId().equals(recordCategoryChildId))
-                        .findFirst()
-                        .orElseThrow();
+                    try
+                    {
+                        // Find this child in created children list
+                        RecordCategoryChild createdComponent = children.stream()
+                                                                       .filter(child -> child.getId().equals(recordCategoryChildId))
+                                                                       .findFirst()
+                                                                       .orElseThrow();
 
-                // Created by
-                assertEquals(recordCategoryChild.getCreatedByUser().getId(), getAdminUser().getUsername());
+                        // Created by
+                        assertEquals(recordCategoryChild.getCreatedByUser().getId(), getAdminUser().getUsername());
 
-                // Is parent id set correctly
-                assertEquals(recordCategoryChild.getParentId(), rootRecordCategory.getId());
+                        // Is parent id set correctly
+                        assertEquals(recordCategoryChild.getParentId(), rootRecordCategory.getId());
 
-                // Boolean properties related to node type
-                assertTrue(recordCategoryChild.getIsRecordFolder());
-                assertFalse(recordCategoryChild.getIsRecordCategory());
+                        // Boolean properties related to node type
+                        assertTrue(recordCategoryChild.getIsRecordFolder());
+                        assertFalse(recordCategoryChild.getIsRecordCategory());
 
-                assertEquals(createdComponent.getName(), recordCategoryChild.getName());
-                assertEquals(createdComponent.getNodeType(), recordCategoryChild.getNodeType());
+                        assertEquals(createdComponent.getName(), recordCategoryChild.getName());
+                        assertEquals(createdComponent.getNodeType(), recordCategoryChild.getNodeType());
 
-            }
-            catch (NoSuchElementException e)
-            {
-                fail("No child element for " + recordCategoryChildId);
-            }
-        });
+                    } catch (NoSuchElementException e)
+                    {
+                        fail("No child element for " + recordCategoryChildId);
+                    }
+                }
+                );
 
     }
 
@@ -531,16 +547,18 @@ public class RecordCategoryTests extends BaseRMRestTest
      * Then the categories specified in the relativePath that don't exist are created
      * </pre>
      */
-    @Test(
-            description = "Create a folder using record-categories endpoint, based on the relativePath. " +
-                    "Containers in the relativePath that do not exist are created before the node is created")
+    @Test
+    (
+        description = "Create a folder using record-categories endpoint, based on the relativePath. " +
+                "Containers in the relativePath that do not exist are created before the node is created"
+    )
     public void createRecordFolderWithRelativePath()
     {
         // The record category to be created
         RecordCategory recordCategoryModel = RecordCategory.builder()
-                .name(RECORD_CATEGORY_NAME + getRandomAlphanumeric())
-                .nodeType(RECORD_CATEGORY_TYPE)
-                .build();
+                                                           .name(RECORD_CATEGORY_NAME + getRandomAlphanumeric())
+                                                           .nodeType(RECORD_CATEGORY_TYPE)
+                                                           .build();
         FilePlanAPI filePlansAPI = getRestAPIFactory().getFilePlansAPI();
         RecordCategory createRootRecordCategory = filePlansAPI.createRootRecordCategory(recordCategoryModel, FILE_PLAN_ALIAS, "include=" + PATH);
         // Check the API response code
@@ -552,10 +570,10 @@ public class RecordCategoryTests extends BaseRMRestTest
 
         // The record folder to be created
         RecordCategoryChild recordFolderModel = RecordCategoryChild.builder()
-                .name(RECORD_FOLDER_NAME)
-                .nodeType(RECORD_FOLDER_TYPE)
-                .relativePath(relativePath)
-                .build();
+                                                                   .name(RECORD_FOLDER_NAME)
+                                                                   .nodeType(RECORD_FOLDER_TYPE)
+                                                                   .relativePath(relativePath)
+                                                                   .build();
 
         // Create the record folder
         RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
@@ -592,10 +610,10 @@ public class RecordCategoryTests extends BaseRMRestTest
 
         // The record folder to be created
         RecordCategoryChild newRecordFolderModel = RecordCategoryChild.builder()
-                .name(RECORD_FOLDER_NAME)
-                .nodeType(RECORD_FOLDER_TYPE)
-                .relativePath(newRelativePath)
-                .build();
+                                                                      .name(RECORD_FOLDER_NAME)
+                                                                      .nodeType(RECORD_FOLDER_TYPE)
+                                                                      .relativePath(newRelativePath)
+                                                                      .build();
 
         // Create the record folder
         RecordCategoryChild newRecordCategoryChild = recordCategoryAPI.createRecordCategoryChild(newRecordFolderModel, recordCategoryId, "include=" + PATH);
@@ -626,6 +644,7 @@ public class RecordCategoryTests extends BaseRMRestTest
         assertTrue(newRecordFolder.getPath().getName().contains(newRelativePath));
     }
 
+
     /**
      * <pre>
      * Given that I want to create a record sub-category
@@ -633,16 +652,18 @@ public class RecordCategoryTests extends BaseRMRestTest
      * Then the categories specified in the relativePath that don't exist are created
      * </pre>
      */
-    @Test(
-            description = "Create a sub-category using record-categories endpoint, based on the relativePath. " +
-                    "Containers in the relativePath that do not exist are created before the node is created")
+    @Test
+    (
+        description = "Create a sub-category using record-categories endpoint, based on the relativePath. " +
+                "Containers in the relativePath that do not exist are created before the node is created"
+    )
     public void createRecordSubCategoryWithRelativePath()
     {
         // The record category to be created
         RecordCategory recordCategoryModel = RecordCategory.builder()
-                .name(RECORD_CATEGORY_NAME + getRandomAlphanumeric())
-                .nodeType(RECORD_CATEGORY_TYPE)
-                .build();
+                                                           .name(RECORD_CATEGORY_NAME + getRandomAlphanumeric())
+                                                           .nodeType(RECORD_CATEGORY_TYPE)
+                                                           .build();
         FilePlanAPI filePlansAPI = getRestAPIFactory().getFilePlansAPI();
         RecordCategory createRootRecordCategory = filePlansAPI.createRootRecordCategory(recordCategoryModel, FILE_PLAN_ALIAS, "include=" + PATH);
         // Check the API response code
@@ -650,14 +671,14 @@ public class RecordCategoryTests extends BaseRMRestTest
         String recordCategoryId = createRootRecordCategory.getId();
 
         // relativePath specify the container structure to create relative to the record folder to be created
-        String relativePath = now().getYear() + "/" + now().getMonth() + "/" + now().getDayOfMonth() + "/" + getRandomAlphanumeric();
+        String relativePath = now().getYear() + "/" + now().getMonth() + "/" + now().getDayOfMonth()+ "/"+getRandomAlphanumeric();
 
         // The record folder to be created
         RecordCategoryChild recordFolderModel = RecordCategoryChild.builder()
-                .name(RECORD_CATEGORY_NAME)
-                .nodeType(RECORD_CATEGORY_TYPE)
-                .relativePath(relativePath)
-                .build();
+                                                                   .name(RECORD_CATEGORY_NAME)
+                                                                   .nodeType(RECORD_CATEGORY_TYPE)
+                                                                   .relativePath(relativePath)
+                                                                   .build();
 
         // Create the record folder
         RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
@@ -689,14 +710,14 @@ public class RecordCategoryTests extends BaseRMRestTest
         assertTrue(recordSubCategory.getPath().getName().contains(relativePath));
 
         // New relative path only a part of containers need to be created before the record folder
-        String newRelativePath = now().getYear() + "/" + now().getMonth() + "/" + (now().getDayOfMonth() + 1) + "/" + getRandomAlphanumeric();
+        String newRelativePath = now().getYear() + "/" + now().getMonth() + "/" + (now().getDayOfMonth() + 1) +"/"+getRandomAlphanumeric();
 
         // The record folder to be created
         RecordCategoryChild newRecordFolderModel = RecordCategoryChild.builder()
-                .name(RECORD_CATEGORY_NAME)
-                .nodeType(RECORD_CATEGORY_TYPE)
-                .relativePath(newRelativePath)
-                .build();
+                                                                      .name(RECORD_CATEGORY_NAME)
+                                                                      .nodeType(RECORD_CATEGORY_TYPE)
+                                                                      .relativePath(newRelativePath)
+                                                                      .build();
 
         // Create the record folder
         RecordCategoryChild newRecordCategoryChild = recordCategoryAPI.createRecordCategoryChild(newRecordFolderModel, recordCategoryId, "include=" + PATH);
@@ -734,25 +755,25 @@ public class RecordCategoryTests extends BaseRMRestTest
      * Then the operation fails
      * </pre>
      */
-    @Test(
-            description = "Create a record folder into transfers/unfiled/file plan container",
-            dataProviderClass = DataProviderClass.class,
-            dataProvider = "getContainers")
-    @Bug(id = "RM-4327")
+    @Test
+    (
+        description = "Create a record folder into transfers/unfiled/file plan container",
+        dataProviderClass = DataProviderClass.class,
+        dataProvider = "getContainers"
+    )
+    @Bug (id = "RM-4327")
     public void createRecordFolderIntoSpecialContainers(String containerAlias)
     {
         String containerId;
         if (FILE_PLAN_ALIAS.equalsIgnoreCase(containerAlias))
         {
             containerId = getRestAPIFactory().getFilePlansAPI().getFilePlan(containerAlias).getId();
-        }
-        else if (TRANSFERS_ALIAS.equalsIgnoreCase(containerAlias))
+        } else if (TRANSFERS_ALIAS.equalsIgnoreCase(containerAlias))
         {
             containerId = getRestAPIFactory().getTransferContainerAPI().getTransferContainer(containerAlias).getId();
-        }
-        else
+        } else
         {
-            // is unfiled container
+            //is unfiled container
             containerId = getRestAPIFactory().getUnfiledContainersAPI().getUnfiledContainer(containerAlias).getId();
         }
 

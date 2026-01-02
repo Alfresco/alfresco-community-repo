@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,8 +29,8 @@ package org.alfresco.rest.rm.community.utils;
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.DOD5015;
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.STANDARD;
 
-import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.model.site.RMSiteCompliance;
+import org.alfresco.rest.rm.community.model.site.RMSite;
 
 /**
  * Utility class for the RM Site
@@ -54,12 +54,9 @@ public class RMSiteUtil
     /**
      * Creates an RM Site model for the given compliance, title and description
      *
-     * @param compliance
-     *            The RM site compliance
-     * @param title
-     *            The site title
-     * @param description
-     *            The site description
+     * @param compliance The RM site compliance
+     * @param title The site title
+     * @param description The site description
      * @return The {@link RMSite} with the given details
      */
     public static RMSite createRMSiteModel(RMSiteCompliance compliance, String title, String description)
@@ -70,8 +67,7 @@ public class RMSiteUtil
     /**
      * Creates an RM Site for the given compliance and default title and description
      *
-     * @param compliance
-     *            The RM site compliance
+     * @param compliance The RM site compliance
      * @return The {@link RMSite} with the given details
      */
     private static RMSite createRMSiteModel(RMSiteCompliance compliance)

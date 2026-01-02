@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,13 +26,6 @@
  */
 package org.alfresco.rest.rm.community.records;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
-
 import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.NONELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
@@ -44,10 +37,12 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -60,9 +55,13 @@ import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.report.Bug;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
- * This class contains the tests for File Unfiled Record Action REST API
+ * This class contains the tests for
+ * File Unfiled Record Action REST API
  *
  * @author Rodica Sutu
  * @since 2.6
@@ -70,23 +69,23 @@ import org.alfresco.utility.report.Bug;
 public class FileRecordsTests extends BaseRMRestTest
 {
     private UnfiledContainerChild electronicRecord = UnfiledContainerChild.builder()
-            .name(ELECTRONIC_RECORD_NAME)
-            .nodeType(CONTENT_TYPE)
-            .content(RecordContent.builder().mimeType("text/plain").build())
-            .build();
+                                                                          .name(ELECTRONIC_RECORD_NAME)
+                                                                          .nodeType(CONTENT_TYPE)
+                                                                          .content(RecordContent.builder().mimeType("text/plain").build())
+                                                                          .build();
 
     private UnfiledContainerChild nonelectronicRecord = UnfiledContainerChild.builder()
-            .properties(UnfiledContainerChildProperties.builder()
-                    .description(NONELECTRONIC_RECORD_NAME)
-                    .title("Title")
-                    .build())
-            .name(NONELECTRONIC_RECORD_NAME)
-            .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-            .build();
+                                                                             .properties(UnfiledContainerChildProperties.builder()
+                                                                                                                        .description(NONELECTRONIC_RECORD_NAME)
+                                                                                                                        .title("Title")
+                                                                                                                        .build())
+                                                                             .name(NONELECTRONIC_RECORD_NAME)
+                                                                             .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+                                                                             .build();
 
     private String targetFolderId, folderToLink, closedFolderId, unfiledRecordFolderId;
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void setupFileRecordsTests()
     {
         // create 3 record folders and close one of them
@@ -101,56 +100,59 @@ public class FileRecordsTests extends BaseRMRestTest
     }
 
     /**
-     * Invalid containers where electronic and non-electronic records can be filed
+     * Invalid  containers where electronic and non-electronic records can be filed
      */
-    @DataProvider(name = "invalidContainersToFile")
+    @DataProvider (name = "invalidContainersToFile")
     public Object[][] getFolderContainers()
     {
-        return new String[][]{
-                {FILE_PLAN_ALIAS},
-                {UNFILED_RECORDS_CONTAINER_ALIAS},
-                {TRANSFERS_ALIAS},
-                // an arbitrary record category
-                {createRootCategory(getAdminUser(), "Category " + getRandomAlphanumeric()).getId()},
-                // an arbitrary unfiled records folder
-                {createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId()}
+        return new String[][] {
+            { FILE_PLAN_ALIAS},
+            { UNFILED_RECORDS_CONTAINER_ALIAS},
+            { TRANSFERS_ALIAS },
+            // an arbitrary record category
+            { createRootCategory(getAdminUser(), "Category " + getRandomAlphanumeric()).getId()},
+            // an arbitrary unfiled records folder
+            { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId() }
         };
     }
 
     /**
      * Returns the ids of unfiled electronic and non-electronic records from Unfiled Records container
      */
-    @DataProvider(name = "unfiledRecordsFromUnfiledRecordsContainer")
+    @DataProvider (name = "unfiledRecordsFromUnfiledRecordsContainer")
     public Object[][] getRecordsFromUnfiledRecordsContainer()
     {
         UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
-        return new String[][]{
-                {unfiledContainersAPI.uploadRecord(electronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS,
-                        createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME)).getId()},
-                {unfiledContainersAPI.createUnfiledContainerChild(nonelectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS).getId()}
+        return new String[][] {
+            { unfiledContainersAPI.uploadRecord(electronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS,
+                    createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME)).getId()},
+            { unfiledContainersAPI.createUnfiledContainerChild(nonelectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS).getId()}
         };
     }
 
     /**
      * Returns the ids of unfiled electronic and non-electronic records from an Unfiled Record Folder
      */
-    @DataProvider(name = "unfiledRecordsFromUnfiledRecordFolder")
+    @DataProvider (name = "unfiledRecordsFromUnfiledRecordFolder")
     public Object[][] getRecordsFromUnfiledRecordFolder()
     {
         UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
 
-        return new String[][]{
-                {unfiledRecordFoldersAPI.uploadRecord(electronicRecord, unfiledRecordFolderId,
-                        createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME)).getId()},
-                {unfiledRecordFoldersAPI.createUnfiledRecordFolderChild(nonelectronicRecord, unfiledRecordFolderId).getId()}
+        return new String[][] {
+            { unfiledRecordFoldersAPI.uploadRecord(electronicRecord, unfiledRecordFolderId,
+                    createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME)).getId()},
+            { unfiledRecordFoldersAPI.createUnfiledRecordFolderChild(nonelectronicRecord, unfiledRecordFolderId).getId()}
         };
     }
 
     /**
-     * Given an unfiled record in the root unfiled record container And an open record folder When I file the unfiled record into the record folder Then the record is filed
+     * Given an unfiled record in the root unfiled record container
+     * And an open record folder
+     * When I file the unfiled record into the record folder
+     * Then the record is filed
      */
-    @Test(dataProvider = "unfiledRecordsFromUnfiledRecordsContainer")
-    @AlfrescoTest(jira = "RM-7060")
+    @Test (dataProvider = "unfiledRecordsFromUnfiledRecordsContainer")
+    @AlfrescoTest (jira = "RM-7060")
     public void fileRecordFromUnfiledContainerToOpenFolder(String unfiledRecordId) throws Exception
     {
         // file the record to the folder created
@@ -169,10 +171,13 @@ public class FileRecordsTests extends BaseRMRestTest
     }
 
     /**
-     * Given an unfiled record in a unfiled record folder And an open record folder When I file the unfiled record into the record folder Then the record is filed
+     * Given an unfiled record in a unfiled record folder
+     * And an open record folder
+     * When I file the unfiled record into the record folder
+     * Then the record is filed
      */
-    @Test(dataProvider = "unfiledRecordsFromUnfiledRecordFolder")
-    @AlfrescoTest(jira = "RM-7060")
+    @Test (dataProvider = "unfiledRecordsFromUnfiledRecordFolder")
+    @AlfrescoTest (jira = "RM-7060")
     public void fileRecordFromUnfiledRecordFolderToOpenFolder(String unfiledRecordId) throws Exception
     {
         // file the record to the folder created
@@ -192,10 +197,13 @@ public class FileRecordsTests extends BaseRMRestTest
     }
 
     /**
-     * Given an unfiled record in the root unfiled record container And a closed record folder When I file the unfiled record into the record folder Then I get an unsupported operation exception
+     * Given an unfiled record in the root unfiled record container
+     * And a closed record folder
+     * When I file the unfiled record into the record folder
+     * Then I get an unsupported operation exception
      *
      */
-    @Test(dataProvider = "unfiledRecordsFromUnfiledRecordsContainer")
+    @Test (dataProvider = "unfiledRecordsFromUnfiledRecordsContainer")
     public void fileRecordFromUnfiledContainerToClosedFolder(String unfiledRecordId)
     {
         // file the record to the closed record folder
@@ -211,7 +219,10 @@ public class FileRecordsTests extends BaseRMRestTest
     }
 
     /**
-     * Given an unfiled record in a unfiled record folder And a closed record folder When I file the unfiled record into the record folder Then I get an unsupported operation exception
+     * Given an unfiled record in a unfiled record folder
+     * And a closed record folder
+     * When I file the unfiled record into the record folder
+     * Then I get an unsupported operation exception
      *
      */
     @Test(dataProvider = "unfiledRecordsFromUnfiledRecordFolder")
@@ -231,10 +242,13 @@ public class FileRecordsTests extends BaseRMRestTest
     }
 
     /**
-     * Given a filed record in a record folder And an open record folder When I file the filed record into the record folder Then the record is filed in both locations
+     * Given a filed record in a record folder
+     * And an open record folder
+     * When I file the filed record into the record folder
+     * Then the record is filed in both locations
      */
-    @Test(dataProvider = "unfiledRecordsFromUnfiledRecordsContainer")
-    @Bug(id = "RM-4578")
+    @Test (dataProvider = "unfiledRecordsFromUnfiledRecordsContainer")
+    @Bug (id = "RM-4578")
     public void linkRecordInto(String unfiledRecordId)
     {
         // file the record to the open folder created
@@ -250,25 +264,30 @@ public class FileRecordsTests extends BaseRMRestTest
         // check the record is added into the record folder
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
         assertTrue(recordFolderAPI.getRecordFolderChildren(targetFolderId)
-                .getEntries()
-                .stream()
-                .anyMatch(c -> c.getEntry().getId().equals(recordFiled.getId()) &&
-                        c.getEntry().getParentId().equals(targetFolderId)));
+                                  .getEntries()
+                                  .stream()
+                                  .anyMatch(c -> c.getEntry().getId().equals(recordFiled.getId()) &&
+                                          c.getEntry().getParentId().equals(targetFolderId)));
 
         // check the record has a link in the second folder
         assertTrue(recordFolderAPI.getRecordFolderChildren(folderToLink)
-                .getEntries().stream()
-                .anyMatch(c -> c.getEntry().getId().equals(recordFiled.getId()) &&
-                        c.getEntry().getParentId().equals(targetFolderId) &&
-                        !c.getEntry().getParentId().equals(folderToLink)));
+                                  .getEntries().stream()
+                                  .anyMatch(c -> c.getEntry().getId().equals(recordFiled.getId()) &&
+                                          c.getEntry().getParentId().equals(targetFolderId) &&
+                                          !c.getEntry().getParentId().equals(folderToLink)));
     }
 
     /**
-     * Given an unfiled container or filed record And a container that is NOT a record folder When I file the unfiled container or filed record to the container Then I get an unsupported operation exception
+     * Given an unfiled container or filed record
+     * And a container that is NOT a record folder
+     * When I file the unfiled container or filed record to the container
+     * Then I get an unsupported operation exception
      */
-    @Test(
-            dataProvider = "invalidContainersToFile",
-            description = "File the unfiled record to the container that is not a record folder")
+    @Test
+    (
+        dataProvider = "invalidContainersToFile",
+        description = "File the unfiled record to the container that is not a record folder"
+    )
     public void invalidContainerToFile(String containerId)
     {
         // create records
@@ -288,10 +307,8 @@ public class FileRecordsTests extends BaseRMRestTest
     /**
      * Files the given record in the target record folder.
      *
-     * @param recordId
-     *            the id of the record to be filed
-     * @param targetFolderId
-     *            the id of the target record folder
+     * @param recordId       the id of the record to be filed
+     * @param targetFolderId the id of the target record folder
      */
     private Record fileRecordToFolder(String recordId, String targetFolderId)
     {
@@ -302,50 +319,46 @@ public class FileRecordsTests extends BaseRMRestTest
     /**
      * Returns whether any child of the record folder match the provided record
      *
-     * @param recordId
-     *            the record id
-     * @param recordFolderId
-     *            the record folder id
+     * @param recordId       the record id
+     * @param recordFolderId the record folder id
      * @return true if any child of the record folder match the provided record, false otherwise
      */
     private boolean isRecordChildOfRecordFolder(String recordId, String recordFolderId)
     {
         return getRestAPIFactory().getRecordFolderAPI()
-                .getRecordFolderChildren(recordFolderId)
-                .getEntries()
-                .stream()
-                .anyMatch(c -> c.getEntry().getId().equals(recordId));
+                                  .getRecordFolderChildren(recordFolderId)
+                                  .getEntries()
+                                  .stream()
+                                  .anyMatch(c -> c.getEntry().getId().equals(recordId));
     }
 
     /**
      * Returns whether any child of the unfiled record folder match the provided record
      *
-     * @param recordId
-     *            the record id
+     * @param recordId the record id
      * @return true if any child of the unfiled record folder match the provided record, false otherwise
      */
     private boolean isRecordChildOfUnfiledRecordFolder(String recordId)
     {
         return getRestAPIFactory().getUnfiledRecordFoldersAPI()
-                .getUnfiledRecordFolderChildren(unfiledRecordFolderId)
-                .getEntries()
-                .stream()
-                .anyMatch(c -> c.getEntry().getId().equals(recordId));
+                                  .getUnfiledRecordFolderChildren(unfiledRecordFolderId)
+                                  .getEntries()
+                                  .stream()
+                                  .anyMatch(c -> c.getEntry().getId().equals(recordId));
     }
 
     /**
      * Returns whether any child of the unfiled container match the provided record
      *
-     * @param recordId
-     *            the record id
+     * @param recordId the record id
      * @return true if any child of the unfiled container match the provided record, false otherwise
      */
     private boolean isRecordChildOfUnfiledContainer(String recordId)
     {
         return getRestAPIFactory().getUnfiledContainersAPI()
-                .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                .getEntries()
-                .stream()
-                .anyMatch(c -> c.getEntry().getId().equals(recordId));
+                                  .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+                                  .getEntries()
+                                  .stream()
+                                  .anyMatch(c -> c.getEntry().getId().equals(recordId));
     }
 }

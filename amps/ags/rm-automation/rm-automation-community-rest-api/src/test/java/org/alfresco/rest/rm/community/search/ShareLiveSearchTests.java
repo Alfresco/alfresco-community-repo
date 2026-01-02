@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,12 +32,11 @@ import static org.testng.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.Test;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.v0.SearchAPI;
 import org.alfresco.test.AlfrescoTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.Test;
 
 public class ShareLiveSearchTests extends BaseRMRestTest
 {
@@ -45,7 +44,8 @@ public class ShareLiveSearchTests extends BaseRMRestTest
     SearchAPI searchApi;
 
     /**
-     * Given the RM site has been created When I search for "vital" Then the "Vital Records Due for Review" search object should not appear as a link in the quick search results drop down
+     * Given the RM site has been created When I search for "vital" Then the "Vital Records Due for Review" search
+     * object should not appear as a link in the quick search results drop down
      */
     @Test
     @AlfrescoTest(jira = "RM-5882")
@@ -53,7 +53,7 @@ public class ShareLiveSearchTests extends BaseRMRestTest
     {
         List<String> results = searchApi.liveSearchForDocumentsAsUser(getAdminUser().getUsername(), getAdminUser().getPassword(), "vital");
         assertTrue(results.isEmpty() || results.stream().noneMatch("Vital Records due for Review"::equalsIgnoreCase),
-                "Share Live Search should return 0 results when searching for RM Saved Search filter words, but it returned:"
-                        + Arrays.toString(results.toArray()));
+                    "Share Live Search should return 0 results when searching for RM Saved Search filter words, but it returned:"
+                                + Arrays.toString(results.toArray()));
     }
 }

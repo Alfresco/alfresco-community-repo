@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.alfresco.rest.core.v0.BaseAPI;
+import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,9 +46,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import org.alfresco.rest.core.v0.BaseAPI;
-import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
 
 /**
  * Covers CRUD API operations on rules
@@ -65,10 +64,8 @@ public class RulesAPI extends BaseAPI
     /**
      * Creates a rule for the specified container with given rule properties
      *
-     * @param containerNodeRef
-     *            the container to have the rule created on
-     * @param ruleProperties
-     *            the rule properties
+     * @param containerNodeRef the container to have the rule created on
+     * @param ruleProperties   the rule properties
      * @return The HTTP Response (or null if the response could not be understood).
      */
     public HttpResponse createRule(String username, String password, String containerNodeRef, RuleDefinition ruleProperties)
@@ -87,10 +84,8 @@ public class RulesAPI extends BaseAPI
     /**
      * Updates a rule for the specified container with given rule properties
      *
-     * @param containerNodeRef
-     *            the container to have the rule created on
-     * @param ruleProperties
-     *            the rule properties
+     * @param containerNodeRef the container to have the rule created on
+     * @param ruleProperties   the rule properties
      * @return true if the rule has been updated successfully, false otherwise
      */
     public JSONObject updateRule(String username, String password, String containerNodeRef, RuleDefinition ruleProperties)
@@ -106,7 +101,7 @@ public class RulesAPI extends BaseAPI
         }
         catch (JSONException error)
         {
-            LOGGER.error("Unable to extract response parameter.", error);
+           LOGGER.error("Unable to extract response parameter.", error);
         }
         return null;
     }
@@ -114,16 +109,11 @@ public class RulesAPI extends BaseAPI
     /**
      * Deletes a rule on a container and checks it doesn't exist anymore
      *
-     * @param username
-     *            the user performing the request
-     * @param password
-     *            the password
-     * @param containerNodeRef
-     *            the container on which the rule has been created
-     * @param ruleId
-     *            the rule id
-     * @throws AssertionError
-     *             if the rule could not be deleted.
+     * @param username         the user performing the request
+     * @param password         the password
+     * @param containerNodeRef the container on which the rule has been created
+     * @param ruleId           the rule id
+     * @throws AssertionError if the rule could not be deleted.
      */
     public void deleteRule(String username, String password, String containerNodeRef, String ruleId)
     {
@@ -135,14 +125,10 @@ public class RulesAPI extends BaseAPI
     /**
      * Deletes all the rules on a container and checks they don't exist anymore
      *
-     * @param username
-     *            the user performing the request
-     * @param password
-     *            the password
-     * @param containerNodeRef
-     *            the container on which the rules have been created
-     * @throws AssertionError
-     *             if at least one of the rules could not be deleted.
+     * @param username         the user performing the request
+     * @param password         the password
+     * @param containerNodeRef the container on which the rules have been created
+     * @throws AssertionError if at least one of the rules could not be deleted.
      */
     public void deleteAllRulesOnContainer(String username, String password, String containerNodeRef)
     {
@@ -156,12 +142,9 @@ public class RulesAPI extends BaseAPI
     /**
      * Gets all the rules for the specified container with given rule properties
      *
-     * @param username
-     *            the user performing the request
-     * @param password
-     *            the password
-     * @param containerNodeRef
-     *            the container to get the rules from
+     * @param username the user performing the request
+     * @param password the password
+     * @param containerNodeRef the container to get the rules from
      *
      * @return list of rules on container
      */
@@ -200,12 +183,9 @@ public class RulesAPI extends BaseAPI
     /**
      * Retrieves all the ids of the rules set on the container
      *
-     * @param username
-     *            the user performing the request
-     * @param password
-     *            the password
-     * @param containerNodeRef
-     *            the container's noderef to get set rules for
+     * @param username         the user performing the request
+     * @param password         the password
+     * @param containerNodeRef the container's noderef to get set rules for
      * @return the list of rules ids that the container has
      */
     public List<String> getRulesIdsSetOnContainer(String username, String password, String containerNodeRef)
@@ -216,8 +196,7 @@ public class RulesAPI extends BaseAPI
     /**
      * Prepares a request object for rules with given properties
      *
-     * @param ruleProperties
-     *            the rule properties
+     * @param ruleProperties the rule properties
      * @return a object containing the rule properties for the request
      *
      * @throws JSONException
@@ -242,8 +221,7 @@ public class RulesAPI extends BaseAPI
     /**
      * Adds rules actions to the request
      *
-     * @param ruleProperties
-     *            the rules properties to extract actions from
+     * @param ruleProperties the rules properties to extract actions from
      *
      * @return the object with actions set
      *
@@ -264,8 +242,7 @@ public class RulesAPI extends BaseAPI
     /**
      * Creates the actions list for request
      *
-     * @param ruleProperties
-     *            given rule properties
+     * @param ruleProperties given rule properties
      *
      * @return the list of rule actions objects
      */
@@ -280,7 +257,7 @@ public class RulesAPI extends BaseAPI
             JSONObject parameters = new JSONObject();
             if (ruleProperties.getPath() != null)
             {
-                if (ruleProperties.getCreateRecordPath() != null)
+                if(ruleProperties.getCreateRecordPath() != null)
                 {
                     parameters.put("createRecordPath", ruleProperties.getCreateRecordPath());
                 }
@@ -311,12 +288,9 @@ public class RulesAPI extends BaseAPI
     /**
      * Returns the rule id for the give rule title set on a container
      *
-     * @param username
-     *            the user performing the request
-     * @param password
-     *            the password
-     * @param containerNodeRef
-     *            container nodeRef
+     * @param username the user performing the request
+     * @param password the password
+     * @param containerNodeRef container nodeRef
      *
      * @return the rule id
      */
@@ -329,18 +303,15 @@ public class RulesAPI extends BaseAPI
     /**
      * Disable inheritance on specific container
      *
-     * @param username
-     *            the username
-     * @param password
-     *            the password
-     * @param containerNodeRef
-     *            the container nodeRef
+     * @param username the username
+     * @param password the password
+     * @param containerNodeRef the container nodeRef
      *
      * @return The HTTP Response (or null if the current state is disabled).
      */
     public HttpResponse disableRulesInheritance(String username, String password, String containerNodeRef)
     {
-        if (containerInheritsRulesFromParent(username, password, containerNodeRef))
+        if(containerInheritsRulesFromParent(username, password, containerNodeRef))
         {
             return doPostJsonRequest(username, password, SC_OK, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
         }
@@ -350,12 +321,9 @@ public class RulesAPI extends BaseAPI
     /**
      * Enable inheritance on specific container
      *
-     * @param username
-     *            the username
-     * @param password
-     *            the password
-     * @param containerNodeRef
-     *            the container nodeRef
+     * @param username         the username
+     * @param password         the password
+     * @param containerNodeRef the container nodeRef
      * @return The HTTP Response (or null if the current state is disabled).
      */
     public HttpResponse enableRulesInheritance(String username, String password, String containerNodeRef)
@@ -370,12 +338,9 @@ public class RulesAPI extends BaseAPI
     /**
      * Returns the rules inheritance state of the container
      *
-     * @param username
-     *            the username
-     * @param password
-     *            the password
-     * @param containerNodeRef
-     *            the container nodeRef
+     * @param username the username
+     * @param password the password
+     * @param containerNodeRef the container nodeRef
      *
      * @return a boolean specifying if the container inherits rules from parent
      * @throws JSONException

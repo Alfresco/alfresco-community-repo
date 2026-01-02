@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,24 +28,22 @@ package org.alfresco.rest.v0.service;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
-import static org.testng.AssertJUnit.assertTrue;
-
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.rm.community.model.audit.AuditEvents;
 import org.alfresco.rest.v0.RMAuditAPI;
 import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.UserModel;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Produces processed results from RM Audit REST API calls
@@ -74,10 +72,8 @@ public class RMAuditService
     /**
      * Returns a list of rm audit entries filtered by given event
      *
-     * @param user
-     *            the user who requests the list of rm audit entries
-     * @param auditEvent
-     *            the event
+     * @param user       the user who requests the list of rm audit entries
+     * @param auditEvent the event
      * @return the list of audit entries matching the event
      */
     public List<AuditEntry> getAuditEntriesFilteredByEvent(UserModel user, AuditEvents auditEvent)
@@ -89,57 +85,49 @@ public class RMAuditService
     /**
      * Checks the rm audit log contains the entry for the given event.
      *
-     * @param user
-     *            the user who checks the audit log
-     * @param auditEvent
-     *            the audited event
-     * @param auditUser
-     *            the user who did the audited event
-     * @param nodeName
-     *            the audited node name if exists or empty string
-     * @param changedValues
-     *            the values changed by event if exist or empty list
+     * @param user          the user who checks the audit log
+     * @param auditEvent    the audited event
+     * @param auditUser     the user who did the audited event
+     * @param nodeName      the audited node name if exists or empty string
+     * @param changedValues the values changed by event if exist or empty list
      */
     public void checkAuditLogForEvent(UserModel user, AuditEvents auditEvent, UserModel auditUser,
-            String nodeName, List<Object> changedValues)
+                                         String nodeName, List<Object> changedValues)
     {
 
         List<AuditEntry> auditEntries = getAuditEntriesFilteredByEvent(user, auditEvent);
         assertTrue("The list of events is not filtered by " + auditEvent.event,
                 auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(auditEvent.eventDisplayName)));
-        final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()).truncatedTo(MINUTES);
+        final LocalDateTime eventTimestamp =
+                LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()).truncatedTo(MINUTES);
         assertTrue("The event details are not audited",
                 auditEntries.stream().anyMatch(auditEntry -> auditEntry.getNodeName().equals(nodeName) &&
                         auditEntry.getUserName().equals(auditUser.getUsername()) &&
                         CollectionUtils.isEqualCollection(auditEntry.getChangedValues(), changedValues) &&
                         !auditEntry.getTimestamp().isEmpty() &&
                         (LocalDateTime.ofInstant(Instant.parse(auditEntry.getTimestamp()), ZoneId.systemDefault()).truncatedTo(MINUTES)
-                                .compareTo(eventTimestamp) <= 0)));
+                                      .compareTo(eventTimestamp) <= 0))
+                  );
     }
 
     /**
      * Checks the rm audit log contains the entry for the given event.
      *
-     * @param user
-     *            the user who checks the audit log
-     * @param auditEvent
-     *            the audited event
-     * @param auditUser
-     *            the user who did the audited event
-     * @param nodeName
-     *            the audited node name if exists or empty string
-     * @param nodePath
-     *            the path of the audited node if exists or empty string
-     * @param changedValues
-     *            the values changed by event if exist or empty list
+     * @param user          the user who checks the audit log
+     * @param auditEvent    the audited event
+     * @param auditUser     the user who did the audited event
+     * @param nodeName      the audited node name if exists or empty string
+     * @param nodePath      the path of the audited node if exists or empty string
+     * @param changedValues the values changed by event if exist or empty list
      */
     public void checkAuditLogForEvent(UserModel user, AuditEvents auditEvent, UserModel auditUser,
-            String nodeName, String nodePath, List<Object> changedValues)
+                                         String nodeName, String nodePath, List<Object> changedValues)
     {
         List<AuditEntry> auditEntries = getAuditEntriesFilteredByEvent(user, auditEvent);
         assertTrue("The list of events is not filtered by " + auditEvent.event,
                 auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(auditEvent.eventDisplayName)));
-        final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()).truncatedTo(MINUTES);
+        final LocalDateTime eventTimestamp =
+                LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()).truncatedTo(MINUTES);
         assertTrue("The event details are not audited",
                 auditEntries.stream().anyMatch(auditEntry -> auditEntry.getNodeName().equals(nodeName) &&
                         auditEntry.getUserName().equals(auditUser.getUsername()) &&
@@ -147,6 +135,7 @@ public class RMAuditService
                         CollectionUtils.isEqualCollection(auditEntry.getChangedValues(), changedValues) &&
                         !auditEntry.getTimestamp().isEmpty() &&
                         (LocalDateTime.ofInstant(Instant.parse(auditEntry.getTimestamp()), ZoneId.systemDefault()).truncatedTo(MINUTES)
-                                .compareTo(eventTimestamp) <= 0)));
+                                      .compareTo(eventTimestamp) <= 0))
+                  );
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -35,7 +35,12 @@ package org.alfresco.rest.rm.community.model.user;
  */
 public enum UserRoles
 {
-    IN_PLACE_WRITERS("ExtendedWriters", "In-Place Writers"), ROLE_RM_ADMIN("Administrator", "Records Management Administrator"), ROLE_RM_MANAGER("RecordsManager", "Records Management Manager"), ROLE_RM_POWER_USER("PowerUser", "Records Management Power User"), ROLE_RM_SECURITY_OFFICER("SecurityOfficer", "Records Management Security Officer"), ROLE_RM_USER("User", "Records Management User");
+    IN_PLACE_WRITERS("ExtendedWriters", "In-Place Writers"),
+    ROLE_RM_ADMIN("Administrator", "Records Management Administrator"),
+    ROLE_RM_MANAGER("RecordsManager", "Records Management Manager"),
+    ROLE_RM_POWER_USER("PowerUser", "Records Management Power User"),
+    ROLE_RM_SECURITY_OFFICER("SecurityOfficer", "Records Management Security Officer"),
+    ROLE_RM_USER("User", "Records Management User");
 
     public final String roleId;
     public final String displayName;
@@ -45,5 +50,6 @@ public enum UserRoles
         this.roleId = roleId;
         this.displayName = displayName;
     }
+
 
 }

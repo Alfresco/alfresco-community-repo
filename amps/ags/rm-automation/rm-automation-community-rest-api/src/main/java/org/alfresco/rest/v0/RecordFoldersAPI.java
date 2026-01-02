@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,14 +28,13 @@ package org.alfresco.rest.v0;
 
 import static org.apache.http.HttpStatus.SC_OK;
 
+import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import org.alfresco.rest.core.v0.BaseAPI;
 
 /**
  * Methods to make API requests using v0 API on records folders
@@ -51,12 +50,9 @@ public class RecordFoldersAPI extends BaseAPI
     /**
      * Close the record folder
      *
-     * @param user
-     *            the user closing the folder
-     * @param password
-     *            the user's password
-     * @param recordFolder
-     *            the record folder name
+     * @param user         the user closing the folder
+     * @param password     the user's password
+     * @param recordFolder the record folder name
      * @return The HTTP Response (or null if the response could not be understood).
      */
     public HttpResponse closeRecordFolder(String user, String password, String recordFolder)
@@ -78,44 +74,39 @@ public class RecordFoldersAPI extends BaseAPI
         return null;
     }
 
-    public HttpResponse postFolderAction(String user, String password, JSONObject requestParams, String recordFolder)
-    {
+    public HttpResponse postFolderAction(String user, String password, JSONObject requestParams, String recordFolder) {
         String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordFolder);
-        try
-        {
+        try {
             requestParams.put("nodeRef", recNodeRef);
             return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
         }
-        catch (Exception error)
-        {
+        catch (Exception error) {
             LOGGER.error("Unable to extract response parameter", error);
         }
         return null;
     }
 
-    public HttpResponse postRecordAction(String user, String password, JSONObject requestParams, String recordId)
-    {
-        try
-        {
+    public HttpResponse postRecordAction(String user, String password, JSONObject requestParams, String recordId) {
+        try {
             requestParams.put("nodeRef", recordId);
             return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
         }
-        catch (JSONException error)
-        {
+        catch (JSONException error) {
             LOGGER.error("Unable to extract response parameter", error);
         }
         return null;
     }
+
 
     public HttpResponse reOpenRecordFolder(String user, String password, String recordFolder)
     {
         String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordFolder);
 
-        JSONObject requestParams = new JSONObject();
-        requestParams.put("name", "openRecordFolder");
-        requestParams.put("nodeRef", recNodeRef);
+            JSONObject requestParams = new JSONObject();
+            requestParams.put("name", "openRecordFolder");
+            requestParams.put("nodeRef", recNodeRef);
 
-        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
-    }
+            return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+        }
 
 }

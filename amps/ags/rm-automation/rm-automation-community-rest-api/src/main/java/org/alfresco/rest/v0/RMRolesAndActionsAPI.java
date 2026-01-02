@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,14 +26,13 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.alfresco.dataprep.AlfrescoHttpClient.MIME_TYPE_JSON;
+import static org.alfresco.rest.core.v0.APIUtils.ISO_INSTANT_FORMATTER;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
-
-import static org.alfresco.dataprep.AlfrescoHttpClient.MIME_TYPE_JSON;
-import static org.alfresco.rest.core.v0.APIUtils.ISO_INSTANT_FORMATTER;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -43,6 +42,12 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.dataprep.AlfrescoHttpClient;
+import org.alfresco.dataprep.AlfrescoHttpClientFactory;
+import org.alfresco.dataprep.UserService;
+import org.alfresco.rest.core.v0.BaseAPI;
+import org.alfresco.rest.core.v0.RMEvents;
+import org.alfresco.utility.data.DataUserAIS;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpResponse;
@@ -58,13 +63,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import org.alfresco.dataprep.AlfrescoHttpClient;
-import org.alfresco.dataprep.AlfrescoHttpClientFactory;
-import org.alfresco.dataprep.UserService;
-import org.alfresco.rest.core.v0.BaseAPI;
-import org.alfresco.rest.core.v0.RMEvents;
-import org.alfresco.utility.data.DataUserAIS;
 
 /**
  * Methods to make API requests using v0 API on RM items (move, update and other actions) including adding users to RM roles
@@ -95,14 +93,11 @@ public class RMRolesAndActionsAPI extends BaseAPI
 
     @Autowired
     private DataUserAIS dataUser;
-
     /**
      * Get all the configured RM roles.
      *
-     * @param adminUser
-     *            The RM admin user.
-     * @param adminPassword
-     *            The password of the user.
+     * @param adminUser The RM admin user.
+     * @param adminPassword The password of the user.
      * @return The RM roles in the system (Note that this will be the internal names, not the display labels).
      */
     public Set<String> getConfiguredRoles(String adminUser, String adminPassword)
@@ -116,12 +111,9 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Get the capabilities for a given role.
      *
-     * @param adminUser
-     *            The RM admin user.
-     * @param adminPassword
-     *            The password of the user.
-     * @param role
-     *            The role to get capabilities for.
+     * @param adminUser The RM admin user.
+     * @param adminPassword The password of the user.
+     * @param role The role to get capabilities for.
      * @return The set of system names for the capabilities.
      */
     public Set<String> getCapabilitiesForRole(String adminUser, String adminPassword, String role)
@@ -135,12 +127,9 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Creates the body for PUT/POST Roles API requests
      *
-     * @param roleName
-     *            the role name
-     * @param roleDisplayLabel
-     *            a human-readable label for the role
-     * @param capabilities
-     *            a list of capabilities for the role
+     * @param roleName         the role name
+     * @param roleDisplayLabel a human-readable label for the role
+     * @param capabilities     a list of capabilities for the role
      * @return
      */
     private JSONObject roleRequestBody(String roleName, String roleDisplayLabel, Set<String> capabilities)
@@ -157,16 +146,11 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Create a new RM role.
      *
-     * @param adminUser
-     *            The username of the admin user.
-     * @param adminPassword
-     *            The password for the admin user.
-     * @param roleName
-     *            The name of the new role.
-     * @param roleDisplayLabel
-     *            A human-readable label for the role.
-     * @param capabilities
-     *            A list of capabilities for the role.
+     * @param adminUser The username of the admin user.
+     * @param adminPassword The password for the admin user.
+     * @param roleName The name of the new role.
+     * @param roleDisplayLabel A human-readable label for the role.
+     * @param capabilities A list of capabilities for the role.
      */
     public void createRole(String adminUser, String adminPassword, String roleName, String roleDisplayLabel, Set<String> capabilities)
     {
@@ -177,16 +161,11 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Update an existing RM role.
      *
-     * @param adminUser
-     *            The username of the admin user.
-     * @param adminPassword
-     *            The password for the admin user.
-     * @param roleName
-     *            The name of the new role.
-     * @param roleDisplayLabel
-     *            A human-readable label for the role.
-     * @param capabilities
-     *            A list of capabilities for the role.
+     * @param adminUser The username of the admin user.
+     * @param adminPassword The password for the admin user.
+     * @param roleName The name of the new role.
+     * @param roleDisplayLabel A human-readable label for the role.
+     * @param capabilities A list of capabilities for the role.
      */
     public void updateRole(String adminUser, String adminPassword, String roleName, String roleDisplayLabel, Set<String> capabilities)
     {
@@ -197,12 +176,9 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Delete a created RM role.
      *
-     * @param adminUser
-     *            The username of the admin user.
-     * @param adminPassword
-     *            The password for the admin user.
-     * @param roleName
-     *            The name of the role to be deleted.
+     * @param adminUser The username of the admin user.
+     * @param adminPassword The password for the admin user.
+     * @param roleName The name of the role to be deleted.
      */
     public void deleteRole(String adminUser, String adminPassword, String roleName)
     {
@@ -232,8 +208,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Assign a records management role to a user.
      *
-     * @throws AssertionError
-     *             if the assignation is unsuccessful.
+     * @throws AssertionError if the assignation is unsuccessful.
      */
     public void assignRoleToUser(String adminUser, String adminPassword, String userName, String role)
     {
@@ -261,22 +236,17 @@ public class RMRolesAndActionsAPI extends BaseAPI
             client.close();
         }
         assertEquals("Assigning role " + role + " to user " + userName + " failed.", SC_OK,
-                response.getStatusLine().getStatusCode());
+                    response.getStatusLine().getStatusCode());
     }
 
     /**
      * Move action
      *
-     * @param user
-     *            the user to move the contentPath
-     * @param password
-     *            the user's password
-     * @param contentPath
-     *            path to the content to be moved
-     * @param destinationPath
-     *            destination path
-     * @throws AssertionError
-     *             if the move was unsuccessful.
+     * @param user            the user to move the contentPath
+     * @param password        the user's password
+     * @param contentPath     path to the content to be moved
+     * @param destinationPath destination path
+     * @throws AssertionError if the move was unsuccessful.
      */
     public void moveTo(String user, String password, String contentPath, String destinationPath)
     {
@@ -297,16 +267,16 @@ public class RMRolesAndActionsAPI extends BaseAPI
             HttpResponse response = client.execute(user, password, request);
             switch (response.getStatusLine().getStatusCode())
             {
-            case HttpStatus.SC_OK:
-                JSONObject json = new JSONObject(EntityUtils.toString(response.getEntity()));
-                success = (Boolean) json.get("overallSuccess");
-                break;
-            case HttpStatus.SC_NOT_FOUND:
-                LOGGER.info("The provided paths couldn't be found " + response.toString());
-                break;
-            default:
-                LOGGER.error("Unable to move: " + response.toString());
-                break;
+                case HttpStatus.SC_OK:
+                    JSONObject json = new JSONObject(EntityUtils.toString(response.getEntity()));
+                    success = (Boolean) json.get("overallSuccess");
+                    break;
+                case HttpStatus.SC_NOT_FOUND:
+                    LOGGER.info("The provided paths couldn't be found " + response.toString());
+                    break;
+                default:
+                    LOGGER.error("Unable to move: " + response.toString());
+                    break;
             }
         }
         catch (JSONException | IOException e)
@@ -328,16 +298,11 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Move action
      *
-     * @param user
-     *            the user to move the contentPath
-     * @param password
-     *            the user's password
-     * @param contentPath
-     *            path to the content to be moved
-     * @param destinationPath
-     *            destination path
-     * @throws AssertionError
-     *             if the move was unexpectedly successful.
+     * @param user            the user to move the contentPath
+     * @param password        the user's password
+     * @param contentPath     path to the content to be moved
+     * @param destinationPath destination path
+     * @throws AssertionError if the move was unexpectedly successful.
      */
     public void moveToAndExpectFailure(String user, String password, String contentPath, String destinationPath)
     {
@@ -345,7 +310,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
         {
             moveTo(user, password, contentPath, destinationPath);
         }
-        catch (AssertionError e)
+        catch(AssertionError e)
         {
             // We are expecting the move to fail.
             return;
@@ -356,32 +321,25 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Perform an action on the given content
      *
-     * @param user
-     *            the user executing the action
-     * @param password
-     *            the user's password
-     * @param contentName
-     *            the content name
+     * @param user        the user executing the action
+     * @param password    the user's password
+     * @param contentName the content name
      * @return The HTTP response.
      */
     public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action)
     {
         return executeAction(user, password, contentName, action, null, SC_OK);
     }
-
     /**
      * Perform an action on the given content
      *
-     * @param user
-     *            the user executing the action
-     * @param password
-     *            the user's password
-     * @param contentName
-     *            the content name
+     * @param user        the user executing the action
+     * @param password    the user's password
+     * @param contentName the content name
      * @return The HTTP response.
      */
     public HttpResponse executeActionAndExpectResponseCode(String user, String password, String contentName, RM_ACTIONS action,
-            int status)
+                                                           int status)
     {
         return executeAction(user, password, contentName, action, null, status);
     }
@@ -389,16 +347,13 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Perform an action on the given content
      *
-     * @param user
-     *            the user executing the action
-     * @param password
-     *            the user's password
-     * @param contentName
-     *            the content name
+     * @param user        the user executing the action
+     * @param password    the user's password
+     * @param contentName the content name
      * @return The HTTP response.
      */
     public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action,
-            ZonedDateTime date)
+                                      ZonedDateTime date)
     {
         return executeAction(user, password, contentName, action, date, SC_OK);
     }
@@ -406,20 +361,15 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Creates the body for Actions API requests
      *
-     * @param user
-     *            the user executing the action
-     * @param password
-     *            the user's password
-     * @param contentName
-     *            the content on which the action is executed
-     * @param action
-     *            the action executed
-     * @param actionsParams
-     *            the request parameters
+     * @param user          the user executing the action
+     * @param password      the user's password
+     * @param contentName   the content on which the action is executed
+     * @param action        the action executed
+     * @param actionsParams the request parameters
      * @return the JSONObject created
      */
     private JSONObject actionsRequestBody(String user, String password, String contentName, RM_ACTIONS action,
-            JSONObject actionsParams)
+                                          JSONObject actionsParams)
     {
         final String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
         final JSONObject requestParams = new JSONObject();
@@ -435,18 +385,14 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Perform an action on the record folder
      *
-     * @param user
-     *            the user executing the action
-     * @param password
-     *            the user's password
-     * @param contentName
-     *            the content name
-     * @param date
-     *            the date to be updated
+     * @param user        the user executing the action
+     * @param password    the user's password
+     * @param contentName the content name
+     * @param date        the date to be updated
      * @return The HTTP response.
      */
     public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action,
-            ZonedDateTime date, int status)
+                                      ZonedDateTime date, int status)
     {
         final JSONObject actionParams = new JSONObject();
         if (date != null)
@@ -460,25 +406,21 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Complete an event on the record/record folder
      *
-     * @param user
-     *            the user executing the action
-     * @param password
-     *            the user's password
-     * @param nodeName
-     *            the node name
-     * @param event
-     *            the event to be completed
-     * @param date
-     *            the date to be updated
+     * @param user        the user executing the action
+     * @param password    the user's password
+     * @param nodeName    the node name
+     * @param event       the event to be completed
+     * @param date        the date to be updated
      * @return The HTTP response.
      */
     public HttpResponse completeEvent(String user, String password, String nodeName, RMEvents event, Instant date)
     {
         date = (date != null) ? date : Instant.now();
         final JSONObject actionParams = new JSONObject().put("eventName", event.getEventName())
-                .put("eventCompletedBy", user)
-                .put("eventCompletedAt", new JSONObject()
-                        .put("iso8601", ISO_INSTANT_FORMATTER.format(date)));
+                                                        .put("eventCompletedBy", user)
+                                                        .put("eventCompletedAt", new JSONObject()
+                                                                .put("iso8601", ISO_INSTANT_FORMATTER.format(date))
+                                                            );
         final JSONObject requestParams = actionsRequestBody(user, password, nodeName, RM_ACTIONS.COMPLETE_EVENT,
                 actionParams);
         return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
@@ -487,14 +429,10 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Undo an event on the record/record folder
      *
-     * @param user
-     *            the user executing the action
-     * @param password
-     *            the user's password
-     * @param contentName
-     *            the content name
-     * @param event
-     *            the event to be undone
+     * @param user        the user executing the action
+     * @param password    the user's password
+     * @param contentName the content name
+     * @param event       the event to be undone
      * @return The HTTP response.
      */
     public HttpResponse undoEvent(String user, String password, String contentName, RMEvents event)
@@ -507,16 +445,11 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Deletes every item in the given container
      *
-     * @param username
-     *            the user's username
-     * @param password
-     *            its password
-     * @param siteId
-     *            the site id in which the container is located
-     * @param containerName
-     *            the container to look for items into
-     * @throws AssertionError
-     *             if not all items could be deleted.
+     * @param username      the user's username
+     * @param password      its password
+     * @param siteId        the site id in which the container is located
+     * @param containerName the container to look for items into
+     * @throws AssertionError if not all items could be deleted.
      */
     public void deleteAllItemsInContainer(String username, String password, String siteId, String containerName)
     {
@@ -531,12 +464,9 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Updates metadata, can be used on records, folders and categories
      *
-     * @param username
-     *            the user updating the item
-     * @param password
-     *            the user's password
-     * @param itemNodeRef
-     *            the item noderef
+     * @param username    the user updating the item
+     * @param password    the user's password
+     * @param itemNodeRef the item noderef
      * @return The HTTP response.
      */
     public HttpResponse updateMetadata(String username, String password, String itemNodeRef, Map<RMProperty, String> properties)
@@ -547,7 +477,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
         addPropertyToRequest(requestParams, "prop_cm_description", properties, RMProperty.DESCRIPTION);
         addPropertyToRequest(requestParams, "prop_cm_author", properties, RMProperty.AUTHOR);
         addPropertyToRequest(requestParams, "prop_dod_originator", properties, RMProperty.ORIGINATOR);
-        addPropertyToRequest(requestParams, "prop_dod_originatingOrganization", properties, RMProperty.ORIGINATING_ORGANIZATION);
+        addPropertyToRequest(requestParams, "prop_dod_originatingOrganization", properties, RMProperty
+                .ORIGINATING_ORGANIZATION);
         addPropertyToRequest(requestParams, "prop_dod_publicationDate", properties, RMProperty.PUBLICATION_DATE);
 
         return doPostJsonRequest(username, password, SC_OK, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", itemNodeRef));

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,18 +26,6 @@
  */
 package org.alfresco.rest.rm.community.records;
 
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.testng.Assert.assertTrue;
-
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.utility.report.log.Step.STEP;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -49,14 +37,23 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.testng.Assert.assertTrue;
 /**
- * This class contains the tests for Create the Document, marking them as Record, Hiding them using Site Collaborator The Rm_Admin user then verofy if he is able to access the documents using Rest Api
+ * This class contains the tests for
+ * Create the Document, marking them as Record, Hiding them using Site Collaborator
+ * The Rm_Admin user then verofy if he is able to access the documents using Rest Api
  *
  * @author Kavit Shah
  */
-public class DeclareInPlaceRecordTests extends BaseRMRestTest
-{
+public class DeclareInPlaceRecordTests extends BaseRMRestTest {
 
     private final String TEST_PREFIX = generateTestPrefix(DeclareInPlaceRecordTests.class);
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
@@ -73,17 +70,16 @@ public class DeclareInPlaceRecordTests extends BaseRMRestTest
     private RecordsAPI recordsAPI;
 
     @BeforeClass(alwaysRun = true)
-    public void preConditions()
-    {
+    public void preConditions() {
         STEP("Create RM Site");
         createRMSiteIfNotExists();
 
         STEP("Create RM Admin user");
         rmRolesAndActionsAPI.createUserAndAssignToRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_ADMIN,
-                getAdminUser().getPassword(),
-                "Administrator");
+            getAdminUser().getPassword(),
+            "Administrator");
 
-        RmAdminUser = new UserModel(RM_ADMIN, getAdminUser().getPassword());
+        RmAdminUser = new UserModel(RM_ADMIN,getAdminUser().getPassword());
 
         STEP("Create collab_user user");
         testUser = getDataUser().createRandomTestUser();
@@ -97,26 +93,25 @@ public class DeclareInPlaceRecordTests extends BaseRMRestTest
 
     @Test
     @AlfrescoTest(jira = "RM-2366")
-    public void declareInplaceRecord()
-    {
+    public void declareInplaceRecord() {
 
         // Upload document in a folder in a collaboration site
         FileModel uploadedDocHidden = dataContent.usingSite(testSite)
-                .usingUser(testUser)
-                .usingResource(testFolder)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            .usingUser(testUser)
+            .usingResource(testFolder)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         // declare uploadedDocument as record
         Record uploadedRecordHidden = getRestAPIFactory().getFilesAPI(testUser).declareAsRecord(uploadedDocHidden.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
-        recordsAPI.hideRecord(testUser.getUsername(), testUser.getPassword(), uploadedRecordHidden.getId());
+        recordsAPI.hideRecord(testUser.getUsername(),testUser.getPassword(),uploadedRecordHidden.getId());
 
         // Upload document in a folder in a collaboration site
         FileModel uploadedDocWithoutHidden = dataContent.usingSite(testSite)
-                .usingUser(testUser)
-                .usingResource(testFolder)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            .usingUser(testUser)
+            .usingResource(testFolder)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         Record uploadedRecordWithoutHidden = getRestAPIFactory().getFilesAPI(testUser).declareAsRecord(uploadedDocWithoutHidden.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
@@ -126,27 +121,25 @@ public class DeclareInPlaceRecordTests extends BaseRMRestTest
     }
 
     @AfterClass(alwaysRun = true)
-    public void deletePreConditions()
-    {
+    public void deletePreConditions() {
         STEP("Delete the records created in the test");
         getRestAPIFactory()
-                .getUnfiledContainersAPI(RmAdminUser)
-                .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                .getEntries()
-                .stream()
+            .getUnfiledContainersAPI(RmAdminUser)
+            .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+            .getEntries()
+            .stream()
                 .forEach(x -> getRestAPIFactory()
-                        .getRecordsAPI()
-                        .deleteRecord(x.getEntry().getId()));
+                    .getRecordsAPI()
+                    .deleteRecord(x.getEntry().getId()));
 
     }
 
-    private boolean isRecordChildOfUnfiledContainer(String recordId)
-    {
+    private boolean isRecordChildOfUnfiledContainer(String recordId) {
         return getRestAPIFactory()
-                .getUnfiledContainersAPI(RmAdminUser)
-                .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                .getEntries()
-                .stream()
-                .anyMatch(c -> c.getEntry().getId().equals(recordId));
+            .getUnfiledContainersAPI(RmAdminUser)
+            .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+            .getEntries()
+            .stream()
+            .anyMatch(c -> c.getEntry().getId().equals(recordId));
     }
 }

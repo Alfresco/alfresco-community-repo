@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,15 +26,6 @@
  */
 package org.alfresco.rest.rm.community.hold;
 
-import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.OK;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.AssertJUnit.assertFalse;
-
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_VITAL_RECORD;
@@ -43,15 +34,17 @@ import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPr
 import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.OK;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertFalse;
 
-import java.io.File;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import java.io.File;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.core.JsonBodyGenerator;
@@ -70,14 +63,18 @@ import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 /**
  * API tests to check actions on frozen content
  *
  * @author Rodica Sutu
  * @since 3.2
  */
-@AlfrescoTest(jira = "RM-6903")
+@AlfrescoTest (jira = "RM-6903")
 public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 {
     private static final String HOLD_ONE = "HOLD" + generateTestPrefix(PreventActionsOnFrozenContentTests.class);
@@ -98,7 +95,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void preconditionForPreventActionsOnFrozenContent()
     {
         STEP("Create a hold.");
@@ -108,7 +105,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         STEP("Create a test file.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         contentHeld = dataContent.usingAdmin().usingSite(testSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                                 .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Add the file to the hold.");
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), contentHeld
@@ -119,7 +116,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 
         STEP("Create a folder withing the test site .");
         folderModel = dataContent.usingAdmin().usingSite(testSite)
-                .createFolder();
+                                 .createFolder();
 
         STEP("Create a record folder with some records");
         recordFolder = createCategoryFolderInFilePlan();
@@ -132,7 +129,10 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     }
 
     /**
-     * Given active content on hold When I try to edit the properties Or perform an action that edits the properties Then I am not successful
+     * Given active content on hold
+     * When I try to edit the properties
+     * Or perform an action that edits the properties
+     * Then I am not successful
      *
      */
     @Test
@@ -147,21 +147,29 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         restClient.assertLastError().containsSummary("Frozen content can't be updated.");
     }
 
-    /* Given active content on hold When I try to update the content Then I am not successful */
+    /*
+     * Given active content on hold
+     * When I try to update the content
+     * Then I am not successful
+     */
     @Test
-    @AlfrescoTest(jira = "RM-6925")
+    @AlfrescoTest (jira = "RM-6925")
     public void updateContentForFrozenFile() throws Exception
     {
         STEP("Update content of the held file");
         restClient.authenticateUser(getAdminUser()).withCoreAPI().usingNode(contentHeld).updateNodeContent(updatedFile);
 
         STEP("Check the request failed.");
-        // TODO change this to FORBIDDEN when REPO-4632 is fixed
+        //TODO change this to FORBIDDEN when REPO-4632 is fixed
         restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
         restClient.assertLastError().containsSummary("Frozen content can't be updated.");
     }
 
-    /* Given active content on hold When I try to delete the content Then I am not successful */
+    /*
+     * Given active content on hold
+     * When I try to delete the content
+     * Then I am not successful
+     */
     @Test
     public void deleteFrozenFile() throws Exception
     {
@@ -174,14 +182,16 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     }
 
     /**
-     * Given active content on hold When I try to copy the content Then I am not successful
+     * Given active content on hold
+     * When I try to copy the content
+     * Then I am not successful
      */
     @Test
     @AlfrescoTest(jira = "RM-6924")
     public void copyFrozenFile()
     {
         STEP("Copy frozen file");
-        String postBody = JsonBodyGenerator.keyValueJson("targetParentId", folderModel.getNodeRef());
+        String postBody = JsonBodyGenerator.keyValueJson("targetParentId",folderModel.getNodeRef());
         getRestAPIFactory().getNodeAPI(contentHeld).copyNode(postBody);
 
         STEP("Check the request failed.");
@@ -190,7 +200,9 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     }
 
     /**
-     * Given active content on hold When I try to move the content Then I am not successful
+     * Given active content on hold
+     * When I try to move the content
+     * Then I am not successful
      *
      */
     @Test
@@ -205,26 +217,31 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     }
 
     /**
-     * Given a record folder with a frozen record and another record not held When I update the record folder and make the records as vital Then I am successful and the records not held are marked as vital And the frozen nodes have the vital record search properties updated
+     * Given a record folder with a frozen record and another record not held
+     * When I update the record folder and make the records as vital
+     * Then I am successful and the records not held are marked as vital
+     * And the frozen nodes have the vital record search properties updated
      */
     @Test
-    @AlfrescoTest(jira = "RM-6929")
+    @AlfrescoTest (jira = "RM-6929")
     public void updateRecordFolderVitalProperties()
     {
         STEP("Update the vital record properties for the record folder");
         // Create the record folder properties to update
         RecordFolder recordFolderToUpdate = RecordFolder.builder()
-                .properties(RecordFolderProperties.builder()
-                        .vitalRecordIndicator(true)
-                        .reviewPeriod(new ReviewPeriod("month", "1"))
-                        .build())
-                .build();
+                                                        .properties(RecordFolderProperties.builder()
+                                                                                          .vitalRecordIndicator(true)
+                                                                                          .reviewPeriod(new ReviewPeriod("month", "1"))
+                                                                                          .build())
+                                                        .build();
 
         // Update the record folder
-        RecordFolder updatedRecordFolder = getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolderToUpdate,
-                recordFolder.getId());
+        RecordFolder updatedRecordFolder = getRestAPIFactory().getRecordFolderAPI().updateRecordFolder
+                (recordFolderToUpdate,
+                        recordFolder.getId());
         assertStatusCode(OK);
         assertTrue(updatedRecordFolder.getAspectNames().contains(ASPECTS_VITAL_RECORD_DEFINITION));
+
 
         STEP("Check the frozen record was not marked as vital");
         recordFrozen = getRestAPIFactory().getRecordsAPI().getRecord(recordFrozen.getId());
@@ -241,15 +258,18 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     }
 
     /**
-     * Given a record folder with a frozen record and another record not held When I add a disposition schedule Then I am successful And the record search disposition schedule properties are updated
+     * Given a record folder with a frozen record and another record not held
+     * When I add a disposition schedule
+     * Then I am successful
+     * And the record search disposition schedule properties are updated
      */
     @Test
-    @AlfrescoTest(jira = "RM-6929")
+    @AlfrescoTest (jira = "RM-6929")
     public void createDispositionScheduleOnCategoryWithHeldChildren()
     {
         STEP("Create a retention schedule on the category with frozen children");
         RecordCategory categoryWithRS = getRestAPIFactory().getRecordCategoryAPI()
-                .getRecordCategory(recordFolder.getParentId());
+                                                           .getRecordCategory(recordFolder.getParentId());
         dispositionScheduleService.createCategoryRetentionSchedule(categoryWithRS.getName(), false);
         dispositionScheduleService.addCutOffImmediatelyStep(categoryWithRS.getName());
         dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(categoryWithRS.getName());
@@ -262,10 +282,15 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     }
 
     /**
-     * Given a record category with a disposition schedule applied to records And the disposition schedule has a retain step immediately and destroy step immediately And a complete record added to one hold When I execute the retain action Then the action is executed And the record search disposition schedule properties are updated
+     * Given a record category with a disposition schedule applied to records
+     * And the disposition schedule has a retain step  immediately and destroy step immediately
+     * And a complete record added to one hold
+     * When I execute the retain action
+     * Then the action is executed
+     * And the record search disposition schedule properties are updated
      */
     @Test
-    @AlfrescoTest(jira = "RM-6931")
+    @AlfrescoTest (jira = "RM-6931")
     public void retainActionOnFrozenHeldRecords()
     {
         STEP("Add a category with a disposition schedule.");
@@ -284,7 +309,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 
         STEP("Execute the retain action");
         rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getPassword(), record.getName(),
-                RM_ACTIONS.END_RETENTION, null, SC_INTERNAL_SERVER_ERROR);
+            RM_ACTIONS.END_RETENTION, null, SC_INTERNAL_SERVER_ERROR);
 
         STEP("Check the record search disposition properties");
         Record recordUpdated = getRestAPIFactory().getRecordsAPI().getRecord(record.getId());
@@ -292,7 +317,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         assertTrue(recordUpdated.getProperties().getRecordSearchDispositionPeriod().contains("immediately"));
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void cleanUpPreventActionsOnFrozenContent()
     {
         holdsAPI.deleteHold(getAdminUser(), holdNodeRef);

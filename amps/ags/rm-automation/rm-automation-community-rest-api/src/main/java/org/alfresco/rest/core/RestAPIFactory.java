@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,10 +32,6 @@ import jakarta.annotation.Resource;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
-
 import org.alfresco.rest.requests.Node;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
 import org.alfresco.rest.requests.search.SearchAPI;
@@ -49,14 +45,17 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RMUserAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.RetentionScheduleAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.TransferAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.TransferContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RetentionScheduleAPI;
 import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 /**
  * REST API Factory which provides access to the APIs
@@ -69,7 +68,7 @@ import org.alfresco.utility.model.UserModel;
 public class RestAPIFactory
 {
     @Autowired
-    @Getter(value = PROTECTED)
+    @Getter (value = PROTECTED)
     private DataUserAIS dataUser;
 
     @Resource(name = "RMRestWrapper")

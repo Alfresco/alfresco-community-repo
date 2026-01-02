@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -25,18 +25,16 @@
  * #L%
  */
 package org.alfresco.rest.v0;
-
 import java.text.MessageFormat;
 
+import org.alfresco.dataprep.AlfrescoHttpClient;
+import org.alfresco.dataprep.AlfrescoHttpClientFactory;
+import org.alfresco.rest.core.v0.BaseAPI;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import org.alfresco.dataprep.AlfrescoHttpClient;
-import org.alfresco.dataprep.AlfrescoHttpClientFactory;
-import org.alfresco.rest.core.v0.BaseAPI;
 
 /**
  * The v0 REST API for nodes
@@ -57,7 +55,7 @@ public class NodeAPI extends BaseAPI
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
 
     /**
-     * Get the node metadata using the using the node data webscript: Document List v2 Component
+     * Get the node metadata using the using the node data webscript:  Document List v2 Component
      *
      * @param username
      * @param password

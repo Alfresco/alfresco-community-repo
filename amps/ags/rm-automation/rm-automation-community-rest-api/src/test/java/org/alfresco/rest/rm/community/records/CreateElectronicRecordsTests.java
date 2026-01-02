@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,41 +27,36 @@
 package org.alfresco.rest.rm.community.records;
 
 import static java.util.Arrays.asList;
-
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.OK;
-
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordModel;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
-import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 /**
- * This class contains the tests for CreateElectronicRecordsTests Action REST API
+ * This class contains the tests for
+ * CreateElectronicRecordsTests Action REST API
  *
  * @author Shishuraj Bisht
  */
-public class CreateElectronicRecordsTests extends BaseRMRestTest
-{
+public class CreateElectronicRecordsTests extends BaseRMRestTest {
 
     private RecordCategory rootCategory;
     private UserModel updateUser;
@@ -75,7 +70,7 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest
     private final String TEST_PREFIX = generateTestPrefix(CreateElectronicRecordsTests.class);
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void preConditions()
     {
         STEP("Create RM Site");
@@ -83,8 +78,8 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest
 
         STEP("Create RM Admin user");
         rmRolesAndActionsAPI.createUserAndAssignToRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_ADMIN,
-                getAdminUser().getPassword(),
-                "Administrator");
+            getAdminUser().getPassword(),
+            "Administrator");
 
         STEP("Create root level category");
         rootCategory = createRootCategory(getRandomName("Category"));
@@ -97,11 +92,10 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest
      * Test v0 methods to create and get electronic records.
      */
     @Test
-    @AlfrescoTest(jira = "RM-2768")
-    public void createElectronicRecordTest() throws Exception
-    {
+    @AlfrescoTest (jira = "RM-2768")
+    public void createElectronicRecordTest() throws Exception {
 
-        // create electronic record in record folder
+        //create electronic record in record folder
         String recordFolder1 = createRecordFolder(rootCategory.getId(), getRandomName("recFolder")).getId();
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
 
@@ -113,8 +107,7 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest
         // Get recordsAPI instance initialised to updateUser
         org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI(updateUser);
 
-        for (Record record : asList(electronicRecord))
-        {
+        for (Record record: asList(electronicRecord)) {
             recordsAPI.getRecord(record.getId());
             assertStatusCode(OK);
 
@@ -133,23 +126,23 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest
 
         STEP("Move record from folder1 to folder2");
         RestNodeModel electronicDocRestNodeModel = getRestAPIFactory()
-                .getNodeAPI(toContentModel(electronicRecord.getId()))
-                .move(createBodyForMoveCopy(recordFolder2));
+            .getNodeAPI(toContentModel(electronicRecord.getId()))
+            .move(createBodyForMoveCopy(recordFolder2));
         assertStatusCode(OK);
     }
 
-    private String getModifiedPropertyValue(String originalValue)
-    {
+    private String getModifiedPropertyValue(String originalValue) {
         /* to be used to append to modifications */
         String MODIFIED_PREFIX = "modified_";
         return MODIFIED_PREFIX + originalValue;
     }
 
-    @AfterClass(alwaysRun = true)
-    public void deletePreConditions()
-    {
+    @AfterClass (alwaysRun = true)
+    public void deletePreConditions() {
         STEP("Delete the created rootCategory along with corresponding record folders/records present in it");
         getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(rootCategory.getId());
     }
 
-}
+    }
+
+

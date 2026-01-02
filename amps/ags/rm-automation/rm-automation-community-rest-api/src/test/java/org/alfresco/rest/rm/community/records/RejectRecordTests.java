@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,22 +26,16 @@
  */
 package org.alfresco.rest.rm.community.records;
 
+import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
+import static org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI.PARENT_ID_PARAM;
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
-import static org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI.PARENT_ID_PARAM;
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
-
 import java.util.Collections;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -56,10 +50,13 @@ import org.alfresco.rest.v0.RulesAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  * API tests for rejecting records
- * 
  * @author Ross Gale
  * @since 3.1
  */
@@ -75,7 +72,7 @@ public class RejectRecordTests extends BaseRMRestTest
     @Autowired
     private RulesAPI rulesAPI;
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void setUp()
     {
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
@@ -93,13 +90,13 @@ public class RejectRecordTests extends BaseRMRestTest
     {
         STEP("Create a document in the collaboration site");
         FileModel testFile = dataContent.usingSite(publicSite)
-                .usingAdmin()
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                                        .usingAdmin()
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare document as record with a location parameter value");
         Record record = getRestAPIFactory().getFilesAPI()
-                .usingParams(String.format("%s=%s", PARENT_ID_PARAM, recordFolder.getId()))
-                .declareAsRecord(testFile.getNodeRefWithoutVersion());
+                                           .usingParams(String.format("%s=%s", PARENT_ID_PARAM, recordFolder.getId()))
+                                           .declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         STEP("Link record to new folder");
@@ -128,15 +125,16 @@ public class RejectRecordTests extends BaseRMRestTest
     {
         STEP("Create a document in the collaboration site");
         FileModel testFile = dataContent.usingSite(publicSite)
-                .usingAdmin()
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                                        .usingAdmin()
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Create a record folder with a reject rule");
         RecordCategoryChild folderWithRule = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
         RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description")
-                .applyToChildren(true).rejectReason(REJECT_REASON)
-                .actions(Collections.singletonList(ActionsOnRule.REJECT.getActionValue()));
+                                                      .applyToChildren(true).rejectReason(REJECT_REASON)
+                                                      .actions(Collections.singletonList(ActionsOnRule.REJECT.getActionValue()));
         rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + folderWithRule.getId(), ruleDefinition);
+
 
         STEP("Declare document as record to Unfiled Records folder");
         Record record = getRestAPIFactory().getFilesAPI().declareAsRecord(testFile.getNodeRefWithoutVersion());
@@ -156,7 +154,7 @@ public class RejectRecordTests extends BaseRMRestTest
                 record.getName(), REJECT_REASON);
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void cleanUp()
     {
         deleteRecordCategory(recordCategory.getId());

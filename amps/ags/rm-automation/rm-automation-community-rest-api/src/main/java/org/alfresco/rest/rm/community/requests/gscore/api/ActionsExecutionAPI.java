@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,13 +27,13 @@
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
 import com.google.common.collect.ImmutableMap;
-import lombok.SneakyThrows;
-import org.json.JSONObject;
 
+import lombok.SneakyThrows;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.alfresco.utility.model.RepoTestModel;
+import org.json.JSONObject;
 
 /**
  * Produces processed results from Core Actions API calls
@@ -44,8 +44,7 @@ import org.alfresco.utility.model.RepoTestModel;
 public class ActionsExecutionAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper
-     *            RM REST Wrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public ActionsExecutionAPI(RMRestWrapper rmRestWrapper)
     {
@@ -55,89 +54,81 @@ public class ActionsExecutionAPI extends RMModelRequest
     /**
      * Declares and files a document as record to a record folder using v1 actions api
      *
-     * @param targetNode
-     *            the node on which the action is executed
-     * @param destinationPath
-     *            the path to the record folder
+     * @param targetNode      the node on which the action is executed
+     * @param destinationPath the path to the record folder
      * @throws Exception
      */
     public JSONObject declareAndFile(RepoTestModel targetNode, String destinationPath) throws Exception
     {
         return getRmRestWrapper().withCoreAPI().usingActions()
-                .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode,
-                        ImmutableMap.of("path", destinationPath));
+                                 .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode,
+                                         ImmutableMap.of("path", destinationPath));
     }
 
     /**
      * Declares a document as record using v1 actions api
      *
-     * @param targetNode
-     *            the node on which the action is executed
+     * @param targetNode the node on which the action is executed
      * @throws Exception
      */
     public JSONObject declareAsRecord(RepoTestModel targetNode) throws Exception
     {
         return getRmRestWrapper().withCoreAPI().usingActions()
-                .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode);
+                                 .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode);
     }
+
 
     /**
      * Declares and file a document version as record to a record folder using v1 actions api
      *
-     * @param targetNode
-     *            the node on which the action is executed
-     * @param destinationPath
-     *            the path to the record folder
+     * @param targetNode      the node on which the action is executed
+     * @param destinationPath the path to the record folder
      * @throws Exception
      */
     public JSONObject declareAndFileVersionAsRecord(RepoTestModel targetNode, String destinationPath) throws Exception
     {
         return getRmRestWrapper().withCoreAPI().usingActions()
-                .executeAction(ActionsOnRule.DECLARE_VERSION_AS_RECORD.getActionValue(), targetNode,
-                        ImmutableMap.of("path", destinationPath));
+                                 .executeAction(ActionsOnRule.DECLARE_VERSION_AS_RECORD.getActionValue(), targetNode,
+                                         ImmutableMap.of("path", destinationPath));
     }
 
     /**
      * Declares a document version as record using v1 actions api
      *
-     * @param targetNode
-     *            the node on which the action is executed
+     * @param targetNode the node on which the action is executed
      * @throws Exception
      */
     public JSONObject declareVersionAsRecord(RepoTestModel targetNode) throws Exception
     {
         return getRmRestWrapper().withCoreAPI().usingActions()
-                .executeAction(ActionsOnRule.DECLARE_VERSION_AS_RECORD.getActionValue(), targetNode);
+                                 .executeAction(ActionsOnRule.DECLARE_VERSION_AS_RECORD.getActionValue(), targetNode);
     }
 
     /**
      * Add WORM lock to a node using v1 actions api
      *
-     * @param targetNode
-     *            the node on which the action is executed
+     * @param targetNode the node on which the action is executed
      * @throws Exception
      */
     @SneakyThrows
     public JSONObject addWORMLock(RepoTestModel targetNode)
     {
         return getRmRestWrapper().withCoreAPI().usingActions()
-                .executeAction(ActionsOnRule.WORM_LOCK.getActionValue(), targetNode);
+                                 .executeAction(ActionsOnRule.WORM_LOCK.getActionValue(), targetNode);
     }
 
     /**
      * WORM lock a node for a period of days
      *
-     * @param targetNode
-     *            the node on which the action is executed
-     * @param retentionPeriod
-     *            the retention period in days for the WORM lock
+     * @param targetNode      the node on which the action is executed
+     * @param retentionPeriod the retention period in days for the WORM lock
      * @throws Exception
      */
     @SneakyThrows
     public JSONObject addWORMLock(RepoTestModel targetNode, int retentionPeriod)
     {
         return getRmRestWrapper().withCoreAPI().usingActions()
-                .executeAction(ActionsOnRule.WORM_LOCK.getActionValue(), targetNode,
-                        ImmutableMap.of("retentionPeriod", String.valueOf(retentionPeriod)));
+                                 .executeAction(ActionsOnRule.WORM_LOCK.getActionValue(), targetNode,
+                                         ImmutableMap.of("retentionPeriod", String.valueOf(retentionPeriod)));
     }
 }

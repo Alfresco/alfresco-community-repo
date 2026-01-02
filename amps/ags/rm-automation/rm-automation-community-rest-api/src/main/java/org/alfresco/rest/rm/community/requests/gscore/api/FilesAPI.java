@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,10 +26,9 @@
  */
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
-import static org.springframework.http.HttpMethod.POST;
-
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
+import static org.springframework.http.HttpMethod.POST;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -46,8 +45,7 @@ public class FilesAPI extends RMModelRequest<FilesAPI>
     public static final String PARENT_ID_PARAM = "parentId";
 
     /**
-     * @param rmRestWrapper
-     *            RM REST Wrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public FilesAPI(RMRestWrapper rmRestWrapper)
     {
@@ -57,20 +55,20 @@ public class FilesAPI extends RMModelRequest<FilesAPI>
     /**
      * Declare file as record
      *
-     * @param fileId
-     *            The Id of a file to declare as record
+     * @param fileId The Id of a file to declare as record
      * @return The {@link Record} for created record
-     * @throws RuntimeException
-     *             for malformed JSON responses
+     * @throws RuntimeException for malformed JSON responses
      */
     public Record declareAsRecord(String fileId)
     {
         mandatoryString("fileId", fileId);
 
         return getRmRestWrapper().processModel(Record.class, simpleRequest(
-                POST,
-                "/files/{fileId}/declare?{parameters}",
-                fileId,
-                getRmRestWrapper().getParameters()));
+            POST,
+            "/files/{fileId}/declare?{parameters}",
+            fileId,
+            getRmRestWrapper().getParameters()
+        ));
     }
 }
+

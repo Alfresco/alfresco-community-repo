@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,21 +26,6 @@
  */
 package org.alfresco.rest.rm.community.audit;
 
-import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.test.util.AssertionErrors.assertTrue;
-import static org.testng.Assert.fail;
-
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordFolderModel;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
@@ -52,9 +37,22 @@ import org.alfresco.rest.v0.RecordFoldersAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import java.util.List;
+import java.util.Optional;
 
-public class RecordFolderAuditLogTest extends BaseRMRestTest
-{
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_COMPLETED_RECORD;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordFolderModel;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.test.util.AssertionErrors.assertTrue;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.fail;
+
+public class RecordFolderAuditLogTest extends BaseRMRestTest {
 
     private Optional<UserModel> rmAdmin;
     @Autowired
@@ -70,8 +68,7 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest
     public static final String DESCRIPTION = "Description";
 
     @BeforeClass(alwaysRun = true)
-    public void recordFolderAuditLogSetup()
-    {
+    public void recordFolderAuditLogSetup() {
         createRMSiteIfNotExists();
         rmAdmin = Optional.ofNullable(getDataUser().createRandomTestUser());
         rmRolesAndActionsAPI.assignRoleToUser(
@@ -83,8 +80,7 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest
 
     @Test(description = "Audit log for empty record folder")
     @AlfrescoTest(jira = "RM-4303")
-    public void recordFolderAudit()
-    {
+    public void recordFolderAudit() {
         category1 = createRootCategory(TITLE, DESCRIPTION);
         recordFolder1 = createFolder(category1.getId(), TITLE);
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
@@ -93,45 +89,47 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest
 
     }
 
-    @Test(
-            dependsOnMethods = "recordFolderAudit",
-            description = "Viewing record folder audit log is itself an auditable event")
+    @Test
+            (
+                    dependsOnMethods = "recordFolderAudit",
+                    description = "Viewing record folder audit log is itself an auditable event"
+            )
     @AlfrescoTest(jira = "RM-4303")
-    public void recordFolderAuditIsEvent()
-    {
+    public void recordFolderAuditIsEvent() {
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
         assertTrue("Audit View Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Audit View")));
 
     }
 
-    @Test(
-            dependsOnMethods = "recordFolderAuditIsEvent",
-            description = "Record folder rename is an edit metadata event")
+    @Test
+            (
+                    dependsOnMethods = "recordFolderAuditIsEvent",
+                    description = "Record folder rename is an edit metadata event"
+            )
     @AlfrescoTest(jira = "RM-4303")
-    public void renameRecordFolder()
-    {
+    public void renameRecordFolder() {
         auditLog.clearAuditLog(rmAdmin.get().getUsername(), rmAdmin.get().getPassword());
         RecordFolder renameRecordFolder = createRecordFolderModel(category1.getId(), "edited");
         getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(renameRecordFolder, recordFolder1.getId());
         assertStatusCode(OK);
         // we expect 1 new event: "metadata update"
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
-        // assertTrue("Move To Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Move to")));
+//        assertTrue("Move To Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Move to")));
         assertTrue("Updated metadata Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Updated Metadata")));
 
     }
 
     @Test(dependsOnMethods = "recordFolderAudit",
-            description = "Close and reopen folder")
+        description = "Close and reopen folder")
     @AlfrescoTest(jira = "RM-4303")
-    public void closeReopenFolder()
-    {
-        // close folder
+    public void closeReopenFolder() {
+        //close folder
         recordFoldersAPI.closeRecordFolder(rmAdmin.get().getUsername(), rmAdmin.get().getPassword(),
                 recordFolder1.getName());
         try
         {
-            Utility.sleep(1000, 30000, () -> {
+            Utility.sleep(1000, 30000, () ->
+            {
                 List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
                 assertTrue("Folder Close Record Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Close Record Folder")));
 
@@ -142,14 +140,15 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest
             fail("InterruptedException received while waiting for results.");
         }
 
-        // reopen folder
+        //reopen folder
         recordFoldersAPI.reOpenRecordFolder(rmAdmin.get().getUsername(), rmAdmin.get().getPassword(),
                 recordFolder1.getName());
         try
         {
-            Utility.sleep(1000, 30000, () -> {
+            Utility.sleep(1000, 30000, () ->
+            {
 
-                List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
+                List<AuditEntry> auditEntries  = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
                 assertTrue("Reopen Record Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Open Record Folder")));
 
             });
@@ -159,14 +158,13 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest
             fail("InterruptedException received while waiting for results.");
         }
     }
-
     @AfterMethod
     private void closeAuditLog()
     {
-        auditLog.clearAuditLog(rmAdmin.get().getUsername(), rmAdmin.get().getPassword());
+        auditLog.clearAuditLog(rmAdmin.get().getUsername(),rmAdmin.get().getPassword());
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void recordFolderAuditLogCleanup()
     {
         deleteRecordFolder(recordFolder1.getId());

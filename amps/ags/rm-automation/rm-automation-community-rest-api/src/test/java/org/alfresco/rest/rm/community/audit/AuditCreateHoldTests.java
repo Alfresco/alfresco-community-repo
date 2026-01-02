@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,25 +28,20 @@ package org.alfresco.rest.rm.community.audit;
 
 import static java.util.Arrays.asList;
 
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
-
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.CREATE_HOLD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
@@ -56,6 +51,10 @@ import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  * This class contains the tests that check the create hold event is audited
@@ -63,7 +62,7 @@ import org.alfresco.utility.model.UserModel;
  * @author Claudia Agache
  * @since 3.3
  */
-@AlfrescoTest(jira = "RM-6859")
+@AlfrescoTest (jira = "RM-6859")
 public class AuditCreateHoldTests extends BaseRMRestTest
 {
     private final String PREFIX = generateTestPrefix(AuditCreateHoldTests.class);
@@ -79,7 +78,7 @@ public class AuditCreateHoldTests extends BaseRMRestTest
 
     private UserModel rmAdmin, rmManager;
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void preconditionForAuditCreateHoldTests()
     {
         STEP("Create test users.");
@@ -88,7 +87,13 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a new hold is created When I view the audit log Then an entry has been created in the audit log which contains the following: name of the hold reason for hold user who created the hold date the creation occurred
+     * Given a new hold is created
+     * When I view the audit log
+     * Then an entry has been created in the audit log which contains the following:
+     *      name of the hold
+     *      reason for hold
+     *      user who created the hold
+     *      date the creation occurred
      */
     @Test
     public void createHoldEventIsAuditedForNewHold()
@@ -97,9 +102,9 @@ public class AuditCreateHoldTests extends BaseRMRestTest
 
         STEP("Create a new hold.");
         String hold1NodeRef = getRestAPIFactory()
-                .getFilePlansAPI(rmAdmin)
-                .createHold(Hold.builder().name(HOLD1).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
-                .getId();
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(HOLD1).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .getId();
         holdsListRef.add(hold1NodeRef);
         STEP("Check the audit log contains the entry for the created hold with the hold details.");
         rmAuditService.checkAuditLogForEvent(getAdminUser(), CREATE_HOLD, rmAdmin, HOLD1,
@@ -108,23 +113,25 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given an unsuccessful create hold action When I view the audit log Then the create hold event isn't audited
+     * Given an unsuccessful create hold action
+     * When I view the audit log
+     * Then the create hold event isn't audited
      */
     @Test
     public void createHoldEventIsNotAuditedForExistingHold()
     {
         STEP("Create a new hold.");
         String hold2NodeRef = getRestAPIFactory()
-                .getFilePlansAPI(rmAdmin)
-                .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
-                .getId();
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .getId();
         holdsListRef.add(hold2NodeRef);
         rmAuditService.clearAuditLog();
 
         STEP("Try to create again the same hold and expect action to fail.");
         getRestAPIFactory()
-                .getFilePlansAPI(rmAdmin)
-                .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
         assertStatusCode(CONFLICT);
 
         STEP("Check the audit log doesn't contain the entry for the second create hold event.");
@@ -133,7 +140,9 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a new hold is created and then deleted When I view the audit log Then the create hold entry still contains the initial details
+     * Given a new hold is created and then deleted
+     * When I view the audit log
+     * Then the create hold entry still contains the initial details
      */
     @Test
     public void createHoldAuditEntryIsNotLost()
@@ -143,16 +152,16 @@ public class AuditCreateHoldTests extends BaseRMRestTest
 
         STEP("Create a new hold.");
         String nodeRef = getRestAPIFactory()
-                .getFilePlansAPI(rmAdmin)
-                .createHold(Hold.builder().name(holdName).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS).getId();
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(holdName).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS).getId();
 
         STEP("Get the list of audit entries for the create hold event.");
         List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), CREATE_HOLD);
 
         STEP("Delete the created hold.");
         getRestAPIFactory()
-                .getHoldsAPI(rmAdmin)
-                .deleteHold(nodeRef);
+            .getHoldsAPI(rmAdmin)
+            .deleteHold(nodeRef);
 
         STEP("Get again the list of audit entries for the create hold event.");
         List<AuditEntry> auditEntriesAfterDelete = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), CREATE_HOLD);
@@ -162,7 +171,9 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a new hold is created When I view the audit log as an user with no Read permissions over the created hold Then the create hold entry isn't visible
+     * Given a new hold is created
+     * When I view the audit log as an user with no Read permissions over the created hold
+     * Then the create hold entry isn't visible
      */
     @Test
     public void createHoldAuditEntryNotVisible()
@@ -171,8 +182,8 @@ public class AuditCreateHoldTests extends BaseRMRestTest
 
         STEP("Create a new hold.");
         String hold3NodeRef = getRestAPIFactory()
-                .getFilePlansAPI(rmAdmin)
-                .createHold(Hold.builder().name(HOLD3).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS).getId();
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(HOLD3).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS).getId();
 
         holdsListRef.add(hold3NodeRef);
 
@@ -181,7 +192,7 @@ public class AuditCreateHoldTests extends BaseRMRestTest
                 rmAuditService.getAuditEntriesFilteredByEvent(rmManager, CREATE_HOLD).isEmpty());
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void cleanUpAuditCreateHoldTests()
     {
         holdsListRef.forEach(holdRef -> getRestAPIFactory().getHoldsAPI(rmAdmin).deleteHold(holdRef));

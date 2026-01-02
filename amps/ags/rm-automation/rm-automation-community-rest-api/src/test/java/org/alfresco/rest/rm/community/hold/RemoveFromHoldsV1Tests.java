@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,11 +28,6 @@ package org.alfresco.rest.rm.community.hold;
 
 import static java.util.Arrays.asList;
 
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
-
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
@@ -46,18 +41,16 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
@@ -75,6 +68,11 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
  * V1 API tests for removing content/record folder/record from holds
@@ -86,7 +84,7 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
     private static final String HOLD_ONE = "HOLD_ONE" + generateTestPrefix(RemoveFromHoldsV1Tests.class);
     private static final String HOLD_TWO = "HOLD_TWO" + generateTestPrefix(RemoveFromHoldsV1Tests.class);
     private static final String ACCESS_DENIED_ERROR_MESSAGE = "Access Denied.  You do not have the appropriate " +
-            "permissions to perform this operation.";
+        "permissions to perform this operation.";
 
     private SiteModel testSite;
     private SiteModel privateSite;
@@ -106,33 +104,33 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
         STEP("Create two holds.");
 
         holdNodeRefOne = createHold(FILE_PLAN_ALIAS,
-                Hold.builder().name(HOLD_ONE).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(),
-                getAdminUser()).getId();
+            Hold.builder().name(HOLD_ONE).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(),
+            getAdminUser()).getId();
         String holdNodeRefTwo = createHold(FILE_PLAN_ALIAS,
-                Hold.builder().name(HOLD_TWO).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(),
-                getAdminUser()).getId();
+            Hold.builder().name(HOLD_TWO).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(),
+            getAdminUser()).getId();
         holdsListRef = asList(holdNodeRefOne, holdNodeRefTwo);
 
         STEP("Create test files.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         contentHeld = dataContent.usingAdmin().usingSite(testSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         contentAddToManyHolds = dataContent.usingSite(testSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Add content to the holds.");
         getRestAPIFactory()
-                .getHoldsAPI(getAdminUser())
-                .addChildToHold(HoldChild.builder().id(contentHeld.getNodeRefWithoutVersion()).build(), holdNodeRefOne);
+            .getHoldsAPI(getAdminUser())
+            .addChildToHold(HoldChild.builder().id(contentHeld.getNodeRefWithoutVersion()).build(), holdNodeRefOne);
         getRestAPIFactory()
-                .getHoldsAPI(getAdminUser())
-                .addChildToHold(HoldChild.builder().id(contentAddToManyHolds.getNodeRefWithoutVersion()).build(),
-                        holdNodeRefOne);
+            .getHoldsAPI(getAdminUser())
+            .addChildToHold(HoldChild.builder().id(contentAddToManyHolds.getNodeRefWithoutVersion()).build(),
+                holdNodeRefOne);
         getRestAPIFactory()
-                .getHoldsAPI(getAdminUser())
-                .addChildToHold(HoldChild.builder().id(contentAddToManyHolds.getNodeRefWithoutVersion()).build(),
-                        holdNodeRefTwo);
+            .getHoldsAPI(getAdminUser())
+            .addChildToHold(HoldChild.builder().id(contentAddToManyHolds.getNodeRefWithoutVersion()).build(),
+                holdNodeRefTwo);
     }
 
     /**
@@ -141,57 +139,67 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
     @DataProvider(name = "validNodesToRemoveFromHold")
     public Object[][] getValidNodesToRemoveFromHold()
     {
-        // create electronic and nonElectronic record in record folder
+        //create electronic and nonElectronic record in record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
         nodesToBeClean.add(recordFolder.getParentId());
         Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder.getId(),
-                getFile(IMAGE_FILE));
+            getFile
+                (IMAGE_FILE));
         assertStatusCode(CREATED);
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(),
-                recordFolder.getId());
+            recordFolder.getId());
         assertStatusCode(CREATED);
 
         RecordCategoryChild folderToHeld = createCategoryFolderInFilePlan();
         nodesToBeClean.add(folderToHeld.getParentId());
         Stream.of(electronicRecord.getId(), nonElectronicRecord.getId(), folderToHeld.getId())
-                .forEach(id -> getRestAPIFactory()
-                        .getHoldsAPI(getAdminUser())
-                        .addChildToHold(HoldChild.builder().id(id).build(), holdNodeRefOne));
+            .forEach(id -> getRestAPIFactory()
+                .getHoldsAPI(getAdminUser())
+                .addChildToHold(HoldChild.builder().id(id).build(), holdNodeRefOne));
 
-        return new String[][]{ // record folder
-                {folderToHeld.getId()},
-                // electronic record
-                {electronicRecord.getId()},
+        return new String[][]
+            {       // record folder
+                { folderToHeld.getId() },
+                //electronic record
+                { electronicRecord.getId() },
                 // non electronic record
-                {nonElectronicRecord.getId()},
+                { nonElectronicRecord.getId() },
                 // document from collaboration site
-                {contentHeld.getNodeRefWithoutVersion()},
-        };
+                { contentHeld.getNodeRefWithoutVersion() },
+            };
     }
 
     /**
-     * Given content/record folder/record that is held And the corresponding hold When I use the existing REST API to remove the node from the hold Then the node is removed from the hold And is no longer frozen
+     * Given content/record folder/record that is held
+     * And the corresponding hold
+     * When I use the existing REST API to remove the node from the hold
+     * Then the node is removed from the hold
+     * And is no longer frozen
      */
     @Test(dataProvider = "validNodesToRemoveFromHold")
     public void removeContentFromHold(String nodeId) throws Exception
     {
         STEP("Remove node from hold");
         getRestAPIFactory()
-                .getHoldsAPI(getAdminUser()).deleteHoldChild(holdNodeRefOne, nodeId);
+            .getHoldsAPI(getAdminUser()).deleteHoldChild(holdNodeRefOne, nodeId);
 
         STEP("Check the node is not held");
         assertFalse(hasAspect(nodeId, FROZEN_ASPECT));
 
         STEP("Check node is not in any hold");
         RestNodeAssociationModelCollection holdsEntries = getRestAPIFactory()
-                .getNodeAPI(CoreUtil.toContentModel(nodeId)).usingParams("where=(assocType='rma:frozenContent')")
-                .getParents();
+            .getNodeAPI(CoreUtil.toContentModel(nodeId)).usingParams("where=(assocType='rma:frozenContent')")
+            .getParents();
         assertTrue(holdsEntries.getEntries().isEmpty(), "Content held is still added to a hold.");
     }
 
     /**
-     * Given active content that is held on many holds When I use the existing REST API to remove the active content from one hold Then the active content is removed from the specific hold And is frozen And in the other holds
+     * Given active content that is held on many holds
+     * When I use the existing REST API to remove the active content from one hold
+     * Then the active content is removed from the specific hold
+     * And is frozen
+     * And in the other holds
      */
     @Test
     public void removeContentAddedToManyHolds() throws Exception
@@ -199,7 +207,7 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
         STEP("Remove content from hold. ");
 
         getRestAPIFactory().getHoldsAPI(getAdminUser())
-                .deleteHoldChild(holdNodeRefOne, contentAddToManyHolds.getNodeRefWithoutVersion());
+            .deleteHoldChild(holdNodeRefOne, contentAddToManyHolds.getNodeRefWithoutVersion());
 
         STEP("Check the content is held. ");
         assertTrue(hasAspect(contentAddToManyHolds.getNodeRefWithoutVersion(), FROZEN_ASPECT));
@@ -207,12 +215,12 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
         STEP("Check node is in hold HOLD_TWO. ");
 
         RestNodeAssociationModelCollection holdsEntries = getRestAPIFactory()
-                .getNodeAPI(CoreUtil.toContentModel(contentAddToManyHolds.getNodeRefWithoutVersion()))
-                .usingParams("where=(assocType='rma:frozenContent')").getParents();
+            .getNodeAPI(CoreUtil.toContentModel(contentAddToManyHolds.getNodeRefWithoutVersion()))
+            .usingParams("where=(assocType='rma:frozenContent')").getParents();
         assertFalse(holdsEntries.getEntries().isEmpty(), "Content held is not held after removing from one hold.");
         assertTrue(holdsEntries.getEntries().stream()
                 .anyMatch(restNodeModel -> restNodeModel.getModel().getName().equals(HOLD_TWO)),
-                "Content held is not held after removing from one hold.");
+            "Content held is not held after removing from one hold.");
     }
 
     /**
@@ -223,53 +231,58 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
     @DataProvider(name = "userWithoutPermissionForRemoveFromHold")
     public Object[][] getUserWithoutPermissionForAddToHold()
     {
-        // create record folder
+        //create record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
         nodesToBeClean.add(recordFolder.getParentId());
         UserModel user = roleService.createUserWithRMRole(ROLE_RM_MANAGER.roleId);
         getRestAPIFactory().getRMUserAPI().addUserPermission(holdNodeRefOne, user, PERMISSION_FILING);
-        // create files that will be removed from hold
+        //create files that will be removed from hold
         FileModel contentNoHoldPerm = dataContent.usingAdmin().usingSite(testSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         FileModel contentNoHoldCap = dataContent.usingAdmin().usingSite(testSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         FileModel privateFile = dataContent.usingAdmin().usingSite(privateSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        // add files to hold
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        //add files to hold
         asList(recordFolder.getId(), contentNoHoldCap.getNodeRefWithoutVersion(),
-                contentNoHoldPerm.getNodeRefWithoutVersion(), privateFile.getNodeRefWithoutVersion())
-                        .forEach(id -> getRestAPIFactory()
-                                .getHoldsAPI(getAdminUser())
-                                .addChildToHold(HoldChild.builder().id(id).build(), holdNodeRefOne));
+            contentNoHoldPerm.getNodeRefWithoutVersion(), privateFile.getNodeRefWithoutVersion())
+            .forEach(id -> getRestAPIFactory()
+                .getHoldsAPI(getAdminUser())
+                .addChildToHold(HoldChild.builder().id(id).build(), holdNodeRefOne));
 
-        return new Object[][]{
+        return new Object[][]
+            {
                 // user with read permission on the content, with remove from hold capability and without
                 // filling permission on a hold
                 {
-                        roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole.SiteCollaborator,
-                                holdNodeRefOne, UserRoles.ROLE_RM_MANAGER, PERMISSION_READ_RECORDS),
-                        contentNoHoldPerm.getNodeRefWithoutVersion()
+                    roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole.SiteCollaborator,
+                        holdNodeRefOne, UserRoles.ROLE_RM_MANAGER, PERMISSION_READ_RECORDS),
+                    contentNoHoldPerm.getNodeRefWithoutVersion()
                 },
                 // user with write permission on the content, filling permission on a hold without remove from
                 // hold capability
                 {
-                        roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole.SiteCollaborator,
-                                holdNodeRefOne, UserRoles.ROLE_RM_POWER_USER, PERMISSION_FILING),
-                        contentNoHoldCap.getNodeRefWithoutVersion()
+                    roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole
+                            .SiteCollaborator,
+                        holdNodeRefOne, UserRoles.ROLE_RM_POWER_USER, PERMISSION_FILING),
+                    contentNoHoldCap.getNodeRefWithoutVersion()
                 },
-                // user without read permission on RM record folder
+                //user without read permission on RM  record folder
                 {
-                        user, recordFolder.getId()
+                    user, recordFolder.getId()
                 },
-                // user without read permission over the content from the private site
+                //user without read permission over the content from the private site
                 {
-                        user, privateFile.getNodeRefWithoutVersion()
+                    user, privateFile.getNodeRefWithoutVersion()
                 }
-        };
+            };
     }
 
     /**
-     * Given node on hold in a single hold location And the user does not have sufficient permissions or capabilities to remove the node from the hold When the user tries to remove the node from the hold Then it's unsuccessful
+     * Given node on hold in a single hold location
+     * And the user does not have sufficient permissions or capabilities to remove the node from the hold
+     * When the user tries to remove the node from the hold
+     * Then it's unsuccessful
      *
      * @throws Exception
      */
@@ -297,36 +310,37 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
     @DataProvider(name = "userWithPermissionForRemoveFromHold")
     public Object[][] getUserWithPermissionForAddToHold()
     {
-        // create record folder
+        //create record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
         nodesToBeClean.add(recordFolder.getParentId());
         UserModel user = roleService.createUserWithRMRoleAndRMNodePermission(ROLE_RM_MANAGER.roleId,
-                recordFolder.getId(),
-                PERMISSION_READ_RECORDS);
+            recordFolder.getId(),
+            PERMISSION_READ_RECORDS);
         getRestAPIFactory().getRMUserAPI().addUserPermission(holdNodeRefOne, user, PERMISSION_FILING);
-        // create file that will be removed from hold
+        //create file that will be removed from hold
         FileModel contentPermission = dataContent.usingAdmin().usingSite(testSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        // add files to hold
+        //add files to hold
         asList(recordFolder.getId(), contentPermission.getNodeRefWithoutVersion())
-                .forEach(id -> getRestAPIFactory()
-                        .getHoldsAPI(getAdminUser())
-                        .addChildToHold(HoldChild.builder().id(id).build(), holdNodeRefOne));
+            .forEach(id -> getRestAPIFactory()
+                .getHoldsAPI(getAdminUser())
+                .addChildToHold(HoldChild.builder().id(id).build(), holdNodeRefOne));
 
-        return new Object[][]{
+        return new Object[][]
+            {
                 // user with write permission on the content
                 {
-                        roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole.SiteConsumer,
-                                holdNodeRefOne, UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING),
-                        contentPermission.getNodeRefWithoutVersion()
+                    roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole.SiteConsumer,
+                        holdNodeRefOne, UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING),
+                    contentPermission.getNodeRefWithoutVersion()
                 },
-                // user with read permission on RM record folder
+                //user with read permission on RM  record folder
                 {
-                        user, recordFolder.getId()
+                    user, recordFolder.getId()
                 },
 
-        };
+            };
     }
 
     @Test(dataProvider = "userWithPermissionForRemoveFromHold")

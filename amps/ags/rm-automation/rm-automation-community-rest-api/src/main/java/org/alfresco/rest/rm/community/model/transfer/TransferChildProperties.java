@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -64,18 +64,19 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_X_RESOLUTION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_Y_RESOLUTION;
 
+import org.alfresco.rest.rm.community.model.common.Owner;
+import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
+import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
+import org.alfresco.utility.model.TestModel;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import org.alfresco.rest.rm.community.model.common.Owner;
-import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
-import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
-import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for transfer child properties
@@ -91,127 +92,128 @@ import org.alfresco.utility.model.TestModel;
 public class TransferChildProperties extends TestModel
 {
     /**************************************************************************/
-    /** Mandatory parameters - Shared by record folders and records */
+    /** Mandatory parameters - Shared by record folders and records*/
     /**************************************************************************/
-    @JsonProperty(PROPERTIES_TITLE)
+    @JsonProperty (PROPERTIES_TITLE)
     private String title;
 
-    @JsonProperty(required = true, value = PROPERTIES_ROOT_NODE_REF)
+    @JsonProperty (required = true, value = PROPERTIES_ROOT_NODE_REF)
     private String rootNodeRef;
 
-    @JsonProperty(required = true, value = PROPERTIES_IDENTIFIER)
+    @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 
-    @JsonProperty(PROPERTIES_DESCRIPTION)
+    @JsonProperty (PROPERTIES_DESCRIPTION)
     private String description;
 
     /*********************************************************/
     /** Optional parameters - Applies only to record folders */
     /*********************************************************/
-    @JsonProperty(PROPERTIES_VITAL_RECORD_INDICATOR)
+    @JsonProperty (PROPERTIES_VITAL_RECORD_INDICATOR)
     private Boolean vitalRecordIndicator;
 
-    @JsonProperty(PROPERTIES_REVIEW_PERIOD)
-    @JsonSerialize(using = ReviewPeriodSerializer.class)
+    @JsonProperty (PROPERTIES_REVIEW_PERIOD)
+    @JsonSerialize (using = ReviewPeriodSerializer.class)
     private ReviewPeriod reviewPeriod;
 
-    @JsonProperty(PROPERTIES_HELD_CHILDREN_COUNT)
+    @JsonProperty (PROPERTIES_HELD_CHILDREN_COUNT)
     private Integer heldChildrenCount;
 
-    @JsonProperty(PROPERTIES_LOCATION)
+    @JsonProperty (PROPERTIES_LOCATION)
     private String location;
 
-    @JsonProperty(PROPERTIES_IS_CLOSED)
+    @JsonProperty (PROPERTIES_IS_CLOSED)
     private Boolean isClosed;
 
     /*********************************************************/
     /** Optional parameters - Applies only to records */
     /*********************************************************/
-    @JsonProperty(PROPERTIES_DATE_FILED)
+    @JsonProperty (PROPERTIES_DATE_FILED)
     private String dateField;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE)
     private Boolean recordSearchHasDispositionSchedule;
 
-    @JsonProperty(PROPERTIES_ORIGINAL_NAME)
+    @JsonProperty (PROPERTIES_ORIGINAL_NAME)
     private String originalName;
+
 
     /*********************************/
     /** Electronic record parameters */
     /*********************************/
-    @JsonProperty(PROPERTIES_VERSION_TYPE)
+    @JsonProperty (PROPERTIES_VERSION_TYPE)
     private String versionType;
 
-    @JsonProperty(PROPERTIES_VERSION_LABEL)
+    @JsonProperty (PROPERTIES_VERSION_LABEL)
     private String versionLabel;
 
-    @JsonProperty(PROPERTIES_DATE_TIME_ORIGINAL)
+    @JsonProperty (PROPERTIES_DATE_TIME_ORIGINAL)
     private String dateTimeOriginal;
 
-    @JsonProperty(PROPERTIES_EXPOSURE_TIME)
+    @JsonProperty (PROPERTIES_EXPOSURE_TIME)
     private Double exposureTime;
 
-    @JsonProperty(PROPERTIES_FLASH)
+    @JsonProperty (PROPERTIES_FLASH)
     private Boolean flash;
 
-    @JsonProperty(PROPERTIES_F_NUMBER)
+    @JsonProperty (PROPERTIES_F_NUMBER)
     private Double fNumber;
 
-    @JsonProperty(PROPERTIES_FOCAL_LENGTH)
+    @JsonProperty (PROPERTIES_FOCAL_LENGTH)
     private Double focalLength;
 
-    @JsonProperty(PROPERTIES_ISO_SPEED_RATINGS)
+    @JsonProperty (PROPERTIES_ISO_SPEED_RATINGS)
     private Integer isoSpeedRatings;
 
-    @JsonProperty(PROPERTIES_MANUFACTURER)
+    @JsonProperty (PROPERTIES_MANUFACTURER)
     private String manufacturer;
 
-    @JsonProperty(PROPERTIES_MODEL)
+    @JsonProperty (PROPERTIES_MODEL)
     private String model;
 
-    @JsonProperty(PROPERTIES_ORIENTATION)
+    @JsonProperty (PROPERTIES_ORIENTATION)
     private Integer orientation;
 
-    @JsonProperty(PROPERTIES_PIXEL_X_DIMENSION)
+    @JsonProperty (PROPERTIES_PIXEL_X_DIMENSION)
     private Integer pixelXDimension;
 
-    @JsonProperty(PROPERTIES_PIXEL_Y_DIMENSION)
+    @JsonProperty (PROPERTIES_PIXEL_Y_DIMENSION)
     private Integer pixelYDimension;
 
-    @JsonProperty(PROPERTIES_RESOLUTION_UNIT)
+    @JsonProperty (PROPERTIES_RESOLUTION_UNIT)
     private String resolutionUnit;
 
-    @JsonProperty(PROPERTIES_SOFTWARE)
+    @JsonProperty (PROPERTIES_SOFTWARE)
     private String software;
 
-    @JsonProperty(PROPERTIES_X_RESOLUTION)
+    @JsonProperty (PROPERTIES_X_RESOLUTION)
     private Double xResolution;
 
-    @JsonProperty(PROPERTIES_Y_RESOLUTION)
+    @JsonProperty (PROPERTIES_Y_RESOLUTION)
     private Double yResolution;
 
     /*************************************/
     /** Non-electronic record parameters */
     /*************************************/
 
-    @JsonProperty(PROPERTIES_SHELF)
+    @JsonProperty (PROPERTIES_SHELF)
     private String shelf;
 
-    @JsonProperty(PROPERTIES_STORAGE_LOCATION)
+    @JsonProperty (PROPERTIES_STORAGE_LOCATION)
     private String storageLocation;
 
-    @JsonProperty(PROPERTIES_FILE)
+    @JsonProperty (PROPERTIES_FILE)
     private String file;
 
-    @JsonProperty(PROPERTIES_BOX)
+    @JsonProperty (PROPERTIES_BOX)
     private String box;
 
-    @JsonProperty(PROPERTIES_NUMBER_OF_COPIES)
+    @JsonProperty (PROPERTIES_NUMBER_OF_COPIES)
     private Integer numberOfCopies;
 
-    @JsonProperty(PROPERTIES_PHYSICAL_SIZE)
+    @JsonProperty (PROPERTIES_PHYSICAL_SIZE)
     private Integer physicalSize;
 
-    @JsonProperty(PROPERTIES_OWNER)
+    @JsonProperty (PROPERTIES_OWNER)
     private Owner owner;
 }

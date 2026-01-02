@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,22 +26,21 @@
  */
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
-
-import static org.alfresco.rest.core.RestRequest.requestWithBody;
-import static org.alfresco.rest.core.RestRequest.simpleRequest;
-import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
-import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
-import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
-
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionSchedule;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleActionDefinition;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleCollection;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleStepCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
+
+import static org.alfresco.rest.core.RestRequest.requestWithBody;
+import static org.alfresco.rest.core.RestRequest.simpleRequest;
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 
 public class RetentionScheduleAPI extends RMModelRequest
 {
@@ -54,25 +53,22 @@ public class RetentionScheduleAPI extends RMModelRequest
         super(rmRestWrapper);
     }
 
+
     /**
      * Creates a retention schedule.
      *
-     * @param retentionScheduleModel
-     *            The retentionSchedule model
-     * @param recordCategoryId
-     *            The identifier of a record category
-     * @param parameters
-     *            The URL parameters to add
+     * @param retentionScheduleModel The retentionSchedule model
+     * @param recordCategoryId The identifier of a record category
+     * @param parameters The URL parameters to add
      * @return The created {@link RetentionSchedule}
-     * @throws RuntimeException
-     *             for the following cases:
-     *             <ul>
-     *             <li>{@code recordCategoryId} is not a valid format or {@code recordCategoryId} is invalid</li>
-     *             <li>authentication fails</li>
-     *             <li>current user does not have permission to add children to {@code recordCategoryId}</li>
-     *             <li>{@code recordCategoryId} does not exist</li>
-     *             <li>new name clashes with an existing node in the current parent container</li>
-     *             </ul>
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code recordCategoryId} is not a valid format or {@code recordCategoryId} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to add children to {@code recordCategoryId}</li>
+     *  <li>{@code recordCategoryId} does not exist</li>
+     *  <li>new name clashes with an existing node in the current parent container</li>
+     * </ul>
      */
     public RetentionSchedule createRetentionSchedule(RetentionSchedule retentionScheduleModel, String recordCategoryId, String parameters)
     {
@@ -80,11 +76,12 @@ public class RetentionScheduleAPI extends RMModelRequest
         mandatoryObject("retentionScheduleModel", retentionScheduleModel);
 
         return getRmRestWrapper().processModel(RetentionSchedule.class, requestWithBody(
-                POST,
-                toJson(retentionScheduleModel),
-                "record-categories/{recordCategoryId}/retention-schedules",
-                recordCategoryId,
-                parameters));
+            POST,
+            toJson(retentionScheduleModel),
+            "record-categories/{recordCategoryId}/retention-schedules",
+            recordCategoryId,
+            parameters
+        ));
     }
 
     /**
@@ -98,28 +95,26 @@ public class RetentionScheduleAPI extends RMModelRequest
     /**
      * Gets the retentionSchedule of a record category.
      *
-     * @param recordCategoryId
-     *            The identifier of a record category
-     * @param parameters
-     *            The URL parameters to add
+     * @param recordCategoryId The identifier of a record category
+     * @param parameters The URL parameters to add
      * @return The {@link RetentionSchedule} for the given {@code recordCategoryId}
-     * @throws RuntimeException
-     *             for the following cases:
-     *             <ul>
-     *             <li>authentication fails</li>
-     *             <li>current user does not have permission to read {@code recordCategoryId}</li>
-     *             <li>{@code recordCategoryId} does not exist</li>
-     *             </ul>
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code recordCategoryId}</li>
+     *  <li>{@code recordCategoryId} does not exist</li>
+     *</ul>
      */
     public RetentionScheduleCollection getRetentionSchedule(String recordCategoryId, String parameters)
     {
         mandatoryString("recordCategoryId", recordCategoryId);
 
         return getRmRestWrapper().processModels(RetentionScheduleCollection.class, simpleRequest(
-                GET,
-                "record-categories/{recordCategoryId}/retention-schedules?{parameters}",
-                recordCategoryId,
-                parameters));
+            GET,
+            "record-categories/{recordCategoryId}/retention-schedules?{parameters}",
+            recordCategoryId,
+            parameters
+        ));
     }
 
     /**
@@ -133,22 +128,18 @@ public class RetentionScheduleAPI extends RMModelRequest
     /**
      * Creates a step in the retention schedule.
      *
-     * @param retentionScheduleActionDefinition
-     *            The retentionScheduleActionDefinition model
-     * @param retentionScheduleId
-     *            The identifier of a retention schedule id
-     * @param parameters
-     *            The URL parameters to add
+     * @param retentionScheduleActionDefinition The retentionScheduleActionDefinition model
+     * @param retentionScheduleId The identifier of a retention schedule id
+     * @param parameters The URL parameters to add
      * @return The created {@link RetentionScheduleActionDefinition}
-     * @throws RuntimeException
-     *             for the following cases:
-     *             <ul>
-     *             <li>{@code retentionScheduleId} is not a valid format or {@code retentionScheduleId} is invalid</li>
-     *             <li>authentication fails</li>
-     *             <li>current user does not have permission to add children to {@code retentionScheduleId}</li>
-     *             <li>{@code retentionScheduleId} does not exist</li>
-     *             <li>new name clashes with an existing node in the current parent container</li>
-     *             </ul>
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code retentionScheduleId} is not a valid format or {@code retentionScheduleId} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to add children to {@code retentionScheduleId}</li>
+     *  <li>{@code retentionScheduleId} does not exist</li>
+     *  <li>new name clashes with an existing node in the current parent container</li>
+     * </ul>
      */
     public RetentionScheduleActionDefinition createRetentionScheduleStep(RetentionScheduleActionDefinition retentionScheduleActionDefinition, String retentionScheduleId, String parameters)
     {
@@ -156,11 +147,12 @@ public class RetentionScheduleAPI extends RMModelRequest
         mandatoryObject("retentionScheduleActionDefinition", retentionScheduleActionDefinition);
 
         return getRmRestWrapper().processModel(RetentionScheduleActionDefinition.class, requestWithBody(
-                POST,
-                toJson(retentionScheduleActionDefinition),
-                "retention-schedules/{retentionScheduleId}/retention-steps",
-                retentionScheduleId,
-                parameters));
+            POST,
+            toJson(retentionScheduleActionDefinition),
+            "retention-schedules/{retentionScheduleId}/retention-steps",
+            retentionScheduleId,
+            parameters
+        ));
     }
 
     /**
@@ -174,28 +166,26 @@ public class RetentionScheduleAPI extends RMModelRequest
     /**
      * Gets the retentionSchedule of a record category.
      *
-     * @param retentionScheduleId
-     *            The identifier of a record category
-     * @param parameters
-     *            The URL parameters to add
+     * @param retentionScheduleId The identifier of a record category
+     * @param parameters The URL parameters to add
      * @return The {@link RetentionScheduleActionDefinition} for the given {@code recordCategoryId}
-     * @throws RuntimeException
-     *             for the following cases:
-     *             <ul>
-     *             <li>authentication fails</li>
-     *             <li>current user does not have permission to read {@code recordCategoryId}</li>
-     *             <li>{@code recordCategoryId} does not exist</li>
-     *             </ul>
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code recordCategoryId}</li>
+     *  <li>{@code recordCategoryId} does not exist</li>
+     *</ul>
      */
     public RetentionScheduleStepCollection getRetentionScheduleStep(String retentionScheduleId, String parameters)
     {
         mandatoryString("retentionScheduleId", retentionScheduleId);
 
         return getRmRestWrapper().processModels(RetentionScheduleStepCollection.class, simpleRequest(
-                GET,
-                "retention-schedules/{retentionScheduleId}/retention-steps?{parameters}",
-                retentionScheduleId,
-                parameters));
+            GET,
+            "retention-schedules/{retentionScheduleId}/retention-steps?{parameters}",
+            retentionScheduleId,
+            parameters
+        ));
     }
 
     /**

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,24 +27,6 @@
 
 package org.alfresco.rest.rm.community.smoke;
 
-import static org.springframework.test.util.AssertionErrors.assertTrue;
-import static org.testng.Assert.*;
-
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
-import static org.alfresco.utility.report.log.Step.STEP;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
@@ -61,20 +43,33 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import java.util.concurrent.atomic.AtomicReference;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
+import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
+import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.test.util.AssertionErrors.assertTrue;
+import static org.testng.Assert.*;
 
-public class FileAsRecordTests extends BaseRMRestTest
-{
+public class FileAsRecordTests extends BaseRMRestTest {
 
     private static final String CATEGORY_MANAGER = "catManager" + generateTestPrefix(FileAsRecordTests.class);
     private static final String CATEGORY_ADMIN = "catAdmin" + generateTestPrefix(FileAsRecordTests.class);
     private static final String FOLDER_MANAGER = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
     private static final String FOLDER_ADMIN = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
 
-    private UserModel nonRMuser, rmManager;
+    private UserModel nonRMuser,rmManager;
     private SiteModel testSite;
     private FileModel document, documentDeclared;
     private RecordCategory category_manager, category_admin;
-    private RecordCategoryChild folder_admin, folder_manager;
+    private RecordCategoryChild folder_admin, folder_manager ;
     @Autowired
     private DataSite dataSite;
     @Autowired
@@ -83,10 +78,8 @@ public class FileAsRecordTests extends BaseRMRestTest
     private RoleService roleService;
     @Autowired
     private RecordCategoriesAPI recordCategoriesAPI;
-
     /**
      * Create preconditions:
-     * 
      * <pre>
      *     1. RM site is created
      *     2. Two users: user without RM role and a user with RM manager role
@@ -108,49 +101,54 @@ public class FileAsRecordTests extends BaseRMRestTest
 
         STEP("Create a document with the user without RM role");
         document = dataContent.usingSite(testSite)
-                .usingUser(nonRMuser)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            .usingUser(nonRMuser)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Create two categories with two folders");
         category_manager = createRootCategory(CATEGORY_MANAGER);
         category_admin = createRootCategory(CATEGORY_ADMIN);
-        folder_admin = createFolder(category_admin.getId(), FOLDER_ADMIN);
-        folder_manager = createFolder(category_manager.getId(), FOLDER_MANAGER);
+        folder_admin = createFolder(category_admin.getId(),FOLDER_ADMIN);
+        folder_manager = createFolder(category_manager.getId(),FOLDER_MANAGER);
 
         STEP("Create an rm user and give filling permission over CATEGORY_MANAGER record category");
         RecordCategory recordCategory = new RecordCategory().builder()
-                .id(category_manager.getId())
-                .build();
+            .id(category_manager.getId())
+            .build();
         rmManager = roleService.createCollaboratorWithRMRoleAndPermission(testSite, recordCategory,
-                UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
+            UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
     }
 
     /**
-     * Given I have selected the record folder I want to file my declared record to When I confirm the action Then the dialog closes And the document is now shown as a record in the collaboration site And if I navigated to the record folder, as any user who had the right permissions, then I would see the record filed
+     * Given I have selected the record folder I want to file my declared record to
+     * When I confirm the action
+     * Then the dialog closes
+     * And the document is now shown as a record in the collaboration site
+     * And if I navigated to the record folder, as any user who had the right permissions, then I would see the
+     * record filed
      */
     @Test
     @AlfrescoTest(jira = "RM-6780")
-    public void checkFileAsRecordToRecordFolder() throws Exception
-    {
+    public void checkFileAsRecordToRecordFolder() throws Exception {
 
         AtomicReference<RecordFolderCollection> apiChildren = new AtomicReference<>();
         STEP("Create a document with the user with RM role");
         documentDeclared = dataContent.usingSite(testSite).usingUser(rmManager)
-                .createContent(new FileModel("checkDeclareAndFileToRecordFolder", FileType.TEXT_PLAIN));
+            .createContent(new FileModel("checkDeclareAndFileToRecordFolder", FileType.TEXT_PLAIN));
 
         STEP("Declare and file into  a record folder the document uploaded");
 
         getRestAPIFactory().getActionsAPI(rmManager).declareAndFile(documentDeclared,
-                Utility.buildPath(CATEGORY_MANAGER, FOLDER_MANAGER));
+            Utility.buildPath(CATEGORY_MANAGER, FOLDER_MANAGER));
 
         STEP("Check the file is a record within the collaboration site");
 
         try
         {
-            Utility.sleep(1000, 40000, () -> {
+            Utility.sleep(1000, 40000, () ->
+            {
                 JSONObject collaboratorSearchJson = getSearchApi().liveSearchForDocuments(rmManager.getUsername(),
-                        rmManager.getPassword(),
-                        documentDeclared.getName());
+                    rmManager.getPassword(),
+                    documentDeclared.getName());
                 assertTrue("Rm Manager not able to find the document.", collaboratorSearchJson.getJSONArray("items").length() != 0);
             });
         }
@@ -164,10 +162,11 @@ public class FileAsRecordTests extends BaseRMRestTest
         // List children from API
         try
         {
-            Utility.sleep(1000, 40000, () -> {
+            Utility.sleep(1000, 40000, () ->
+            {
                 apiChildren.set((RecordFolderCollection) getRestAPIFactory()
-                        .getRecordFolderAPI(rmManager).getRecordFolderChildren(folder_manager.getId(), "include=properties")
-                        .assertThat().entriesListIsNotEmpty().assertThat().entriesListIsNotEmpty());
+                    .getRecordFolderAPI(rmManager).getRecordFolderChildren(folder_manager.getId(), "include=properties")
+                    .assertThat().entriesListIsNotEmpty().assertThat().entriesListIsNotEmpty());
             });
         }
         catch (InterruptedException e)
@@ -176,35 +175,35 @@ public class FileAsRecordTests extends BaseRMRestTest
         }
 
         assertEquals(apiChildren.get()
-                .getEntries()
-                .get(0)
-                .getEntry()
-                .getProperties()
-                .getOriginalName(), documentDeclared.getName());
+            .getEntries()
+            .get(0)
+            .getEntry()
+            .getProperties()
+            .getOriginalName(),documentDeclared.getName());
     }
 
     /**
-     * Given I have selected the "File As Record" action When I confirm the action without selecting a location to file to Then the record is declared in the unfiled folder
+     * Given I have selected the "File As Record" action
+     * When I confirm the action without selecting a location to file to
+     * Then the record is declared in the unfiled folder
      */
     @Test
-    @AlfrescoTest(jira = "RM-6780")
-    public void fileAsRecordToUnfiledRecordFolder() throws Exception
-    {
+    @AlfrescoTest (jira = "RM-6780")
+    public void fileAsRecordToUnfiledRecordFolder() throws Exception {
         STEP("Create a document with the user without RM role");
         FileModel inplaceRecord = dataContent.usingSite(testSite).usingUser(rmManager)
-                .createContent(new FileModel("declareAndFileToIntoUnfiledRecordFolder",
-                        FileType.TEXT_PLAIN));
+            .createContent(new FileModel("declareAndFileToIntoUnfiledRecordFolder",
+                FileType.TEXT_PLAIN));
 
         STEP("Click on Declare and file without selecting a record folder");
-        getRestAPIFactory().getActionsAPI(rmManager).declareAndFile(inplaceRecord, "");
+        getRestAPIFactory().getActionsAPI(rmManager).declareAndFile(inplaceRecord,"");
 
         STEP("Check the file is declared in unfiled record folder");
         Assert.assertTrue(isMatchingRecordInUnfiledRecords(inplaceRecord), "Record should be filed to Unfiled Records folder");
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpForFileAsRecordRecordTests()
-    {
+    public void cleanUpForFileAsRecordRecordTests() {
         STEP("Delete the collaboration site");
         dataSite.usingUser(nonRMuser).deleteSite(testSite);
 
@@ -212,13 +211,13 @@ public class FileAsRecordTests extends BaseRMRestTest
         restClient.authenticateUser(nonRMuser).withCoreAPI().usingTrashcan().deleteNodeFromTrashcan(toContentModel(testSite.getId()));
 
         getRestAPIFactory()
-                .getUnfiledContainersAPI(rmManager)
-                .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                .getEntries()
-                .stream()
-                .forEach(x -> getRestAPIFactory()
-                        .getRecordsAPI()
-                        .deleteRecord(x.getEntry().getId()));
+            .getUnfiledContainersAPI(rmManager)
+            .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+            .getEntries()
+            .stream()
+            .forEach(x -> getRestAPIFactory()
+                .getRecordsAPI()
+                .deleteRecord(x.getEntry().getId()));
 
         STEP("Cleanup Documents inside folders");
 
@@ -228,9 +227,9 @@ public class FileAsRecordTests extends BaseRMRestTest
 
         STEP("Delete categories");
         recordCategoriesAPI.deleteCategory(getDataUser().usingAdmin().getAdminUser().getUsername(),
-                getDataUser().usingAdmin().getAdminUser().getPassword(), category_manager.getName());
+            getDataUser().usingAdmin().getAdminUser().getPassword(), category_manager.getName());
         recordCategoriesAPI.deleteCategory(getDataUser().usingAdmin().getAdminUser().getUsername(),
-                getDataUser().usingAdmin().getAdminUser().getPassword(), category_admin.getName());
+            getDataUser().usingAdmin().getAdminUser().getPassword(), category_admin.getName());
 
         STEP("Delete Users");
         dataUser.deleteUser(nonRMuser);

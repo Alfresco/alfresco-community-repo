@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,24 +26,22 @@
  */
 package org.alfresco.rest.rm.community.hold;
 
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.Test;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.hold.Hold;
 import org.alfresco.rest.rm.community.model.hold.HoldDeletionReason;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.Test;
 
 /**
  * This class contains the tests for the Holds CRUD V1 API
@@ -64,12 +62,12 @@ public class HoldsTests extends BaseRMRestTest
 
         // Create the hold
         Hold hold = Hold.builder()
-                .name(holdName)
-                .description(holdDescription)
-                .reason(holdReason)
-                .build();
+            .name(holdName)
+            .description(holdDescription)
+            .reason(holdReason)
+            .build();
         Hold createdHold = getRestAPIFactory().getFilePlansAPI()
-                .createHold(hold, FILE_PLAN_ALIAS);
+            .createHold(hold, FILE_PLAN_ALIAS);
 
         // Get the hold
         Hold receivedHold = getRestAPIFactory().getHoldsAPI().getHold(createdHold.getId());
@@ -93,19 +91,19 @@ public class HoldsTests extends BaseRMRestTest
 
         // Create the hold
         Hold hold = Hold.builder()
-                .name(holdName)
-                .description(holdDescription)
-                .reason(holdReason)
-                .build();
+            .name(holdName)
+            .description(holdDescription)
+            .reason(holdReason)
+            .build();
         Hold createdHold = getRestAPIFactory().getFilePlansAPI()
-                .createHold(hold, FILE_PLAN_ALIAS);
+            .createHold(hold, FILE_PLAN_ALIAS);
         nodeRefs.add(createdHold.getId());
 
         Hold holdModel = Hold.builder()
-                .name("Updated" + holdName)
-                .description("Updated" + holdDescription)
-                .reason("Updated" + holdReason)
-                .build();
+            .name("Updated" + holdName)
+            .description("Updated" + holdDescription)
+            .reason("Updated" + holdReason)
+            .build();
 
         // Update the hold
         Hold updatedHold = getRestAPIFactory().getHoldsAPI().updateHold(holdModel, createdHold.getId());
@@ -128,12 +126,12 @@ public class HoldsTests extends BaseRMRestTest
 
         // Create the hold
         Hold hold = Hold.builder()
-                .name(holdName)
-                .description(holdDescription)
-                .reason(holdReason)
-                .build();
+            .name(holdName)
+            .description(holdDescription)
+            .reason(holdReason)
+            .build();
         Hold createdHold = getRestAPIFactory().getFilePlansAPI()
-                .createHold(hold, FILE_PLAN_ALIAS);
+            .createHold(hold, FILE_PLAN_ALIAS);
         nodeRefs.add(createdHold.getId());
 
         // Delete the hold
@@ -158,17 +156,17 @@ public class HoldsTests extends BaseRMRestTest
 
         // Create the hold
         Hold hold = Hold.builder()
-                .name(holdName)
-                .description(holdDescription)
-                .reason(holdReason)
-                .build();
+            .name(holdName)
+            .description(holdDescription)
+            .reason(holdReason)
+            .build();
         Hold createdHold = getRestAPIFactory().getFilePlansAPI()
-                .createHold(hold, FILE_PLAN_ALIAS);
+            .createHold(hold, FILE_PLAN_ALIAS);
         nodeRefs.add(createdHold.getId());
 
         // Delete the hold with the reason
         getRestAPIFactory().getHoldsAPI()
-                .deleteHoldWithReason(HoldDeletionReason.builder().reason("Example reason").build(), createdHold.getId());
+            .deleteHoldWithReason(HoldDeletionReason.builder().reason("Example reason").build(), createdHold.getId());
 
         // Verify the status code
         assertStatusCode(OK);

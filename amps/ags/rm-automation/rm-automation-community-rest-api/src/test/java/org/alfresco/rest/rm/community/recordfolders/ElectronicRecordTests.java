@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,13 +26,6 @@
  */
 package org.alfresco.rest.rm.community.recordfolders;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
-
 import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
@@ -48,9 +41,12 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -61,6 +57,8 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
 import org.alfresco.utility.report.Bug;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
  * Create/File electronic records tests
@@ -72,15 +70,16 @@ public class ElectronicRecordTests extends BaseRMRestTest
 {
     /** Invalid parent containers where electronic records can't be created */
     @DataProvider(name = "invalidParentContainers")
-    public Object[][] invalidParentContainers()
+    public  Object[][] invalidParentContainers()
     {
-        return new String[][]{
-                // record category
-                {createCategoryFolderInFilePlan().getParentId()},
-                // file plan root
-                {FILE_PLAN_ALIAS},
-                // transfers
-                {TRANSFERS_ALIAS}
+        return new String[][]
+        {
+            // record category
+            { createCategoryFolderInFilePlan().getParentId() },
+            // file plan root
+            { FILE_PLAN_ALIAS },
+            // transfers
+            { TRANSFERS_ALIAS }
         };
     }
 
@@ -91,13 +90,13 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * 
-     * @param container
-     *            The parent container
+     * @param container The parent container
      */
-    @Test(
-            dataProvider = "invalidParentContainers",
-            description = "Electronic records can't be created in invalid parent containers")
+    @Test
+    (
+        dataProvider = "invalidParentContainers",
+        description = "Electronic records can't be created in invalid parent containers"
+    )
     public void cantCreateElectronicRecordsInInvalidContainers(String container)
     {
         // Create an electronic record in the given container, this should throw an IllegalArgumentException
@@ -116,8 +115,10 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * And an error is reported
      * </pre>
      */
-    @Test(
-            description = "Electronic record can't be created in closed record folder")
+    @Test
+    (
+        description = "Electronic record can't be created in closed record folder"
+    )
     public void cantCreateElectronicRecordInClosedFolder()
     {
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
@@ -144,9 +145,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * 
      * and
-     * 
      * <pre>
      *
      *
@@ -156,17 +155,15 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * 
-     * @param folderId
-     *            The folder, which the record will be created in
-     * @param type
-     *            The type of the record folder, which the record will be created in
-     * @throws Exception
-     *             if record can't be created
+     * @param folderId The folder, which the record will be created in
+     * @param type The type of the record folder, which the record will be created in
+     * @throws Exception if record can't be created
      */
-    @Test(
-            dataProvider = "validRootContainers",
-            description = "Electronic record can only be created if all mandatory properties are given")
+    @Test
+    (
+        dataProvider = "validRootContainers",
+        description = "Electronic record can only be created if all mandatory properties are given"
+    )
     public void canCreateElectronicRecordOnlyWithMandatoryProperties(String folderId, String type) throws Exception
     {
         logger.info("Root container:\n" + toJson(folderId));
@@ -183,13 +180,13 @@ public class ElectronicRecordTests extends BaseRMRestTest
             // Try to create it
             recordFolderAPI.createRecord(recordModel, folderId);
         }
-        else if (UNFILED_CONTAINER_TYPE.equalsIgnoreCase(type))
+        else if(UNFILED_CONTAINER_TYPE.equalsIgnoreCase(type))
         {
             UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
             UnfiledContainerChild recordModel = UnfiledContainerChild.builder().nodeType(CONTENT_TYPE).build();
             unfiledContainersAPI.createUnfiledContainerChild(recordModel, folderId);
         }
-        else if (UNFILED_RECORD_FOLDER_TYPE.equalsIgnoreCase(type))
+        else if(UNFILED_RECORD_FOLDER_TYPE.equalsIgnoreCase(type))
         {
             UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
             UnfiledContainerChild recordModel = UnfiledContainerChild.builder().nodeType(CONTENT_TYPE).build();
@@ -212,9 +209,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then the electronic record is created
      * And the details of the new record are returned
      * </pre>
-     * 
      * and
-     * 
      * <pre>
      *
      * Given a parent container that is an unfiled record folder or the root unfiled record container
@@ -222,17 +217,15 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then the electronic record is created
      * And the details of the new record are returned
      * </pre>
-     * 
-     * @param folderId
-     *            The folder, which the record will be created in
-     * @param type
-     *            The type of the folder, which the record will be created in
-     * @throws Exception
-     *             if record can't be created
+     * @param folderId The folder, which the record will be created in
+     * @param type The type of the folder, which the record will be created in
+     * @throws Exception if record can't be created
      */
-    @Test(
-            dataProvider = "validRootContainers",
-            description = "Electronic records can be created in record folders, unfiled record folders or unfiled record folder root")
+    @Test
+    (
+        dataProvider = "validRootContainers",
+        description = "Electronic records can be created in record folders, unfiled record folders or unfiled record folder root"
+    )
     public void canCreateElectronicRecordsInValidContainers(String folderId, String type) throws Exception
     {
         String newRecordId;
@@ -244,14 +237,14 @@ public class ElectronicRecordTests extends BaseRMRestTest
             newRecordId = recordFolderAPI.createRecord(recordModel, folderId, getFile(IMAGE_FILE)).getId();
             expectedName = recordModel.getName();
         }
-        else if (UNFILED_CONTAINER_TYPE.equalsIgnoreCase(type))
+        else if(UNFILED_CONTAINER_TYPE.equalsIgnoreCase(type))
         {
             UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
             UnfiledContainerChild recordModel = createElectronicUnfiledContainerChildModel();
             newRecordId = unfiledContainersAPI.uploadRecord(recordModel, folderId, getFile(IMAGE_FILE)).getId();
             expectedName = recordModel.getName();
         }
-        else if (UNFILED_RECORD_FOLDER_TYPE.equalsIgnoreCase(type))
+        else if(UNFILED_RECORD_FOLDER_TYPE.equalsIgnoreCase(type))
         {
             UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
             UnfiledContainerChild recordModel = createElectronicUnfiledContainerChildModel();
@@ -281,17 +274,15 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * When I create an electronic record
      * Then the record name defaults to filed file name.
      * </pre>
-     * 
-     * @param folderId
-     *            The folder, which the record will be created in
-     * @param type
-     *            The type of the folder, which the record will be created in
-     * @throws Exception
-     *             if record can't be created
+     * @param folderId The folder, which the record will be created in
+     * @param type The type of the folder, which the record will be created in
+     * @throws Exception if record can't be created
      */
-    @Test(
-            dataProvider = "validRootContainers",
-            description = "Electronic records can be created in unfiled record folder or unfiled record root")
+    @Test
+    (
+        dataProvider = "validRootContainers",
+        description = "Electronic records can be created in unfiled record folder or unfiled record root"
+    )
     public void recordNameDerivedFromFileName(String folderId, String type) throws Exception
     {
         String newRecordId;
@@ -304,13 +295,13 @@ public class ElectronicRecordTests extends BaseRMRestTest
             RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
             newRecordId = recordFolderAPI.createRecord(recordModel, folderId, getFile(IMAGE_FILE)).getId();
         }
-        else if (UNFILED_CONTAINER_TYPE.equalsIgnoreCase(type))
+        else if(UNFILED_CONTAINER_TYPE.equalsIgnoreCase(type))
         {
             UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
             UnfiledContainerChild recordModel = UnfiledContainerChild.builder().nodeType(CONTENT_TYPE).build();
             newRecordId = unfiledContainersAPI.uploadRecord(recordModel, folderId, getFile(IMAGE_FILE)).getId();
         }
-        else if (UNFILED_RECORD_FOLDER_TYPE.equalsIgnoreCase(type))
+        else if(UNFILED_RECORD_FOLDER_TYPE.equalsIgnoreCase(type))
         {
             UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
             UnfiledContainerChild recordModel = UnfiledContainerChild.builder().nodeType(CONTENT_TYPE).build();
@@ -333,12 +324,13 @@ public class ElectronicRecordTests extends BaseRMRestTest
 
     /**
      * <pre>
-     * Given that I want to create an electronic record in one unfiled record folder When I use the path relative to the one unfiled record folder Then the containers in the relativePath that don't exist are created before creating the electronic record
-     * 
+     * Given that I want to create an electronic record in one unfiled record folder
+     * When I use the path relative to the one unfiled record folder
+     * Then the containers in the relativePath that don't exist are created before creating the electronic record
      * <pre>
      */
     @Test
-    @Bug(id = "RM-4568")
+    @Bug (id = "RM-4568")
     public void createElectronicRecordWithRelativePath()
     {
         // The containers specified on the relativePath parameter don't exist on server
@@ -350,11 +342,13 @@ public class ElectronicRecordTests extends BaseRMRestTest
         String parentUnfiledRecordFolderId = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, parentUbnfiledRecordFolderName, UNFILED_RECORD_FOLDER_TYPE).getId();
 
         String relativePath = unfiledRecordFolderPathEl1 + "/" + unfiledRecordFolderPathEl2 + "/" + unfiledRecordFolderPathEl3;
-        UnfiledContainerChild unfiledContainerChildModel = UnfiledContainerChild.builder()
-                .name(ELECTRONIC_RECORD_NAME)
-                .nodeType(CONTENT_TYPE)
-                .relativePath(relativePath)
-                .build();
+        UnfiledContainerChild unfiledContainerChildModel= UnfiledContainerChild.builder()
+                                                                                .name(ELECTRONIC_RECORD_NAME)
+                                                                                .nodeType(CONTENT_TYPE)
+                                                                                .relativePath(relativePath)
+                                                                                .build();
+
+
 
         UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
         UnfiledContainerChild recordCreated = unfiledRecordFoldersAPI.uploadRecord(unfiledContainerChildModel, parentUnfiledRecordFolderId, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
@@ -383,7 +377,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
         assertTrue(record.getName().startsWith(ELECTRONIC_RECORD_NAME));
         assertTrue(unfiledRecordFoldersAPI.getUnfiledRecordFolder(record.getParentId()).getName().equals(unfiledRecordFolderPathEl4));
 
-        // the containers from the RELATIVE PATH exists
+        //the containers from the RELATIVE PATH exists
         unfiledContainerChildModel.setName(ELECTRONIC_RECORD_NAME + getRandomAlphanumeric());
         recordCreated = unfiledRecordFoldersAPI.uploadRecord(unfiledContainerChildModel, parentUnfiledRecordFolderId, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
         // verify the create request status code
@@ -404,7 +398,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * </pre>
      */
     @Test(description = "Electronic records can be created in record folder with duplicate name")
-    @Bug(id = "RM-5116, RM-5012")
+    @Bug(id ="RM-5116, RM-5012")
     public void canCreateElectronicRecordsWithDuplicateName()
     {
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();

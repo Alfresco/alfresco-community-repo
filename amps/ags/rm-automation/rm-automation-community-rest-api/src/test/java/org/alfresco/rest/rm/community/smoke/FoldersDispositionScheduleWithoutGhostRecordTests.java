@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,18 +26,6 @@
  */
 package org.alfresco.rest.rm.community.smoke;
 
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
-
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
@@ -46,9 +34,18 @@ import org.alfresco.rest.v0.RecordFoldersAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
+import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
 
-public class FoldersDispositionScheduleWithoutGhostRecordTests extends BaseRMRestTest
-{
+public class FoldersDispositionScheduleWithoutGhostRecordTests extends BaseRMRestTest {
 
     private RecordCategory Category1;
     @Autowired
@@ -61,8 +58,7 @@ public class FoldersDispositionScheduleWithoutGhostRecordTests extends BaseRMRes
     private final String nonElectronicRecord = "RM-2937 non-electronic record";
 
     @BeforeClass(alwaysRun = true)
-    private void setUp()
-    {
+    private void setUp(){
 
         STEP("Create the RM site if doesn't exist");
         createRMSiteIfNotExists();
@@ -72,11 +68,10 @@ public class FoldersDispositionScheduleWithoutGhostRecordTests extends BaseRMRes
     }
 
     @Test
-    @AlfrescoTest(jira = "RM-2937")
-    public void foldersDispositionScheduleWithoutGhosting()
-    {
+    @AlfrescoTest(jira="RM-2937")
+    public void foldersDispositionScheduleWithoutGhosting() {
 
-        // create retention schedule
+        //create retention schedule
         dispositionScheduleService.createCategoryRetentionSchedule(Category1.getName(), false);
 
         // add cut off step
@@ -85,11 +80,11 @@ public class FoldersDispositionScheduleWithoutGhostRecordTests extends BaseRMRes
         // add destroy step with ghosting
         dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(Category1.getName(), "day|1", CUT_OFF_DATE);
 
-        // create folders
-        RecordCategoryChild FOLDER_DESTROY = createFolder(getAdminUser(), Category1.getId(), folderDisposition);
+        //create folders
+        RecordCategoryChild FOLDER_DESTROY = createFolder(getAdminUser(),Category1.getId(),folderDisposition);
 
-        Record elRecord = createElectronicRecord(FOLDER_DESTROY.getId(), electronicRecord);
-        Record nonElRecord = createNonElectronicRecord(FOLDER_DESTROY.getId(), nonElectronicRecord);
+        Record elRecord = createElectronicRecord(FOLDER_DESTROY.getId(),electronicRecord);
+        Record nonElRecord = createNonElectronicRecord(FOLDER_DESTROY.getId(),nonElectronicRecord);
 
         // complete records
         completeRecord(elRecord.getId());
@@ -97,26 +92,25 @@ public class FoldersDispositionScheduleWithoutGhostRecordTests extends BaseRMRes
 
         // edit disposition date
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), editDispositionDateJson(), FOLDER_DESTROY.getName());
+            getAdminUser().getPassword(),editDispositionDateJson(),FOLDER_DESTROY.getName());
 
         // cut off the FOLDER_DESTROY
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), new JSONObject().put("name", "cutoff"), FOLDER_DESTROY.getName());
+            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),FOLDER_DESTROY.getName());
 
         // edit disposition date
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), editDispositionDateJson(), FOLDER_DESTROY.getName());
+            getAdminUser().getPassword(),editDispositionDateJson(),FOLDER_DESTROY.getName());
 
-        Utility.waitToLoopTime(5, "Waiting for Edit Disposition to be processed");
+        Utility.waitToLoopTime(5,"Waiting for Edit Disposition to be processed");
 
         // Destroy the FOLDER_DESTROY
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), new JSONObject().put("name", "destroy"), FOLDER_DESTROY.getName());
+            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),FOLDER_DESTROY.getName());
     }
 
     @AfterMethod(alwaysRun = true)
-    private void deletePreconditions()
-    {
+    private  void deletePreconditions() {
         deleteRecordCategory(Category1.getId());
     }
 }

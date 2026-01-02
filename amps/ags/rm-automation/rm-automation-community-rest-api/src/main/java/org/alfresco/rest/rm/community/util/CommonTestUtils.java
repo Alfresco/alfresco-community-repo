@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,10 +44,12 @@ public class CommonTestUtils
 
     /** Private constructor to prevent instantiation. */
     private CommonTestUtils()
-    {}
+    {
+    }
 
     /**
-     * Generate a prefix to namespace the objects in a test class. Note that four random hex digits should be good enough to avoid collisions when running locally and should also be short enough to maintain readability.
+     * Generate a prefix to namespace the objects in a test class. Note that four random hex digits should be good enough to avoid
+     * collisions when running locally and should also be short enough to maintain readability.
      */
     public static String generateTestPrefix(Class<?> clazz)
     {

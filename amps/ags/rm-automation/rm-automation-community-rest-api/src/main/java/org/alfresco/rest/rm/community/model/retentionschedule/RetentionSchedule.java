@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,12 +26,11 @@
  */
 package org.alfresco.rest.rm.community.model.retentionschedule;
 
-import java.util.List;
-
-import lombok.Data;
 import lombok.EqualsAndHashCode;
-
 import org.alfresco.utility.model.TestModel;
+import lombok.Data;
+
+import java.util.List;
 
 /**
  * retention schedule
@@ -40,7 +39,7 @@ import org.alfresco.utility.model.TestModel;
 @Data
 public class RetentionSchedule extends TestModel
 {
-    private String id;
+    private String id ;
     private String parentId;
     private String authority;
     private String instructions;
@@ -53,8 +52,7 @@ public class RetentionSchedule extends TestModel
         return isRecordLevel;
     }
 
-    public void setIsRecordLevel(boolean recordLevel)
-    {
+    public void setIsRecordLevel(boolean recordLevel) {
         isRecordLevel = recordLevel;
     }
 }

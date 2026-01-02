@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,13 +29,14 @@ package org.alfresco.rest.rm.community.model.common;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.utility.model.TestModel;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for path parameter
@@ -50,12 +51,12 @@ import org.alfresco.utility.model.TestModel;
 @AllArgsConstructor
 public class Path extends TestModel
 {
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String name;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private Boolean isComplete;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private List<IdNamePair> elements;
 }

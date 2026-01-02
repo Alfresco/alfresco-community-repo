@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -64,6 +64,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RESOLUTION_UNIT;
+
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_REVIEW_AS_OF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RMV_VERSIONED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
@@ -84,12 +85,12 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
 import org.alfresco.rest.rm.community.model.common.Owner;
 import org.alfresco.utility.model.TestModel;
 
@@ -110,160 +111,160 @@ public class RecordProperties extends TestModel
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty(required = true, value = PROPERTIES_ROOT_NODE_REF)
+    @JsonProperty (required = true, value = PROPERTIES_ROOT_NODE_REF)
     private String rootNodeRef;
 
-    @JsonProperty(required = true, value = PROPERTIES_DATE_FILED)
+    @JsonProperty (required = true, value = PROPERTIES_DATE_FILED)
     private String dateField;
 
-    @JsonProperty(required = true, value = PROPERTIES_IDENTIFIER)
+    @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 
-    @JsonProperty(required = true, value = PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE)
+    @JsonProperty (required = true, value = PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE)
     private Boolean recordSearchHasDispositionSchedule;
 
-    @JsonProperty(required = true, value = PROPERTIES_ORIGINAL_NAME)
+    @JsonProperty (required = true, value = PROPERTIES_ORIGINAL_NAME)
     private String originalName;
 
-    @JsonProperty(PROPERTIES_CLASSIFICATION)
+    @JsonProperty (PROPERTIES_CLASSIFICATION)
     private List<String> classification;
 
     /*********************************/
     /** Electronic record parameters */
     /*********************************/
-    @JsonProperty(PROPERTIES_VERSION_TYPE)
+    @JsonProperty (PROPERTIES_VERSION_TYPE)
     private String versionType;
 
-    @JsonProperty(PROPERTIES_VERSION_LABEL)
+    @JsonProperty (PROPERTIES_VERSION_LABEL)
     private String versionLabel;
 
     @JsonProperty(PROPERTIES_VERSIONED_NODEREF)
     private String versionedNodeRef;
 
-    @JsonProperty(PROPERTIES_RMV_VERSIONED)
+    @JsonProperty (PROPERTIES_RMV_VERSIONED)
     private String recordVersionLabel;
 
-    @JsonProperty(PROPERTIES_DATE_TIME_ORIGINAL)
+    @JsonProperty (PROPERTIES_DATE_TIME_ORIGINAL)
     private String dateTimeOriginal;
 
-    @JsonProperty(PROPERTIES_EXPOSURE_TIME)
+    @JsonProperty (PROPERTIES_EXPOSURE_TIME)
     private Double exposureTime;
 
-    @JsonProperty(PROPERTIES_FLASH)
+    @JsonProperty (PROPERTIES_FLASH)
     private Boolean flash;
 
-    @JsonProperty(PROPERTIES_F_NUMBER)
+    @JsonProperty (PROPERTIES_F_NUMBER)
     private Double fNumber;
 
-    @JsonProperty(PROPERTIES_FOCAL_LENGTH)
+    @JsonProperty (PROPERTIES_FOCAL_LENGTH)
     private Double focalLength;
 
-    @JsonProperty(PROPERTIES_ISO_SPEED_RATINGS)
+    @JsonProperty (PROPERTIES_ISO_SPEED_RATINGS)
     private Integer isoSpeedRatings;
 
-    @JsonProperty(PROPERTIES_MANUFACTURER)
+    @JsonProperty (PROPERTIES_MANUFACTURER)
     private String manufacturer;
 
-    @JsonProperty(PROPERTIES_MODEL)
+    @JsonProperty (PROPERTIES_MODEL)
     private String model;
 
-    @JsonProperty(PROPERTIES_ORIENTATION)
+    @JsonProperty (PROPERTIES_ORIENTATION)
     private Integer orientation;
 
-    @JsonProperty(PROPERTIES_PIXEL_X_DIMENSION)
+    @JsonProperty (PROPERTIES_PIXEL_X_DIMENSION)
     private Integer pixelXDimension;
 
-    @JsonProperty(PROPERTIES_PIXEL_Y_DIMENSION)
+    @JsonProperty (PROPERTIES_PIXEL_Y_DIMENSION)
     private Integer pixelYDimension;
 
-    @JsonProperty(PROPERTIES_RESOLUTION_UNIT)
+    @JsonProperty (PROPERTIES_RESOLUTION_UNIT)
     private String resolutionUnit;
 
-    @JsonProperty(PROPERTIES_SOFTWARE)
+    @JsonProperty (PROPERTIES_SOFTWARE)
     private String software;
 
-    @JsonProperty(PROPERTIES_X_RESOLUTION)
+    @JsonProperty (PROPERTIES_X_RESOLUTION)
     private Double xResolution;
 
-    @JsonProperty(PROPERTIES_Y_RESOLUTION)
+    @JsonProperty (PROPERTIES_Y_RESOLUTION)
     private Double yResolution;
 
-    @JsonProperty(PROPERTIES_RECORD_ORIGINATING_LOCATION)
+    @JsonProperty (PROPERTIES_RECORD_ORIGINATING_LOCATION)
     private String originatingLocation;
 
-    @JsonProperty(PROPERTIES_RECORD_ORIGINATING_USER_ID)
+    @JsonProperty (PROPERTIES_RECORD_ORIGINATING_USER_ID)
     private String originatingUserId;
 
-    @JsonProperty(PROPERTIES_RECORD_ORIGINATING_CREATION_DATE)
+    @JsonProperty (PROPERTIES_RECORD_ORIGINATING_CREATION_DATE)
     private String originatingCreationDate;
 
     /*************************************/
     /** Non-electronic record parameters */
     /*************************************/
-    @JsonProperty(PROPERTIES_TITLE)
+    @JsonProperty (PROPERTIES_TITLE)
     private String title;
 
-    @JsonProperty(PROPERTIES_SHELF)
+    @JsonProperty (PROPERTIES_SHELF)
     private String shelf;
 
-    @JsonProperty(PROPERTIES_STORAGE_LOCATION)
+    @JsonProperty (PROPERTIES_STORAGE_LOCATION)
     private String storageLocation;
 
-    @JsonProperty(PROPERTIES_FILE)
+    @JsonProperty (PROPERTIES_FILE)
     private String file;
 
-    @JsonProperty(PROPERTIES_BOX)
+    @JsonProperty (PROPERTIES_BOX)
     private String box;
 
-    @JsonProperty(PROPERTIES_DESCRIPTION)
+    @JsonProperty (PROPERTIES_DESCRIPTION)
     private String description;
 
-    @JsonProperty(PROPERTIES_NUMBER_OF_COPIES)
+    @JsonProperty (PROPERTIES_NUMBER_OF_COPIES)
     private Integer numberOfCopies;
 
-    @JsonProperty(PROPERTIES_PHYSICAL_SIZE)
+    @JsonProperty (PROPERTIES_PHYSICAL_SIZE)
     private Integer physicalSize;
 
-    @JsonProperty(PROPERTIES_OWNER)
+    @JsonProperty (PROPERTIES_OWNER)
     private Owner owner;
 
     @JsonProperty(PROPERTIES_AUTHOR)
     private String author;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD_EXPRESSION)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD_EXPRESSION)
     private String recordSearchDispositionPeriodExpression;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY)
     private String recordSearchDispositionAuthority;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_AS_OF)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_AS_OF)
     private Date recordSearchDispositionActionAsOf;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD)
     private String recordSearchDispositionPeriod;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_NAME)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_NAME)
     private String recordSearchDispositionActionName;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS_ELIGIBLE)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS_ELIGIBLE)
     private Boolean recordSearchDispositionEventsEligible;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS)
     private List<String> recordSearchDispositionEvents;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS)
     private String recordSearchDispositionInstructions;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD)
     private String recordSearchVitalRecordReviewPeriod;
 
-    @JsonProperty(PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION)
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION)
     private String recordSearchVitalRecordReviewPeriodExpression;
 
     @JsonProperty(PROPERTIES_REVIEW_AS_OF)
     private Date reviewAsOf;
 
-    @JsonProperty(PROPERTIES_STORE)
+    @JsonProperty (PROPERTIES_STORE)
     private String store;
 
     @JsonProperty(PROPERTIES_WORM_UNLOCK_DATE)

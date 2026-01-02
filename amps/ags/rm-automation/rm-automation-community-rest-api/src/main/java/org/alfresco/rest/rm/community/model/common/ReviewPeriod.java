@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,6 +27,7 @@
 package org.alfresco.rest.rm.community.model.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,9 +45,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReviewPeriod
 {
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String periodType;
 
-    @JsonProperty(required = true)
+    @JsonProperty (required = true)
     private String expression;
 }

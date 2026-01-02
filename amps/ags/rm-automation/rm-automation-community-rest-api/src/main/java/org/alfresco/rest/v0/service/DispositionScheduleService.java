@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,18 +26,18 @@
  */
 package org.alfresco.rest.v0.service;
 
+
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
 
 import java.util.HashMap;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty;
 import org.alfresco.rest.v0.RecordCategoriesAPI;
 import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Service for different disposition schedule actions
@@ -57,10 +57,8 @@ public class DispositionScheduleService extends BaseAPI
     /**
      * Helper method for adding a retain after period step
      *
-     * @param categoryName
-     *            the category in whose schedule the step will be added
-     * @param period
-     *            for what period the item will be retained
+     * @param categoryName the category in whose schedule the step will be added
+     * @param period       for what period the item will be retained
      */
     public void addRetainAfterPeriodStep(String categoryName, String period)
     {
@@ -75,8 +73,7 @@ public class DispositionScheduleService extends BaseAPI
     /**
      * Helper method for adding a cut off immediately after created date step
      *
-     * @param categoryName
-     *            the category in whose schedule the step will be added
+     * @param categoryName   the category in whose schedule the step will be added
      */
     public void addCutOffImmediatelyStep(String categoryName)
     {
@@ -91,12 +88,9 @@ public class DispositionScheduleService extends BaseAPI
     /**
      * Helper method for adding a cut off after period step
      *
-     * @param categoryName
-     *            the category in whose schedule the step will be added
-     * @param period
-     *            the period that needs to pass from periodProperty for cut off to be available
-     * @param periodProperty
-     *            the property of the dispositioned item that is used to calculate the "as of" period
+     * @param categoryName   the category in whose schedule the step will be added
+     * @param period         the period that needs to pass from periodProperty for cut off to be available
+     * @param periodProperty the property of the dispositioned item that is used to calculate the "as of" period
      */
     public void addCutOffAfterPeriodStep(String categoryName, String period, RetentionPeriodProperty periodProperty)
     {
@@ -112,8 +106,7 @@ public class DispositionScheduleService extends BaseAPI
     /**
      * Helper method for adding a destroy step with ghosting immediately after CUT OFF date
      *
-     * @param categoryName
-     *            the category in whose schedule the step will be added
+     * @param categoryName   the category in whose schedule the step will be added
      */
     public void addDestroyWithGhostingImmediatelyAfterCutOff(String categoryName)
     {
@@ -123,12 +116,9 @@ public class DispositionScheduleService extends BaseAPI
     /**
      * Helper method for adding a destroy step with ghosting after period
      *
-     * @param categoryName
-     *            the category in whose schedule the step will be added
-     * @param period
-     *            the period that needs to pass for destroy to be available
-     * @param periodProperty
-     *            the property of the dispositioned item that is used to calculate the "as of" period
+     * @param categoryName   the category in whose schedule the step will be added
+     * @param period         the period that needs to pass for destroy to be available
+     * @param periodProperty the property of the dispositioned item that is used to calculate the "as of" period
      */
     public void addDestroyWithGhostingAfterPeriodStep(String categoryName, String period, RetentionPeriodProperty periodProperty)
     {
@@ -145,15 +135,12 @@ public class DispositionScheduleService extends BaseAPI
     /**
      * Helper method for adding a destroy step without ghosting after period
      *
-     * @param categoryName
-     *            the category in whose schedule the step will be added
-     * @param period
-     *            the period that needs to pass for destroy to be available
-     * @param periodProperty
-     *            the property of the dispositioned item that is used to calculate the "as of" period
+     * @param categoryName   the category in whose schedule the step will be added
+     * @param period         the period that needs to pass for destroy to be available
+     * @param periodProperty the property of the dispositioned item that is used to calculate the "as of" period
      */
     public void addDestroyWithoutGhostingAfterPeriodStep(String categoryName, String period,
-            RetentionPeriodProperty periodProperty)
+                                                       RetentionPeriodProperty periodProperty)
     {
         HashMap<RETENTION_SCHEDULE, String> destroyStep = new HashMap<>();
         destroyStep.put(RETENTION_SCHEDULE.NAME, "destroy");
@@ -167,10 +154,8 @@ public class DispositionScheduleService extends BaseAPI
     /**
      * Helper method for adding a cut off after an event occurs step
      *
-     * @param categoryName
-     *            the category in whose schedule the step will be added
-     * @param events
-     *            the events that need to occur for cut off to be available
+     * @param categoryName the category in whose schedule the step will be added
+     * @param events       the events that need to occur for cut off to be available
      */
     public void addCutOffAfterEventStep(String categoryName, String events)
     {
@@ -186,12 +171,9 @@ public class DispositionScheduleService extends BaseAPI
     /**
      * Helper method for adding a transfer after an event occurs step
      *
-     * @param categoryName
-     *            the category in whose schedule the step will be added
-     * @param location
-     *            the transfer location
-     * @param events
-     *            the events that need to occur for transfer to be available
+     * @param categoryName the category in whose schedule the step will be added
+     * @param location     the transfer location
+     * @param events       the events that need to occur for transfer to be available
      */
     public void addTransferAfterEventStep(String categoryName, String location, String events)
     {
@@ -217,7 +199,7 @@ public class DispositionScheduleService extends BaseAPI
      * @param combineConditions
      */
     public void addAccessionStep(String categoryName, Boolean timeOrEvent, String events, String period,
-            RetentionPeriodProperty periodProperty, Boolean combineConditions)
+                                 RetentionPeriodProperty periodProperty, Boolean combineConditions)
     {
         HashMap<RETENTION_SCHEDULE, String> accessionStep = new HashMap<>();
         accessionStep.put(RETENTION_SCHEDULE.NAME, "accession");
@@ -235,14 +217,12 @@ public class DispositionScheduleService extends BaseAPI
     }
 
     /**
-     * Helper method to create retention schedule with general fields for the given category as user and apply it to the records/ record folders
+     * Helper method to create retention schedule with general fields for the given category as user
+     * and apply it to the records/ record folders
      *
-     * @param user
-     *            the user who creates the retention schedule
-     * @param categoryName
-     *            the category on which is created the retention schedule
-     * @param appliedToRecords
-     *            true if is applied on records, false if is applied on folders
+     * @param user             the user who creates the retention schedule
+     * @param categoryName     the category on which is created the retention schedule
+     * @param appliedToRecords true if is applied on records, false if is applied on folders
      */
     public void createCategoryRetentionSchedule(UserModel user, String categoryName, Boolean appliedToRecords)
     {
@@ -259,12 +239,11 @@ public class DispositionScheduleService extends BaseAPI
     }
 
     /**
-     * Helper method to create retention schedule with general fields for the given category as admin and apply it to the records/record folders
+     * Helper method to create retention schedule with general fields for the given category as admin
+     * and apply it to the records/record folders
      *
-     * @param categoryName
-     *            the category on which is created the retention schedule
-     * @param appliedToRecords
-     *            true if is applied on records, false if is applied on folders
+     * @param categoryName     the category on which is created the retention schedule
+     * @param appliedToRecords true if is applied on records, false if is applied on folders
      */
     public void createCategoryRetentionSchedule(String categoryName, Boolean appliedToRecords)
     {

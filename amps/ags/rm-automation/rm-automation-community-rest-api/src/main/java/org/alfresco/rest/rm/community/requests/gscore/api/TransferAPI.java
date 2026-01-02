@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,11 +27,10 @@
 
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.springframework.http.HttpMethod.GET;
-
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.HttpMethod.GET;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.transfer.Transfer;
@@ -47,8 +46,7 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
 public class TransferAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper
-     *            RM REST Wrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public TransferAPI(RMRestWrapper rmRestWrapper)
     {
@@ -68,19 +66,16 @@ public class TransferAPI extends RMModelRequest
     /**
      * Gets a transfer.
      *
-     * @param transferId
-     *            The identifier of a transfer
-     * @param parameters
-     *            The URL parameters to add
+     * @param transferId The identifier of a transfer
+     * @param parameters The URL parameters to add
      * @return The {@link Transfer} for the given {@code transferId}
-     * @throws RuntimeException
-     *             for the following cases:
-     *             <ul>
-     *             <li>{@code transferId} is not a valid format</li>
-     *             <li>authentication fails</li>
-     *             <li>current user does not have permission to read {@code transferId}</li>
-     *             <li>{@code transferId} does not exist</li>
-     *             </ul>
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code transferId} is not a valid format</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code transferId}</li>
+     *  <li>{@code transferId} does not exist</li>
+     * </ul>
      */
     public Transfer getTransfer(String transferId, String parameters)
     {
@@ -90,9 +85,9 @@ public class TransferAPI extends RMModelRequest
                 GET,
                 "/transfers/{transferId}?{parameters}",
                 transferId,
-                parameters));
+                parameters
+        ));
     }
-
     /**
      * see {@link #getTransfersChildren(String, String)}
      */
@@ -106,27 +101,25 @@ public class TransferAPI extends RMModelRequest
     /**
      * Gets the children (record folder or record) of a transfer.
      *
-     * @param transferId
-     *            The identifier of a transfer
-     * @param parameters
-     *            The URL parameters to add
+     * @param transferId The identifier of a transfer
+     * @param parameters The URL parameters to add
      * @return The {@link TransferChildCollection} for the given {@code transferId}
-     * @throws RuntimeException
-     *             for the following cases:
-     *             <ul>
-     *             <li>authentication fails</li>
-     *             <li>current user does not have permission to read {@code transferId}</li>
-     *             <li>{@code filePlanId} does not exist</li>
-     *             </ul>
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code transferId}</li>
+     *  <li>{@code filePlanId} does not exist</li>
+     *</ul>
      */
     public TransferChildCollection getTransfersChildren(String transferId, String parameters)
     {
         mandatoryString("transferId", transferId);
 
         return getRmRestWrapper().processModels(TransferChildCollection.class, simpleRequest(
-                GET,
-                "transfers/{filePlanId}/children?{parameters}",
-                transferId,
-                parameters));
+            GET,
+            "transfers/{filePlanId}/children?{parameters}",
+            transferId,
+            parameters
+        ));
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,13 +44,11 @@ public class SearchRequestBuilder extends SearchRequest
     {
         new SearchRequest();
     }
-
     /**
      * Set the sql statement for the SearchRequest
      *
-     * @param query
-     *            sql statement
-     * @return search request
+     * @param query sql statement
+     * @return search  request
      */
     public SearchRequestBuilder setQueryBuilder(RestRequestQueryModel query)
     {
@@ -61,8 +59,7 @@ public class SearchRequestBuilder extends SearchRequest
     /**
      * Set the paging statement for the SearchRequest
      *
-     * @param paging
-     *            pagination requested
+     * @param paging pagination requested
      * @return search request
      */
     public SearchRequestBuilder setPagingBuilder(Pagination paging)
@@ -85,8 +82,7 @@ public class SearchRequestBuilder extends SearchRequest
     /**
      * Set the requested fields for the SearchRequest
      *
-     * @param fields
-     *            requested fields
+     * @param fields requested fields
      * @return search request
      */
     public SearchRequestBuilder setFieldsBuilder(List<String> fields)

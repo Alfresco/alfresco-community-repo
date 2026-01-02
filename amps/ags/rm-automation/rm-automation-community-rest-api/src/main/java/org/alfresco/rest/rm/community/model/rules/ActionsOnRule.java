@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,7 +31,26 @@ package org.alfresco.rest.rm.community.model.rules;
  */
 public enum ActionsOnRule
 {
-    COMPLETE_RECORD("declareRecord"), REOPEN_RECORD("undeclareRecord"), OPEN_RECORD_FOLDER("openRecordFolder"), CLOSE_RECORD_FOLDER("closeRecordFolder"), FILE_TO("fileTo"), COPY_TO("copyTo"), MOVE_TO("moveTo"), LINK_TO("linkTo"), REJECT("reject"), REQUEST_INFORMATION("requestInfo"), COMPLETE_EVENT("completeEvent"), ADD_RECORD_TYPES("addRecordTypes"), EXECUTE_SCRIPT("executeScript"), SEND_EMAIL("sendEmail"), SET_PROPERTY_VALUE_COLL_SITE("set-property-value"), SET_PROPERTY_VALUE_RM("setPropertyValue"), HIDE_RECORD("hide-record"), DECLARE_VERSION_AS_RECORD("declare-as-version-record"), DECLARE_AS_RECORD("create-record"), WORM_LOCK("wormLock");
+    COMPLETE_RECORD("declareRecord"),
+    REOPEN_RECORD("undeclareRecord"),
+    OPEN_RECORD_FOLDER("openRecordFolder"),
+    CLOSE_RECORD_FOLDER("closeRecordFolder"),
+    FILE_TO("fileTo"),
+    COPY_TO("copyTo"),
+    MOVE_TO("moveTo"),
+    LINK_TO("linkTo"),
+    REJECT("reject"),
+    REQUEST_INFORMATION("requestInfo"),
+    COMPLETE_EVENT("completeEvent"),
+    ADD_RECORD_TYPES("addRecordTypes"),
+    EXECUTE_SCRIPT("executeScript"),
+    SEND_EMAIL("sendEmail"),
+    SET_PROPERTY_VALUE_COLL_SITE("set-property-value"),
+    SET_PROPERTY_VALUE_RM("setPropertyValue"),
+    HIDE_RECORD("hide-record"),
+    DECLARE_VERSION_AS_RECORD("declare-as-version-record"),
+    DECLARE_AS_RECORD("create-record"),
+    WORM_LOCK("wormLock");
 
     private String actionValue;
 

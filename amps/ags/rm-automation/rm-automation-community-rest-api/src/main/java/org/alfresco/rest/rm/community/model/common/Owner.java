@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,10 +27,10 @@
 package org.alfresco.rest.rm.community.model.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
 import org.alfresco.utility.model.TestModel;
 
 /**
@@ -42,9 +42,9 @@ import org.alfresco.utility.model.TestModel;
 @Builder
 @Data
 @EqualsAndHashCode(callSuper = true)
-// @NoArgsConstructor
-// @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
+//@NoArgsConstructor
+//@AllArgsConstructor
+@JsonIgnoreProperties (ignoreUnknown = true)
 public class Owner extends TestModel
 {
 

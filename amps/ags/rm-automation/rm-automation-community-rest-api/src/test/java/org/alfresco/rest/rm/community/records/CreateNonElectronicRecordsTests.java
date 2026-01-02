@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,20 +26,14 @@
  */
 package org.alfresco.rest.rm.community.records;
 
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.testng.Assert.assertNotNull;
-
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.testng.Assert.assertNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 import org.alfresco.rest.core.v0.BaseAPI.RMProperty;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -48,6 +42,10 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  * Contains CreateNonElectronicRecords test which checks creation and basic actions(view details, edit, move, copy, delete) on non-electronic records
@@ -82,7 +80,8 @@ public class CreateNonElectronicRecordsTests extends BaseRMRestTest
     private final String recordTitle = recordName + " title";
     private final String recordDescription = recordName + " description";
 
-    @BeforeClass(alwaysRun = true)
+
+    @BeforeClass (alwaysRun = true)
     public void preConditions()
     {
         STEP("Create RM Site");
@@ -105,7 +104,7 @@ public class CreateNonElectronicRecordsTests extends BaseRMRestTest
      * Test v0 methods to create and get non-electronic records.
      */
     @Test
-    @AlfrescoTest(jira = "RM-2777")
+    @AlfrescoTest (jira = "RM-2777")
     public void createNonElectronicRecordTest()
     {
         STEP("Create a non-electronic record by completing some of the fields");
@@ -130,7 +129,7 @@ public class CreateNonElectronicRecordsTests extends BaseRMRestTest
 
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void deletePreConditions()
     {
         STEP("Delete the created rootCategory along with corresponding record folders/records present in it");

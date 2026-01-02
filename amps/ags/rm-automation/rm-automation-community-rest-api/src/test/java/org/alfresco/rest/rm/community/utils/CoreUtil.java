@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -49,8 +49,7 @@ public class CoreUtil
     /**
      * Creates a body model for move/copy with the given the target node id
      *
-     * @param nodeId
-     *            The node id
+     * @param nodeId The node id
      * @return The {@link RestNodeBodyMoveCopyModel} with for the given node id
      */
     public static RestNodeBodyMoveCopyModel createBodyForMoveCopy(String nodeId)
@@ -75,18 +74,16 @@ public class CoreUtil
      *
      * @return ContentModel
      */
-    public static FileModel toFileModel(String nodeId)
+    public  static FileModel toFileModel(String nodeId)
     {
-        return toModel(nodeId, FileModel.class);
+        return toModel(nodeId,FileModel.class);
     }
 
     /**
      * Helper method to create a RepoTestModel using the node id
      *
-     * @param nodeId
-     *            node ref of the test model
-     * @param classOf
-     *            repo test model class
+     * @param nodeId  node ref of the test model
+     * @param classOf repo test model class
      * @return
      */
     private static <T extends RepoTestModel> T toModel(String nodeId, Class classOf)
@@ -96,7 +93,7 @@ public class CoreUtil
         {
             target = (T) classOf.getDeclaredConstructor().newInstance();
         }
-        catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | InstantiationException e)
+        catch (InvocationTargetException| NoSuchMethodException| IllegalAccessException | InstantiationException e)
         {
             e.printStackTrace();
         }
@@ -105,5 +102,6 @@ public class CoreUtil
         return target;
 
     }
+
 
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,15 +26,10 @@
  */
 package org.alfresco.rest.rm.community.records;
 
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
-import static org.springframework.http.HttpStatus.OK;
-
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
@@ -46,12 +41,11 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.core.RestResponse;
@@ -77,6 +71,12 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 
 /**
  * Delete records tests
@@ -97,20 +97,21 @@ public class DeleteRecordTests extends BaseRMRestTest
     private RecordCategoryChild recordFolder;
     private UnfiledContainerChild unfiledRecordFolder;
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void setupDeleteRecordTests()
     {
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         recordFolder = createCategoryFolderInFilePlan();
         unfiledRecordFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, getRandomName("Unfiled Folder "),
-                UNFILED_RECORD_FOLDER_TYPE);
+            UNFILED_RECORD_FOLDER_TYPE);
     }
 
     /** Data provider with electronic and non-electronic records to be deleted */
-    @DataProvider(name = "recordsToBeDeleted")
+    @DataProvider (name = "recordsToBeDeleted")
     public Object[][] getRecordsToBeDeleted()
     {
-        return new String[][]{
+        return new String[][]
+            {
                 // records created in an arbitrary record folder
                 {getRestAPIFactory().getRecordFolderAPI().createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile(IMAGE_FILE)).getId()},
                 {getRestAPIFactory().getRecordFolderAPI().createRecord(createNonElectronicRecordModel(), recordFolder.getId()).getId()},
@@ -120,7 +121,7 @@ public class DeleteRecordTests extends BaseRMRestTest
                 // records created in an arbitrary unfiled records folder
                 {getRestAPIFactory().getUnfiledRecordFoldersAPI().uploadRecord(createElectronicUnfiledContainerChildModel(), unfiledRecordFolder.getId(), getFile(IMAGE_FILE)).getId()},
                 {getRestAPIFactory().getUnfiledRecordFoldersAPI().createUnfiledRecordFolderChild(createNonElectronicUnfiledContainerChildModel(), unfiledRecordFolder.getId()).getId()}
-        };
+            };
     }
 
     /**
@@ -132,10 +133,12 @@ public class DeleteRecordTests extends BaseRMRestTest
      * Then it is deleted from the file plan
      * </pre>
      */
-    @Test(
+    @Test
+        (
             dataProvider = "recordsToBeDeleted",
-            description = "Admin user can delete records")
-    @AlfrescoTest(jira = "RM-4363")
+            description = "Admin user can delete records"
+        )
+    @AlfrescoTest(jira="RM-4363")
     public void adminCanDeleteRecords(String recordId)
     {
         // Delete record and verify successful deletion
@@ -151,16 +154,18 @@ public class DeleteRecordTests extends BaseRMRestTest
      * And error gets reported
      * </pre>
      */
-    @Test(
-            description = "User without write permissions can't delete a record")
-    @AlfrescoTest(jira = "RM-4363")
+    @Test
+        (
+            description = "User without write permissions can't delete a record"
+        )
+    @AlfrescoTest(jira="RM-4363")
     public void userWithoutWritePermissionsCantDeleteRecord()
     {
         // Create a non-electronic record in unfiled records
         UnfiledContainerChild nonElectronicRecord = UnfiledContainerChild.builder()
-                .name("Record " + RandomData.getRandomAlphanumeric())
-                .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                .build();
+            .name("Record " + RandomData.getRandomAlphanumeric())
+            .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+            .build();
         UnfiledContainerChild newRecord = getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(nonElectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
 
         assertStatusCode(CREATED);
@@ -182,9 +187,11 @@ public class DeleteRecordTests extends BaseRMRestTest
      * And error gets reported
      * </pre>
      */
-    @Test(
-            description = "User without delete records capability can't delete a record")
-    @AlfrescoTest(jira = "RM-4363")
+    @Test
+        (
+            description = "User without delete records capability can't delete a record"
+        )
+    @AlfrescoTest(jira="RM-4363")
     public void userWithoutDeleteRecordsCapabilityCantDeleteRecord()
     {
         // Create test user and add it with collaboration privileges
@@ -220,7 +227,7 @@ public class DeleteRecordTests extends BaseRMRestTest
      * </pre>
      */
     @Test(description = "Deleting copy of record doesn't delete original content")
-    @AlfrescoTest(jira = "MNT-18806")
+    @AlfrescoTest(jira="MNT-18806")
     public void deleteCopyOfRecord()
     {
         STEP("Create another record category with a folder.");
@@ -228,7 +235,7 @@ public class DeleteRecordTests extends BaseRMRestTest
 
         STEP("Create a record in first folder and copy it into second folder.");
         String recordId = getRestAPIFactory().getRecordFolderAPI()
-                .createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile(IMAGE_FILE)).getId();
+            .createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile(IMAGE_FILE)).getId();
         String copyId = copyNode(recordId, recordFolderB.getId()).getId();
         assertStatusCode(CREATED);
 
@@ -244,6 +251,7 @@ public class DeleteRecordTests extends BaseRMRestTest
         getNodeContent(recordId);
     }
 
+
     /**
      * <pre>
      * Given a file that has a copy
@@ -252,8 +260,8 @@ public class DeleteRecordTests extends BaseRMRestTest
      * Then it is still possible to view the content of the copy
      * </pre>
      */
-    @Test(description = "Deleting record doesn't delete the content for the copies")
-    @AlfrescoTest(jira = "MNT-20145")
+    @Test (description = "Deleting record doesn't delete the content for the copies")
+    @AlfrescoTest (jira = "MNT-20145")
     public void deleteOriginOfRecord()
     {
         STEP("Create a file.");
@@ -283,8 +291,8 @@ public class DeleteRecordTests extends BaseRMRestTest
      * Then it is still possible to view the content of the copy
      * </pre>
      */
-    @Test(description = "Destroying record doesn't delete the content for the associated copy")
-    @AlfrescoTest(jira = "MNT-20145")
+    @Test (description = "Destroying record doesn't delete the content for the associated copy")
+    @AlfrescoTest (jira = "MNT-20145")
     public void destroyOfRecord()
     {
         STEP("Create a file.");
@@ -316,9 +324,9 @@ public class DeleteRecordTests extends BaseRMRestTest
 
         STEP("Execute the disposition schedule steps.");
         rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),
-                RM_ACTIONS.CUT_OFF);
+            RM_ACTIONS.CUT_OFF);
         rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),
-                RM_ACTIONS.DESTROY);
+            RM_ACTIONS.DESTROY);
 
         STEP("Check that it's possible to load the copy content.");
         getNodeContent(copy.getId());
@@ -332,8 +340,8 @@ public class DeleteRecordTests extends BaseRMRestTest
      * Then it is still possible to view the content of the file
      * </pre>
      */
-    @Test(description = "Deleting record made from version doesn't delete the content for the file")
-    @AlfrescoTest(jira = "MNT-20145")
+    @Test (description = "Deleting record made from version doesn't delete the content for the file")
+    @AlfrescoTest (jira = "MNT-20145")
     public void deleteVersionDeclaredAsRecord()
     {
         STEP("Create a file.");
@@ -341,14 +349,14 @@ public class DeleteRecordTests extends BaseRMRestTest
 
         STEP("Declare file version as record.");
         recordsAPI.declareDocumentVersionAsRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(),
-                testFile.getName());
+            testFile.getName());
         UnfiledContainerChild unfiledContainerChild = getRestAPIFactory().getUnfiledContainersAPI()
-                .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                .getEntries().stream()
-                .filter(child -> child.getEntry().getName()
-                        .startsWith(testFile.getName().substring(0, testFile.getName().indexOf("."))))
-                .findFirst()
-                .get().getEntry();
+            .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+            .getEntries().stream()
+            .filter(child -> child.getEntry().getName()
+                .startsWith(testFile.getName().substring(0, testFile.getName().indexOf("."))))
+            .findFirst()
+            .get().getEntry();
 
         STEP("Delete the record.");
         deleteAndVerify(unfiledContainerChild.getId());
@@ -358,11 +366,11 @@ public class DeleteRecordTests extends BaseRMRestTest
         assertStatusCode(OK);
     }
 
+
     /**
      * Utility method to delete a record and verify successful deletion
      *
-     * @param recordId
-     *            The id of the record
+     * @param recordId The id of the record
      */
     private void deleteAndVerify(String recordId)
     {
@@ -380,10 +388,8 @@ public class DeleteRecordTests extends BaseRMRestTest
     /**
      * Copy a node to a folder.
      *
-     * @param nodeId
-     *            The id of the node to copy.
-     * @param destinationFolder
-     *            The id of the folder to copy it to.
+     * @param nodeId The id of the node to copy.
+     * @param destinationFolder The id of the folder to copy it to.
      * @return The model returned by the copy API.
      */
     private RestNodeModel copyNode(String nodeId, String destinationFolder)
@@ -422,8 +428,7 @@ public class DeleteRecordTests extends BaseRMRestTest
     /**
      * Check that the given node exists.
      *
-     * @param nodeId
-     *            The node to check.
+     * @param nodeId The node to check.
      */
     private void checkNodeExists(String nodeId)
     {
@@ -440,8 +445,7 @@ public class DeleteRecordTests extends BaseRMRestTest
     /**
      * Get the node from a record id.
      *
-     * @param recordId
-     *            The record to get.
+     * @param recordId The record to get.
      * @return The node object.
      */
     private Node getNode(String recordId)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,6 +26,20 @@
  */
 package org.alfresco.rest.rm.community.retentionschedule;
 
+import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
+import org.alfresco.rest.rm.community.model.retentionschedule.RetentionSchedule;
+import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleCollection;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
+import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import static org.alfresco.rest.core.v0.BaseAPI.RM_SITE_ID;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -35,22 +49,6 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertEquals;
-
-import static org.alfresco.rest.core.v0.BaseAPI.RM_SITE_ID;
-import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-import static org.alfresco.utility.data.RandomData.getRandomName;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
-import org.alfresco.rest.rm.community.model.retentionschedule.RetentionSchedule;
-import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleCollection;
-import org.alfresco.rest.v0.RMRolesAndActionsAPI;
-import org.alfresco.utility.model.UserModel;
 
 /**
  * This class contains the tests for the Retention Schedule CRUD V1 API
@@ -69,11 +67,11 @@ public class RetentionScheduleTests extends BaseRMRestTest
         createRMSiteIfNotExists();
         // create a non rm user
         nonRMuser = dataUser.createRandomTestUser("testUser");
-        // Create record category
+        //Create record category
         recordCategory = createRootCategory(getRandomName("recordCategory"));
 
-    }
 
+    }
     /**
      * <pre>
      * Given that a record category exists
@@ -105,7 +103,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
     {
         RetentionSchedule retentionSchedule = new RetentionSchedule();
 
-        // Create retention schedule with category id not exist
+        //Create retention schedule with category id not exist
         getRestAPIFactory().getRetentionScheduleAPI().createRetentionSchedule(retentionSchedule, getRandomAlphanumeric());
 
         // Verify the status code
@@ -124,7 +122,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
     {
         RetentionSchedule retentionSchedule = new RetentionSchedule();
 
-        // Create retention schedule with a user with unauthorized access
+        //Create retention schedule with a user with unauthorized access
         createdRetentionSchedule = getRestAPIFactory().getRetentionScheduleAPI(new UserModel(getAdminUser().getUsername(), "wrongPassword")).createRetentionSchedule(retentionSchedule, recordCategory.getId());
 
         // Verify the status code
@@ -149,9 +147,9 @@ public class RetentionScheduleTests extends BaseRMRestTest
         retentionSchedule.setInstructions(instructions);
         retentionSchedule.setIsRecordLevel(isRecordLevel);
 
-        // Create retention schedule with a valid user
+        //Create retention schedule with a valid user
         createdRetentionSchedule = getRestAPIFactory().getRetentionScheduleAPI()
-                .createRetentionSchedule(retentionSchedule, recordCategory.getId());
+            .createRetentionSchedule(retentionSchedule, recordCategory.getId());
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -172,9 +170,9 @@ public class RetentionScheduleTests extends BaseRMRestTest
     public void createRetentionScheduleFor409()
     {
         RetentionSchedule retentionSchedule = new RetentionSchedule();
-        // Create retention schedule on a category with already having retention schedule
+        //Create retention schedule on a category with already having retention schedule
         getRestAPIFactory().getRetentionScheduleAPI()
-                .createRetentionSchedule(retentionSchedule, recordCategory.getId());
+            .createRetentionSchedule(retentionSchedule, recordCategory.getId());
 
         assertStatusCode(CONFLICT);
     }
@@ -189,7 +187,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
     @Test(priority = 6)
     public void retentionScheduleWith403()
     {
-        // Get retention schedule with user having no rights
+        //Get retention schedule with user having no rights
         getRestAPIFactory().getRetentionScheduleAPI(nonRMuser).getRetentionSchedule(recordCategory.getId());
 
         // Verify the status code
@@ -207,7 +205,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
     public void retentionScheduleWith404()
     {
 
-        // Get retention schedule with category id that does not exist
+        //Get retention schedule with category id that does not exist
         getRestAPIFactory().getRetentionScheduleAPI().getRetentionSchedule(getRandomAlphanumeric());
 
         // Verify the status code
@@ -224,7 +222,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
     @Test(priority = 8)
     public void retentionScheduleWith401()
     {
-        // Create retention schedule with a user with unauthorized access
+        //Create retention schedule with a user with unauthorized access
         getRestAPIFactory().getRetentionScheduleAPI(new UserModel(getAdminUser().getUsername(), "wrongPassword")).getRetentionSchedule(recordCategory.getId());
 
         // Verify the status code
@@ -244,7 +242,8 @@ public class RetentionScheduleTests extends BaseRMRestTest
         RetentionScheduleCollection retentionScheduleCollection = getRestAPIFactory().getRetentionScheduleAPI().getRetentionSchedule(recordCategory.getId());
         // Verify the status code
         assertStatusCode(OK);
-        retentionScheduleCollection.getEntries().forEach(c -> {
+        retentionScheduleCollection.getEntries().forEach(c ->
+        {
             RetentionSchedule retentionSchedule = c.getEntry();
             String retentionScheduleId = retentionSchedule.getId();
             assertNotNull(retentionScheduleId);
@@ -252,7 +251,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
 
             // Find this retention schedule is created one or not
             assertEquals(createdRetentionSchedule.getId(), retentionScheduleId);
-            assertEquals(createdRetentionSchedule.getParentId(), retentionSchedule.getParentId());
+            assertEquals(createdRetentionSchedule.getParentId(),retentionSchedule.getParentId());
             assertEquals(createdRetentionSchedule.getAuthority(), retentionSchedule.getAuthority());
             assertEquals(createdRetentionSchedule.getInstructions(), retentionSchedule.getInstructions());
             assertEquals(createdRetentionSchedule.getIsRecordLevel(), retentionSchedule.getIsRecordLevel());
@@ -264,7 +263,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
     public void cleanUpRetentionScheduleTests()
     {
         rmRolesAndActionsAPI.deleteAllItemsInContainer(getDataUser().usingAdmin().getAdminUser().getUsername(),
-                getDataUser().usingAdmin().getAdminUser().getPassword(), RM_SITE_ID, recordCategory.getName());
+            getDataUser().usingAdmin().getAdminUser().getPassword(), RM_SITE_ID, recordCategory.getName());
         deleteRecordCategory(recordCategory.getId());
         dataUser.deleteUser(nonRMuser);
     }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,17 +26,6 @@
  */
 package org.alfresco.rest.rm.community.recordfolders;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
-import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
-
 import static org.alfresco.rest.rm.community.base.TestData.RECORD_FOLDER_NAME;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
@@ -56,15 +45,19 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.TITLE_
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
-
-import org.testng.AssertJUnit;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
@@ -77,6 +70,11 @@ import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderCollection;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderProperties;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.utility.report.Bug;
+import org.testng.AssertJUnit;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
  * This class contains the tests for the Record Folder CRUD API
@@ -91,48 +89,50 @@ public class RecordFolderTests extends BaseRMRestTest
     public static final String RECORD_CATEGORY_NAME = "CATEGORY NAME" + getRandomAlphanumeric();
     private RecordCategory rootCategory;
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void preconditionRecordFolderTests()
     {
         rootCategory = createRootCategory(RECORD_CATEGORY_NAME);
     }
 
     /**
-     * Data Provider with: with the object types not allowed as children for a record folder
+     * Data Provider with:
+     * with the object types not allowed as children for a record folder
      *
      * @return node type to be created
      */
     @DataProvider
     public static Object[][] childrenNotAllowedForFolder()
     {
-        return new String[][]{
-                {FILE_PLAN_TYPE},
-                {TRANSFER_CONTAINER_TYPE},
-                {UNFILED_CONTAINER_TYPE},
-                {UNFILED_RECORD_FOLDER_TYPE},
-                {TRANSFER_TYPE},
-                {RECORD_CATEGORY_TYPE},
-                {FOLDER_TYPE}
+        return new String[][] {
+                { FILE_PLAN_TYPE },
+                { TRANSFER_CONTAINER_TYPE },
+                { UNFILED_CONTAINER_TYPE },
+                { UNFILED_RECORD_FOLDER_TYPE },
+                { TRANSFER_TYPE },
+                { RECORD_CATEGORY_TYPE },
+                { FOLDER_TYPE }
         };
     }
 
     /**
-     * Invalid containers that cannot be updated/deleted with record folder endpoint
+     * Invalid  containers that cannot be updated/deleted with record folder endpoint
      */
     @DataProvider
     public Object[][] getInvalidNodesForRecordFolders()
     {
-        return new String[][]{
-                {getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS).getId()},
-                {getRestAPIFactory().getUnfiledContainersAPI().getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId()},
-                {getRestAPIFactory().getTransferContainerAPI().getTransferContainer(TRANSFERS_ALIAS).getId()},
+        return new String[][] {
+                { getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS).getId()},
+                { getRestAPIFactory().getUnfiledContainersAPI().getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId() },
+                { getRestAPIFactory().getTransferContainerAPI().getTransferContainer(TRANSFERS_ALIAS).getId() },
                 // an arbitrary record category
-                {rootCategory.getId()},
+                { rootCategory.getId()},
                 // an arbitrary unfiled records folder
-                {createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId()},
-                {createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Record " + getRandomAlphanumeric(), CONTENT_TYPE).getId()}
+                { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId() },
+                { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Record " + getRandomAlphanumeric(), CONTENT_TYPE).getId()}
         };
     }
+
 
     /**
      * <pre>
@@ -141,21 +141,23 @@ public class RecordFolderTests extends BaseRMRestTest
      * Then the operation fails
      * </pre>
      */
-    // TODO enable this test when REPO-2454 is fixed
-    @Test(
-            enabled = false,
-            description = "Create invalid types as children for a record folder",
-            dataProvider = "childrenNotAllowedForFolder")
+    //TODO enable this test when REPO-2454 is fixed
+    @Test
+    (
+        enabled = false,
+        description = "Create invalid types as children for a record folder",
+        dataProvider = "childrenNotAllowedForFolder"
+    )
     public void createInvalidChildrenForFolder(String nodeType)
     {
-        // create a record folder
+        //create a record folder
         RecordCategoryChild folder = createRecordFolder(rootCategory.getId(), getRandomName("recFolder"));
         Record record = Record.builder()
-                .name(ELECTRONIC_RECORD_NAME)
-                .nodeType(nodeType)
-                .build();
-        // create invalid child type for the record folder
-        getRestAPIFactory().getRecordFolderAPI().createRecord(record, folder.getId());
+                            .name(ELECTRONIC_RECORD_NAME)
+                            .nodeType(nodeType)
+                            .build();
+        //create invalid child type for the record folder
+        getRestAPIFactory().getRecordFolderAPI().createRecord(record,folder.getId());
         // Check the API Response code
         assertStatusCode(UNPROCESSABLE_ENTITY);
     }
@@ -167,8 +169,10 @@ public class RecordFolderTests extends BaseRMRestTest
      * Then I am given the details of a record folder
      * </pre>
      */
-    @Test(
-            description = "Check the details of a record folder")
+    @Test
+    (
+        description = "Check the details of a record folder"
+    )
     public void checkRecordFolderDetails()
     {
         // Create a folder
@@ -183,7 +187,7 @@ public class RecordFolderTests extends BaseRMRestTest
         assertEquals(recordFolder.getCreatedByUser().getId(), getAdminUser().getUsername());
         assertEquals(recordFolder.getModifiedByUser().getId(), getAdminUser().getUsername());
         assertEquals(recordFolder.getProperties().getTitle(), TITLE_PREFIX + RECORD_FOLDER_NAME);
-        assertNotNull(recordFolder.getProperties().getIdentifier(), "The record folder doesn't have a identifier");
+        assertNotNull(recordFolder.getProperties().getIdentifier(),"The record folder doesn't have a identifier");
         assertFalse(recordFolder.getProperties().getVitalRecordIndicator(), "The record folder has the vital record identifier");
         assertFalse(recordFolder.getProperties().getIsClosed(), "The record folder is closed");
     }
@@ -197,8 +201,10 @@ public class RecordFolderTests extends BaseRMRestTest
      * Note: The details of the record folder includes any custom meta-data
      * </pre>
      */
-    @Test(
-            description = "Update the details of a record folder")
+    @Test
+    (
+        description = "Update the details of a record folder"
+    )
     public void updateRecordFolderDetails()
     {
         // Create a record folder
@@ -208,19 +214,19 @@ public class RecordFolderTests extends BaseRMRestTest
         String folderDescription = "The folder description is updated" + getRandomAlphanumeric();
         String folderName = "The folder name is updated" + getRandomAlphanumeric();
         String folderTitle = "Update title " + getRandomAlphanumeric();
-        String location = "Location " + getRandomAlphanumeric();
+        String location = "Location "+ getRandomAlphanumeric();
 
         // Create the record folder properties to update
         RecordFolder recordFolder = RecordFolder.builder()
-                .name(folderName)
-                .properties(RecordFolderProperties.builder()
-                        .title(folderTitle)
-                        .description(folderDescription)
-                        .vitalRecordIndicator(true)
-                        .reviewPeriod(new ReviewPeriod("month", "1"))
-                        .location(location)
-                        .build())
-                .build();
+                                                .name(folderName)
+                                                .properties(RecordFolderProperties.builder()
+                                                        .title(folderTitle)
+                                                        .description(folderDescription)
+                                                        .vitalRecordIndicator(true)
+                                                        .reviewPeriod(new ReviewPeriod("month","1"))
+                                                        .location(location)
+                                                        .build())
+                                                .build();
 
         // Update the record folder
         RecordFolder updatedRecordFolder = getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolder, recordCategoryChild.getId());
@@ -246,9 +252,11 @@ public class RecordFolderTests extends BaseRMRestTest
      * Then the request fails
      * </pre>
      */
-    @Test(
-            description = "Update the details for other nodes than record folder with the request used for record-folders ",
-            dataProvider = "getInvalidNodesForRecordFolders")
+    @Test
+    (
+        description = "Update the details for other nodes than record folder with the request used for record-folders ",
+        dataProvider = "getInvalidNodesForRecordFolders"
+    )
     public void updateOtherNodeTypesDetails(String nodeId)
     {
         // Create record category first
@@ -256,16 +264,17 @@ public class RecordFolderTests extends BaseRMRestTest
         String nodeName = "The folder name is updated" + getRandomAlphanumeric();
         String nodeTitle = "Update title " + getRandomAlphanumeric();
 
+
         // Create the record folder properties to update
         RecordFolder recordFolder = RecordFolder.builder()
-                .name(nodeName)
-                .properties(RecordFolderProperties.builder()
-                        .title(nodeTitle)
-                        .description(nodeDescription)
-                        .vitalRecordIndicator(true)
-                        .reviewPeriod(new ReviewPeriod("month", "1"))
-                        .build())
-                .build();
+                                                .name(nodeName)
+                                                .properties(RecordFolderProperties.builder()
+                                                                                  .title(nodeTitle)
+                                                                                  .description(nodeDescription)
+                                                                                  .vitalRecordIndicator(true)
+                                                                                  .reviewPeriod(new ReviewPeriod("month", "1"))
+                                                                                  .build())
+                                                .build();
 
         // Update the record folder
         getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolder, nodeId);
@@ -281,9 +290,11 @@ public class RecordFolderTests extends BaseRMRestTest
      * Then the request fails
      * </pre>
      */
-    @Test(
-            description = "Delete invalid nodes type with the DELETE record folders request",
-            dataProvider = "getInvalidNodesForRecordFolders")
+    @Test
+    (
+        description = "Delete invalid nodes type with the DELETE record folders request",
+        dataProvider = "getInvalidNodesForRecordFolders"
+    )
     public void deleteInvalidNodesRecordFolder(String nodeId)
     {
         // Delete the nodes with record-folders end-point
@@ -301,8 +312,10 @@ public class RecordFolderTests extends BaseRMRestTest
      * Then it is deleted according to the normal rules governing the deletion of record folders
      * </pre>
      */
-    @Test(
-            description = "Delete record folder")
+    @Test
+    (
+        description = "Delete record folder"
+    )
     public void deleteRecordFolder()
     {
         // Create the record folder
@@ -324,11 +337,15 @@ public class RecordFolderTests extends BaseRMRestTest
     }
 
     /**
-     * Given that a record folder exists When the record folder is closed Then a request can be made to reopen it
+     * Given that a record folder exists
+     * When the record folder is closed
+     * Then a request can be made to reopen it
      */
-    @Test(
-            description = "A closed record folder can be reopened")
-    @Bug(id = "RM-4808")
+    @Test
+    (
+        description = "A closed record folder can be reopened"
+    )
+    @Bug(id="RM-4808")
     public void openClosedRecordFolder()
     {
         // Create a record folder
@@ -342,10 +359,10 @@ public class RecordFolderTests extends BaseRMRestTest
 
         // Create a record folder model to close it
         RecordFolder recordFolderModel = RecordFolder.builder()
-                .properties(RecordFolderProperties.builder()
-                        .isClosed(true)
-                        .build())
-                .build();
+                                                     .properties(RecordFolderProperties.builder()
+                                                                                       .isClosed(true)
+                                                                                       .build())
+                                                     .build();
 
         // Make a request to close the record folder
         RecordFolder updatedRecordFolder = recordFolderAPI.updateRecordFolder(recordFolderModel, recordFolder.getId());
@@ -355,10 +372,10 @@ public class RecordFolderTests extends BaseRMRestTest
 
         // Create a record folder model to reopen it
         recordFolderModel = RecordFolder.builder()
-                .properties(RecordFolderProperties.builder()
-                        .isClosed(false)
-                        .build())
-                .build();
+                                        .properties(RecordFolderProperties.builder()
+                                                                          .isClosed(false)
+                                                                          .build())
+                                        .build();
 
         // Make a request to reopen the record folder
         updatedRecordFolder = recordFolderAPI.updateRecordFolder(recordFolderModel, recordFolder.getId());
@@ -368,7 +385,9 @@ public class RecordFolderTests extends BaseRMRestTest
     }
 
     /**
-     * Given a container that is a record folder When I try to list the records from the record folder Then I receive a list of all the records contained within the record folder
+     * Given a container that is a record folder
+     * When I try to list the records from the record folder
+     * Then I receive a list of all the records contained within the record folder
      */
     @Test
     public void listRecordsFromRecordFolder()
@@ -380,41 +399,43 @@ public class RecordFolderTests extends BaseRMRestTest
         ArrayList<Record> children = new ArrayList<>();
         for (int i = 0; i < NUMBER_OF_RECORDS; i++)
         {
-            // build the electronic record
+            //build the electronic record
             Record record = Record.builder()
-                    .name(ELECTRONIC_RECORD_NAME + i)
-                    .nodeType(CONTENT_TYPE)
-                    .build();
-            // create a child
+                                  .name(ELECTRONIC_RECORD_NAME + i)
+                                  .nodeType(CONTENT_TYPE)
+                                  .build();
+            //create a child
             Record child = recordFolderAPI.createRecord(record, containerId, createTempFile(ELECTRONIC_RECORD_NAME + i, ELECTRONIC_RECORD_NAME + i));
 
             children.add(child);
         }
-        // Create NonElectronicRecords
+        //Create NonElectronicRecords
         for (int i = 0; i < NUMBER_OF_RECORDS; i++)
         {
             Record nonelectronicRecord = Record.builder()
-                    .properties(RecordProperties.builder()
-                            .description("Description")
-                            .title("Title")
-                            .build())
-                    .name(NONELECTRONIC_RECORD_NAME + i)
-                    .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                    .build();
-            // create records
+                                               .properties(RecordProperties.builder()
+                                                                           .description("Description")
+                                                                           .title("Title")
+                                                                           .build())
+                                               .name(NONELECTRONIC_RECORD_NAME + i)
+                                               .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+                                               .build();
+            //create records
             Record child = recordFolderAPI.createRecord(nonelectronicRecord, containerId);
 
             children.add(child);
         }
 
         // List children from API
-        RecordFolderCollection apiChildren = (RecordFolderCollection) recordFolderAPI.getRecordFolderChildren(containerId, "include=properties").assertThat().entriesListIsNotEmpty();
+        RecordFolderCollection apiChildren = (RecordFolderCollection) recordFolderAPI.getRecordFolderChildren(containerId,"include=properties").assertThat().entriesListIsNotEmpty();
 
         // Check status code
         assertStatusCode(OK);
 
+
         // Check listed children against created list
-        apiChildren.getEntries().forEach(c -> {
+        apiChildren.getEntries().forEach(c ->
+        {
             Record record = c.getEntry();
             assertNotNull(record.getId());
             logger.info("Checking child " + record.getId());
@@ -423,9 +444,9 @@ public class RecordFolderTests extends BaseRMRestTest
             {
                 // Find this child in created children list
                 Record createdComponent = children.stream()
-                        .filter(child -> child.getId().equals(record.getId()))
-                        .findFirst()
-                        .orElseThrow();
+                                                  .filter(child -> child.getId().equals(record.getId()))
+                                                  .findFirst()
+                                                  .orElseThrow();
 
                 // Created by
                 assertEquals(record.getCreatedByUser().getId(), getAdminUser().getUsername());
@@ -433,22 +454,21 @@ public class RecordFolderTests extends BaseRMRestTest
                 // Is parent Id set correctly
                 assertEquals(record.getParentId(), containerId);
 
-                // check the record name
+                //check the record name
                 assertEquals(createdComponent.getName(), record.getName(),
                         "Record Name" + record.getName() + " doesn't match the one returned on create");
                 assertTrue(createdComponent.getName().contains(createdComponent.getProperties().getIdentifier()),
-                        "Record Name" + createdComponent.getName() + " doesn't contain the record identifier in response when creating");
+                        "Record Name"+ createdComponent.getName()+" doesn't contain the record identifier in response when creating");
                 assertEquals(createdComponent.getNodeType(), record.getNodeType());
 
-            }
-            catch (NoSuchElementException e)
+            } catch (NoSuchElementException e)
             {
                 fail("No child element for " + record.getId());
             }
         });
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void tearDown()
     {
         deleteRecordCategory(rootCategory.getId());

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,12 +26,6 @@
  */
 package org.alfresco.rest.rm.community.hold;
 
-import static org.apache.commons.httpclient.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-import static org.testng.AssertJUnit.assertFalse;
 
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
@@ -51,16 +45,16 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.apache.commons.httpclient.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertFalse;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.ContentActions;
@@ -79,6 +73,11 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
  * API tests for adding content/record folder/records to holds
@@ -86,7 +85,7 @@ import org.alfresco.utility.model.UserModel;
  * @author Rodica Sutu
  * @since 3.2
  */
-@AlfrescoTest(jira = "RM-6874")
+@AlfrescoTest (jira = "RM-6874")
 public class AddToHoldsTests extends BaseRMRestTest
 {
     private static final String HOLD = "HOLD" + generateTestPrefix(AddToHoldsTests.class);
@@ -109,7 +108,7 @@ public class AddToHoldsTests extends BaseRMRestTest
     @Autowired
     private ContentActions contentActions;
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void preconditionForAddContentToHold()
     {
         STEP("Create a hold.");
@@ -119,11 +118,11 @@ public class AddToHoldsTests extends BaseRMRestTest
         STEP("Create test files.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         documentHeld = dataContent.usingAdmin().usingSite(testSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                                  .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         contentToAddToHold = dataContent.usingAdmin().usingSite(testSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         contentAddToHoldNoPermission = dataContent.usingAdmin().usingSite(testSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                                                  .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Add the content to the hold.");
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), documentHeld
@@ -137,7 +136,9 @@ public class AddToHoldsTests extends BaseRMRestTest
     }
 
     /**
-     * Given a hold that contains at least one active content When I use the existing REST API to retrieve the contents of the hold Then I should see all the active content on hold
+     * Given a hold that contains at least one active content
+     * When I use the existing REST API to retrieve the contents of the hold
+     * Then I should see all the active content on hold
      */
     @Test
     public void retrieveTheContentOfTheHoldUsingV1API() throws Exception
@@ -145,11 +146,11 @@ public class AddToHoldsTests extends BaseRMRestTest
         STEP("Retrieve the list of children from the hold and collect the entries that have the name of the active " +
                 "content held");
         List<RestNodeModel> documentsHeld = restClient.authenticateUser(getAdminUser()).withCoreAPI()
-                .usingNode(toContentModel(holdNodeRef))
-                .listChildren().getEntries().stream()
-                .filter(child -> child.onModel().getName().contains(documentHeld
-                        .getName()))
-                .collect(Collectors.toList());
+                                                      .usingNode(toContentModel(holdNodeRef))
+                                                      .listChildren().getEntries().stream()
+                                                      .filter(child -> child.onModel().getName().contains(documentHeld
+                                                              .getName()))
+                                                      .collect(Collectors.toList());
         STEP("Check the list of active content");
         assertEquals(documentsHeld.size(), 1, "The active content is not retrieve when getting the children from the " +
                 "hold folder");
@@ -157,7 +158,9 @@ public class AddToHoldsTests extends BaseRMRestTest
     }
 
     /**
-     * Given a hold that contains at least one active content When I use the existing REST API to retrieve the holds the content is added Then the hold where the content held is returned
+     * Given a hold that contains at least one active content
+     * When I use the existing REST API to retrieve the holds the content is added
+     * Then the hold where the content held is returned
      */
     @Test
     public void retrieveTheHoldWhereTheContentIsAdded()
@@ -171,14 +174,15 @@ public class AddToHoldsTests extends BaseRMRestTest
     /**
      * Valid nodes to be added to hold
      */
-    @DataProvider(name = "validNodesForAddToHold")
+    @DataProvider (name = "validNodesForAddToHold")
     public Object[][] getValidNodesForAddToHold()
     {
-        // create electronic and nonElectronic record in record folder
+        //create electronic and nonElectronic record in record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
         nodesToBeClean.add(recordFolder.getParentId());
-        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile(IMAGE_FILE));
+        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile
+                (IMAGE_FILE));
         assertStatusCode(CREATED);
 
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolder.getId());
@@ -191,23 +195,30 @@ public class AddToHoldsTests extends BaseRMRestTest
                 PERMISSION_FILING);
         nodesToBeClean.add(folderToHold.getParentId());
 
-        return new String[][]{ // record folder
-                {folderToHold.getId()},
-                // electronic record
-                {electronicRecord.getId()},
-                // non electronic record
-                {nonElectronicRecord.getId()},
-                // document from collaboration site
-                {contentToAddToHold.getNodeRefWithoutVersion()},
-        };
+        return new String[][]
+                {       // record folder
+                        { folderToHold.getId() },
+                        //electronic record
+                        { electronicRecord.getId() },
+                        // non electronic record
+                        { nonElectronicRecord.getId() },
+                        // document from collaboration site
+                        { contentToAddToHold.getNodeRefWithoutVersion() },
+                };
     }
 
     /**
-     * Given record folder/record/document not on hold And a hold And file permission on the hold And the appropriate capability to add to hold When I use the existing REST API to add the node to the hold Then the record folder/record/document is added to the hold And the item is frozen
+     * Given record folder/record/document not on hold
+     * And a hold
+     * And file permission on the hold
+     * And the appropriate capability to add to hold
+     * When I use the existing REST API to add the node to the hold
+     * Then the record folder/record/document is added to the hold
+     * And the item is frozen
      *
      * @throws Exception
      */
-    @Test(dataProvider = "validNodesForAddToHold")
+    @Test (dataProvider = "validNodesForAddToHold")
     public void addValidNodesToHoldWithAllowedUser(String nodeId) throws Exception
     {
         STEP("Add node to hold with user with permission.");
@@ -219,52 +230,59 @@ public class AddToHoldsTests extends BaseRMRestTest
 
     /**
      * Data provider with user without correct permission to add to hold and the node ref to be added to hold
-     * 
      * @return object with user model and the node ref to be added to hold
      */
-    @DataProvider(name = "userWithoutPermissionForAddToHold")
+    @DataProvider (name = "userWithoutPermissionForAddToHold")
     public Object[][] getUserWithoutPermissionForAddToHold()
     {
-        // create record folder
+        //create record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
-        // create a rm manager and grant read permission over the record folder created
+        //create a rm manager and grant read permission over the record folder created
         UserModel user = roleService.createUserWithRMRoleAndRMNodePermission(ROLE_RM_MANAGER.roleId, recordFolder.getId(),
                 PERMISSION_READ_RECORDS);
         getRestAPIFactory().getRMUserAPI().addUserPermission(holdNodeRef, user, PERMISSION_FILING);
         nodesToBeClean.add(recordFolder.getParentId());
-        return new Object[][]{ // user without write permission on the content
-                {
-                        roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole.SiteConsumer,
-                                holdNodeRef, UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING),
-                        contentAddToHoldNoPermission.getNodeRefWithoutVersion()
-                },
-                // user with write permission on the content and without filling permission on a hold
-                {
-                        roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole.SiteCollaborator,
-                                holdNodeRef, UserRoles.ROLE_RM_MANAGER, PERMISSION_READ_RECORDS),
-                        contentAddToHoldNoPermission.getNodeRefWithoutVersion()
-                },
-                // user with write permission on the content, filling permission on a hold without add to
-                // hold capability
-                {
-                        roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole.SiteCollaborator,
-                                holdNodeRef, UserRoles.ROLE_RM_POWER_USER, PERMISSION_READ_RECORDS),
-                        contentAddToHoldNoPermission.getNodeRefWithoutVersion()
-                },
-                // user without write permission on RM record folder
-                {
-                        user, recordFolder.getId()
-                },
+        return new Object[][]
+                {       // user without write permission on the content
+                        {
+                                roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole.SiteConsumer,
+                                        holdNodeRef, UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING),
+                                contentAddToHoldNoPermission.getNodeRefWithoutVersion()
+                        },
+                        // user with write permission on the content and without filling permission on a hold
+                        {
+                                roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole
+                                                .SiteCollaborator,
+                                        holdNodeRef, UserRoles.ROLE_RM_MANAGER, PERMISSION_READ_RECORDS),
+                                contentAddToHoldNoPermission.getNodeRefWithoutVersion()
+                        },
+                        // user with write permission on the content, filling permission on a hold without add to
+                        // hold capability
+                        {
+                                roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole
+                                                .SiteCollaborator,
+                                        holdNodeRef, UserRoles.ROLE_RM_POWER_USER, PERMISSION_READ_RECORDS),
+                                contentAddToHoldNoPermission.getNodeRefWithoutVersion()
+                        },
+                        //user without write permission on RM  record folder
+                        {
+                                user, recordFolder.getId()
+                        },
 
-        };
+                };
     }
 
     /**
-     * Given a node not on hold And a hold And user without right permission to add to hold When I use the existing REST API to add the node to the hold Then the node is not added to the hold And the node is not frozen
+     * Given a node not on hold
+     * And a hold
+     * And user without right permission to add to hold
+     * When I use the existing REST API to add the node to the hold
+     * Then the node is not added to the hold
+     * And the node is not frozen
      *
      * @throws Exception
      */
-    @Test(dataProvider = "userWithoutPermissionForAddToHold")
+    @Test (dataProvider = "userWithoutPermissionForAddToHold")
     public void addContentToHoldWithUserWithoutHoldPermission(UserModel userModel, String nodeToBeAddedToHold) throws Exception
     {
         users.add(userModel);
@@ -274,50 +292,56 @@ public class AddToHoldsTests extends BaseRMRestTest
         assertTrue(response.contains(ACCESS_DENIED_ERROR_MESSAGE));
 
         STEP("Check the node is not frozen.");
-        assertFalse(hasAspect(nodeToBeAddedToHold, FROZEN_ASPECT));
+        assertFalse(hasAspect(nodeToBeAddedToHold,FROZEN_ASPECT));
     }
 
     /**
      * Data provider with invalid node types that can be added to a hold
      */
-    @DataProvider(name = "invalidNodesForAddToHold")
+    @DataProvider (name = "invalidNodesForAddToHold")
     public Object[][] getInvalidNodesForAddToHold()
     {
-        // create locked file
+        //create locked file
         FileModel contentLocked = dataContent.usingAdmin().usingSite(testSite)
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                                            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         contentActions.checkOut(getAdminUser().getUsername(), getAdminUser().getPassword(),
                 testSite.getId(), contentLocked.getName());
         RecordCategory category = createRootCategory(getRandomAlphanumeric());
         nodesToBeClean.add(category.getId());
-        return new Object[][]{ // file plan node id
-                {getFilePlan(FILE_PLAN_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE},
-                // transfer container
-                {getTransferContainer(TRANSFERS_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE},
-                // a record category
-                {category.getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE},
-                // unfiled records root
-                {getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId(), SC_BAD_REQUEST,
-                        INVALID_TYPE_ERROR_MESSAGE},
-                // an arbitrary unfiled records folder
-                {createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " +
-                        getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), SC_BAD_REQUEST,
-                        INVALID_TYPE_ERROR_MESSAGE},
-                // folder,
-                {dataContent.usingAdmin().usingSite(testSite).createFolder().getNodeRef(), SC_BAD_REQUEST,
-                        INVALID_TYPE_ERROR_MESSAGE},
-                // document locked
-                {contentLocked.getNodeRefWithoutVersion(), SC_INTERNAL_SERVER_ERROR, LOCKED_FILE_ERROR_MESSAGE}
-        };
+        return new Object[][]
+                {       // file plan node id
+                        { getFilePlan(FILE_PLAN_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
+                        //transfer container
+                        { getTransferContainer(TRANSFERS_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
+                        // a record category
+                        { category.getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
+                        // unfiled records root
+                        { getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId(), SC_BAD_REQUEST,
+                                INVALID_TYPE_ERROR_MESSAGE },
+                        // an arbitrary unfiled records folder
+                        { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " +
+                                getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), SC_BAD_REQUEST,
+                                INVALID_TYPE_ERROR_MESSAGE },
+                        //folder,
+                        { dataContent.usingAdmin().usingSite(testSite).createFolder().getNodeRef(), SC_BAD_REQUEST,
+                                INVALID_TYPE_ERROR_MESSAGE },
+                        //document locked
+                        { contentLocked.getNodeRefWithoutVersion(), SC_INTERNAL_SERVER_ERROR, LOCKED_FILE_ERROR_MESSAGE }
+                };
     }
 
     /**
-     * Given a node that is not a document/record/ record folder ( a valid node type to be added to hold) And a hold And user without right permission to add to hold When I use the existing REST API to add the node to the hold Then the node is not added to the hold And the node is not frozen
+     * Given a node that is not a document/record/ record folder ( a valid node type to be added to hold)
+     * And a hold
+     * And user without right permission to add to hold
+     * When I use the existing REST API to add the node to the hold
+     * Then the node is not added to the hold
+     * And the node is not frozen
      *
      * @throws Exception
      */
-    @Test(dataProvider = "invalidNodesForAddToHold")
+    @Test (dataProvider = "invalidNodesForAddToHold")
     public void addInvalidNodesToHold(String itemNodeRef, int responseCode, String errorMessage) throws Exception
     {
         STEP("Add the node to the hold ");
@@ -330,12 +354,12 @@ public class AddToHoldsTests extends BaseRMRestTest
         assertFalse(hasAspect(itemNodeRef, FROZEN_ASPECT));
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void cleanUpAddContentToHold()
     {
         holdsAPI.deleteHold(getAdminUser(), holdNodeRef);
         dataSite.usingAdmin().deleteSite(testSite);
         users.forEach(user -> getDataUser().usingAdmin().deleteUser(user));
-        nodesToBeClean.forEach(category -> deleteRecordCategory(category));
+        nodesToBeClean.forEach( category -> deleteRecordCategory(category));
     }
 }

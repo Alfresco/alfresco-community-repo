@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,10 +26,6 @@
  */
 package org.alfresco.rest.rm.community.files;
 
-import static org.springframework.http.HttpStatus.ACCEPTED;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
-
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
@@ -40,16 +36,11 @@ import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import java.io.File;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -64,8 +55,15 @@ import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
+import org.alfresco.utility.model.TestGroup;
 
 /**
  * API tests for declaring a document version as record and filing to a record folder location within the file plan
@@ -73,7 +71,7 @@ import org.alfresco.utility.model.UserModel;
  * @author Rodica Sutu
  * @since 3.4
  */
-@AlfrescoTest(jira = "APPS-35")
+@AlfrescoTest (jira = "APPS-35")
 public class FileVersionAsRecordTests extends BaseRMRestTest
 {
     private final static String DESTINATION_PATH_NOT_FOUND_EXC = "Unable to execute declare-version-record action, " +
@@ -84,7 +82,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
             "action, because the destination path is not a record folder.";
     private final static String ACCESS_DENIED_EXC = "Access Denied.  You do not have the appropriate " +
             "permissions to perform this operation.";
-    private final static String HOLD_NAME = getRandomName("holdName");
+      private final static String HOLD_NAME = getRandomName("holdName");
 
     private UserModel userFillingPermission, userReadOnlyPermission;
     private SiteModel publicSite;
@@ -102,7 +100,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     @Autowired
     private HoldsAPI holdsAPI;
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void declareAndFileVersionAsRecordSetup()
     {
         STEP("Create test collaboration site to store documents in.");
@@ -130,17 +128,21 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
                 ROLE_RM_POWER_USER, PERMISSION_READ_RECORDS);
     }
 
-    @BeforeMethod(alwaysRun = true)
+    @BeforeMethod (alwaysRun = true)
     public void createDocument()
     {
         STEP("Create a document in the collaboration site");
         testFile = dataContent.usingSite(publicSite)
-                .usingAdmin()
-                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                              .usingAdmin()
+                              .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
     }
 
     /**
-     * Given I am calling the "declare version as record" action And I am not providing a location parameter value When I execute the action Then the document is declared as a version record And is placed in the Unfiled Records location
+     * Given I am calling the "declare version as record" action
+     * And I am not providing a location parameter value
+     * When I execute the action
+     * Then the document is declared as a version record
+     * And is placed in the Unfiled Records location
      */
     @Test
     public void declareVersionAndFileNoLocationUsingActionsAPI() throws Exception
@@ -154,7 +156,11 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     }
 
     /**
-     * Given I am calling the "declare version as record" action And I provide a valid record folder in the location parameter When I execute the action Then the document is declared as a version record And is filed to the record folder specified
+     * Given I am calling the "declare version as record" action
+     * And I provide a valid record folder in the location parameter
+     * When I execute the action
+     * Then the document is declared as a version record
+     * And is filed to the record folder specified
      */
     @Test
     public void fileVersionAsRecordToValidLocationUsingActionsAPI() throws Exception
@@ -171,33 +177,39 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     /**
      * Invalid destination paths where version records can't be filed
      */
-    @DataProvider(name = "invalidDestinationPaths")
+    @DataProvider (name = "invalidDestinationPaths")
     public Object[][] getInvalidDestinationPaths()
     {
-        return new String[][]{
-                {"/", DESTINATION_PATH_NOT_FOUND_EXC},
-                {"Unfiled Records", INVALID_DESTINATION_PATH_EXC},
-                {"Transfers", INVALID_DESTINATION_PATH_EXC},
-                {"Holds", INVALID_DESTINATION_PATH_EXC},
-                {"rm/documentlibrary", DESTINATION_PATH_NOT_FOUND_EXC},
-                {recordCategory.getName(), DESTINATION_PATH_NOT_RECORD_FOLDER_EXC},
-                // a closed record folder
-                {Utility.buildPath(recordCategory.getName(), closedRecordFolder.getName()),
-                        ACCESS_DENIED_EXC},
-                // a frozen record folder
-                {Utility.buildPath(recordCategory.getName(), heldRecordFolder.getName()),
-                        ACCESS_DENIED_EXC},
-                // an arbitrary unfiled records folder
-                {"Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC},
-                // a collaboration site folder
-                {testFolder.getCmisLocation(), DESTINATION_PATH_NOT_FOUND_EXC}
-        };
+        return new String[][]
+                {
+                        { "/", DESTINATION_PATH_NOT_FOUND_EXC },
+                        { "Unfiled Records", INVALID_DESTINATION_PATH_EXC },
+                        { "Transfers", INVALID_DESTINATION_PATH_EXC },
+                        { "Holds", INVALID_DESTINATION_PATH_EXC },
+                        { "rm/documentlibrary", DESTINATION_PATH_NOT_FOUND_EXC },
+                        { recordCategory.getName(), DESTINATION_PATH_NOT_RECORD_FOLDER_EXC },
+                        // a closed record folder
+                        { Utility.buildPath(recordCategory.getName(), closedRecordFolder.getName()),
+                                ACCESS_DENIED_EXC },
+                         // a frozen record folder
+                        { Utility.buildPath(recordCategory.getName(), heldRecordFolder.getName()),
+                                ACCESS_DENIED_EXC },
+                        // an arbitrary unfiled records folder
+                        { "Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC },
+                        // a collaboration site folder
+                        { testFolder.getCmisLocation(), DESTINATION_PATH_NOT_FOUND_EXC }
+                };
     }
 
     /**
-     * Given I am calling the "declare version as record" action And I provide an invalid record folder in the path parameter When I execute the action Then I receive an error indicating that I have attempted to file version as record a document into an invalid record folder And the document is not declared as a version record
+     * Given I am calling the "declare version as record" action
+     * And I provide an invalid record folder in the path parameter
+     * When I execute the action
+     * Then I receive an error indicating that I have attempted to file version as record a document into an invalid
+     * record folder
+     * And the document is not declared as a version record
      */
-    @Test(dataProvider = "invalidDestinationPaths", groups = {TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE})
+    @Test (dataProvider = "invalidDestinationPaths", groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
     @Ignore
     public void declareVersionAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
@@ -210,7 +222,10 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     }
 
     /**
-     * Given I am an user with read only permissions on a record folder When I declare and file a version record to the record folder Then I receive an error indicating that the access is denied And the document is not declared as a record
+     * Given I am an user with read only permissions on a record folder
+     * When I declare and file a version record to the record folder
+     * Then I receive an error indicating that the access is denied
+     * And the document is not declared as a record
      */
     @Test
     public void declareAndFileByUserWithReadOnlyPermission() throws Exception
@@ -225,14 +240,18 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     }
 
     /**
-     * Given I am calling the "declare version as record" action for a minor document version And I am not providing a path parameter value When I execute the action Then the document version is declared as a version record And is placed in the Unfiled Records location
+     * Given I am calling the "declare version as record" action for a minor document version
+     * And I am not providing a path parameter value
+     * When I execute the action
+     * Then the document version is declared as a version record
+     * And is placed in the Unfiled Records location
      */
     @Test
     public void declareVersionAsRecordMinorVersionUsingActionsAPI() throws Exception
     {
         STEP("Update document in the collaboration site");
         dataContent.usingSite(publicSite).usingAdmin().usingResource(testFile).updateContent("This is the new content" +
-                "for " + testFile.getName());
+               "for " + testFile.getName());
 
         STEP("Declare document version as record with providing a location parameter value using v1 actions api");
         getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFileVersionAsRecord(testFile,
@@ -244,7 +263,11 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     }
 
     /**
-     * Given I am calling the "declare version as record" action for a major document version And I am not providing a path parameter value When I execute the action Then the document version is declared as a version record version And is placed in the Unfiled Records location
+     * Given I am calling the "declare version as record" action for a major document version
+     * And I am not providing a path parameter value
+     * When I execute the action
+     * Then the document version is declared as a version record version
+     * And is placed in the Unfiled Records location
      */
     @Test
     public void declareVersionAsRecordMajorVersionUsingActionsAPI() throws Exception
@@ -262,16 +285,16 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
                 "the record folder");
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void declareAndFileVersionAsRecordCleanUp()
     {
         holdsAPI.deleteHold(getAdminUser(), holdNodeRef);
         deleteRecordCategory(recordCategory.getId());
 
-        // delete created collaboration site
+        //delete created collaboration site
         dataSite.deleteSite(publicSite);
 
-        // delete users
+        //delete users
         getDataUser().deleteUser(userFillingPermission);
         getDataUser().deleteUser(userReadOnlyPermission);
     }

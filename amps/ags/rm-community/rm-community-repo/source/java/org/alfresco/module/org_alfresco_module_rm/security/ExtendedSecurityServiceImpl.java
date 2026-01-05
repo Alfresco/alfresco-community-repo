@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -35,6 +35,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -76,13 +78,15 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         RecordsManagementModel,
         ApplicationListener<ContextRefreshedEvent>
 {
+    private static final Log LOGGER = LogFactory.getLog(ExtendedSecurityServiceImpl.class);
+
+    /** max page size for authority query */
+    private static final int MAX_ITEMS = 50;
+
     /** ipr group names */
     static final String ROOT_IPR_GROUP = "INPLACE_RECORD_MANAGEMENT";
     static final String READER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "R";
     static final String WRITER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "W";
-
-    /** max page size for authority query */
-    private static final int MAX_ITEMS = 50;
 
     /** File plan service */
     private FilePlanService filePlanService;
@@ -517,13 +521,34 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     private boolean isIPRGroupTrueMatch(String group, Set<String> authorities)
     {
         // Remove GROUP_EVERYONE for proper comparison as GROUP_EVERYONE is never included in an IPR group
+        // and also remove authorities that do not exist but may be associated to a node
         Set<String> plainAuthorities = new HashSet<String>();
+
         if (authorities != null)
         {
-            plainAuthorities.addAll(authorities);
-            plainAuthorities.remove(PermissionService.ALL_AUTHORITIES);
+            for (String authority : authorities)
+            {
+                if (!authorityService.authorityExists(authority))
+                {
+                    LOGGER.warn("Authority " + authority + " does not exist and will not be considered for the extended security group");
+                    continue;
+                }
+
+                if (!PermissionService.ALL_AUTHORITIES.equals(authority))
+                {
+                    plainAuthorities.add(authority);
+                }
+            }
         }
+
         Set<String> contained = authorityService.getContainedAuthorities(null, group, true);
+
+        if (LOGGER.isTraceEnabled())
+        {
+            LOGGER.trace("IPR Group True Match validation: " + "incoming: " + String.join(",", plainAuthorities)
+                    + "; in pre-existing group " + group + ": " + String.join(",", contained));
+        }
+
         return contained.equals(plainAuthorities);
     }
 
@@ -642,7 +667,13 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             {
                 for (String child : children)
                 {
-                    if (authorityService.authorityExists(child) && !PermissionService.ALL_AUTHORITIES.equals(child))
+                    if (!authorityService.authorityExists(child))
+                    {
+                        LOGGER.warn("Authority " + child + " does not exist and will not be added to the extended security group");
+                        continue;
+                    }
+
+                    if (!PermissionService.ALL_AUTHORITIES.equals(child))
                     {
                         authorityService.addAuthority(group, child);
                     }

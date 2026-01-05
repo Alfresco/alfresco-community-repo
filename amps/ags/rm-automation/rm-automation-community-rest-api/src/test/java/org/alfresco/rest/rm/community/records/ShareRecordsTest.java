@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -48,7 +48,7 @@ import org.alfresco.test.AlfrescoTest;
 
 /**
  * Tests to cover share action for records
- * 
+ *
  * @author Kavit Shah
  */
 public class ShareRecordsTest extends BaseRMRestTest

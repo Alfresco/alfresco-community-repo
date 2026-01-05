@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -95,7 +95,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     /**
      * <pre>
      * Given a document that is not a record And I have write permissions on the document When I declare the document as a record Then it is successfully moved into the unfiled record container And it is renamed to reflect the record identifier And it is now a record And it remains a secondary child of the starting location where I can still view it
-     * 
+     *
      * <pre>
      *
      * RM-6779 Given I declare a record using the v1 API When I do not provide a location parameter Then the record is declared in the unfiled folder
@@ -169,7 +169,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * When I declare the document as a record
      * Then I get a permission denied exception
      * </pre>
-     * 
+     *
      * @throws Exception
      *             for malformed JSON API response
      */

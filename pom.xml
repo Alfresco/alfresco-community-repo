@@ -48,7 +48,7 @@
         <dependency.alfresco-hb-data-sender.version>1.1.1</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-trashcan-cleaner.version>2.4.2</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.5</dependency.alfresco-jlan.version>
-        <dependency.alfresco-server-root.version>7.0.2</dependency.alfresco-server-root.version>
+        <dependency.alfresco-server-root.version>8.0.0</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.alfresco-transform-core.version>5.2.5</dependency.alfresco-transform-core.version>

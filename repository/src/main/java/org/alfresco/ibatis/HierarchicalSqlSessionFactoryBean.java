@@ -32,6 +32,7 @@ import static org.springframework.util.StringUtils.tokenizeToStringArray;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.Locale;
 import java.util.Properties;
 import javax.sql.DataSource;
 
@@ -405,7 +406,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
         try (Connection con = dataSource.getConnection())
         {
             String driverName = con.getMetaData().getDriverName();
-            if (driverName != null && driverName.contains("MariaDB"))
+            if (driverName != null && driverName.toLowerCase(Locale.ROOT).contains("mariadb"))
             {
                 fetchsize = "1";
             }

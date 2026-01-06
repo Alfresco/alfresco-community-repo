@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -211,6 +211,23 @@ public class FilePlanComponentsApiUtils
     public void setSites(RMSites sites)
     {
         this.sites = sites;
+    }
+
+    /**
+     * lookup node and validate type based on the file plan type
+     *
+     * @param nodeId
+     * @return
+     * @throws EntityNotFoundException
+     */
+    public NodeRef lookupAndValidateFilePlan(String nodeId) throws EntityNotFoundException
+    {
+        QName filePlanType = getFilePlanType();
+        if (filePlanType == null)
+        {
+            throw new EntityNotFoundException(nodeId);
+        }
+        return lookupAndValidateNodeType(nodeId, filePlanType);
     }
 
     /**

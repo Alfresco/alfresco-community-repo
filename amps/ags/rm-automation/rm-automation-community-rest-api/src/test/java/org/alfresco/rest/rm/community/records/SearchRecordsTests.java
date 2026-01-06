@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -73,7 +73,7 @@ import org.alfresco.utility.model.UserModel;
 
 /**
  * Tests the search of records in Records Search page
- * 
+ *
  * @author Kavit Shah
  */
 public class SearchRecordsTests extends BaseRMRestTest

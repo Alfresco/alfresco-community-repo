@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -89,7 +89,7 @@ public class NonElectronicRecordTests extends BaseRMRestTest
      * Then the non-electronic record is created
      * And the details of the new record are returned
      * </pre>
-     * 
+     *
      * @throws Exception
      *             if record can't be created
      */
@@ -196,9 +196,9 @@ public class NonElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * 
+     *
      * and
-     * 
+     *
      * <pre>
      *
      * Given a parent container that is an unfiled record folder or the root unfiled record container
@@ -354,7 +354,7 @@ public class NonElectronicRecordTests extends BaseRMRestTest
      * Checks whether the user exists in RM site and creates it if required, with password identical to user name. Note the role is a Core API role, not an RM role. <br>
      * For already existing users, no site membership or role verification is performed.
      * <p>
-     * 
+     *
      * @param userName
      *            user name to add
      */

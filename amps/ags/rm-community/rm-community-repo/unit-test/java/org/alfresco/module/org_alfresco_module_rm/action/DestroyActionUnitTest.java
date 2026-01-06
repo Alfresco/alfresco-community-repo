@@ -33,6 +33,7 @@ import java.util.List;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 
+@SuppressWarnings({"PMD.TestClassWithoutTestCases", "PMD.JUnit4TestShouldUseTestAnnotation"})
 public class DestroyActionUnitTest extends BaseRMTestCase {
 
     private DestroyAction destroyAction;
@@ -50,7 +51,7 @@ public class DestroyActionUnitTest extends BaseRMTestCase {
         destroyAction = (DestroyAction) applicationContext.getBean("destroy");
     }
 
-    public void testDestroyActionAuditedImmediatelyTrue() throws Exception {
+    public void testDestroyActionAuditedImmediatelyTrue() {
         assertTrue("DestroyAction bean should be auditedImmediately so ghosted and non-ghosted records are recorded",
                 destroyAction.isAuditedImmediately());
     }

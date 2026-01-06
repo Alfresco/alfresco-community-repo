@@ -35,7 +35,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0      
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -64,7 +64,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0      
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh

@@ -46,6 +46,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -100,9 +104,6 @@ import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility class that handles common api endpoint tasks
@@ -121,7 +122,7 @@ public class FilePlanComponentsApiUtils
     public static final String RM_SITE_ID = "rm";
     public static final List<String> CONTAINERS_FOR_CLASSIFIABLE_CHILDREN_ALIAS = Arrays.asList(
             FILE_PLAN_ALIAS, UNFILED_ALIAS);
-    //public static String PARAM_RELATIVE_PATH = "relativePath";
+    // public static String PARAM_RELATIVE_PATH = "relativePath";
 
     // excluded properties
     public static final List<QName> TYPES_CAN_CREATE = Arrays.asList(
@@ -201,7 +202,7 @@ public class FilePlanComponentsApiUtils
     {
         this.authenticationUtil = authenticationUtil;
     }
-    
+
     public void setActivityPoster(ActivityPoster poster)
     {
         this.activityPoster = poster;
@@ -210,6 +211,23 @@ public class FilePlanComponentsApiUtils
     public void setSites(RMSites sites)
     {
         this.sites = sites;
+    }
+
+    /**
+     * lookup node and validate type based on the file plan type
+     *
+     * @param nodeId
+     * @return
+     * @throws EntityNotFoundException
+     */
+    public NodeRef lookupAndValidateFilePlan(String nodeId) throws EntityNotFoundException
+    {
+        QName filePlanType = getFilePlanType();
+        if (filePlanType == null)
+        {
+            throw new EntityNotFoundException(nodeId);
+        }
+        return lookupAndValidateNodeType(nodeId, filePlanType);
     }
 
     /**
@@ -259,10 +277,10 @@ public class FilePlanComponentsApiUtils
         if (!nodeType.equals(expectedNodeType))
         {
             throw new InvalidArgumentException("The given id:'" + nodeId + "' (nodeType:" + nodeType.toString()
-            + ") is not valid for this endpoint. Expected nodeType is:" + expectedNodeType.toString());
+                    + ") is not valid for this endpoint. Expected nodeType is:" + expectedNodeType.toString());
         }
 
-        if(StringUtils.isNotBlank(relativePath))
+        if (StringUtils.isNotBlank(relativePath))
         {
             nodeRef = lookupAndValidateRelativePath(nodeRef, relativePath, readOnlyRelativePath, expectedNodeType);
         }
@@ -281,14 +299,15 @@ public class FilePlanComponentsApiUtils
 
         NodeRef nodeRef = lookupByAllowedPlaceholders(nodeId, allowedPlaceholders);
         QName nodeType = nodeService.getType(nodeRef);
-        if(!dictionaryService.isSubClass(nodeType, TYPE_FOLDER))
+        if (!dictionaryService.isSubClass(nodeType, TYPE_FOLDER))
         {
             throw new InvalidArgumentException("The given id:'" + nodeId + "' (nodeType:" + nodeType.toString()
-            + ") is not valid for this endpoint. Expected nodeType is:" + TYPE_FOLDER.toString());
+                    + ") is not valid for this endpoint. Expected nodeType is:" + TYPE_FOLDER.toString());
         }
 
         return nodeRef;
     }
+
     /**
      * Lookup node by placeholder from allowed placeholder list
      *
@@ -371,12 +390,13 @@ public class FilePlanComponentsApiUtils
         {
             nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         }
-        
+
         return nodeRef;
     }
 
     /**
      * TODO
+     * 
      * @param parameters
      * @return
      */
@@ -391,10 +411,14 @@ public class FilePlanComponentsApiUtils
     /**
      * Write content to file
      *
-     * @param nodeRef  the node to write the content to
-     * @param fileName  the name of the file (used for guessing the file's mimetype)
-     * @param stream  the input stream to write
-     * @param guessEncoding  whether to guess stream encoding
+     * @param nodeRef
+     *            the node to write the content to
+     * @param fileName
+     *            the name of the file (used for guessing the file's mimetype)
+     * @param stream
+     *            the input stream to write
+     * @param guessEncoding
+     *            whether to guess stream encoding
      */
     public void writeContent(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding)
     {
@@ -407,7 +431,8 @@ public class FilePlanComponentsApiUtils
             {
                 // quick/weak guess based on file extension
                 writer.setMimetype(mimeType);
-            } else
+            }
+            else
             {
                 // stronger guess based on file stream
                 writer.guessMimetype(fileName);
@@ -423,14 +448,16 @@ public class FilePlanComponentsApiUtils
                 try
                 {
                     is.reset();
-                } catch (IOException ioe)
+                }
+                catch (IOException ioe)
                 {
                     if (LOGGER.isWarnEnabled())
                     {
                         LOGGER.warn("Failed to reset stream after trying to guess encoding: " + ioe.getMessage());
                     }
                 }
-            } else
+            }
+            else
             {
                 is = stream;
             }
@@ -449,7 +476,7 @@ public class FilePlanComponentsApiUtils
         {
             if (cioe.getCause() instanceof NodeLockedException)
             {
-                throw (NodeLockedException)cioe.getCause();
+                throw (NodeLockedException) cioe.getCause();
             }
             throw cioe;
         }
@@ -457,9 +484,13 @@ public class FilePlanComponentsApiUtils
 
     /**
      * Helper method that guesses the encoding of a stream of data
-     * @param in  the stream to guess the encoding for
-     * @param mimeType  the mimetype of the file
-     * @param close  if true the stream will be closed at the end
+     * 
+     * @param in
+     *            the stream to guess the encoding for
+     * @param mimeType
+     *            the mimetype of the file
+     * @param close
+     *            if true the stream will be closed at the end
      * @return the stream encoding
      */
     private String guessEncoding(InputStream in, String mimeType, boolean close)
@@ -494,15 +525,15 @@ public class FilePlanComponentsApiUtils
     }
 
     /**
-     * Helper method that creates a relative path if it doesn't already exist
-     * The relative path will be build with nodes of the type specified in nodesType
-     * If the relative path already exists the method validates if the last element is of type nodesType
-     * The method does not validate the type of parentNodeRef
+     * Helper method that creates a relative path if it doesn't already exist The relative path will be build with nodes of the type specified in nodesType If the relative path already exists the method validates if the last element is of type nodesType The method does not validate the type of parentNodeRef
      *
-     * @param parentNodeRef  the first node of the path
-     * @param relativePath  a string representing the relative path in the format "Folder1/Folder2/Folder3"
-     * @param nodesType  the type of all the containers in the path
-     * @return  the last element of the relative path
+     * @param parentNodeRef
+     *            the first node of the path
+     * @param relativePath
+     *            a string representing the relative path in the format "Folder1/Folder2/Folder3"
+     * @param nodesType
+     *            the type of all the containers in the path
+     * @return the last element of the relative path
      */
     public NodeRef lookupAndValidateRelativePath(final NodeRef parentNodeRef, String relativePath, QName nodesType)
     {
@@ -510,17 +541,17 @@ public class FilePlanComponentsApiUtils
     }
 
     /**
-     * Helper method that creates a relative path if it doesn't already exist and if relative path is not read only.
-     * If relative path is read only an exception will be thrown if the provided relative path does not exist.
-     * The relative path will be build with nodes of the type specified in nodesType
-     * If the relative path already exists the method validates if the last element is of type nodesType
-     * The method does not validate the type of parentNodeRef
+     * Helper method that creates a relative path if it doesn't already exist and if relative path is not read only. If relative path is read only an exception will be thrown if the provided relative path does not exist. The relative path will be build with nodes of the type specified in nodesType If the relative path already exists the method validates if the last element is of type nodesType The method does not validate the type of parentNodeRef
      *
-     * @param parentNodeRef  the first node of the path
-     * @param relativePath  a string representing the relative path in the format "Folder1/Folder2/Folder3"
-     * @param readOnlyRelativePath the flag that indicates if the relativePath should be created if doesn't exist or not
-     * @param nodesType  the type of all the containers in the path
-     * @return  the last element of the relative path
+     * @param parentNodeRef
+     *            the first node of the path
+     * @param relativePath
+     *            a string representing the relative path in the format "Folder1/Folder2/Folder3"
+     * @param readOnlyRelativePath
+     *            the flag that indicates if the relativePath should be created if doesn't exist or not
+     * @param nodesType
+     *            the type of all the containers in the path
+     * @return the last element of the relative path
      */
     public NodeRef lookupAndValidateRelativePath(final NodeRef parentNodeRef, String relativePath, boolean readOnlyRelativePath, QName nodesType)
     {
@@ -536,9 +567,7 @@ public class FilePlanComponentsApiUtils
             return parentNodeRef;
         }
 
-        /*
-         * Get the latest existing path element
-         */
+        /* Get the latest existing path element */
         NodeRef lastNodeRef = parentNodeRef;
         int i = 0;
         for (; i < pathElements.size(); i++)
@@ -546,8 +575,7 @@ public class FilePlanComponentsApiUtils
             final String pathElement = pathElements.get(i);
             final NodeRef contextParentNodeRef = lastNodeRef;
             // Navigation should not check permissions
-            NodeRef child = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-            {
+            NodeRef child = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
                 @Override
                 public NodeRef doWork() throws Exception
                 {
@@ -555,25 +583,25 @@ public class FilePlanComponentsApiUtils
                 }
             });
 
-            if(child == null)
+            if (child == null)
             {
                 break;
             }
             lastNodeRef = child;
         }
-        if(i == pathElements.size())
+        if (i == pathElements.size())
         {
             QName nodeType = nodeService.getType(lastNodeRef);
-            if(!nodeType.equals(nodesType))
+            if (!nodeType.equals(nodesType))
             {
-                throw new InvalidArgumentException("The given id:'"+ parentNodeRef.getId() +"' and the relative path '"+ relativePath + "' reach a node type invalid for this endpoint."
-                            + " Expected nodeType is:" + nodesType.toString() + ". Actual nodeType is:" + nodeType);
+                throw new InvalidArgumentException("The given id:'" + parentNodeRef.getId() + "' and the relative path '" + relativePath + "' reach a node type invalid for this endpoint."
+                        + " Expected nodeType is:" + nodesType.toString() + ". Actual nodeType is:" + nodeType);
             }
             return lastNodeRef;
         }
         else
         {
-            if(!readOnlyRelativePath)
+            if (!readOnlyRelativePath)
             {
                 pathElements = pathElements.subList(i, pathElements.size());
             }
@@ -583,17 +611,15 @@ public class FilePlanComponentsApiUtils
             }
         }
 
-        /*
-         * Starting from the latest existing element create the rest of the elements
-         */
-        if(nodesType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER))
+        /* Starting from the latest existing element create the rest of the elements */
+        if (nodesType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER))
         {
             for (String pathElement : pathElements)
             {
                 lastNodeRef = fileFolderService.create(lastNodeRef, pathElement, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
             }
         }
-        else if(nodesType.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY))
+        else if (nodesType.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY))
         {
             for (String pathElement : pathElements)
             {
@@ -611,7 +637,9 @@ public class FilePlanComponentsApiUtils
 
     /**
      * Helper method that parses a string representing a file path and returns a list of element names
-     * @param path the file path represented as a string
+     * 
+     * @param path
+     *            the file path represented as a string
      * @return a list of file path element names
      */
     private List<String> getPathElements(String path)
@@ -628,15 +656,17 @@ public class FilePlanComponentsApiUtils
         }
         return pathElements;
     }
+
     /**
      * Helper method that converts a map of String properties into a map of QName properties
+     * 
      * @param properties
      * @return a map of properties
      */
     public Map<QName, Serializable> mapToNodeProperties(Map<String, Object> properties)
     {
         Map<QName, Serializable> response = null;
-        if(properties != null)
+        if (properties != null)
         {
             response = nodes.mapToNodeProperties(properties);
         }
@@ -646,9 +676,12 @@ public class FilePlanComponentsApiUtils
     /**
      * Create an RM node
      *
-     * @param parentNodeRef  the parent of the node
-     * @param nodeInfo  the node infos to create
-     * @param parameters  the object to get the parameters passed into the request
+     * @param parentNodeRef
+     *            the parent of the node
+     * @param nodeInfo
+     *            the node infos to create
+     * @param parameters
+     *            the object to get the parameters passed into the request
      * @return the new node
      */
     public NodeRef createRMNode(NodeRef parentNodeRef, RMNode nodeInfo, Parameters parameters)
@@ -707,7 +740,7 @@ public class FilePlanComponentsApiUtils
         {
             throw new InvalidArgumentException("The given type:'" + nodeType + "' is invalid '");
         }
-        catch(DuplicateAttributeException ex)
+        catch (DuplicateAttributeException ex)
         {
             // This exception can occur when setting a custom identifier that already exists
             throw new IntegrityException(ex.getMessage(), null);
@@ -719,9 +752,12 @@ public class FilePlanComponentsApiUtils
     /**
      * Upload a record
      *
-     * @param parentNodeRef  the parent of the record
-     * @param uploadInfo  the infos of the uploaded record
-     * @param parameters  the object to get the parameters passed into the request
+     * @param parentNodeRef
+     *            the parent of the record
+     * @param uploadInfo
+     *            the infos of the uploaded record
+     * @param parameters
+     *            the object to get the parameters passed into the request
      * @return the new record
      */
     public NodeRef uploadRecord(NodeRef parentNodeRef, UploadInfo uploadInfo, Parameters parameters)
@@ -772,9 +808,9 @@ public class FilePlanComponentsApiUtils
 
     /**
      * Returns a List of filter properties specified by request parameters.
-     * @param parameters The {@link Parameters} object to get the parameters passed into the request
-     *        including:
-     *        - filter, sort &amp; paging params (where, orderBy, skipCount, maxItems)
+     * 
+     * @param parameters
+     *            The {@link Parameters} object to get the parameters passed into the request including: - filter, sort &amp; paging params (where, orderBy, skipCount, maxItems)
      * @return The list of {@link FilterProp}. Can be null.
      */
     public List<FilterProp> getListChildrenFilterProps(Parameters parameters, Set<String> listFolderChildrenEqualsQueryProperties)
@@ -800,21 +836,25 @@ public class FilePlanComponentsApiUtils
                 filterProps = new ArrayList<>(1);
                 filterProps.add(new FilterPropBoolean(RecordsManagementModel.PROP_IS_CLOSED, isClosed));
             }
-            //TODO see how we can filter for categories that have retention schedule
-//            Boolean hasRetentionSchedule = propertyWalker.getProperty(RMNode.PARAM_HAS_RETENTION_SCHEDULE, WhereClauseParser.EQUALS, Boolean.class);
-//            if (hasRetentionSchedule != null)
-//            {
-//                filterProps = new ArrayList<>(1);
-//            }
+            // TODO see how we can filter for categories that have retention schedule
+            // Boolean hasRetentionSchedule = propertyWalker.getProperty(RMNode.PARAM_HAS_RETENTION_SCHEDULE, WhereClauseParser.EQUALS, Boolean.class);
+            // if (hasRetentionSchedule != null)
+            // {
+            // filterProps = new ArrayList<>(1);
+            // }
         }
         return filterProps;
     }
 
     /**
      * Utility method that updates a node's name and properties
-     * @param nodeRef  the node to update
-     * @param updateInfo  information to update the record with
-     * @param parameters  request parameters
+     * 
+     * @param nodeRef
+     *            the node to update
+     * @param updateInfo
+     *            information to update the record with
+     * @param parameters
+     *            request parameters
      */
     public void updateNode(NodeRef nodeRef, RMNode updateInfo, Parameters parameters)
     {
@@ -850,15 +890,16 @@ public class FilePlanComponentsApiUtils
     /**
      * Validates a record
      *
-     * @param recordId  the id of the record to validate
+     * @param recordId
+     *            the id of the record to validate
      * @return
      */
     public NodeRef validateRecord(String recordId) throws InvalidArgumentException
     {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, recordId);
-        if(!recordService.isRecord(nodeRef))
+        if (!recordService.isRecord(nodeRef))
         {
-            throw new IllegalArgumentException("The given id:'"+ recordId +"' is not valid for this endpoint. This endpoint only supports records.");
+            throw new IllegalArgumentException("The given id:'" + recordId + "' is not valid for this endpoint. This endpoint only supports records.");
         }
         return nodeRef;
     }
@@ -871,9 +912,12 @@ public class FilePlanComponentsApiUtils
     /**
      * Utility method that updates a transfer container's name and properties
      *
-     * @param nodeRef  the node to update
-     * @param transferContainerInfo  information to update the transfer container with
-     * @param parameters  request parameters
+     * @param nodeRef
+     *            the node to update
+     * @param transferContainerInfo
+     *            information to update the transfer container with
+     * @param parameters
+     *            request parameters
      */
     public void updateTransferContainer(NodeRef nodeRef, TransferContainer transferContainerInfo, Parameters parameters)
     {
@@ -904,30 +948,32 @@ public class FilePlanComponentsApiUtils
 
     /**
      * Helper method that generates allowable operation for the provided node
-     * @param nodeRef the node to get the allowable operations for
-     * @param typeQName the type of the provided nodeRef
-     * @return a sublist of [{@link Nodes#OP_DELETE}, {@link Nodes#OP_CREATE}, {@link Nodes#OP_UPDATE}] representing
-     * the allowable operations for the provided node
+     * 
+     * @param nodeRef
+     *            the node to get the allowable operations for
+     * @param typeQName
+     *            the type of the provided nodeRef
+     * @return a sublist of [{@link Nodes#OP_DELETE}, {@link Nodes#OP_CREATE}, {@link Nodes#OP_UPDATE}] representing the allowable operations for the provided node
      */
     protected List<String> getAllowableOperations(NodeRef nodeRef, QName typeQName)
     {
         List<String> allowableOperations = new ArrayList<>();
 
-        boolean isFilePlan =  typeQName.equals(RecordsManagementModel.TYPE_FILE_PLAN);
+        boolean isFilePlan = typeQName.equals(RecordsManagementModel.TYPE_FILE_PLAN);
         boolean isTransferContainer = typeQName.equals(RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
         boolean isUnfiledContainer = typeQName.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
         boolean isHoldsContainer = typeQName.equals(RecordsManagementModel.TYPE_HOLD_CONTAINER);
         boolean isSpecialContainer = isFilePlan || isTransferContainer || isUnfiledContainer || isHoldsContainer;
 
         // DELETE
-        if(!isSpecialContainer &&
+        if (!isSpecialContainer &&
                 capabilityService.getCapability("Delete").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
         {
             allowableOperations.add(Nodes.OP_DELETE);
         }
 
         // CREATE
-        if(TYPES_CAN_CREATE.contains(typeQName) &&
+        if (TYPES_CAN_CREATE.contains(typeQName) &&
                 capabilityService.getCapability("FillingPermissionOnly").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
         {
             allowableOperations.add(Nodes.OP_CREATE);
@@ -950,12 +996,13 @@ public class FilePlanComponentsApiUtils
     public QName getFilePlanType()
     {
         NodeRef filePlanNodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-        if(filePlanNodeRef != null)
+        if (filePlanNodeRef != null)
         {
             return nodeService.getType(filePlanNodeRef);
         }
         return null;
     }
+
     /**
      * Posts activities for given fileInfo
      * 
@@ -997,12 +1044,14 @@ public class FilePlanComponentsApiUtils
                     Activities.RESTAPI_CLIENT, activityInfo.getFileInfo());
         }
     }
+
     /**
-     * Creates a unique file name, if the upload component was configured to
-     * find a new unique name for clashing filenames.
+     * Creates a unique file name, if the upload component was configured to find a new unique name for clashing filenames.
      *
-     * @param parentNodeRef the parent node
-     * @param fileName      the original fileName
+     * @param parentNodeRef
+     *            the parent node
+     * @param fileName
+     *            the original fileName
      * @return a new file name
      */
     private String findUniqueName(NodeRef parentNodeRef, String fileName)

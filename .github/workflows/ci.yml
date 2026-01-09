@@ -219,6 +219,10 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: AppContextExtraTestSuite
             compose-profile: default
+          # Compatibility test with the first Alfresco Base T-Engine compatible version
+          - testSuite: org.alfresco.rest.api.tests.RenditionsTest
+            compose-profile: with-transform-core-aio
+            transformers-tag: 5.2.0
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
@@ -234,7 +238,12 @@ jobs:
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
       - name: "Set transformers tag"
-        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
+        run: |
+          if [ -n "${{ matrix.transformers-tag }}" ]; then
+            echo "TRANSFORMERS_TAG=${{ matrix.transformers-tag }}" >> $GITHUB_ENV
+          else
+            echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
+          fi
       - name: "Set up the environment"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d

@@ -846,6 +846,39 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     }
 
     /**
+     * Find the entity associated with the given value if its cached
+     *
+     * @param value
+     *            The entity value (<tt>null</tt> is not allowed)
+     * @return Returns the key-value pair (existing or <tt>null</tt>)
+     */
+    @SuppressWarnings("unchecked")
+    public Pair<K, V> getCachedEntityByValue(V value)
+    {
+        if (cache == null || value == null)
+        {
+            return null;
+        }
+
+        VK valueKey = entityLookup.getValueKey(value);
+        if (valueKey == null)
+        {
+            return null;
+        }
+
+        // Retrieve the cached value
+        CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
+        K key = (K) cache.get(valueCacheKey);
+
+        if (key != null && !key.equals(VALUE_NOT_FOUND))
+        {
+            return getByKey(key);
+        }
+
+        return null;
+    }
+
+    /**
      * Cache-only operation: Get the key for a given value key (note: not 'value' but 'value key').
      * 
      * @param valueKey

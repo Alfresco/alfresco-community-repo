@@ -3159,7 +3159,8 @@ public class NodesImpl implements Nodes
         return updateExistingFile(null, nodeRef, fileName, contentInfo, stream, parameters, versionMajor, versionComment);
     }
 
-    private String getSiteManagerAuthority(NodeRef nodeRef) {
+    private String getSiteManagerAuthority(NodeRef nodeRef)
+    {
         return AuthenticationUtil.runAsSystem(() -> {
             SiteInfo containingSite = siteService.getSite(nodeRef);
 

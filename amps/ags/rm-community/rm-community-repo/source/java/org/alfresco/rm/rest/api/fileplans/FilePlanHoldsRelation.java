@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
@@ -84,7 +83,7 @@ public class FilePlanHoldsRelation implements
         checkNotBlank("filePlanId", filePlanId);
         mandatory("parameters", parameters);
 
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
+        NodeRef parentNodeRef = apiUtils.lookupAndValidateFilePlan(filePlanId);
         List<NodeRef> holds = holdService.getHolds(parentNodeRef);
 
         List<HoldModel> page = holds.stream()
@@ -107,7 +106,7 @@ public class FilePlanHoldsRelation implements
         mandatory("holds", holds);
         mandatory("parameters", parameters);
 
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
+        NodeRef parentNodeRef = apiUtils.lookupAndValidateFilePlan(filePlanId);
 
         RetryingTransactionCallback<List<NodeRef>> callback = () -> {
             List<NodeRef> createdNodes = new LinkedList<>();

@@ -225,7 +225,7 @@ jobs:
           # Compatibility test with the first Alfresco Base T-Engine compatible version
           - testSuite: org.alfresco.rest.api.tests.RenditionsTest
             compose-profile: with-transform-core-aio
-            transformers-tag: 5.2.0
+            transformers-tag: 5.1.0
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:

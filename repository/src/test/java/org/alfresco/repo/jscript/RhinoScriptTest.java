@@ -142,7 +142,7 @@ public class RhinoScriptTest extends TestCase
                             assertNotNull(obj.get("a", obj));
 
                             // should resolve "obj.a == 1" - JavaScript objects come back as Number
-                            assertEquals(Double.valueOf(1.0), obj.get("a", obj));
+                            assertEquals(1, obj.get("a", obj));
 
                             // try another script eval - this time a function call returning a result
                             result = cx.evaluateString(scope, "function f(x) {return x+1} f(7)", "TestJS2", 1, null);

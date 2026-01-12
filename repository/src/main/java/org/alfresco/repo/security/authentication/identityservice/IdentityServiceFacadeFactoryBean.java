@@ -631,21 +631,34 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private void reconfigureJWKSCache(ConfigurableJWTProcessor<SecurityContext> jwtProcessor)
         {
-            final JWKSource<SecurityContext> cachingJWKSource;
+            if (jwtProcessor == null)
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Missing JWT processor.");
+                return;
+            }
 
-            final Optional<JWKSetSource<SecurityContext>> jwkSource = ofNullable(jwtProcessor)
-                    .map(ConfigurableJWTProcessor::getJWSKeySelector)
-                    .filter(JWSVerificationKeySelector.class::isInstance)
-                    .map(o -> (JWKSetBasedJWKSource<SecurityContext>) ((JWSVerificationKeySelector<SecurityContext>) o).getJWKSource())
-                    .map(JWKSetBasedJWKSource::getJWKSetSource);
-
-            if (jwkSource.isEmpty())
+            if (!(jwtProcessor.getJWSKeySelector() instanceof JWSVerificationKeySelector<?> selector))
             {
                 LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
                 return;
             }
 
-            cachingJWKSource = JWKSourceBuilder.create(jwkSource.get())
+            if (!(selector.getJWKSource() instanceof JWKSetBasedJWKSource<?> jwkSetBasedSource))
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
+                return;
+            }
+
+            @SuppressWarnings("unchecked")
+            final JWKSetSource<SecurityContext> jwkSetSource = ((JWKSetBasedJWKSource<SecurityContext>) jwkSetBasedSource).getJWKSetSource();
+
+            if (jwkSetSource == null)
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Missing JWKSetSource.");
+                return;
+            }
+
+            final JWKSource<SecurityContext> newJWKSCache = JWKSourceBuilder.create(jwkSetSource)
                     .cache(config.getPublicKeyCacheTtl() * 1000L, -1)
                     .rateLimited(false)
                     .refreshAheadCache(false)
@@ -656,7 +669,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     signatureAlgorithms.stream()
                             .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
                             .collect(Collectors.toSet()),
-                    cachingJWKSource));
+                    newJWKSCache));
 
             jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
         }

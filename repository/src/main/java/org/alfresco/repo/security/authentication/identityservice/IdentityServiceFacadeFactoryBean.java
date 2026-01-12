@@ -36,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -60,8 +61,11 @@ import java.util.stream.Collectors;
 
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.source.CachingJWKSetSource;
 import com.nimbusds.jose.jwk.source.DefaultJWKSetCache;
+import com.nimbusds.jose.jwk.source.JWKSetBasedJWKSource;
 import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.nimbusds.jose.jwk.source.RemoteJWKSet;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
@@ -626,48 +630,34 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             signatureAlgorithms.forEach(decoderBuilder::jwsAlgorithm);
             return decoderBuilder
                     .restOperations(rest)
-                    .jwtProcessorCustomizer(this::reconfigureJWKSCache)
+                    .jwtProcessorCustomizer(jwkProcessor -> reconfigureJWKSCache(jwkProcessor, jwkSetUri))
                     .build();
         }
 
-        private void reconfigureJWKSCache(ConfigurableJWTProcessor<SecurityContext> jwtProcessor)
+        private void reconfigureJWKSCache(ConfigurableJWTProcessor<SecurityContext> jwtProcessor, String jwkSetUri)
         {
-            final Optional<RemoteJWKSet<SecurityContext>> jwkSource = ofNullable(jwtProcessor)
-                    .map(ConfigurableJWTProcessor::getJWSKeySelector)
-                    .filter(JWSVerificationKeySelector.class::isInstance)
-                    .map(o -> (JWSVerificationKeySelector<SecurityContext>) o)
-                    .map(JWSVerificationKeySelector::getJWKSource)
-                    .filter(RemoteJWKSet.class::isInstance).map(o -> (RemoteJWKSet<SecurityContext>) o);
-            if (jwkSource.isEmpty())
+            final JWKSource<SecurityContext> cachingJWKSource;
+            try
             {
-                LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
-                return;
+                cachingJWKSource = JWKSourceBuilder.create(new URI(jwkSetUri).toURL())
+                        .cache(config.getPublicKeyCacheTtl() * 1000L, -1)
+                        .rateLimited(false)
+                        .refreshAheadCache(false)
+                        .retrying(true)
+                        .build();
             }
-
-            final Optional<URL> jwkSetUrl = jwkSource.map(RemoteJWKSet::getJWKSetURL);
-            if (jwkSetUrl.isEmpty())
+            catch (MalformedURLException | URISyntaxException e)
             {
                 LOGGER.warn("Not able to reconfigure the JWK Cache. Unknown JWKSetURL.");
                 return;
             }
-
-            final Optional<ResourceRetriever> resourceRetriever = jwkSource.map(RemoteJWKSet::getResourceRetriever);
-            if (resourceRetriever.isEmpty())
-            {
-                LOGGER.warn("Not able to reconfigure the JWK Cache. Unknown ResourceRetriever.");
-                return;
-            }
-
-            final DefaultJWKSetCache cache = new DefaultJWKSetCache(config.getPublicKeyCacheTtl(), -1,
-                    TimeUnit.SECONDS);
-            final JWKSource<SecurityContext> cachingJWKSource = new RemoteJWKSet<>(jwkSetUrl.get(),
-                    resourceRetriever.get(), cache);
 
             jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
                     signatureAlgorithms.stream()
                             .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
                             .collect(Collectors.toSet()),
                     cachingJWKSource));
+
             jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
         }
 

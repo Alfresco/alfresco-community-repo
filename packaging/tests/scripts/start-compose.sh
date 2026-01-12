@@ -39,8 +39,14 @@ fi
 
 echo "Starting ACS stack in ${DOCKER_COMPOSE_PATH}"
 
-export TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)
-export TRANSFORM_ROUTER_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-service.version -q -DforceStdout)
+# If variables are not set from outside, get them from Maven
+if [ -z "$TRANSFORMERS_TAG" ]; then
+  export TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)
+fi
+
+if [ -z "$TRANSFORM_ROUTER_TAG" ]; then
+  export TRANSFORM_ROUTER_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-service.version -q -DforceStdout)
+fi
 
 docker compose ${DOCKER_COMPOSES} --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") up -d
 

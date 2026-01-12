@@ -262,16 +262,26 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     private static OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> createAuthorizationCodeClient(
             RestOperations rest)
     {
+        if (!(rest instanceof RestTemplate restTemplate))
+        {
+            throw new IllegalArgumentException("RestOperations must be an instance of RestTemplate");
+        }
+
         final RestClientAuthorizationCodeTokenResponseClient client = new RestClientAuthorizationCodeTokenResponseClient();
-        client.setRestClient(RestClient.create((RestTemplate) rest));
+        client.setRestClient(RestClient.create(restTemplate));
         return client;
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> createRefreshTokenClient(
             RestOperations rest)
     {
+        if (!(rest instanceof RestTemplate restTemplate))
+        {
+            throw new IllegalArgumentException("RestOperations must be an instance of RestTemplate");
+        }
+
         final RestClientRefreshTokenTokenResponseClient client = new RestClientRefreshTokenTokenResponseClient();
-        client.setRestClient(RestClient.create((RestTemplate) rest));
+        client.setRestClient(RestClient.create(restTemplate));
         return client;
     }
 

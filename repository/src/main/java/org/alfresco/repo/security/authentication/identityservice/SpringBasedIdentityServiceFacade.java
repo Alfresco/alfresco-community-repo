@@ -359,7 +359,12 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         @Override
         public Instant getExpiresAt()
         {
-            return Instant.ofEpochSecond(token.getLifetime());
+            long lifetime = token.getLifetime();
+            if (lifetime <= 0)
+            {
+                return null;
+            }
+            return Instant.now().plusSeconds(lifetime);
         }
     }
 

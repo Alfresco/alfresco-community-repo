@@ -202,7 +202,19 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                 scope);
 
         HTTPResponse httpResponse = tokenRequest.toHTTPRequest().send();
-        var passwordGrantToken = TokenResponse.parse(httpResponse).toSuccessResponse();
+        TokenResponse tokenResponse = TokenResponse.parse(httpResponse);
+
+        if (!tokenResponse.indicatesSuccess())
+        {
+            var errorResponse = tokenResponse.toErrorResponse();
+            throw new OAuth2AuthorizationException(
+                    new org.springframework.security.oauth2.core.OAuth2Error(
+                            errorResponse.getErrorObject().getCode(),
+                            errorResponse.getErrorObject().getDescription(),
+                            null));
+        }
+
+        var passwordGrantToken = tokenResponse.toSuccessResponse();
         return new NimbusAccessTokenAuthorization(passwordGrantToken.getTokens());
     }
 

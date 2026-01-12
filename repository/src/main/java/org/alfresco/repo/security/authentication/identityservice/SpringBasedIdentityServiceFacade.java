@@ -65,6 +65,7 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AccessToken.TokenType;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationExchange;
@@ -208,7 +209,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         {
             var errorResponse = tokenResponse.toErrorResponse();
             throw new OAuth2AuthorizationException(
-                    new org.springframework.security.oauth2.core.OAuth2Error(
+                    new OAuth2Error(
                             errorResponse.getErrorObject().getCode(),
                             errorResponse.getErrorObject().getDescription(),
                             null));

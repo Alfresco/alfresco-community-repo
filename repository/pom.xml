@@ -151,6 +151,11 @@
             <version>1.8.1</version>
         </dependency>
         <dependency>
+            <groupId>org.mozilla</groupId>
+            <artifactId>rhino-tools</artifactId>
+            <version>1.8.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <!-- exclude spring-jcl which is brought in by spring-core -->

@@ -258,10 +258,8 @@ var Filters =
                  filterParams.query = filterQuery + ' +@cm\\:categories:"' + categoryNodeRef + '"';
              }
              else if(categoryNodeRef && Array.isArray(categoryNodeRef)){
-
                  filterData = this.constructCategoryPathQuery(filterData);
                  filterParams.query = filterQuery + 'PATH:"/cm:categoryRoot/cm:generalclassifiable' + filterData + '/*" AND  TYPE:"cm:content"';
-
              }
             else {
                logger.warn("category filter: skipping invalid category node : " + categoryNodeRef);

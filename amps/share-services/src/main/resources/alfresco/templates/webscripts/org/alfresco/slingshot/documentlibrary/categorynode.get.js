@@ -23,18 +23,12 @@ function getCategoryNode()
       }
       else
       {
-
           var queryPath = "/" + catAspect + "/" + encodePath(path);
-          logger.warn ("queryPath from categorynode :"+queryPath);
-
           var query = 'PATH:"/cm:categoryRoot/'+queryPath+'/*" AND  TYPE:"cm:category"';
-
-          logger.debug ("query from categorynode.get.js ="+ query);
-
+          logger.debug ("Query for showing category nodes :"+ query);
           //categoryResults = search.luceneSearch("+PATH:\"" + queryPath + "/*\" AND -PATH:\"" + queryPath + "/member\"");
           categoryResults = search.luceneSearch(query);
-          logger.debug("categoryResults :" + categoryResults);
-
+          logger.debug("Results of query, showing category nodes :" + categoryResults);
       }
       
       // make each result an object and indicate it is selectable in the UI
@@ -43,12 +37,8 @@ function getCategoryNode()
 
            if (evalChildFolders)
            {
-
                hasSubfolders = item.children.length > 0;
-
            }
-           logger.warn("hasSubfolders :" + hasSubfolders);
-
            items.push(
                {
                    node: item,
@@ -56,9 +46,7 @@ function getCategoryNode()
                });
 
        }
-
        items.sort(sortByName);
-
        return (
            {
                items: items

@@ -659,7 +659,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             }
 
             final JWKSource<SecurityContext> newJWKSCache = JWKSourceBuilder.create(jwkSetSource)
-                    .cache(config.getPublicKeyCacheTtl() * 1000L, -1)
+                    .cache(config.getPublicKeyCacheTtl() * 1000L, -1) // TTL provided in config is in seconds.
                     .rateLimited(false)
                     .refreshAheadCache(false)
                     .retrying(true)

@@ -31,8 +31,10 @@ import static java.util.Objects.requireNonNull;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.ResourceOwnerPasswordCredentialsGrant;
@@ -200,7 +202,9 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                 URI.create(clientRegistration.getProviderDetails().getTokenUri()),
                 clientAuth,
                 passwordGrant,
-                scope);
+                scope,
+                null,
+                createRequestMetadata());
 
         HTTPResponse httpResponse = tokenRequest.toHTTPRequest().send();
         TokenResponse tokenResponse = TokenResponse.parse(httpResponse);
@@ -217,6 +221,13 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 
         var passwordGrantToken = tokenResponse.toSuccessResponse();
         return new NimbusAccessTokenAuthorization(passwordGrantToken.getTokens());
+    }
+
+    private Map<String, List<String>> createRequestMetadata()
+    {
+        return clientRegistration.getProviderDetails().getConfigurationMetadata().entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> List.of(String.valueOf(e.getValue()))));
     }
 
     private AbstractOAuth2AuthorizationGrantRequest createRequest(AuthorizationGrant grant)

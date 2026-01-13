@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>26.1.0.21-SNAPSHOT</version>
+    <version>26.1.0.26-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -48,7 +48,7 @@
         <dependency.alfresco-hb-data-sender.version>1.1.1</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-trashcan-cleaner.version>2.4.2</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.5</dependency.alfresco-jlan.version>
-        <dependency.alfresco-server-root.version>7.0.2</dependency.alfresco-server-root.version>
+        <dependency.alfresco-server-root.version>8.0.0</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.alfresco-transform-core.version>5.2.5</dependency.alfresco-transform-core.version>
@@ -116,7 +116,7 @@
         <dependency.json-smart.version>2.5.2</dependency.json-smart.version>
         <alfresco.googledrive.version>4.1.0</alfresco.googledrive.version>
         <alfresco.aos-module.version>3.4.1-A.1</alfresco.aos-module.version>
-        <alfresco.api-explorer.version>25.3.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
+        <alfresco.api-explorer.version>26.1.0-A.1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.4.0</license-maven-plugin.version>

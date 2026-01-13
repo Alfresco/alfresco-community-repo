@@ -243,21 +243,32 @@ var Filters =
               filterParams.query = filterQuery + " +TAG:\"" + search.ISO9075Encode(filterData) + "\"";
               break;
 
-         case "category":
-            // Remove any trailing "/" character
+          case "category":
+
+             // Set search language at first place.
+             filterParams.language = "fts-alfresco";
+             // Remove any trailing "/" character
             if (filterData.charAt(filterData.length - 1) == "/")
             {
                filterData = filterData.slice(0, -1);
             }
 
-            var categoryNodeRef = this.getCategoryNodeRef(filterData);
+             logger.warn("filterData after slice ="+filterData)
+             var categoryNodeRef = this.getCategoryNodeRef(filterData);
+             logger.warn ("categoryNodeRef  = "+categoryNodeRef);
 
-            if (categoryNodeRef && search.findNode(categoryNodeRef) != null) {
-               filterParams.query = filterQuery + ' +@cm\\:categories:"' + categoryNodeRef + '"';
-            } else {
+             if ( categoryNodeRef && categoryNodeRef.length !== 0 && search.findNode(categoryNodeRef) != null) {
+                 filterParams.query = filterQuery + ' +@cm\\:categories:"' + categoryNodeRef + '"';
+             }
+             else if(categoryNodeRef && Array.isArray(categoryNodeRef)){
+
+                 filterData = this.constructCategoryPathQuery(filterData);
+                 filterParams.query = filterQuery + 'PATH:"/cm:categoryRoot/cm:generalclassifiable' + filterData + '/*" AND  TYPE:"cm:content"';
+
+             }
+            else {
                logger.warn("category filter: skipping invalid category node : " + categoryNodeRef);
             }
-            filterParams.language = "fts-alfresco";
             break;
 
          case "aspect":
@@ -283,6 +294,8 @@ var Filters =
    },
 
     getCategoryNodeRef: function(categoryName) {
+
+        // This search for first level. i.e Tags , Langugages etc.
         var results = search.luceneSearch(
             'PATH:"/cm:categoryRoot/cm:generalclassifiable//*" AND @cm\\:name:"' + categoryName + '"'
         );
@@ -290,11 +303,32 @@ var Filters =
         if (results && results.length > 0) {
             return results[0].nodeRef.toString();
         }
-
-        logger.warn("Category not found: " + categoryName);
-        return null;
+        else if (categoryName.includes("/")) {
+            // In case filtered value selected as  nested category node , i.e /Languages/English
+            categoryName = this.constructCategoryPathQuery(categoryName);
+            var ftsQuery =  'PATH:"/cm:categoryRoot/cm:generalclassifiable' + categoryName + '/*"';
+            logger.debug("ftsQuery : " + ftsQuery);
+            var resultForChild = search.luceneSearch(ftsQuery);
+            logger.debug("resultForChild : " + resultForChild);
+            if(resultForChild && Array.isArray(resultForChild) && resultForChild.length >0) {
+                return resultForChild;
+            }else{
+                return [];
+            }
+        }
+        else {
+            logger.warn("Category not found: " + categoryName);
+            return null;
+        }
     },
-
+    /* Construct path query for category , by appending prefix 'cm:' to the filtered value */
+    constructCategoryPathQuery: function (str){
+        str = "/" + str.split("/")
+            .filter(part => part.length > 0)
+            .map(part => "cm:" + search.ISO9075Encode(part))
+            .join("/");
+        return str;
+    },
    constructPathQuery: function(parsedArgs)
    {
       var pathQuery = "";

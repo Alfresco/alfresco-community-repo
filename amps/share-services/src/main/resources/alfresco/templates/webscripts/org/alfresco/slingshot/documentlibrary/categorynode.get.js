@@ -23,31 +23,46 @@ function getCategoryNode()
       }
       else
       {
-         var queryPath = "/" + catAspect + "/" + encodePath(path);
-         categoryResults = search.luceneSearch("+PATH:\"" + queryPath + "/*\" AND -PATH:\"" + queryPath + "/member\"");
+
+          var queryPath = "/" + catAspect + "/" + encodePath(path);
+          logger.warn ("queryPath from categorynode :"+queryPath);
+
+          var query = 'PATH:"/cm:categoryRoot/'+queryPath+'/*" AND  TYPE:"cm:category"';
+
+          logger.debug ("query from categorynode.get.js ="+ query);
+
+          //categoryResults = search.luceneSearch("+PATH:\"" + queryPath + "/*\" AND -PATH:\"" + queryPath + "/member\"");
+          categoryResults = search.luceneSearch(query);
+          logger.debug("categoryResults :" + categoryResults);
+
       }
       
       // make each result an object and indicate it is selectable in the UI
-      for each (item in categoryResults)
-      {
-         if (evalChildFolders)
-         {
-            hasSubfolders = item.children.length > 0;
-         }
+       for each (item in categoryResults)
+       {
 
-         items.push(
-         {
-            node: item,
-            hasSubfolders: hasSubfolders
-         });
-      }
-      
-      items.sort(sortByName);
-      
-      return (
-      {
-         items: items
-      });
+           if (evalChildFolders)
+           {
+
+               hasSubfolders = item.children.length > 0;
+
+           }
+           logger.warn("hasSubfolders :" + hasSubfolders);
+
+           items.push(
+               {
+                   node: item,
+                   hasSubfolders: hasSubfolders
+               });
+
+       }
+
+       items.sort(sortByName);
+
+       return (
+           {
+               items: items
+           });
    }
    catch(e)
    {

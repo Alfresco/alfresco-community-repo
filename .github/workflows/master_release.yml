@@ -35,14 +35,14 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v10.5.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v10.5.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v10.5.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v8.24.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v10.5.0
         with:
           username: ${{ env.GIT_USERNAME }}
           email: ${{ env.GIT_EMAIL }}
@@ -66,14 +66,14 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v10.5.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v10.5.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v10.5.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v8.24.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v10.5.0
         with:
           username: ${{ env.GIT_USERNAME }}
           email: ${{ env.GIT_EMAIL }}

@@ -253,10 +253,7 @@ var Filters =
                filterData = filterData.slice(0, -1);
             }
 
-             logger.warn("filterData after slice ="+filterData)
              var categoryNodeRef = this.getCategoryNodeRef(filterData);
-             logger.warn ("categoryNodeRef  = "+categoryNodeRef);
-
              if ( categoryNodeRef && categoryNodeRef.length !== 0 && search.findNode(categoryNodeRef) != null) {
                  filterParams.query = filterQuery + ' +@cm\\:categories:"' + categoryNodeRef + '"';
              }

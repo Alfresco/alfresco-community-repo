@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -29,25 +29,11 @@ package org.alfresco.repo.security.authentication.identityservice;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
-import java.net.URI;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.ParseException;
-import com.nimbusds.oauth2.sdk.ResourceOwnerPasswordCredentialsGrant;
-import com.nimbusds.oauth2.sdk.Scope;
-import com.nimbusds.oauth2.sdk.TokenRequest;
-import com.nimbusds.oauth2.sdk.TokenResponse;
-import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
-import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
-import com.nimbusds.oauth2.sdk.auth.Secret;
-import com.nimbusds.oauth2.sdk.http.HTTPResponse;
-import com.nimbusds.oauth2.sdk.id.ClientID;
-import com.nimbusds.oauth2.sdk.token.RefreshToken;
-import com.nimbusds.oauth2.sdk.token.Tokens;
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -67,7 +53,6 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AccessToken.TokenType;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
-import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationExchange;
@@ -77,7 +62,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
@@ -89,19 +73,21 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     private static final Instant SOME_INSIGNIFICANT_DATE_IN_THE_PAST = Instant.MIN.plusSeconds(12345);
     private final Map<AuthorizationGrantType, OAuth2AccessTokenResponseClient> clients;
     private final DefaultOAuth2UserService defaultOAuth2UserService;
+    private final PasswordGrantFlowHandler passwordGrantFlowHandler;
     private final ClientRegistration clientRegistration;
     private final JwtDecoder jwtDecoder;
 
-    SpringBasedIdentityServiceFacade(RestOperations restOperations, ClientRegistration clientRegistration,
+    SpringBasedIdentityServiceFacade(RestTemplate restTemplate, ClientRegistration clientRegistration,
             JwtDecoder jwtDecoder)
     {
-        requireNonNull(restOperations);
+        requireNonNull(restTemplate);
         this.clientRegistration = requireNonNull(clientRegistration);
         this.jwtDecoder = requireNonNull(jwtDecoder);
         this.clients = Map.of(
-                AuthorizationGrantType.AUTHORIZATION_CODE, createAuthorizationCodeClient(restOperations),
-                AuthorizationGrantType.REFRESH_TOKEN, createRefreshTokenClient(restOperations));
-        this.defaultOAuth2UserService = createOAuth2UserService(restOperations);
+                AuthorizationGrantType.AUTHORIZATION_CODE, createAuthorizationCodeClient(restTemplate),
+                AuthorizationGrantType.REFRESH_TOKEN, createRefreshTokenClient(restTemplate));
+        this.defaultOAuth2UserService = createOAuth2UserService(restTemplate);
+        this.passwordGrantFlowHandler = new PasswordGrantFlowHandler(clientRegistration);
     }
 
     @Override
@@ -112,7 +98,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         {
             if (authorizationGrant.isPassword())
             {
-                response = passwordGrantFlow(authorizationGrant);
+                response = passwordGrantFlowHandler.passwordGrantFlow(authorizationGrant);
             }
             else
             {
@@ -175,81 +161,6 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         return new SpringDecodedAccessToken(validToken);
     }
 
-    /**
-     * Handles the password grant flow for obtaining an access token. Replacement for Spring Security implementation removed in Spring 7.
-     *
-     * @see <a target="_blank" href= "https://tools.ietf.org/html/rfc6749#section-4.3.2">Section 4.3.2 Access Token Request (Resource Owner Password Credentials Grant)</a>
-     * @see <a target="_blank" href= "https://tools.ietf.org/html/rfc6749#section-4.3.3">Section 4.3.3 Access Token Response (Resource Owner Password Credentials Grant)</a>
-     * @deprecated The OAuth 2.0 Security Best Current Practice disallows the use of the Resource Owner Password Credentials grant. See reference <a target="_blank" href= "https://datatracker.ietf.org/doc/html/rfc9700#section-2.4">OAuth 2.0 Security Best Current Practice.</a>. It was added as backward compatibility with Spring Framework 7. Meant to be removed in the future.
-     *
-     * @param authorizationGrant
-     *            the authorization grant
-     * @return the access token authorization
-     * @throws IOException
-     *             if an I/O error occurs
-     * @throws ParseException
-     *             if parsing the token response fails
-     */
-    @Deprecated(since = "26.1")
-    private AccessTokenAuthorization passwordGrantFlow(AuthorizationGrant authorizationGrant) throws IOException, ParseException
-    {
-        TokenRequest tokenRequest = prepareTokenRequest(authorizationGrant);
-
-        var passwordGrantToken = handleTokenRequest(tokenRequest);
-
-        return new NimbusAccessTokenAuthorization(passwordGrantToken.getTokens());
-    }
-
-    private static AccessTokenResponse handleTokenRequest(TokenRequest tokenRequest) throws IOException, ParseException
-    {
-        HTTPResponse httpResponse = tokenRequest.toHTTPRequest().send();
-        TokenResponse tokenResponse = TokenResponse.parse(httpResponse);
-
-        if (!tokenResponse.indicatesSuccess())
-        {
-            var errorResponse = tokenResponse.toErrorResponse();
-            throw new OAuth2AuthorizationException(
-                    new OAuth2Error(
-                            errorResponse.getErrorObject().getCode(),
-                            errorResponse.getErrorObject().getDescription(),
-                            null));
-        }
-
-        return tokenResponse.toSuccessResponse();
-    }
-
-    private TokenRequest prepareTokenRequest(AuthorizationGrant authorizationGrant)
-    {
-        Scope scope = Scope.parse(clientRegistration.getScopes());
-
-        var tokenRequestBuilder = new TokenRequest.Builder(
-                URI.create(clientRegistration.getProviderDetails().getTokenUri()),
-                createClientAuthentication(),
-                createPasswordGrant(authorizationGrant))
-                        .scope(scope);
-
-        createRequestMetadata().forEach(tokenRequestBuilder::customParameter);
-
-        return tokenRequestBuilder.build();
-    }
-
-    private ResourceOwnerPasswordCredentialsGrant createPasswordGrant(AuthorizationGrant authorizationGrant)
-    {
-        return new ResourceOwnerPasswordCredentialsGrant(authorizationGrant.getUsername(), new Secret(authorizationGrant.getPassword()));
-    }
-
-    private ClientAuthentication createClientAuthentication()
-    {
-        return new ClientSecretBasic(new ClientID(clientRegistration.getClientId()), new Secret(clientRegistration.getClientSecret()));
-    }
-
-    private Map<String, String[]> createRequestMetadata()
-    {
-        return clientRegistration.getProviderDetails().getConfigurationMetadata().entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> new String[]{String.valueOf(e.getValue())}));
-    }
-
     private AbstractOAuth2AuthorizationGrantRequest createRequest(AuthorizationGrant grant)
     {
         if (grant.isRefreshToken())
@@ -291,32 +202,22 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> createAuthorizationCodeClient(
-            RestOperations rest)
+            RestTemplate rest)
     {
-        if (!(rest instanceof RestTemplate restTemplate))
-        {
-            throw new IllegalArgumentException("RestOperations must be an instance of RestTemplate");
-        }
-
         final RestClientAuthorizationCodeTokenResponseClient client = new RestClientAuthorizationCodeTokenResponseClient();
-        client.setRestClient(RestClient.create(restTemplate));
+        client.setRestClient(RestClient.create(rest));
         return client;
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> createRefreshTokenClient(
-            RestOperations rest)
+            RestTemplate rest)
     {
-        if (!(rest instanceof RestTemplate restTemplate))
-        {
-            throw new IllegalArgumentException("RestOperations must be an instance of RestTemplate");
-        }
-
         final RestClientRefreshTokenTokenResponseClient client = new RestClientRefreshTokenTokenResponseClient();
-        client.setRestClient(RestClient.create(restTemplate));
+        client.setRestClient(RestClient.create(rest));
         return client;
     }
 
-    private static DefaultOAuth2UserService createOAuth2UserService(RestOperations rest)
+    private static DefaultOAuth2UserService createOAuth2UserService(RestTemplate rest)
     {
         final DefaultOAuth2UserService userService = new DefaultOAuth2UserService();
         userService.setRestOperations(rest);
@@ -346,30 +247,6 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                 SOME_INSIGNIFICANT_DATE_IN_THE_PAST.plusSeconds(1));
     }
 
-    private static class NimbusAccessTokenAuthorization implements AccessTokenAuthorization
-    {
-        private final Tokens tokens;
-
-        private NimbusAccessTokenAuthorization(Tokens tokens)
-        {
-            this.tokens = requireNonNull(tokens);
-        }
-
-        @Override
-        public AccessToken getAccessToken()
-        {
-            return new NimbusAccessToken(tokens.getAccessToken());
-        }
-
-        @Override
-        public String getRefreshTokenValue()
-        {
-            return Optional.ofNullable(tokens.getRefreshToken())
-                    .map(RefreshToken::getValue)
-                    .orElse(null);
-        }
-    }
-
     private static class SpringAccessTokenAuthorization implements AccessTokenAuthorization
     {
         private final OAuth2AccessTokenResponse tokenResponse;
@@ -392,33 +269,6 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                     .map(OAuth2AccessTokenResponse::getRefreshToken)
                     .map(AbstractOAuth2Token::getTokenValue)
                     .orElse(null);
-        }
-    }
-
-    private static class NimbusAccessToken implements AccessToken
-    {
-        private final com.nimbusds.oauth2.sdk.token.AccessToken token;
-
-        private NimbusAccessToken(com.nimbusds.oauth2.sdk.token.AccessToken token)
-        {
-            this.token = requireNonNull(token);
-        }
-
-        @Override
-        public String getTokenValue()
-        {
-            return token.getValue();
-        }
-
-        @Override
-        public Instant getExpiresAt()
-        {
-            long lifetime = token.getLifetime();
-            if (lifetime <= 0)
-            {
-                return null;
-            }
-            return Instant.now().plusSeconds(lifetime);
         }
     }
 

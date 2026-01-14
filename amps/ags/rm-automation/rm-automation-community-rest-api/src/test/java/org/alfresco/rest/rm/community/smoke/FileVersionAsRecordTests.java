@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,48 +27,40 @@
 
 package org.alfresco.rest.rm.community.smoke;
 
+import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
+import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderCollection;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
-import org.alfresco.rest.rm.community.records.FileUnfiledRecordsTests;
-import org.alfresco.rest.v0.RMRolesAndActionsAPI;
-import org.alfresco.rest.v0.RecordCategoriesAPI;
-import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
-import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
-import java.util.concurrent.atomic.AtomicReference;
+public class FileVersionAsRecordTests extends BaseRMRestTest
+{
 
-import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
-import static org.springframework.test.util.AssertionErrors.assertTrue;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
-
-public class FileVersionAsRecordTests extends BaseRMRestTest {
-
-    private UserModel nonRMuser,rmManager;
+    private UserModel nonRMuser, rmManager;
     private SiteModel testSite;
     private FileModel document, documentDeclared;
     private RecordCategory category_manager, category_admin;
-    private RecordCategoryChild folder_admin, folder_manager ;
+    private RecordCategoryChild folder_admin, folder_manager;
     private static final String CATEGORY_MANAGER = "catManager" + generateTestPrefix(FileAsRecordTests.class);
     private static final String CATEGORY_ADMIN = "catAdmin" + generateTestPrefix(FileAsRecordTests.class);
     private static final String FOLDER_MANAGER = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
@@ -95,26 +87,26 @@ public class FileVersionAsRecordTests extends BaseRMRestTest {
 
         STEP("Create a document with the user without RM role");
         document = dataContent.usingSite(testSite)
-            .usingUser(nonRMuser)
-            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                .usingUser(nonRMuser)
+                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Create two categories with two folders");
         category_manager = createRootCategory(CATEGORY_MANAGER);
         category_admin = createRootCategory(CATEGORY_ADMIN);
-        folder_admin = createFolder(category_admin.getId(),FOLDER_ADMIN);
-        folder_manager = createFolder(category_manager.getId(),FOLDER_MANAGER);
+        folder_admin = createFolder(category_admin.getId(), FOLDER_ADMIN);
+        folder_manager = createFolder(category_manager.getId(), FOLDER_MANAGER);
 
         STEP("Create an rm user and give filling permission over CATEGORY_MANAGER record category");
         RecordCategory recordCategory = new RecordCategory().builder()
-            .id(category_manager.getId())
-            .build();
+                .id(category_manager.getId())
+                .build();
         rmManager = roleService.createCollaboratorWithRMRoleAndPermission(testSite, recordCategory,
-            UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
+                UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
 
     }
 
     @Test
-    @AlfrescoTest (jira = "APPS-1625")
+    @AlfrescoTest(jira = "APPS-1625")
     public void fileVersionAsRecordToUnfiledRecordContainer() throws Exception
     {
 
@@ -122,17 +114,15 @@ public class FileVersionAsRecordTests extends BaseRMRestTest {
 
         STEP("Create a document with the user without RM role");
         FileModel inplaceRecord = dataContent.usingSite(testSite).usingUser(rmManager)
-            .createContent(new FileModel("declareAndFileToIntoUnfiledRecordFolder",
-                FileType.TEXT_PLAIN));
+                .createContent(new FileModel("declareAndFileToIntoUnfiledRecordFolder",
+                        FileType.TEXT_PLAIN));
 
         STEP("Click on Declare and file without selecting a record folder");
-        getRestAPIFactory().getActionsAPI(rmManager).declareAndFile(inplaceRecord,"");
+        getRestAPIFactory().getActionsAPI(rmManager).declareAndFile(inplaceRecord, "");
 
         STEP("Check the file is declared in unfiled record folder");
         Assert.assertTrue(isMatchingRecordInUnfiledRecords(inplaceRecord), "Record should be filed to Unfiled Records folder");
 
-
     }
-
 
 }

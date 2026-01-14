@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,8 +28,9 @@ package org.alfresco.rest.v0;
 
 import static org.testng.AssertJUnit.assertNotNull;
 
-import org.alfresco.rest.core.v0.BaseAPI;
 import org.springframework.stereotype.Component;
+
+import org.alfresco.rest.core.v0.BaseAPI;
 
 /**
  * Helper methods for performing actions on user trashcan
@@ -45,14 +46,17 @@ public class UserTrashcanAPI extends BaseAPI
     /**
      * Clears the trashcan for the current user
      *
-     * @param username the username
-     * @param password the password
-     * @throws AssertionError if emptying the trashcan fails.
+     * @param username
+     *            the username
+     * @param password
+     *            the password
+     * @throws AssertionError
+     *             if emptying the trashcan fails.
      */
     public void emptyTrashcan(String username, String password)
     {
         assertNotNull("Emptying trashcan failed for user " + username,
-                    doDeleteRequest(username, password, EMPTY_TRASHCAN));
+                doDeleteRequest(username, password, EMPTY_TRASHCAN));
     }
 
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,6 +27,12 @@
 package org.alfresco.rest.rm.community.base;
 
 import static lombok.AccessLevel.PROTECTED;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+
 import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.RECORD_CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
@@ -47,21 +53,22 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createUnfiledContainerChildModel;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
-import static org.springframework.http.HttpStatus.OK;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Date;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
@@ -94,11 +101,6 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
 
 /**
  * Base class for all GS REST API Tests
@@ -110,11 +112,11 @@ import org.testng.annotations.DataProvider;
 public class BaseRMRestTest extends RestTest
 {
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private RestAPIFactory restAPIFactory;
 
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     protected DataUserAIS dataUser;
 
     @Autowired
@@ -125,12 +127,13 @@ public class BaseRMRestTest extends RestTest
     @Getter(value = PROTECTED)
     private SearchAPI searchApi;
 
-    protected static final String iso8601_DateFormat="yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    protected static final String iso8601_DateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 
     /**
      * Asserts the given status code
      *
-     * @param statusCode The status code to assert
+     * @param statusCode
+     *            The status code to assert
      */
     protected void assertStatusCode(HttpStatus statusCode)
     {
@@ -151,14 +154,13 @@ public class BaseRMRestTest extends RestTest
     @DataProvider(name = "validRootContainers")
     public Object[][] getValidRootContainers()
     {
-        return new String[][]
-        {
-            // an arbitrary record folder
-            { createCategoryFolderInFilePlan().getId(), RECORD_FOLDER_TYPE},
-            // unfiled records root
-            { UNFILED_RECORDS_CONTAINER_ALIAS, UNFILED_CONTAINER_TYPE},
-            // an arbitrary unfiled records folder
-            { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), UNFILED_RECORD_FOLDER_TYPE }
+        return new String[][]{
+                // an arbitrary record folder
+                {createCategoryFolderInFilePlan().getId(), RECORD_FOLDER_TYPE},
+                // unfiled records root
+                {UNFILED_RECORDS_CONTAINER_ALIAS, UNFILED_CONTAINER_TYPE},
+                // an arbitrary unfiled records folder
+                {createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), UNFILED_RECORD_FOLDER_TYPE}
         };
     }
 
@@ -166,7 +168,7 @@ public class BaseRMRestTest extends RestTest
      * @see org.alfresco.rest.RestTest#checkServerHealth()
      */
     @Override
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void checkServerHealth()
     {
         // Create RM Site if not exist
@@ -174,8 +176,7 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * Helper method to create the RM Site via the POST request
-     * if the site doesn't exist
+     * Helper method to create the RM Site via the POST request if the site doesn't exist
      */
     public void createRMSiteIfNotExists()
     {
@@ -211,9 +212,11 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create root category as the admin user
      *
-     * @param categoryName The name of the category
+     * @param categoryName
+     *            The name of the category
      * @return The created category
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public RecordCategory createRootCategory(String categoryName)
     {
@@ -223,10 +226,13 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create root category
      *
-     * @param userModel The user under whose privileges this structure is going to be created
-     * @param categoryName The name of the category
+     * @param userModel
+     *            The user under whose privileges this structure is going to be created
+     * @param categoryName
+     *            The name of the category
      * @return The created category
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public RecordCategory createRootCategory(UserModel userModel, String categoryName)
     {
@@ -236,10 +242,13 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create root category as the admin user
      *
-     * @param categoryName The name of the category
-     * @param categoryTitle The title of the category
+     * @param categoryName
+     *            The name of the category
+     * @param categoryTitle
+     *            The title of the category
      * @return The created category
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public RecordCategory createRootCategory(String categoryName, String categoryTitle)
     {
@@ -249,11 +258,15 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create root category
      *
-     * @param userModel The user under whose privileges this structure is going to be created
-     * @param categoryName The name of the category
-     * @param categoryTitle The title of the category
+     * @param userModel
+     *            The user under whose privileges this structure is going to be created
+     * @param categoryName
+     *            The name of the category
+     * @param categoryTitle
+     *            The title of the category
      * @return The created category
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public RecordCategory createRootCategory(UserModel userModel, String categoryName, String categoryTitle)
     {
@@ -264,12 +277,17 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create a record category child
      *
-     * @param user The user under whose privileges the node is going to be created
-     * @param recordCategoryId The id of the record category
-     * @param name The name of the record category child
-     * @param type The type of the record category child
+     * @param user
+     *            The user under whose privileges the node is going to be created
+     * @param recordCategoryId
+     *            The id of the record category
+     * @param name
+     *            The name of the record category child
+     * @param type
+     *            The type of the record category child
      * @return The created {@link RecordCategoryChild}
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public RecordCategoryChild createRecordCategoryChild(UserModel user, String recordCategoryId, String name, String type)
     {
@@ -280,11 +298,15 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create a record category child as the admin user
      *
-     * @param recordCategoryId The id of the record category
-     * @param name The name of the record category child
-     * @param type The type of the record category child
+     * @param recordCategoryId
+     *            The id of the record category
+     * @param name
+     *            The name of the record category child
+     * @param type
+     *            The type of the record category child
      * @return The created {@link RecordCategoryChild}
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name, String type)
     {
@@ -294,10 +316,13 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create a record category as the admin user
      *
-     * @param recordCategoryId The id of the record category
-     * @param name The name of the record category child
+     * @param recordCategoryId
+     *            The id of the record category
+     * @param name
+     *            The name of the record category child
      * @return The created {@link RecordCategoryChild}
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public RecordCategoryChild createRecordCategory(String recordCategoryId, String name)
     {
@@ -307,10 +332,13 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create a record folder as the admin user
      *
-     * @param recordCategoryId The id of the record category
-     * @param name The name of the record category child
+     * @param recordCategoryId
+     *            The id of the record category
+     * @param name
+     *            The name of the record category child
      * @return The created {@link RecordCategoryChild}
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public RecordCategoryChild createRecordFolder(String recordCategoryId, String name)
     {
@@ -320,11 +348,15 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create record folder
      *
-     * @param user The user under whose privileges this structure is going to be created
-     * @param recordCategoryId The id of the record category
-     * @param name The name of the folder
+     * @param user
+     *            The user under whose privileges this structure is going to be created
+     * @param recordCategoryId
+     *            The id of the record category
+     * @param name
+     *            The name of the folder
      * @return The created folder
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public RecordCategoryChild createFolder(UserModel user, String recordCategoryId, String name)
     {
@@ -335,10 +367,13 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create record folder as the admin user
      *
-     * @param recordCategoryId The id of the record category
-     * @param name The name of the folder
+     * @param recordCategoryId
+     *            The id of the record category
+     * @param name
+     *            The name of the folder
      * @return The created folder
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public RecordCategoryChild createFolder(String recordCategoryId, String name)
     {
@@ -348,11 +383,15 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create child unfiled record folder
      *
-     *@param user The user under whose privileges this structure is going to be created
-     * @param parentId The id of the parent folder
-     * @param nodeType The child type
+     * @param user
+     *            The user under whose privileges this structure is going to be created
+     * @param parentId
+     *            The id of the parent folder
+     * @param nodeType
+     *            The child type
      * @return The created folder
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public UnfiledContainerChild createUnfiledRecordsFolderChild(UserModel user, String parentId, String childName, String nodeType)
     {
@@ -366,10 +405,13 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create child unfiled record folder as the admin user
      *
-     * @param parentId The id of the parent folder
-     * @param nodeType The child type
+     * @param parentId
+     *            The id of the parent folder
+     * @param nodeType
+     *            The child type
      * @return The created folder
-     * @throws RuntimeException on unsuccessful component creation
+     * @throws RuntimeException
+     *             on unsuccessful component creation
      */
     public UnfiledContainerChild createUnfiledRecordsFolderChild(String parentId, String childName, String nodeType)
     {
@@ -379,12 +421,17 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create a child to an unfiled record container
      *
-     * @param user The user under whose privileges this structure is going to be created
-     * @param parentId The id of the parent container
-     * @param childName The name of the child
-     * @param nodeType the child type
+     * @param user
+     *            The user under whose privileges this structure is going to be created
+     * @param parentId
+     *            The id of the parent container
+     * @param childName
+     *            The name of the child
+     * @param nodeType
+     *            the child type
      * @return The created chid
-     * @throws RuntimeException on unsuccessful child creation
+     * @throws RuntimeException
+     *             on unsuccessful child creation
      */
     public UnfiledContainerChild createUnfiledContainerChild(UserModel user, String parentId, String childName, String nodeType)
     {
@@ -407,11 +454,15 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create a child to an unfiled record container as the admin user
      *
-     * @param parentId The id of the parent container
-     * @param childName The name of the child
-     * @param nodeType the child type
+     * @param parentId
+     *            The id of the parent container
+     * @param childName
+     *            The name of the child
+     * @param nodeType
+     *            the child type
      * @return The created chid
-     * @throws RuntimeException on unsuccessful child creation
+     * @throws RuntimeException
+     *             on unsuccessful child creation
      */
     public UnfiledContainerChild createUnfiledContainerChild(String parentId, String childName, String nodeType)
     {
@@ -421,16 +472,17 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to close folder
      *
-     * @param folderId The id of the folder
+     * @param folderId
+     *            The id of the folder
      * @return The closed folder
      */
     protected RecordFolder closeFolder(String folderId)
     {
         RecordFolder recordFolderModel = RecordFolder.builder()
-                                            .properties(RecordFolderProperties.builder()
-                                                    .isClosed(true)
-                                                    .build())
-                                            .build();
+                .properties(RecordFolderProperties.builder()
+                        .isClosed(true)
+                        .build())
+                .build();
         RecordFolder updateRecordFolder = getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolderModel, folderId);
         assertStatusCode(OK);
 
@@ -440,7 +492,8 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to complete record
      *
-     * @param recordId The id of the record to complete
+     * @param recordId
+     *            The id of the record to complete
      * @return The completed record
      */
     public Record completeRecord(String recordId)
@@ -464,9 +517,11 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create a randomly-named [category]/[folder] structure in file plan
      *
-     * @param user The user under whose privileges this structure is going to be created
+     * @param user
+     *            The user under whose privileges this structure is going to be created
      * @return {@link RecordCategoryChild} which represents the record folder
-     * @throws RuntimeException on failed creation
+     * @throws RuntimeException
+     *             on failed creation
      */
     public RecordCategoryChild createCategoryFolderInFilePlan(UserModel user)
     {
@@ -481,7 +536,8 @@ public class BaseRMRestTest extends RestTest
      * Helper method to create a randomly-named [category]/[folder] structure in file plan as the admin user
      *
      * @return {@link RecordCategoryChild} which represents the record folder
-     * @throws RuntimeException on failed creation
+     * @throws RuntimeException
+     *             on failed creation
      */
     public RecordCategoryChild createCategoryFolderInFilePlan()
     {
@@ -527,27 +583,30 @@ public class BaseRMRestTest extends RestTest
     public void deleteFolder(SiteModel siteModel, FolderModel folder)
     {
         contentService.deleteTree(getAdminUser().getUsername(), getAdminUser().getPassword(), siteModel.getId(),
-                    folder.getName());
+                folder.getName());
     }
 
     /**
      * Create an electronic record
      *
-     * @param parentId the id of the parent
-     * @param name the name of the record
+     * @param parentId
+     *            the id of the parent
+     * @param name
+     *            the name of the record
      * @return the created record
      */
     public Record createElectronicRecord(String parentId, String name)
     {
-       return createElectronicRecord(parentId, name ,null);
+        return createElectronicRecord(parentId, name, null);
     }
-
 
     /**
      * Create an electronic record
      *
-     * @param parentId the id of the parent
-     * @param name     the name of the record
+     * @param parentId
+     *            the id of the parent
+     * @param name
+     *            the name of the record
      * @return the created record
      */
     public Record createElectronicRecord(String parentId, String name, UserModel user)
@@ -560,8 +619,10 @@ public class BaseRMRestTest extends RestTest
     /**
      * Create a non-electronic record
      *
-     * @param parentId the id of the parent
-     * @param name     the name of the record
+     * @param parentId
+     *            the id of the parent
+     * @param name
+     *            the name of the record
      * @return the created record
      */
     public Record createNonElectronicRecord(String parentId, String name)
@@ -572,9 +633,12 @@ public class BaseRMRestTest extends RestTest
     /**
      * Create a non-electronic record
      *
-     * @param parentId the id of the parent
-     * @param name     the name of the record
-     * @param user the user who creates the  non-electronic record
+     * @param parentId
+     *            the id of the parent
+     * @param name
+     *            the name of the record
+     * @param user
+     *            the user who creates the non-electronic record
      * @return the created record
      */
     public Record createNonElectronicRecord(String parentId, String name, UserModel user)
@@ -587,7 +651,8 @@ public class BaseRMRestTest extends RestTest
     /**
      * Delete a record folder
      *
-     * @param recordFolderId the id of the record folder to delete
+     * @param recordFolderId
+     *            the id of the record folder to delete
      */
     public void deleteRecordFolder(String recordFolderId)
     {
@@ -598,7 +663,8 @@ public class BaseRMRestTest extends RestTest
     /**
      * Delete a record
      *
-     * @param recordId the id of the record to delete
+     * @param recordId
+     *            the id of the record to delete
      */
     public void deleteRecord(String recordId)
     {
@@ -609,7 +675,8 @@ public class BaseRMRestTest extends RestTest
     /**
      * Delete a record category
      *
-     * @param recordCategoryId the id of the record category to delete
+     * @param recordCategoryId
+     *            the id of the record category to delete
      */
     public void deleteRecordCategory(String recordCategoryId)
     {
@@ -627,7 +694,7 @@ public class BaseRMRestTest extends RestTest
     public List<String> searchForContentAsUser(UserModel user, String term)
     {
         String query = "cm:name:*" + term + "*";
-        return searchForContentAsUser(user,query,"afts");
+        return searchForContentAsUser(user, query, "afts");
     }
 
     /**
@@ -635,7 +702,8 @@ public class BaseRMRestTest extends RestTest
      *
      * @param user
      * @param q
-     * @param queryLanguage language
+     * @param queryLanguage
+     *            language
      * @return
      * @throws Exception
      */
@@ -667,7 +735,7 @@ public class BaseRMRestTest extends RestTest
             }
 
             List<SearchNodeModel> searchResults = getRestAPIFactory().getRmRestWrapper().withSearchAPI().search(query)
-                                                                     .getEntries();
+                    .getEntries();
             if (searchResults != null && !searchResults.isEmpty())
             {
                 searchResults.forEach(childNode -> names.add(childNode.onModel().getName()));
@@ -695,7 +763,7 @@ public class BaseRMRestTest extends RestTest
      * @return List<String>
      */
     public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby, boolean includeFolders,
-                boolean includeCategories, List<String> expectedResults)
+            boolean includeCategories, List<String> expectedResults)
     {
         List<String> results = new ArrayList<>();
         // wait for solr indexing
@@ -746,7 +814,7 @@ public class BaseRMRestTest extends RestTest
      * @return String
      */
     public String searchForRMContentAsUser(UserModel user, String term, String nodeRef, String propertyName,
-                String sortby, boolean includeFolders, boolean includeCategories, String expectedResults)
+            String sortby, boolean includeFolders, boolean includeCategories, String expectedResults)
     {
         String result = "";
         // wait for solr indexing
@@ -767,7 +835,7 @@ public class BaseRMRestTest extends RestTest
                 }
             }
             result = searchApi.searchForNodePropertyAsUser(user.getUsername(), user.getPassword(), nodeRef,
-                        propertyName, term, sortby, includeFolders, includeCategories);
+                    propertyName, term, sortby, includeFolders, includeCategories);
             if (!result.isEmpty() && result.contains(expectedResults))
             {
                 break;
@@ -796,16 +864,18 @@ public class BaseRMRestTest extends RestTest
         restClient.authenticateUser(usermodel);
 
         List<RestNodeModel> nodes = restClient.withCoreAPI().usingNode(siteModel)
-                                              .listChildren().getEntries().stream().collect(Collectors.toList());
+                .listChildren().getEntries().stream().collect(Collectors.toList());
         ContentModel documentLibrary = new ContentModel();
         documentLibrary.setName(nodes.get(0).onModel().getName());
         documentLibrary.setNodeRef(nodes.get(0).onModel().getId());
         return documentLibrary;
     }
+
     /**
      * Checks if the given file has record aspect
      *
-     * @param testFile the file to be checked
+     * @param testFile
+     *            the file to be checked
      * @return true if the file has the aspect, false otherwise
      */
     protected boolean hasRecordAspect(FileModel testFile) throws Exception
@@ -816,21 +886,25 @@ public class BaseRMRestTest extends RestTest
     /**
      * Checks if the given file has the given aspect
      *
-     * @param testFile the file to be checked
-     * @param aspectName the matching aspect
+     * @param testFile
+     *            the file to be checked
+     * @param aspectName
+     *            the matching aspect
      * @return true if the file has the aspect, false otherwise
      */
     private boolean hasAspect(FileModel testFile, String aspectName) throws Exception
     {
         return getRestAPIFactory().getNodeAPI(testFile).getNode()
-                                  .getAspectNames().contains(aspectName);
+                .getAspectNames().contains(aspectName);
     }
 
     /**
      * Checks if the given node has the given aspect
      *
-     * @param nodeId   the node to be checked
-     * @param aspectName the matching aspect
+     * @param nodeId
+     *            the node to be checked
+     * @param aspectName
+     *            the matching aspect
      * @return true if the file has the aspect, false otherwise
      */
     protected boolean hasAspect(String nodeId, String aspectName) throws Exception
@@ -841,7 +915,8 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to verify if the declared record is in Unfiled Records location
      *
-     * @param testFile the file declared as record
+     * @param testFile
+     *            the file declared as record
      * @return true if the matching record is found in Unfiled Records, false otherwise
      */
     protected boolean isMatchingRecordInUnfiledRecords(FileModel testFile)
@@ -851,12 +926,12 @@ public class BaseRMRestTest extends RestTest
             Utility.sleep(1000, 10000,
                     () -> {
                         Optional<UnfiledContainerChildEntry> matchingRecord = getRestAPIFactory().getUnfiledContainersAPI()
-                                                                                                 .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                                                                                                 .getEntries()
-                                                                                                 .stream()
-                                                                                                 .filter(e -> e.getEntry().getId()
-                                                                                                               .equals(testFile.getNodeRefWithoutVersion()))
-                                                                                                 .findAny();
+                                .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+                                .getEntries()
+                                .stream()
+                                .filter(e -> e.getEntry().getId()
+                                        .equals(testFile.getNodeRefWithoutVersion()))
+                                .findAny();
                         assertTrue(matchingRecord.isPresent());
                     });
             return true;
@@ -870,8 +945,10 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to verify if the declared record is filed to the record folder location
      *
-     * @param testFile  the file declared as record
-     * @param recFolder the record folder where the declared record has been filed
+     * @param testFile
+     *            the file declared as record
+     * @param recFolder
+     *            the record folder where the declared record has been filed
      * @return true if matching record is found in record folder, null otherwise
      */
     protected boolean isMatchingRecordInRecordFolder(FileModel testFile, RecordCategoryChild recFolder)
@@ -881,12 +958,12 @@ public class BaseRMRestTest extends RestTest
             Utility.sleep(1000, 10000,
                     () -> {
                         Optional<RecordFolderEntry> matchingRecord = getRestAPIFactory().getRecordFolderAPI()
-                                                                                        .getRecordFolderChildren(recFolder.getId())
-                                                                                        .getEntries()
-                                                                                        .stream()
-                                                                                        .filter(e -> e.getEntry().getId()
-                                                                                                      .equals(testFile.getNodeRefWithoutVersion()))
-                                                                                        .findAny();
+                                .getRecordFolderChildren(recFolder.getId())
+                                .getEntries()
+                                .stream()
+                                .filter(e -> e.getEntry().getId()
+                                        .equals(testFile.getNodeRefWithoutVersion()))
+                                .findAny();
                         assertTrue(matchingRecord.isPresent());
                     });
             return true;
@@ -896,11 +973,14 @@ public class BaseRMRestTest extends RestTest
             return false;
         }
     }
+
     /**
      * Helper method to verify if the document version is declared as record version in unfiled container
      *
-     * @param testFile  the file  declared as record version
-     * @param version the document version
+     * @param testFile
+     *            the file declared as record version
+     * @param version
+     *            the document version
      * @return true if matching record version is found in unfiled record container, false otherwise
      */
     protected boolean isRecordVersionInUnfiledRecords(FileModel testFile, String version)
@@ -910,14 +990,13 @@ public class BaseRMRestTest extends RestTest
             Utility.sleep(1000, 10000,
                     () -> {
                         UnfiledContainerChildEntry matchingRecord = getRestAPIFactory().getUnfiledContainersAPI()
-                                                                                       .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS, "include=properties,aspectNames")
-                                                                                       .getEntries()
-                                                                                       .stream()
-                                                                                       .filter(e -> e.getEntry().getName().contains(testFile.getName().replace(".txt", ""))
-                                                                                               && e.getEntry().getProperties().getVersionedNodeRef().equals(testFile.getNodeRefWithoutVersion())
-                                                                                               && e.getEntry().getProperties().getRecordVersionLabel().equalsIgnoreCase(version)
-                                                                                              )
-                                                                                       .findFirst().get();
+                                .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS, "include=properties,aspectNames")
+                                .getEntries()
+                                .stream()
+                                .filter(e -> e.getEntry().getName().contains(testFile.getName().replace(".txt", ""))
+                                        && e.getEntry().getProperties().getVersionedNodeRef().equals(testFile.getNodeRefWithoutVersion())
+                                        && e.getEntry().getProperties().getRecordVersionLabel().equalsIgnoreCase(version))
+                                .findFirst().get();
 
                         assertTrue(hasAspect(matchingRecord.getEntry().getId(), VERSION_AS_RECORD));
                     });
@@ -928,30 +1007,33 @@ public class BaseRMRestTest extends RestTest
             return false;
         }
     }
+
     /**
      * Helper method to verify if the document version is declared as record version in a specific record folder
      *
-     * @param testFile  the file declared as record version
-     * @param recordFolder  the record folder where the versioned record is filled
-     * @param version the document version
+     * @param testFile
+     *            the file declared as record version
+     * @param recordFolder
+     *            the record folder where the versioned record is filled
+     * @param version
+     *            the document version
      * @return true if matching record version is found in record folder, false otherwise
      */
     protected boolean isRecordVersionInRecordFolder(FileModel testFile, RecordCategoryChild recordFolder,
-                                                    String version)
+            String version)
     {
         try
         {
             Utility.sleep(1000, 10000,
                     () -> {
                         RecordFolderEntry matchingRecord = getRestAPIFactory().getRecordFolderAPI()
-                                                                              .getRecordFolderChildren(recordFolder.getId(),"include=properties,aspectNames")
-                                                                              .getEntries()
-                                                                              .stream()
-                                                                              .filter(e -> e.getEntry().getName().contains(testFile.getName().replace(".txt", ""))
-                                                                                      && e.getEntry().getProperties().getVersionedNodeRef().equals(testFile.getNodeRefWithoutVersion())
-                                                                                      && e.getEntry().getProperties().getRecordVersionLabel().equalsIgnoreCase(version)
-                                                                                     )
-                                                                              .findFirst().get();
+                                .getRecordFolderChildren(recordFolder.getId(), "include=properties,aspectNames")
+                                .getEntries()
+                                .stream()
+                                .filter(e -> e.getEntry().getName().contains(testFile.getName().replace(".txt", ""))
+                                        && e.getEntry().getProperties().getVersionedNodeRef().equals(testFile.getNodeRefWithoutVersion())
+                                        && e.getEntry().getProperties().getRecordVersionLabel().equalsIgnoreCase(version))
+                                .findFirst().get();
 
                         assertTrue(hasAspect(matchingRecord.getEntry().getId(), VERSION_AS_RECORD));
                     });
@@ -962,34 +1044,41 @@ public class BaseRMRestTest extends RestTest
             return false;
         }
     }
+
     /**
      * Helper method to get the Previous Date in the YYYY-MM-ddTHH:mm:ss.SSSXXX format
-     * @param previousDays number of previous days while calculating the date as output
+     * 
+     * @param previousDays
+     *            number of previous days while calculating the date as output
      * @return previousDate as String in the ISO 8601 Date Format
      */
-    protected String getIso8601Date(int previousDays) {
+    protected String getIso8601Date(int previousDays)
+    {
         Date date = new Date(System.currentTimeMillis());
         Date previousDate = new Date(date.getTime() - previousDays);
         // Conversion
-        SimpleDateFormat sdf= new SimpleDateFormat(iso8601_DateFormat);;
+        SimpleDateFormat sdf = new SimpleDateFormat(iso8601_DateFormat);
+        ;
         sdf.setTimeZone(TimeZone.getDefault());
         return sdf.format(previousDate);
     }
+
     /**
-     * Helper method to provide the Edited Disposition Date Json
-     * The Edited Disposition Date is modified to previous date so that CUTOFF & DESTROY Steps will be enabled
+     * Helper method to provide the Edited Disposition Date Json The Edited Disposition Date is modified to previous date so that CUTOFF & DESTROY Steps will be enabled
+     * 
      * @return JsonObject with the format {"name":"editDispositionActionAsOfDate","params":{"asOfDate":{"iso8601":"Previous Date"}}}
      */
-    protected JSONObject editDispositionDateJson() {
+    protected JSONObject editDispositionDateJson()
+    {
         JSONObject requestParams = new JSONObject();
 
-        requestParams.put("name","editDispositionActionAsOfDate");
+        requestParams.put("name", "editDispositionActionAsOfDate");
         JSONObject params = new JSONObject();
-        requestParams.put("params",params);
+        requestParams.put("params", params);
 
         JSONObject asOfDate = new JSONObject();
-        params.put("asOfDate",asOfDate);
-        asOfDate.put("iso8601",getIso8601Date(1));
+        params.put("asOfDate", asOfDate);
+        asOfDate.put("iso8601", getIso8601Date(1));
         return requestParams;
     }
 }

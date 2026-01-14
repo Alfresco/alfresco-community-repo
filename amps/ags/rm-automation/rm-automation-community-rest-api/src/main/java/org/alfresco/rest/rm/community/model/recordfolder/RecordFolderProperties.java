@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,10 +33,8 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IS_CLOSED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_LOCATION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_OWNER;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields
-        .PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields
-        .PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION;
@@ -50,17 +48,16 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import org.alfresco.rest.rm.community.model.common.Owner;
-import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
-import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
-import org.alfresco.utility.model.TestModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.rest.rm.community.model.common.Owner;
+import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
+import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for record folder properties
@@ -73,62 +70,62 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties (ignoreUnknown = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RecordFolderProperties extends TestModel
 {
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true, value = PROPERTIES_IS_CLOSED)
+    @JsonProperty(required = true, value = PROPERTIES_IS_CLOSED)
     private Boolean isClosed;
 
-    @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
+    @JsonProperty(required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 
-    @JsonProperty (required = true, value = PROPERTIES_HELD_CHILDREN_COUNT)
+    @JsonProperty(required = true, value = PROPERTIES_HELD_CHILDREN_COUNT)
     private Integer heldChildrenCount;
 
     /************************/
     /** Optional parameters */
     /************************/
-    @JsonProperty (PROPERTIES_TITLE)
+    @JsonProperty(PROPERTIES_TITLE)
     private String title;
 
-    @JsonProperty (PROPERTIES_VITAL_RECORD_INDICATOR)
+    @JsonProperty(PROPERTIES_VITAL_RECORD_INDICATOR)
     private Boolean vitalRecordIndicator;
 
-    @JsonProperty (PROPERTIES_ROOT_NODE_REF)
+    @JsonProperty(PROPERTIES_ROOT_NODE_REF)
     private String rootNodeRef;
 
-    @JsonProperty (PROPERTIES_LOCATION)
+    @JsonProperty(PROPERTIES_LOCATION)
     private String location;
 
-    @JsonProperty (PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE)
+    @JsonProperty(PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE)
     private Boolean recordSearchHasDispositionSchedule;
 
-    @JsonProperty (PROPERTIES_REVIEW_PERIOD)
-    @JsonSerialize (using = ReviewPeriodSerializer.class)
+    @JsonProperty(PROPERTIES_REVIEW_PERIOD)
+    @JsonSerialize(using = ReviewPeriodSerializer.class)
     private ReviewPeriod reviewPeriod;
 
-    @JsonProperty (PROPERTIES_CLASSIFICATION)
+    @JsonProperty(PROPERTIES_CLASSIFICATION)
     private List<String> classification;
 
-    @JsonProperty (PROPERTIES_DESCRIPTION)
+    @JsonProperty(PROPERTIES_DESCRIPTION)
     private String description;
 
-    @JsonProperty (PROPERTIES_OWNER)
+    @JsonProperty(PROPERTIES_OWNER)
     private Owner owner;
 
-    @JsonProperty (PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD)
+    @JsonProperty(PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD)
     private String recordSearchVitalRecordReviewPeriod;
 
-    @JsonProperty (PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION)
+    @JsonProperty(PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION)
     private String recordSearchVitalRecordReviewPeriodExpression;
 
-    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY)
+    @JsonProperty(PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY)
     private String recordSearchDispositionAuthority;
 
-    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS)
+    @JsonProperty(PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS)
     private String recordSearchDispositionInstructions;
 
 }

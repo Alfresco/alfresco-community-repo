@@ -25,7 +25,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 - 2025 Alfresco Software Limited.
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -53,8 +53,18 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Format;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -71,16 +81,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Format;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * Webscript used to update records that are missing their schedule information
@@ -119,6 +119,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
     private QNameDAO qnameDAO;
     private FrozenAspect frozenAspect;
     private RecordsManagementSearchBehaviour recordsManagementSearchBehaviour;
+
     /**
      * service setters
      */
@@ -179,15 +180,14 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
     {
         Map<String, Object> model = new HashMap<>();
         transactionService.getRetryingTransactionHelper()
-            .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
-            {
-                public String execute() throws Throwable
-                {
-                    qnameDAO.getOrCreateQName(ASPECT_DISPOSITION_PROCESSED);
-                    return null;
-                }
+                .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
+                    public String execute() throws Throwable
+                    {
+                        qnameDAO.getOrCreateQName(ASPECT_DISPOSITION_PROCESSED);
+                        return null;
+                    }
 
-            }, false, true);
+                }, false, true);
 
         int maxRecordFolders = getMaxRecordFolders(req);
         NodeRef recordFolder = getRecordFolder(req);
@@ -236,11 +236,9 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
         return model;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.web.scripts.content.StreamContent#execute(org.springframework.extensions.webscripts.
-     * WebScriptRequest, org.springframework.extensions.webscripts.WebScriptResponse)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.web.scripts.content.StreamContent#execute(org.springframework.extensions.webscripts. WebScriptRequest, org.springframework.extensions.webscripts.WebScriptResponse) */
     @Override
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
@@ -250,7 +248,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
         try
         {
             String mimetype = getContainer().getFormatRegistry()
-                .getMimeType(req.getAgent(), format);
+                    .getMimeType(req.getAgent(), format);
             if (mimetype == null)
             {
                 throw new WebScriptException("Web Script format '" + format + "' is not registered");
@@ -262,7 +260,10 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
 
             Map<String, Object> model = buildModel(req, res);
 
-            if (model == null) { return; }
+            if (model == null)
+            {
+                return;
+            }
             model.put("status", status);
             model.put("cache", cache);
 
@@ -301,13 +302,13 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
             {
                 if (logger.isDebugEnabled())
                     logger.debug(
-                        "Rendering JSON callback response: content type=" + Format.JAVASCRIPT.mimetype() + ", status="
-                            + statusCode + ", callback=" + callback);
+                            "Rendering JSON callback response: content type=" + Format.JAVASCRIPT.mimetype() + ", status="
+                                    + statusCode + ", callback=" + callback);
 
                 // NOTE: special case for wrapping JSON results in a javascript function callback
                 res.setContentType(Format.JAVASCRIPT.mimetype() + ";charset=UTF-8");
                 res.getWriter()
-                    .write((callback + "("));
+                        .write((callback + "("));
             }
             else
             {
@@ -324,7 +325,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
             {
                 // NOTE: special case for wrapping JSON results in a javascript function callback
                 res.getWriter()
-                    .write(")");
+                        .write(")");
             }
         }
         catch (Throwable e)
@@ -364,7 +365,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
             }
             catch (NumberFormatException ex)
             {
-                //do nothing here, the value will remain 0L in this case
+                // do nothing here, the value will remain 0L in this case
             }
         }
         return value;
@@ -385,59 +386,57 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
     private int updateRecordFolder(final NodeRef recordFolder)
     {
         return transactionService.getRetryingTransactionHelper()
-            .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>()
-            {
-                public Integer execute() throws Throwable
-                {
-                    int recordCount = 0;
-                    frozenAspect.disableOnPropUpdateFrozenAspect();
-                    try
+                .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>() {
+                    public Integer execute() throws Throwable
                     {
-	                    if (logger.isDebugEnabled())
-	                    {
-	                        logger.info("Checking folder: " + recordFolder);
-	                    }
-	                    recordCount = AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Integer>()
-	                    {
-	                        @Override
-	                        public Integer doWork() throws Exception
-	                        {
-	                            DispositionSchedule schedule = dispositionService.getDispositionSchedule(recordFolder);
-	                            int innerRecordCount = 0;
-	                            if (schedule != null && schedule.isRecordLevelDisposition())
-	                            {
-	
-	                                List<NodeRef> records = recordService.getRecords(recordFolder);
-	                                for (NodeRef record : records)
-	                                {
-	                                    if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
-	                                    {
-	                                        if (recordFolder.equals(nodeService.getPrimaryParent(record).getParentRef()))
-	                                        {
-	                                            if (logger.isDebugEnabled())
-	                                            {
-	                                                logger.info("updating record: " + record);
-	                                            }
+                        int recordCount = 0;
+                        frozenAspect.disableOnPropUpdateFrozenAspect();
+                        try
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.info("Checking folder: " + recordFolder);
+                            }
+                            recordCount = AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Integer>() {
+                                @Override
+                                public Integer doWork() throws Exception
+                                {
+                                    DispositionSchedule schedule = dispositionService.getDispositionSchedule(recordFolder);
+                                    int innerRecordCount = 0;
+                                    if (schedule != null && schedule.isRecordLevelDisposition())
+                                    {
 
-	                                            // update record disposition information
-	                                            dispositionService.updateNextDispositionAction(record, schedule);
-                                                recordsManagementSearchBehaviour.onAddDispositionLifecycleAspect(record,null);
-	                                            innerRecordCount++;
-	                                        }
-	                                    }
-	                                }
-	                            }
-	                            return innerRecordCount;
-	                        }
-	                    });
-	                    nodeService.addAspect(recordFolder, ASPECT_DISPOSITION_PROCESSED, null);
+                                        List<NodeRef> records = recordService.getRecords(recordFolder);
+                                        for (NodeRef record : records)
+                                        {
+                                            if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
+                                            {
+                                                if (recordFolder.equals(nodeService.getPrimaryParent(record).getParentRef()))
+                                                {
+                                                    if (logger.isDebugEnabled())
+                                                    {
+                                                        logger.info("updating record: " + record);
+                                                    }
+
+                                                    // update record disposition information
+                                                    dispositionService.updateNextDispositionAction(record, schedule);
+                                                    recordsManagementSearchBehaviour.onAddDispositionLifecycleAspect(record, null);
+                                                    innerRecordCount++;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return innerRecordCount;
+                                }
+                            });
+                            nodeService.addAspect(recordFolder, ASPECT_DISPOSITION_PROCESSED, null);
+                        }
+                        finally
+                        {
+                            frozenAspect.enableOnPropUpdateFrozenAspect();
+                        }
+                        return recordCount;
                     }
-                    finally
-                    {
-                        frozenAspect.enableOnPropUpdateFrozenAspect();
-                    }
-                    return recordCount;
-                }
-            }, false, true);
+                }, false, true);
     }
 }

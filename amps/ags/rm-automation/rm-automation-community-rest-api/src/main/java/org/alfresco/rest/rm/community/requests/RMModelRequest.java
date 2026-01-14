@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,11 +29,11 @@ package org.alfresco.rest.rm.community.requests;
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
-import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.requests.ModelRequest;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import org.alfresco.rest.core.RMRestWrapper;
+import org.alfresco.rest.requests.ModelRequest;
 
 /**
  * Extends {@link ModelRequest} to set {@link RMRestWrapper}
@@ -43,8 +43,8 @@ import lombok.Setter;
  */
 public abstract class RMModelRequest<Request> extends ModelRequest<Request>
 {
-    @Getter (value = PROTECTED)
-    @Setter (value = PRIVATE)
+    @Getter(value = PROTECTED)
+    @Setter(value = PRIVATE)
     private RMRestWrapper rmRestWrapper;
 
     /**

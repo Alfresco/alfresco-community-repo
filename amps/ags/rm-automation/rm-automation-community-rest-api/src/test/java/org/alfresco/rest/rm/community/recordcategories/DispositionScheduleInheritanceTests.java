@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,15 +29,16 @@ package org.alfresco.rest.rm.community.recordcategories;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class DispositionScheduleInheritanceTests extends BaseRMRestTest
 {
@@ -48,15 +49,9 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
     private DispositionScheduleService dispositionScheduleService;
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on records level
-     *      - subCategory without RS
-     *              - recFolder
-     *                      - incomplete electronic record
-     *                      - complete non-electronic record
-     * Then both records should inherit the RS from rootCategory
+     * Given following structure is created: rootCategory with RS applied on records level - subCategory without RS - recFolder - incomplete electronic record - complete non-electronic record Then both records should inherit the RS from rootCategory
      */
-    @AlfrescoTest (jira = "MNT-19967")
+    @AlfrescoTest(jira = "MNT-19967")
     @Test
     public void testRSInheritanceOnRecordsWhenOnlyACategoryHasRS()
     {
@@ -87,11 +82,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
     }
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on records folder level
-     *      - subCategory without RS
-     *              - recFolder
-     * Then recFolder should inherit the RS from rootCategory
+     * Given following structure is created: rootCategory with RS applied on records folder level - subCategory without RS - recFolder Then recFolder should inherit the RS from rootCategory
      */
     @Test
     public void testRSInheritanceOnRecordFoldersWhenOnlyACategoryHasRS()
@@ -116,14 +107,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
     }
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on records level
-     *      - subCategory1 with another RS applied on records level
-     *              - subCategory2 without RS
-     *                      - recFolder
-     *                              - incomplete electronic record
-     *                              - complete non-electronic record
-     * Then both records should inherit the RS from subCategory1
+     * Given following structure is created: rootCategory with RS applied on records level - subCategory1 with another RS applied on records level - subCategory2 without RS - recFolder - incomplete electronic record - complete non-electronic record Then both records should inherit the RS from subCategory1
      */
     @Test
     public void testRSInheritanceOnRecordsWhen2CategoriesHaveRS()
@@ -166,12 +150,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
     }
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on records folder level
-     *      - subCategory1 with another RS applied on records folder level
-     *          - subCategory2 without RS
-     *              - recFolder
-     * Then recFolder should inherit the RS from subCategory1
+     * Given following structure is created: rootCategory with RS applied on records folder level - subCategory1 with another RS applied on records folder level - subCategory2 without RS - recFolder Then recFolder should inherit the RS from subCategory1
      */
     @Test
     public void testRSInheritanceOnRecordFoldersWhen2CategoriesHaveRS()
@@ -204,13 +183,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
     }
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on folder records level
-     *      - subCategory with another RS applied on records level
-     *              - recFolder
-     *                      - incomplete electronic record
-     *                      - complete non-electronic record
-     * Then both records should inherit the RS from subCategory
+     * Given following structure is created: rootCategory with RS applied on folder records level - subCategory with another RS applied on records level - recFolder - incomplete electronic record - complete non-electronic record Then both records should inherit the RS from subCategory
      */
     @Test
     public void testMixedRSInheritanceWhenFirstParentHasRSOnRecords()
@@ -250,14 +223,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
     }
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on records level
-     *      - subCategory with another RS applied on folder records level
-     *              - recFolder
-     *                      - incomplete electronic record
-     *                      - complete non-electronic record
-     * Then both records should not have RS (rma:recordSearchHasDispositionSchedule property is set to false)
-     * and record folder inherits the RS from subCategory
+     * Given following structure is created: rootCategory with RS applied on records level - subCategory with another RS applied on folder records level - recFolder - incomplete electronic record - complete non-electronic record Then both records should not have RS (rma:recordSearchHasDispositionSchedule property is set to false) and record folder inherits the RS from subCategory
      */
     @Test
     public void testMixedRSInheritanceWhenFirstParentHasRSOnFolders()

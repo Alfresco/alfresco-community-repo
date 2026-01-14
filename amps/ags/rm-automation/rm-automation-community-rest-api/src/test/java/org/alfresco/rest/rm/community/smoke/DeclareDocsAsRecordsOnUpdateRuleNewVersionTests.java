@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,7 +26,23 @@
  */
 package org.alfresco.rest.rm.community.smoke;
 
+import static lombok.AccessLevel.PROTECTED;
+import static org.springframework.http.HttpStatus.CREATED;
+
+import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
@@ -43,23 +59,9 @@ import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static lombok.AccessLevel.PROTECTED;
-import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
-import static org.springframework.http.HttpStatus.CREATED;
-
-public class DeclareDocsAsRecordsOnUpdateRuleNewVersionTests extends BaseRMRestTest {
-
+public class DeclareDocsAsRecordsOnUpdateRuleNewVersionTests extends BaseRMRestTest
+{
 
     @Autowired
     private DataSite dataSite;
@@ -74,7 +76,7 @@ public class DeclareDocsAsRecordsOnUpdateRuleNewVersionTests extends BaseRMRestT
     protected DataUserAIS dataUser;
     private final static String title = "Rule to convert document as record";
 
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void setUp()
     {
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
@@ -84,7 +86,8 @@ public class DeclareDocsAsRecordsOnUpdateRuleNewVersionTests extends BaseRMRestT
 
     @Test
     @AlfrescoTest(jira = "RM-1521")
-    public void declareDocsAsRecordsOnUpdateRuleNewVersion() {
+    public void declareDocsAsRecordsOnUpdateRuleNewVersion()
+    {
         FolderModel testFolder;
 
         STEP("Create test collaboration site to store documents in.");
@@ -93,29 +96,28 @@ public class DeclareDocsAsRecordsOnUpdateRuleNewVersionTests extends BaseRMRestT
         STEP("Create a record folder with a DECLARE_AS_RECORD");
         RecordCategoryChild folderWithRule = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
         RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description")
-            .applyToChildren(true)
-            .actions(Collections.singletonList(ActionsOnRule.DECLARE_AS_RECORD.getActionValue()));
+                .applyToChildren(true)
+                .actions(Collections.singletonList(ActionsOnRule.DECLARE_AS_RECORD.getActionValue()));
         rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + folderWithRule.getId(), ruleDefinition);
 
         STEP("Create a document in the collaboration site");
         FileModel testFile = dataContent.usingSite(publicSite)
-            .usingAdmin()
-            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                .usingAdmin()
+                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         assertStatusCode(CREATED);
-
 
         // verify the declared record is in Unfilled Records folder
         UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
         List<UnfiledContainerChildEntry> matchingRecords = unfiledContainersAPI.getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-            .getEntries()
-            .stream()
-            .filter(e -> e.getEntry().getId().equals(testFile.getNodeRefWithoutVersion()))
-            .collect(Collectors.toList());
+                .getEntries()
+                .stream()
+                .filter(e -> e.getEntry().getId().equals(testFile.getNodeRefWithoutVersion()))
+                .collect(Collectors.toList());
 
-        //delete rm items
+        // delete rm items
         deleteRecordCategory(recordCategory.getId());
         STEP("Delete the record.");
-        //delete created collaboration site
+        // delete created collaboration site
         dataSite.deleteSite(publicSite);
 
     }

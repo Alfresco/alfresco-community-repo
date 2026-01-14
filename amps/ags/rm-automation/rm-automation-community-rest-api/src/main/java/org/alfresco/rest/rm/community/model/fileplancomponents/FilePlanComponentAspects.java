@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,16 +36,15 @@ public class FilePlanComponentAspects
 {
     /** Private constructor to prevent instantiation. */
     private FilePlanComponentAspects()
-    {
-    }
+    {}
 
     // aspect present on completed records
     public static final String ASPECTS_COMPLETED_RECORD = "rma:declaredRecord";
 
-	// aspect present on record folders/categories with vital records
-    public static final String ASPECTS_VITAL_RECORD_DEFINITION= "rma:vitalRecordDefinition";
+    // aspect present on record folders/categories with vital records
+    public static final String ASPECTS_VITAL_RECORD_DEFINITION = "rma:vitalRecordDefinition";
 
-	// aspect present on vital records
+    // aspect present on vital records
     public static final String ASPECTS_VITAL_RECORD = "rma:vitalRecord";
 
     // Frozen aspect

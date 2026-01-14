@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,7 +28,9 @@ package org.alfresco.rest.rm.community.model.retentionschedule;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+
 import org.alfresco.rest.core.RestModels;
+
 @Data
 public class RetentionScheduleEntry extends RestModels<RetentionSchedule, RetentionScheduleEntry>
 {

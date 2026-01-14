@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,14 +27,13 @@
 package org.alfresco.rest.rm.community.model.site;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.rest.model.RestSiteModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.rest.model.RestSiteModel;
 
 /**
  * POJO for RM Site component
@@ -48,7 +47,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RMSite extends RestSiteModel
 {
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private RMSiteCompliance compliance;
 
     /** Private constructor allowing Lombok to include superclass fields in the builder. */

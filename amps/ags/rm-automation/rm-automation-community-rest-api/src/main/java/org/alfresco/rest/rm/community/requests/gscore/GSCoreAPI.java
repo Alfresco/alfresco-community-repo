@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,8 +33,8 @@ import io.restassured.RestAssured;
 
 import org.alfresco.rest.core.RMRestProperties;
 import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.rm.community.requests.gscore.api.ActionsExecutionAPI;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
+import org.alfresco.rest.rm.community.requests.gscore.api.ActionsExecutionAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.HoldsAPI;
@@ -43,15 +43,14 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RMUserAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RetentionScheduleAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.TransferAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.TransferContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.RetentionScheduleAPI;
 
 /**
- * Defines the entire GS Core API
- * {@link http://host:port/gs-api-explorer} select "GS Core API"
+ * Defines the entire GS Core API {@link http://host:port/gs-api-explorer} select "GS Core API"
  *
  * @author Tuna Aksoy
  * @since 2.6
@@ -61,8 +60,10 @@ public class GSCoreAPI extends RMModelRequest
     /**
      * Constructor
      *
-     * @param rmRestWrapper RM REST Wrapper
-     * @param rmRestProperties RM REST Properties
+     * @param rmRestWrapper
+     *            RM REST Wrapper
+     * @param rmRestProperties
+     *            RM REST Properties
      */
     public GSCoreAPI(RMRestWrapper rmRestWrapper, RMRestProperties rmRestProperties)
     {
@@ -80,7 +81,7 @@ public class GSCoreAPI extends RMModelRequest
      */
     public RMSiteAPI usingRMSite()
     {
-      return new RMSiteAPI(getRmRestWrapper());
+        return new RMSiteAPI(getRmRestWrapper());
     }
 
     /**
@@ -193,7 +194,10 @@ public class GSCoreAPI extends RMModelRequest
         return new ActionsExecutionAPI(getRmRestWrapper());
     }
 
-    public HoldsAPI usingHoldsAPI() { return new HoldsAPI(getRmRestWrapper()); }
+    public HoldsAPI usingHoldsAPI()
+    {
+        return new HoldsAPI(getRmRestWrapper());
+    }
 
     public RetentionScheduleAPI usingRetentionScheduleAPI()
     {

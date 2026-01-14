@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,16 +27,16 @@
 
 package org.alfresco.rest.v0;
 
-import org.alfresco.rest.core.v0.BaseAPI;
+import java.io.UnsupportedEncodingException;
+import java.text.MessageFormat;
+import java.util.List;
+
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.MessageFormat;
-import java.util.List;
+import org.alfresco.rest.core.v0.BaseAPI;
 
 /**
  * Methods to make API requests using v0 API for Linking Records
@@ -45,29 +45,35 @@ import java.util.List;
  * @since 3.2
  */
 @Component
-public class LinksAPI extends BaseAPI {
+public class LinksAPI extends BaseAPI
+{
 
     private static final String LINK_API = "{0}doclib/action/rm-link/site/rm/documentLibrary/{1}";
 
     /**
      * Creates the Link
      *
-     * @param user The username of the user to use.
-     * @param password The password of the user.
-     * @param expectedStatusCode The expected return status code.
-     * @param sourcePath The Source of link the record. This should be in the format
-     * "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}",
-     * "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
-     * @param nodeRefs The Node that needs to be linked.
+     * @param user
+     *            The username of the user to use.
+     * @param password
+     *            The password of the user.
+     * @param expectedStatusCode
+     *            The expected return status code.
+     * @param sourcePath
+     *            The Source of link the record. This should be in the format "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}", "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
+     * @param nodeRefs
+     *            The Node that needs to be linked.
      * @return The HTTP Response.
-     * @throws AssertionError If the API didn't return the expected status code.
+     * @throws AssertionError
+     *             If the API didn't return the expected status code.
      */
-    public HttpResponse linkRecord(String user, String password, int expectedStatusCode, String sourcePath, List<String> nodeRefs) throws UnsupportedEncodingException {
+    public HttpResponse linkRecord(String user, String password, int expectedStatusCode, String sourcePath, List<String> nodeRefs) throws UnsupportedEncodingException
+    {
         JSONObject requestParams = new JSONObject();
         requestParams.put("nodeRefs", new JSONArray(nodeRefs));
 
         return doSlingshotPostJsonRequest(user, password, expectedStatusCode, requestParams,
-            MessageFormat.format(LINK_API, "{0}", sourcePath));
+                MessageFormat.format(LINK_API, "{0}", sourcePath));
     }
 
 }

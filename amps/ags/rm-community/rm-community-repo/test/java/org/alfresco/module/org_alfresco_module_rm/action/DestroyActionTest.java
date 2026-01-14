@@ -34,7 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 
 @SuppressWarnings({"PMD.TestClassWithoutTestCases", "PMD.JUnit4TestShouldUseTestAnnotation"})
-public class DestroyActionUnitTest extends BaseRMTestCase
+public class DestroyActionTest extends BaseRMTestCase
 {
 
     private DestroyAction destroyAction;

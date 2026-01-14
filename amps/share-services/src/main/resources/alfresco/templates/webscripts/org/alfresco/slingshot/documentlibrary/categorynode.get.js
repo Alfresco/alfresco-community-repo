@@ -25,10 +25,10 @@ function getCategoryNode()
       {
           var queryPath = "/" + catAspect + "/" + encodePath(path);
           var query = 'PATH:"/cm:categoryRoot/'+queryPath+'/*" AND  TYPE:"cm:category"';
-          logger.debug ("Query for showing category nodes :"+ query);
+          logger.debug ("Query for showing category nodes : "+ query);
           //categoryResults = search.luceneSearch("+PATH:\"" + queryPath + "/*\" AND -PATH:\"" + queryPath + "/member\"");
           categoryResults = search.luceneSearch(query);
-          logger.debug("Results of query, showing category nodes :" + categoryResults);
+          logger.debug("Results of query, showing for category nodes : " + categoryResults);
       }
       
       // make each result an object and indicate it is selectable in the UI

@@ -34,24 +34,28 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 
 @SuppressWarnings({"PMD.TestClassWithoutTestCases", "PMD.JUnit4TestShouldUseTestAnnotation"})
-public class DestroyActionUnitTest extends BaseRMTestCase {
+public class DestroyActionUnitTest extends BaseRMTestCase
+{
 
     private DestroyAction destroyAction;
 
     @Override
-    protected String[] getConfigLocations() {
+    protected String[] getConfigLocations()
+    {
         List<String> list = new ArrayList<>(Arrays.asList(super.getConfigLocations()));
         list.add("classpath:alfresco/module/org_alfresco_module_rm/rm-action-context.xml");
         return list.toArray(new String[0]);
     }
 
     @Override
-    protected void setUp() throws Exception {
+    protected void setUp() throws Exception
+    {
         super.setUp();
         destroyAction = (DestroyAction) applicationContext.getBean("destroy");
     }
 
-    public void testDestroyActionAuditedImmediatelyTrue() {
+    public void testDestroyActionAuditedImmediatelyTrue()
+    {
         assertTrue("DestroyAction bean should be auditedImmediately so ghosted and non-ghosted records are recorded",
                 destroyAction.isAuditedImmediately());
     }

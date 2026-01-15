@@ -257,7 +257,7 @@ var Filters =
              if (categoryNodeRef && categoryNodeRef.length !== 0 && search.findNode(categoryNodeRef) != null) {
                  filterParams.query = filterQuery + ' +@cm\\:categories:"' + categoryNodeRef + '"';
              }
-             else if(categoryNodeRef && Array.isArray(categoryNodeRef)){
+             else if (categoryNodeRef && Array.isArray(categoryNodeRef)) {
                  filterData = this.constructCategoryPathQuery(filterData);
                  filterParams.query = filterQuery + 'PATH:"/cm:categoryRoot/cm:generalclassifiable' + filterData + '/*" AND  TYPE:"cm:content"';
              }

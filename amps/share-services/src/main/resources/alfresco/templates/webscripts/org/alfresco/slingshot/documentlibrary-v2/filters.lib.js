@@ -290,7 +290,7 @@ var Filters =
 
     getCategoryNodeRef: function(categoryName) {
 
-        // This search for first level. i.e Tags , Langugages etc.
+        // This search for first level. i.e Tags , Languages etc.
         var results = search.luceneSearch(
             'PATH:"/cm:categoryRoot/cm:generalclassifiable//*" AND @cm\\:name:"' + categoryName + '"'
         );

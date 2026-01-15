@@ -310,10 +310,9 @@ var Filters =
             }
             return [];
         }
-        else {
-            logger.warn("Category not found : " + categoryName);
-            return null;
-        }
+        logger.warn("Category not found : " + categoryName);
+        return null;
+
     },
     /* Construct path query for category , by appending prefix 'cm:' to the filtered value */
     constructCategoryPathQuery: function (str){

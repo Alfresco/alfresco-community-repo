@@ -7,7 +7,7 @@ version: "3"
 
 services:
   alfresco:
-    image: alfresco/alfresco-community-repo-base:latest
+    image: alfresco/alfresco-content-repository:latest
     environment:
       CATALINA_OPTS : "-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
       JAVA_TOOL_OPTIONS: "

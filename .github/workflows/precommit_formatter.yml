@@ -22,7 +22,7 @@ jobs:
           extra_args: --all-files
       - name: Update secrets baseline
         run: pip install detect-secrets && detect-secrets scan --baseline .secrets.baseline
-      - uses: Alfresco/alfresco-build-tools/.github/actions/git-commit-changes@v8.24.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/git-commit-changes@v12.4.3
         with:
           username: ${{ secrets.BOT_GITHUB_USERNAME }}
           add-options: -u

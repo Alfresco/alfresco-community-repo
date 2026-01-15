@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -28,28 +28,23 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import static java.util.Objects.requireNonNull;
 
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.AUDIENCE;
-
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
+import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.oauth2.client.endpoint.AbstractOAuth2AuthorizationGrantRequest;
-import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
-import org.springframework.security.oauth2.client.endpoint.DefaultPasswordTokenResponseClient;
-import org.springframework.security.oauth2.client.endpoint.DefaultRefreshTokenTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
-import org.springframework.security.oauth2.client.endpoint.OAuth2PasswordGrantRequest;
-import org.springframework.security.oauth2.client.endpoint.OAuth2PasswordGrantRequestEntityConverter;
 import org.springframework.security.oauth2.client.endpoint.OAuth2RefreshTokenGrantRequest;
+import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.RestClientRefreshTokenTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.AbstractOAuth2Token;
@@ -66,9 +61,8 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResp
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestTemplate;
 
 import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
 import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
@@ -79,45 +73,52 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     private static final Instant SOME_INSIGNIFICANT_DATE_IN_THE_PAST = Instant.MIN.plusSeconds(12345);
     private final Map<AuthorizationGrantType, OAuth2AccessTokenResponseClient> clients;
     private final DefaultOAuth2UserService defaultOAuth2UserService;
+    private final PasswordGrantFlowHandler passwordGrantFlowHandler;
     private final ClientRegistration clientRegistration;
     private final JwtDecoder jwtDecoder;
 
-    SpringBasedIdentityServiceFacade(RestOperations restOperations, ClientRegistration clientRegistration,
+    SpringBasedIdentityServiceFacade(RestTemplate restTemplate, ClientRegistration clientRegistration,
             JwtDecoder jwtDecoder)
     {
-        requireNonNull(restOperations);
+        requireNonNull(restTemplate);
         this.clientRegistration = requireNonNull(clientRegistration);
         this.jwtDecoder = requireNonNull(jwtDecoder);
         this.clients = Map.of(
-                AuthorizationGrantType.AUTHORIZATION_CODE, createAuthorizationCodeClient(restOperations),
-                AuthorizationGrantType.REFRESH_TOKEN, createRefreshTokenClient(restOperations),
-                AuthorizationGrantType.PASSWORD, createPasswordClient(restOperations, clientRegistration));
-        this.defaultOAuth2UserService = createOAuth2UserService(restOperations);
+                AuthorizationGrantType.AUTHORIZATION_CODE, createAuthorizationCodeClient(restTemplate),
+                AuthorizationGrantType.REFRESH_TOKEN, createRefreshTokenClient(restTemplate));
+        this.defaultOAuth2UserService = createOAuth2UserService(restTemplate);
+        this.passwordGrantFlowHandler = new PasswordGrantFlowHandler(clientRegistration);
     }
 
     @Override
     public AccessTokenAuthorization authorize(AuthorizationGrant authorizationGrant)
     {
-        final AbstractOAuth2AuthorizationGrantRequest request = createRequest(authorizationGrant);
-        final OAuth2AccessTokenResponseClient client = getClient(request);
-
-        final OAuth2AccessTokenResponse response;
+        final AccessTokenAuthorization response;
         try
         {
-            response = client.getTokenResponse(request);
+            if (authorizationGrant.isPassword())
+            {
+                response = passwordGrantFlowHandler.passwordGrantFlow(authorizationGrant);
+            }
+            else
+            {
+                final AbstractOAuth2AuthorizationGrantRequest request = createRequest(authorizationGrant);
+                final OAuth2AccessTokenResponseClient client = getClient(request);
+                response = new SpringAccessTokenAuthorization(client.getTokenResponse(request));
+            }
         }
         catch (OAuth2AuthorizationException e)
         {
             LOGGER.debug("Failed to authorize against Authorization Server. Reason: " + e.getError() + ".");
             throw new AuthorizationException("Failed to obtain access token. " + e.getError(), e);
         }
-        catch (RuntimeException e)
+        catch (IOException | ParseException | RuntimeException e)
         {
             LOGGER.warn("Failed to authorize against Authorization Server. Reason: " + e.getMessage());
             throw new AuthorizationException("Failed to obtain access token.", e);
         }
 
-        return new SpringAccessTokenAuthorization(response);
+        return response;
     }
 
     @Override
@@ -162,11 +163,6 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 
     private AbstractOAuth2AuthorizationGrantRequest createRequest(AuthorizationGrant grant)
     {
-        if (grant.isPassword())
-        {
-            return new OAuth2PasswordGrantRequest(clientRegistration, grant.getUsername(), grant.getPassword());
-        }
-
         if (grant.isRefreshToken())
         {
             final OAuth2AccessToken expiredAccessToken = getSpringAccessToken("JUST_FOR_FULFILLING_THE_SPRING_API");
@@ -206,22 +202,22 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> createAuthorizationCodeClient(
-            RestOperations rest)
+            RestTemplate rest)
     {
-        final DefaultAuthorizationCodeTokenResponseClient client = new DefaultAuthorizationCodeTokenResponseClient();
-        client.setRestOperations(rest);
+        final RestClientAuthorizationCodeTokenResponseClient client = new RestClientAuthorizationCodeTokenResponseClient();
+        client.setRestClient(RestClient.create(rest));
         return client;
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> createRefreshTokenClient(
-            RestOperations rest)
+            RestTemplate rest)
     {
-        final DefaultRefreshTokenTokenResponseClient client = new DefaultRefreshTokenTokenResponseClient();
-        client.setRestOperations(rest);
+        final RestClientRefreshTokenTokenResponseClient client = new RestClientRefreshTokenTokenResponseClient();
+        client.setRestClient(RestClient.create(rest));
         return client;
     }
 
-    private static DefaultOAuth2UserService createOAuth2UserService(RestOperations rest)
+    private static DefaultOAuth2UserService createOAuth2UserService(RestTemplate rest)
     {
         final DefaultOAuth2UserService userService = new DefaultOAuth2UserService();
         userService.setRestOperations(rest);
@@ -239,36 +235,6 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                 oAuth2User.getAttribute(userInfoAttrMapping.firstNameClaim()),
                 oAuth2User.getAttribute(userInfoAttrMapping.lastNameClaim()),
                 oAuth2User.getAttribute(userInfoAttrMapping.emailClaim())));
-    }
-
-    private static OAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> createPasswordClient(RestOperations rest,
-            ClientRegistration clientRegistration)
-    {
-        final DefaultPasswordTokenResponseClient client = new DefaultPasswordTokenResponseClient();
-        client.setRestOperations(rest);
-        Optional.of(clientRegistration)
-                .map(ClientRegistration::getProviderDetails)
-                .map(ProviderDetails::getConfigurationMetadata)
-                .map(metadata -> metadata.get(AUDIENCE.getValue()))
-                .filter(String.class::isInstance)
-                .map(String.class::cast)
-                .ifPresent(audienceValue -> {
-                    final OAuth2PasswordGrantRequestEntityConverter requestEntityConverter = new OAuth2PasswordGrantRequestEntityConverter();
-                    requestEntityConverter.addParametersConverter(audienceParameterConverter(audienceValue));
-                    client.setRequestEntityConverter(requestEntityConverter);
-                });
-        return client;
-    }
-
-    private static Converter<OAuth2PasswordGrantRequest, MultiValueMap<String, String>> audienceParameterConverter(
-            String audienceValue)
-    {
-        return (grantRequest) -> {
-            MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-            parameters.set("audience", audienceValue);
-
-            return parameters;
-        };
     }
 
     private static OAuth2AccessToken getSpringAccessToken(String token)

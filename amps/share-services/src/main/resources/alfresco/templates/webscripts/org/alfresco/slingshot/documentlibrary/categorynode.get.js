@@ -32,7 +32,7 @@ function getCategoryNode()
       }
       
       // make each result an object and indicate it is selectable in the UI
-       for each (item in categoryResults)
+       for each (var item in categoryResults)
        {
 
            if (evalChildFolders)

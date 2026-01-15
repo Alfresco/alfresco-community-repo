@@ -307,9 +307,8 @@ var Filters =
             logger.debug("Children present in the result of query : " + resultForChild);
             if(resultForChild && Array.isArray(resultForChild) && resultForChild.length >0) {
                 return resultForChild;
-            }else{
-                return [];
             }
+            return [];
         }
         else {
             logger.warn("Category not found : " + categoryName);

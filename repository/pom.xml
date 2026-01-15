@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>26.1.0.22-SNAPSHOT</version>
+        <version>26.1.0.32-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -148,7 +148,7 @@
         <dependency>
             <groupId>org.mozilla</groupId>
             <artifactId>rhino</artifactId>
-            <version>1.7.14</version>
+            <version>1.7.15.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

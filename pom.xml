@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>26.1.0.22-SNAPSHOT</version>
+    <version>26.1.0.32-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -48,11 +48,11 @@
         <dependency.alfresco-hb-data-sender.version>1.1.1</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-trashcan-cleaner.version>2.4.2</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.5</dependency.alfresco-jlan.version>
-        <dependency.alfresco-server-root.version>7.0.2</dependency.alfresco-server-root.version>
+        <dependency.alfresco-server-root.version>8.0.0</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-core.version>5.2.5</dependency.alfresco-transform-core.version>
-        <dependency.alfresco-transform-service.version>4.2.4</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>5.3.0-A.1</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>4.3.0-A.1</dependency.alfresco-transform-service.version>
         <dependency.alfresco-greenmail.version>7.1</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>1.0.11</dependency.acs-event-model.version>
 
@@ -125,7 +125,7 @@
         <dependency.postgresql.version>42.7.5</dependency.postgresql.version>
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
-        <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
+        <dependency.mariadb.version>3.5.6</dependency.mariadb.version>
         <dependency.tas-utility.version>6.0.0-A.1</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.5.5</dependency.rest-assured.version>
         <dependency.tas-email.version>2.0.0</dependency.tas-email.version>

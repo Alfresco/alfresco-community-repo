@@ -31,6 +31,8 @@ import static org.springframework.util.StringUtils.hasLength;
 import static org.springframework.util.StringUtils.tokenizeToStringArray;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.util.Locale;
 import java.util.Properties;
 import javax.sql.DataSource;
 
@@ -385,7 +387,34 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
         {
             ((AlfrescoSqlSessionFactoryBuilder) sqlSessionFactoryBuilder).setDbMetricsReporter(this.dbMetricsReporter);
         }
+        configureFetchSizeForDriver();
         this.sqlSessionFactory = buildSqlSessionFactory();
+    }
+
+    /**
+     * Configures the fetchSize property based on the database driver.MariaDB driver requires fetchSize = 1, MySQL driver requires fetchSize = Integer.MIN_VALUE
+     */
+    private void configureFetchSizeForDriver()
+    {
+        if (this.configurationProperties == null)
+        {
+            this.configurationProperties = new Properties();
+        }
+        // default fetch size for MySQL
+        String fetchsize = "-2147483648";
+
+        try (Connection con = dataSource.getConnection())
+        {
+            String driverName = con.getMetaData().getDriverName();
+            if (driverName != null && driverName.toLowerCase(Locale.ROOT).contains("mariadb"))
+            {
+                fetchsize = "1";
+            }
+        }
+        catch (Exception ignored)
+        {}
+
+        this.configurationProperties.setProperty("db.fetchsize", fetchsize);
     }
 
     /**

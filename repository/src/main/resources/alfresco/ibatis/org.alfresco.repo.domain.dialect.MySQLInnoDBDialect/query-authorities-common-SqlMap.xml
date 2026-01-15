@@ -40,7 +40,7 @@
     </select>
     
     <!-- GetAuthorities - note: take advantage of fact that authority name is also on child assoc (including "username" for users, eg. getAllAuthoritiesInZone) -->
-    <select id="select_GetAuthoritiesCannedQuery" parameterType="AuthorityInfo" resultMap="result_AuthorityInfo" fetchSize="-2147483648">
+    <select id="select_GetAuthoritiesCannedQuery" parameterType="AuthorityInfo" resultMap="result_AuthorityInfo" fetchSize="${db.fetchsize}">
        select
             childNode.id             as id,
             adn.string_value         as authority_display_name,
@@ -58,7 +58,7 @@
     </select>
     
     <!--  Get all relationships between authorities -->
-    <select id="select_GetAuthorityBridgeEntries" parameterType="AuthorityBridgeParameters" resultMap="result_AuthorityBridgeLink" fetchSize="-2147483648">
+    <select id="select_GetAuthorityBridgeEntries" parameterType="AuthorityBridgeParameters" resultMap="result_AuthorityBridgeLink" fetchSize="${db.fetchsize}">
     	select 
     	    ca.qname_localname    			as child_name,
     	    parentName.string_value         as parent_name
@@ -72,7 +72,7 @@
     </select>
     
     <!--  Get direct parent authorities -->
-    <select id="select_GetDirectAuthoritiesForUser" parameterType="AuthorityBridgeParameters" resultMap="result_AuthorityBridgeLink" fetchSize="-2147483648">
+    <select id="select_GetDirectAuthoritiesForUser" parameterType="AuthorityBridgeParameters" resultMap="result_AuthorityBridgeLink" fetchSize="${db.fetchsize}">
         select 
     	    ''    			                as child_name,
     	    parentName.string_value         as parent_name

@@ -305,7 +305,7 @@ var Filters =
             logger.debug("FtsQuery : " + ftsQuery);
             var resultForChild = search.luceneSearch(ftsQuery);
             logger.debug("Children present in the result of query : " + resultForChild);
-            if(resultForChild && Array.isArray(resultForChild) && resultForChild.length >0) {
+            if (resultForChild && Array.isArray(resultForChild) && resultForChild.length > 0) {
                 return resultForChild;
             }
             return [];

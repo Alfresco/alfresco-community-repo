@@ -254,7 +254,7 @@ var Filters =
             }
 
              var categoryNodeRef = this.getCategoryNodeRef(filterData);
-             if ( categoryNodeRef && categoryNodeRef.length !== 0 && search.findNode(categoryNodeRef) != null) {
+             if (categoryNodeRef && categoryNodeRef.length !== 0 && search.findNode(categoryNodeRef) != null) {
                  filterParams.query = filterQuery + ' +@cm\\:categories:"' + categoryNodeRef + '"';
              }
              else if(categoryNodeRef && Array.isArray(categoryNodeRef)){

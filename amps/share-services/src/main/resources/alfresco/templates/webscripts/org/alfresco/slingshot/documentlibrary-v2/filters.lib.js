@@ -302,9 +302,8 @@ var Filters =
             // In case filtered value selected as  nested category node , i.e /Languages/English
             categoryName = this.constructCategoryPathQuery(categoryName);
             var ftsQuery =  'PATH:"/cm:categoryRoot/cm:generalclassifiable' + categoryName + '/*"';
-            logger.debug("FtsQuery : " + ftsQuery);
+            logger.debug("FtsQuery for nested category selection : " + ftsQuery);
             var resultForChild = search.luceneSearch(ftsQuery);
-            logger.debug("Children present in the result of query : " + resultForChild);
             if (resultForChild && Array.isArray(resultForChild) && resultForChild.length > 0) {
                 return resultForChild;
             }

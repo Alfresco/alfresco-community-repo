@@ -262,7 +262,9 @@ var Filters =
                  filterParams.query = filterQuery + 'PATH:"/cm:categoryRoot/cm:generalclassifiable' + filterData + '/*" AND  TYPE:"cm:content"';
              }
             else {
-               logger.warn("Category filter : skipping invalid category node : " + categoryNodeRef);
+               if(logger.isWarnLoggingEnabled()) {
+                   logger.warn("Category filter : skipping invalid category node : " + categoryNodeRef);
+               }
             }
             break;
 
@@ -284,7 +286,9 @@ var Filters =
       {
          filterParams.query += " " + (Filters.TYPE_MAP[parsedArgs.type] || "");
       }
-      logger.warn("Final Query : " + filterParams.query);
+      if(logger.isWarnLoggingEnabled()) {
+          logger.warn("Final Query : " + filterParams.query);
+      }
       return filterParams;
    },
 
@@ -302,14 +306,18 @@ var Filters =
             // In case filtered value selected as  nested category node , i.e /Languages/English
             categoryName = this.constructCategoryPathQuery(categoryName);
             var ftsQuery =  'PATH:"/cm:categoryRoot/cm:generalclassifiable' + categoryName + '/*"';
-            logger.debug("FtsQuery for nested category selection : " + ftsQuery);
+            if (logger.isLoggingEnabled()) {
+                logger.debug("FtsQuery for nested category selection : " + ftsQuery);
+            }
             var resultForChild = search.luceneSearch(ftsQuery);
             if (resultForChild && Array.isArray(resultForChild) && resultForChild.length > 0) {
                 return resultForChild;
             }
             return [];
         }
-        logger.warn("Category not found : " + categoryName);
+        if(logger.isWarnLoggingEnabled()) {
+            logger.warn("Category not found : " + categoryName);
+        }
         return null;
 
     },

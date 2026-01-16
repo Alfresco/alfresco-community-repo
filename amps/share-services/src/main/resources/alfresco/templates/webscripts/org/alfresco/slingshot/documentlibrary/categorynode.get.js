@@ -25,7 +25,9 @@ function getCategoryNode()
       {
           var queryPath = "/" + catAspect + "/" + encodePath(path);
           var query = 'PATH:"/cm:categoryRoot/'+queryPath+'/*" AND  TYPE:"cm:category"';
-          logger.debug ("Query for showing category nodes : "+ query);
+          if (logger.isLoggingEnabled()) {
+              logger.debug("Query for showing category nodes : " + query);
+          }
           categoryResults = search.luceneSearch(query);
       }
       

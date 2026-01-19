@@ -23,31 +23,33 @@ function getCategoryNode()
       }
       else
       {
-         var queryPath = "/" + catAspect + "/" + encodePath(path);
-         categoryResults = search.luceneSearch("+PATH:\"" + queryPath + "/*\" AND -PATH:\"" + queryPath + "/member\"");
+          var queryPath = "/" + catAspect + "/" + encodePath(path);
+          var query = 'PATH:"/cm:categoryRoot/'+queryPath+'/*" AND  TYPE:"cm:category"';
+          if (logger.isLoggingEnabled()) {
+              logger.debug("Query for showing category nodes : " + query);
+          }
+          categoryResults = search.luceneSearch(query);
       }
       
       // make each result an object and indicate it is selectable in the UI
-      for each (item in categoryResults)
-      {
-         if (evalChildFolders)
-         {
-            hasSubfolders = item.children.length > 0;
-         }
+       for each (var item in categoryResults)
+       {
+           if (evalChildFolders)
+           {
+               hasSubfolders = item.children.length > 0;
+           }
+           items.push(
+               {
+                   node: item,
+                   hasSubfolders: hasSubfolders
+               });
 
-         items.push(
-         {
-            node: item,
-            hasSubfolders: hasSubfolders
-         });
-      }
-      
-      items.sort(sortByName);
-      
-      return (
-      {
-         items: items
-      });
+       }
+       items.sort(sortByName);
+       return (
+           {
+               items: items
+           });
    }
    catch(e)
    {

@@ -59,7 +59,7 @@ services:
       CLIENT_SSL_TRUST_STORE_TYPE: "JCEKS"
   keycloak:
     profiles: ["with-sso"]
-    image: quay.io/keycloak/keycloak:26.1.0
+    image: quay.io/keycloak/keycloak:26.5.0
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin

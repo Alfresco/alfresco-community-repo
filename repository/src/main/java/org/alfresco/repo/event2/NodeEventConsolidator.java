@@ -396,8 +396,8 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
 
     private boolean shouldIncludeModifiedAt()
     {
-         // Node-type specific (e.g., only for folders)
-         return nodeType.equals(ContentModel.TYPE_FOLDER);
+        // Node-type specific (e.g., only for folders)
+        return nodeType.equals(ContentModel.TYPE_FOLDER);
     }
 
     Set<String> getMappedAspectsBefore(Set<String> currentAspects)

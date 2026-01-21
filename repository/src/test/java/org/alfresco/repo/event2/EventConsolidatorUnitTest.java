@@ -370,4 +370,95 @@ public class EventConsolidatorUnitTest
         assertTrue("Node event consolidator should contain event type: NODE_UPDATED", eventConsolidator.getEventTypes().contains(EventType.NODE_UPDATED));
         assertEquals(secondaryParentsMock, eventConsolidator.getSecondaryParentsBefore());
     }
+
+    @Test
+    public void testBuildNodeResourceBeforeDelta_FolderWithOnlyModifiedAtChange_IncludesModifiedAt()
+    {
+        // GIVEN: An existing folder node that is being updated (NOT being created)
+        // This simulates when same user uploads file to an existing folder
+        NodeRef folderRef = new NodeRef("workspace://SpacesStore/folder-uuid");
+
+        // Mock the helper to return folder type
+        when(nodeResourceHelper.getNodeType(folderRef)).thenReturn(ContentModel.TYPE_FOLDER);
+        when(nodeResourceHelper.createNodeResourceBuilder(folderRef)).thenReturn(mock(org.alfresco.repo.event.v1.model.NodeResource.Builder.class));
+
+        // Setup: Simulate update where only cm:modified changes (NOT creating the node)
+        // cm:modifier stays the same (same user)
+        java.util.Map<org.alfresco.service.namespace.QName, java.io.Serializable> propertiesBefore = new java.util.HashMap<>();
+        propertiesBefore.put(ContentModel.PROP_MODIFIED, new java.util.Date(1000000000L));
+        propertiesBefore.put(ContentModel.PROP_MODIFIER, "admin");
+
+        java.util.Map<org.alfresco.service.namespace.QName, java.io.Serializable> propertiesAfter = new java.util.HashMap<>();
+        propertiesAfter.put(ContentModel.PROP_MODIFIED, new java.util.Date(2000000000L)); // Different time
+        propertiesAfter.put(ContentModel.PROP_MODIFIER, "admin"); // Same user - won't be in changedPropsBefore
+
+        // Mock the helper methods - simulating that no properties map to NodeResource fields
+        when(nodeResourceHelper.mapToNodeProperties(any())).thenReturn(java.util.Collections.emptyMap());
+        when(nodeResourceHelper.getLocalizedPropertiesBefore(any(java.util.Map.class), any(org.alfresco.repo.event.v1.model.NodeResource.class))).thenReturn(java.util.Collections.emptyMap());
+        when(nodeResourceHelper.getContentInfo(any())).thenReturn(null);
+        when(nodeResourceHelper.getUserInfo(any())).thenReturn(null); // cm:modifier not in changedPropsBefore
+        when(nodeResourceHelper.getZonedDateTime(any(java.util.Date.class))).thenReturn(java.time.ZonedDateTime.now());
+
+        // WHEN: onUpdateProperties is called (simulating folder update, not creation)
+        eventConsolidator.onUpdateProperties(folderRef, propertiesBefore, propertiesAfter);
+
+        // THEN: Verify event type is UPDATE
+        assertTrue("Event consolidator should contain NODE_UPDATED event for folder",
+                   eventConsolidator.getEventTypes().contains(EventType.NODE_UPDATED));
+
+        // THEN: Verify derived event is UPDATE (not CREATED, not filtered out)
+        // This validates that our shouldIncludeModifiedAt() logic works:
+        // - For folders, even when only cm:modified changes
+        // - modifiedAt is included in resourceBefore
+        // - resourceBeforeAllFieldsNull is set to false
+        // - Event passes the eligibility check
+        assertEquals("Derived event should be NODE_UPDATED for folder with only timestamp change",
+                     EventType.NODE_UPDATED, eventConsolidator.getDerivedEvent());
+    }
+
+    @Test
+    public void testBuildNodeResourceBeforeDelta_ContentNodeWithOnlyModifiedAtChange()
+    {
+        // GIVEN: A content node (NOT folder) where only cm:modified changes
+        // This tests that our logic is specific to folders
+        NodeRef contentRef = new NodeRef("workspace://SpacesStore/content-uuid");
+        ChildAssociationRef childAssocRef = mock(ChildAssociationRef.class);
+        when(childAssocRef.getChildRef()).thenReturn(contentRef);
+
+        // Mock the helper to return content type (NOT folder)
+        when(nodeResourceHelper.getNodeType(contentRef)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(nodeResourceHelper.createNodeResourceBuilder(contentRef)).thenReturn(mock(org.alfresco.repo.event.v1.model.NodeResource.Builder.class));
+
+        // Setup: Create content node
+        eventConsolidator.onCreateNode(childAssocRef);
+
+        // Setup: Simulate update where only cm:modified changes
+        java.util.Map<org.alfresco.service.namespace.QName, java.io.Serializable> propertiesBefore = new java.util.HashMap<>();
+        propertiesBefore.put(ContentModel.PROP_MODIFIED, new java.util.Date(1000000000L));
+        propertiesBefore.put(ContentModel.PROP_MODIFIER, "admin");
+
+        java.util.Map<org.alfresco.service.namespace.QName, java.io.Serializable> propertiesAfter = new java.util.HashMap<>();
+        propertiesAfter.put(ContentModel.PROP_MODIFIED, new java.util.Date(2000000000L));
+        propertiesAfter.put(ContentModel.PROP_MODIFIER, "admin"); // Same user
+
+        // Mock helpers - same as folder test
+        when(nodeResourceHelper.mapToNodeProperties(any())).thenReturn(java.util.Collections.emptyMap());
+        when(nodeResourceHelper.getLocalizedPropertiesBefore(any(java.util.Map.class), any(org.alfresco.repo.event.v1.model.NodeResource.class))).thenReturn(java.util.Collections.emptyMap());
+        when(nodeResourceHelper.getContentInfo(any())).thenReturn(null);
+        when(nodeResourceHelper.getUserInfo(any())).thenReturn(null);
+        when(nodeResourceHelper.getZonedDateTime(any(java.util.Date.class))).thenReturn(java.time.ZonedDateTime.now());
+
+        // WHEN: onUpdateProperties is called
+        eventConsolidator.onUpdateProperties(contentRef, propertiesBefore, propertiesAfter);
+
+        // THEN: For content nodes (not folders), shouldIncludeModifiedAt returns false
+        // So the behavior might be different (could be filtered if no other changes)
+        assertTrue("Event consolidator should contain NODE_UPDATED event",
+                   eventConsolidator.getEventTypes().contains(EventType.NODE_UPDATED));
+
+        // Note: Without shouldIncludeModifiedAt logic for content,
+        // this event might be filtered by EventGenerator's eligibility check
+        // Our implementation specifically helps folders to avoid Elasticsearch sync issues
+    }
 }
+

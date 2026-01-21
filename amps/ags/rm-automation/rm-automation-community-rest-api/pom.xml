@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>25.2.1.4-SNAPSHOT</version>
+      <version>25.2.2.1-SNAPSHOT</version>
    </parent>
 
    <build>

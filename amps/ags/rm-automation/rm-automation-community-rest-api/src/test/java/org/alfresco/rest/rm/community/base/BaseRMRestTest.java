@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -1052,7 +1052,7 @@ public class BaseRMRestTest extends RestTest
 
     /**
      * Helper method to get the Previous Date in the YYYY-MM-ddTHH:mm:ss.SSSXXX format
-     * 
+     *
      * @param previousDays
      *            number of previous days while calculating the date as output
      * @return previousDate as String in the ISO 8601 Date Format
@@ -1070,7 +1070,7 @@ public class BaseRMRestTest extends RestTest
 
     /**
      * Helper method to provide the Edited Disposition Date Json The Edited Disposition Date is modified to previous date so that CUTOFF & DESTROY Steps will be enabled
-     * 
+     *
      * @return JsonObject with the format {"name":"editDispositionActionAsOfDate","params":{"asOfDate":{"iso8601":"Previous Date"}}}
      */
     protected JSONObject editDispositionDateJson()

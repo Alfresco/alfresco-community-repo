@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -68,7 +68,7 @@ public class RMUserAPI extends RMModelRequest
 
     /**
      * Helper method to obtain {@link AlfrescoHttpClient}
-     * 
+     *
      * @return Initialized {@link AlfrescoHttpClient} instance
      */
     private AlfrescoHttpClient getAlfrescoHttpClient()
@@ -122,7 +122,7 @@ public class RMUserAPI extends RMModelRequest
 
     /**
      * Helper method to add permission on a component to user
-     * 
+     *
      * @param filePlanComponentId
      *            The id of the file plan component on which permission should be given
      * @param user

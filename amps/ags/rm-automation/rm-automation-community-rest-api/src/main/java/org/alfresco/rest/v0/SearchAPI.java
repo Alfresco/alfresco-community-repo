@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -71,7 +71,7 @@ public class SearchAPI extends BaseAPI
      * Perform search request on search endpoint as a user.
      * <p>
      * This method is applicable only to endpoints that support HTTP GET requests and return JSON body as response.
-     * 
+     *
      * @param searchEndpoint
      * @param searchUser
      * @param searchPassword
@@ -87,7 +87,7 @@ public class SearchAPI extends BaseAPI
 
     /**
      * Generic rm search.
-     * 
+     *
      * @param username
      * @param password
      * @param site
@@ -161,7 +161,7 @@ public class SearchAPI extends BaseAPI
 
     /**
      * Generic faceted search.
-     * 
+     *
      * @param username
      * @param password
      * @param parameters
@@ -188,7 +188,7 @@ public class SearchAPI extends BaseAPI
 
     /**
      * Execute faceted search for term.
-     * 
+     *
      * @param searchUser
      * @param searchPassword
      * @param searchTerm
@@ -204,7 +204,7 @@ public class SearchAPI extends BaseAPI
 
     /**
      * Helper method to search for documents as a user using faceted search.
-     * 
+     *
      * @param username
      *            to search as
      * @param password
@@ -220,7 +220,7 @@ public class SearchAPI extends BaseAPI
 
     /**
      * Helper method to search for documents as a user using share live search.
-     * 
+     *
      * @param username
      *            to search as
      * @param password

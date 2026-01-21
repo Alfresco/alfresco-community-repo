@@ -92,5 +92,7 @@ services:
         image: alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
+            SPRING_ACTIVEMQ_USER: admin
+            SPRING_ACTIVEMQ_PASSWORD: admin #pragma: allowlist secret
         ports:
             - 8090:8090

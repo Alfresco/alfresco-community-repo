@@ -393,11 +393,11 @@ public class EventConsolidatorUnitTest
         // Setup: Simulate update where only cm:modified changes (NOT creating the node)
         // cm:modifier stays the same (same user)
         Map<QName, Serializable> propertiesBefore = new HashMap<>();
-        propertiesBefore.put(ContentModel.PROP_MODIFIED, new java.util.Date(1000000000L));
+        propertiesBefore.put(ContentModel.PROP_MODIFIED, new Date(1_000_000_000L));
         propertiesBefore.put(ContentModel.PROP_MODIFIER, "admin");
 
         Map<QName, Serializable> propertiesAfter = new HashMap<>();
-        propertiesAfter.put(ContentModel.PROP_MODIFIED, new Date(2000000000L)); // Different time
+        propertiesAfter.put(ContentModel.PROP_MODIFIED, new Date(2_000_000_000L)); // Different time
         propertiesAfter.put(ContentModel.PROP_MODIFIER, "admin"); // Same user - won't be in changedPropsBefore
 
         // Mock the helper methods - simulating that no properties map to NodeResource fields

@@ -316,7 +316,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
                 resourceBeforeAllFieldsNull = false;
             }
 
-            Map<String, Map<String, String>> localizedProps = helper.getLocalizedPropertiesBefore(changedPropsBefore, after);
+            Map<String, Map<String, String>> localizedProps = helper.getLocalizedPropertiesBefore(propertiesBefore, after);
             if (!localizedProps.isEmpty())
             {
                 builder.setLocalizedProperties(localizedProps);
@@ -378,25 +378,13 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
             resourceBeforeAllFieldsNull = false;
         }
 
-        // Only set modifiedAt if one of the other fields is also not null
-        if (modifiedAt != null && !resourceBeforeAllFieldsNull)
-        {
-            builder.setModifiedAt(modifiedAt);
-        }
-
-        // Set modifiedAt if node type is folder
-        if (modifiedAt != null && isFolderNodeType())
+        if (modifiedAt != null)
         {
             builder.setModifiedAt(modifiedAt);
             resourceBeforeAllFieldsNull = false;
         }
 
         return builder.build();
-    }
-
-    private boolean isFolderNodeType()
-    {
-        return ContentModel.TYPE_FOLDER.equals(nodeType);
     }
 
     Set<String> getMappedAspectsBefore(Set<String> currentAspects)

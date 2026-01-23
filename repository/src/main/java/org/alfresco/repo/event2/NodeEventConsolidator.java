@@ -385,7 +385,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
         }
 
         // Set modifiedAt if node type is folder
-        if (modifiedAt != null && shouldIncludeModifiedAt())
+        if (modifiedAt != null && isFolderNodeType())
         {
             builder.setModifiedAt(modifiedAt);
             resourceBeforeAllFieldsNull = false;
@@ -394,10 +394,9 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
         return builder.build();
     }
 
-    private boolean shouldIncludeModifiedAt()
+    private boolean isFolderNodeType()
     {
-        // Node-type specific (e.g., only for folders)
-        return nodeType.equals(ContentModel.TYPE_FOLDER);
+        return ContentModel.TYPE_FOLDER.equals(nodeType);
     }
 
     Set<String> getMappedAspectsBefore(Set<String> currentAspects)

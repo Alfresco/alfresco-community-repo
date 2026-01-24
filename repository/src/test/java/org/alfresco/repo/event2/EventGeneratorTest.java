@@ -37,7 +37,6 @@ import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageListener;
 import jakarta.jms.Session;
 
-import org.alfresco.util.PropertyMap;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.advisory.DestinationSource;
@@ -54,6 +53,7 @@ import org.alfresco.repo.event.v1.model.DataAttributes;
 import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.PropertyMap;
 
 public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {
@@ -178,7 +178,8 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
                 .filter(event -> event.getType().equals("org.alfresco.event.node.Updated"))
                 .filter(event -> {
                     DataAttributes<?> data = event.getData();
-                    if (data.getResource() instanceof NodeResource) {
+                    if (data.getResource() instanceof NodeResource)
+                    {
                         NodeResource resource = (NodeResource) data.getResource();
                         return resource.getId().equals(folderRef.getId());
                     }

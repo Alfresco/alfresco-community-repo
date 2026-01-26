@@ -489,6 +489,7 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: MiscContextTestSuite
             compose-profile: with-transform-core-aio
+            mvn-options: '-Dmessaging.broker.username=admin -Dmessaging.broker.password=admin' # pragma: allowlist secret
           - testSuite: SearchTestSuite
             compose-profile: default
             mvn-options: '-Dindex.subsystem.name=solr6'

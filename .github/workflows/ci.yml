@@ -450,7 +450,7 @@ jobs:
       - name: "Run ActiveMQ"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

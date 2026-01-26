@@ -484,6 +484,7 @@ jobs:
             idp: Auth0
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio
+            mvn-options: '-Dmessaging.broker.username=admin -Dmessaging.broker.password=admin' # pragma: allowlist secret
           - testSuite: AppContextExtraTestSuite
             compose-profile: with-transform-core-aio
           - testSuite: MiscContextTestSuite

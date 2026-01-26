@@ -484,12 +484,10 @@ jobs:
             idp: Auth0
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio
-            mvn-options: '-Dmessaging.broker.username=admin -Dmessaging.broker.password=admin' # pragma: allowlist secret
           - testSuite: AppContextExtraTestSuite
             compose-profile: with-transform-core-aio
           - testSuite: MiscContextTestSuite
             compose-profile: with-transform-core-aio
-            mvn-options: '-Dmessaging.broker.username=admin -Dmessaging.broker.password=admin' # pragma: allowlist secret
           - testSuite: SearchTestSuite
             compose-profile: default
             mvn-options: '-Dindex.subsystem.name=solr6'
@@ -526,7 +524,7 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }} # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

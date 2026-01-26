@@ -25,7 +25,7 @@
     <properties>
         <acs.version.major>25</acs.version.major>
         <acs.version.minor>2</acs.version.minor>
-        <acs.version.revision>2</acs.version.revision>
+        <acs.version.revision>3</acs.version.revision>
         <acs.version.label />
         <amp.min.version>${acs.version.major}.0.0</amp.min.version>
 

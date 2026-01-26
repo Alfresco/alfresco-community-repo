@@ -40,6 +40,8 @@ services:
         -Dshare.host=localhost
         -Daos.baseUrlOverwrite=http://localhost:8082/alfresco/aos
         -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
+        -Dmessaging.broker.username=admin
+        -Dmessaging.broker.password=admin
         -DlocalTransform.core-aio.url=http://transform-core-aio:8090/
         -Dimap.server.port=1143
         -Dftp.port=1221

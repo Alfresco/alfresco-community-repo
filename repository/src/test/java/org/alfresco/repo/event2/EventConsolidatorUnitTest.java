@@ -370,5 +370,4 @@ public class EventConsolidatorUnitTest
         assertTrue("Node event consolidator should contain event type: NODE_UPDATED", eventConsolidator.getEventTypes().contains(EventType.NODE_UPDATED));
         assertEquals(secondaryParentsMock, eventConsolidator.getSecondaryParentsBefore());
     }
-
 }

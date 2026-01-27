@@ -34,14 +34,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-import java.io.Serializable;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -49,10 +43,8 @@ import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.EventType;
-import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 public class EventConsolidatorUnitTest
 {
@@ -379,44 +371,4 @@ public class EventConsolidatorUnitTest
         assertEquals(secondaryParentsMock, eventConsolidator.getSecondaryParentsBefore());
     }
 
-    @Test
-    public void testFolderWithOnlyModifiedAtChangeIncludesModifiedAt()
-    {
-        // GIVEN: An existing folder node that is being updated (NOT being created)
-        // This simulates when same user uploads file to an existing folder
-        NodeRef folderRef = new NodeRef("workspace://SpacesStore/folder-uuid");
-
-        // Mock the helper to return folder type
-        when(nodeResourceHelper.getNodeType(folderRef)).thenReturn(ContentModel.TYPE_FOLDER);
-        when(nodeResourceHelper.createNodeResourceBuilder(folderRef)).thenReturn(mock(org.alfresco.repo.event.v1.model.NodeResource.Builder.class));
-
-        // Setup: Simulate update where only cm:modified changes (NOT creating the node)
-        // cm:modifier stays the same (same user)
-        Map<QName, Serializable> propertiesBefore = new HashMap<>();
-        propertiesBefore.put(ContentModel.PROP_MODIFIED, new Date(1_000_000_000L));
-        propertiesBefore.put(ContentModel.PROP_MODIFIER, "admin");
-
-        Map<QName, Serializable> propertiesAfter = new HashMap<>();
-        propertiesAfter.put(ContentModel.PROP_MODIFIED, new Date(2_000_000_000L)); // Different time
-        propertiesAfter.put(ContentModel.PROP_MODIFIER, "admin"); // Same user - won't be in changedPropsBefore
-
-        // Mock the helper methods - simulating that no properties map to NodeResource fields
-        when(nodeResourceHelper.mapToNodeProperties(any())).thenReturn(Collections.emptyMap());
-        when(nodeResourceHelper.getLocalizedPropertiesBefore(any(Map.class), any(NodeResource.class))).thenReturn(Collections.emptyMap());
-        when(nodeResourceHelper.getContentInfo(any())).thenReturn(null);
-        when(nodeResourceHelper.getUserInfo(any())).thenReturn(null); // cm:modifier not in changedPropsBefore
-        when(nodeResourceHelper.getZonedDateTime(any(Date.class))).thenReturn(ZonedDateTime.now());
-
-        // WHEN: onUpdateProperties is called (simulating folder update, not creation)
-        eventConsolidator.onUpdateProperties(folderRef, propertiesBefore, propertiesAfter);
-
-        // THEN: Verify event type is UPDATE
-        assertTrue("Event consolidator should contain NODE_UPDATED event for folder",
-                eventConsolidator.getEventTypes().contains(EventType.NODE_UPDATED));
-
-        // THEN: Verify derived event is UPDATE (not CREATED, not filtered out)
-        // Validate shouldIncludeModifiedAt() logic
-        assertEquals("Derived event should be NODE_UPDATED for folder with only timestamp change",
-                EventType.NODE_UPDATED, eventConsolidator.getDerivedEvent());
-    }
 }

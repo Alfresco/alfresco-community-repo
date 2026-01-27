@@ -25,9 +25,11 @@
  */
 package org.alfresco.repo.event2;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import jakarta.jms.Destination;
@@ -37,6 +39,7 @@ import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageListener;
 import jakarta.jms.Session;
 
+import org.alfresco.service.namespace.QName;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.advisory.DestinationSource;
@@ -149,16 +152,17 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
     }
 
     /**
-     * Test that verifies no extra events are generated when uploading a file to a folder with empty string title and description.
+     * Test that verifies no extra events are generated when uploading a file to a folder created with empty string title and description.
      */
     @Test
     public void testUploadFileToFolderWithEmptyStringLocalizedProperties()
     {
         // Create a folder with empty title and description
-        PropertyMap properties = new PropertyMap();
+        Map<QName, Serializable> properties = new PropertyMap();
+
         properties.put(ContentModel.PROP_TITLE, "");
         properties.put(ContentModel.PROP_DESCRIPTION, "");
-        NodeRef folderRef = createNode(ContentModel.TYPE_FOLDER, properties);
+        NodeRef folderRef = createNode(ContentModel.TYPE_FOLDER, (PropertyMap) properties);
 
         Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 1);
 
@@ -167,7 +171,7 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
         EVENT_CONTAINER.reset();
 
         // Add a child file to the folder - this will update the folder's modifiedAt
-        NodeRef childFileRef = createNode(ContentModel.TYPE_CONTENT, folderRef);
+        createNode(ContentModel.TYPE_CONTENT, folderRef);
 
         // Wait for events to be received
         // Only one event should be generated, i.e., the file creation event as only modidfiedAt changes for the folder

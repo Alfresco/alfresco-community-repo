@@ -60,6 +60,7 @@ import org.alfresco.repo.node.db.traitextender.NodeServiceExtension;
 import org.alfresco.repo.node.db.traitextender.NodeServiceTrait;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -1699,7 +1700,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
 
         // locking only once instead of per nodeRef
-        var permissionReference = permissionService.getPermissionReference(PermissionService.READ_PROPERTIES);
+        PermissionReference permissionReference = permissionService.getPermissionReference(PermissionService.READ_PROPERTIES);
         // check permissions per node (since we can't do this in config). Remove nodes that the user has no permission to see
         nodeRefs.removeIf(nodeRef -> permissionService.hasPermission(nodeRef, permissionReference) != AccessStatus.ALLOWED);
 
@@ -1722,7 +1723,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             logger.debug("getPropertiesForNodeRefs: Retrieved " + nodePairs.size() + " node pairs after permission check");
         }
 
-        Map<Long, Map<QName, Serializable>> propertiesMappedById = getPropertiesImpl(nodePairs); // 30% time
+        Map<Long, Map<QName, Serializable>> propertiesMappedById = getPropertiesImpl(nodePairs);
 
         if (logger.isDebugEnabled())
         {

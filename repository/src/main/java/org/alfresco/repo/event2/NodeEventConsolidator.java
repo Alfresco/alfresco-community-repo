@@ -316,7 +316,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
                 resourceBeforeAllFieldsNull = false;
             }
 
-            Map<String, Map<String, String>> localizedProps = helper.getLocalizedPropertiesBefore(changedPropsBefore, after);
+            Map<String, Map<String, String>> localizedProps = helper.getLocalizedPropertiesBefore(propertiesBefore, after);
             if (!localizedProps.isEmpty())
             {
                 builder.setLocalizedProperties(localizedProps);

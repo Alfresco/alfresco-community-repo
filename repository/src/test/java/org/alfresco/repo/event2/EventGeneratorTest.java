@@ -25,9 +25,11 @@
  */
 package org.alfresco.repo.event2;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import jakarta.jms.Destination;
@@ -49,8 +51,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.event.v1.model.DataAttributes;
+import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyMap;
 
 public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {
@@ -143,6 +149,50 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
         assertEquals("Expected create event!", sentCreation, receivedEvents.get(0));
         assertEquals("Expected update event!", sentUpdate, receivedEvents.get(1));
         assertEquals("Expected delete event!", sentDeletion, receivedEvents.get(2));
+    }
+
+    /**
+     * Test that verifies no extra events are generated when uploading a file to a folder created with empty string title and description.
+     */
+    @Test
+    public void testUploadFileToFolderWithEmptyStringLocalizedProperties()
+    {
+        // Create a folder with empty title and description
+        Map<QName, Serializable> properties = new PropertyMap();
+
+        properties.put(ContentModel.PROP_TITLE, "");
+        properties.put(ContentModel.PROP_DESCRIPTION, "");
+        NodeRef folderRef = createNode(ContentModel.TYPE_FOLDER, (PropertyMap) properties);
+
+        Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 1);
+
+        // Clear events to focus on the update event
+        receivedEvents.clear();
+        EVENT_CONTAINER.reset();
+
+        // Add a child file to the folder - this will update the folder's modifiedAt
+        createNode(ContentModel.TYPE_CONTENT, folderRef);
+
+        // Wait for events to be received
+        // Only one event should be generated, i.e., the file creation event as only modidfiedAt changes for the folder
+        Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> !receivedEvents.isEmpty());
+
+        // Find the folder update event
+        RepoEvent<?> folderUpdateEvent = receivedEvents.stream()
+                .filter(event -> event.getType().equals("org.alfresco.event.node.Updated"))
+                .filter(event -> {
+                    DataAttributes<?> data = event.getData();
+                    if (data.getResource() instanceof NodeResource)
+                    {
+                        NodeResource resource = (NodeResource) data.getResource();
+                        return resource.getId().equals(folderRef.getId());
+                    }
+                    return false;
+                })
+                .findFirst()
+                .orElse(null);
+
+        assertNull("Folder update event should not be generated", folderUpdateEvent);
     }
 
     private void assertEventsEquals(String message, RepoEvent<?> expected, RepoEvent<?> current)

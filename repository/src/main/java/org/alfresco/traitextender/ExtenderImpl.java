@@ -68,28 +68,33 @@ public class ExtenderImpl extends Extender
         }
     }
 
-    public synchronized <E, M extends Trait> E getExtension(Extensible anExtensible, ExtensionPoint<E, M> point)
+    public <E, M extends Trait> E getExtension(Extensible anExtensible, ExtensionPoint<E, M> point)
     {
-        E extension = null;
-
         // consistency is checked at registration time
         @SuppressWarnings("unchecked")
         ExtensionFactory<E> factory = (ExtensionFactory<E>) pointFactories.get(point);
-
-        if (factory != null)
+        if (factory == null)
         {
-            ExtendedTrait<M> exTrait = anExtensible.getTrait(point.getTraitAPI());
+            return null;
+        }
 
-            extension = exTrait.getExtension(point.getExtensionAPI());
+        ExtendedTrait<M> exTrait = anExtensible.getTrait(point.getTraitAPI());
 
-            if (extension == null)
+        E extension = exTrait.getExtension(point.getExtensionAPI());
+
+        if (extension == null)
+        {
+            synchronized (exTrait)
             {
-                extension = exTrait.extend(point.getExtensionAPI(),
-                                           factory);
-                if (logger.isDebugEnabled())
+                extension = exTrait.getExtension(point.getExtensionAPI());
+                if (extension == null)
                 {
-                    logger.debug("trait extension leak trace : " + System.identityHashCode(extension) + " : "
+                    extension = exTrait.extend(point.getExtensionAPI(), factory);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("trait extension leak trace : " + System.identityHashCode(extension) + " : "
                                 + System.identityHashCode(exTrait) + " : " + System.identityHashCode(extension));
+                    }
                 }
             }
         }
@@ -104,7 +109,7 @@ public class ExtenderImpl extends Extender
             throw new InvalidExtension("Invalid extension factory registry entry : " + point + "->" + factory);
         }
         pointFactories.put(point,
-                           factory);
+                factory);
     }
 
     public synchronized void unregister(ExtensionPoint<?, ?> point)

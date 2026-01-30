@@ -29,7 +29,7 @@ services:
       - "61616:61616" # OpenWire
   activemq5:
     profiles: ["activemq5"]
-    image: alfresco/alfresco-activemq:5.19.0-jre17-rockylinux8
+    image: alfresco/alfresco-activemq:5.19-jre17-rockylinux8
     ports:
       - "5672:5672" # AMQP
       - "61616:61616" # OpenWire

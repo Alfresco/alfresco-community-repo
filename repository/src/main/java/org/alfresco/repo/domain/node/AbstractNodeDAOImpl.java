@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -42,10 +42,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -4861,15 +4863,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private static class ParentAssocsCache
     {
-        private final ReadWriteLock lock = new ReentrantReadWriteLock();
-        private final int size;
-        private final int maxParentCount;
-        private final Map<Pair<Long, String>, ParentAssocsInfo> cache;
-        private final Map<Pair<Long, String>, Pair<Long, String>> nextKeys;
-        private final Map<Pair<Long, String>, Pair<Long, String>> previousKeys;
-        private Pair<Long, String> firstKey;
-        private Pair<Long, String> lastKey;
-        private int parentCount;
+        private final Cache<Pair<Long, String>, ParentAssocsInfo> cache;
 
         /**
          * @param size
@@ -4879,133 +4873,46 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
          */
         public ParentAssocsCache(int size, int limitFactor)
         {
-            this.size = size;
-            this.maxParentCount = size * limitFactor;
-            final int mapSize = size * 2;
-            this.cache = new HashMap<Pair<Long, String>, ParentAssocsInfo>(mapSize);
-            this.nextKeys = new HashMap<Pair<Long, String>, Pair<Long, String>>(mapSize);
-            this.previousKeys = new HashMap<Pair<Long, String>, Pair<Long, String>>(mapSize);
+            final int maxParentCount = size * limitFactor;
+
+            this.cache = CacheBuilder.newBuilder()
+                    .maximumWeight(maxParentCount)
+                    .weigher((Pair<Long, String> key, ParentAssocsInfo value) -> Math.max(1, value.getParentAssocs().size()))
+                    .build();
         }
 
         private ParentAssocsInfo get(Pair<Long, String> cacheKey)
         {
-            lock.readLock().lock();
+            return cache.getIfPresent(cacheKey);
+        }
+
+        private ParentAssocsInfo get(Pair<Long, String> cacheKey, Callable<ParentAssocsInfo> valueLoader)
+        {
             try
             {
-                return cache.get(cacheKey);
+                return cache.get(cacheKey, valueLoader);
             }
-            finally
+            catch (ExecutionException e)
             {
-                lock.readLock().unlock();
+                throw new AlfrescoRuntimeException("Failed to load parent associations", e);
             }
         }
 
         private void put(Pair<Long, String> cacheKey, ParentAssocsInfo parentAssocs)
         {
-            lock.writeLock().lock();
-            try
-            {
-                // If an entry already exists, remove it and do the necessary housekeeping
-                if (cache.containsKey(cacheKey))
-                {
-                    remove(cacheKey);
-                }
-
-                // Add the value and prepend the key
-                cache.put(cacheKey, parentAssocs);
-                if (firstKey == null)
-                {
-                    lastKey = cacheKey;
-                }
-                else
-                {
-                    nextKeys.put(cacheKey, firstKey);
-                    previousKeys.put(firstKey, cacheKey);
-                }
-                firstKey = cacheKey;
-                parentCount += parentAssocs.getParentAssocs().size();
-
-                // Now prune the oldest entries whilst we have more cache entries or cached parents than desired
-                int currentSize = cache.size();
-                while (currentSize > size || parentCount > maxParentCount)
-                {
-                    remove(lastKey);
-                    currentSize--;
-                }
-            }
-            finally
-            {
-                lock.writeLock().unlock();
-            }
+            cache.put(cacheKey, parentAssocs);
         }
 
         private ParentAssocsInfo remove(Pair<Long, String> cacheKey)
         {
-            lock.writeLock().lock();
-            try
-            {
-                // Remove from the map
-                ParentAssocsInfo oldParentAssocs = cache.remove(cacheKey);
-
-                // If the object didn't exist, we are done
-                if (oldParentAssocs == null)
-                {
-                    return null;
-                }
-
-                // Re-link the list
-                Pair<Long, String> previousCacheKey = previousKeys.remove(cacheKey);
-                Pair<Long, String> nextCacheKey = nextKeys.remove(cacheKey);
-                if (nextCacheKey == null)
-                {
-                    if (previousCacheKey == null)
-                    {
-                        firstKey = lastKey = null;
-                    }
-                    else
-                    {
-                        lastKey = previousCacheKey;
-                        nextKeys.remove(previousCacheKey);
-                    }
-                }
-                else
-                {
-                    if (previousCacheKey == null)
-                    {
-                        firstKey = nextCacheKey;
-                        previousKeys.remove(nextCacheKey);
-                    }
-                    else
-                    {
-                        nextKeys.put(previousCacheKey, nextCacheKey);
-                        previousKeys.put(nextCacheKey, previousCacheKey);
-                    }
-                }
-                // Update the parent count
-                parentCount -= oldParentAssocs.getParentAssocs().size();
-                return oldParentAssocs;
-            }
-            finally
-            {
-                lock.writeLock().unlock();
-            }
+            ParentAssocsInfo old = cache.getIfPresent(cacheKey);
+            cache.invalidate(cacheKey);
+            return old;
         }
 
         private void clear()
         {
-            lock.writeLock().lock();
-            try
-            {
-                cache.clear();
-                nextKeys.clear();
-                previousKeys.clear();
-                firstKey = lastKey = null;
-                parentCount = 0;
-            }
-            finally
-            {
-                lock.writeLock().unlock();
-            }
+            cache.invalidateAll();
         }
     }
 
@@ -5015,13 +4922,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private ParentAssocsInfo getParentAssocsCached(Long nodeId)
     {
         Node node = getNodeNotNull(nodeId, false);
-        Pair<Long, String> cacheKey = new Pair<Long, String>(nodeId, node.getTransaction().getChangeTxnId());
-        ParentAssocsInfo value = parentAssocsCache.get(cacheKey);
-        if (value == null)
-        {
-            value = loadParentAssocs(node.getNodeVersionKey());
-            parentAssocsCache.put(cacheKey, value);
-        }
+        Pair<Long, String> cacheKey = new Pair<>(nodeId, node.getTransaction().getChangeTxnId());
+        ParentAssocsInfo value = parentAssocsCache.get(cacheKey, () -> loadParentAssocs(node.getNodeVersionKey()));
 
         // We have already validated on loading that we have a list in sync with the child node, so if the list is still
         // empty we have an integrity problem

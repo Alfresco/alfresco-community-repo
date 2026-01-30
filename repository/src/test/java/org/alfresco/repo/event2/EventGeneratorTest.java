@@ -180,7 +180,7 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
     {
         System.out.println("Broker at url: '" + url + "'");
 
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("admin", "admin",url);
         ActiveMQConnection connection = (ActiveMQConnection) connectionFactory.createConnection();
         try
         {

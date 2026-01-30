@@ -436,7 +436,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 
     private void configRoute() throws Exception
     {
-        final ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(BROKER_URL);
+        final ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("admin", "admin", BROKER_URL);
         CAMEL_CONTEXT.addComponent("jms", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
 
         CAMEL_CONTEXT.addRoutes(new RouteBuilder() {

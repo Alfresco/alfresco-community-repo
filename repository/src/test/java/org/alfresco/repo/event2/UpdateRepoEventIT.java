@@ -1088,9 +1088,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     /**
-     * Test that verifies update event is generated when only cm:modifiedAt property is changed
-     * In a transaction cm:userName property is added and removed, resulting in no net change to properties
-     * but cm:modifiedAt is updated
+     * Test that verifies update event is generated when only cm:modifiedAt property is changed In a transaction cm:userName property is added and removed, resulting in no net change to properties but cm:modifiedAt should be updated
      */
     @Test
     public void testAddAndRemovePropertyInTheSameTransaction()

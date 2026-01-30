@@ -39,6 +39,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import org.alfresco.util.testing.category.NeverRunsTests;
 
+import java.util.Map;
+
 /**
  * Tests Camel components defined in the application's Spring context
  */
@@ -50,7 +52,7 @@ public class CamelComponentsTest
     @Autowired
     protected CamelContext camelContext;
 
-    @Produce("activemq6:queue:alfresco.test")
+    @Produce("activemq:queue:alfresco.test")
     protected ProducerTemplate activemqTemplate;
 
     @Produce("amqp:queue:alfresco.test")
@@ -68,7 +70,7 @@ public class CamelComponentsTest
 
         final Object reply = camelContext
                 .createConsumerTemplate()
-                .receiveBody("activemq6:queue:alfresco.test", 2000);
+                .receiveBody("activemq:queue:alfresco.test", 2000);
 
         assertEquals(msg, reply);
     }

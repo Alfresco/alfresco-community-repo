@@ -25,11 +25,9 @@
  */
 package org.alfresco.repo.event2;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import jakarta.jms.Destination;
@@ -51,12 +49,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.event.v1.model.DataAttributes;
-import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PropertyMap;
 
 public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {

@@ -63,7 +63,7 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
     @Before
     public void startupTopicListener() throws Exception
     {
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("admin", "admin", "tcp://localhost:61616");
         connection = (ActiveMQConnection) connectionFactory.createConnection();
         connection.start();
 

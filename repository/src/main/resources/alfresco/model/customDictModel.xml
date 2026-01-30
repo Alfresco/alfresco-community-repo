@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="cdict:customdictionarymodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <description>Custom Dictionary Model</description>
+    <author>Alfresco</author>
+    <version>1.0</version>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/cascadingdictionarymodel/1.0" prefix="cd"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/customdictionarymodel/1.0" prefix="cdict"/>
+    </namespaces>
+
+    <types>
+        <type name="cdict:contentA">
+            <parent>cm:content</parent>
+            <mandatory-aspects>
+                <aspect>cd:classifiable</aspect>
+                <aspect>cdict:account</aspect>
+            </mandatory-aspects>
+        </type>
+        <type name="cdict:contentD">
+            <parent>cm:content</parent>
+            <mandatory-aspects>
+                <aspect>cd:classifiable</aspect>
+                <aspect>cdict:department</aspect>
+            </mandatory-aspects>
+        </type>
+        <type name="cdict:contentAD">
+            <parent>cm:content</parent>
+            <mandatory-aspects>
+                <aspect>cd:classifiable</aspect>
+                <aspect>cdict:account</aspect>
+                <aspect>cdict:department</aspect>
+            </mandatory-aspects>
+        </type>
+    </types>
+
+    <aspects>
+        <aspect name="cdict:account">
+            <title>Account Classification</title>
+            <parent>cd:classifiable</parent>
+            <properties>
+                <property name="cdict:accountCategory">
+                    <title>Account Category</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:accountNumber">
+                    <title>Account Number</title>
+                    <type>d:int</type>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:accountName">
+                    <title>Account Name</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </aspect>
+
+        <aspect name="cdict:department">
+            <title>Department Classification</title>
+            <parent>cd:classifiable</parent>
+            <properties>
+                <property name="cdict:departmentId">
+                    <title>Department ID</title>
+                    <type>d:text</type>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:departmentName">
+                    <title>Department Name</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+</model>

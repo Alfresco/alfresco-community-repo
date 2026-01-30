@@ -740,6 +740,10 @@
                 <!-- IPTC model -->
                 <value>alfresco/model/iptcModel.xml</value>
 
+                <!-- Cascading Dictionary Model PoC -->
+                <value>alfresco/model/cascadingDictionaryModel.xml</value>
+                <value>alfresco/model/customDictModel.xml</value>
+
             </list>
         </property>
         <property name="labels">

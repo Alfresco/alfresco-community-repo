@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="cd:cascadingdictionarymodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <description>Cascading Dictionary Model</description>
+    <author>Alfresco</author>
+    <version>1.0</version>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/cascadingdictionarymodel/1.0" prefix="cd"/>
+    </namespaces>
+
+    <aspects>
+        <aspect name="cd:classifiable">
+            <title>Cascading Dictionaries Classifiable</title>
+        </aspect>
+    </aspects>
+</model>

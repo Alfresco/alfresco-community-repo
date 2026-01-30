@@ -41,10 +41,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -4236,8 +4234,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
             this.cache = CacheBuilder.newBuilder()
                     .maximumWeight(maxParentCount)
-                    .weigher((Pair<Long, String> key, ParentAssocsInfo value) ->
-                            Math.max(1, value.getParentAssocs().size()))
+                    .weigher((Pair<Long, String> key, ParentAssocsInfo value) -> Math.max(1, value.getParentAssocs().size()))
                     .build();
         }
 

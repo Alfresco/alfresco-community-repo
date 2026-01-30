@@ -64,7 +64,7 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
     public void startupTopicListener() throws Exception
     {
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("admin", "admin", "tcp://localhost:61616");
-        connection = (ActiveMQConnection) connectionFactory.createConnection();
+        connection = (ActiveMQConnection) connectionFactory.createConnection("admin", "admin");
         connection.start();
 
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -181,7 +181,7 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
         System.out.println("Broker at url: '" + url + "'");
 
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("admin", "admin", url);
-        ActiveMQConnection connection = (ActiveMQConnection) connectionFactory.createConnection();
+        ActiveMQConnection connection = (ActiveMQConnection) connectionFactory.createConnection("admin", "admin");
         try
         {
             connection.start();

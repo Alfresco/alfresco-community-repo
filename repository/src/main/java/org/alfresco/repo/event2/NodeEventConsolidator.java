@@ -316,7 +316,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
                 resourceBeforeAllFieldsNull = false;
             }
 
-            Map<String, Map<String, String>> localizedProps = helper.getLocalizedPropertiesBefore(changedPropsBefore, after);
+            Map<String, Map<String, String>> localizedProps = helper.getLocalizedPropertiesBefore(propertiesBefore, after);
             if (!localizedProps.isEmpty())
             {
                 builder.setLocalizedProperties(localizedProps);
@@ -378,10 +378,14 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
             resourceBeforeAllFieldsNull = false;
         }
 
-        // Only set modifiedAt if one of the other fields is also not null
-        if (modifiedAt != null && !resourceBeforeAllFieldsNull)
+        // If modifiedAt is changed, set it
+        if (modifiedAt != null)
         {
             builder.setModifiedAt(modifiedAt);
+            if (resourceBeforeAllFieldsNull)
+            {
+                resourceBeforeAllFieldsNull = false;
+            }
         }
 
         return builder.build();

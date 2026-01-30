@@ -39,8 +39,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import org.alfresco.util.testing.category.NeverRunsTests;
 
-import java.util.Map;
-
 /**
  * Tests Camel components defined in the application's Spring context
  */

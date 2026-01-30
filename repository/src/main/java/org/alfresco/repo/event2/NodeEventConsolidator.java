@@ -382,7 +382,10 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
         if (modifiedAt != null)
         {
             builder.setModifiedAt(modifiedAt);
-            resourceBeforeAllFieldsNull = false;
+            if (resourceBeforeAllFieldsNull)
+            {
+                resourceBeforeAllFieldsNull = false;
+            }
         }
 
         return builder.build();

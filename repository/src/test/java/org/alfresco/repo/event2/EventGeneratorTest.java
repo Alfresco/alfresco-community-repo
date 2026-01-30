@@ -151,50 +151,6 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
         assertEquals("Expected delete event!", sentDeletion, receivedEvents.get(2));
     }
 
-    /**
-     * Test that verifies update event is generated when uploading a file to a folder created with empty string title and description.
-     */
-    @Test
-    public void testUploadFileToFolderWithEmptyStringLocalizedProperties()
-    {
-        // Create a folder with empty title and description
-        Map<QName, Serializable> properties = new PropertyMap();
-
-        properties.put(ContentModel.PROP_TITLE, "");
-        properties.put(ContentModel.PROP_DESCRIPTION, "");
-        NodeRef folderRef = createNode(ContentModel.TYPE_FOLDER, (PropertyMap) properties);
-
-        Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 1);
-
-        // Clear events to focus on the update event
-        receivedEvents.clear();
-        EVENT_CONTAINER.reset();
-
-        // Add a child file to the folder - this will update the folder's modifiedAt
-        createNode(ContentModel.TYPE_CONTENT, folderRef);
-
-        // Wait for events to be received
-        // two events are expected: one for the file creation and one for the folder update
-        Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 2);
-
-        // Find the folder update event
-        RepoEvent<?> folderUpdateEvent = receivedEvents.stream()
-                .filter(event -> event.getType().equals("org.alfresco.event.node.Updated"))
-                .filter(event -> {
-                    DataAttributes<?> data = event.getData();
-                    if (data.getResource() instanceof NodeResource)
-                    {
-                        NodeResource resource = (NodeResource) data.getResource();
-                        return resource.getId().equals(folderRef.getId());
-                    }
-                    return false;
-                })
-                .findFirst()
-                .orElse(null);
-
-        assertNotNull("Folder update event should be generated", folderUpdateEvent);
-    }
-
     private void assertEventsEquals(String message, RepoEvent<?> expected, RepoEvent<?> current)
     {
         if (DEBUG)

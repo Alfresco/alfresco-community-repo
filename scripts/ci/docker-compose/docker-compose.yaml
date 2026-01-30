@@ -12,7 +12,7 @@ services:
     image: postgres:16.6
     profiles: ["default", "with-transform-core-aio", "postgres", "with-mtls-transform-core-aio", "with-sso"]
     environment:
-      POSTGRES_PASSWORD: alfresco
+      POSTGRES_PASSWORD: alfresco #pragma: allowlist secret
       POSTGRES_USER: alfresco
       POSTGRES_DB: alfresco
     command: postgres -c max_connections=300
@@ -23,7 +23,7 @@ services:
     image: alfresco/alfresco-activemq:6.2-jre17-rockylinux8
     environment:
       ACTIVEMQ_ADMIN_LOGIN: admin
-      ACTIVEMQ_ADMIN_PASSWORD: admin
+      ACTIVEMQ_ADMIN_PASSWORD: admin #pragma: allowlist secret
     ports:
       - "5672:5672" # AMQP
       - "61616:61616" # OpenWire
@@ -72,7 +72,7 @@ services:
     image: quay.io/keycloak/keycloak:26.5.0
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin #pragma: allowlist secret
       KC_DB: dev-file
     command: ["start-dev", "--import-realm", "--http-relative-path=/auth", "--hostname=localhost", "--http-enabled=true"]
     volumes:

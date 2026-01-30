@@ -50,7 +50,7 @@ public class CamelComponentsTest
     @Autowired
     protected CamelContext camelContext;
 
-    @Produce("activemq:queue:alfresco.test")
+    @Produce("activemq6:queue:alfresco.test")
     protected ProducerTemplate activemqTemplate;
 
     @Produce("amqp:queue:alfresco.test")
@@ -68,7 +68,7 @@ public class CamelComponentsTest
 
         final Object reply = camelContext
                 .createConsumerTemplate()
-                .receiveBody("activemq:queue:alfresco.test", 2000);
+                .receiveBody("activemq6:queue:alfresco.test", 2000);
 
         assertEquals(msg, reply);
     }

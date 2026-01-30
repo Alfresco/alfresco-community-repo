@@ -47,11 +47,11 @@ import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Value;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.beans.factory.annotation.Value;
 
 public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {

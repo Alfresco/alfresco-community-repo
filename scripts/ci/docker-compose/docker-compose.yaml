@@ -19,11 +19,18 @@ services:
     ports:
       - "5433:5432"
   activemq:
-    profiles: ["default", "with-transform-core-aio", "activemq", "with-mtls-transform-core-aio", "with-sso"]
+    profiles: ["default", "with-transform-core-aio", "activemq", "activemq6, ""with-mtls-transform-core-aio", "with-sso"]
     image: alfresco/alfresco-activemq:6.2-jre17-rockylinux8
     environment:
       ACTIVEMQ_ADMIN_LOGIN: admin
       ACTIVEMQ_ADMIN_PASSWORD: admin
+    ports:
+      - "5672:5672" # AMQP
+      - "61616:61616" # OpenWire
+      -
+  activemq5:
+    profiles: ["activemq5"]
+    image: alfresco/alfresco-activemq:5.19.0-jre17-rockylinux8
     ports:
       - "5672:5672" # AMQP
       - "61616:61616" # OpenWire

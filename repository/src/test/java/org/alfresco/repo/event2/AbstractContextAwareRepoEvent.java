@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -51,6 +51,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
 
 import org.alfresco.model.ContentModel;
@@ -95,6 +96,11 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     protected final Locale germanLocale = new Locale(Locale.GERMAN.getLanguage(), "XX");
     protected final Locale frenchLocale = new Locale(Locale.FRENCH.getLanguage());
     protected final Locale japaneseLocale = new Locale(Locale.JAPANESE.getLanguage(), "YY", "ZZ");
+
+    @Value("${messaging.broker.password}")
+    private String acqPassword;
+    @Value("${messaging.broker.username}")
+    private String acqUsername;
 
     private static boolean isCamelConfigured;
     private static DataFormat dataFormat;
@@ -180,7 +186,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         int count = maxloops;
         do
         {
-            Thread.sleep(165l);
+            Thread.sleep(165L);
             if (EVENT_CONTAINER.isEmpty())
             {
                 count--;
@@ -436,7 +442,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 
     private void configRoute() throws Exception
     {
-        final ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(BROKER_URL);
+        final ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(acqUsername, acqPassword, BROKER_URL);
         CAMEL_CONTEXT.addComponent("jms", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
 
         CAMEL_CONTEXT.addRoutes(new RouteBuilder() {

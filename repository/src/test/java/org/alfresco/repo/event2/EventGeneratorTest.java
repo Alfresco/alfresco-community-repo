@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -47,6 +47,7 @@ import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Value;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.RepoEvent;
@@ -57,14 +58,19 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
     private static final String EVENT2_TOPIC_NAME = "alfresco.repo.event2";
     private static final long DUMP_BROKER_TIMEOUT = 50000000L;
 
+    @Value("${messaging.broker.password}")
+    private String acqPassword;
+    @Value("${messaging.broker.username}")
+    private String acqUsername;
+
     private ActiveMQConnection connection;
     protected List<RepoEvent<?>> receivedEvents;
 
     @Before
     public void startupTopicListener() throws Exception
     {
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
-        connection = (ActiveMQConnection) connectionFactory.createConnection();
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(acqUsername, acqPassword, "tcp://localhost:61616");
+        connection = (ActiveMQConnection) connectionFactory.createConnection(acqUsername, acqPassword);
         connection.start();
 
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -180,8 +186,8 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
     {
         System.out.println("Broker at url: '" + url + "'");
 
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
-        ActiveMQConnection connection = (ActiveMQConnection) connectionFactory.createConnection();
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("admin", "admin", url);
+        ActiveMQConnection connection = (ActiveMQConnection) connectionFactory.createConnection("admin", "admin");
         try
         {
             connection.start();

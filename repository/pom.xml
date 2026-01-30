@@ -564,7 +564,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-activemq</artifactId>
+            <artifactId>camel-activemq6</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>

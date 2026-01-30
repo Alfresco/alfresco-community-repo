@@ -378,10 +378,11 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
             resourceBeforeAllFieldsNull = false;
         }
 
-        // Only set modifiedAt if one of the other fields is also not null
-        if (modifiedAt != null && !resourceBeforeAllFieldsNull)
+        // If modifiedAt is changed, set it
+        if (modifiedAt != null)
         {
             builder.setModifiedAt(modifiedAt);
+            resourceBeforeAllFieldsNull = false;
         }
 
         return builder.build();

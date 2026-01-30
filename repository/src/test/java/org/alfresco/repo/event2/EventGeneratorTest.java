@@ -152,7 +152,7 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
     }
 
     /**
-     * Test that verifies no extra events are generated when uploading a file to a folder created with empty string title and description.
+     * Test that verifies update event is generated when uploading a file to a folder created with empty string title and description.
      */
     @Test
     public void testUploadFileToFolderWithEmptyStringLocalizedProperties()
@@ -174,8 +174,8 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
         createNode(ContentModel.TYPE_CONTENT, folderRef);
 
         // Wait for events to be received
-        // Only one event should be generated, i.e., the file creation event as only modidfiedAt changes for the folder
-        Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> !receivedEvents.isEmpty());
+        // two events are expected: one for the file creation and one for the folder update
+        Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 2);
 
         // Find the folder update event
         RepoEvent<?> folderUpdateEvent = receivedEvents.stream()
@@ -192,7 +192,7 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
                 .findFirst()
                 .orElse(null);
 
-        assertNull("Folder update event should not be generated", folderUpdateEvent);
+        assertNotNull("Folder update event should be generated", folderUpdateEvent);
     }
 
     private void assertEventsEquals(String message, RepoEvent<?> expected, RepoEvent<?> current)

@@ -51,11 +51,17 @@ import org.junit.Test;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.springframework.beans.factory.annotation.Value;
 
 public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {
     private static final String EVENT2_TOPIC_NAME = "alfresco.repo.event2";
     private static final long DUMP_BROKER_TIMEOUT = 50000000L;
+
+    @Value("${messaging.broker.password}")
+    private String acqPassword;
+    @Value("${messaging.broker.username}")
+    private String acqUsername;
 
     private ActiveMQConnection connection;
     protected List<RepoEvent<?>> receivedEvents;
@@ -63,8 +69,8 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
     @Before
     public void startupTopicListener() throws Exception
     {
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("admin", "admin", "tcp://localhost:61616");
-        connection = (ActiveMQConnection) connectionFactory.createConnection("admin", "admin");
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(acqUsername, acqPassword, "tcp://localhost:61616");
+        connection = (ActiveMQConnection) connectionFactory.createConnection(acqUsername, acqPassword);
         connection.start();
 
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

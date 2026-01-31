@@ -5466,23 +5466,59 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Bulk load the parent associations
         List<ChildAssocEntity> assocs = selectParentAssocsOfChildren(childAssocsNodeIds);
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Pre-loaded parent associations for " + childAssocsNodeIds.size() + " nodes.");
+        }
+
+        // Sort the associations into per-child lists
+        Map<Long, List<ChildAssocEntity>> assocsByChildId = new HashMap<>();
+
         for (ChildAssocEntity assoc : assocs)
         {
-            Long nodeId = assoc.getChildNode().getId();
-            Node childNode = getNodeNotNull(nodeId, false);
-            boolean isRoot = hasNodeAspect(nodeId, ContentModel.ASPECT_ROOT);
-            boolean isStoreRoot = getNodeType(nodeId).equals(ContentModel.TYPE_STOREROOT);
+            Long childNodeId = assoc.getChildNode().getId();
+            List<ChildAssocEntity> childAssocs = assocsByChildId.get(childNodeId);
+            if (childAssocs == null)
+            {
+                childAssocs = new ArrayList<>();
+                assocsByChildId.put(childNodeId, childAssocs);
+            }
+            childAssocs.add(assoc);
+        }
+
+        // Now set the cache entries
+        for (Map.Entry<Long, List<ChildAssocEntity>> entry : assocsByChildId.entrySet())
+        {
+            Long childNodeId = entry.getKey();
+            List<ChildAssocEntity> childAssocs = entry.getValue();
+
+            if (childAssocs.isEmpty())
+            {
+                // Should not happen - skip
+                logger.warn("Child node ID " + childNodeId + " has no parent associations - cannot cache parent associations");
+                continue;
+            }
+            
+            Node childNode = getNodeNotNull(childNodeId, false);
+            boolean isRoot = hasNodeAspect(childNodeId, ContentModel.ASPECT_ROOT);
+            boolean isStoreRoot = getNodeType(childNodeId).equals(ContentModel.TYPE_STOREROOT);
+
             if (childNode.getTransaction() == null)
             {
                 // Should not happen - skip
                 logger.warn("Child node " + childNode + " has no transaction - cannot cache parent associations");
                 continue;
             }
-            Pair<Long, String> cacheKey = new Pair<>(nodeId, childNode.getTransaction().getChangeTxnId());
 
-            ParentAssocsInfo value = new ParentAssocsInfo(isRoot, isStoreRoot, assoc);
-            parentAssocsCache.put(cacheKey, value);
+            Pair<Long, String> cacheKey = new Pair<>(childNodeId, childNode.getTransaction().getChangeTxnId());
 
+            // Set the cache
+            ParentAssocsInfo parentAssocsInfo = new ParentAssocsInfo(
+                    isRoot,
+                    isStoreRoot,
+                    childAssocs);
+            
+            parentAssocsCache.put(cacheKey, parentAssocsInfo);
         }
     }
 

@@ -442,7 +442,7 @@
                            </run>
                         </image>
                         <image>
-                           <name>alfresco/alfresco-activemq:6.2.0-jre17-rockylinux8</name>
+                           <name>alfresco/alfresco-activemq:6.2-jre17-rockylinux8</name>
                            <run>
                               <ports>
                                  <port>${activemq.port1}:${activemq.port1}</port>
@@ -513,7 +513,7 @@
                            </run>
                         </image>
                         <image>
-                           <name>alfresco/alfresco-activemq:6.2.0-jre17-rockylinux8</name>
+                           <name>alfresco/alfresco-activemq:6.2-jre17-rockylinux8</name>
                            <run>
                               <ports>
                                  <port>${activemq.port1}:${activemq.port1}</port>

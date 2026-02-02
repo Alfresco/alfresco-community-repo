@@ -34,7 +34,7 @@ services:
     ports:
       - "3307:3306"
   activemq:
-    image: alfresco/alfresco-activemq:6.2.0-jre17-rockylinux8
+    image: alfresco/alfresco-activemq:6.2-jre17-rockylinux8
     ports:
       - "5672:5672" # AMQP
       - "61616:61616" # OpenWire

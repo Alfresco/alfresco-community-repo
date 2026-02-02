@@ -39,7 +39,7 @@
         <property name="configuration" ref="jmsConfig"/>
     </bean>
 
-    <bean id="activemq" class="org.apache.camel.component.activemq.ActiveMQComponent">
+    <bean id="activemq" class="org.apache.camel.component.activemq6.ActiveMQComponent">
         <property name="configuration" ref="jmsConfig"/>
     </bean>
 

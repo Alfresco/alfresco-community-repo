@@ -251,7 +251,7 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
-        run: mvn -B test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco  # pragma: allowlist secret
+        run: mvn -B test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -431,13 +431,17 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_messaging_tests:
-    name: Repository - Messaging tests
+    name: Repository - Messaging tests against ${{ matrix.activemq }}
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
       !contains(github.event.head_commit.message, '[skip repo]') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    strategy:
+      fail-fast: false
+      matrix:
+        activemq: [ 'activemq6', 'activemq5' ]
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v12.4.3
@@ -448,9 +452,9 @@ jobs:
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run ActiveMQ"
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
+        run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.activemq }} up -d
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -524,7 +528,7 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }} # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

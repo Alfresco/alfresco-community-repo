@@ -1691,21 +1691,21 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             return Collections.emptyMap();
         }
 
-        // make a copy so we can modify if needed
-        nodeRefs = new ArrayList<>(nodeRefs);
+        // Force lookup of nodes across all stores to avoid issues with mixed store lists
+        List<Pair<Long, NodeRef>> nodePairs = nodeDAO.getNodePairs(null, nodeRefs);
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("getPropertiesForNodeRefs: Checking permissions for " + nodeRefs.size() + " nodeRefs");
+            logger.debug("getPropertiesForNodeRefs: Retrieved " + nodePairs.size() + " node pairs before permission check");
         }
 
         // locking only once instead of per nodeRef
         PermissionReference permissionReference = permissionService.getPermissionReference(PermissionService.READ_PROPERTIES);
         // check permissions per node (since we can't do this in config). Remove nodes that the user has no permission to see
-        nodeRefs.removeIf(nodeRef -> permissionService.hasPermission(nodeRef, permissionReference) != AccessStatus.ALLOWED);
+        nodePairs.removeIf(pair -> permissionService.hasPermission(pair.getSecond(), permissionReference) != AccessStatus.ALLOWED);
 
         // if no nodes left, return empty map
-        if (nodeRefs.isEmpty())
+        if (nodePairs.isEmpty())
         {
             if (logger.isDebugEnabled())
             {
@@ -1713,14 +1713,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
 
             return Collections.emptyMap();
-        }
-
-        // Force lookup of nodes across all stores to avoid issues with mixed store lists
-        List<Pair<Long, NodeRef>> nodePairs = nodeDAO.getNodePairs(null, nodeRefs);
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("getPropertiesForNodeRefs: Retrieved " + nodePairs.size() + " node pairs after permission check");
         }
 
         Map<Long, Map<QName, Serializable>> propertiesMappedById = getPropertiesImpl(nodePairs);

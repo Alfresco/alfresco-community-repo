@@ -565,7 +565,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         final PermissionReference perm;
         if (permIn.equals(OLD_ALL_PERMISSIONS_REFERENCE))
         {
-            perm = getAllPermissionReference();
+            perm = allPermissionReference;
         }
         else
         {
@@ -589,8 +589,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         {
             QName typeQname = nodeService.getType(nodeRef);
             Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
-            PermissionContext context = new PermissionContext(typeQname);
-            context.getAspects().addAll(aspectQNames);
+            PermissionContext context = new PermissionContext(typeQname, aspectQNames);
             Authentication auth = AuthenticationUtil.getRunAsAuthentication();
             if (auth != null)
             {
@@ -618,7 +617,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
         }, AuthenticationUtil.getSystemUserName());
 
-        available.add(getAllPermissionReference());
+        available.add(allPermissionReference);
         available.add(OLD_ALL_PERMISSIONS_REFERENCE);
 
         final Serializable key = generateKey(authorisations, nodeRef, perm, CacheType.HAS_PERMISSION);
@@ -746,7 +745,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             }
 
         }, AuthenticationUtil.getSystemUserName());
-        available.add(getAllPermissionReference());
+        available.add(allPermissionReference);
         available.add(OLD_ALL_PERMISSIONS_REFERENCE);
 
         if (!(available.contains(permission)))
@@ -771,7 +770,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
         if (permission.equals(OLD_ALL_PERMISSIONS_REFERENCE))
         {
-            permission = getAllPermissionReference();
+            permission = allPermissionReference;
         }
 
         boolean result;
@@ -1506,7 +1505,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             this.aspectQNames = aspectQNames;
 
             // Set the required node permissions
-            if (required.equals(getAllPermissionReference()))
+            if (required.equals(allPermissionReference))
             {
                 nodeRequirements = modelDAO.getRequiredPermissions(fullControlPermissionReference, typeQName, aspectQNames, RequiredPermission.On.NODE);
             }
@@ -1523,7 +1522,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             // All permissions are treated specially.
             granters = new LinkedHashSet<PermissionReference>(128, 1.0f);
             granters.addAll(modelDAO.getGrantingPermissions(required));
-            granters.add(getAllPermissionReference());
+            granters.add(allPermissionReference);
             granters.add(OLD_ALL_PERMISSIONS_REFERENCE);
         }
 
@@ -1832,7 +1831,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
                         // All permission excludes all permissions available for
                         // the node.
-                        if (pe.getPermissionReference().equals(getAllPermissionReference()) || pe.getPermissionReference().equals(OLD_ALL_PERMISSIONS_REFERENCE))
+                        if (pe.getPermissionReference().equals(allPermissionReference) || pe.getPermissionReference().equals(OLD_ALL_PERMISSIONS_REFERENCE))
                         {
                             for (PermissionReference deny : modelDAO.getAllPermissions(nodeRef))
                             {
@@ -1975,7 +1974,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             this.aspectQNames = aspectQNames;
 
             // Set the required node permissions
-            if (required.equals(getAllPermissionReference()))
+            if (required.equals(allPermissionReference))
             {
                 nodeRequirements = modelDAO.getRequiredPermissions(fullControlPermissionReference, typeQName, aspectQNames, RequiredPermission.On.NODE);
             }
@@ -1998,7 +1997,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             // All permissions are treated specially.
             granters = new LinkedHashSet<PermissionReference>(128, 1.0f);
             granters.addAll(modelDAO.getGrantingPermissions(required));
-            granters.add(getAllPermissionReference());
+            granters.add(allPermissionReference);
             granters.add(OLD_ALL_PERMISSIONS_REFERENCE);
         }
 
@@ -2164,7 +2163,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
                 // All permission excludes all permissions available for
                 // the node.
-                if (ace.getPermission().equals(getAllPermissionReference()) || ace.getPermission().equals(OLD_ALL_PERMISSIONS_REFERENCE))
+                if (ace.getPermission().equals(allPermissionReference) || ace.getPermission().equals(OLD_ALL_PERMISSIONS_REFERENCE))
                 {
                     for (PermissionReference deny : modelDAO.getAllPermissions(context.getType(), context.getAspects()))
                     {
@@ -2237,7 +2236,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
                 // All permission excludes all permissions available for
                 // the node.
-                if (ace.getPermission().equals(getAllPermissionReference()) || ace.getPermission().equals(OLD_ALL_PERMISSIONS_REFERENCE))
+                if (ace.getPermission().equals(allPermissionReference) || ace.getPermission().equals(OLD_ALL_PERMISSIONS_REFERENCE))
                 {
                     for (PermissionReference deny : modelDAO.getAllPermissions(context.getType(), context.getAspects()))
                     {
@@ -2319,7 +2318,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             this.required = required;
 
             // Set the required node permissions
-            if (required.equals(getAllPermissionReference()))
+            if (required.equals(allPermissionReference))
             {
                 nodeRequirements = modelDAO.getUnconditionalRequiredPermissions(fullControlPermissionReference, RequiredPermission.On.NODE);
             }
@@ -2342,7 +2341,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             // All permissions are treated specially.
             granters = new LinkedHashSet<PermissionReference>(128, 1.0f);
             granters.addAll(modelDAO.getGrantingPermissions(required));
-            granters.add(getAllPermissionReference());
+            granters.add(allPermissionReference);
             granters.add(OLD_ALL_PERMISSIONS_REFERENCE);
         }
 
@@ -2494,7 +2493,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
                 // All permission excludes all permissions available for
                 // the node.
-                if (ace.getPermission().equals(getAllPermissionReference()) || ace.getPermission().equals(OLD_ALL_PERMISSIONS_REFERENCE))
+                if (ace.getPermission().equals(allPermissionReference) || ace.getPermission().equals(OLD_ALL_PERMISSIONS_REFERENCE))
                 {
                     for (PermissionReference deny : modelDAO.getAllPermissions())
                     {
@@ -2575,7 +2574,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             this.required = required;
 
             // Set the required node permissions
-            if (required.equals(getAllPermissionReference()))
+            if (required.equals(allPermissionReference))
             {
                 nodeRequirements = modelDAO.getUnconditionalRequiredPermissions(fullControlPermissionReference, RequiredPermission.On.NODE);
             }
@@ -2598,7 +2597,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             // All permissions are treated specially.
             granters = new LinkedHashSet<PermissionReference>(128, 1.0f);
             granters.addAll(modelDAO.getGrantingPermissions(required));
-            granters.add(getAllPermissionReference());
+            granters.add(allPermissionReference);
             granters.add(OLD_ALL_PERMISSIONS_REFERENCE);
         }
 
@@ -2750,7 +2749,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
                 // All permission excludes all permissions available for
                 // the node.
-                if (ace.getPermission().equals(getAllPermissionReference()) || ace.getPermission().equals(OLD_ALL_PERMISSIONS_REFERENCE))
+                if (ace.getPermission().equals(allPermissionReference) || ace.getPermission().equals(OLD_ALL_PERMISSIONS_REFERENCE))
                 {
                     for (PermissionReference deny : modelDAO.getAllPermissions())
                     {

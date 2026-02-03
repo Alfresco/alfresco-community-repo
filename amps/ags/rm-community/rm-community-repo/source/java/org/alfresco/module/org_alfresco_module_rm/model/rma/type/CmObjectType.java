@@ -106,29 +106,36 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
         mandatory("newChildAssocRef", newChildAssocRef);
 
         NodeRef sourceParent = oldChildAssocRef.getParentRef();
-        boolean isSourceParentFilePlanComponent = isFilePlanComponent(sourceParent);
-
         NodeRef targetParent = newChildAssocRef.getParentRef();
-        boolean isTargetParentFilePlanComponent = isFilePlanComponent(targetParent);
+        boolean sourceIsRm = isFilePlanComponent(sourceParent);
+        boolean targetIsRm = isFilePlanComponent(targetParent);
 
         // If we are doing the move operation within the RM site then we can stop here
-        // The method should just check move operations from outside of RM into the RM site
-        if (isSourceParentFilePlanComponent && isTargetParentFilePlanComponent)
+        if (sourceIsRm && targetIsRm)
         {
             return;
         }
 
-        NodeRef object = oldChildAssocRef.getChildRef();
-        QName objectType = nodeService.getType(object);
+        if (isMoveIntoRmSite(sourceIsRm, targetIsRm))
+        {
+            QName objectType = nodeService.getType(oldChildAssocRef.getChildRef());
+            validateMoveIntoRm(objectType, targetParent);
+        }
+    }
 
-        // Only documents can be moved into the RM site
-        if (!objectType.equals(ContentModel.TYPE_CONTENT) && isTargetParentFilePlanComponent)
+    private boolean isMoveIntoRmSite(boolean sourceIsRm, boolean targetIsRm)
+    {
+        return !sourceIsRm && targetIsRm;
+    }
+
+    private void validateMoveIntoRm(QName objectType, NodeRef targetParent)
+    {
+        if (!instanceOf(objectType, ContentModel.TYPE_CONTENT))
         {
             throw new AlfrescoRuntimeException("Only documents can be moved from a collaboration site into a RM site.");
         }
 
-        // Documents can be moved only into a RM folder
-        if (isTargetParentFilePlanComponent && !isRecordFolder(targetParent))
+        if (!isRecordFolder(targetParent))
         {
             throw new AlfrescoRuntimeException("A document can only be moved into a folder in RM site.");
         }

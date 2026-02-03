@@ -27,6 +27,7 @@
 package org.alfresco.traitextender;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Trait based extension reference holder.<br>
@@ -36,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ExtendedTrait<T extends Trait>
 {
-    private final ConcurrentHashMap<Class<?>, Object> extensions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Class<?>, Object> extensions = new ConcurrentHashMap<>();
 
     private final T trait;
 

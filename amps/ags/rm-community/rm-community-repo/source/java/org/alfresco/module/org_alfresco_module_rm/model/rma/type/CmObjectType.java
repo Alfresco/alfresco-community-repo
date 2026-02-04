@@ -110,7 +110,8 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
         boolean sourceIsRm = isFilePlanComponent(sourceParent);
         boolean targetIsRm = isFilePlanComponent(targetParent);
 
-        // If we are doing the move operation within the RM site then we can stop here
+        // This runs for all move operations, if both source and target are within
+        // the RM site no additional validation is needed, so we can stop here
         if (sourceIsRm && targetIsRm)
         {
             return;
@@ -132,7 +133,7 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
     {
         if (!instanceOf(objectType, ContentModel.TYPE_CONTENT))
         {
-            throw new AlfrescoRuntimeException("Only documents can be moved from a collaboration site into a RM site.");
+            throw new AlfrescoRuntimeException("Only documents of types cm:content or subtypes can be moved from a collaboration site into a RM site.");
         }
 
         if (!isRecordFolder(targetParent))

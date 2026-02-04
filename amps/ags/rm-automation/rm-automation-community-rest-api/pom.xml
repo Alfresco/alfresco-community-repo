@@ -88,7 +88,7 @@
       <dependency>
          <groupId>com.github.docker-java</groupId>
          <artifactId>docker-java</artifactId>
-         <version>3.4.0</version>
+         <version>3.7.0</version>
          <exclusions>
             <exclusion>
                <groupId>org.bouncycastle</groupId>

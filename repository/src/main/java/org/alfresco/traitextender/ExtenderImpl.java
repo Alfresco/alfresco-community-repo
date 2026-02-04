@@ -41,24 +41,27 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ExtenderImpl extends Extender
 {
-    private static Log logger = LogFactory.getLog(Extender.class);
+    private static final Log logger = LogFactory.getLog(ExtenderImpl.class);
 
-    private List<ExtensionBundle> bundles = new LinkedList<ExtensionBundle>();
+    private final List<ExtensionBundle> bundles = new LinkedList<>();
 
-    private Map<ExtensionPoint<?, ?>, ExtensionFactory<?>> pointFactories = new ConcurrentHashMap<ExtensionPoint<?, ?>, ExtensionFactory<?>>();
+    private final Map<ExtensionPoint<?, ?>, ExtensionFactory<?>> pointFactories = new ConcurrentHashMap<>();
 
+    @Override
     public synchronized void start(ExtensionBundle bundle)
     {
         bundles.add(bundle);
         bundle.start(this);
     }
 
+    @Override
     public void stop(ExtensionBundle bundle)
     {
         bundle.stop(this);
         bundles.remove(bundle);
     }
 
+    @Override
     public synchronized void stopAll()
     {
         List<ExtensionBundle> bundlesCopy = new LinkedList<>(bundles);
@@ -68,34 +71,43 @@ public class ExtenderImpl extends Extender
         }
     }
 
-    public synchronized <E, M extends Trait> E getExtension(Extensible anExtensible, ExtensionPoint<E, M> point)
+    @Override
+    public <E, M extends Trait> E getExtension(Extensible anExtensible, ExtensionPoint<E, M> point)
     {
-        E extension = null;
-
         // consistency is checked at registration time
         @SuppressWarnings("unchecked")
         ExtensionFactory<E> factory = (ExtensionFactory<E>) pointFactories.get(point);
-
-        if (factory != null)
+        if (factory == null)
         {
-            ExtendedTrait<M> exTrait = anExtensible.getTrait(point.getTraitAPI());
+            return null;
+        }
 
+        ExtendedTrait<M> exTrait = anExtensible.getTrait(point.getTraitAPI());
+
+        E extension = exTrait.getExtension(point.getExtensionAPI());
+
+        if (extension != null)
+        {
+            return extension;
+        }
+        synchronized (exTrait)
+        {
             extension = exTrait.getExtension(point.getExtensionAPI());
-
-            if (extension == null)
+            if (extension != null)
             {
-                extension = exTrait.extend(point.getExtensionAPI(),
-                                           factory);
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("trait extension leak trace : " + System.identityHashCode(extension) + " : "
-                                + System.identityHashCode(exTrait) + " : " + System.identityHashCode(extension));
-                }
+                return extension;
+            }
+            extension = exTrait.extend(point.getExtensionAPI(), factory);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("trait extension leak trace : " + System.identityHashCode(extension) + " : "
+                        + System.identityHashCode(exTrait) + " : " + System.identityHashCode(extension));
             }
         }
         return extension;
     }
 
+    @Override
     public synchronized void register(ExtensionPoint<?, ?> point, ExtensionFactory<?> factory)
     {
         // point->factory type consistency checks
@@ -104,9 +116,10 @@ public class ExtenderImpl extends Extender
             throw new InvalidExtension("Invalid extension factory registry entry : " + point + "->" + factory);
         }
         pointFactories.put(point,
-                           factory);
+                factory);
     }
 
+    @Override
     public synchronized void unregister(ExtensionPoint<?, ?> point)
     {
         pointFactories.remove(point);

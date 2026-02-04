@@ -60,6 +60,8 @@ import org.alfresco.repo.node.db.traitextender.NodeServiceExtension;
 import org.alfresco.repo.node.db.traitextender.NodeServiceTrait;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -118,7 +120,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
     private QNameDAO qnameDAO;
     private NodeDAO nodeDAO;
-    private PermissionService permissionService;
+    private PermissionServiceSPI permissionService;
     private StoreArchiveMap storeArchiveMap;
     private BehaviourFilter policyBehaviourFilter;
     private boolean enableTimestampPropagation;
@@ -140,7 +142,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         this.nodeDAO = nodeDAO;
     }
 
-    public void setPermissionService(PermissionService permissionService)
+    public void setPermissionService(PermissionServiceSPI permissionService)
     {
         this.permissionService = permissionService;
     }
@@ -1689,19 +1691,21 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             return Collections.emptyMap();
         }
 
-        // make a copy so we can modify if needed
-        nodeRefs = new ArrayList<>(nodeRefs);
+        // Force lookup of nodes across all stores to avoid issues with mixed store lists
+        List<Pair<Long, NodeRef>> nodePairs = nodeDAO.getNodePairs(null, nodeRefs);
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("getPropertiesForNodeRefs: Checking permissions for " + nodeRefs.size() + " nodeRefs");
+            logger.debug("getPropertiesForNodeRefs: Retrieved " + nodePairs.size() + " node pairs before permission check");
         }
 
+        // locking only once instead of per nodeRef
+        PermissionReference permissionReference = permissionService.getPermissionReference(PermissionService.READ_PROPERTIES);
         // check permissions per node (since we can't do this in config). Remove nodes that the user has no permission to see
-        nodeRefs.removeIf(nodeRef -> permissionService.hasPermission(nodeRef, PermissionService.READ_PROPERTIES) != AccessStatus.ALLOWED);
+        nodePairs.removeIf(pair -> permissionService.hasPermission(pair.getSecond(), permissionReference) != AccessStatus.ALLOWED);
 
         // if no nodes left, return empty map
-        if (nodeRefs.isEmpty())
+        if (nodePairs.isEmpty())
         {
             if (logger.isDebugEnabled())
             {
@@ -1709,14 +1713,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
 
             return Collections.emptyMap();
-        }
-
-        // Force lookup of nodes across all stores to avoid issues with mixed store lists
-        List<Pair<Long, NodeRef>> nodePairs = nodeDAO.getNodePairs(null, nodeRefs);
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("getPropertiesForNodeRefs: Retrieved " + nodePairs.size() + " node pairs after permission check");
         }
 
         Map<Long, Map<QName, Serializable>> propertiesMappedById = getPropertiesImpl(nodePairs);

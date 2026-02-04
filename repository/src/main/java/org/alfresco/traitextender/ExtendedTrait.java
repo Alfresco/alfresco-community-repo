@@ -27,19 +27,19 @@
 package org.alfresco.traitextender;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Trait based extension reference holder.<br>
- * Keeps track of extension references for one extensible and allows the
- * collection of those extensions when the extensible is collected.
+ * Keeps track of extension references for one extensible and allows the collection of those extensions when the extensible is collected.
  * 
  * @author Bogdan Horje
  */
 public class ExtendedTrait<T extends Trait>
 {
-    private ConcurrentHashMap<Class<?>, Object> extensions = new ConcurrentHashMap<Class<?>, Object>();
+    private final ConcurrentMap<Class<?>, Object> extensions = new ConcurrentHashMap<>();
 
-    private T trait;
+    private final T trait;
 
     public ExtendedTrait(T trait)
     {
@@ -60,19 +60,9 @@ public class ExtendedTrait<T extends Trait>
         return extension;
     }
 
-    public synchronized <E> E extend(Class<E> extensionAPI, ExtensionFactory<E> factory)
+    public <E> E extend(Class<E> extensionAPI, ExtensionFactory<E> factory)
     {
-        @SuppressWarnings("unchecked")
-        E extension = (E) extensions.get(extensionAPI);
-
-        if (extension == null)
-        {
-            extension = factory.createExtension(trait);
-            extensions.put(extensionAPI,
-                           extension);
-
-        }
-
-        return extension;
+        return extensionAPI.cast(
+                extensions.computeIfAbsent(extensionAPI, key -> factory.createExtension(trait)));
     }
 }

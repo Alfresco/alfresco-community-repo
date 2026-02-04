@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -141,54 +140,14 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
             NodeRef nodeRef = (NodeRef) args[0];
 
             Map<QName, Serializable> properties = (Map<QName, Serializable>) invocation.proceed();
-            LockState lockState = getLockState(nodeRef);
-            if (isEphemeralLock(lockState))
-            {
-                String userName = lockState.getOwner();
-                properties.put(ContentModel.PROP_LOCK_OWNER, userName);
-                properties.put(ContentModel.PROP_LOCK_TYPE, lockState.getLockType().toString());
-                properties.put(ContentModel.PROP_EXPIRY_DATE, lockState.getExpires());
-                properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.EPHEMERAL.toString());
-            }
-            else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
-            {
-                // Persistent lock, ensure lifetime property is present.
-                if (!properties.containsKey(ContentModel.PROP_LOCK_LIFETIME))
-                {
-                    properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.PERSISTENT.toString());
-                }
-            }
+            addLockRelatedProperties(nodeRef, properties);
             return properties;
         }
         else if (methodName.equals("getPropertiesForNodeRefs"))
         {
-            List<NodeRef> nodeRefs = (List<NodeRef>) args[0];
-
             Map<NodeRef, Map<QName, Serializable>> propertyMap = (Map<NodeRef, Map<QName, Serializable>>) invocation.proceed();
 
-            for (Map.Entry<NodeRef, Map<QName, Serializable>> entry : propertyMap.entrySet())
-            {
-                NodeRef nodeRef = entry.getKey();
-                Map<QName, Serializable> properties = entry.getValue();
-
-                LockState lockState = getLockState(nodeRef);
-                if (isEphemeralLock(lockState))
-                {
-                    String userName = lockState.getOwner();
-                    properties.put(ContentModel.PROP_LOCK_OWNER, userName);
-                    properties.put(ContentModel.PROP_LOCK_TYPE, lockState.getLockType().toString());
-                    properties.put(ContentModel.PROP_EXPIRY_DATE, lockState.getExpires());
-                    properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.EPHEMERAL.toString());
-                }
-                else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
-                {
-                    // Persistent lock, ensure lifetime property is present.
-                    if (!properties.containsKey(ContentModel.PROP_LOCK_LIFETIME))
-                    {
-                        properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.PERSISTENT.toString());
-                    }
-                }
-            }
+            addLockRelatedPropertiesForAllNodeRefs(propertyMap);
 
             return propertyMap;
         }
@@ -271,6 +230,35 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
         {
             // If not a special case, invoke the original method.
             return invocation.proceed();
+        }
+    }
+
+    private void addLockRelatedPropertiesForAllNodeRefs(Map<NodeRef, Map<QName, Serializable>> propertyMap)
+    {
+        for (Map.Entry<NodeRef, Map<QName, Serializable>> entry : propertyMap.entrySet())
+        {
+            NodeRef nodeRef = entry.getKey();
+            Map<QName, Serializable> properties = entry.getValue();
+            addLockRelatedProperties(nodeRef, properties);
+        }
+    }
+
+    private void addLockRelatedProperties(NodeRef nodeRef, Map<QName, Serializable> properties)
+    {
+        LockState lockState = getLockState(nodeRef);
+        if (isEphemeralLock(lockState))
+        {
+            String userName = lockState.getOwner();
+            properties.put(ContentModel.PROP_LOCK_OWNER, userName);
+            properties.put(ContentModel.PROP_LOCK_TYPE, lockState.getLockType().toString());
+            properties.put(ContentModel.PROP_EXPIRY_DATE, lockState.getExpires());
+            properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.EPHEMERAL.toString());
+        }
+        else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE)
+                && !properties.containsKey(ContentModel.PROP_LOCK_LIFETIME))
+        {
+            // Persistent lock, ensure lifetime property is present.
+            properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.PERSISTENT.toString());
         }
     }
 

@@ -35,6 +35,9 @@ import net.sf.acegisecurity.context.Context;
 import net.sf.acegisecurity.context.ContextHolder;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -44,9 +47,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.log.NDC;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Utility helper methods to change the authenticated context for threads.
@@ -55,6 +55,7 @@ import org.springframework.beans.factory.InitializingBean;
 public class AuthenticationUtil implements InitializingBean
 {
     static Log logger = LogFactory.getLog(AuthenticationUtil.class);
+
     @AlfrescoPublicApi
     public interface RunAsWork<Result>
     {
@@ -67,31 +68,31 @@ public class AuthenticationUtil implements InitializingBean
     }
 
     private static boolean initialized = false;
-    
+
     public static final String SYSTEM_USER_NAME = "System";
     private static String defaultAdminUserName = PermissionService.ADMINISTRATOR_AUTHORITY;
-    private static String defaultGuestUserName = PermissionService.GUEST_AUTHORITY; 
+    private static String defaultGuestUserName = PermissionService.GUEST_AUTHORITY;
     private static boolean mtEnabled = false;
-    
+
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+     * 
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     public void afterPropertiesSet() throws Exception
     {
         // at this point default admin and guest names have been assigned
         initialized = true;
     }
-    
+
     public void setDefaultAdminUserName(String defaultAdminUserName)
     {
         AuthenticationUtil.defaultAdminUserName = defaultAdminUserName;
     }
-    
+
     public void setDefaultGuestUserName(String defaultGuestUserName)
     {
         AuthenticationUtil.defaultGuestUserName = defaultGuestUserName;
     }
-    
+
     public static void setMtEnabled(boolean mtEnabled)
     {
         if (logger.isDebugEnabled())
@@ -108,25 +109,26 @@ public class AuthenticationUtil implements InitializingBean
 
     public static String maskUsername(String userName)
     {
-        if (userName != null)
+        if (userName == null)
         {
-            try
-            {
-                if (userName.length() >= 2)
-                {
-                    return userName.substring(0, 2) + new String(new char[(userName.length() - 2)]).replace("\0", "*");
-                }
-            }
-            catch (Exception e)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Failed to mask the username because: " + e.getMessage(), e);
-                }
-            }
+            return null;
+        }
+
+        final int len = userName.length();
+        if (len < 2)
+        {
             return userName;
         }
-        return null;
+
+        // Build the output in one go to avoid substring/concat and replace-based allocations.
+        final char[] out = new char[len];
+        out[0] = userName.charAt(0);
+        out[1] = userName.charAt(1);
+        if (len > 2)
+        {
+            java.util.Arrays.fill(out, 2, len, '*');
+        }
+        return new String(out);
     }
 
     public static String getMaskedUsername(Authentication authentication)
@@ -206,8 +208,7 @@ public class AuthenticationUtil implements InitializingBean
     }
 
     /**
-     * Authenticate as the Admin user.  The Admin user will be authenticated and all operations
-     * with be run in the context of this Admin user.
+     * Authenticate as the Admin user. The Admin user will be authenticated and all operations with be run in the context of this Admin user.
      * 
      * @return the authentication token
      */
@@ -215,37 +216,37 @@ public class AuthenticationUtil implements InitializingBean
     {
         return setFullyAuthenticatedUser(getAdminUserName());
     }
-    
+
     /**
-     * Authenticate as the given user.  The user will be authenticated and all operations
-     * with be run in the context of this user.
+     * Authenticate as the given user. The user will be authenticated and all operations with be run in the context of this user.
      * 
-     * @param userName              the user name
-     * @return                      the authentication token
+     * @param userName
+     *            the user name
+     * @return the authentication token
      */
     public static Authentication setFullyAuthenticatedUser(String userName)
     {
         return setFullyAuthenticatedUser(userName, getDefaultUserDetails(userName));
     }
-    
+
     private static Authentication setFullyAuthenticatedUser(String userNameIn, UserDetails providedDetails) throws AuthenticationException
     {
         if (userNameIn == null)
         {
             throw new AuthenticationException("Null user name");
         }
-        
+
         try
         {
             Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userNameIn);
             final String userName = userTenant.getFirst();
             final String tenantDomain = userTenant.getSecond();
-            
+
             UsernamePasswordAuthenticationToken auth = getAuthenticationToken(userName, providedDetails);
             Authentication authentication = setFullAuthentication(auth);
-            
+
             TenantContextHolder.setTenantDomain(tenantDomain);
-            
+
             return authentication;
         }
         catch (net.sf.acegisecurity.AuthenticationException ae)
@@ -292,7 +293,7 @@ public class AuthenticationUtil implements InitializingBean
             return authentication;
         }
     }
-    
+
     /**
      * <b>WARN: Advanced usage only.</b><br/>
      * Set the system user as the currently running user for authentication purposes.
@@ -308,18 +309,18 @@ public class AuthenticationUtil implements InitializingBean
 
     /**
      * <b>WARN: Advanced usage only.</b><br/>
-     * Switch to the given user for all authenticated operations.  The original, authenticated user
-     * can still be found using {@link #getFullyAuthenticatedUser()}.
+     * Switch to the given user for all authenticated operations. The original, authenticated user can still be found using {@link #getFullyAuthenticatedUser()}.
      * 
-     * @param userName          the user to run as
-     * @return                  the new authentication
+     * @param userName
+     *            the user to run as
+     * @return the new authentication
      */
     public static Authentication setRunAsUser(String userName)
     {
         return setRunAsUser(userName, getDefaultUserDetails(userName));
     }
-    
-    /*package*/ static Authentication setRunAsUser(String userName, UserDetails providedDetails) throws AuthenticationException
+
+    /* package */ static Authentication setRunAsUser(String userName, UserDetails providedDetails) throws AuthenticationException
     {
         if (userName == null)
         {
@@ -337,7 +338,7 @@ public class AuthenticationUtil implements InitializingBean
         }
     }
 
-    /*package*/ static Authentication setRunAsAuthentication(Authentication authentication)
+    /* package */ static Authentication setRunAsAuthentication(Authentication authentication)
     {
         if (authentication == null)
         {
@@ -378,12 +379,11 @@ public class AuthenticationUtil implements InitializingBean
             return authentication;
         }
     }
-    
+
     /**
-     * Get the current authentication for application of permissions.  This includes
-     * the any overlay details set by {@link #setRunAsUser(String)}.
+     * Get the current authentication for application of permissions. This includes the any overlay details set by {@link #setRunAsUser(String)}.
      * 
-     * @return Authentication               Returns the running authentication
+     * @return Authentication Returns the running authentication
      * @throws AuthenticationException
      */
     public static Authentication getRunAsAuthentication() throws AuthenticationException
@@ -395,12 +395,12 @@ public class AuthenticationUtil implements InitializingBean
         }
         return ((AlfrescoSecureContext) context).getEffectiveAuthentication();
     }
-    
+
     /**
      * <b>WARN: Advanced usage only.</b><br/>
      * Get the authentication for that was set by an real authentication.
      * 
-     * @return Authentication               Returns the real authentication
+     * @return Authentication Returns the real authentication
      * @throws AuthenticationException
      */
     public static Authentication getFullAuthentication() throws AuthenticationException
@@ -412,12 +412,11 @@ public class AuthenticationUtil implements InitializingBean
         }
         return ((AlfrescoSecureContext) context).getRealAuthentication();
     }
-    
+
     /**
-     * Get the user that is currently in effect for purposes of authentication.  This includes
-     * any overlays introduced by {@link #setRunAsUser(String) runAs}.
+     * Get the user that is currently in effect for purposes of authentication. This includes any overlays introduced by {@link #setRunAsUser(String) runAs}.
      * 
-     * @return              Returns the name of the user
+     * @return Returns the name of the user
      * @throws AuthenticationException
      */
     public static String getRunAsUser() throws AuthenticationException
@@ -434,7 +433,7 @@ public class AuthenticationUtil implements InitializingBean
         }
         return getUserName(ctx.getEffectiveAuthentication());
     }
-    
+
     public static boolean isRunAsUserTheSystemUser()
     {
         String runAsUser = getRunAsUser();
@@ -449,13 +448,11 @@ public class AuthenticationUtil implements InitializingBean
         }
         return EqualsHelper.nullSafeEquals(runAsUser, AuthenticationUtil.SYSTEM_USER_NAME);
     }
-    
+
     /**
-     * Get the fully authenticated user. 
-     * It returns the name of the user that last authenticated and excludes any overlay authentication set
-     * by {@link #runAs(org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork, String) runAs}.
+     * Get the fully authenticated user. It returns the name of the user that last authenticated and excludes any overlay authentication set by {@link #runAs(org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork, String) runAs}.
      * 
-     * @return              Returns the name of the authenticated user
+     * @return Returns the name of the authenticated user
      * @throws AuthenticationException
      */
     public static String getFullyAuthenticatedUser() throws AuthenticationException
@@ -472,7 +469,7 @@ public class AuthenticationUtil implements InitializingBean
         }
         return getUserName(ctx.getRealAuthentication());
     }
-    
+
     /**
      * Get the name of the system user
      * 
@@ -482,7 +479,7 @@ public class AuthenticationUtil implements InitializingBean
     {
         return SYSTEM_USER_NAME;
     }
-    
+
     /**
      * Get the name of the default admin user (the admin user created during bootstrap)
      * 
@@ -494,32 +491,30 @@ public class AuthenticationUtil implements InitializingBean
         {
             throw new IllegalStateException("AuthenticationUtil not yet initialised; default admin username not available");
         }
-        
+
         if (isMtEnabled())
         {
             String runAsUser = AuthenticationUtil.getRunAsUser();
             if (runAsUser != null)
             {
                 String tenantDomain = AuthenticationUtil.getUserTenant(runAsUser).getSecond();
-                
-                if (! TenantService.DEFAULT_DOMAIN.equals(tenantDomain))
+
+                if (!TenantService.DEFAULT_DOMAIN.equals(tenantDomain))
                 {
                     return defaultAdminUserName + TenantService.SEPARATOR + tenantDomain;
                 }
             }
         }
-        
+
         return defaultAdminUserName;
     }
 
-    /*
-     * Get the name of admin role
-     */
+    /* Get the name of admin role */
     public static String getAdminRoleName()
     {
         return PermissionService.ADMINISTRATOR_AUTHORITY;
     }
-    
+
     /**
      * Get the name of the Guest User
      */
@@ -531,7 +526,7 @@ public class AuthenticationUtil implements InitializingBean
         }
         return defaultGuestUserName;
     }
-    
+
     /**
      * Get the name of the guest role
      */
@@ -551,15 +546,14 @@ public class AuthenticationUtil implements InitializingBean
         }
         ContextHolder.setContext(null);
         InMemoryTicketComponentImpl.clearCurrentSecurityContext();
-        
+
         NDC.remove();
-        
+
         TenantContextHolder.clearTenantDomain();
     }
 
     /**
-     * Execute a unit of work as a given user. The thread's authenticated user will be returned to its normal state
-     * after the call.
+     * Execute a unit of work as a given user. The thread's authenticated user will be returned to its normal state after the call.
      * 
      * @param runAsWork
      *            the unit of work to do
@@ -571,7 +565,7 @@ public class AuthenticationUtil implements InitializingBean
     {
         Authentication originalFullAuthentication = AuthenticationUtil.getFullAuthentication();
         Authentication originalRunAsAuthentication = AuthenticationUtil.getRunAsAuthentication();
-        
+
         final R result;
         try
         {
@@ -582,20 +576,7 @@ public class AuthenticationUtil implements InitializingBean
             else
             {
                 // TODO remove - this should be obsolete now we're using TenantContextHolder
-                /*
-                if ((originalRunAsAuthentication != null) && (isMtEnabled()))
-                {
-                    String originalRunAsUserName = getUserName(originalRunAsAuthentication);
-                    int idx = originalRunAsUserName.indexOf(TenantService.SEPARATOR);
-                    if ((idx != -1) && (idx < (originalRunAsUserName.length() - 1)))
-                    {
-                        if (uid.equals(AuthenticationUtil.getSystemUserName()))
-                        {
-                            uid = uid + TenantService.SEPARATOR + originalRunAsUserName.substring(idx + 1);
-                        }
-                    }
-                }
-                */
+                /* if ((originalRunAsAuthentication != null) && (isMtEnabled())) { String originalRunAsUserName = getUserName(originalRunAsAuthentication); int idx = originalRunAsUserName.indexOf(TenantService.SEPARATOR); if ((idx != -1) && (idx < (originalRunAsUserName.length() - 1))) { if (uid.equals(AuthenticationUtil.getSystemUserName())) { uid = uid + TenantService.SEPARATOR + originalRunAsUserName.substring(idx + 1); } } } */
                 AuthenticationUtil.setRunAsUser(uid);
             }
             logNDC(uid);
@@ -631,41 +612,40 @@ public class AuthenticationUtil implements InitializingBean
             {
                 AuthenticationUtil.setFullAuthentication(originalFullAuthentication);
                 AuthenticationUtil.setRunAsAuthentication(originalRunAsAuthentication);
-                
+
                 logNDC(getUserName(originalFullAuthentication));
             }
         }
     }
-    
+
     public static <R> R runAsSystem(RunAsWork<R> runAsWork)
     {
         return runAs(runAsWork, getSystemUserName());
     }
-    
+
     static class ThreadLocalStack extends ThreadLocal<Stack<Authentication>>
     {
         /* (non-Javadoc)
-         * @see java.lang.ThreadLocal#initialValue()
-         */
+         * 
+         * @see java.lang.ThreadLocal#initialValue() */
         @Override
         protected Stack<Authentication> initialValue()
         {
             return new Stack<Authentication>();
         }
     }
-    
+
     private static ThreadLocal<Stack<Authentication>> threadLocalFullAuthenticationStack = new ThreadLocalStack();
     private static ThreadLocal<Stack<Authentication>> threadLocalRunAsAuthenticationStack = new ThreadLocalStack();
-    
-    private static ThreadLocal<Stack<String>> threadLocalTenantDomainStack = new ThreadLocal<Stack<String>>()
-                                                                                    {
-                                                                                        @Override
-                                                                                        protected Stack<String> initialValue()
-                                                                                        {
-                                                                                            return new Stack<String>();
-                                                                                        }
-                                                                                    };
-    
+
+    private static ThreadLocal<Stack<String>> threadLocalTenantDomainStack = new ThreadLocal<Stack<String>>() {
+        @Override
+        protected Stack<String> initialValue()
+        {
+            return new Stack<String>();
+        }
+    };
+
     /**
      * Push the current authentication context onto a threadlocal stack.
      */
@@ -675,14 +655,14 @@ public class AuthenticationUtil implements InitializingBean
         Authentication originalRunAsAuthentication = AuthenticationUtil.getRunAsAuthentication();
         threadLocalFullAuthenticationStack.get().push(originalFullAuthentication);
         threadLocalRunAsAuthenticationStack.get().push(originalRunAsAuthentication);
-        
+
         threadLocalTenantDomainStack.get().push(TenantContextHolder.getTenantDomain());
         if (logger.isTraceEnabled())
         {
             logger.trace("Pushed authentication in thread: " + Thread.currentThread().getName());
         }
     }
-    
+
     /**
      * Pop the authentication context from a threadlocal stack.
      */
@@ -690,7 +670,7 @@ public class AuthenticationUtil implements InitializingBean
     {
         Authentication originalFullAuthentication = threadLocalFullAuthenticationStack.get().pop();
         Authentication originalRunAsAuthentication = threadLocalRunAsAuthenticationStack.get().pop();
-        
+
         if (originalFullAuthentication == null)
         {
             AuthenticationUtil.clearCurrentSecurityContext();
@@ -700,7 +680,7 @@ public class AuthenticationUtil implements InitializingBean
             AuthenticationUtil.setFullAuthentication(originalFullAuthentication);
             AuthenticationUtil.setRunAsAuthentication(originalRunAsAuthentication);
         }
-        
+
         String originalTenantDomain = threadLocalTenantDomainStack.get().pop();
         TenantContextHolder.setTenantDomain(originalTenantDomain);
         if (logger.isTraceEnabled())
@@ -718,15 +698,15 @@ public class AuthenticationUtil implements InitializingBean
         {
             logger.debug(
                     "Authentication: \n" +
-                    "   Fully authenticated: " + maskUsername(getFullyAuthenticatedUser()) + "\n" +
-                    "   Run as:              " + maskUsername(getRunAsUser()));
+                            "   Fully authenticated: " + maskUsername(getFullyAuthenticatedUser()) + "\n" +
+                            "   Run as:              " + maskUsername(getRunAsUser()));
         }
     }
 
     public static void logNDC(String userNameIn)
     {
         NDC.remove();
-        
+
         if (userNameIn != null)
         {
             if (isMtEnabled())
@@ -734,9 +714,9 @@ public class AuthenticationUtil implements InitializingBean
                 Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userNameIn);
                 final String userName = userTenant.getFirst();
                 final String tenantDomain = userTenant.getSecond();
-                if (! TenantService.DEFAULT_DOMAIN.equals(tenantDomain))
+                if (!TenantService.DEFAULT_DOMAIN.equals(tenantDomain))
                 {
-                    NDC.push("Tenant:" +tenantDomain + " User:" + maskUsername(userName));
+                    NDC.push("Tenant:" + tenantDomain + " User:" + maskUsername(userName));
                 }
                 else
                 {
@@ -749,10 +729,10 @@ public class AuthenticationUtil implements InitializingBean
             }
         }
     }
-    
+
     //
     // Return username and current tenant domain. If current tenant domain is not set then
-    // get implied tenant domain. For example: bob@acme.com  => bob@acme.com, acme.com
+    // get implied tenant domain. For example: bob@acme.com => bob@acme.com, acme.com
     //
     public static Pair<String, String> getUserTenant(String userName)
     {
@@ -760,17 +740,17 @@ public class AuthenticationUtil implements InitializingBean
         if (tenantDomain == null)
         {
             tenantDomain = TenantService.DEFAULT_DOMAIN;
-            
+
             if ((userName != null) && isMtEnabled())
             {
                 // MT implied domain from username (for backwards compatibility)
                 int idx = userName.indexOf(TenantService.SEPARATOR);
-                if ((idx > 0) && (idx < (userName.length()-1)))
+                if ((idx > 0) && (idx < (userName.length() - 1)))
                 {
-                    tenantDomain = userName.substring(idx+1);
+                    tenantDomain = userName.substring(idx + 1);
                     if (tenantDomain.indexOf(TenantService.SEPARATOR) > 0)
                     {
-                        throw new AlfrescoRuntimeException("Unexpected tenant: "+tenantDomain+" (contains @)");
+                        throw new AlfrescoRuntimeException("Unexpected tenant: " + tenantDomain + " (contains @)");
                     }
 
                     if (logger.isDebugEnabled())

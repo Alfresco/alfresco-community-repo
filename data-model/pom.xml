@@ -117,7 +117,7 @@
         <dependency>
             <groupId>org.jibx</groupId>
             <artifactId>jibx-run</artifactId>
-            <version>1.4.2</version>
+            <version>1.4.5</version>
             <exclusions>
                 <!-- [ACS-5371] Excluded to avoid conflict in JDK9+ as it includes javax.xml-->
                 <exclusion>

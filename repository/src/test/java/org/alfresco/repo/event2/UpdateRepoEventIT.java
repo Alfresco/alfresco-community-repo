@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,12 +25,6 @@
  */
 
 package org.alfresco.repo.event2;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import static org.alfresco.model.ContentModel.PROP_DESCRIPTION;
 
@@ -1093,6 +1087,9 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertTrue(aspectsBefore.contains("cm:auditable"));
     }
 
+    /**
+     * Test that verifies update event is generated when only cm:modifiedAt property is changed. In a transaction userName property is added and removed, resulting in no net change to properties but cm:modifiedAt should be updated
+     */
     @Test
     public void testAddAndRemovePropertyInTheSameTransaction()
     {
@@ -1112,12 +1109,12 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        // There should only be a create event
-        resource = getNodeResource(1);
+        // No change to properties expected
+        resource = getNodeResource(2);
         assertTrue(resource.getProperties().isEmpty());
 
-        // Check there isn't a node update event
+        // There should be one update event as modifiedAt is updated
         List<RepoEvent<EventData<NodeResource>>> nodeUpdatedEvents = getFilteredEvents(EventType.NODE_UPDATED);
-        assertEquals(0, nodeUpdatedEvents.size());
+        assertEquals(1, nodeUpdatedEvents.size());
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -85,9 +85,9 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     @Override
     protected DataAttributes<NodeResource> buildEventData(EventInfo eventInfo, NodeResource resource, EventType eventType)
     {
-        EventData.Builder<NodeResource> eventDataBuilder = EventData.<NodeResource>builder()
-                    .setEventGroupId(eventInfo.getTxnId())
-                    .setResource(resource);
+        EventData.Builder<NodeResource> eventDataBuilder = EventData.<NodeResource> builder()
+                .setEventGroupId(eventInfo.getTxnId())
+                .setResource(resource);
 
         if (eventType == EventType.NODE_UPDATED)
         {
@@ -98,12 +98,12 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     }
 
     /**
-     * Creates a builder instance if absent or {@code forceUpdate} is requested.
-     * It also, sets the required fields.
+     * Creates a builder instance if absent or {@code forceUpdate} is requested. It also, sets the required fields.
      *
-     * @param nodeRef     the nodeRef in the txn
-     * @param forceUpdate if {@code true}, will get the latest node info and ignores
-     *                    the existing builder object.
+     * @param nodeRef
+     *            the nodeRef in the txn
+     * @param forceUpdate
+     *            if {@code true}, will get the latest node info and ignores the existing builder object.
      */
     protected void createBuilderIfAbsent(NodeRef nodeRef, boolean forceUpdate)
     {
@@ -118,7 +118,8 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     /**
      * Creates a builder instance if absent, and sets the required fields.
      *
-     * @param nodeRef the nodeRef in the txn
+     * @param nodeRef
+     *            the nodeRef in the txn
      */
     protected void createBuilderIfAbsent(NodeRef nodeRef)
     {
@@ -157,7 +158,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
                 // on create secondary child association event takes place - recreate secondary parents previous state
                 secondaryParents.remove(newChildAssocRef.getParentRef().getId());
             }
-            else if(oldChildAssocRef.getParentRef() != null && !secondaryParents.contains(oldChildAssocRef.getParentRef().getId()))
+            else if (oldChildAssocRef.getParentRef() != null && !secondaryParents.contains(oldChildAssocRef.getParentRef().getId()))
             {
                 // before remove secondary child association event takes place - recreate secondary parents previous state
                 secondaryParents.add(oldChildAssocRef.getParentRef().getId());
@@ -315,7 +316,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
                 resourceBeforeAllFieldsNull = false;
             }
 
-            Map<String, Map<String, String>> localizedProps = helper.getLocalizedPropertiesBefore(changedPropsBefore, after);
+            Map<String, Map<String, String>> localizedProps = helper.getLocalizedPropertiesBefore(propertiesBefore, after);
             if (!localizedProps.isEmpty())
             {
                 builder.setLocalizedProperties(localizedProps);
@@ -377,10 +378,14 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
             resourceBeforeAllFieldsNull = false;
         }
 
-        // Only set modifiedAt if one of the other fields is also not null
-        if (modifiedAt != null && !resourceBeforeAllFieldsNull)
+        // If modifiedAt is changed, set it
+        if (modifiedAt != null)
         {
             builder.setModifiedAt(modifiedAt);
+            if (resourceBeforeAllFieldsNull)
+            {
+                resourceBeforeAllFieldsNull = false;
+            }
         }
 
         return builder.build();
@@ -511,8 +516,9 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     {
         return this.getDerivedEvent().getType().equals(eventType.getType());
     }
-    
-    protected void setResourceBeforeAllFieldsNull(boolean resourceBeforeAllFieldsNull){
+
+    protected void setResourceBeforeAllFieldsNull(boolean resourceBeforeAllFieldsNull)
+    {
         this.resourceBeforeAllFieldsNull = resourceBeforeAllFieldsNull;
     }
 }

@@ -118,21 +118,19 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
             return;
         }
 
-        if (isTargetParentFilePlanComponent)
-        {
             NodeRef object = oldChildAssocRef.getChildRef();
             QName objectType = nodeService.getType(object);
+
             // Only documents can be moved into the RM site
-            if (!instanceOf(objectType, ContentModel.TYPE_CONTENT))
+            if (!instanceOf(objectType, ContentModel.TYPE_CONTENT) && isTargetParentFilePlanComponent)
             {
                 throw new AlfrescoRuntimeException("Only documents of types cm:content or subtypes can be moved from a collaboration site into a RM site.");
             }
             // Documents can be moved only into a RM folder
-            if (!isRecordFolder(targetParent))
+            if (isTargetParentFilePlanComponent && !isRecordFolder(targetParent))
             {
                 throw new AlfrescoRuntimeException("A document can only be moved into a folder in RM site.");
             }
-        }
     }
 
     /**

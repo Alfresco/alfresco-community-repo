@@ -107,38 +107,37 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
 
         NodeRef sourceParent = oldChildAssocRef.getParentRef();
         NodeRef targetParent = newChildAssocRef.getParentRef();
-        boolean sourceIsRm = isFilePlanComponent(sourceParent);
-        boolean targetIsRm = isFilePlanComponent(targetParent);
+        boolean isSourceParentFilePlanComponent = isFilePlanComponent(sourceParent);
+        boolean isTargetParentFilePlanComponent = isFilePlanComponent(targetParent);
 
-        // This runs for all move operations, if both source and target are within
-        // the RM site no additional validation is needed, so we can stop here
-        if (sourceIsRm && targetIsRm)
+        // If we are doing the move operation within the RM site then we can stop here
+        if (isSourceParentFilePlanComponent && isTargetParentFilePlanComponent)
         {
             return;
         }
 
-        if (isMoveIntoRmSite(sourceIsRm, targetIsRm))
+        if (isMoveIntoRmSite(isSourceParentFilePlanComponent, isTargetParentFilePlanComponent))
         {
             QName objectType = nodeService.getType(oldChildAssocRef.getChildRef());
             validateMoveIntoRm(objectType, targetParent);
         }
     }
 
-    private boolean isMoveIntoRmSite(boolean sourceIsRm, boolean targetIsRm)
+    private boolean isMoveIntoRmSite(boolean isSourceParentFilePlanComponent, boolean isTargetParentFilePlanComponent)
     {
-        return !sourceIsRm && targetIsRm;
+        return !isSourceParentFilePlanComponent && isTargetParentFilePlanComponent;
     }
 
     private void validateMoveIntoRm(QName objectType, NodeRef targetParent)
     {
-        if (!instanceOf(objectType, ContentModel.TYPE_CONTENT))
-        {
-            throw new AlfrescoRuntimeException("Only documents of types cm:content or subtypes can be moved from a collaboration site into a RM site.");
-        }
-
         if (!isRecordFolder(targetParent))
         {
             throw new AlfrescoRuntimeException("A document can only be moved into a folder in RM site.");
+        }
+
+        if (!instanceOf(objectType, ContentModel.TYPE_CONTENT))
+        {
+            throw new AlfrescoRuntimeException("Only documents of types cm:content or subtypes can be moved from a collaboration site into a RM site.");
         }
     }
 

@@ -2575,7 +2575,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
             // Wrap to ensure that we only clone values if the client attempts to modify
             // the map or retrieve values that might, themselves, be mutable
-            nodeProps = new ValueProtectingMap<>(nodeProps, NodePropertyValue.IMMUTABLE_CLASSES);
+            nodeProps = Collections.unmodifiableMap(nodeProps);
 
             // Done
             if (logger.isDebugEnabled())

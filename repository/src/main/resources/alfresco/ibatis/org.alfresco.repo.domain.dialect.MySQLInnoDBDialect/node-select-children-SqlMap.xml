@@ -27,7 +27,6 @@
             <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
                 #{item}
             </foreach>
-            and assoc.is_primary = true
     </select>
 
 </mapper>

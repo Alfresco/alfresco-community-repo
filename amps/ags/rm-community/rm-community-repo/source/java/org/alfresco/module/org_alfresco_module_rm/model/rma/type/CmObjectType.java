@@ -106,8 +106,9 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
         mandatory("newChildAssocRef", newChildAssocRef);
 
         NodeRef sourceParent = oldChildAssocRef.getParentRef();
-        NodeRef targetParent = newChildAssocRef.getParentRef();
         boolean isSourceParentFilePlanComponent = isFilePlanComponent(sourceParent);
+
+        NodeRef targetParent = newChildAssocRef.getParentRef();
         boolean isTargetParentFilePlanComponent = isFilePlanComponent(targetParent);
 
         // If we are doing the move operation within the RM site then we can stop here
@@ -117,26 +118,21 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
             return;
         }
 
-        if (isMoveIntoRmSite(isSourceParentFilePlanComponent, isTargetParentFilePlanComponent))
+        if (isTargetParentFilePlanComponent)
         {
             NodeRef object = oldChildAssocRef.getChildRef();
             QName objectType = nodeService.getType(object);
             // Only documents can be moved into the RM site
-            if (!instanceOf(objectType, ContentModel.TYPE_CONTENT) && isTargetParentFilePlanComponent)
+            if (!instanceOf(objectType, ContentModel.TYPE_CONTENT))
             {
                 throw new AlfrescoRuntimeException("Only documents of types cm:content or subtypes can be moved from a collaboration site into a RM site.");
             }
             // Documents can be moved only into a RM folder
-            if (isTargetParentFilePlanComponent && !isRecordFolder(targetParent))
+            if (!isRecordFolder(targetParent))
             {
                 throw new AlfrescoRuntimeException("A document can only be moved into a folder in RM site.");
             }
         }
-    }
-
-    private boolean isMoveIntoRmSite(boolean isSourceParentFilePlanComponent, boolean isTargetParentFilePlanComponent)
-    {
-        return !isSourceParentFilePlanComponent && isTargetParentFilePlanComponent;
     }
 
     /**

@@ -122,11 +122,10 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
         QName objectType = nodeService.getType(object);
 
         // Only documents can be moved into the RM site
-        if (!objectType.equals(ContentModel.TYPE_CONTENT) && isTargetParentFilePlanComponent)
+        if (!instanceOf(objectType, ContentModel.TYPE_CONTENT) && isTargetParentFilePlanComponent)
         {
-            throw new AlfrescoRuntimeException("Only documents can be moved from a collaboration site into a RM site.");
+            throw new AlfrescoRuntimeException("Only documents of types cm:content or subtypes can be moved from a collaboration site into a RM site.");
         }
-
         // Documents can be moved only into a RM folder
         if (isTargetParentFilePlanComponent && !isRecordFolder(targetParent))
         {

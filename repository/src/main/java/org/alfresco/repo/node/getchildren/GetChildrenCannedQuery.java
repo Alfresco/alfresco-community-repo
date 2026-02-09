@@ -87,6 +87,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     private Log logger = LogFactory.getLog(getClass());
     
     private static final String QUERY_NAMESPACE = "alfresco.node";
+    private static final String QUERY_SELECT_SUPER_GET_CHILDREN_WITH_PROPS = "select_SuperGetChildrenCannedQueryWithProps";
     private static final String QUERY_SELECT_GET_CHILDREN_WITH_PROPS = "select_GetChildrenCannedQueryWithProps";
     private static final String QUERY_SELECT_GET_CHILDREN_WITHOUT_PROPS = "select_GetChildrenCannedQueryWithoutProps";
     
@@ -140,6 +141,14 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         {
             applyPostQueryPermissions = true;
         }
+    }
+
+    protected SuperFilterSortChildQueryCallback getSuperFilterSortChildQuery(final List<FilterSortNode> children, final int requestedCount, GetChildrenCannedQueryParams paramBean)
+    {
+        Set<QName> inclusiveAspects = paramBean.getInclusiveAspects();
+        Set<QName> exclusiveAspects = paramBean.getExclusiveAspects();
+
+        return new SuperFilterSortChildQueryCallback(children, requestedCount, inclusiveAspects, exclusiveAspects);
     }
     
     protected FilterSortChildQueryCallback getFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps, GetChildrenCannedQueryParams paramBean)
@@ -293,8 +302,30 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 	            params.setNamePropertyQNameId(nameQName.getFirst());
 	            params.setPattern(pattern);
 	        }
-	        
-	        if (filterSortPropCnt > 0)
+            
+	        if(filterProps.isEmpty() 
+                    && sortPairs.size() == 2
+                    && sortPairs.get(0).equals(new Pair<>(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, SortOrder.DESCENDING))
+                    && sortPairs.get(1).equals(new Pair<>(ContentModel.PROP_NAME, SortOrder.ASCENDING)) ){
+
+                int requestedCount = parameters.getResultsRequired();
+
+                Set<QName> folderQNames = nodePropertyHelper.buildFolderTypes();
+                Set<Long> folderTypeQNameIds = qnameDAO.convertQNamesToIds(folderQNames, false);
+                params.setFolderTypeQNameIds(folderTypeQNameIds);
+                
+                final List<FilterSortNode> children = new ArrayList<>(requestedCount);
+                final SuperFilterSortChildQueryCallback c = getSuperFilterSortChildQuery(children, requestedCount, paramBean);
+                FilterSortResultHandler resultHandler = new FilterSortResultHandler(c);
+                cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_SUPER_GET_CHILDREN_WITH_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
+                resultHandler.done();
+                
+                result = new ArrayList<>(children.size());
+                for (FilterSortNode child : children)
+                {
+                    result.add(tenantService.getBaseName(child.getNodeRef()));
+                }
+            } else if (filterSortPropCnt > 0)
 	        {
 	            // filtered and/or sorted - note: permissions will be applied post query
 	            final List<FilterSortNode> children = new ArrayList<FilterSortNode>(100);
@@ -670,6 +701,38 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     protected interface FilterSortChildQueryCallback
     {
         boolean handle(FilterSortNode node);
+    }
+
+    protected class SuperFilterSortChildQueryCallback implements FilterSortChildQueryCallback
+    {
+        private List<FilterSortNode> children;
+        private int requestedCount;
+        private Set<QName> inclusiveAspects;
+        private Set<QName> exclusiveAspects;
+        
+        public SuperFilterSortChildQueryCallback(final List<FilterSortNode> children, final int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
+        {
+            this.children = children;
+            this.requestedCount = requestedCount;
+            this.inclusiveAspects = inclusiveAspects;
+            this.exclusiveAspects = exclusiveAspects;
+        }
+
+        @Override
+        public boolean handle(FilterSortNode node)
+        {
+            if(include(node))
+            {
+                children.add(node);
+            }
+
+            return children.size() < requestedCount;
+        }
+
+        protected boolean include(FilterSortNode node)
+        {
+            return includeAspects(node.getNodeRef(), inclusiveAspects, exclusiveAspects);
+        }
     }
     
     protected class DefaultFilterSortChildQueryCallback implements FilterSortChildQueryCallback

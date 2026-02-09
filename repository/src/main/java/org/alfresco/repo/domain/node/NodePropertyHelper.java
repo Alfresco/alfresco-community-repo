@@ -29,13 +29,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -688,5 +691,22 @@ public class NodePropertyHelper
                     "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
                     "   property value: " + propertyValue, e);
         }
+    }
+
+    public Set<QName> buildFolderTypes()
+    {
+        Set<QName> folderTypeQNames = new HashSet<>(50);
+
+        // Build a list of folder types
+        Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true);
+        folderTypeQNames.addAll(qnames);
+        folderTypeQNames.add(ContentModel.TYPE_FOLDER);
+
+        // Remove 'system' folders
+        qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+        folderTypeQNames.removeAll(qnames);
+        folderTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
+
+        return folderTypeQNames;
     }
 }

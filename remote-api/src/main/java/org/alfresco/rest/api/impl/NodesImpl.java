@@ -190,6 +190,7 @@ import org.alfresco.util.PropertyCheck;
 public class NodesImpl implements Nodes
 {
     private static final Log logger = LogFactory.getLog(NodesImpl.class);
+    private static final List<Pair<QName, Boolean>> DEFAULT_SORT_PROPS = List.of(new Pair<>(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, Boolean.FALSE), new Pair<>(ContentModel.PROP_NAME, true));
 
     private enum Type
     {
@@ -1721,7 +1722,8 @@ public class NodesImpl implements Nodes
 
         Paging paging = parameters.getPaging();
 
-        PagingRequest pagingRequest = Util.getPagingRequest(paging);
+        PagingRequest pagingRequest = new PagingRequest(paging.getSkipCount(), paging.getMaxItems());
+        pagingRequest.setRequestTotalCountMax(paging.getMaxItems());
 
         final PagingResults<FileInfo> pagingResults;
 
@@ -1861,7 +1863,7 @@ public class NodesImpl implements Nodes
      *
      * @param parameters
      *            The {@link Parameters} object to get the parameters passed into the request including: - filter, sort & paging params (where, orderBy, skipCount, maxItems) - incFiles, incFolders (both true by default)
-     * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort properties. If no sort parameters are found defaults to {@link #getListChildrenSortPropsDefault() getListChildrenSortPropsDefault}.
+     * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort properties. Defaults to {@link #DEFAULT_SORT_PROPS}.
      */
     protected List<Pair<QName, Boolean>> getListChildrenSortProps(final Parameters parameters)
     {
@@ -1887,26 +1889,12 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            sortProps = getListChildrenSortPropsDefault();
+            sortProps = DEFAULT_SORT_PROPS;
         }
 
         return sortProps;
     }
-
-    /**
-     * <p>
-     * Returns the default sort order.
-     * </p>
-     *
-     * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort properties.
-     */
-    protected List<Pair<QName, Boolean>> getListChildrenSortPropsDefault()
-    {
-        List<Pair<QName, Boolean>> sortProps = new ArrayList<>(
-                Arrays.asList(new Pair<>(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, Boolean.FALSE), new Pair<>(ContentModel.PROP_NAME, true)));
-        return sortProps;
-    }
-
+    
     private Pair<QName, Boolean> parseNodeTypeFilter(String nodeTypeStr)
     {
         boolean filterIncludeSubTypes = false; // default nodeType filtering is without subTypes (unless nodeType value is suffixed with ' INCLUDESUBTYPES')

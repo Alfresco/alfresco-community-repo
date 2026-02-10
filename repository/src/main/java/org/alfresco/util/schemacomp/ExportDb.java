@@ -305,7 +305,7 @@ public class ExportDb
 
                 String dbType = columns.getString("TYPE_NAME");
 
-                if ("BOOLEAN".equalsIgnoreCase(dbType) && isMariaDB(dbmd))
+                if ("BOOLEAN".equalsIgnoreCase(dbType) && isMariaDBDriver(dbmd))
                 {
                     dbType = "BIT";
                 }
@@ -649,9 +649,9 @@ public class ExportDb
         }
     }
 
-    private boolean isMariaDB(DatabaseMetaData dbmd) throws SQLException
+    private boolean isMariaDBDriver(DatabaseMetaData dbmd) throws SQLException
     {
-        String productName = dbmd.getDatabaseProductName();
-        return productName != null && productName.toLowerCase(Locale.ROOT).contains("mariadb");
+        String driverName = dbmd.getDriverName();
+        return driverName != null && driverName.toLowerCase(Locale.ROOT).contains("mariadb");
     }
 }

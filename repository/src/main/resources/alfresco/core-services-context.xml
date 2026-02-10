@@ -19,6 +19,11 @@
         <property name="order">
             <value>5</value>
         </property>
+        <property name="jvmProperties">
+            <map>
+                <entry key="mariadb.logging.disable" value="true" />
+            </map>
+        </property>
     </bean>
 
     <!-- Ensure backward compatibility with installations that control custom properties through repository-properties -->

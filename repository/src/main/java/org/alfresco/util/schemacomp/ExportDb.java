@@ -308,6 +308,12 @@ public class ExportDb
                 Column column = new Column(columnName);
 
                 String dbType = columns.getString("TYPE_NAME");
+
+                if ("BOOLEAN".equalsIgnoreCase(dbType) && isMariaDB(dbmd))
+                {
+                    dbType = "BIT";
+                }
+
                 int colSize = columns.getInt("COLUMN_SIZE");
                 int scale = columns.getInt("DECIMAL_DIGITS");
                 int jdbcType = columns.getInt("DATA_TYPE");
@@ -645,5 +651,11 @@ public class ExportDb
                 }
             }
         }
+    }
+
+    private boolean isMariaDB(DatabaseMetaData dbmd) throws SQLException
+    {
+        String productName = dbmd.getDatabaseProductName();
+        return productName != null && productName.toLowerCase().contains("mariadb");
     }
 }

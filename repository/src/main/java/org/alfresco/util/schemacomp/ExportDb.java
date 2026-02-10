@@ -32,11 +32,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
@@ -656,6 +652,6 @@ public class ExportDb
     private boolean isMariaDB(DatabaseMetaData dbmd) throws SQLException
     {
         String productName = dbmd.getDatabaseProductName();
-        return productName != null && productName.toLowerCase().contains("mariadb");
+        return productName != null && productName.toLowerCase(Locale.ROOT).contains("mariadb");
     }
 }

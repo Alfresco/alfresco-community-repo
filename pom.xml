@@ -100,7 +100,7 @@
         <dependency.kxml2.version>2.3.0</dependency.kxml2.version>
 
         <dependency.jakarta-ee-jaxb-api.version>4.0.2</dependency.jakarta-ee-jaxb-api.version>
-        <dependency.jakarta-ee-jaxb-impl.version>4.0.5</dependency.jakarta-ee-jaxb-impl.version>
+        <dependency.jakarta-ee-jaxb-impl.version>4.0.6</dependency.jakarta-ee-jaxb-impl.version>
         <dependency.jakarta-ws-api.version>3.0.1</dependency.jakarta-ws-api.version>
         <dependency.jakarta-soap-api.version>3.0.2</dependency.jakarta-soap-api.version>
         <dependency.jakarta-annotation-api.version>3.0.0</dependency.jakarta-annotation-api.version>

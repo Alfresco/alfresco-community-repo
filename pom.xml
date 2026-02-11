@@ -84,7 +84,7 @@
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
         <dependency.tika.version>3.2.3</dependency.tika.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
-        <dependency.poi.version>5.4.0</dependency.poi.version>
+        <dependency.poi.version>5.5.1</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>4.15.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.127.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->

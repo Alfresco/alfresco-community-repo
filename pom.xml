@@ -57,7 +57,7 @@
         <dependency.acs-event-model.version>1.0.11</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
-        <dependency.spring.version>7.0.2</dependency.spring.version>
+        <dependency.spring.version>7.0.3</dependency.spring.version>
         <dependency.spring-security.version>7.0.0</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.17.2</dependency.jackson.version>

@@ -118,7 +118,7 @@
         <alfresco.aos-module.version>3.4.1</alfresco.aos-module.version>
         <alfresco.api-explorer.version>26.1.0-A.1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
-        <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
+        <alfresco.maven-plugin.version>4.13.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.4.0</license-maven-plugin.version>
         <spotless-plugin.version>2.45.0</spotless-plugin.version>
 

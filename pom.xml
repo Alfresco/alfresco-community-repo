@@ -94,7 +94,7 @@
         <dependency.swagger-ui.version>4.1.3</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.73</dependency.swagger-parser.version>
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
-        <dependency.maven-artifact.version>3.8.6</dependency.maven-artifact.version>
+        <dependency.maven-artifact.version>3.9.12</dependency.maven-artifact.version>
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
         <dependency.pooled-jms.version>3.1.6</dependency.pooled-jms.version>
         <dependency.kxml2.version>2.3.0</dependency.kxml2.version>

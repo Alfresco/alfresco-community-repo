@@ -27,14 +27,22 @@ package org.alfresco.repo.domain.dialect;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class DBConnectionPropertiesFactoryBeanTest
 {
+    private DBConnectionPropertiesFactoryBean factory;
+
+    @Before
+    public void setUp()
+    {
+        factory = new DBConnectionPropertiesFactoryBean();
+    }
+
     @Test
     public void mariaDBDriverReturnsTransformedBitProperty()
     {
-        DBConnectionPropertiesFactoryBean factory = new DBConnectionPropertiesFactoryBean();
         factory.setDbDriver("org.mariadb.jdbc.Driver");
 
         assertEquals("transformedBitIsBoolean=false", factory.getObject());
@@ -43,7 +51,6 @@ public class DBConnectionPropertiesFactoryBeanTest
     @Test
     public void mysqlDriverReturnsEmptyProperty()
     {
-        DBConnectionPropertiesFactoryBean factory = new DBConnectionPropertiesFactoryBean();
         factory.setDbDriver("com.mysql.cj.jdbc.Driver");
 
         assertEquals("", factory.getObject());
@@ -52,7 +59,6 @@ public class DBConnectionPropertiesFactoryBeanTest
     @Test
     public void postgresqlDriverReturnsEmptyProperty()
     {
-        DBConnectionPropertiesFactoryBean factory = new DBConnectionPropertiesFactoryBean();
         factory.setDbDriver("org.postgresql.Driver");
 
         assertEquals("", factory.getObject());

@@ -26,6 +26,7 @@
 package org.alfresco.repo.domain.dialect;
 
 import java.util.Locale;
+
 import org.springframework.beans.factory.FactoryBean;
 
 public class DBConnectionPropertiesFactoryBean implements FactoryBean<String>

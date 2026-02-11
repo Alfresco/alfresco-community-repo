@@ -80,7 +80,7 @@
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.16</dependency.slf4j.version>
-        <dependency.log4j.version>2.25.1</dependency.log4j.version>
+        <dependency.log4j.version>2.25.3</dependency.log4j.version>
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
         <dependency.tika.version>3.2.3</dependency.tika.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>

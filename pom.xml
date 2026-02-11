@@ -96,7 +96,7 @@
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
         <dependency.maven-artifact.version>3.8.6</dependency.maven-artifact.version>
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
-        <dependency.pooled-jms.version>3.1.6</dependency.pooled-jms.version>
+        <dependency.pooled-jms.version>3.2.2</dependency.pooled-jms.version>
         <dependency.kxml2.version>2.3.0</dependency.kxml2.version>
 
         <dependency.jakarta-ee-jaxb-api.version>4.0.2</dependency.jakarta-ee-jaxb-api.version>

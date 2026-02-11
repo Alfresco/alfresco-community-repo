@@ -272,7 +272,8 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.util.schemacomp.SchemaDifferenceHelperUnitTest.class,
         org.alfresco.repo.tagging.TaggingServiceImplUnitTest.class,
         org.alfresco.repo.serviceaccount.ServiceAccountRegistryImplTest.class,
-        org.alfresco.repo.template.DocumentationURLMethodTest.class
+        org.alfresco.repo.template.DocumentationURLMethodTest.class,
+        org.alfresco.repo.domain.dialect.DBConnectionPropertiesFactoryBeanTest.class
 })
 public class AllUnitTestsSuite
 {}

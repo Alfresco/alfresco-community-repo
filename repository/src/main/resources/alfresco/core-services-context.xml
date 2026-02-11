@@ -172,6 +172,11 @@
         <property name="authenticationService"><ref bean="authenticationService"/></property>
     </bean>
 
+    <bean id="dbConnectionProperties"
+          class="org.alfresco.repo.domain.dialect.DBConnectionPropertiesFactoryBean">
+        <property name="dbDriver" value="${db.driver}" />
+    </bean>
+
     <!-- from Thor -->
     <bean id="defaultDataSource" parent="baseDefaultDataSource" />
 
@@ -183,6 +188,7 @@
         <property name="url">
             <value>${db.url}</value>
         </property>
+        <property name="connectionProperties" ref="dbConnectionProperties" />
         <property name="username">
             <value>${db.username}</value>
         </property>

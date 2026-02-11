@@ -35,7 +35,6 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -309,12 +308,6 @@ public class ExportDb
                 Column column = new Column(columnName);
 
                 String dbType = columns.getString("TYPE_NAME");
-
-                if ("BOOLEAN".equalsIgnoreCase(dbType) && isMariaDBDriver(dbmd))
-                {
-                    dbType = "BIT";
-                }
-
                 int colSize = columns.getInt("COLUMN_SIZE");
                 int scale = columns.getInt("DECIMAL_DIGITS");
                 int jdbcType = columns.getInt("DATA_TYPE");
@@ -652,11 +645,5 @@ public class ExportDb
                 }
             }
         }
-    }
-
-    private boolean isMariaDBDriver(DatabaseMetaData dbmd) throws SQLException
-    {
-        String driverName = dbmd.getDriverName();
-        return driverName != null && driverName.toLowerCase(Locale.ROOT).contains("mariadb");
     }
 }

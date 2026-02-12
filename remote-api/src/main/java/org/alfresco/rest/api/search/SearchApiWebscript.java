@@ -25,6 +25,16 @@
  */
 package org.alfresco.rest.api.search;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
+import org.alfresco.repo.node.ContentPropertyRestrictionInterceptor;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.impl.ResultMapper;
@@ -45,14 +55,6 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An implementation of the {{baseUrl}}/{{networkId}}/public/search/versions/1/search endpoint
@@ -60,7 +62,7 @@ import java.util.List;
  * @author Gethin James
  */
 public class SearchApiWebscript extends AbstractWebScript implements RecognizedParamsExtractor, RequestReader, ResponseWriter,
-                                                                InitializingBean
+        InitializingBean
 {
     private ServiceRegistry serviceRegistry;
     private SearchService searchService;
@@ -82,38 +84,51 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
     @Override
     public void execute(WebScriptRequest webScriptRequest, WebScriptResponse webScriptResponse) throws IOException
     {
-        try {
-            //Turn JSON into a Java object respresentation
-            SearchQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchQuery.class);
-
-            //Parse the parameters
-            Params params = getParams(webScriptRequest, searchQuery.getFields(), searchQuery.getInclude(), searchQuery.getPaging());
-
-            //Make a copy of the request
-            SearchRequestContext searchRequestContext = SearchRequestContext.from(searchQuery);
-
-            //Turn the SearchQuery json into the Java SearchParameters object
-            SearchParameters searchParams = searchMapper.toSearchParameters(params, searchQuery, searchRequestContext);
-
-            //Call searchService
-            ResultSet results = searchService.query(searchParams);
-
-            //Turn solr results into JSON
-            CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(params, searchRequestContext, searchQuery, results);
-            //Post-process the request and pass in params, eg. params.getFilter()
-            Object toRender = helper.processAdditionsToTheResponse(null, null, null, params, resultJson);
-
-            //Write response
-            setResponse(webScriptResponse, DEFAULT_SUCCESS);
-            renderJsonResponse(webScriptResponse, toRender, assistant.getJsonHelper());
-
-        } catch (Exception exception) {
-            renderException(exception,webScriptResponse,webScriptRequest,assistant);
+        try
+        {
+            ContentPropertyRestrictionInterceptor.disable();
+            doExecute(webScriptRequest, webScriptResponse);
         }
+        catch (Exception exception)
+        {
+            renderException(exception, webScriptResponse, webScriptRequest, assistant);
+        }
+        finally
+        {
+            ContentPropertyRestrictionInterceptor.enable();
+        }
+    }
+
+    private void doExecute(WebScriptRequest webScriptRequest, WebScriptResponse webScriptResponse) throws IOException
+    {
+        // Turn JSON into a Java object respresentation
+        SearchQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchQuery.class);
+
+        // Parse the parameters
+        Params params = getParams(webScriptRequest, searchQuery.getFields(), searchQuery.getInclude(), searchQuery.getPaging());
+
+        // Make a copy of the request
+        SearchRequestContext searchRequestContext = SearchRequestContext.from(searchQuery);
+
+        // Turn the SearchQuery json into the Java SearchParameters object
+        SearchParameters searchParams = searchMapper.toSearchParameters(params, searchQuery, searchRequestContext);
+
+        // Call searchService
+        ResultSet results = searchService.query(searchParams);
+
+        // Turn solr results into JSON
+        CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(params, searchRequestContext, searchQuery, results);
+        // Post-process the request and pass in params, eg. params.getFilter()
+        Object toRender = helper.processAdditionsToTheResponse(null, null, null, params, resultJson);
+
+        // Write response
+        setResponse(webScriptResponse, DEFAULT_SUCCESS);
+        renderJsonResponse(webScriptResponse, toRender, assistant.getJsonHelper());
     }
 
     /**
      * Gets the Params object, parameters come from the SearchQuery json not the request
+     * 
      * @param webScriptRequest
      * @param searchQuery
      * @return Params
@@ -130,12 +145,12 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             List<String> selectList = new ArrayList<>(fields.size());
             selectList.addAll(fields);
 
-            if (include != null &&  !include.isEmpty())
+            if (include != null && !include.isEmpty())
             {
                 selectList.addAll(include);
             }
 
-          filter = getFilter("", selectList);
+            filter = getFilter("", selectList);
         }
 
         Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, paging, filter, null, include, null, null, null, false);
@@ -152,11 +167,13 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
         this.resultMapper = resultMapper;
     }
 
-    public void setAssistant(ApiAssistant assistant) {
+    public void setAssistant(ApiAssistant assistant)
+    {
         this.assistant = assistant;
     }
 
-    public void setServiceRegistry(ServiceRegistry serviceRegistry) {
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
         this.serviceRegistry = serviceRegistry;
     }
 

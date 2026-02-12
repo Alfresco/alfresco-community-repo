@@ -19,6 +19,11 @@
         <property name="order">
             <value>5</value>
         </property>
+        <property name="jvmProperties">
+            <map>
+                <entry key="mariadb.logging.disable" value="true" />
+            </map>
+        </property>
     </bean>
 
     <!-- Ensure backward compatibility with installations that control custom properties through repository-properties -->
@@ -167,6 +172,11 @@
         <property name="authenticationService"><ref bean="authenticationService"/></property>
     </bean>
 
+    <bean id="dbConnectionProperties"
+          class="org.alfresco.repo.domain.dialect.DBConnectionPropertiesFactoryBean">
+        <property name="dbDriver" value="${db.driver}" />
+    </bean>
+
     <!-- from Thor -->
     <bean id="defaultDataSource" parent="baseDefaultDataSource" />
 
@@ -178,6 +188,7 @@
         <property name="url">
             <value>${db.url}</value>
         </property>
+        <property name="connectionProperties" ref="dbConnectionProperties" />
         <property name="username">
             <value>${db.username}</value>
         </property>

@@ -174,14 +174,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     /**
-     +     * @param eagerOrphanCleanup
-     +     *            <tt>true</tt> to enable this component, otherwise <tt>false</tt>
-     +     */
+     * + * @param eagerOrphanCleanup + * <tt>true</tt> to enable this component, otherwise <tt>false</tt> +
+     */
     public void setEagerOrphanCleanup(boolean eagerOrphanCleanup)
-   {
-           this.eagerOrphanCleanup = eagerOrphanCleanup;
-        }
-
+    {
+        this.eagerOrphanCleanup = eagerOrphanCleanup;
+    }
 
     /**
      * Performs a null-safe get of the node

@@ -124,6 +124,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     private BehaviourFilter policyBehaviourFilter;
     private boolean enableTimestampPropagation;
     private final ExtendedTrait<NodeServiceTrait> nodeServiceTrait;
+    private boolean eagerOrphanCleanup;
 
     public DbNodeServiceImpl()
     {
@@ -171,6 +172,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     {
         this.enableTimestampPropagation = enableTimestampPropagation;
     }
+
+    /**
+     +     * @param eagerOrphanCleanup
+     +     *            <tt>true</tt> to enable this component, otherwise <tt>false</tt>
+     +     */
+    public void setEagerOrphanCleanup(boolean eagerOrphanCleanup)
+   {
+           this.eagerOrphanCleanup = eagerOrphanCleanup;
+        }
+
 
     /**
      * Performs a null-safe get of the node
@@ -1170,7 +1181,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         propagateTimeStamps(childAssocRef);
 
         // Archive, if necessary
-        boolean archive = requiresDelete != null && !requiresDelete.booleanValue();
+        boolean archive = requiresDelete != null && !requiresDelete.booleanValue() && !eagerOrphanCleanup;
 
         // Fire pre-delete events
         Set<Long> childAssocIds = new HashSet<Long>(23); // Prevents duplicate firing

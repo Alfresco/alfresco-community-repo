@@ -47,10 +47,8 @@ import org.alfresco.service.namespace.QName;
  * @author Tuna Aksoy
  * @since 2.3
  */
-@BehaviourBean
-(
-   defaultType = "cm:cmobject"
-)
+@BehaviourBean(
+        defaultType = "cm:cmobject")
 public class CmObjectType extends BaseBehaviourBean implements NodeServicePolicies.OnMoveNodePolicy, CopyServicePolicies.BeforeCopyPolicy
 {
     /** Move behaviour name */
@@ -99,11 +97,9 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       name = MOVE_BEHAVIOUR_NAME
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            name = MOVE_BEHAVIOUR_NAME)
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         mandatory("oldChildAssocRef", oldChildAssocRef);
@@ -126,9 +122,9 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
         QName objectType = nodeService.getType(object);
 
         // Only documents can be moved into the RM site
-        if (!objectType.equals(ContentModel.TYPE_CONTENT) && isTargetParentFilePlanComponent)
+        if (!instanceOf(objectType, ContentModel.TYPE_CONTENT) && isTargetParentFilePlanComponent)
         {
-            throw new AlfrescoRuntimeException("Only documents can be moved from a collaboration site into a RM site.");
+            throw new AlfrescoRuntimeException("Only documents of types cm:content or subtypes can be moved from a collaboration site into a RM site.");
         }
 
         // Documents can be moved only into a RM folder
@@ -142,11 +138,9 @@ public class CmObjectType extends BaseBehaviourBean implements NodeServicePolici
      * @see org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy#beforeCopy(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       name = COPY_BEHAVIOUR_NAME
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            name = COPY_BEHAVIOUR_NAME)
     public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
     {
         mandatory("sourceNodeRef", sourceNodeRef);

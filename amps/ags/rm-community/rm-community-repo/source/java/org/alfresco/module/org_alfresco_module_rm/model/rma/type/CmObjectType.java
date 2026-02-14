@@ -48,7 +48,7 @@ import org.alfresco.service.namespace.QName;
  * @since 2.3
  */
 @BehaviourBean(
-    defaultType = "cm:cmobject")
+        defaultType = "cm:cmobject")
 public class CmObjectType extends BaseBehaviourBean implements NodeServicePolicies.OnMoveNodePolicy, CopyServicePolicies.BeforeCopyPolicy
 {
     /** Move behaviour name */

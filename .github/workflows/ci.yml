@@ -106,6 +106,10 @@ jobs:
         run: |
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
+      - name: "Remove excluded files"
+        run: |
+          mkdir temp-dir-for-sast
+          bash ./scripts/ci/remove-sast-exclusions.sh ./packaging/war/target/alfresco.war temp-dir-for-sast/reduced.war
       - name: "Run SAST Scan"
         uses: veracode/Veracode-pipeline-scan-action@v1.0.20
         with:
@@ -120,6 +124,7 @@ jobs:
           summary_output_file: results.json
           summary_display: true
           baseline_file: baseline.json
+          timeout: 15
       - name: Upload scan result
         if: success() || failure()
         run: zip readable_output.zip results.json
@@ -129,6 +134,8 @@ jobs:
         with:
           name: Veracode Pipeline-Scan Results (Human Readable)
           path: readable_output.zip
+      - name: "Remove temporary directory"
+        run: rm -rfv temp-dir-for-sast
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

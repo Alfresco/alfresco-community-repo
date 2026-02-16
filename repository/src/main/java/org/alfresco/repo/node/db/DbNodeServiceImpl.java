@@ -1081,7 +1081,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void deleteNode(NodeRef nodeRef)
     {
-        deleteNode(nodeRef, true);
+        boolean allowArchival = !eagerOrphanCleanup;
+        deleteNode(nodeRef, allowArchival);
     }
 
     /**
@@ -1179,7 +1180,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         propagateTimeStamps(childAssocRef);
 
         // Archive, if necessary
-        boolean archive = requiresDelete != null && !requiresDelete.booleanValue() && !eagerOrphanCleanup;
+        boolean archive = requiresDelete != null && !requiresDelete.booleanValue();
 
         // Fire pre-delete events
         Set<Long> childAssocIds = new HashSet<Long>(23); // Prevents duplicate firing

@@ -2731,7 +2731,12 @@ paths:
         '201':
           description: Successful response
           schema:
-            $ref: '#/definitions/RetentionScheduleResponse'
+            type: object
+            required:
+              - entry
+            properties:
+              entry:
+                $ref: '#/definitions/RetentionScheduleResponse'
         '400':
           description: |
             Invalid parameter: value of recordCategoryId is invalid

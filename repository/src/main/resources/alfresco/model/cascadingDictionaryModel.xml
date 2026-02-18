@@ -15,6 +15,20 @@
         <namespace uri="http://www.alfresco.org/model/cascadingdictionarymodel/1.0" prefix="cd"/>
     </namespaces>
 
+    <types>
+        <type name="cd:definition">
+            <title>Cascading Dictionary Definition</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="cd:aspect">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <index enabled="false" />
+                </property>
+            </properties>
+        </type>
+    </types>
+
     <aspects>
         <aspect name="cd:classifiable">
             <title>Cascading Dictionaries Classifiable</title>

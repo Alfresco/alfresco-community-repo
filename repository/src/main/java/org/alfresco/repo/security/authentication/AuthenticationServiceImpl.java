@@ -27,7 +27,9 @@ package org.alfresco.repo.security.authentication;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.UUID;
 
+import org.alfresco.repo.tenant.TenantService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -55,7 +57,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private boolean protectionEnabled;
     private int protectionLimit;
     private SimpleCache<String, ProtectedUser> protectedUsersCache;
-
     private PersonService personService;
 
     public void setProtectionPeriodSeconds(int protectionPeriodSeconds)
@@ -178,7 +179,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             {
                 long currentTimeStamp = System.currentTimeMillis();
                 isProtected = protectedUser.getNumLogins() >= protectionLimit &&
-                        currentTimeStamp - protectedUser.getTimeStamp() < protectionPeriodSeconds * 1000;
+                        currentTimeStamp - protectedUser.getTimeStamp() < protectionPeriodSeconds * 1000L;
+                logger.warn(currentTimeStamp - protectedUser.getTimeStamp() + " " + isProtected);
             }
         }
         return isProtected;
@@ -219,7 +221,12 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         {
             userName = userName.toLowerCase();
         }
-        return "AUTH_@@" + userName + "@@"; //
+        return getCurrentTenantDomain()+"@@" + userName ; // Get the tenant domain to avoid clashes between users with the same name in different tenants
+    }
+
+    private String getCurrentTenantDomain()
+    {
+        return TenantContextHolder.getTenantDomain() == null ? TenantService.DEFAULT_DOMAIN : TenantContextHolder.getTenantDomain();
     }
 
     public String getCurrentUserName() throws AuthenticationException

@@ -17,32 +17,56 @@ function main()
       resultObj = null,
       lastPathElement = null;
    
-   if (logger.isLoggingEnabled())
-   {
-      logger.log("children type = " + url.templateArgs.type);
-      logger.log("argsSelectableType = " + argsSelectableType);
-      logger.log("argsFilterType = " + argsFilterType);
-      logger.log("argsSearchTerm = " + argsSearchTerm);
-      logger.log("argsMaxResults = " + argsMaxResults);
-      logger.log("argsXPath = " + argsXPath);
-      logger.log("argsSelectableMimeType = " + argsSelectableMimeType);
-   }
+  // if (logger.isLoggingEnabled())
+  // {
+      logger.warn("children type = " + url.templateArgs.type);
+      logger.warn("argsSelectableType = " + argsSelectableType);
+      logger.warn("argsFilterType = " + argsFilterType);
+      logger.warn("argsSearchTerm = " + argsSearchTerm);
+      logger.warn("argsMaxResults = " + argsMaxResults);
+      logger.warn("argsXPath = " + argsXPath);
+      logger.warn("argsSelectableMimeType = " + argsSelectableMimeType);
+   //}
    try
    {
       // construct the NodeRef from the URL
       var nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
+      logger.warn ("nodeRef ===="+nodeRef)
       
       // determine if we need to resolve the parent NodeRef
-      
-      if (argsXPath != null)
-      {
-         // resolve the provided XPath to a NodeRef
-         var nodes = search.xpathSearch(argsXPath);
-         if (nodes.length > 0)
-         {
-            nodeRef = String(nodes[0].nodeRef);
-         }
-      }
+
+    if (argsXPath != null)
+    {
+            //var nodes = search.xpathSearch(argsXPath);
+
+            /**
+             * If the selectable type is 'trx:transferTarget', the XPath contains '/cm:default'
+             * which represents the default content model namespace. This placeholder must be
+             * removed before converting to FTS-Alfresco syntax because FTS does not use the
+             * same namespace representation as XPath queries. This replacement ensures the
+             * path is properly formatted for the FTS query engine.
+             */
+
+            if(argsSelectableType === 'trx:transferTarget'){
+                argsXPath = argsXPath.replace('/cm:default', '');
+            }
+
+            var pathQuery = 'PATH:"' + argsXPath + '/*"';
+            logger.warn ("pathQuery ====" + pathQuery);
+
+            var nodes = search.query({
+                query: pathQuery,
+                language: "fts-alfresco"
+            });
+
+            logger.warn ("nodes ===="+nodes)
+            logger.warn ("nodes.length ===="+nodes.length)
+
+            if (nodes.length > 0)
+            {
+                nodeRef = String(nodes[0].nodeRef);
+            }
+    }
 
       // default to max of 100 results
       var maxResults = 100;

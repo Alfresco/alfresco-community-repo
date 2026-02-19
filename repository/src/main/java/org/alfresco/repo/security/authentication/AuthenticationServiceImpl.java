@@ -27,9 +27,7 @@ package org.alfresco.repo.security.authentication;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.UUID;
 
-import org.alfresco.repo.tenant.TenantService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -37,6 +35,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
 import org.alfresco.repo.tenant.TenantContextHolder;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.Pair;
 
@@ -221,7 +220,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         {
             userName = userName.toLowerCase();
         }
-        return getCurrentTenantDomain()+"@@" + userName ; // Get the tenant domain to avoid clashes between users with the same name in different tenants
+        return getCurrentTenantDomain() + "@@" + userName; // Get the tenant domain to avoid clashes between users with the same name in different tenants
     }
 
     private String getCurrentTenantDomain()

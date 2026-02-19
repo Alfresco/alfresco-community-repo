@@ -43,7 +43,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.tenant.TenantService;
 import org.junit.Before;
 import org.junit.Test;
 

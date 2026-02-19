@@ -4601,7 +4601,7 @@ definitions:
           This field is used to specify whether the retention schedule needs to be applied in the folder level or record level.
           True will cause the the retention schedule to apply to records and false will cause the retention schedule to apply to record folders.
           This cannot be changed once items start being managed by the retention schedule.
-  cleaRetentionScheduleResponse:
+  RetentionScheduleResponse:
     type: object
     properties:
       id:

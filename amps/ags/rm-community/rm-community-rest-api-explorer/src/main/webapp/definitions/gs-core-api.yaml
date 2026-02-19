@@ -2731,12 +2731,7 @@ paths:
         '201':
           description: Successful response
           schema:
-            type: object
-            required:
-              - entry
-            properties:
-              entry:
-                $ref: '#/definitions/RetentionScheduleResponse'
+            $ref: '#/definitions/RetentionScheduleResponseEntry'
         '400':
           description: |
             Invalid parameter: value of recordCategoryId is invalid
@@ -4606,7 +4601,7 @@ definitions:
           This field is used to specify whether the retention schedule needs to be applied in the folder level or record level.
           True will cause the the retention schedule to apply to records and false will cause the retention schedule to apply to record folders.
           This cannot be changed once items start being managed by the retention schedule.
-  RetentionScheduleResponse:
+  cleaRetentionScheduleResponse:
     type: object
     properties:
       id:
@@ -4621,6 +4616,15 @@ definitions:
         type: boolean
       unpublishedUpdates:
         type: boolean
+  RetentionScheduleResponseEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/RetentionScheduleResponse'
+
+
   RetentionScheduleResponseList:
     type: object
     properties:

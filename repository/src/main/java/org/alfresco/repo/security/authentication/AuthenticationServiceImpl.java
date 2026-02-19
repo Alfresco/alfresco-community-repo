@@ -178,8 +178,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             {
                 long currentTimeStamp = System.currentTimeMillis();
                 isProtected = protectedUser.getNumLogins() >= protectionLimit &&
-                        currentTimeStamp - protectedUser.getTimeStamp() < protectionPeriodSeconds * 1000L;
-                logger.warn(currentTimeStamp - protectedUser.getTimeStamp() + " " + isProtected);
+                        currentTimeStamp - protectedUser.getTimeStamp() < protectionPeriodSeconds * 1000;
             }
         }
         return isProtected;

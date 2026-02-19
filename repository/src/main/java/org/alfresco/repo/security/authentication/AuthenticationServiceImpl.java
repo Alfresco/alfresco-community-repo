@@ -45,9 +45,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     AuthenticationComponent authenticationComponent;
     TicketComponent ticketComponent;
 
-    /** a serviceInstanceId identifying this unique instance */
-    private String serviceInstanceId;
-
     private String domain;
     private boolean allowsUserCreation = true;
     private boolean allowsUserDeletion = true;
@@ -95,8 +92,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     public AuthenticationServiceImpl()
     {
         super();
-
-        this.serviceInstanceId = GUID.generate();
     }
 
     public void setTicketComponent(TicketComponent ticketComponent)
@@ -225,7 +220,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         {
             userName = userName.toLowerCase();
         }
-        return serviceInstanceId + "@@" + userName;
+        return  "AUTH_@@" + userName + "@@"; //
     }
 
     public String getCurrentUserName() throws AuthenticationException

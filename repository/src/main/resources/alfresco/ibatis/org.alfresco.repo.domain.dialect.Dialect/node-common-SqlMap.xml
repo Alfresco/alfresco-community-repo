@@ -999,7 +999,7 @@
             assoc.parent_node_id = #{parentNode.id}
             and assoc.is_primary = #{isPrimary}
     </select>
-    
+
     <select id="select_SuperGetChildrenCannedQueryWithProps" parameterType="FilterSortNode" resultMap="result_FilterSortNode">
         select
         childNode.id             as id,
@@ -1017,7 +1017,7 @@
         childNode.audit_created  as audit_created,
         childNode.audit_modifier as audit_modifier,
         childNode.audit_modified as audit_modified,
-        childNode.audit_accessed  as audit_accessed, 
+        childNode.audit_accessed as audit_accessed,
         prop1.node_id            as prop1_node_id,
         prop1.qname_id           as prop1_qname_id,
         prop1.locale_id          as prop1_locale_id,
@@ -1029,49 +1029,54 @@
         prop1.float_value        as prop1_float_value,
         prop1.double_value       as prop1_double_value,
         prop1.string_value       as prop1_string_value
-        from
-        alf_child_assoc assoc
-        join alf_node childNode on (childNode.id = assoc.child_node_id)
+        from (
+            select
+            cn.id, cn.version, cn.uuid, cn.type_qname_id, cn.locale_id, cn.acl_id,
+            cn.store_id, cn.transaction_id,
+            cn.audit_creator, cn.audit_created, cn.audit_modifier, cn.audit_modified, cn.audit_accessed
+            from alf_child_assoc assoc
+            join alf_node cn on (cn.id = assoc.child_node_id)
+            <if test="pattern != null">
+                join alf_node_properties prop4 on (prop4.node_id = cn.id)
+                join alf_qname qname on (prop4.qname_id = qname.id and qname.id = #{namePropertyQNameId})
+            </if>
+            where
+            assoc.parent_node_id = #{parentNodeId}
+            <if test="isPrimary != null">
+                and assoc.is_primary = #{isPrimary}
+            </if>
+            <if test="childNodeTypeQNameIds != null">
+                and cn.type_qname_id in
+                <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="pattern != null">
+                and prop4.string_value like #{pattern} <include refid="alfresco.util.escape"/>
+            </if>
+            <if test="assocTypeQNameIds != null">
+                and assoc.type_qname_id in
+                <foreach item="item" index="index" collection="assocTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        ) childNode
         left join alf_store childStore on (childStore.id = childNode.store_id)
         join alf_transaction childTxn on (childTxn.id = childNode.transaction_id)
         left join alf_node_properties prop1 on (prop1.node_id = childNode.id and prop1.qname_id = #{prop1qnameId})
-        <if test="pattern != null">
-            join alf_node_properties prop4 on (prop4.node_id = childNode.id)
-            join alf_qname qname on (prop4.qname_id = qname.id and qname.id = #{namePropertyQNameId})
-        </if>
-        where
-        assoc.parent_node_id = #{parentNodeId}
-        <if test="isPrimary != null">
-            and assoc.is_primary = #{isPrimary}
-        </if>
-        <if test="childNodeTypeQNameIds != null">
-            and childNode.type_qname_id in
-            <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
-        <if test="pattern != null">
-            and prop4.string_value like #{pattern} <include refid="alfresco.util.escape"/>
-        </if>
-        <if test="assocTypeQNameIds != null">
-            and assoc.type_qname_id in
-            <foreach item="item" index="index" collection="assocTypeQNameIds" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
-        ORDER BY 
-            CASE 
+        ORDER BY
+            CASE
                 WHEN childNode.type_qname_id IN
                 <foreach item="id" collection="folderTypeQNameIds" open="(" separator="," close=")">
                     #{id}
                 </foreach>
-                THEN 0 
-                ELSE 1 
+                THEN 0
+                ELSE 1
             END,
-            CASE 
-                WHEN prop1.string_value IS NULL THEN 0 
-                ELSE 1 
-            END, 
+            CASE
+                WHEN prop1.string_value IS NULL THEN 0
+                ELSE 1
+            END,
             prop1.string_value ASC
     </select>
     

@@ -106,12 +106,16 @@ jobs:
         run: |
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
+      - name: "Remove excluded files"
+        run: |
+          mkdir temp-dir-for-sast
+          bash ./scripts/ci/remove-sast-exclusions.sh ./packaging/war/target/alfresco.war temp-dir-for-sast/reduced.war
       - name: "Run SAST Scan"
         uses: veracode/Veracode-pipeline-scan-action@v1.0.20
         with:
           vid: ${{ secrets.VERACODE_API_ID }}
           vkey: ${{ secrets.VERACODE_API_KEY }}
-          file: "packaging/war/target/alfresco.war"
+          file: "temp-dir-for-sast/reduced.war"
           fail_build: true
           project_name: alfresco-community-repo
           issue_details: true
@@ -120,6 +124,7 @@ jobs:
           summary_output_file: results.json
           summary_display: true
           baseline_file: baseline.json
+          timeout: 15
       - name: Upload scan result
         if: success() || failure()
         run: zip readable_output.zip results.json

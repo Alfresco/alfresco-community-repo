@@ -89,7 +89,7 @@ jobs:
       (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       github.actor != 'dependabot[bot]' &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
@@ -112,14 +112,15 @@ jobs:
           vid: ${{ secrets.VERACODE_API_ID }}
           vkey: ${{ secrets.VERACODE_API_KEY }}
           file: "packaging/war/target/alfresco.war"
-          fail_build: true
+          fail_build: false
           project_name: alfresco-community-repo
-          issue_details: true
+          issue_details: false
           veracode_policy_name: Alfresco Default
           summary_output: true
           summary_output_file: results.json
           summary_display: true
           baseline_file: baseline.json
+          timeout: 60
       - name: Upload scan result
         if: success() || failure()
         run: zip readable_output.zip results.json

@@ -91,13 +91,13 @@ jobs:
       (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       github.actor != 'dependabot[bot]' &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+      !contains(github.event.head_commit.message, '[force]')
     steps:
-      - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v8.16.0
+      - uses: actions/checkout@v5
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v12.4.3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.4.3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v12.4.3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v12.4.3
         with:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
           repository: "Alfresco/veracode-baseline-archive"
@@ -136,6 +136,8 @@ jobs:
         with:
           name: Veracode Pipeline-Scan Results (Human Readable)
           path: readable_output.zip
+      - name: "Remove temporary directory"
+        run: rm -rfv temp-dir-for-sast
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

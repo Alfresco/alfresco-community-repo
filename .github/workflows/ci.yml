@@ -120,13 +120,13 @@ jobs:
           file: "temp-dir-for-sast/reduced.war"
           fail_build: true
           project_name: alfresco-community-repo
-          issue_details: true
+          issue_details: false
           veracode_policy_name: Alfresco Default
           summary_output: true
           summary_output_file: results.json
           summary_display: true
           baseline_file: baseline.json
-          timeout: 15
+          timeout: 120
       - name: Upload scan result
         if: success() || failure()
         run: zip readable_output.zip results.json

@@ -36,7 +36,7 @@ function main()
     if (argsPath != null)
     {
             /**
-             * If the selectable type is 'trx:transferTarget', the XPath contains '/cm:default'
+             * If the selectable type is 'trx:transferTarget', the argsPath contains '/cm:default'
              * which represents the default content model namespace. This placeholder must be
              * removed before converting to FTS-Alfresco syntax because FTS does not use the
              * same namespace representation as XPath queries. This replacement ensures the

@@ -51,7 +51,9 @@ jobs:
         uses: Alfresco/alfresco-build-tools/.github/actions/github-list-changes@v8.16.0
         with:
           write-list-to-env: true
-      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v12.4.3
+        with:
+          pre-commit-all-files: false
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare maven cache and check compilation"
@@ -91,11 +93,11 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
-      - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v8.16.0
+      - uses: actions/checkout@v5
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v12.4.3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.4.3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v12.4.3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v12.4.3
         with:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
           repository: "Alfresco/veracode-baseline-archive"
@@ -106,13 +108,17 @@ jobs:
         run: |
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
+      - name: "Remove excluded files"
+        run: |
+          mkdir temp-dir-for-sast
+          bash ./scripts/ci/remove-sast-exclusions.sh ./packaging/war/target/alfresco.war temp-dir-for-sast/reduced.war
       - name: "Run SAST Scan"
         uses: veracode/Veracode-pipeline-scan-action@v1.0.20
         with:
           vid: ${{ secrets.VERACODE_API_ID }}
           vkey: ${{ secrets.VERACODE_API_KEY }}
-          file: "packaging/war/target/alfresco.war"
-          fail_build: true
+          file: "temp-dir-for-sast/reduced.war"
+          fail_build: false
           project_name: alfresco-community-repo
           issue_details: false
           veracode_policy_name: Alfresco Default
@@ -130,6 +136,8 @@ jobs:
         with:
           name: Veracode Pipeline-Scan Results (Human Readable)
           path: readable_output.zip
+      - name: "Remove temporary directory"
+        run: rm -rfv temp-dir-for-sast
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

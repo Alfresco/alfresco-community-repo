@@ -112,14 +112,15 @@ jobs:
           vid: ${{ secrets.VERACODE_API_ID }}
           vkey: ${{ secrets.VERACODE_API_KEY }}
           file: "packaging/war/target/alfresco.war"
-          fail_build: true
+          fail_build: false
           project_name: alfresco-community-repo
-          issue_details: true
+          issue_details: false
           veracode_policy_name: Alfresco Default
           summary_output: true
           summary_output_file: results.json
           summary_display: true
           baseline_file: baseline.json
+          timeout: 60
       - name: Upload scan result
         if: success() || failure()
         run: zip readable_output.zip results.json

@@ -6,7 +6,7 @@ function main()
       argsSelectableType = args['selectableType'],
       argsSearchTerm = args['searchTerm'],
       argsMaxResults = args['size'],
-      argsXPath = args['xpath'],
+      argsPath = args['xpath'],
       argsRootNode = args['rootNode'],
       argsSelectableMimeType = args['selectableMimeType'],
       pathElements = url.service.split("/"),
@@ -17,28 +17,24 @@ function main()
       resultObj = null,
       lastPathElement = null;
    
-  // if (logger.isLoggingEnabled())
-  // {
-      logger.warn("children type = " + url.templateArgs.type);
-      logger.warn("argsSelectableType = " + argsSelectableType);
-      logger.warn("argsFilterType = " + argsFilterType);
-      logger.warn("argsSearchTerm = " + argsSearchTerm);
-      logger.warn("argsMaxResults = " + argsMaxResults);
-      logger.warn("argsXPath = " + argsXPath);
-      logger.warn("argsSelectableMimeType = " + argsSelectableMimeType);
-   //}
+   if (logger.isLoggingEnabled())
+   {
+      logger.log("children type = " + url.templateArgs.type);
+      logger.log("argsSelectableType = " + argsSelectableType);
+      logger.log("argsFilterType = " + argsFilterType);
+      logger.log("argsSearchTerm = " + argsSearchTerm);
+      logger.log("argsMaxResults = " + argsMaxResults);
+      logger.log("argsPath = " + argsPath);
+      logger.log("argsSelectableMimeType = " + argsSelectableMimeType);
+   }
    try
    {
       // construct the NodeRef from the URL
       var nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
-      logger.warn ("nodeRef ===="+nodeRef)
-      
-      // determine if we need to resolve the parent NodeRef
 
-    if (argsXPath != null)
+    // determine if we need to resolve the parent NodeRef
+    if (argsPath != null)
     {
-            //var nodes = search.xpathSearch(argsXPath);
-
             /**
              * If the selectable type is 'trx:transferTarget', the XPath contains '/cm:default'
              * which represents the default content model namespace. This placeholder must be
@@ -48,19 +44,18 @@ function main()
              */
 
             if(argsSelectableType === 'trx:transferTarget'){
-                argsXPath = argsXPath.replace('/cm:default', '');
+                argsPath = argsPath.replace('/cm:default', '');
             }
 
-            var pathQuery = 'PATH:"' + argsXPath + '/*"';
-            logger.warn ("pathQuery ====" + pathQuery);
+            var pathQuery = 'PATH:"' + argsPath + '/*"';
+            if (logger.isLoggingEnabled()){
+                logger.debug("Path query =" + pathQuery);
+            }
 
             var nodes = search.query({
                 query: pathQuery,
                 language: "fts-alfresco"
             });
-
-            logger.warn ("nodes ===="+nodes)
-            logger.warn ("nodes.length ===="+nodes.length)
 
             if (nodes.length > 0)
             {

@@ -29,10 +29,9 @@ function main()
    }
    try
    {
-      // construct the NodeRef from the URL
+      // Construct the NodeRef from the URL
       var nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
 
-      // determine if we need to resolve the parent NodeRef
     if (argsPath != null)
     {
             /**
@@ -57,6 +56,7 @@ function main()
                 language: "fts-alfresco"
             });
 
+			// Determine if we need to resolve the parent NodeRef
             if (nodes.length > 0)
             {
                 nodeRef = String(nodes[0].nodeRef);

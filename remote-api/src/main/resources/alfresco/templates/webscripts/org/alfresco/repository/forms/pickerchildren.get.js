@@ -48,7 +48,7 @@ function main()
             }
 
             var pathQuery = 'PATH:"' + argsPath + '/*"';
-            if (logger.isLoggingEnabled()){
+            if (logger.isLoggingEnabled()) {
                 logger.debug("Path query = " + pathQuery);
             }
 

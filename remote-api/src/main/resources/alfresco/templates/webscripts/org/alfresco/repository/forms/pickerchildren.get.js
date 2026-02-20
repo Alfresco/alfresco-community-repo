@@ -43,7 +43,7 @@ function main()
              * path is properly formatted for the FTS query engine.
              */
 
-            if(argsSelectableType === 'trx:transferTarget'){
+            if (argsSelectableType === 'trx:transferTarget') {
                 argsPath = argsPath.replace('/cm:default', '');
             }
 

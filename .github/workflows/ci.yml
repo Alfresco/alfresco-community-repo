@@ -44,10 +44,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v12.4.3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
+      - id: changed-files
+        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-changes@v8.16.0
+        with:
+          write-list-to-env: true
       - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v12.4.3
+        with:
+          pre-commit-all-files: false
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare maven cache and check compilation"

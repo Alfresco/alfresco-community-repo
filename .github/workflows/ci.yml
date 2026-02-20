@@ -52,8 +52,6 @@ jobs:
         with:
           write-list-to-env: true
       - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v8.16.0
-        with:
-          pre-commit-all-files: false
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare maven cache and check compilation"

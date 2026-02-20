@@ -49,8 +49,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v12.4.3
       - id: changed-files
         uses: Alfresco/alfresco-build-tools/.github/actions/github-list-changes@v12.4.3
-        with:
-
       - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v12.4.3
       - name: "Init"
         run: bash ./scripts/ci/init.sh

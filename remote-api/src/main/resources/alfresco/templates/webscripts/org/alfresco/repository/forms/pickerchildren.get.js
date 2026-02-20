@@ -32,7 +32,7 @@ function main()
       // construct the NodeRef from the URL
       var nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
 
-    // determine if we need to resolve the parent NodeRef
+      // determine if we need to resolve the parent NodeRef
     if (argsPath != null)
     {
             /**

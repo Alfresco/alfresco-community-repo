@@ -49,7 +49,7 @@ function main()
 
             var pathQuery = 'PATH:"' + argsPath + '/*"';
             if (logger.isLoggingEnabled()){
-                logger.debug("Path query =" + pathQuery);
+                logger.debug("Path query = " + pathQuery);
             }
 
             var nodes = search.query({

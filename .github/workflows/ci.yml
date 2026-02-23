@@ -98,8 +98,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v8.16.0
         with:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
-          repository: "Alfresco/veracode-baseline-archive/tree/fix/acs-11075-sast-baseline"
-          file-path: "alfresco-community-repo/alfresco-community-repo-baseline.json"
+          repository: "Alfresco/veracode-baseline-archive"
+          file-path: "alfresco-community-repo/alfresco-community-repo-baseline.json?ref=fix/acs-11075-sast-baseline"
           target: "baseline.json"
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}

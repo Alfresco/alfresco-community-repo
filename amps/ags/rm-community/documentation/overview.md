@@ -21,8 +21,8 @@ RM is split into two main parts - a repository integration and a Share integrati
 * [Community License](../LICENSE.txt)
 * [Enterprise License](../../rm-enterprise/LICENSE.txt) (this file will only be present in clones of the Enterprise repository)
 * [Issue Tracker Link](https://issues.alfresco.com/jira/projects/RM)
-* [Community Documentation Link](https://support.hyland.com/access?dita:id=job1721300866386&vrm_version=25.1&component=Alfresco%20Governance%20Services%20Community%20Edition)
-* [Enterprise Documentation Link](https://support.hyland.com/access?dita:id=job1721300866386&vrm_version=25.1)
+* [Community Documentation Link](https://support.hyland.com/access?dita:id=job1721300866386&vrm_version=26.1&component=Alfresco%20Governance%20Services%20Community%20Edition)
+* [Enterprise Documentation Link](https://support.hyland.com/access?dita:id=job1721300866386&vrm_version=26.1)
 * [Contribution Model](../../CONTRIBUTING.md)
 
 *** 

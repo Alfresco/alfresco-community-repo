@@ -172,6 +172,7 @@ public interface IdentityServiceFacade
         private final String refreshToken;
         private final String authorizationCode;
         private final String redirectUri;
+        private static boolean passwordGrantEnabled;
 
         private AuthorizationGrant(String username, String password, String refreshToken, String authorizationCode, String redirectUri)
         {
@@ -197,8 +198,15 @@ public interface IdentityServiceFacade
             return new AuthorizationGrant(null, null, null, requireNonNull(authorizationCode), requireNonNull(redirectUri));
         }
 
+        static void setPasswordGrantEnabled(boolean passwordGrantEnabled) {
+            AuthorizationGrant.passwordGrantEnabled = passwordGrantEnabled;
+        }
+
         boolean isPassword()
         {
+            if (nonNull(username) && !passwordGrantEnabled) {
+                throw new AuthorizationException("Password Grant Flow is deprecated and disabled by configuration property 'identity-service.authentication.enable-username-password-authentication=false'.");
+            }
             return nonNull(username);
         }
 

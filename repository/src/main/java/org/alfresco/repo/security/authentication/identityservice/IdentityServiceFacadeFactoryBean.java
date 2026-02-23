@@ -147,7 +147,8 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         this.enabled = enabled;
     }
 
-    public void setPasswordGrantEnabled(boolean passwordGrantEnabled) {
+    public void setPasswordGrantEnabled(boolean passwordGrantEnabled)
+    {
         IdentityServiceFacade.AuthorizationGrant.setPasswordGrantEnabled(passwordGrantEnabled);
     }
 

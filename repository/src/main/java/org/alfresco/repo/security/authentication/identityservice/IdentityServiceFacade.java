@@ -198,13 +198,15 @@ public interface IdentityServiceFacade
             return new AuthorizationGrant(null, null, null, requireNonNull(authorizationCode), requireNonNull(redirectUri));
         }
 
-        public static void setPasswordGrantEnabled(boolean passwordGrantEnabled) {
+        public static void setPasswordGrantEnabled(boolean passwordGrantEnabled)
+        {
             AuthorizationGrant.passwordGrantEnabled = passwordGrantEnabled;
         }
 
         boolean isPassword()
         {
-            if (nonNull(username) && !passwordGrantEnabled) {
+            if (nonNull(username) && !passwordGrantEnabled)
+            {
                 throw new AuthorizationException("Password-based authentication is deprecated and disabled. Obtain a Bearer access token from the identity service and retry the request.");
             }
             return nonNull(username);

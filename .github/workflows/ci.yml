@@ -89,7 +89,7 @@ jobs:
       (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       github.actor != 'dependabot[bot]' &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
@@ -98,7 +98,7 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v8.16.0
         with:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
-          repository: "Alfresco/veracode-baseline-archive"
+          repository: "Alfresco/veracode-baseline-archive/tree/fix/acs-11075-sast-baseline"
           file-path: "alfresco-community-repo/alfresco-community-repo-baseline.json"
           target: "baseline.json"
       - name: "Build"

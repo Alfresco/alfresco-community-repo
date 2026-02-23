@@ -35,20 +35,14 @@ function main()
     if (argsPath != null)
     {
             /**
-             * If the selectable type is 'trx:transferTarget', the argsPath contains '/cm:default'
-             * which represents the default content model namespace. This placeholder must be
-             * removed before converting to FTS-Alfresco syntax because FTS does not use the
-             * same namespace representation as XPath queries. This replacement ensures the
-             * path is properly formatted for the FTS query engine.
+             * MNT-25495 :Execute the FTS-Alfresco search query against the
+             * repository using the constructed path query,
+             * instead of XPath query , which not relevant to elastic search.
              */
-
-            if (argsSelectableType === 'trx:transferTarget') {
-                argsPath = argsPath.replace('/cm:default', '');
-            }
 
             var pathQuery = 'PATH:"' + argsPath + '/*"';
             if (logger.isLoggingEnabled()) {
-                logger.debug("Path query = " + pathQuery);
+                logger.warn("Path query = " + pathQuery);
             }
 
             var nodes = search.query({

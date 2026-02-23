@@ -4800,7 +4800,7 @@ definitions:
   RetentionStepNodeBodyResponse:
     type: object
     properties:
-      actions:
+      entry:
         $ref: '#/definitions/Actions'
   RetentionStepsNodeBodyResponse:
     type: object

@@ -2731,7 +2731,7 @@ paths:
         '201':
           description: Successful response
           schema:
-            $ref: '#/definitions/RetentionScheduleResponse'
+            $ref: '#/definitions/RetentionScheduleResponseEntry'
         '400':
           description: |
             Invalid parameter: value of recordCategoryId is invalid
@@ -4616,6 +4616,13 @@ definitions:
         type: boolean
       unpublishedUpdates:
         type: boolean
+  RetentionScheduleResponseEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/RetentionScheduleResponse'
   RetentionScheduleResponseList:
     type: object
     properties:
@@ -4791,7 +4798,7 @@ definitions:
   RetentionStepNodeBodyResponse:
     type: object
     properties:
-      actions:
+      entry:
         $ref: '#/definitions/Actions'
   RetentionStepsNodeBodyResponse:
     type: object

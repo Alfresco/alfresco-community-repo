@@ -41,11 +41,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -4225,70 +4221,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             assocIdStack.pop();
         }
         // done
-    }
-
-    /**
-     * A Map-like class for storing ParentAssocsInfos, backed by a Google {@link Cache} implementation.
-     */
-    private static class ParentAssocsCache
-    {
-        private final Cache<Pair<Long, String>, ParentAssocsInfo> cache;
-
-        /**
-         * @param size
-         *            int
-         * @param limitFactor
-         *            int
-         * @param concurrencyLevel
-         *            int
-         */
-        public ParentAssocsCache(int size, int limitFactor, int concurrencyLevel)
-        {
-            final int maxParentCount = size * limitFactor;
-
-            this.cache = CacheBuilder.newBuilder()
-                    .maximumWeight(maxParentCount)
-                    .concurrencyLevel(concurrencyLevel)
-                    .weigher((Pair<Long, String> key, ParentAssocsInfo value) -> Math.max(1, value.getParentAssocs().size()))
-                    .build();
-        }
-
-        private ParentAssocsInfo get(Pair<Long, String> cacheKey)
-        {
-            return cache.getIfPresent(cacheKey);
-        }
-
-        private ParentAssocsInfo get(Pair<Long, String> cacheKey, Callable<ParentAssocsInfo> valueLoader)
-        {
-            try
-            {
-                return cache.get(cacheKey, valueLoader);
-            }
-            catch (ExecutionException e)
-            {
-                throw new AlfrescoRuntimeException("Failed to load parent associations", e);
-            }
-        }
-
-        private void put(Pair<Long, String> cacheKey, ParentAssocsInfo parentAssocs)
-        {
-            cache.put(cacheKey, parentAssocs);
-        }
-
-        private ParentAssocsInfo remove(Pair<Long, String> cacheKey)
-        {
-            ParentAssocsInfo old = cache.getIfPresent(cacheKey);
-            if (old != null)
-            {
-                cache.invalidate(cacheKey);
-            }
-            return old;
-        }
-
-        private void clear()
-        {
-            cache.invalidateAll();
-        }
     }
 
     /**

@@ -4278,7 +4278,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         private ParentAssocsInfo remove(Pair<Long, String> cacheKey)
         {
             ParentAssocsInfo old = cache.getIfPresent(cacheKey);
-            cache.invalidate(cacheKey);
+            if (old != null)
+            {
+                cache.invalidate(cacheKey);
+            }
             return old;
         }
 

@@ -44,7 +44,7 @@ import org.alfresco.util.Pair;
 public class ParentAssocsCacheTest
 {
     @Test
-    public void getReturnsNullWhenAbsent()
+    public void testGetReturnsNullWhenAbsent()
     {
         ParentAssocsCache cache = new ParentAssocsCache(10, 2, 1);
         Pair<Long, String> key = new Pair<>(1L, "store");
@@ -53,7 +53,7 @@ public class ParentAssocsCacheTest
     }
 
     @Test
-    public void getWithLoaderCachesValue()
+    public void testGetWithLoaderCachesValue()
     {
         ParentAssocsCache cache = new ParentAssocsCache(10, 2, 1);
         Pair<Long, String> key = new Pair<>(2L, "store");
@@ -74,7 +74,7 @@ public class ParentAssocsCacheTest
     }
 
     @Test
-    public void getWrapsExecutionException()
+    public void testGetWrapsExecutionException()
     {
         ParentAssocsCache cache = new ParentAssocsCache(10, 2, 1);
         Pair<Long, String> key = new Pair<>(3L, "store");
@@ -89,7 +89,7 @@ public class ParentAssocsCacheTest
     }
 
     @Test
-    public void putAndRemoveReturnOld()
+    public void testPutAndRemoveReturnOld()
     {
         ParentAssocsCache cache = new ParentAssocsCache(10, 2, 1);
         Pair<Long, String> key = new Pair<>(4L, "store");
@@ -103,7 +103,7 @@ public class ParentAssocsCacheTest
     }
 
     @Test
-    public void clearInvalidatesAll()
+    public void testClearInvalidatesAll()
     {
         ParentAssocsCache cache = new ParentAssocsCache(10, 2, 1);
         Pair<Long, String> key1 = new Pair<>(5L, "store");

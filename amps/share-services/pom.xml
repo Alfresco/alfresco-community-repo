@@ -56,14 +56,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Events dependencies -->
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-sync-events</artifactId>
-            <version>1.2.14</version>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>

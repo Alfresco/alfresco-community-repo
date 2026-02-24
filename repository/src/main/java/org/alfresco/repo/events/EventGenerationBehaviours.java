@@ -80,7 +80,7 @@ import org.alfresco.util.EqualsHelper;
  * @author steveglover
  *
  */
-public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours implements
+class EventGenerationBehaviours extends AbstractEventGenerationBehaviours implements
         ContentServicePolicies.OnContentPropertyUpdatePolicy,
         ContentServicePolicies.OnContentReadPolicy,
         NodeServicePolicies.OnCreateNodePolicy,

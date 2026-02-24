@@ -4623,8 +4623,6 @@ definitions:
     properties:
       entry:
         $ref: '#/definitions/RetentionScheduleResponse'
-
-
   RetentionScheduleResponseList:
     type: object
     properties:

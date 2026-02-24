@@ -218,7 +218,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         {
             userName = userName.toLowerCase();
         }
-        return "@@_" + userName; // Get the tenant domain to avoid clashes between users with the same name in different tenants
+        return "@@_" + userName; // Just cache the userName
     }
 
     public String getCurrentUserName() throws AuthenticationException

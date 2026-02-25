@@ -138,7 +138,7 @@ public class ParentAssocsCacheTest
         };
         int threads = 24;
         CountDownLatch start = new CountDownLatch(1);
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        ExecutorService executor = Executors.newCachedThreadPool();
         try
         {
             List<Future<ParentAssocsInfo>> futures = new ArrayList<>(threads);
@@ -174,7 +174,7 @@ public class ParentAssocsCacheTest
                 .mapToObj(index -> new AtomicInteger())
                 .toList();
         CountDownLatch start = new CountDownLatch(1);
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        ExecutorService executor = Executors.newCachedThreadPool();
         try
         {
             List<Future<ParentAssocsInfo>> futures = new ArrayList<>(keys);

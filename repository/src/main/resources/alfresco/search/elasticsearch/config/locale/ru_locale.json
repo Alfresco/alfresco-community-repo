@@ -1,0 +1,40 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "locale_content": {
+          "type": "russian"
+        },
+        "locale_text_index": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "flatten_graph",
+            "russian_stemmer_multiplexer"
+          ]
+        },
+        "locale_text_query": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "russian_stemmer_multiplexer"
+          ]
+        }
+      },
+      "filter": {
+        "russian_stemmer": {
+          "type": "stemmer",
+          "language": "russian"
+        },
+        "russian_stemmer_multiplexer": {
+          "type": "multiplexer",
+          "filters": [ "russian_stemmer" ]
+        }
+      }
+    }
+  }
+}

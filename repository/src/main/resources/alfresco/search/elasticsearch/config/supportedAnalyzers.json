@@ -1,0 +1,59 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "path_emulator": {
+          "tokenizer": "path_tokenizer",
+          "char_filter": [
+            "line_end_markers"
+          ]
+        },
+        "locale_cross_text_index": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "flatten_graph"
+          ]
+        },
+        "locale_cross_text_query": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase"
+          ]
+        }
+      },
+      "tokenizer": {
+        "path_tokenizer": {
+          "type": "pattern",
+          "pattern": "(\\{.*?\\}|[^{\/:]+)",
+          "group": 1
+        }
+      },
+      "char_filter": {
+        "line_end_markers": {
+          "type": "pattern_replace",
+          "pattern": "^(.*)$",
+          "replacement": "\\^/$1/\\$"
+        }
+      },
+      "filter": {
+        "custom_word_delimiter_graph": {
+          "type": "word_delimiter_graph",
+          "generate_word_parts": true,
+          "generate_number_parts": true,
+          "catenate_all": true,
+          "catenate_numbers": true,
+          "catenate_words": true,
+          "split_on_case_change": true,
+          "split_on_numeric": true,
+          "preserve_original": true,
+          "stem_english_possessive": true
+        }
+      }
+    }
+  }
+}

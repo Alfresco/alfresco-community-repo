@@ -68,6 +68,7 @@
       <property name="personService">
          <ref bean="PersonService" />
       </property>
+      <property name="beanName" value="#{beanName}"/>
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->

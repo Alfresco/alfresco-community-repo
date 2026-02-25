@@ -86,6 +86,7 @@
       <property name="personService">
          <ref bean="PersonService" />
       </property>
+      <property name="beanName" value="#{beanName}"/>
    </bean>
 
    <bean name="identityServiceConfig" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig">

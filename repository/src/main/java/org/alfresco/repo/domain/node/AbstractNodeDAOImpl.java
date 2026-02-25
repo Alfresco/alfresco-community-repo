@@ -186,7 +186,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private ParentAssocsCache parentAssocsCache;
     private int parentAssocsCacheSize;
-    private int parentAssocsCacheLimitFactor = 8;
+    private int parentAssocsCacheLimitFactor;
     private int parentAssocsCacheConcurrencyLevel;
 
     /**

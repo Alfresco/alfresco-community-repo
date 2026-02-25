@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -30,11 +30,19 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
 
@@ -115,6 +123,87 @@ public class ParentAssocsCacheTest
 
         assertNull(cache.get(key1));
         assertNull(cache.get(key2));
+    }
+
+    @Test
+    public void testConcurrentGetWithLoaderOnlyLoadsOnce() throws Exception
+    {
+        ParentAssocsCache cache = new ParentAssocsCache(10, 2, 1);
+        Pair<Long, String> key = new Pair<>(7L, "store");
+        ParentAssocsInfo info = parentAssocsInfo(40L, true);
+        AtomicInteger calls = new AtomicInteger();
+        Callable<ParentAssocsInfo> loader = () -> {
+            calls.incrementAndGet();
+            return info;
+        };
+        int threads = 24;
+        CountDownLatch start = new CountDownLatch(1);
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        try
+        {
+            List<Future<ParentAssocsInfo>> futures = new ArrayList<>(threads);
+            for (int i = 0; i < threads; i++)
+            {
+                futures.add(executor.submit(() -> {
+                    start.await();
+                    return cache.get(key, loader);
+                }));
+            }
+            start.countDown();
+            for (Future<ParentAssocsInfo> future : futures)
+            {
+                assertSame(info, future.get(5, TimeUnit.SECONDS));
+            }
+            assertEquals(1, calls.get());
+        }
+        finally
+        {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testConcurrentGetDifferentKeysLoadsEachOnce() throws Exception
+    {
+        ParentAssocsCache cache = new ParentAssocsCache(50, 2, 1);
+        int keys = 16;
+        List<Pair<Long, String>> keyList = IntStream.range(0, keys)
+                .mapToObj(index -> new Pair<>((long) index + 100, "store"))
+                .toList();
+        List<AtomicInteger> counters = IntStream.range(0, keys)
+                .mapToObj(index -> new AtomicInteger())
+                .toList();
+        CountDownLatch start = new CountDownLatch(1);
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        try
+        {
+            List<Future<ParentAssocsInfo>> futures = new ArrayList<>(keys);
+            for (int i = 0; i < keys; i++)
+            {
+                int index = i;
+                Pair<Long, String> key = keyList.get(i);
+                ParentAssocsInfo info = parentAssocsInfo((long) index + 200, index % 2 == 0);
+                Callable<ParentAssocsInfo> loader = () -> {
+                    counters.get(index).incrementAndGet();
+                    return info;
+                };
+                futures.add(executor.submit(() -> {
+                    start.await();
+                    return cache.get(key, loader);
+                }));
+            }
+            start.countDown();
+            for (int i = 0; i < keys; i++)
+            {
+                ParentAssocsInfo value = futures.get(i).get(5, TimeUnit.SECONDS);
+                assertSame(cache.get(keyList.get(i)), value);
+            }
+            assertTrue(counters.stream().allMatch(counter -> counter.get() == 1));
+        }
+        finally
+        {
+            executor.shutdownNow();
+        }
     }
 
     private ParentAssocsInfo parentAssocsInfo(Long assocId, boolean isPrimary)

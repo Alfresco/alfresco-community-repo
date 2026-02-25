@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.domain.node;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 import com.google.common.cache.Cache;
@@ -55,7 +57,13 @@ class ParentAssocsCache
         this.cache = CacheBuilder.newBuilder()
                 .maximumWeight(maxParentCount)
                 .concurrencyLevel(concurrencyLevel)
-                .weigher((Pair<Long, String> key, ParentAssocsInfo value) -> Math.max(1, value.getParentAssocs().size()))
+                .weigher((Pair<Long, String> key, ParentAssocsInfo value) -> {
+                    var parentAssocsSize = Optional.ofNullable(value)
+                            .map(ParentAssocsInfo::getParentAssocs)
+                            .map(Map::size)
+                            .orElse(1);
+                    return Math.max(1, parentAssocsSize);
+                })
                 .build();
     }
 

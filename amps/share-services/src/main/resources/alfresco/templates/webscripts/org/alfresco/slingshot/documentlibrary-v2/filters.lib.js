@@ -243,21 +243,29 @@ var Filters =
               filterParams.query = filterQuery + " +TAG:\"" + search.ISO9075Encode(filterData) + "\"";
               break;
 
-         case "category":
-            // Remove any trailing "/" character
+          case "category":
+
+             // Set search language at first place.
+             filterParams.language = "fts-alfresco";
+             // Remove any trailing "/" character
             if (filterData.charAt(filterData.length - 1) == "/")
             {
                filterData = filterData.slice(0, -1);
             }
 
-            var categoryNodeRef = this.getCategoryNodeRef(filterData);
-
-            if (categoryNodeRef && search.findNode(categoryNodeRef) != null) {
-               filterParams.query = filterQuery + ' +@cm\\:categories:"' + categoryNodeRef + '"';
-            } else {
-               logger.warn("category filter: skipping invalid category node : " + categoryNodeRef);
+             var categoryNodeRef = this.getCategoryNodeRef(filterData);
+             if (categoryNodeRef && categoryNodeRef.length !== 0 && search.findNode(categoryNodeRef) != null) {
+                 filterParams.query = filterQuery + ' +@cm\\:categories:"' + categoryNodeRef + '"';
+             }
+             else if (categoryNodeRef && Array.isArray(categoryNodeRef)) {
+                 filterData = this.constructCategoryPathQuery(filterData);
+                 filterParams.query = filterQuery + 'PATH:"/cm:categoryRoot/cm:generalclassifiable' + filterData + '/*" AND  TYPE:"cm:content"';
+             }
+            else {
+               if(logger.isWarnLoggingEnabled()) {
+                   logger.warn("Category filter : skipping invalid category node : " + categoryNodeRef);
+               }
             }
-            filterParams.language = "fts-alfresco";
             break;
 
          case "aspect":
@@ -278,11 +286,15 @@ var Filters =
       {
          filterParams.query += " " + (Filters.TYPE_MAP[parsedArgs.type] || "");
       }
-      logger.warn("Final Query : " + filterParams.query);
+      if(logger.isWarnLoggingEnabled()) {
+          logger.warn("Final Query : " + filterParams.query);
+      }
       return filterParams;
    },
 
     getCategoryNodeRef: function(categoryName) {
+
+        // This search for first level. i.e Tags , Languages etc.
         var results = search.luceneSearch(
             'PATH:"/cm:categoryRoot/cm:generalclassifiable//*" AND @cm\\:name:"' + categoryName + '"'
         );
@@ -290,11 +302,33 @@ var Filters =
         if (results && results.length > 0) {
             return results[0].nodeRef.toString();
         }
-
-        logger.warn("Category not found: " + categoryName);
+        else if (categoryName.includes("/")) {
+            // In case filtered value selected as  nested category node , i.e /Languages/English
+            categoryName = this.constructCategoryPathQuery(categoryName);
+            var ftsQuery =  'PATH:"/cm:categoryRoot/cm:generalclassifiable' + categoryName + '/*"';
+            if (logger.isLoggingEnabled()) {
+                logger.debug("FtsQuery for nested category selection : " + ftsQuery);
+            }
+            var resultForChild = search.luceneSearch(ftsQuery);
+            if (resultForChild && Array.isArray(resultForChild) && resultForChild.length > 0) {
+                return resultForChild;
+            }
+            return [];
+        }
+        if(logger.isWarnLoggingEnabled()) {
+            logger.warn("Category not found : " + categoryName);
+        }
         return null;
-    },
 
+    },
+    /* Construct path query for category , by appending prefix 'cm:' to the filtered value */
+    constructCategoryPathQuery: function (str){
+        str = "/" + str.split("/")
+            .filter(part => part.length > 0)
+            .map(part => "cm:" + search.ISO9075Encode(part))
+            .join("/");
+        return str;
+    },
    constructPathQuery: function(parsedArgs)
    {
       var pathQuery = "";

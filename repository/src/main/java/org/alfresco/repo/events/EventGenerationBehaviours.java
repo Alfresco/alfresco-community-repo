@@ -110,10 +110,17 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     private static final QName POLICY_BEFORE_LOCK = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeLock");
     private static final QName POLICY_BEFORE_UNLOCK = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeUnlock");
 
+    private boolean enabled = false;
+
     protected EventsService eventsService;
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
     protected NodeService nodeService;
+
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
 
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -137,6 +144,11 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
 
     public void init()
     {
+        if (!enabled)
+        {
+            return;
+        }
+
         bindClassPolicy(ContentServicePolicies.OnContentPropertyUpdatePolicy.QNAME, NodeContentPutEvent.EVENT_TYPE);
 
         bindClassPolicy(ContentServicePolicies.OnContentReadPolicy.QNAME, NodeContentGetEvent.EVENT_TYPE);

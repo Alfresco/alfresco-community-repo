@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.events;
 
-public interface MessageProducer
+interface MessageProducer
 {
     /**
      * Send the given POJO message to the default queue for the producer

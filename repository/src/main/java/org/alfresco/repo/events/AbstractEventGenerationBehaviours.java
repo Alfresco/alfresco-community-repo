@@ -46,7 +46,7 @@ import org.alfresco.service.namespace.QName;
  * @author steveglover
  *
  */
-public abstract class AbstractEventGenerationBehaviours
+abstract class AbstractEventGenerationBehaviours
 {
     protected static Log logger = LogFactory.getLog(AbstractEventGenerationBehaviours.class);
 

@@ -82,7 +82,7 @@ import org.alfresco.util.transaction.TransactionSupportUtil;
  * @author steveglover
  *
  */
-public abstract class AbstractEventsService extends TransactionListenerAdapter
+abstract class AbstractEventsService extends TransactionListenerAdapter
 {
     private static Log logger = LogFactory.getLog(AbstractEventsService.class);
 

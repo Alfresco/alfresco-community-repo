@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software LimitedP
+ * Copyright (C) 2005 - 2026 Alfresco Software LimitedP
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -53,6 +53,7 @@ import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
+import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
@@ -204,8 +205,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         {
             for (ChildAssociationRef childAssociationRef : nodeRefRenditions)
             {
-                NodeRef renditionNodeRef = childAssociationRef.getChildRef();
-                Rendition apiRendition = toApiRendition(renditionNodeRef);
+                Rendition apiRendition = toApiRendition(childAssociationRef);
                 String renditionName = apiRendition.getId();
                 if (renditionNames.contains(renditionName))
                 {
@@ -225,7 +225,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 {
                     if (logger.isTraceEnabled())
                     {
-                        logger.trace("Skip unknown rendition [" + renditionName + ", " + renditionNodeRef + "]");
+                        logger.trace("Skip unknown rendition [" + renditionName + ", " + childAssociationRef.getChildRef() + "]");
                     }
                 }
             }
@@ -637,6 +637,46 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
 
         return null;
+    }
+
+    private boolean isVersionStore(NodeRef nodeRef)
+    {
+        return Version2Model.STORE_ID.equals(nodeRef.getStoreRef().getIdentifier());
+    }
+
+    protected Rendition toApiRendition(ChildAssociationRef childAssociationRef)
+    {
+        NodeRef renditionNodeRef = childAssociationRef.getChildRef();
+        String renditionName = childAssociationRef.getQName().getLocalName();
+
+        Rendition apiRendition = new Rendition();
+        apiRendition.setId(renditionName);
+
+        ContentData contentData = getContentData(renditionNodeRef, false);
+        ContentInfo contentInfo = null;
+        if (contentData != null)
+        {
+            contentInfo = new ContentInfo(contentData.getMimetype(),
+                    getMimeTypeDisplayName(contentData.getMimetype()),
+                    contentData.getSize(),
+                    contentData.getEncoding());
+        }
+        apiRendition.setStatus(RenditionStatus.CREATED);
+
+        if (contentInfo == null)
+        {
+            RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+            RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
+            if (renditionDefinition != null)
+            {
+                contentInfo = new ContentInfo(renditionDefinition.getTargetMimetype(),
+                        getMimeTypeDisplayName(renditionDefinition.getTargetMimetype()), null, null);
+            }
+            apiRendition.setStatus(RenditionStatus.NOT_CREATED);
+        }
+        apiRendition.setContent(contentInfo);
+
+        return apiRendition;
     }
 
     protected Rendition toApiRendition(NodeRef renditionNodeRef)

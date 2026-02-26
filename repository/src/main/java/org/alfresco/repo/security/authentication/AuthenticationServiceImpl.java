@@ -48,7 +48,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private boolean allowsUserCreation = true;
     private boolean allowsUserDeletion = true;
     private boolean allowsUserPasswordChange = true;
-    private String beanName;
+    private String authSubSystemContextName; // ldap@@admin // Multiple ldap
 
     private static final String AUTHENTICATION_UNSUCCESSFUL = "Authentication was not successful.";
     private static final String BRUTE_FORCE_ATTACK_DETECTED = "Brute force attack was detected for user: %s";
@@ -58,9 +58,9 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private SimpleCache<String, ProtectedUser> protectedUsersCache;
     private PersonService personService;
 
-
-    public void setBeanName(String beanName) {
-        this.beanName = beanName;
+    public void setAuthSubSystemContextName(String authSubSystemContextName)
+    {
+        this.authSubSystemContextName = authSubSystemContextName;
     }
 
     public void setProtectionPeriodSeconds(int protectionPeriodSeconds)
@@ -224,7 +224,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         {
             userName = userName.toLowerCase();
         }
-        return beanName + "@@" + userName; // Just cache the userName
+        return authSubSystemContextName + "@@" + userName; // Just cache the userName
     }
 
     public String getCurrentUserName() throws AuthenticationException

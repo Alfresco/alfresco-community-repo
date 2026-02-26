@@ -34,7 +34,6 @@ import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 import static org.apache.lucene.search.BooleanClause.Occur.MUST_NOT;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
 
-import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.ALIVE;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLTXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLTXID;
@@ -92,6 +91,7 @@ import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.QueryConstants.PROPERTY_FIELD_PREFIX;
 import static org.alfresco.repo.search.impl.QueryParserUtils.matchDataTypeDefinition;
 import static org.alfresco.repo.search.impl.QueryParserUtils.matchPropertyDefinition;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
 import static org.alfresco.repo.search.impl.elasticsearch.util.CollectionUtils.safe;
 import static org.alfresco.repo.site.SiteModel.TYPE_SITE;
 
@@ -125,13 +125,13 @@ import org.jaxen.saxpath.base.XPathReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.alfresco.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfig;
 import org.alfresco.repo.search.impl.elasticsearch.model.FieldName;
 import org.alfresco.repo.search.impl.elasticsearch.query.AlfrescoDefaultTextFields;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.FieldQueryTransformer;
+import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.repo.search.impl.elasticsearch.util.ThrowingFunction;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;

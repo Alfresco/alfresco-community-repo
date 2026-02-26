@@ -19,11 +19,6 @@
 
         <!-- Elasticsearch / OpenSearch search support -->
         <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-elasticsearch-shared</artifactId>
-            <version>${dependency.elasticsearch-shared.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-java</artifactId>
             <version>${dependency.opensearch.version}</version>

@@ -25,13 +25,13 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.model;
 
-import static org.alfresco.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator.encode;
 import static org.alfresco.repo.search.adaptor.QueryConstants.PROPERTY_FIELD_PREFIX;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator.encode;
 
 import java.util.Objects;
 
-import org.alfresco.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.repo.dictionary.NamespaceDAO;
+import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 

@@ -28,7 +28,7 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.elasticsearch.shared.ElasticsearchConstants;
+import org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants;
 import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;

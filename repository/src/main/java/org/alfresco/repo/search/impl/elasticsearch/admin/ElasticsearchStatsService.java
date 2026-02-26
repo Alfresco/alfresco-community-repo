@@ -25,11 +25,11 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.admin;
 
-import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.ALIVE;
-import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CM_CONTENT_TR_STATUS;
-import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CONTENT_ATTRIBUTE_NAME;
-import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.TYPE;
-import static org.alfresco.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator.encode;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CM_CONTENT_TR_STATUS;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_ATTRIBUTE_NAME;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.TYPE;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator.encode;
 
 import java.io.IOException;
 import java.util.Map;

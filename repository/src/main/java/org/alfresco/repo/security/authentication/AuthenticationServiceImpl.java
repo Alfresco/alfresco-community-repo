@@ -48,7 +48,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private boolean allowsUserCreation = true;
     private boolean allowsUserDeletion = true;
     private boolean allowsUserPasswordChange = true;
-    private String authSubSystemContextName; // ldap@@admin // Multiple ldap
+    private String authSubSystemContextName;
 
     private static final String AUTHENTICATION_UNSUCCESSFUL = "Authentication was not successful.";
     private static final String BRUTE_FORCE_ATTACK_DETECTED = "Brute force attack was detected for user: %s";
@@ -224,7 +224,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         {
             userName = userName.toLowerCase();
         }
-        return authSubSystemContextName + "@@" + userName; // Just cache the userName
+        return authSubSystemContextName + "@@" + userName; // caching key is based on the auth subsystem context and the username
     }
 
     public String getCurrentUserName() throws AuthenticationException
@@ -468,6 +468,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     /**
      * {@inheritDoc}
      */
+    @Override
     public Set<String> getDefaultGuestUserNames()
     {
         return authenticationComponent.getDefaultGuestUserNames();
@@ -476,6 +477,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean authenticationExists(String userName)
     {
         return true;
@@ -484,6 +486,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean getAuthenticationEnabled(String userName) throws AuthenticationException
     {
         if (personService != null && personService.personExists(userName))

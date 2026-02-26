@@ -39,6 +39,15 @@
                 <aspect>cdict:department</aspect>
             </mandatory-aspects>
         </type>
+        <type name="cdict:content">
+            <parent>cm:content</parent>
+            <mandatory-aspects>
+                <aspect>cd:classifiable</aspect>
+                <aspect>cdict:account</aspect>
+                <aspect>cdict:department</aspect>
+                <aspect>cdict:location</aspect>
+            </mandatory-aspects>
+        </type>
     </types>
 
     <aspects>
@@ -46,6 +55,16 @@
             <title>Account Classification</title>
             <parent>cd:classifiable</parent>
             <properties>
+                <property name="cdict:accountDictVersion">
+                    <title>Dictionary Version</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
                 <property name="cdict:accountCategory">
                     <title>Account Category</title>
                     <type>d:text</type>
@@ -82,6 +101,16 @@
             <title>Department Classification</title>
             <parent>cd:classifiable</parent>
             <properties>
+                <property name="cdict:departmentDictVersion">
+                    <title>Dictionary Version</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
                 <property name="cdict:departmentId">
                     <title>Department ID</title>
                     <type>d:text</type>
@@ -93,6 +122,92 @@
                 </property>
                 <property name="cdict:departmentName">
                     <title>Department Name</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </aspect>
+
+        <aspect name="cdict:location">
+            <title>Location Classification</title>
+            <parent>cd:classifiable</parent>
+            <properties>
+                <property name="cdict:locDictVersion">
+                    <title>Dictionary Version</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:locId">
+                    <title>Location ID</title>
+                    <type>d:text</type>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:locRegionCode">
+                    <title>Region Code</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:locRegionName">
+                    <title>Region Name</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:locCity">
+                    <title>City</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:locZipCode">
+                    <title>Zip Code</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:locStreet">
+                    <title>Street</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:locBuilding">
+                    <title>Building</title>
                     <type>d:text</type>
                     <protected>true</protected>
                     <index enabled="true">

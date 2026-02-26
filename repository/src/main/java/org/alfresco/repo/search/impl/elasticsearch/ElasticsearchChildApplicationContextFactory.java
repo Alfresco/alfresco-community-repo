@@ -25,9 +25,7 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch;
 
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
-import org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchStatsService;
-import org.springframework.context.ApplicationContext;
+import static org.alfresco.repo.search.impl.elasticsearch.ElasticsearchContextProperties.*;
 
 import java.util.List;
 import java.util.OptionalLong;
@@ -35,7 +33,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import static org.alfresco.repo.search.impl.elasticsearch.ElasticsearchContextProperties.*;
+import org.springframework.context.ApplicationContext;
+
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchStatsService;
 
 /**
  * Context Factory for Elasticsearch Search subsystem.

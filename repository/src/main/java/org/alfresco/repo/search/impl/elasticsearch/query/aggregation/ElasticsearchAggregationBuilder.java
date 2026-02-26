@@ -29,8 +29,8 @@ import static java.util.Optional.ofNullable;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
-import static org.alfresco.repo.search.impl.elasticsearch.util.CollectionUtils.safe;
 import static org.alfresco.repo.search.adaptor.QueryConstants.PROPERTY_FIELD_PREFIX;
+import static org.alfresco.repo.search.impl.elasticsearch.util.CollectionUtils.safe;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -203,32 +203,32 @@ public class ElasticsearchAggregationBuilder
     }
 
     private List<FiltersAggregation> buildFilterAggregations(SearchParameters parameters,
-                                                             LanguageQueryBuilder languageQueryBuilder)
+            LanguageQueryBuilder languageQueryBuilder)
     {
         return parameters.getFacetQueries()
                 .stream()
                 .map(ElasticsearchQueryHelper::extractFacetQueryAndLabel)
                 .map(facetQueryAndLabelResult -> facetQueryAndLabelResult.map(facetQueryAndLabel -> {
-                            String aftsQuery = facetQueryAndLabel.getFirst();
-                            String label = facetQueryAndLabel.getSecond();
+                    String aftsQuery = facetQueryAndLabel.getFirst();
+                    String label = facetQueryAndLabel.getSecond();
 
-                            SearchParameters facetQueryParams = new SearchParameters();
-                            facetQueryParams.setQuery(aftsQuery);
+                    SearchParameters facetQueryParams = new SearchParameters();
+                    facetQueryParams.setQuery(aftsQuery);
 
-                            try
-                            {
-                                Query elasticsearchQuery = languageQueryBuilder.getQuery(facetQueryParams);
-                                Buckets<Query> bucketQuery = new Buckets.Builder<Query>().keyed(Map.of(label, elasticsearchQuery))
-                                        .build();
-                                return new FiltersAggregation.Builder().filters(bucketQuery)
-                                        .build();
-                            }
-                            catch (ParseException | FTSQueryException e)
-                            {
-                                LOGGER.warn("Cannot parse AFTS facet query: {}", aftsQuery);
-                                return null;
-                            }
-                        })
+                    try
+                    {
+                        Query elasticsearchQuery = languageQueryBuilder.getQuery(facetQueryParams);
+                        Buckets<Query> bucketQuery = new Buckets.Builder<Query>().keyed(Map.of(label, elasticsearchQuery))
+                                .build();
+                        return new FiltersAggregation.Builder().filters(bucketQuery)
+                                .build();
+                    }
+                    catch (ParseException | FTSQueryException e)
+                    {
+                        LOGGER.warn("Cannot parse AFTS facet query: {}", aftsQuery);
+                        return null;
+                    }
+                })
                         .orElse(null))
                 .filter(Objects::nonNull)
                 .toList();

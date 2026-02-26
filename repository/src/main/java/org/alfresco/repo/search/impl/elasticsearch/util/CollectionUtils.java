@@ -53,4 +53,3 @@ public abstract class CollectionUtils
         return ofNullable(values).orElse(emptySet());
     }
 }
-

@@ -99,7 +99,7 @@
    
    <bean id="nodeServiceWithMemLocks" class="org.springframework.aop.framework.ProxyFactoryBean" >
       <property name="targetName">
-         <value>dbNodeService</value>
+         <value>propsExtendedNodeService</value>
       </property>
       <property name="proxyInterfaces">
          <list>
@@ -112,7 +112,30 @@
          </list>
       </property>
    </bean>
-   
+
+    <bean id="propertyExtendersHolder" class="org.alfresco.repo.node.PropertyExtendersHolder" autowire="constructor" />
+
+    <bean id="propertyExtenderInterceptor" class="org.alfresco.repo.node.PropertyExtenderInterceptor">
+        <constructor-arg index="0" ref="dbNodeService" />
+        <constructor-arg index="1" ref="propertyExtendersHolder"/>
+    </bean>
+
+    <bean id="propsExtendedNodeService" class="org.springframework.aop.framework.ProxyFactoryBean" >
+        <property name="targetName">
+            <value>dbNodeService</value>
+        </property>
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.service.cmr.repository.NodeService</value>
+            </list>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>propertyExtenderInterceptor</value>
+            </list>
+        </property>
+    </bean>
+
    <!-- Map stores to archive stores -->
    <bean id="storeArchiveMap" class="org.alfresco.repo.node.StoreArchiveMap">
       <property name="archiveMap">

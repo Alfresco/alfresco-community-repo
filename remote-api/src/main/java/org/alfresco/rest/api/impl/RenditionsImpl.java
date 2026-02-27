@@ -53,7 +53,6 @@ import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
-import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
@@ -639,30 +638,15 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         return null;
     }
 
-    private boolean isVersionStore(NodeRef nodeRef)
-    {
-        return Version2Model.STORE_ID.equals(nodeRef.getStoreRef().getIdentifier());
-    }
-
     protected Rendition toApiRendition(ChildAssociationRef childAssociationRef)
     {
         NodeRef renditionNodeRef = childAssociationRef.getChildRef();
         String renditionName = childAssociationRef.getQName().getLocalName();
 
-        Rendition apiRendition = new Rendition();
+        Rendition apiRendition = toApiRendition(renditionNodeRef);
         apiRendition.setId(renditionName);
 
-        ContentData contentData = getContentData(renditionNodeRef, false);
-        ContentInfo contentInfo = null;
-        if (contentData != null)
-        {
-            contentInfo = new ContentInfo(contentData.getMimetype(),
-                    getMimeTypeDisplayName(contentData.getMimetype()),
-                    contentData.getSize(),
-                    contentData.getEncoding());
-        }
-        apiRendition.setStatus(RenditionStatus.CREATED);
-
+        ContentInfo contentInfo = apiRendition.getContent();
         if (contentInfo == null)
         {
             RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();

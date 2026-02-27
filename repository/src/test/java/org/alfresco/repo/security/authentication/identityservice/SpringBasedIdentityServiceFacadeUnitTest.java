@@ -56,7 +56,7 @@ public class SpringBasedIdentityServiceFacadeUnitTest
         when(restTemplate.getErrorHandler()).thenReturn(new DefaultResponseErrorHandler());
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
 
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restTemplate, testRegistration(), jwtDecoder, true);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restTemplate, testRegistration(), jwtDecoder);
 
         assertThatExceptionOfType(AuthorizationException.class)
                 .isThrownBy(() -> facade.authorize(AuthorizationGrant.password(USER_NAME, PASSWORD)))
@@ -71,7 +71,7 @@ public class SpringBasedIdentityServiceFacadeUnitTest
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
         when(jwtDecoder.decode(TOKEN)).thenThrow(new RuntimeException("Expected"));
 
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restTemplate, testRegistration(), jwtDecoder, true);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restTemplate, testRegistration(), jwtDecoder);
 
         assertThatExceptionOfType(TokenDecodingException.class)
                 .isThrownBy(() -> facade.decodeToken(TOKEN))
@@ -84,7 +84,7 @@ public class SpringBasedIdentityServiceFacadeUnitTest
         final RestTemplate restTemplate = mock(RestTemplate.class);
         when(restTemplate.getErrorHandler()).thenReturn(new DefaultResponseErrorHandler());
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restTemplate, testRegistration(), jwtDecoder, true);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restTemplate, testRegistration(), jwtDecoder);
 
         assertThat(facade.getUserInfo(TOKEN, USER_INFO_ATTR_MAPPING).isEmpty()).isTrue();
 

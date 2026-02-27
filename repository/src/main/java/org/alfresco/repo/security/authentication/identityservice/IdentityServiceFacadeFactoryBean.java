@@ -140,7 +140,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     private static final String DEFAULT_ISSUER_ATTR = "issuer";
 
     private boolean enabled;
-    private boolean passwordGrantEnabled;
     private SpringBasedIdentityServiceFacadeFactory factory;
 
     public void setEnabled(boolean enabled)
@@ -150,7 +149,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
     public void setPasswordGrantEnabled(boolean passwordGrantEnabled)
     {
-        this.passwordGrantEnabled = passwordGrantEnabled;
+        IdentityServiceFacade.AuthorizationGrant.setPasswordGrantEnabled(passwordGrantEnabled);
     }
 
     public void setIdentityServiceConfig(IdentityServiceConfig identityServiceConfig)
@@ -158,8 +157,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         factory = new SpringBasedIdentityServiceFacadeFactory(
                 new HttpClientProvider(identityServiceConfig)::createHttpClient,
                 new ClientRegistrationProvider(identityServiceConfig)::createClientRegistration,
-                new JwtDecoderProvider(identityServiceConfig)::createJwtDecoder,
-                passwordGrantEnabled);
+                new JwtDecoderProvider(identityServiceConfig)::createJwtDecoder);
     }
 
     @Override
@@ -257,18 +255,15 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         private final Supplier<HttpClient> httpClientProvider;
         private final Function<RestOperations, ClientRegistration> clientRegistrationProvider;
         private final BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider;
-        private final boolean passwordGrantEnabled;
 
         SpringBasedIdentityServiceFacadeFactory(
                 Supplier<HttpClient> httpClientProvider,
                 Function<RestOperations, ClientRegistration> clientRegistrationProvider,
-                BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider,
-                boolean passwordGrantEnabled)
+                BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider)
         {
             this.httpClientProvider = requireNonNull(httpClientProvider);
             this.clientRegistrationProvider = requireNonNull(clientRegistrationProvider);
             this.jwtDecoderProvider = requireNonNull(jwtDecoderProvider);
-            this.passwordGrantEnabled = passwordGrantEnabled;
         }
 
         private IdentityServiceFacade createIdentityServiceFacade()
@@ -285,7 +280,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     clientRegistration.getProviderDetails());
 
             return new SpringBasedIdentityServiceFacade(createOAuth2RestTemplate(httpRequestFactory),
-                    clientRegistration, jwtDecoder, passwordGrantEnabled);
+                    clientRegistration, jwtDecoder);
         }
 
         private RestTemplate createOAuth2RestTemplate(ClientHttpRequestFactory requestFactory)

@@ -56,7 +56,7 @@ class ParentAssocsCache
         final int maxParentCount = size * limitFactor;
 
         Weigher<Pair<Long, String>, ParentAssocsInfo> weigher = (key, value) -> {
-            var parentAssocsSize = Optional.ofNullable(value)
+            int parentAssocsSize = Optional.ofNullable(value)
                     .map(ParentAssocsInfo::getParentAssocs)
                     .map(Map::size)
                     .orElse(1);

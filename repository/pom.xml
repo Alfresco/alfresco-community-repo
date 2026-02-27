@@ -17,6 +17,34 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- Elasticsearch / OpenSearch search support -->
+        <dependency>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>opensearch-java</artifactId>
+            <version>${dependency.opensearch.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse</groupId>
+                    <artifactId>yasson</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${dependency.lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${dependency.lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analysis-common</artifactId>
+            <version>${dependency.lucene.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>

@@ -1,0 +1,40 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "locale_content": {
+          "type": "danish"
+        },
+        "locale_text_index": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "flatten_graph",
+            "danish_stemmer_multiplexer"
+          ]
+        },
+        "locale_text_query": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "danish_stemmer_multiplexer"
+          ]
+        }
+      },
+      "filter": {
+        "danish_stemmer": {
+          "type": "stemmer",
+          "language": "danish"
+        },
+        "danish_stemmer_multiplexer": {
+          "type": "multiplexer",
+          "filters": [ "danish_stemmer" ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,325 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/context
+          http://www.springframework.org/schema/context/spring-context-3.0.xsd
+          http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <import resource="classpath:alfresco/subsystems/Search/common-search-context.xml" />
+    <import resource="classpath:alfresco/subsystems/Search/common-opencmis-context.xml" />
+
+    <context:annotation-config />
+    <context:component-scan base-package="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync" />
+
+    <bean id="search.elasticsearchFieldAnalyzersConfig" class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchFieldAnalyzersConfig">
+        <constructor-arg type="org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory" ref="elasticsearchHttpClientFactory"/>
+    </bean>
+
+    <bean id="search.elasticsearchExactTermSearchConfig" class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfig">
+        <constructor-arg type="org.springframework.core.env.Environment" ref="environment"/>
+    </bean>
+
+    <bean id="search.fieldMappingBuilder" class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.FieldMappingBuilder"></bean>
+
+    <bean id="search.indexerComponent" class="org.alfresco.repo.search.IndexerComponent">
+        <property name="storeRedirectorProxyFactory">
+            <ref bean="&amp;search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.searchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.admSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="elasticsearchSearchServiceFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.versionSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="elasticsearchSearchServiceFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.elasticsearchContentModelSync" class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ContentModelSynchronizer">
+        <constructor-arg ref="elasticsearchHttpClientFactory" />
+        <constructor-arg ref="search.fieldMappingBuilder" />
+        <constructor-arg value="${elasticsearch.index.locale}" />
+        <constructor-arg ref="indexConfigurationInitializer" />
+        <property name="customAnalyzerConfigFiles" value="${elasticsearch.index.custom.analyzer.config.files}"/>
+    </bean>
+
+    <bean id="indexConfigurationInitializer" class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.IndexConfigurationInitializer"/>
+
+    <bean id="elasticsearchHttpClientFactory" class="org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory" init-method="init">
+        <property name="host" value="${elasticsearch.host}" />
+        <property name="port" value="${elasticsearch.port}" />
+        <property name="baseUrl" value="${elasticsearch.baseUrl}" />
+        <property name="secureComms" value="${elasticsearch.secureComms}" />
+        <property name="user" value="${elasticsearch.user}" />
+        <property name="password" value="${elasticsearch.password}" />
+        <property name="indexName" value="${elasticsearch.indexName}" />
+        <property name="archiveIndexName" value="${elasticsearch.archive.indexName}" />
+        <property name="maxTotalConnections" value="${elasticsearch.max.total.connections}" />
+        <property name="maxHostConnections" value="${elasticsearch.max.host.connections}" />
+        <property name="socketTimeout" value="${elasticsearch.http.socket.timeout}" />
+        <property name="connectionTimeout" value="${elasticsearch.http.connection.timeout}" />
+        <property name="threadCount" value="${elasticsearch.io.threadCount:0}" />
+        <property name="hostNameVerification" value="${elasticsearch.ssl.host.name.verification}" />
+        <property name="sslEncryptionParameters" ref="sslEncryptionParameters" />
+        <property name="keyResourceLoader" ref="springKeyResourceLoader" />
+    </bean>
+
+    <bean id="elasticsearchInitialiser"
+          destroy-method="stop"
+          class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiser"
+          init-method="initAsync">
+        <constructor-arg ref="dictionaryDAO" />
+        <constructor-arg ref="elasticsearchIndexService" />
+        <constructor-arg ref="search.elasticsearchContentModelSync" />
+        <constructor-arg ref="jobLockService"/>
+        <constructor-arg value="${elasticsearch.retryAttempts}" />
+        <constructor-arg value="${elasticsearch.retryPeriodSeconds}" />
+        <constructor-arg value="${elasticsearch.lockRetryAttempts}" />
+        <constructor-arg value="${elasticsearch.lockRetryPeriodSeconds}" />
+        <constructor-arg value="${elasticsearch.createIndexIfNotExists}" />
+    </bean>
+
+    <bean id="elasticsearchIndexService"
+          class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchIndexService">
+        <constructor-arg ref="elasticsearchHttpClientFactory" />
+        <constructor-arg name="fieldsLimit" value="${elasticsearch.index.mapping.total_fields.limit}" />
+        <constructor-arg name="maxResultWindow" value="${elasticsearch.index.max_result_window}" />
+    </bean>
+
+    <!-- search.queryRegisterComponent is already defined in common-search-context.xml -->
+
+    <bean id="searchRequestBuilderService"
+          class="org.alfresco.repo.search.impl.elasticsearch.query.SearchRequestBuilderService">
+        <constructor-arg ref="aFTSQueryBuilder"/>
+        <constructor-arg ref="elasticsearchHttpClientFactory"/>
+        <constructor-arg ref="elasticsearchSortBuilder"/>
+        <constructor-arg ref="elasticsearchAggregationBuilder"/>
+        <constructor-arg ref="elasticsearchHighlightBuilder"/>
+    </bean>
+
+    <bean id="standardSearchStrategy"
+          class="org.alfresco.repo.search.impl.elasticsearch.query.StandardSearchStrategy">
+        <constructor-arg ref="searchRequestBuilderService"/>
+        <constructor-arg ref="elasticsearchHttpClientFactory"/>
+        <constructor-arg ref="elasticsearchResultSetBuilder"/>
+        <constructor-arg name="maxResultWindow" value="${elasticsearch.index.max_result_window}" />
+    </bean>
+
+    <bean id="scrollSearchStrategy"
+          class="org.alfresco.repo.search.impl.elasticsearch.query.ScrollSearchStrategy">
+        <constructor-arg ref="searchRequestBuilderService"/>
+        <constructor-arg ref="elasticsearchHttpClientFactory"/>
+        <constructor-arg ref="elasticsearchResultSetBuilder"/>
+        <constructor-arg name="scrollTime" value="${elasticsearch.scroll.api_time}" />
+        <constructor-arg name="batchSize" value="${elasticsearch.scroll.batch_size}" />
+    </bean>
+
+    <bean id="strategySelector" class="org.alfresco.repo.search.impl.elasticsearch.query.SearchStrategySelector">
+        <constructor-arg ref="standardSearchStrategy"/>
+        <constructor-arg ref="scrollSearchStrategy"/>
+        <constructor-arg name="maxResultWindow" value="${elasticsearch.index.max_result_window}" />
+    </bean>
+
+    <bean id="search.indexerAndSearcherFactory" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+        <property name="proxyInterface">
+            <value>org.alfresco.repo.search.IndexerAndSearcher</value>
+        </property>
+        <property name="defaultBinding">
+            <ref bean="elasticsearchSearchServiceFactory"></ref>
+        </property>
+    </bean>
+
+    <bean id="search.categoryService" class="org.alfresco.repo.search.impl.elasticsearch.ElasticsearchCategoryService">
+        <constructor-arg ref="NodeService" />
+        <constructor-arg ref="search.indexerAndSearcherFactory" />
+        <constructor-arg ref="nodeService" />
+        <property name="queryFetchSize" value="${category.queryFetchSize:5000}" />
+        <property name="namespacePrefixResolver" ref="namespaceService" />
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="tenantService" ref="tenantService" />
+    </bean>
+
+    <bean id="elasticsearchSearchServiceFactory"
+          class="org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSearchServiceFactory">
+        <property name="queryRegister" ref="search.queryRegisterComponent" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+    </bean>
+
+    <bean id="elasticsearchQueryExecutor" abstract="true" class="org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchQueryExecutor">
+        <constructor-arg name="elasticsearchPermissionQueryFactory" ref="elasticsearchFlatPermissionFactory" />
+        <constructor-arg name="languageQueryBuilder" ref="aFTSQueryBuilder" />
+        <constructor-arg name="defaultLanguageQueryBuilder" ref="aFTSQueryBuilder" />
+        <constructor-arg name="elasticsearchFilterBuilder" ref="elasticsearchFilterBuilder" />
+        <constructor-arg name="includeGroupsForRoleAdmin">
+            <value>${elasticsearch.query.includeGroupsForRoleAdmin}</value>
+        </constructor-arg>
+        <constructor-arg name="strategySelector" ref="strategySelector" />
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="search.cmis.alfresco.index" parent="elasticsearchQueryExecutor">
+        <constructor-arg name="languageQueryBuilder" ref="cmisQueryBuilder" />
+        <property name="name">
+            <value>index-cmis</value>
+        </property>
+    </bean>
+
+    <bean id="search.lucene.alfresco" parent="elasticsearchQueryExecutor">
+        <constructor-arg name="languageQueryBuilder" ref="luceneQueryBuilder" />
+        <property name="name">
+            <value>lucene</value>
+        </property>
+    </bean>
+
+    <bean id="search.fts.alfresco.switching" parent="base.search.fts.alfresco.switching">
+        <property name="queryConsistency" value="${query.fts.queryConsistency:${solr.query.fts.queryConsistency:TRANSACTIONAL_IF_POSSIBLE}}"/>
+        <property name="hybridEnabled" value="${query.hybrid.enabled:${solr.query.hybrid.enabled:false}}"/>
+        <property name="subsystemName" value="elasticsearch"/>
+    </bean>
+
+    <bean id="search.fts.alfresco.index" parent="elasticsearchQueryExecutor">
+        <constructor-arg name="languageQueryBuilder" ref="aFTSQueryBuilder" />
+        <property name="name">
+            <value>index-fts-alfresco</value>
+        </property>
+    </bean>
+
+    <bean id="search.index.alfresco" class="org.alfresco.repo.search.impl.UnsupportedQueryLanguage">
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>index-alfresco</value>
+        </property>
+    </bean>
+
+    <bean id="search.lucene.xpath" class="org.alfresco.repo.search.impl.UnsupportedQueryLanguage">
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>xpath</value>
+        </property>
+    </bean>
+
+    <bean id="search.index.sql.alfresco" class="org.alfresco.repo.search.impl.UnsupportedQueryLanguage">
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>index-sql</value>
+        </property>
+    </bean>
+
+    <bean id="elasticsearchSortBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.sort.ElasticsearchSortBuilder">
+        <constructor-arg name="namespaceDAO" ref="namespaceDAO"/>
+        <constructor-arg name="dictionaryService" ref="DictionaryService"/>
+        <constructor-arg name="indexConfigurationInitializer" ref="indexConfigurationInitializer"/>
+    </bean>
+
+    <bean id="elasticsearchFilterBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.filter.ElasticsearchFilterBuilder">
+    </bean>
+
+    <bean id="elasticsearchHighlightBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilder">
+        <constructor-arg name="namespaceDAO" ref="namespaceDAO" />
+        <constructor-arg name="dictionaryService" ref="DictionaryService" />
+    </bean>
+
+    <bean id="esTypeResolver" class="org.alfresco.repo.search.impl.elasticsearch.query.language.EsTypeResolver">
+        <constructor-arg name="elasticsearchHttpClientFactory" ref="elasticsearchHttpClientFactory" />
+    </bean>
+
+    <bean id="aFTSQueryBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.language.afts.AFTSQueryBuilder">
+        <constructor-arg name="namespace" ref="namespaceDAO"/>
+        <constructor-arg name="dictionaryService" ref="DictionaryService"/>
+        <constructor-arg name="exactTermSearchConfig" ref="search.elasticsearchExactTermSearchConfig"/>
+        <constructor-arg name="siteService" ref="siteService" />
+        <constructor-arg name="esTypeResolver" ref="esTypeResolver" />
+    </bean>
+
+    <bean id="elasticsearchAggregationBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilder">
+        <constructor-arg name="namespaceDAO" ref="namespaceDAO"/>
+        <constructor-arg name="dictionaryService" ref="dictionaryService"/>
+        <property name="defaultFacetLimit" value="${elasticsearch.defaultFacetLimit}"/>
+    </bean>
+
+    <bean id="elasticsearchFlatPermissionFactory" class="org.alfresco.repo.search.impl.elasticsearch.permission.FlatElasticsearchPermissionQueryFactory">
+        <constructor-arg name="permissionService" ref="permissionService"/>
+    </bean>
+
+    <bean id="elasticsearchResultSetBuilder" class="org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResultSetBuilder">
+        <constructor-arg name="nodeService" ref="nodeService"/>
+        <constructor-arg name="nodeDAO" ref="nodeDAO"/>
+        <constructor-arg name="highlightsHandler">
+            <bean class="org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandler" />
+        </constructor-arg>
+        <constructor-arg name="aggregationHandler">
+            <bean class="org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationHandler" />
+        </constructor-arg>
+    </bean>
+
+    <bean id="elasticsearchStatsService" name="search.statsService" class="org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchStatsService">
+        <property name="elasticsearchHttpClientFactory" ref="elasticsearchHttpClientFactory" />
+        <property name="nodeTypeFilter" ref="event2NodeTypeFilter" />
+        <property name="searcher" ref="search.indexerAndSearcherFactory"/>
+        <property name="nodeService" ref="nodeService" />
+    </bean>
+
+    <bean id="elasticsearchDocumentsService" class="org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsService">
+        <property name="elasticsearchHttpClientFactory" ref="elasticsearchHttpClientFactory" />
+    </bean>
+
+    <bean id="elasticStatsResult" class="org.alfresco.repo.search.impl.elasticsearch.ElasticStatsResult">
+    </bean>
+
+    <bean id="luceneQueryBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.LuceneQueryBuilder">
+        <constructor-arg name="namespaceResolver" ref="namespaceDAO"/>
+        <constructor-arg name="dictionaryService" ref="DictionaryService"/>
+        <constructor-arg name="siteService" ref="siteService" />
+    </bean>
+
+    <bean id="cmisQueryParserFactory" class="org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.CMISQueryParserFactory" />
+
+    <bean id="cmisQueryBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.CMISQueryBuilder">
+        <constructor-arg name="namespacePrefixResolver" ref="namespaceDAO" />
+        <constructor-arg name="dictionaryService" ref="DictionaryService" />
+        <constructor-arg name="exactTermSearchConfig" ref="search.elasticsearchExactTermSearchConfig" />
+        <constructor-arg name="siteService" ref="siteService" />
+        <constructor-arg name="cmisDictionaryService" ref="OpenCMISDictionaryService" />
+        <constructor-arg name="cmisQueryParserFactory" ref="cmisQueryParserFactory" />
+        <constructor-arg name="esTypeResolver" ref="esTypeResolver" />
+    </bean>
+
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.QueryConverter.setAnalyzeWildcardFields"/>
+        <property name="arguments">
+            <list>
+                <value>${elasticsearch.query.analyzeWildcard.fields}</value>
+            </list>
+        </property>
+    </bean>
+
+</beans>
+

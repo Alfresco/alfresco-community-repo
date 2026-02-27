@@ -1,0 +1,40 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "locale_content": {
+          "type": "finnish"
+        },
+        "locale_text_index": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "flatten_graph",
+            "finnish_stemmer_multiplexer"
+          ]
+        },
+        "locale_text_query": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "finnish_stemmer_multiplexer"
+          ]
+        }
+      },
+      "filter": {
+        "finnish_stemmer": {
+          "type": "stemmer",
+          "language": "finnish"
+        },
+        "finnish_stemmer_multiplexer": {
+          "type": "multiplexer",
+          "filters": [ "finnish_stemmer" ]
+        }
+      }
+    }
+  }
+}

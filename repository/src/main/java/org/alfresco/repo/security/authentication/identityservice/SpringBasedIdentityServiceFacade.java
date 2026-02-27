@@ -78,11 +78,12 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     private final JwtDecoder jwtDecoder;
 
     SpringBasedIdentityServiceFacade(RestTemplate restTemplate, ClientRegistration clientRegistration,
-            JwtDecoder jwtDecoder)
+                                     JwtDecoder jwtDecoder, boolean passwordGrantEnabled)
     {
         requireNonNull(restTemplate);
         this.clientRegistration = requireNonNull(clientRegistration);
         this.jwtDecoder = requireNonNull(jwtDecoder);
+        AuthorizationGrant.setPasswordGrantEnabled(passwordGrantEnabled);
         this.clients = Map.of(
                 AuthorizationGrantType.AUTHORIZATION_CODE, createAuthorizationCodeClient(restTemplate),
                 AuthorizationGrantType.REFRESH_TOKEN, createRefreshTokenClient(restTemplate));

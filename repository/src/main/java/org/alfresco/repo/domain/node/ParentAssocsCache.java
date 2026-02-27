@@ -31,6 +31,7 @@ import java.util.concurrent.Callable;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.Weigher;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.Pair;
@@ -54,16 +55,18 @@ class ParentAssocsCache
     {
         final int maxParentCount = size * limitFactor;
 
+        Weigher<Pair<Long, String>, ParentAssocsInfo> weigher = (key, value) -> {
+            var parentAssocsSize = Optional.ofNullable(value)
+                    .map(ParentAssocsInfo::getParentAssocs)
+                    .map(Map::size)
+                    .orElse(1);
+            return Math.max(1, parentAssocsSize);
+        };
+
         this.cache = CacheBuilder.newBuilder()
                 .maximumWeight(maxParentCount)
                 .concurrencyLevel(concurrencyLevel)
-                .weigher((Pair<Long, String> key, ParentAssocsInfo value) -> {
-                    var parentAssocsSize = Optional.ofNullable(value)
-                            .map(ParentAssocsInfo::getParentAssocs)
-                            .map(Map::size)
-                            .orElse(1);
-                    return Math.max(1, parentAssocsSize);
-                })
+                .weigher(weigher)
                 .build();
     }
 

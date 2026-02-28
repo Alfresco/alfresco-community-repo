@@ -118,6 +118,7 @@
       <property name="protectionPeriodSeconds">
          <value>${authentication.protection.periodSeconds}</value>
       </property>
+      <property name="authSubSystemContextName" value="alfrescoNtlm" />
    </bean>
 
    <!--                                                                    -->

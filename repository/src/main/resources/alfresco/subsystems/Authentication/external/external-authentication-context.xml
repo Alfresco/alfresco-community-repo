@@ -68,6 +68,7 @@
       <property name="personService">
          <ref bean="PersonService" />
       </property>
+      <property name="authSubSystemContextName" value="external" />
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->

@@ -110,6 +110,7 @@
       <property name="protectionPeriodSeconds">
          <value>${authentication.protection.periodSeconds}</value>
       </property>
+      <property name="authSubSystemContextName" value="ldap"/>
    </bean>
 
    <!--

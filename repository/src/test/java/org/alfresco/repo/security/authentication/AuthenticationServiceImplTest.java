@@ -58,7 +58,8 @@ import org.alfresco.service.cmr.security.PersonService;
 public class AuthenticationServiceImplTest
 {
     private AuthenticationComponent authenticationComponent = mock(AuthenticationComponent.class);
-    private SimpleCache<String, ProtectedUser> cache;
+    private SimpleCache<String, ProtectedUser> cache1;
+    private SimpleCache<String, ProtectedUser> cache2;
     private TicketComponent ticketComponent = mock(TicketComponent.class);
     private AuthenticationServiceImpl authService;
     private AuthenticationServiceImpl authService2;
@@ -74,14 +75,15 @@ public class AuthenticationServiceImplTest
         authService = new AuthenticationServiceImpl();
         authService.setAuthenticationComponent(authenticationComponent);
         authService.setTicketComponent(ticketComponent);
-        cache = new MockCache<>();
-        authService.setProtectedUsersCache(cache);
+        cache1 = new MockCache<>();
+        authService.setProtectedUsersCache(cache1);
         authService.setPersonService(personService);
 
+        cache2 = new MockCache<>();
         authService2 = new AuthenticationServiceImpl();
         authService2.setAuthenticationComponent(authenticationComponent);
         authService2.setTicketComponent(ticketComponent);
-        authService2.setProtectedUsersCache(cache);
+        authService2.setProtectedUsersCache(cache2);
     }
 
     @Test
@@ -119,7 +121,7 @@ public class AuthenticationServiceImplTest
         assertTrue("The user should be protected.", authService.isUserProtected(USERNAME));
 
         final String protectedUserKey = authService.getProtectedUserKey(USERNAME);
-        assertEquals("The number of recorded logins did not match.", attempts, cache.get(protectedUserKey).getNumLogins());
+        assertEquals("The number of recorded logins did not match.", attempts, cache1.get(protectedUserKey).getNumLogins());
 
         // test that the protection is still in place even if the password is correct
         doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
@@ -133,7 +135,7 @@ public class AuthenticationServiceImplTest
             // normal
         }
         verify(authenticationComponent, times(limit)).authenticate(USERNAME, PASSWORD);
-        assertEquals("The number of recorded logins did not match.", attempts + 1, cache.get(protectedUserKey).getNumLogins());
+        assertEquals("The number of recorded logins did not match.", attempts + 1, cache1.get(protectedUserKey).getNumLogins());
     }
 
     @Test
@@ -238,11 +240,11 @@ public class AuthenticationServiceImplTest
         assertTrue("The user should be protected.", authService.isUserProtected(USERNAME));
 
         final String protectedUserKey = authService.getProtectedUserKey(USERNAME);
-        assertEquals("The number of recorded logins did not match.", attempts, cache.get(protectedUserKey).getNumLogins());
+        assertEquals("The number of recorded logins did not match.", attempts, cache1.get(protectedUserKey).getNumLogins());
         Thread.sleep(timeLimit * 1000 + 1);
         assertFalse("The user should not be protected any more.", authService.isUserProtected(USERNAME));
         assertEquals("The number of recorded logins should stay the same after protection period ends.",
-                attempts, cache.get(protectedUserKey).getNumLogins());
+                attempts, cache1.get(protectedUserKey).getNumLogins());
 
         doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
         try
@@ -254,7 +256,7 @@ public class AuthenticationServiceImplTest
             fail("An " + AuthenticationException.class.getName() + " should not be thrown.");
         }
         assertNull("The user should be removed from the cache after successful login.",
-                cache.get(protectedUserKey));
+                cache1.get(protectedUserKey));
     }
 
     @Test
@@ -327,9 +329,9 @@ public class AuthenticationServiceImplTest
         }
 
         assertNotNull("The user should not be removed from the cache for the corresponding authorization service after a failed login.",
-                cache.get(authenticationChain[0].getProtectedUserKey(USERNAME)));
+                cache1.get(authenticationChain[0].getProtectedUserKey(USERNAME)));
         assertNull("The user should be removed from the cache for the corresponding authorization service after successful login.",
-                cache.get(authenticationChain[1].getProtectedUserKey(USERNAME)));
+                cache2.get(authenticationChain[1].getProtectedUserKey(USERNAME)));
     }
 
     @Test
@@ -356,7 +358,7 @@ public class AuthenticationServiceImplTest
             }
         }
         verify(authenticationComponent, times(attempts)).authenticate(USERNAME, PASSWORD);
-        assertNull("The user should not be in the cache.", cache.get(USERNAME));
+        assertNull("The user should not be in the cache.", cache1.get(USERNAME));
     }
 
     private class MockCache<K extends Serializable, V> implements SimpleCache<K, V>

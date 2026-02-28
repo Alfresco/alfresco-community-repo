@@ -36,7 +36,6 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
 import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
@@ -45,13 +44,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     AuthenticationComponent authenticationComponent;
     TicketComponent ticketComponent;
 
-    /** a serviceInstanceId identifying this unique instance */
-    private String serviceInstanceId;
-
     private String domain;
     private boolean allowsUserCreation = true;
     private boolean allowsUserDeletion = true;
     private boolean allowsUserPasswordChange = true;
+    private String authSubSystemContextName;
 
     private static final String AUTHENTICATION_UNSUCCESSFUL = "Authentication was not successful.";
     private static final String BRUTE_FORCE_ATTACK_DETECTED = "Brute force attack was detected for user: %s";
@@ -59,8 +56,12 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private boolean protectionEnabled;
     private int protectionLimit;
     private SimpleCache<String, ProtectedUser> protectedUsersCache;
-
     private PersonService personService;
+
+    public void setAuthSubSystemContextName(String authSubSystemContextName)
+    {
+        this.authSubSystemContextName = authSubSystemContextName;
+    }
 
     public void setProtectionPeriodSeconds(int protectionPeriodSeconds)
     {
@@ -95,8 +96,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     public AuthenticationServiceImpl()
     {
         super();
-
-        this.serviceInstanceId = GUID.generate();
     }
 
     public void setTicketComponent(TicketComponent ticketComponent)
@@ -225,7 +224,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         {
             userName = userName.toLowerCase();
         }
-        return serviceInstanceId + "@@" + userName;
+        return authSubSystemContextName + "@@" + userName; // caching key is based on the auth subsystem context and the username
     }
 
     public String getCurrentUserName() throws AuthenticationException
@@ -469,6 +468,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     /**
      * {@inheritDoc}
      */
+    @Override
     public Set<String> getDefaultGuestUserNames()
     {
         return authenticationComponent.getDefaultGuestUserNames();
@@ -477,6 +477,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean authenticationExists(String userName)
     {
         return true;
@@ -485,6 +486,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean getAuthenticationEnabled(String userName) throws AuthenticationException
     {
         if (personService != null && personService.personExists(userName))

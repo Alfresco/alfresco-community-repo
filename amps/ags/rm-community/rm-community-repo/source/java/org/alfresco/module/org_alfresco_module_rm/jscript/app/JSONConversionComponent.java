@@ -349,15 +349,19 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                     addInfo(nodeInfo, rootJSONObject);
                 }
             }
-            Set<NodeRef> filePlans = filePlanService.getFilePlans();
-            if (!CollectionUtils.isEmpty(filePlans))
+            boolean isFilePlanComponent = filePlanService.isFilePlanComponent(nodeRef);
+            if(isFilePlanComponent)
             {
-                NodeRef filePlanNodeRef = filePlans.stream().findFirst().orElse(null);
-                if (filePlanNodeRef != null)
+                Set<NodeRef> filePlans = filePlanService.getFilePlans();
+                if (!CollectionUtils.isEmpty(filePlans))
                 {
-                    Set<Role> roles = filePlanRoleService.getRolesByUser(filePlanNodeRef, AuthenticationUtil.getFullyAuthenticatedUser());
-                    boolean hasFilingPermission = !CollectionUtils.isEmpty(roles);
-                    rootJSONObject.put(IS_VISIBLE_FOR_CURRENT_USER, hasFilingPermission);
+                    NodeRef filePlanNodeRef = filePlans.stream().findFirst().orElse(null);
+                    if (filePlanNodeRef != null)
+                    {
+                        Set<Role> roles = filePlanRoleService.getRolesByUser(filePlanNodeRef, AuthenticationUtil.getFullyAuthenticatedUser());
+                        boolean hasFilingPermission = !CollectionUtils.isEmpty(roles);
+                        rootJSONObject.put(IS_VISIBLE_FOR_CURRENT_USER, hasFilingPermission);
+                    }
                 }
             }
         }

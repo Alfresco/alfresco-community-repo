@@ -28,7 +28,7 @@ function main()
    var name = json.get(PROP_NAME);       
    if (name == null || name.length === 0)
    {
-      tatus.setCode(status.STATUS_BAD_REQUEST, "Could not update category, because 'name' parameter is missing from json request.");
+      status.setCode(status.STATUS_BAD_REQUEST, "Could not update category, because 'name' parameter is missing from json request.");
       return;
    }
    

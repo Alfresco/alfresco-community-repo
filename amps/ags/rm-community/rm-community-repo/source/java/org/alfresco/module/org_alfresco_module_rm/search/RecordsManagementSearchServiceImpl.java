@@ -233,7 +233,11 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
         searchParameters.setQuery(fullQuery.toString());
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        searchParameters.setMaxItems(recordsManagementSearchParameters.getMaxItems());
+        int maxItems = rmSearchParameters.getMaxItems();
+        if (maxItems > 0)
+        {
+            searchParameters.setMaxItems(maxItems);
+        }
         searchParameters.setNamespace(RecordsManagementModel.RM_URI);
 
         // set sort

@@ -65,7 +65,7 @@
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.81</dependency.bouncycastle.version>
-        <dependency.mockito-core.version>5.18.0</dependency.mockito-core.version>
+        <dependency.mockito-core.version>5.21.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.27.3</dependency.assertj.version>
         <dependency.org-json.version>20250517</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.12.0</dependency.commons-dbcp.version>

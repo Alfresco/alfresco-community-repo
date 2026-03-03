@@ -114,18 +114,15 @@ public class AuthenticationUtil implements InitializingBean
         {
             return null;
         }
-        final int len = userName.length();
-        if (len < 2)
+        final int length = userName.length();
+        if (length <= 2)
         {
             return userName;
         }
-        final char[] out = new char[len];
+        final char[] out = new char[length];
         out[0] = userName.charAt(0);
         out[1] = userName.charAt(1);
-        if (len > 2)
-        {
-            Arrays.fill(out, 2, len, '*');
-        }
+        Arrays.fill(out, 2, length, '*');
         return new String(out);
     }
 

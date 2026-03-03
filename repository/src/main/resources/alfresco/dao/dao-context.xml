@@ -138,6 +138,7 @@
       <property name="propertiesCache" ref="node.propertiesCache"/>
       <property name="parentAssocsCacheSize" value="${system.cache.parentAssocs.maxSize}"/>
       <property name="parentAssocsCacheLimitFactor" value="${system.cache.parentAssocs.limitFactor}"/>
+      <property name="parentAssocsCacheConcurrencyLevel" value="${system.cache.parentAssocs.concurrencyLevel}"/>
       <property name="childByNameCache" ref="node.childByNameCache"/>
       <property name="cachingThreshold" value="${nodes.bulkLoad.cachingThreshold}"/>
       <property name="batchSize" value="${nodes.bulkLoad.batchSize}"/>

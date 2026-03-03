@@ -44,6 +44,7 @@ import org.junit.runners.Suite;
         org.alfresco.repo.search.impl.parsers.CMIS_FTSTest.class,
         org.alfresco.repo.search.impl.parsers.FTSTest.class,
         org.alfresco.repo.security.authentication.InMemoryTicketComponentTest.class,
+        org.alfresco.repo.security.authentication.AuthenticationUtilTest.class,
         org.alfresco.service.cmr.repository.MLTextTest.class,
         org.alfresco.service.cmr.repository.NodeRefTest.class,
         org.alfresco.service.cmr.repository.PathTest.class,
@@ -60,5 +61,5 @@ import org.junit.runners.Suite;
         org.alfresco.util.SearchDateConversionTest.class,
         org.alfresco.util.SearchLanguageConversionTest.class
 })
-public class AllDataModelUnitTestSuite {
-}
+public class AllDataModelUnitTestSuite
+{}

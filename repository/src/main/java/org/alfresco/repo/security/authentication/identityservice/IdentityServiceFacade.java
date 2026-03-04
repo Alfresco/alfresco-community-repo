@@ -172,7 +172,6 @@ public interface IdentityServiceFacade
         private final String refreshToken;
         private final String authorizationCode;
         private final String redirectUri;
-        private static boolean passwordGrantEnabled;
 
         private AuthorizationGrant(String username, String password, String refreshToken, String authorizationCode, String redirectUri)
         {
@@ -198,17 +197,8 @@ public interface IdentityServiceFacade
             return new AuthorizationGrant(null, null, null, requireNonNull(authorizationCode), requireNonNull(redirectUri));
         }
 
-        public static void setPasswordGrantEnabled(boolean passwordGrantEnabled)
-        {
-            AuthorizationGrant.passwordGrantEnabled = passwordGrantEnabled;
-        }
-
         boolean isPassword()
         {
-            if (nonNull(username) && !passwordGrantEnabled)
-            {
-                throw new AuthorizationException("Resource Owner Password Flow is deprecated and disabled. Obtain a Bearer access token from the identity service and retry the request.");
-            }
             return nonNull(username);
         }
 

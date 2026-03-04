@@ -980,6 +980,69 @@ public class RenditionsTest extends AbstractBaseApiTest
         getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib/content", params, 200);
     }
 
+    @Test
+    public void testListRenditionsForVersionNode() throws Exception
+    {
+        String RENDITION_NAME = "pdf";
+
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
+
+        String folderName = "folder" + System.currentTimeMillis();
+        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
+
+        // Upload quick.pdf (initial node, live version)
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .build();
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        Thread.sleep(DELAY_IN_MS);
+
+        // Create pdf rendition on the live node
+        Rendition rendition = createAndGetRendition(contentNodeId, RENDITION_NAME);
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.CREATED, rendition.getStatus());
+
+        // Upload new version to create version history (1.0 becomes a frozen version)
+        String fileName2 = "quick-2.pdf";
+        File file2 = getResourceFile(fileName2);
+        reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData("quick.pdf", file2))
+                .setMajorVersion(true)
+                .setOverwrite(true)
+                .build();
+        post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, null, "alfresco", reqBody.getContentType(), 201);
+
+        Thread.sleep(DELAY_IN_MS);
+
+        // GET renditions for version 1.0 - should list with correct ID, not UUID
+        Paging paging = getPaging(0, 50);
+        response = getAll(getNodeVersionRenditionsUrl(contentNodeId, "1.0"), paging, 200);
+        List<Rendition> renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+
+        Rendition pdfRendition = getRendition(renditions, RENDITION_NAME);
+        assertNotNull("Rendition should be found by name 'pdf', not UUID", pdfRendition);
+        ContentInfo contentInfo = pdfRendition.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+
+        // GET renditions for version 2.0 - inherited stubs should show NOT_CREATED
+        response = getAll(getNodeVersionRenditionsUrl(contentNodeId, "2.0"), paging, 200);
+        renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+
+        pdfRendition = getRendition(renditions, RENDITION_NAME);
+        assertNotNull("Inherited rendition should appear with correct ID from QName", pdfRendition);
+        assertEquals("Inherited rendition without version-specific content should be NOT_CREATED",
+                RenditionStatus.NOT_CREATED, pdfRendition.getStatus());
+        contentInfo = pdfRendition.getContent();
+        assertNotNull("Content info should fall back to rendition definition metadata", contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+    }
+
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception
     {
         String parentId = getSiteContainerNodeId(testSite.getId(), "documentLibrary");

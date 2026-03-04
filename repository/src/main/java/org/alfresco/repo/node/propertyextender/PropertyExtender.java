@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.node;
+package org.alfresco.repo.node.propertyextender;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -32,10 +32,19 @@ import java.util.Optional;
 
 import org.alfresco.service.namespace.QName;
 
+/**
+ * Interface for implementing property extenders. A property extender is used to calculate additional properties based on the properties that are being added on a node.
+ */
 public interface PropertyExtender
 {
     CalculationResult calculate(CalculationContext context);
 
+    /**
+     * The context for the property extender calculation.
+     *
+     * @param newProperties
+     *            map of properties that are being added on a node
+     */
     record CalculationContext(Map<QName, Serializable> newProperties)
     {
         public CalculationContext
@@ -46,6 +55,12 @@ public interface PropertyExtender
         }
     }
 
+    /**
+     * The result of the property extender calculation.
+     *
+     * @param calculatedProperties
+     *            the additional properties calculated by the property extender, which will be added to the node together with the new properties
+     */
     record CalculationResult(Map<QName, Serializable> calculatedProperties)
     {
         public CalculationResult

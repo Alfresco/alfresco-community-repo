@@ -146,7 +146,7 @@ public interface NamespaceService extends NamespacePrefixResolver
     /** Email Server Application Model Prefix */
     static final String EMAILSERVER_MODEL_PREFIX = "emailserver";
 
-    /** Content Model URI */
+    /** Cascading Dictionaries Model URI */
     String CD_MODEL_1_0_URI = "http://www.alfresco.org/model/cascadingdictionarymodel/1.0";
 
     /**

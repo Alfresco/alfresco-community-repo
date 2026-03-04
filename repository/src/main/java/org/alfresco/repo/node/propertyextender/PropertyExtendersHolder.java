@@ -23,19 +23,23 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.node;
+package org.alfresco.repo.node.propertyextender;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import static java.util.Collections.unmodifiableList;
+
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Holder for the registered property extenders. Other Spring components can use it to register custom property extenders. All extenders will be invoked by the {@link PropertyExtenderInterceptor} when properties are being added on a node, to calculate the additional properties that need to be added together with the new properties.
+ */
 public class PropertyExtendersHolder
 {
-    private final List<PropertyExtender> extenders = new ArrayList<>();
+    private final List<PropertyExtender> extenders = new CopyOnWriteArrayList<>();
 
     public List<PropertyExtender> getExtenders()
     {
-        return Collections.unmodifiableList(extenders);
+        return unmodifiableList(extenders);
     }
 
     public void registerExtender(PropertyExtender extender)

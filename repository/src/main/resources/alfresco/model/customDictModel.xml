@@ -17,32 +17,9 @@
     </namespaces>
 
     <types>
-        <type name="cdict:contentA">
-            <parent>cm:content</parent>
-            <mandatory-aspects>
-                <aspect>cd:classifiable</aspect>
-                <aspect>cdict:account</aspect>
-            </mandatory-aspects>
-        </type>
-        <type name="cdict:contentD">
-            <parent>cm:content</parent>
-            <mandatory-aspects>
-                <aspect>cd:classifiable</aspect>
-                <aspect>cdict:department</aspect>
-            </mandatory-aspects>
-        </type>
-        <type name="cdict:contentAD">
-            <parent>cm:content</parent>
-            <mandatory-aspects>
-                <aspect>cd:classifiable</aspect>
-                <aspect>cdict:account</aspect>
-                <aspect>cdict:department</aspect>
-            </mandatory-aspects>
-        </type>
         <type name="cdict:content">
             <parent>cm:content</parent>
             <mandatory-aspects>
-                <aspect>cd:classifiable</aspect>
                 <aspect>cdict:account</aspect>
                 <aspect>cdict:department</aspect>
                 <aspect>cdict:location</aspect>
@@ -51,6 +28,42 @@
     </types>
 
     <aspects>
+        <aspect name="cdict:department">
+            <title>Department Classification</title>
+            <parent>cd:classifiable</parent>
+            <properties>
+                <property name="cdict:departmentDictVersion">
+                    <title>Dictionary Version</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:departmentId">
+                    <title>Department ID</title>
+                    <type>d:text</type>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="cdict:departmentName">
+                    <title>Department Name</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </aspect>
+
         <aspect name="cdict:account">
             <title>Account Classification</title>
             <parent>cd:classifiable</parent>
@@ -86,42 +99,6 @@
                 </property>
                 <property name="cdict:accountName">
                     <title>Account Name</title>
-                    <type>d:text</type>
-                    <protected>true</protected>
-                    <index enabled="true">
-                        <atomic>true</atomic>
-                        <stored>true</stored>
-                        <tokenised>false</tokenised>
-                    </index>
-                </property>
-            </properties>
-        </aspect>
-
-        <aspect name="cdict:department">
-            <title>Department Classification</title>
-            <parent>cd:classifiable</parent>
-            <properties>
-                <property name="cdict:departmentDictVersion">
-                    <title>Dictionary Version</title>
-                    <type>d:text</type>
-                    <protected>true</protected>
-                    <index enabled="true">
-                        <atomic>true</atomic>
-                        <stored>true</stored>
-                        <tokenised>false</tokenised>
-                    </index>
-                </property>
-                <property name="cdict:departmentId">
-                    <title>Department ID</title>
-                    <type>d:text</type>
-                    <index enabled="true">
-                        <atomic>true</atomic>
-                        <stored>true</stored>
-                        <tokenised>false</tokenised>
-                    </index>
-                </property>
-                <property name="cdict:departmentName">
-                    <title>Department Name</title>
                     <type>d:text</type>
                     <protected>true</protected>
                     <index enabled="true">

@@ -113,9 +113,9 @@
       </property>
    </bean>
 
-    <bean id="propertyExtendersHolder" class="org.alfresco.repo.node.PropertyExtendersHolder" autowire="constructor" />
+    <bean id="propertyExtendersHolder" class="org.alfresco.repo.node.propertyextender.PropertyExtendersHolder" autowire="constructor" />
 
-    <bean id="propertyExtenderInterceptor" class="org.alfresco.repo.node.PropertyExtenderInterceptor">
+    <bean id="propertyExtenderInterceptor" class="org.alfresco.repo.node.propertyextender.PropertyExtenderInterceptor">
         <constructor-arg index="0" ref="dbNodeService" />
         <constructor-arg index="1" ref="propertyExtendersHolder"/>
     </bean>

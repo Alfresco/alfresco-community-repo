@@ -40,7 +40,7 @@ import org.alfresco.sync.events.types.Property;
  * @author steveglover
  *
  */
-public interface EventsService
+interface EventsService
 {
     /**
      * Generate a node moved event.

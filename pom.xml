@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>26.1.0.51-SNAPSHOT</version>
+    <version>26.1.0.57-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -51,8 +51,8 @@
         <dependency.alfresco-server-root.version>8.0.0</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-core.version>5.3.2-A.2</dependency.alfresco-transform-core.version>
-        <dependency.alfresco-transform-service.version>4.3.2-A.2</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>5.4.0-A.1</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>4.4.0-A.1</dependency.alfresco-transform-service.version>
         <dependency.alfresco-greenmail.version>7.1</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>1.0.11</dependency.acs-event-model.version>
 
@@ -116,13 +116,13 @@
         <dependency.json-smart.version>2.5.2</dependency.json-smart.version>
         <alfresco.googledrive.version>4.1.0</alfresco.googledrive.version>
         <alfresco.aos-module.version>3.4.1</alfresco.aos-module.version>
-        <alfresco.api-explorer.version>26.1.0-A.1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
+        <alfresco.api-explorer.version>26.1.0-A.2</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.4.0</license-maven-plugin.version>
         <spotless-plugin.version>2.45.0</spotless-plugin.version>
 
-        <dependency.postgresql.version>42.7.5</dependency.postgresql.version>
+        <dependency.postgresql.version>42.7.7</dependency.postgresql.version>
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>3.5.6</dependency.mariadb.version>
@@ -703,7 +703,7 @@
             <dependency>
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
-                <version>7.5.5</version>
+                <version>7.5.8</version>
             </dependency>
             <dependency>
                 <groupId>com.networknt</groupId>

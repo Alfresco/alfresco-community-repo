@@ -29,7 +29,7 @@ import java.io.Serial;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MessagingException extends RuntimeException
+class MessagingException extends RuntimeException
 {
     @Serial
     private static final long serialVersionUID = 8192266871339806688L;

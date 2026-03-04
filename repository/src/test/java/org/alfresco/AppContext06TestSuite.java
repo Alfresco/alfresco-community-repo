@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -70,6 +70,8 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.rawevents.EventBehaviourTest.class,
         org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
         org.alfresco.repo.event2.RepoEvent2ITSuite.class,
+
+        org.alfresco.repo.events.EventGenerationBehavioursTest.class,
 })
 public class AppContext06TestSuite
 {}

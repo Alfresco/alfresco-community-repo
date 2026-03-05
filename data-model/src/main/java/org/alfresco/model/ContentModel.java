@@ -457,4 +457,8 @@ public interface ContentModel
     static final QName PROP_CASCADE_CRC = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "cascadeCRC");
     static final QName PROP_CASCADE_TX = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "cascadeTx");
 
+    // Cascading dictionary
+    QName TYPE_CD_DEFINITION = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "definition");
+    QName ASPECT_CD_CLASSIFIABLE = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "classifiable");
+    QName PROP_CD_ASPECT = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "aspect");
 }

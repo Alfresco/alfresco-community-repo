@@ -358,6 +358,7 @@
                 <prop key="spaces.templates.email.notify.childname">${spaces.templates.email.notify.childname}</prop>
                 <prop key="spaces.templates.email.activities.childname">${spaces.templates.email.activities.childname}</prop>
                 <prop key="spaces.imapConfig.childname">${spaces.imapConfig.childname}</prop>
+                <prop key="spaces.cd_definitions.childname">${spaces.cd_definitions.childname}</prop>
                 <prop key="spaces.transfers.childname">${spaces.transfers.childname}</prop>
                 <prop key="spaces.transfer_groups.childname">${spaces.transfer_groups.childname}</prop>
                 <prop key="spaces.transfer_temp.childname">${spaces.transfer_temp.childname}</prop>
@@ -609,7 +610,13 @@
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                     <prop key="location">alfresco/bootstrap/transferSpaces.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>       
-                </props>    
+                </props>
+
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/cdDefinitionsSpaces.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
                 
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>

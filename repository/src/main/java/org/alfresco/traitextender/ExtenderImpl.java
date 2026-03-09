@@ -42,18 +42,21 @@ public class ExtenderImpl extends Extender
 
     private final Map<ExtensionPoint<?, ?>, ExtensionFactory<?>> pointFactories = new ConcurrentHashMap<>();
 
+    @Override
     public synchronized void start(ExtensionBundle bundle)
     {
         bundles.add(bundle);
         bundle.start(this);
     }
 
+    @Override
     public void stop(ExtensionBundle bundle)
     {
         bundle.stop(this);
         bundles.remove(bundle);
     }
 
+    @Override
     public synchronized void stopAll()
     {
         List<ExtensionBundle> bundlesCopy = new LinkedList<>(bundles);
@@ -63,6 +66,7 @@ public class ExtenderImpl extends Extender
         }
     }
 
+    @Override
     public <E, M extends Trait> E getExtension(Extensible anExtensible, ExtensionPoint<E, M> point)
     {
         // consistency is checked at registration time
@@ -79,6 +83,7 @@ public class ExtenderImpl extends Extender
         return exTrait.getOrCreate(point.getExtensionAPI(), factory);
     }
 
+    @Override
     public synchronized void register(ExtensionPoint<?, ?> point, ExtensionFactory<?> factory)
     {
         // point->factory type consistency checks
@@ -90,6 +95,7 @@ public class ExtenderImpl extends Extender
                 factory);
     }
 
+    @Override
     public synchronized void unregister(ExtensionPoint<?, ?> point)
     {
         pointFactories.remove(point);

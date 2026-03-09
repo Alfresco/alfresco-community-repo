@@ -44,7 +44,7 @@ public abstract class Extender
 {
     private static class InstanceHolder
     {
-        private static final Extender instance = new ExtenderImpl();
+        private static final Extender INSTANCE = new ExtenderImpl();
     }
 
     /**
@@ -52,7 +52,7 @@ public abstract class Extender
      */
     public static Extender getInstance()
     {
-        return InstanceHolder.instance;
+        return InstanceHolder.INSTANCE;
     }
 
     /**

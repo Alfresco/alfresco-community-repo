@@ -28,15 +28,10 @@ package org.alfresco.repo.search.impl.elasticsearch;
 import static org.alfresco.repo.search.impl.elasticsearch.ElasticsearchContextProperties.*;
 
 import java.util.List;
-import java.util.OptionalLong;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Supplier;
-
-import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
-import org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchStatsService;
 
 /**
  * Context Factory for Elasticsearch Search subsystem.
@@ -51,8 +46,6 @@ public class ElasticsearchChildApplicationContextFactory extends ChildApplicatio
      */
     private static final List<String> ADM_PROPERTY_NAMES = List.of(NODES_COUNT, ELASTICSEARCH_DOCUMENT_COUNT, ES_CONTENT_INDEX_SUCCESS_COUNT,
             ES_CONTENT_INDEX_FAILURES_COUNT, ES_CONTENT_INDEX_NEW_PROGRESS_COUNT, ES_CONTENT_INDEX_UPDATE_PROGRESS_COUNT);
-
-    private ElasticsearchStatsService elasticsearchStatsService;
 
     /**
      * Check updateable status for a property name
@@ -102,26 +95,8 @@ public class ElasticsearchChildApplicationContextFactory extends ChildApplicatio
             {
                 return UNAVAILABLE;
             }
-            switch (name)
-            {
-            case ELASTICSEARCH_DOCUMENT_COUNT:
-                return retrieveCounter(getElasticsearchStatsService()::getCount);
-            case ES_CONTENT_INDEX_SUCCESS_COUNT:
-                return retrieveCounter(getElasticsearchStatsService()::getContentIndexingSuccessCount);
-            case ES_CONTENT_INDEX_FAILURES_COUNT:
-                return retrieveCounter(getElasticsearchStatsService()::getContentIndexingFailuresCount);
-            case ES_CONTENT_INDEX_NEW_PROGRESS_COUNT:
-                return retrieveCounter(getElasticsearchStatsService()::getNewContentIndexingInProgressCount);
-            case ES_CONTENT_INDEX_UPDATE_PROGRESS_COUNT:
-                return retrieveCounter(getElasticsearchStatsService()::getOutdatedContentIndexingInProgressCount);
-            default:
-                return null;
-            }
         }
-        else
-        {
-            return super.getProperty(name);
-        }
+        return super.getProperty(name);
     }
 
     /**
@@ -139,21 +114,6 @@ public class ElasticsearchChildApplicationContextFactory extends ChildApplicatio
     }
 
     /**
-     * Get the ElasticsearchStatsService from the Spring context.
-     *
-     * @return The statistics service.
-     */
-    public ElasticsearchStatsService getElasticsearchStatsService()
-    {
-        if (elasticsearchStatsService == null)
-        {
-            ApplicationContext ctx = getApplicationContext();
-            elasticsearchStatsService = (ElasticsearchStatsService) ctx.getBean("elasticsearchStatsService");
-        }
-        return elasticsearchStatsService;
-    }
-
-    /**
      *
      * @return true if the Elasticsearch Spring context is selected
      */
@@ -162,9 +122,4 @@ public class ElasticsearchChildApplicationContextFactory extends ChildApplicatio
         return ((ApplicationContextState) getState(false)).getApplicationContext(false) != null;
     }
 
-    private String retrieveCounter(Supplier<OptionalLong> countSupplier)
-    {
-        var countOptional = countSupplier.get();
-        return countOptional.isPresent() ? String.valueOf(countOptional.getAsLong()) : UNAVAILABLE;
-    }
 }

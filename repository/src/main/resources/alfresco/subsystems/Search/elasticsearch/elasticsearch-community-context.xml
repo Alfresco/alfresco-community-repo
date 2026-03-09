@@ -280,18 +280,8 @@
         </constructor-arg>
     </bean>
 
-    <bean id="elasticsearchStatsService" name="search.statsService" class="org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchStatsService">
-        <property name="elasticsearchHttpClientFactory" ref="elasticsearchHttpClientFactory" />
-        <property name="nodeTypeFilter" ref="event2NodeTypeFilter" />
-        <property name="searcher" ref="search.indexerAndSearcherFactory"/>
-        <property name="nodeService" ref="nodeService" />
-    </bean>
-
     <bean id="elasticsearchDocumentsService" class="org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsService">
         <property name="elasticsearchHttpClientFactory" ref="elasticsearchHttpClientFactory" />
-    </bean>
-
-    <bean id="elasticStatsResult" class="org.alfresco.repo.search.impl.elasticsearch.ElasticStatsResult">
     </bean>
 
     <bean id="luceneQueryBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.LuceneQueryBuilder">

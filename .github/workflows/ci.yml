@@ -269,7 +269,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ['10.5', '10.6']
+        version: ['10.11']
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v12.4.3
@@ -288,8 +288,8 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_mariadb_10_11_tests:
-    name: "Repository - MariaDB 10.11 tests"
+  repository_mariadb_11_8_tests:
+    name: "Repository - MariaDB 11.8 tests"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
@@ -308,10 +308,10 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run MariaDB 10.11 database"
+      - name: "Run MariaDB 11.8 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
         env:
-          MARIADB_VERSION: 10.11
+          MARIADB_VERSION: 11.8
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
       - name: "Clean Maven cache"

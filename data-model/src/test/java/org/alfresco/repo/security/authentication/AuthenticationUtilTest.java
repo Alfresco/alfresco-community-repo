@@ -14,10 +14,10 @@ public class AuthenticationUtilTest
         String userName = null;
 
         // when
-        String masked = AuthenticationUtil.maskUsername(userName);
+        String maskedUsername = AuthenticationUtil.maskUsername(userName);
 
         // then
-        assertNull(masked);
+        assertNull(maskedUsername);
     }
 
     @Test
@@ -27,10 +27,10 @@ public class AuthenticationUtilTest
         String userName = "";
 
         // when
-        String masked = AuthenticationUtil.maskUsername(userName);
+        String maskedUsername = AuthenticationUtil.maskUsername(userName);
 
         // then
-        assertEquals("", masked);
+        assertEquals(userName, maskedUsername);
     }
 
     @Test
@@ -40,10 +40,10 @@ public class AuthenticationUtilTest
         String userName = "a";
 
         // when
-        String masked = AuthenticationUtil.maskUsername(userName);
+        String maskedUsername = AuthenticationUtil.maskUsername(userName);
 
         // then
-        assertEquals("a", masked);
+        assertEquals(userName, maskedUsername);
     }
 
     @Test
@@ -53,10 +53,10 @@ public class AuthenticationUtilTest
         String userName = "ab";
 
         // when
-        String masked = AuthenticationUtil.maskUsername(userName);
+        String maskedUsername = AuthenticationUtil.maskUsername(userName);
 
         // then
-        assertEquals("ab", masked);
+        assertEquals(userName, maskedUsername);
     }
 
     @Test
@@ -66,10 +66,11 @@ public class AuthenticationUtilTest
         String userName = "abc";
 
         // when
-        String masked = AuthenticationUtil.maskUsername(userName);
+        String maskedUsername = AuthenticationUtil.maskUsername(userName);
 
         // then
-        assertEquals("ab*", masked);
+        String expected = "ab*";
+        assertEquals(expected, maskedUsername);
     }
 
     @Test
@@ -79,10 +80,11 @@ public class AuthenticationUtilTest
         String userName = "administrator";
 
         // when
-        String masked = AuthenticationUtil.maskUsername(userName);
+        String maskedUsername = AuthenticationUtil.maskUsername(userName);
 
         // then
-        assertEquals("ad***********", masked);
+        String expected = "ad***********";
+        assertEquals(expected, maskedUsername);
     }
 
     @Test
@@ -92,10 +94,11 @@ public class AuthenticationUtilTest
         String userName = "  bob";
 
         // when
-        String masked = AuthenticationUtil.maskUsername(userName);
+        String maskedUsername = AuthenticationUtil.maskUsername(userName);
 
         // then
-        assertEquals("  ***", masked);
+        String expected = "  ***";
+        assertEquals(expected, maskedUsername);
     }
 
     @Test
@@ -105,9 +108,10 @@ public class AuthenticationUtilTest
         String userName = "żółw"; // 4 chars
 
         // when
-        String masked = AuthenticationUtil.maskUsername(userName);
+        String maskedUsername = AuthenticationUtil.maskUsername(userName);
 
         // then
-        assertEquals("żó**", masked);
+        String expected = "żó**";
+        assertEquals(expected, maskedUsername);
     }
 }

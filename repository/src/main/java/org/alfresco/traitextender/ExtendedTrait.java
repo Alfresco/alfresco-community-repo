@@ -36,9 +36,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ExtendedTrait<T extends Trait>
 {
-    private ConcurrentHashMap<Class<?>, Object> extensions = new ConcurrentHashMap<Class<?>, Object>();
+    private final ConcurrentHashMap<Class<?>, Object> extensions = new ConcurrentHashMap<>();
 
-    private T trait;
+    private final T trait;
 
     public ExtendedTrait(T trait)
     {
@@ -51,27 +51,8 @@ public class ExtendedTrait<T extends Trait>
         return trait;
     }
 
-    public <E> E getExtension(Class<E> extensionAPI)
+    public <E> E getOrCreate(Class<E> extensionAPI, ExtensionFactory<E> factory)
     {
-        @SuppressWarnings("unchecked")
-        E extension = (E) extensions.get(extensionAPI);
-
-        return extension;
-    }
-
-    public synchronized <E> E extend(Class<E> extensionAPI, ExtensionFactory<E> factory)
-    {
-        @SuppressWarnings("unchecked")
-        E extension = (E) extensions.get(extensionAPI);
-
-        if (extension == null)
-        {
-            extension = factory.createExtension(trait);
-            extensions.put(extensionAPI,
-                    extension);
-
-        }
-
-        return extension;
+        return extensionAPI.cast(extensions.computeIfAbsent(extensionAPI, key -> factory.createExtension(trait)));
     }
 }

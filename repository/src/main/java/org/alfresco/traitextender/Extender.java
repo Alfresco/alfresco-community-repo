@@ -42,18 +42,17 @@ package org.alfresco.traitextender;
  */
 public abstract class Extender
 {
-    private static Extender instance;
+    private static class InstanceHolder
+    {
+        private static final Extender instance = new ExtenderImpl();
+    }
 
     /**
      * @return singleton {@link ExtenderImpl} instance
      */
-    public static synchronized Extender getInstance()
+    public static Extender getInstance()
     {
-        if (instance == null)
-        {
-            instance = new ExtenderImpl();
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     /**

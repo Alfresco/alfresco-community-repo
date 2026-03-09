@@ -31,9 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * Standard-singleton {@link Extender} implementation.
  *
@@ -41,11 +38,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ExtenderImpl extends Extender
 {
-    private static Log logger = LogFactory.getLog(Extender.class);
+    private final List<ExtensionBundle> bundles = new LinkedList<>();
 
-    private List<ExtensionBundle> bundles = new LinkedList<ExtensionBundle>();
-
-    private Map<ExtensionPoint<?, ?>, ExtensionFactory<?>> pointFactories = new ConcurrentHashMap<ExtensionPoint<?, ?>, ExtensionFactory<?>>();
+    private final Map<ExtensionPoint<?, ?>, ExtensionFactory<?>> pointFactories = new ConcurrentHashMap<>();
 
     public synchronized void start(ExtensionBundle bundle)
     {
@@ -68,32 +63,20 @@ public class ExtenderImpl extends Extender
         }
     }
 
-    public synchronized <E, M extends Trait> E getExtension(Extensible anExtensible, ExtensionPoint<E, M> point)
+    public <E, M extends Trait> E getExtension(Extensible anExtensible, ExtensionPoint<E, M> point)
     {
-        E extension = null;
-
         // consistency is checked at registration time
         @SuppressWarnings("unchecked")
         ExtensionFactory<E> factory = (ExtensionFactory<E>) pointFactories.get(point);
 
-        if (factory != null)
+        if (factory == null)
         {
-            ExtendedTrait<M> exTrait = anExtensible.getTrait(point.getTraitAPI());
-
-            extension = exTrait.getExtension(point.getExtensionAPI());
-
-            if (extension == null)
-            {
-                extension = exTrait.extend(point.getExtensionAPI(),
-                        factory);
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("trait extension leak trace : " + System.identityHashCode(extension) + " : "
-                            + System.identityHashCode(exTrait) + " : " + System.identityHashCode(extension));
-                }
-            }
+            return null;
         }
-        return extension;
+
+        ExtendedTrait<M> exTrait = anExtensible.getTrait(point.getTraitAPI());
+
+        return exTrait.getOrCreate(point.getExtensionAPI(), factory);
     }
 
     public synchronized void register(ExtensionPoint<?, ?> point, ExtensionFactory<?> factory)

@@ -120,8 +120,7 @@ public class AuthenticationUtil implements InitializingBean
             return userName;
         }
         final char[] out = new char[length];
-        out[0] = userName.charAt(0);
-        out[1] = userName.charAt(1);
+        userName.getChars(0, 2, out, 0);
         Arrays.fill(out, 2, length, '*');
         return new String(out);
     }

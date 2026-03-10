@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -491,6 +491,35 @@ public class RhinoScriptTest extends TestCase
                 });
     }
 
+    // Covers SandboxWrapFactory.wrap() – arrays returned from Java methods must also be sandboxed
+    public void testArrayWrappingInSandbox()
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Object>() {
+                    public Object execute() throws Exception
+                    {
+                        Map<String, Object> model = new HashMap<String, Object>();
+                        model.put("provider", new StringArrayProvider());
+
+                        // Elements of the Java array returned from a method call should still be accessible
+                        scriptService.executeScriptString("javascript", "var item = provider.items[0];", model, false);
+
+                        // getClass() on the array returned from a Java method must be blocked in sandbox mode.
+                        try
+                        {
+                            scriptService.executeScriptString("javascript", ARRAY_REFLECTION_SCRIPT, model, false);
+                            fail("getClass() on a Java array returned from a method should be blocked in sandbox mode");
+                        }
+                        catch (Exception e)
+                        {
+                            // expected – getClass is NOT_FOUND on SandboxNativeJavaObject
+                        }
+
+                        return null;
+                    }
+                });
+    }
+
     private boolean executeSecureScriptString(String script, Boolean secure)
     {
         return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>() {
@@ -583,5 +612,18 @@ public class RhinoScriptTest extends TestCase
             "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
 
     private static final String REFLECTION_GET_CLASS = "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
+
+    private static final String ARRAY_REFLECTION_SCRIPT = "provider.items.getClass().forName('java.lang.ProcessBuilder')";
+
+    /**
+     * A simple Java object whose {@code getItems()} method returns a {@code String[]}. Rhino wraps the return value using the declared return type as {@code staticType}, which is the scenario exercised by {@link SandboxWrapFactory#wrap}.
+     */
+    public static class StringArrayProvider
+    {
+        public String[] getItems()
+        {
+            return new String[]{"foo", "bar"};
+        }
+    }
 
 }

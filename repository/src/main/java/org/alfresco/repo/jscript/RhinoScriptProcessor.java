@@ -724,7 +724,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         {
             if (wrapArray(obj, staticType))
             {
-                return new SandboxNativeJavaObject(scope, obj, staticType);
+                return new SandboxNativeJavaArray(scope, obj);
             }
             return super.wrap(cx, scope, obj, staticType);
         }

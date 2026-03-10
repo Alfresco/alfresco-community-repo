@@ -722,14 +722,14 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         @Override
         public Object wrap(Context cx, Scriptable scope, Object obj, Class<?> staticType)
         {
-            if (wrapArray(cx, scope, obj, staticType))
+            if (wrapArray(obj, staticType))
             {
                 return new SandboxNativeJavaObject(scope, obj, staticType);
             }
             return super.wrap(cx, scope, obj, staticType);
         }
 
-        private boolean wrapArray(Context cx, Scriptable scope, Object obj, Class<?> staticType)
+        private boolean wrapArray(Object obj, Class<?> staticType)
         {
             return staticType != null && !staticType.isPrimitive() && isJavaPrimitiveWrap() && obj != null && obj.getClass().isArray();
         }

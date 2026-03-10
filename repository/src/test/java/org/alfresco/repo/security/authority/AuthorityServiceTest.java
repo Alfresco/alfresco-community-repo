@@ -1433,6 +1433,7 @@ public class AuthorityServiceTest extends TestCase
     /**
      * MNT-25474: Verify that getAuthorityDisplayName returns firstName + lastName for person authorities instead of the user ID.
      */
+    @Test
     public void testAuthorityDisplayNameForPerson()
     {
         // Person with both firstName and lastName

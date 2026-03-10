@@ -702,6 +702,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             // Set the reference property to point to the child node
             properties.put(ContentModel.PROP_REFERENCE, childRef);
 
+            Serializable childName = nodeService.getProperty(childRef, ContentModel.PROP_NAME);
+            if (childName != null)
+            {
+                properties.put(ContentModel.PROP_NAME, childName);
+            }
+
             // Create child version reference
             dbNodeService.createNode(
                     versionNodeRef,

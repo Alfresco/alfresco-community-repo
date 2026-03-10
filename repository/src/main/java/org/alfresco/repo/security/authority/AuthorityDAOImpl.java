@@ -1436,7 +1436,13 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         Serializable value = nodeService.getProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
         if (value == null)
         {
-            return null;
+            String firstName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(ref, ContentModel.PROP_FIRSTNAME));
+            String lastName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(ref, ContentModel.PROP_LASTNAME));
+            if (firstName == null && lastName == null)
+            {
+                return null;
+            }
+            return ((firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "")).trim();
         }
         return DefaultTypeConverter.INSTANCE.convert(String.class, value);
     }

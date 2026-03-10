@@ -772,7 +772,14 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
             properties.put(PROP_QNAME_NTH_SIBLING, Integer.valueOf(childAssocRef.getNthSibling()));
 
             // Set the reference property to point to the child node
-            properties.put(ContentModel.PROP_REFERENCE, childAssocRef.getChildRef());
+            NodeRef childRef = childAssocRef.getChildRef();
+            properties.put(ContentModel.PROP_REFERENCE, childRef);
+
+            Serializable childName = nodeService.getProperty(childRef, ContentModel.PROP_NAME);
+            if (childName != null)
+            {
+                properties.put(ContentModel.PROP_NAME, childName);
+            }
 
             // Create child version reference
             this.dbNodeService.createNode(

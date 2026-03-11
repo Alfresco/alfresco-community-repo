@@ -276,7 +276,7 @@ public class AuthenticationServiceImplTest
         doThrow(new AuthenticationException("Bad password"))
                 .when(authenticationComponent).authenticate(USERNAME, PASSWORD);
 
-        // Authentication fails on first run.
+        // Authentication fails on every run for USERNAME and PASSWORD
         for (int i = 0; i < attempts; i++)
         {
             AuthenticationServiceImpl authentication = authServices[i % authServices.length];
@@ -299,6 +299,8 @@ public class AuthenticationServiceImplTest
 
         assertNotNull("The user should not be removed from the cache for the corresponding authorization service after successful login.",
                 sharedCache.get(authServices[1].getProtectedUserKey(USERNAME)));
+        // also check total number of logins recorded in the cache for the user
+        assertEquals("The number of recorded logins did not match.", attempts, sharedCache.get(authServices[1].getProtectedUserKey(USERNAME)).getNumLogins());
 
         Thread.sleep(timeLimit * 1000 + 1);
 
@@ -307,17 +309,11 @@ public class AuthenticationServiceImplTest
             assertFalse("The user should not be protected any more.", authentication.isUserProtected(USERNAME));
         }
 
-        // Authentication should pass first authentication service in the chain.
-        doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
-        try
-        {
-            authServices[0].authenticate(USERNAME, PASSWORD);
-        }
-        catch (AuthenticationException ae)
-        {
-            fail("An " + AuthenticationException.class.getName() + " should be not be thrown.");
-        }
+        // Cache Must not be empty as the user made wrong attempts of login
+        assertNotNull("The user should not be removed from the cache for the corresponding authorization service after failed login.",
+                sharedCache.get(authServices[1].getProtectedUserKey(USERNAME)));
 
+        doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
         // Authentication should succeed on second authentication service in the chain.
         try
         {
@@ -328,8 +324,9 @@ public class AuthenticationServiceImplTest
             fail("An " + AuthenticationException.class.getName() + " should not be thrown.");
         }
 
+        // As One should be able to login successfully on the second authentication service, the user should be removed from the cache for the corresponding authorization service.
         assertNull("The user should be removed from the cache for the corresponding authorization service after successful login.",
-                sharedCache.get(authServices[1].getProtectedUserKey(USERNAME)));
+                sharedCache.get(authServices[0].getProtectedUserKey(USERNAME)));
     }
 
     @Test

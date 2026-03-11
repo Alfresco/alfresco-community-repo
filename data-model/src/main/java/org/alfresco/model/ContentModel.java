@@ -461,4 +461,6 @@ public interface ContentModel
     QName TYPE_CD_DEFINITION = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "definition");
     QName ASPECT_CD_CLASSIFIABLE = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "classifiable");
     QName PROP_CD_ASPECT = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "aspect");
+    QName PROP_CD_KEY = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "keyProperty");
+    QName PROP_CD_VERSION = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "versionProperty");
 }

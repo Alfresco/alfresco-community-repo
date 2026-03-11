@@ -25,6 +25,16 @@
                     <mandatory>true</mandatory>
                     <index enabled="false" />
                 </property>
+                <property name="cd:keyProperty">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <index enabled="false" />
+                </property>
+                <property name="cd:versionProperty">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <index enabled="false" />
+                </property>
             </properties>
         </type>
     </types>

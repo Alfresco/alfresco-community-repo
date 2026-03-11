@@ -262,8 +262,8 @@ var Filters =
                  filterParams.query = filterQuery + 'PATH:"/cm:categoryRoot/cm:generalclassifiable' + filterData + '/*" AND  TYPE:"cm:content"';
              }
             else {
-               if(logger.isWarnLoggingEnabled()) {
-                   logger.warn("Category filter : skipping invalid category node : " + categoryNodeRef);
+               if(logger.isLoggingEnabled()) {
+                   logger.debug("Category filter : skipping invalid category node : " + categoryNodeRef);
                }
             }
             break;
@@ -286,8 +286,8 @@ var Filters =
       {
          filterParams.query += " " + (Filters.TYPE_MAP[parsedArgs.type] || "");
       }
-      if(logger.isWarnLoggingEnabled()) {
-          logger.warn("Final Query : " + filterParams.query);
+      if(logger.isLoggingEnabled()) {
+          logger.debug("Final Query : " + filterParams.query);
       }
       return filterParams;
    },

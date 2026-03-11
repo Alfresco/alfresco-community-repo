@@ -6,7 +6,7 @@ function main()
       argsSelectableType = args['selectableType'],
       argsSearchTerm = args['searchTerm'],
       argsMaxResults = args['size'],
-      argsXPath = args['xpath'],
+      argsPath = args['xpath'],
       argsRootNode = args['rootNode'],
       argsSelectableMimeType = args['selectableMimeType'],
       pathElements = url.service.split("/"),
@@ -24,25 +24,38 @@ function main()
       logger.log("argsFilterType = " + argsFilterType);
       logger.log("argsSearchTerm = " + argsSearchTerm);
       logger.log("argsMaxResults = " + argsMaxResults);
-      logger.log("argsXPath = " + argsXPath);
+      logger.log("argsPath = " + argsPath);
       logger.log("argsSelectableMimeType = " + argsSelectableMimeType);
    }
    try
    {
-      // construct the NodeRef from the URL
+      // Construct the NodeRef from the URL
       var nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
-      
-      // determine if we need to resolve the parent NodeRef
-      
-      if (argsXPath != null)
-      {
-         // resolve the provided XPath to a NodeRef
-         var nodes = search.xpathSearch(argsXPath);
-         if (nodes.length > 0)
-         {
-            nodeRef = String(nodes[0].nodeRef);
-         }
-      }
+
+    if (argsPath != null)
+    {
+            /**
+             * MNT-25495 :Execute the FTS-Alfresco search query against the
+             * repository using the constructed path query,
+             * instead of XPath query , which not relevant to elastic search.
+             */
+
+            var pathQuery = 'PATH:"' + argsPath + '/*"';
+            if (logger.isLoggingEnabled()) {
+                logger.warn("Path query = " + pathQuery);
+            }
+
+            var nodes = search.query({
+                query: pathQuery,
+                language: "fts-alfresco"
+            });
+
+			// Determine if we need to resolve the parent NodeRef
+            if (nodes.length > 0)
+            {
+                nodeRef = String(nodes[0].nodeRef);
+            }
+    }
 
       // default to max of 100 results
       var maxResults = 100;

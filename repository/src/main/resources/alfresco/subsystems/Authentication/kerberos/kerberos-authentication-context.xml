@@ -69,7 +69,7 @@
       <property name="protectionPeriodSeconds">
          <value>${authentication.protection.periodSeconds}</value>
       </property>
-      <property name="authSubSystemContextName" value="kerberos"/>
+      <property name="authSubSystemContextName" value="${instancePath}"/>
    </bean>
 
    <!-- FTP authentication -->

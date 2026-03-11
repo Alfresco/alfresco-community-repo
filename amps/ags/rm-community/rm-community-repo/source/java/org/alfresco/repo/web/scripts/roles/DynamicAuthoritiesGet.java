@@ -25,7 +25,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 - 2025 Alfresco Software Limited.
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *

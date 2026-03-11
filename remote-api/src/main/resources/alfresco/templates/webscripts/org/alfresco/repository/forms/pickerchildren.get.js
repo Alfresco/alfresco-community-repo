@@ -35,9 +35,9 @@ function main()
     if (argsPath != null)
     {
             /**
-             * MNT-25495 :Execute the FTS-Alfresco search query against the
+             * MNT-25495: Execute the FTS-Alfresco search query against the
              * repository using the constructed path query,
-             * instead of XPath query , which not relevant to elastic search.
+             * instead of an XPath query, which is not relevant to Elasticsearch.
              */
 
             var pathQuery = 'PATH:"' + argsPath + '/*"';

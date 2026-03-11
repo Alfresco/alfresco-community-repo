@@ -33,7 +33,7 @@ import org.alfresco.util.FileFilterMode;
  *
  * @author Gethin James
  */
-public class ClientUtil
+class ClientUtil
 {
     /**
      * If a new client is added to the FileFilterMode.Client then the unit test will throw a IllegalArgument exception. To fix it you will need to add to the org.alfresco.sync.events.Client.ClientType.
@@ -49,10 +49,4 @@ public class ClientUtil
         ClientType type = org.alfresco.sync.repo.Client.ClientType.valueOf(from.toString());
         return org.alfresco.sync.repo.Client.asType(type);
     }
-
-    // public static FileFilterMode.Client to(org.alfresco.events.Client from)
-    // {
-    // FileFilterMode.Client client = FileFilterMode.Client.valueOf(from.getType().toString());
-    // return client;
-    // }
 }

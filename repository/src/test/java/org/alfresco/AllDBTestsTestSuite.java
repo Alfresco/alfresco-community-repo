@@ -54,6 +54,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
 
         // From AppContext05TestSuite
         org.alfresco.repo.domain.node.NodeDAOTest.class,
+        org.alfresco.repo.domain.node.ParentAssocsCacheTest.class,
         org.alfresco.repo.domain.subscriptions.SubscriptionDAOTest.class,
         org.alfresco.repo.security.permissions.impl.AclDaoComponentTest.class,
         org.alfresco.repo.domain.contentdata.ContentDataDAOTest.class,

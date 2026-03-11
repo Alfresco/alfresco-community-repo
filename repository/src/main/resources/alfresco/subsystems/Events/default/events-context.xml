@@ -37,6 +37,7 @@
     </bean>
 
     <bean id="eventGenerationBehaviours" class="org.alfresco.repo.events.EventGenerationBehaviours" parent="abstractEventGenerationBehaviours" init-method="init">
+        <property name="enabled" value="${alfresco.events.enabled}"/>
         <property name="eventsService" ref="eventsService"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="namespaceService" ref="namespaceService"/>

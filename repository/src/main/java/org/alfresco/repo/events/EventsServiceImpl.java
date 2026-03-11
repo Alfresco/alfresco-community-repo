@@ -93,7 +93,7 @@ import org.alfresco.util.FileFilterMode;
  * 
  * @author steveglover
  */
-public class EventsServiceImpl extends AbstractEventsService implements EventsService
+class EventsServiceImpl extends AbstractEventsService implements EventsService
 {
     private static Log logger = LogFactory.getLog(EventsServiceImpl.class);
 

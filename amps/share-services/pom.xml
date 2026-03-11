@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-amps</artifactId>
-        <version>26.1.0.47-SNAPSHOT</version>
+        <version>26.1.0.62-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -53,14 +53,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Events dependencies -->
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-sync-events</artifactId>
-            <version>1.2.14</version>
             <scope>provided</scope>
         </dependency>
 

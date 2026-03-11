@@ -16,7 +16,7 @@
 * Source Code Link:m https://svn.alfresco.com/repos/alfresco-enterprise/alfresco/
 * License: LGPL
 * Issue Tracker Link: https://issues.alfresco.com/jira/secure/RapidBoard.jspa?projectKey=REPO&useStoredSettings=true&rapidView=379
-* Documentation Link: https://support.hyland.com/access?dita:id=ybx1720084724583&vrm_version=25.2
+* Documentation Link: https://support.hyland.com/access?dita:id=ybx1720084724583&vrm_version=26.1
 * Contribution Model: Alfresco publishes the source code and will review proposed patch requests
 ***
 

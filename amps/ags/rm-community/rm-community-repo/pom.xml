@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>26.1.0.47-SNAPSHOT</version>
+      <version>26.1.0.62-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -422,7 +422,7 @@
                   <configuration>
                      <images>
                         <image>
-                           <name>postgres:16.6</name>
+                           <name>postgres:17.9</name>
                            <run>
                               <ports>
                                  <port>${postgresql.tests.port}:${postgresql.port}</port>

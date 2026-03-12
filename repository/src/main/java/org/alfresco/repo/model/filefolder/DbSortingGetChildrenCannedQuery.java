@@ -55,7 +55,6 @@ import org.alfresco.util.Pair;
 
 public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
 {
-
     private static final Log LOG = LogFactory.getLog(DbSortingGetChildrenCannedQuery.class);
     private static final String QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED = "select_GetChildrenCannedQueryWithPropsSorted";
 
@@ -75,7 +74,7 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
         if (filterProps.isEmpty() && isDefaultSorting(sortPairs))
         {
             wasUsed = true;
-            LOG.info("Executing DB sorting get children canned query for " + params.getParentNodeId() + " with default sorting and no filters");
+            LOG.warn("Executing DB sorting get children canned query for " + params.getParentNodeId() + " with default sorting and no filters");
             CannedQueryPageDetails pageDetails = parameters.getPageDetails();
             int requestedCount = pageDetails.getPageSize();
 
@@ -95,12 +94,12 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
                 result.add(tenantService.getBaseName(child.getNodeRef()));
             }
 
-            LOG.info(children.size() + " children found for " + params.getParentNodeId() + " total seen: " + totalSeenCount + " skipped: " + skipped + " seen after required count satisfied: " + seenAfterRequiredCountSatisfied);
+            LOG.warn(children.size() + " children found for " + params.getParentNodeId() + " total seen: " + totalSeenCount + " skipped: " + skipped + " seen after required count satisfied: " + seenAfterRequiredCountSatisfied);
             return result;
         }
         else
         {
-            LOG.info("Fallback to super executeQuery");
+            LOG.warn("Fallback to super executeQuery");
             return super.executeQuery(filterProps, sortPairs, params, paramBean);
         }
     }

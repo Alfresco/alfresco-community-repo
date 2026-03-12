@@ -675,7 +675,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             }
 
             // check that the node isn't already in the hold
-            if (!getHeld(hold).contains(nodeRef))
+            if (!getParentHolds(nodeRef).contains(hold))
             {
                 // fire before add to hold policy
                 invokeBeforeAddToHold(hold, nodeRef);
@@ -839,7 +839,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
                 }
 
-                if (getHeld(hold).contains(nodeRef))
+                if (getParentHolds(nodeRef).contains(hold))
                 {
                     // fire before remove from hold policy
                     invokeBeforeRemoveFromHold(hold, nodeRef);

@@ -700,11 +700,6 @@ public class NodePropertyHelper
         folderTypeQNames.addAll(qnames);
         folderTypeQNames.add(ContentModel.TYPE_FOLDER);
 
-        // Remove 'system' folders
-        qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
-        folderTypeQNames.removeAll(qnames);
-        folderTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
-
         return folderTypeQNames;
     }
 }

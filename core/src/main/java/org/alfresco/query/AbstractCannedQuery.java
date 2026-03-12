@@ -36,8 +36,8 @@ import org.alfresco.util.ParameterCheck;
  */
 public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
 {
-    private final CannedQueryParameters parameters;
-    private final String queryExecutionId;
+    protected final CannedQueryParameters parameters;
+    protected final String queryExecutionId;
     private CannedQueryResults<R> results;
 
     /**

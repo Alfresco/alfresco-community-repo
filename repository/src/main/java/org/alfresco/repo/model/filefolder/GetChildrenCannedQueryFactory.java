@@ -66,6 +66,6 @@ public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchi
     {
         NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
 
-        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, parameters, hiddenAspect, dictionaryService, ignoreAspectQNames);
+        return new DbSortingGetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, parameters, hiddenAspect, dictionaryService, ignoreAspectQNames);
     }
 }

@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 import net.sf.acegisecurity.Authentication;
@@ -109,25 +110,19 @@ public class AuthenticationUtil implements InitializingBean
 
     public static String maskUsername(String userName)
     {
-        if (userName != null)
+        if (userName == null)
         {
-            try
-            {
-                if (userName.length() >= 2)
-                {
-                    return userName.substring(0, 2) + new String(new char[(userName.length() - 2)]).replace("\0", "*");
-                }
-            }
-            catch (Exception e)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Failed to mask the username because: " + e.getMessage(), e);
-                }
-            }
+            return null;
+        }
+        final int length = userName.length();
+        if (length <= 2)
+        {
             return userName;
         }
-        return null;
+        final char[] out = new char[length];
+        userName.getChars(0, 2, out, 0);
+        Arrays.fill(out, 2, length, '*');
+        return new String(out);
     }
 
     public static String getMaskedUsername(Authentication authentication)

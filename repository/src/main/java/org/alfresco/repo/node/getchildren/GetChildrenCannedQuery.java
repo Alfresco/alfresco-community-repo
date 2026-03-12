@@ -86,6 +86,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     private Log logger = LogFactory.getLog(getClass());
 
     private static final String QUERY_NAMESPACE = "alfresco.node";
+    private static final String QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED = "select_GetChildrenCannedQueryWithPropsSorted";
     private static final String QUERY_SELECT_GET_CHILDREN_WITH_PROPS = "select_GetChildrenCannedQueryWithProps";
     private static final String QUERY_SELECT_GET_CHILDREN_WITHOUT_PROPS = "select_GetChildrenCannedQueryWithoutProps";
 
@@ -140,7 +141,15 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
     }
 
-    protected FilterSortChildQueryCallback getFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps, GetChildrenCannedQueryParams paramBean)
+    protected FilterSortChildQueryCallback getPagedDefaultFilterSortChildQuery(final List<FilterSortNode> children, final int requestedCount, GetChildrenCannedQueryParams paramBean)
+    {
+        Set<QName> inclusiveAspects = paramBean.getInclusiveAspects();
+        Set<QName> exclusiveAspects = paramBean.getExclusiveAspects();
+
+        return new PagedFilterSortChildQueryCallback(children, requestedCount, inclusiveAspects, exclusiveAspects);
+    }
+
+    protected FilterSortChildQueryCallback getDefaultFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps, GetChildrenCannedQueryParams paramBean)
     {
         Set<QName> inclusiveAspects = paramBean.getInclusiveAspects();
         Set<QName> exclusiveAspects = paramBean.getExclusiveAspects();
@@ -291,11 +300,31 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 params.setPattern(pattern);
             }
 
-            if (filterSortPropCnt > 0)
+            if (filterProps.isEmpty() && isDefaultSorting(sortPairs))
+            {
+                int requestedCount = parameters.getPageDetails().getResultsRequiredForPaging();
+
+                Set<QName> folderQNames = nodePropertyHelper.buildFolderTypes();
+                Set<Long> folderTypeQNameIds = qnameDAO.convertQNamesToIds(folderQNames, false);
+                params.setFolderTypeQNameIds(folderTypeQNameIds);
+
+                final List<FilterSortNode> children = new ArrayList<>(requestedCount);
+                final FilterSortChildQueryCallback c = getPagedDefaultFilterSortChildQuery(children, requestedCount, paramBean);
+                FilterSortResultHandler resultHandler = new FilterSortResultHandler(c);
+                cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED, params, 0, Integer.MAX_VALUE, resultHandler);
+                resultHandler.done();
+
+                result = new ArrayList<>(children.size());
+                for (FilterSortNode child : children)
+                {
+                    result.add(tenantService.getBaseName(child.getNodeRef()));
+                }
+            }
+            else if (filterSortPropCnt > 0)
             {
                 // filtered and/or sorted - note: permissions will be applied post query
                 final List<FilterSortNode> children = new ArrayList<FilterSortNode>(100);
-                final FilterSortChildQueryCallback c = getFilterSortChildQuery(children, filterProps, paramBean);
+                final FilterSortChildQueryCallback c = getDefaultFilterSortChildQuery(children, filterProps, paramBean);
                 FilterSortResultHandler resultHandler = new FilterSortResultHandler(c);
                 cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
                 resultHandler.done();
@@ -344,6 +373,16 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
 
         return result;
+    }
+
+    /**
+     * See: NodesImpl.getListChildrenSortPropsDefault()
+     */
+    private boolean isDefaultSorting(List<Pair<QName, SortOrder>> sortPairs)
+    {
+        return sortPairs.size() == 2
+                && sortPairs.get(0).equals(new Pair<>(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, SortOrder.DESCENDING))
+                && sortPairs.get(1).equals(new Pair<>(ContentModel.PROP_NAME, SortOrder.ASCENDING));
     }
 
     // Set filter/sort props (between 0 and 3)
@@ -666,7 +705,53 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
     protected interface FilterSortChildQueryCallback
     {
-        boolean handle(FilterSortNode node);
+        void handle(FilterSortNode node);
+
+        default boolean needsMore()
+        {
+            return remainingNeeded() > 0;
+        }
+
+        default boolean doesntNeedMore()
+        {
+            return !needsMore();
+        }
+
+        default int remainingNeeded()
+        {
+            return Integer.MAX_VALUE;
+        }
+    }
+
+    protected class PagedFilterSortChildQueryCallback implements FilterSortChildQueryCallback
+    {
+        private List<FilterSortNode> children;
+        private final int requestedCount;
+        private Set<QName> inclusiveAspects;
+        private Set<QName> exclusiveAspects;
+
+        public PagedFilterSortChildQueryCallback(final List<FilterSortNode> children, final int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
+        {
+            this.children = children;
+            this.requestedCount = requestedCount;
+            this.inclusiveAspects = inclusiveAspects;
+            this.exclusiveAspects = exclusiveAspects;
+        }
+
+        @Override
+        public void handle(FilterSortNode node)
+        {
+            if (includeAspects(node.getNodeRef(), inclusiveAspects, exclusiveAspects))
+            {
+                children.add(node);
+            }
+        }
+
+        @Override
+        public int remainingNeeded()
+        {
+            return Math.max(0, requestedCount - children.size());
+        }
     }
 
     protected class DefaultFilterSortChildQueryCallback implements FilterSortChildQueryCallback
@@ -692,15 +777,12 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
 
         @Override
-        public boolean handle(FilterSortNode node)
+        public void handle(FilterSortNode node)
         {
             if (include(node))
             {
                 children.add(node);
             }
-
-            // More results
-            return true;
         }
 
         protected boolean include(FilterSortNode node)
@@ -708,6 +790,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             // filter, if needed
             return (!applyFilter || includeFilter(node.getPropVals(), filterProps)) && includeAspects(node.getNodeRef(), inclusiveAspects, exclusiveAspects);
         }
+
     }
 
     protected class DefaultUnsortedChildQueryCallback implements UnsortedChildQueryCallback
@@ -751,41 +834,42 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     protected class FilterSortResultHandler implements CannedQueryDAO.ResultHandler<FilterSortNodeEntity>
     {
         private final FilterSortChildQueryCallback resultsCallback;
-        private boolean more = true;
 
         private static final int BATCH_SIZE = 256 * 4;
-        private final List<FilterSortNodeEntity> results;
+        private final List<FilterSortNodeEntity> currentBatch;
 
         private FilterSortResultHandler(FilterSortChildQueryCallback resultsCallback)
         {
             this.resultsCallback = resultsCallback;
 
-            results = new LinkedList<FilterSortNodeEntity>();
+            currentBatch = new LinkedList<>();
         }
 
         public boolean handleResult(FilterSortNodeEntity result)
         {
             // Do nothing if no further results are required
-            if (!more)
+            if (resultsCallback.doesntNeedMore())
             {
                 return false;
             }
 
-            if (results.size() >= BATCH_SIZE)
+            currentBatch.add(result);
+
+            int remainingNeeded = resultsCallback.remainingNeeded();
+            int currentBatchSize = currentBatch.size();
+            if (currentBatchSize >= BATCH_SIZE || currentBatchSize >= remainingNeeded)
             {
                 // batch
                 preloadNodes();
                 filterSort();
             }
 
-            results.add(result);
-
-            return more;
+            return resultsCallback.needsMore();
         }
 
         public void done()
         {
-            if (results.size() >= 0)
+            if (currentBatch.size() >= 0)
             {
                 // finish batch
                 preloadNodes();
@@ -795,8 +879,8 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
         private void preloadNodes()
         {
-            List<NodeRef> nodeRefs = new ArrayList<>(results.size());
-            for (FilterSortNodeEntity result : results)
+            List<NodeRef> nodeRefs = new ArrayList<>(currentBatch.size());
+            for (FilterSortNodeEntity result : currentBatch)
             {
                 nodeRefs.add(result.createNodeRef());
             }
@@ -806,7 +890,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
         private void filterSort()
         {
-            for (FilterSortNodeEntity result : results)
+            for (FilterSortNodeEntity result : currentBatch)
             {
                 NodeRef nodeRef = result.createNodeRef();
 
@@ -876,15 +960,14 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 }
 
                 // Call back
-                boolean more = resultsCallback.handle(new FilterSortNode(nodeRef, propVals));
-                if (!more)
+                resultsCallback.handle(new FilterSortNode(nodeRef, propVals));
+                if (resultsCallback.doesntNeedMore())
                 {
-                    this.more = false;
                     break;
                 }
             }
 
-            results.clear();
+            currentBatch.clear();
         }
     }
 

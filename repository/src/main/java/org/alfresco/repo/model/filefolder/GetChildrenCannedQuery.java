@@ -101,7 +101,7 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
     }
 
     @Override
-    protected FilterSortChildQueryCallback getFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps, GetChildrenCannedQueryParams paramBean)
+    protected FilterSortChildQueryCallback getDefaultFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps, GetChildrenCannedQueryParams paramBean)
     {
         FilterSortChildQueryCallback callback = new FileFolderFilterSortChildQueryCallback(children, filterProps);
         return callback;
@@ -124,7 +124,7 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
         }
 
         @Override
-        public boolean handle(FilterSortNode node)
+        public void handle(FilterSortNode node)
         {
             super.handle(node);
 
@@ -143,8 +143,6 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
 
                 propVals.put(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, isFolder);
             }
-
-            return true;
         }
     }
 

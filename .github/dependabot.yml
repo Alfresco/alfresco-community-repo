@@ -11,8 +11,9 @@ updates:
   schedule:
     interval: daily
     time: "22:00"
-    timezone: Africa/Abidjan
-  open-pull-requests-limit: 99
+    timezone: "Europe/London"
+# disabling versions updates, when set to 0 only security updates will open
+  open-pull-requests-limit: 0
   ignore:
   - dependency-name: org.acegisecurity:acegi-security
     versions:
@@ -51,8 +52,12 @@ updates:
   schedule:
     interval: "daily"
     time: "22:00"
-    timezone: Africa/Abidjan
+    timezone: "Europe/London"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
-    interval: "monthly"
+    interval: "weekly"
+  groups:
+    github-actions:
+      patterns:
+        - "*"

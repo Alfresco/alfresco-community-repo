@@ -38,13 +38,15 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v8.24.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare maven cache and check compilation"
@@ -61,13 +63,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v8.24.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v15.7.1
         continue-on-error: true
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
@@ -84,11 +86,11 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v15.7.1
         with:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
           repository: "Alfresco/veracode-baseline-archive"
@@ -104,7 +106,7 @@ jobs:
           mkdir temp-dir-for-sast
           bash ./scripts/ci/remove-sast-exclusions.sh ./packaging/war/target/alfresco.war temp-dir-for-sast/reduced.war
       - name: "Run SAST Scan"
-        uses: veracode/Veracode-pipeline-scan-action@v1.0.16
+        uses: veracode/Veracode-pipeline-scan-action@v1.0.21
         with:
           vid: ${{ secrets.VERACODE_API_ID }}
           vkey: ${{ secrets.VERACODE_API_KEY }}
@@ -122,7 +124,7 @@ jobs:
         run: zip readable_output.zip results.json
       - name: Upload Artifact
         if: success() || failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Veracode Pipeline-Scan Results (Human Readable)
           path: readable_output.zip
@@ -141,10 +143,10 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
-      - uses: Alfresco/ya-pmd-scan@v4.3.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
+      - uses: Alfresco/ya-pmd-scan@v4.4.1
         with:
           classpath-build-command: "mvn test-compile -ntp -Pags -pl \"-:alfresco-community-repo-docker\""
 
@@ -173,10 +175,10 @@ jobs:
             testModule: mmt
             testAttributes: "-Dtest=AllMmtUnitTestSuite"
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run tests"
@@ -210,10 +212,10 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -245,10 +247,10 @@ jobs:
       matrix:
         version: ['10.5', '10.6']
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: Run MariaDB ${{ matrix.version }} database
@@ -272,10 +274,10 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MariaDB 10.11 database"
@@ -299,10 +301,10 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MySQL 8 database"
@@ -325,10 +327,10 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 14.15 database"
@@ -351,10 +353,10 @@ jobs:
             !contains(github.event.head_commit.message, '[skip tests]') &&
             !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 15.10 database"
@@ -377,10 +379,10 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 16.6 database"
@@ -401,10 +403,10 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run ActiveMQ"
@@ -457,10 +459,10 @@ jobs:
             disabledHostnameVerification: false
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
@@ -527,10 +529,10 @@ jobs:
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -566,10 +568,10 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run Postgres 16.6 database"
@@ -596,10 +598,10 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -628,10 +630,10 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -656,10 +658,10 @@ jobs:
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -676,7 +678,7 @@ jobs:
         run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
       - name: "Configure AWS credentials"
         if: ${{ always() }}
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AGS_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AGS_AWS_SECRET_ACCESS_KEY }}
@@ -702,10 +704,10 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
+      - uses: actions/checkout@v6
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v15.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v15.7.1
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |

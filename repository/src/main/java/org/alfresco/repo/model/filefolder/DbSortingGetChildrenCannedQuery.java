@@ -59,9 +59,8 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
     private static final String QUERY_COUNT_GET_CHILDREN_WITH_PROPS_SORTED = "count_GetChildrenCannedQueryWithPropsSorted";
     private static final String QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED = "select_GetChildrenCannedQueryWithPropsSorted";
 
-    boolean wasUsed = false;
-    int totalCount;
-    boolean hasMoreItems = false;
+    private boolean wasUsed = false;
+    private int totalCount;
 
     public DbSortingGetChildrenCannedQuery(NodeDAO nodeDAO, QNameDAO qnameDAO, CannedQueryDAO cannedQueryDAO, NodePropertyHelper nodePropertyHelper, TenantService tenantService, NodeService nodeService, MethodSecurityBean<NodeRef> methodSecurity, CannedQueryParameters params, HiddenAspect hiddenAspect, DictionaryService dictionaryService, Set<QName> ignoreAspectQNames)
     {
@@ -74,44 +73,41 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
         if (filterProps.isEmpty() && isDefaultSorting(sortPairs))
         {
             wasUsed = true;
-            LOG.debug("Executing DB sorting get children canned query for " + params.getParentNodeId() + " with default sorting and no filters");
-            CannedQueryPageDetails pageDetails = parameters.getPageDetails();
-            int requestedCount = pageDetails.getPageSize();
-
-            Set<QName> folderQNames = nodePropertyHelper.buildFolderTypes();
-            Set<Long> folderTypeQNameIds = qnameDAO.convertQNamesToIds(folderQNames, false);
-            params.setFolderTypeQNameIds(folderTypeQNameIds);
-
-            totalCount = cannedQueryDAO.executeCountQuery(QUERY_NAMESPACE, QUERY_COUNT_GET_CHILDREN_WITH_PROPS_SORTED, params).intValue();
-            LOG.debug("Total children count for " + params.getParentNodeId() + ": " + totalCount);
-
-            final List<FilterSortNode> children = new ArrayList<>(requestedCount);
-            final PagedFilterSortChildQueryCallback callback = new PagedFilterSortChildQueryCallback(children, pageDetails);
-            FilterSortResultHandler resultHandler = new FilterSortResultHandler(callback);
-            int skipResults = pageDetails.getSkipResults();
-            cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED, params, skipResults, Integer.MAX_VALUE, resultHandler);
-            resultHandler.done();
-
-            List<NodeRef> result = new ArrayList<>(children.size());
-            for (FilterSortNode child : children)
-            {
-                result.add(tenantService.getBaseName(child.getNodeRef()));
-            }
-
-            if (result.size() > requestedCount)
-            {
-                hasMoreItems = true;
-                result = result.subList(0, requestedCount);
-            }
-
-            LOG.debug(result.size() + " children found for " + params.getParentNodeId() + " total count: " + totalCount + " hasMore: " + hasMoreItems);
-            return result;
+            return doExecute(params);
         }
         else
         {
-            LOG.debug("Fallback to super executeQuery");
+            LOG.trace("Fallback to super executeQuery");
             return super.executeQuery(filterProps, sortPairs, params, paramBean, filterSortPropCnt);
         }
+    }
+
+    private List<NodeRef> doExecute(FilterSortNodeEntity params)
+    {
+        LOG.trace("Executing DB sorting get children canned query for " + params.getParentNodeId() + " with default sorting and no filters");
+        CannedQueryPageDetails pageDetails = parameters.getPageDetails();
+        int requestedCount = pageDetails.getPageSize();
+
+        Set<QName> folderQNames = nodePropertyHelper.buildFolderTypes();
+        Set<Long> folderTypeQNameIds = qnameDAO.convertQNamesToIds(folderQNames, false);
+        params.setFolderTypeQNameIds(folderTypeQNameIds);
+
+        totalCount = cannedQueryDAO.executeCountQuery(QUERY_NAMESPACE, QUERY_COUNT_GET_CHILDREN_WITH_PROPS_SORTED, params).intValue();
+        LOG.trace("Total children count for " + params.getParentNodeId() + ": " + totalCount);
+
+        final List<FilterSortNode> children = new ArrayList<>(requestedCount);
+        final PagedFilterSortChildQueryCallback callback = new PagedFilterSortChildQueryCallback(children, requestedCount);
+        FilterSortResultHandler resultHandler = new FilterSortResultHandler(callback);
+        int skipResults = pageDetails.getSkipResults();
+        cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED, params, skipResults, Integer.MAX_VALUE, resultHandler);
+        resultHandler.done();
+
+        List<NodeRef> result = children.stream()
+                .map(child -> tenantService.getBaseName(child.getNodeRef()))
+                .toList();
+
+        LOG.trace(result.size() + " children found for " + params.getParentNodeId() + " total count: " + totalCount);
+        return result;
     }
 
     @Override
@@ -205,7 +201,8 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
             @Override
             public boolean hasMoreItems()
             {
-                return hasMoreItems;
+                CannedQueryPageDetails pageDetails = parameters.getPageDetails();
+                return totalCount > pageDetails.getSkipResults() + pageDetails.getPageSize();
             }
         };
     }
@@ -220,18 +217,15 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
                 && sortPairs.contains(new Pair<>(ContentModel.PROP_NAME, CannedQuerySortDetails.SortOrder.ASCENDING));
     }
 
-    /**
-     * Collects page size + 1 children to determine if there are more results available for paging purposes. The callback will stop collecting results once the required count is reached.
-     */
     protected class PagedFilterSortChildQueryCallback implements FilterSortChildQueryCallback
     {
         private final List<FilterSortNode> children;
         private final int requiredCount;
 
-        public PagedFilterSortChildQueryCallback(List<FilterSortNode> children, CannedQueryPageDetails pageDetails)
+        public PagedFilterSortChildQueryCallback(List<FilterSortNode> children, int requiredCount)
         {
             this.children = children;
-            this.requiredCount = pageDetails.getPageSize() + 1;
+            this.requiredCount = requiredCount;
         }
 
         @Override

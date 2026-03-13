@@ -328,7 +328,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 }
             }
 
-            List<NodeRef> result = new ArrayList<NodeRef>(children.size());
+            List<NodeRef> result = new ArrayList<>(children.size());
             for (FilterSortNode child : children)
             {
                 result.add(tenantService.getBaseName(child.getNodeRef()));

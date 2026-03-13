@@ -262,7 +262,7 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
         // Has more items beyond requested pages ? ... ie. at least one more page (with at least one result)
         final boolean hasMoreItems = (rawResults.size() > pagingDetails.getResultsRequiredForPaging()) || (totalCount.getFirst() > pagingDetails.getResultsRequiredForPaging());
 
-        results = new CannedQueryResults<R>() {
+        results = new CannedQueryResults<>() {
             @Override
             public CannedQuery<R> getOriginatingQuery()
             {

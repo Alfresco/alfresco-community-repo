@@ -47,7 +47,6 @@ import org.alfresco.repo.node.getchildren.FilterSortNodeEntity;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryParams;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -62,9 +61,9 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
     private boolean wasUsed = false;
     private int totalCount;
 
-    public DbSortingGetChildrenCannedQuery(NodeDAO nodeDAO, QNameDAO qnameDAO, CannedQueryDAO cannedQueryDAO, NodePropertyHelper nodePropertyHelper, TenantService tenantService, NodeService nodeService, MethodSecurityBean<NodeRef> methodSecurity, CannedQueryParameters params, HiddenAspect hiddenAspect, DictionaryService dictionaryService, Set<QName> ignoreAspectQNames)
+    public DbSortingGetChildrenCannedQuery(NodeDAO nodeDAO, QNameDAO qnameDAO, CannedQueryDAO cannedQueryDAO, NodePropertyHelper nodePropertyHelper, TenantService tenantService, NodeService nodeService, MethodSecurityBean<NodeRef> methodSecurity, CannedQueryParameters params, HiddenAspect hiddenAspect, Set<QName> ignoreAspectQNames)
     {
-        super(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, params, hiddenAspect, dictionaryService, ignoreAspectQNames);
+        super(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, params, hiddenAspect, ignoreAspectQNames);
     }
 
     @Override

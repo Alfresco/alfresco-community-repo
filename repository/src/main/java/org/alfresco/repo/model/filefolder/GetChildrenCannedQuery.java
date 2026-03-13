@@ -26,12 +26,10 @@
 package org.alfresco.repo.model.filefolder;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodePropertyHelper;
@@ -43,7 +41,6 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryParams;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -64,7 +61,6 @@ import org.alfresco.util.FileFilterMode.Client;
 public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.GetChildrenCannedQuery
 {
     private HiddenAspect hiddenAspect;
-    private DictionaryService dictionaryService;
     private NodeService nodeService;
     private Set<QName> ignoreAspectQNames;
 
@@ -78,13 +74,11 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
             MethodSecurityBean<NodeRef> methodSecurity,
             CannedQueryParameters params,
             HiddenAspect hiddenAspect,
-            DictionaryService dictionaryService,
             Set<QName> ignoreAspectQNames)
     {
         super(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, params);
 
         this.hiddenAspect = hiddenAspect;
-        this.dictionaryService = dictionaryService;
 
         this.nodeService = nodeService;
         this.ignoreAspectQNames = ignoreAspectQNames;
@@ -109,11 +103,12 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
 
     private class FileFolderFilterSortChildQueryCallback extends DefaultFilterSortChildQueryCallback
     {
-        private Map<QName, Boolean> isTypeFolderMap = new HashMap<QName, Boolean>(10);
+        private final Set<QName> folderTypes;
 
         public FileFolderFilterSortChildQueryCallback(List<FilterSortNode> children, List<FilterProp> filterProps)
         {
             super(children, filterProps);
+            folderTypes = nodePropertyHelper.buildFolderTypes();
         }
 
         @Override
@@ -133,14 +128,7 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
 
             if (nodeTypeQName != null)
             {
-                // ALF-13968
-                Boolean isFolder = isTypeFolderMap.get(nodeTypeQName);
-                if (isFolder == null)
-                {
-                    isFolder = dictionaryService.isSubClass(nodeTypeQName, ContentModel.TYPE_FOLDER);
-                    isTypeFolderMap.put(nodeTypeQName, isFolder);
-                }
-
+                boolean isFolder = folderTypes.contains(nodeTypeQName);
                 propVals.put(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, isFolder);
             }
         }

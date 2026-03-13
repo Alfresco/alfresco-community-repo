@@ -694,12 +694,8 @@ public class NodePropertyHelper
     public Set<QName> buildFolderTypes()
     {
         Set<QName> folderTypeQNames = new HashSet<>(50);
-
-        // Build a list of folder types
-        Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true);
-        folderTypeQNames.addAll(qnames);
+        folderTypeQNames.addAll(dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true));
         folderTypeQNames.add(ContentModel.TYPE_FOLDER);
-
         return folderTypeQNames;
     }
 }

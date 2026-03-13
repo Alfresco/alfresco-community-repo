@@ -291,7 +291,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 params.setPattern(pattern);
             }
 
-            result.addAll(executeQuery(filterProps, sortPairs, params, paramBean));
+            result.addAll(executeQuery(filterProps, sortPairs, params, paramBean, filterSortPropCnt));
         }
         finally
         {
@@ -304,9 +304,9 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         return result;
     }
 
-    protected List<NodeRef> executeQuery(List<FilterProp> filterProps, List<Pair<QName, SortOrder>> sortPairs, FilterSortNodeEntity params, GetChildrenCannedQueryParams paramBean)
+    protected List<NodeRef> executeQuery(List<FilterProp> filterProps, List<Pair<QName, SortOrder>> sortPairs, FilterSortNodeEntity params, GetChildrenCannedQueryParams paramBean, int filterSortPropCnt)
     {
-        if (filterProps.size() + sortPairs.size() > 0)
+        if (filterSortPropCnt > 0)
         {
             // filtered and/or sorted - note: permissions will be applied post query
             final List<FilterSortNode> children = new ArrayList<>(100);
@@ -672,7 +672,22 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
     protected interface FilterSortChildQueryCallback
     {
-        boolean handle(FilterSortNode node);
+        void handle(FilterSortNode node);
+
+        default int remainingNeeded()
+        {
+            return Integer.MAX_VALUE;
+        }
+
+        default boolean needsMore()
+        {
+            return remainingNeeded() > 0;
+        }
+
+        default boolean doesntNeedMore()
+        {
+            return !needsMore();
+        }
     }
 
     protected class DefaultFilterSortChildQueryCallback implements FilterSortChildQueryCallback
@@ -698,15 +713,12 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
 
         @Override
-        public boolean handle(FilterSortNode node)
+        public void handle(FilterSortNode node)
         {
             if (include(node))
             {
                 children.add(node);
             }
-
-            // More results
-            return true;
         }
 
         protected boolean include(FilterSortNode node)
@@ -757,41 +769,43 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     protected class FilterSortResultHandler implements CannedQueryDAO.ResultHandler<FilterSortNodeEntity>
     {
         private final FilterSortChildQueryCallback resultsCallback;
-        private boolean more = true;
 
         private static final int BATCH_SIZE = 256 * 4;
-        private final List<FilterSortNodeEntity> results;
+        private final List<FilterSortNodeEntity> currentBatch;
 
         public FilterSortResultHandler(FilterSortChildQueryCallback resultsCallback)
         {
             this.resultsCallback = resultsCallback;
 
-            results = new LinkedList<FilterSortNodeEntity>();
+            currentBatch = new ArrayList<>(BATCH_SIZE);
         }
 
+        @Override
         public boolean handleResult(FilterSortNodeEntity result)
         {
             // Do nothing if no further results are required
-            if (!more)
+            if (resultsCallback.doesntNeedMore())
             {
                 return false;
             }
 
-            if (results.size() >= BATCH_SIZE)
+            currentBatch.add(result);
+
+            int remainingNeeded = resultsCallback.remainingNeeded();
+            int currentBatchSize = currentBatch.size();
+            if (currentBatchSize >= BATCH_SIZE || currentBatchSize >= remainingNeeded)
             {
                 // batch
                 preloadNodes();
                 filterSort();
             }
 
-            results.add(result);
-
-            return more;
+            return resultsCallback.needsMore();
         }
 
         public void done()
         {
-            if (results.size() >= 0)
+            if (currentBatch.size() >= 0)
             {
                 // finish batch
                 preloadNodes();
@@ -801,8 +815,8 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
         private void preloadNodes()
         {
-            List<NodeRef> nodeRefs = new ArrayList<>(results.size());
-            for (FilterSortNodeEntity result : results)
+            List<NodeRef> nodeRefs = new ArrayList<>(currentBatch.size());
+            for (FilterSortNodeEntity result : currentBatch)
             {
                 nodeRefs.add(result.createNodeRef());
             }
@@ -812,7 +826,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
         private void filterSort()
         {
-            for (FilterSortNodeEntity result : results)
+            for (FilterSortNodeEntity result : currentBatch)
             {
                 NodeRef nodeRef = result.createNodeRef();
 
@@ -882,15 +896,14 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 }
 
                 // Call back
-                boolean more = resultsCallback.handle(new FilterSortNode(nodeRef, propVals));
-                if (!more)
+                resultsCallback.handle(new FilterSortNode(nodeRef, propVals));
+                if (resultsCallback.doesntNeedMore())
                 {
-                    this.more = false;
                     break;
                 }
             }
 
-            results.clear();
+            currentBatch.clear();
         }
     }
 

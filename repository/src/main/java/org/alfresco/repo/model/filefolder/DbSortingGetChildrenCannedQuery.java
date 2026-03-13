@@ -56,12 +56,12 @@ import org.alfresco.util.Pair;
 public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
 {
     private static final Log LOG = LogFactory.getLog(DbSortingGetChildrenCannedQuery.class);
+    private static final String QUERY_COUNT_GET_CHILDREN_WITH_PROPS_SORTED = "count_GetChildrenCannedQueryWithPropsSorted";
     private static final String QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED = "select_GetChildrenCannedQueryWithPropsSorted";
 
     boolean wasUsed = false;
-    int totalSeenCount;
-    int skipped;
-    int seenAfterRequiredCountSatisfied = 0;
+    int totalCount;
+    boolean hasMoreItems = false;
 
     public DbSortingGetChildrenCannedQuery(NodeDAO nodeDAO, QNameDAO qnameDAO, CannedQueryDAO cannedQueryDAO, NodePropertyHelper nodePropertyHelper, TenantService tenantService, NodeService nodeService, MethodSecurityBean<NodeRef> methodSecurity, CannedQueryParameters params, HiddenAspect hiddenAspect, DictionaryService dictionaryService, Set<QName> ignoreAspectQNames)
     {
@@ -69,12 +69,12 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
     }
 
     @Override
-    protected List<NodeRef> executeQuery(List<FilterProp> filterProps, List<Pair<QName, CannedQuerySortDetails.SortOrder>> sortPairs, FilterSortNodeEntity params, GetChildrenCannedQueryParams paramBean)
+    protected List<NodeRef> executeQuery(List<FilterProp> filterProps, List<Pair<QName, CannedQuerySortDetails.SortOrder>> sortPairs, FilterSortNodeEntity params, GetChildrenCannedQueryParams paramBean, int filterSortPropCnt)
     {
         if (filterProps.isEmpty() && isDefaultSorting(sortPairs))
         {
             wasUsed = true;
-            LOG.warn("Executing DB sorting get children canned query for " + params.getParentNodeId() + " with default sorting and no filters");
+            LOG.debug("Executing DB sorting get children canned query for " + params.getParentNodeId() + " with default sorting and no filters");
             CannedQueryPageDetails pageDetails = parameters.getPageDetails();
             int requestedCount = pageDetails.getPageSize();
 
@@ -82,10 +82,14 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
             Set<Long> folderTypeQNameIds = qnameDAO.convertQNamesToIds(folderQNames, false);
             params.setFolderTypeQNameIds(folderTypeQNameIds);
 
+            totalCount = cannedQueryDAO.executeCountQuery(QUERY_NAMESPACE, QUERY_COUNT_GET_CHILDREN_WITH_PROPS_SORTED, params).intValue();
+            LOG.debug("Total children count for " + params.getParentNodeId() + ": " + totalCount);
+
             final List<FilterSortNode> children = new ArrayList<>(requestedCount);
             final PagedFilterSortChildQueryCallback callback = new PagedFilterSortChildQueryCallback(children, pageDetails);
             FilterSortResultHandler resultHandler = new FilterSortResultHandler(callback);
-            cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED, params, 0, Integer.MAX_VALUE, resultHandler);
+            int skipResults = pageDetails.getSkipResults();
+            cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED, params, skipResults, Integer.MAX_VALUE, resultHandler);
             resultHandler.done();
 
             List<NodeRef> result = new ArrayList<>(children.size());
@@ -94,13 +98,19 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
                 result.add(tenantService.getBaseName(child.getNodeRef()));
             }
 
-            LOG.warn(children.size() + " children found for " + params.getParentNodeId() + " total seen: " + totalSeenCount + " skipped: " + skipped + " seen after required count satisfied: " + seenAfterRequiredCountSatisfied);
+            if (result.size() > requestedCount)
+            {
+                hasMoreItems = true;
+                result = result.subList(0, requestedCount);
+            }
+
+            LOG.debug(result.size() + " children found for " + params.getParentNodeId() + " total count: " + totalCount + " hasMore: " + hasMoreItems);
             return result;
         }
         else
         {
-            LOG.warn("Fallback to super executeQuery");
-            return super.executeQuery(filterProps, sortPairs, params, paramBean);
+            LOG.debug("Fallback to super executeQuery");
+            return super.executeQuery(filterProps, sortPairs, params, paramBean, filterSortPropCnt);
         }
     }
 
@@ -150,7 +160,7 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
             {
                 if (parameters.getTotalResultCountMax() > 0)
                 {
-                    return new Pair<>(totalSeenCount, totalSeenCount);
+                    return new Pair<>(totalCount, totalCount);
                 }
                 else
                 {
@@ -195,7 +205,7 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
             @Override
             public boolean hasMoreItems()
             {
-                return seenAfterRequiredCountSatisfied > 0;
+                return hasMoreItems;
             }
         };
     }
@@ -210,40 +220,33 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
                 && sortPairs.contains(new Pair<>(ContentModel.PROP_NAME, CannedQuerySortDetails.SortOrder.ASCENDING));
     }
 
+    /**
+     * Collects page size + 1 children to determine if there are more results available for paging purposes. The callback will stop collecting results once the required count is reached.
+     */
     protected class PagedFilterSortChildQueryCallback implements FilterSortChildQueryCallback
     {
         private final List<FilterSortNode> children;
-        private final int skipResults;
-        private final int pageSize;
+        private final int requiredCount;
 
         public PagedFilterSortChildQueryCallback(List<FilterSortNode> children, CannedQueryPageDetails pageDetails)
         {
             this.children = children;
-            this.skipResults = pageDetails.getSkipResults();
-            this.pageSize = pageDetails.getPageSize();
+            this.requiredCount = pageDetails.getPageSize() + 1;
         }
 
         @Override
-        public boolean handle(FilterSortNode node)
+        public void handle(FilterSortNode node)
         {
-            if (includeImpl(true, node.getNodeRef()))
+            if (includeImpl(true, node.getNodeRef()) && needsMore())
             {
-                totalSeenCount++;
-                if (skipped < skipResults)
-                {
-                    skipped++;
-                    return true;
-                }
-                if (children.size() < pageSize)
-                {
-                    children.add(node);
-                }
-                else
-                {
-                    seenAfterRequiredCountSatisfied++;
-                }
+                children.add(node);
             }
-            return true;
+        }
+
+        @Override
+        public int remainingNeeded()
+        {
+            return requiredCount - children.size();
         }
     }
 }

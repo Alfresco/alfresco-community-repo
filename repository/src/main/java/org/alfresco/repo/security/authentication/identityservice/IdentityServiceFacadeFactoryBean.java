@@ -677,7 +677,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                             .collect(Collectors.toSet()),
                     newJWKSCache));
 
-            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
+            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT, null));
         }
 
         private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)

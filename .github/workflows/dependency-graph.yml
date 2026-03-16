@@ -1,0 +1,28 @@
+name: "Load Dependency Graph"
+
+on:
+  push:
+    branches:
+      - "master"
+      - "release/25.N"
+      - "release/23.N"
+      - "release/7.4.N"
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  scan-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: Alfresco/alfresco-build-tools/.github/actions/maven-dependency-scan@v15.9.0
+        with:
+          java-version: '21'
+          maven-version: '3.9.9'
+          maven-args: -Dscopes=compile,runtime
+          maven-username: ${{ secrets.NEXUS_USERNAME }}
+          maven-password: ${{ secrets.NEXUS_PASSWORD }}
+          maven-settings-path: ".ci.settings.xml"

@@ -3,7 +3,7 @@ name: "Load Dependency Graph"
 on:
   push:
     branches:
-      - "main"
+      - "master"
       - "release/25.N"
       - "release/23.N"
       - "release/7.4.N"

@@ -97,8 +97,8 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
         LOG.trace("Total children count for " + params.getParentNodeId() + ": " + totalCount);
 
         CannedQueryPageDetails pageDetails = parameters.getPageDetails();
+        final List<FilterSortNode> children = new ArrayList<>(100);
         int requestedCount = pageDetails.getPageSize();
-        final List<FilterSortNode> children = new ArrayList<>(requestedCount);
         final PagedFilterSortChildQueryCallback callback = new PagedFilterSortChildQueryCallback(children, requestedCount);
         FilterSortResultHandler resultHandler = new FilterSortResultHandler(callback);
         int skipResults = pageDetails.getSkipResults();

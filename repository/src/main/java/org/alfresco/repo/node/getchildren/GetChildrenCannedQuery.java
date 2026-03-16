@@ -244,7 +244,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
         filterSortPropCnt = setFilterSortParams(sortFilterProps, params);
 
-        List<NodeRef> result = new ArrayList<>(0);
+        List<NodeRef> result = new ArrayList<>();
 
         try
         {
@@ -291,7 +291,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 params.setPattern(pattern);
             }
 
-            result.addAll(executeQuery(filterProps, sortPairs, params, paramBean, filterSortPropCnt));
+            result = executeQuery(filterProps, sortPairs, params, paramBean, filterSortPropCnt);
         }
         finally
         {
@@ -300,7 +300,6 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 logger.debug("Base query " + (filterSortPropCnt > 0 ? "(sort=y, perms=n)" : "(sort=n, perms=y)") + ": " + result.size() + " in " + (System.currentTimeMillis() - start) + " msecs");
             }
         }
-
         return result;
     }
 

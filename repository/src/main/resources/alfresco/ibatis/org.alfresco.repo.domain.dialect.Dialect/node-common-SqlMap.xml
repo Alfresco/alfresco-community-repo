@@ -986,7 +986,7 @@
 
     <!-- GetChildren - count of matching rows with same conditions as select_GetChildrenCannedQueryWithPropsSorted -->
     <select id="count_GetChildrenCannedQueryWithPropsSorted" parameterType="FilterSortNode" resultType="long">
-        select count(*)
+        select distinct count(*)
         from
         alf_child_assoc assoc
         join alf_node childNode on (childNode.id = assoc.child_node_id)
@@ -1016,9 +1016,9 @@
         </if>
     </select>
 
-    <!-- GetChildren - with explicit prop filtering and DEFAULT sorting: folders first -> null cm:name -> non null cm:name ascending -->
+    <!-- GetChildren - with explicit prop filtering and DEFAULT sorting -->
     <select id="select_GetChildrenCannedQueryWithPropsSorted" parameterType="FilterSortNode" resultMap="result_FilterSortNode">
-        select
+        select distinct
         childNode.id             as id,
         childNode.version        as version,
         childStore.id            as store_id,
@@ -1041,7 +1041,19 @@
         prop1.list_index         as prop1_list_index,
         prop1.actual_type_n      as prop1_actual_type_n,
         prop1.persisted_type_n   as prop1_persisted_type_n,
-        prop1.string_value       as prop1_string_value
+        prop1.string_value       as prop1_string_value,
+        CASE
+            WHEN childNode.type_qname_id IN
+            <foreach item="id" collection="folderTypeQNameIds" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+            THEN 0
+            ELSE 1
+        END                      as sort_folder_first,
+        CASE
+            WHEN prop1.string_value IS NULL THEN 0
+            ELSE 1
+        END                      as sort_null_prop1_first
         from
         alf_child_assoc assoc
         join alf_node childNode on (childNode.id = assoc.child_node_id)
@@ -1073,18 +1085,8 @@
             </foreach>
         </if>
         ORDER BY 
-            CASE 
-                WHEN childNode.type_qname_id IN
-                <foreach item="id" collection="folderTypeQNameIds" open="(" separator="," close=")">
-                    #{id}
-                </foreach>
-                THEN 0 
-                ELSE 1 
-            END,
-            CASE 
-                WHEN prop1.string_value IS NULL THEN 0 
-                ELSE 1 
-            END, 
+            sort_folder_first,
+            sort_null_prop1_first, 
             prop1.string_value ASC
     </select>
     

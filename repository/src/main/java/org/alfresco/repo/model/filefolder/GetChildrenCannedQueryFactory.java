@@ -28,8 +28,11 @@ package org.alfresco.repo.model.filefolder;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryParameters;
+import org.alfresco.query.CannedQuerySortDetails;
+import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.domain.node.NodePropertyHelper;
 import org.alfresco.repo.node.getchildren.FilterProp;
@@ -46,6 +49,8 @@ import org.alfresco.util.Pair;
  */
 public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory
 {
+    private static final QName SORT_QNAME_NODE_IS_FOLDER = QName.createQName("", "IS_FOLDER");
+
     private HiddenAspect hiddenAspect;
     private Set<QName> ignoreAspectQNames;
 
@@ -66,6 +71,22 @@ public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchi
     {
         NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
 
-        return new DbSortingGetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, parameters, hiddenAspect, ignoreAspectQNames);
+        if (isDefaultSorting(parameters))
+        {
+            return new DbSortingGetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, parameters, hiddenAspect, ignoreAspectQNames);
+        }
+        return new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, parameters, hiddenAspect, ignoreAspectQNames);
+    }
+
+    /**
+     * See: NodesImpl.getListChildrenSortPropsDefault()
+     */
+    private boolean isDefaultSorting(CannedQueryParameters parameters)
+    {
+        CannedQuerySortDetails sortDetails = parameters.getSortDetails();
+        var sortPairs = sortDetails.getSortPairs();
+        return sortPairs.size() == 2
+                && sortPairs.contains(new Pair<>(SORT_QNAME_NODE_IS_FOLDER, SortOrder.DESCENDING))
+                && sortPairs.contains(new Pair<>(ContentModel.PROP_NAME, SortOrder.ASCENDING));
     }
 }

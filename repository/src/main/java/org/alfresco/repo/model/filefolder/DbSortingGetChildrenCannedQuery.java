@@ -32,7 +32,6 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
@@ -52,13 +51,17 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
+/**
+ * GetChildren canned query that performs sorting in the database.
+ * <p>
+ * This query handles the specific case of default sorting (folders first descending, name ascending).
+ */
 public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
 {
     private static final Log LOG = LogFactory.getLog(DbSortingGetChildrenCannedQuery.class);
     private static final String QUERY_COUNT_GET_CHILDREN_WITH_PROPS_SORTED = "count_GetChildrenCannedQueryWithPropsSorted";
     private static final String QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED = "select_GetChildrenCannedQueryWithPropsSorted";
 
-    private boolean wasUsed = false;
     private int totalCount;
 
     public DbSortingGetChildrenCannedQuery(NodeDAO nodeDAO, QNameDAO qnameDAO, CannedQueryDAO cannedQueryDAO, NodePropertyHelper nodePropertyHelper, TenantService tenantService, NodeService nodeService, MethodSecurityBean<NodeRef> methodSecurity, CannedQueryParameters params, HiddenAspect hiddenAspect, Set<QName> ignoreAspectQNames)
@@ -69,17 +72,8 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
     @Override
     protected List<NodeRef> executeQuery(List<FilterProp> filterProps, List<Pair<QName, CannedQuerySortDetails.SortOrder>> sortPairs, FilterSortNodeEntity params, GetChildrenCannedQueryParams paramBean, int filterSortPropCnt)
     {
-        if (filterProps.isEmpty() && isDefaultSorting(sortPairs))
-        {
-            wasUsed = true;
-            addFolderTypes(params);
-            return doExecute(params);
-        }
-        else
-        {
-            LOG.trace("Fallback to super executeQuery");
-            return super.executeQuery(filterProps, sortPairs, params, paramBean, filterSortPropCnt);
-        }
+        addFolderTypes(params);
+        return doExecute(params);
     }
 
     private void addFolderTypes(FilterSortNodeEntity params)
@@ -91,7 +85,7 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
 
     private List<NodeRef> doExecute(FilterSortNodeEntity params)
     {
-        LOG.trace("Executing DB sorting get children canned query for " + params.getParentNodeId() + " with default sorting and no filters");
+        LOG.trace("Executing DB sorting get children canned query for " + params.getParentNodeId() + " with default sorting");
 
         totalCount = cannedQueryDAO.executeCountQuery(QUERY_NAMESPACE, QUERY_COUNT_GET_CHILDREN_WITH_PROPS_SORTED, params).intValue();
         LOG.trace("Total children count for " + params.getParentNodeId() + ": " + totalCount);
@@ -118,31 +112,18 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
     @Override
     protected boolean isApplyPostQueryPermissions()
     {
-        if (wasUsed)
-        {
-            return true;
-        }
-        return super.isApplyPostQueryPermissions();
-
+        return true;
     }
 
     @Override
     protected boolean isApplyPostQueryPaging()
     {
-        if (wasUsed)
-        {
-            return false;
-        }
-        return super.isApplyPostQueryPaging();
+        return false;
     }
 
     @Override
     protected CannedQueryResults<NodeRef> createCannedQueryResults(List<List<NodeRef>> finalPages, List<NodeRef> rawResults)
     {
-        if (!wasUsed)
-        {
-            return super.createCannedQueryResults(finalPages, rawResults);
-        }
         return new CannedQueryResults<>() {
             @Override
             public CannedQuery<NodeRef> getOriginatingQuery()
@@ -210,16 +191,6 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
                 return totalCount > pageDetails.getSkipResults() + pageDetails.getPageSize();
             }
         };
-    }
-
-    /**
-     * See: NodesImpl.getListChildrenSortPropsDefault()
-     */
-    private boolean isDefaultSorting(List<Pair<QName, CannedQuerySortDetails.SortOrder>> sortPairs)
-    {
-        return sortPairs.size() == 2
-                && sortPairs.contains(new Pair<>(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, CannedQuerySortDetails.SortOrder.DESCENDING))
-                && sortPairs.contains(new Pair<>(ContentModel.PROP_NAME, CannedQuerySortDetails.SortOrder.ASCENDING));
     }
 
     protected class PagedFilterSortChildQueryCallback implements FilterSortChildQueryCallback

@@ -124,7 +124,7 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
         }
 
         @Override
-        public boolean handle(FilterSortNode node)
+        public void handle(FilterSortNode node)
         {
             super.handle(node);
 
@@ -143,8 +143,6 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
 
                 propVals.put(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, isFolder);
             }
-
-            return true;
         }
     }
 

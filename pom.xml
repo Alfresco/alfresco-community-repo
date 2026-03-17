@@ -702,11 +702,6 @@
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
-                <groupId>com.github.junrar</groupId>
-                <artifactId>junrar</artifactId>
-                <version>7.5.8</version>
-            </dependency>
-            <dependency>
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>1.5.1</version>

@@ -183,7 +183,7 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
                 {
                     throw new IllegalStateException("There must be exactly one page of one result available.");
                 }
-                return rawResults.getFirst();
+                return rawResults.get(0);
             }
 
             @Override

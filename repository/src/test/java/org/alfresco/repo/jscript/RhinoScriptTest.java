@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -75,6 +75,36 @@ public class RhinoScriptTest extends TestCase
     private ServiceRegistry serviceRegistry;
     private AuthenticationComponent authenticationComponent;
     private ScriptService scriptService;
+
+    private static final String TESTSCRIPT_CLASSPATH1 = "org/alfresco/repo/jscript/test_script1.js";
+    private static final String TESTSCRIPT_CLASSPATH2 = "org/alfresco/repo/jscript/test_script2.js";
+    private static final String TESTSCRIPT_CLASSPATH3 = "org/alfresco/repo/jscript/test_script3.js";
+
+    private static final String TESTSCRIPT1 = "var id = root.id;\r\n" +
+            "logger.log(id);\r\n" +
+            "var name = root.name;\r\n" +
+            "logger.log(name);\r\n" +
+            "var type = root.type;\r\n" +
+            "logger.log(type);\r\n" +
+            "var childList = root.children;\r\n" +
+            "logger.log(\"zero index node name: \" + childList[0].name);\r\n" +
+            "logger.log(\"name property access: \" + childList[0].properties.name);\r\n" +
+            "var childByNameNode = root.childByNamePath(\"/\" + childList[0].name);\r\n" +
+            "logger.log(\"child by name path: \" + childByNameNode.name);\r\n" +
+            "var xpathResults = root.childrenByXPath(\"/*\");\r\n" +
+            "logger.log(\"children of root from xpath: \" + xpathResults.length);\r\n";
+
+    private static final String TESTSCRIPT2 = "var exec = new org.alfresco.util.exec.RuntimeExec();\r\n"
+            + "exec.setCommand([\"/bin/ls\"]);\r\n"
+            + "var res = exec.execute();\r\n"
+            + "java.lang.System.err.println(res.getStdOut());\r\n";
+
+    private static final String BASIC_JAVA = "var list = com.google.common.collect.Lists.newArrayList();\n" +
+            "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
+
+    private static final String REFLECTION_GET_CLASS = "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
+
+    private static final String ARRAY_REFLECTION_GET_CLASS = "arrayProvider.getItems().getClass().forName('java.lang.ProcessBuilder')";
 
     /* @see junit.framework.TestCase#setUp() */
     protected void setUp() throws Exception
@@ -491,9 +521,20 @@ public class RhinoScriptTest extends TestCase
                 });
     }
 
+    public void testArrayWrappingInSandbox()
+    {
+        boolean executed = executeSecureScriptString("var item = arrayProvider.getItems()[0];", false);
+        assertTrue("Script should have been executed", executed);
+
+        executed = executeSecureScriptString(ARRAY_REFLECTION_GET_CLASS, false);
+        assertFalse("Script shouldn't have been executed (secure = false with getClass)", executed);
+    }
+
     private boolean executeSecureScriptString(String script, Boolean secure)
     {
-        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>() {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<>() {
+
+            @Override
             public Boolean execute() throws Exception
             {
                 StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
@@ -507,6 +548,8 @@ public class RhinoScriptTest extends TestCase
 
                     ScriptNode rootNode = new ScriptNode(root, serviceRegistry, null);
                     model.put("root", rootNode);
+
+                    model.put("arrayProvider", new StringArrayProvider());
 
                     // test executing a script directly as string
                     scriptService.executeScriptString("javascript", script, model, secure);
@@ -556,32 +599,14 @@ public class RhinoScriptTest extends TestCase
         }
     }
 
-    private static final String TESTSCRIPT_CLASSPATH1 = "org/alfresco/repo/jscript/test_script1.js";
-    private static final String TESTSCRIPT_CLASSPATH2 = "org/alfresco/repo/jscript/test_script2.js";
-    private static final String TESTSCRIPT_CLASSPATH3 = "org/alfresco/repo/jscript/test_script3.js";
-
-    private static final String TESTSCRIPT1 = "var id = root.id;\r\n" +
-            "logger.log(id);\r\n" +
-            "var name = root.name;\r\n" +
-            "logger.log(name);\r\n" +
-            "var type = root.type;\r\n" +
-            "logger.log(type);\r\n" +
-            "var childList = root.children;\r\n" +
-            "logger.log(\"zero index node name: \" + childList[0].name);\r\n" +
-            "logger.log(\"name property access: \" + childList[0].properties.name);\r\n" +
-            "var childByNameNode = root.childByNamePath(\"/\" + childList[0].name);\r\n" +
-            "logger.log(\"child by name path: \" + childByNameNode.name);\r\n" +
-            "var xpathResults = root.childrenByXPath(\"/*\");\r\n" +
-            "logger.log(\"children of root from xpath: \" + xpathResults.length);\r\n";
-
-    private static final String TESTSCRIPT2 = "var exec = new org.alfresco.util.exec.RuntimeExec();\r\n"
-            + "exec.setCommand([\"/bin/ls\"]);\r\n"
-            + "var res = exec.execute();\r\n"
-            + "java.lang.System.err.println(res.getStdOut());\r\n";
-
-    private static final String BASIC_JAVA = "var list = com.google.common.collect.Lists.newArrayList();\n" +
-            "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
-
-    private static final String REFLECTION_GET_CLASS = "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
-
+    /**
+     * A simple Java object whose {@code getItems()} method returns a {@code String[]}. Rhino wraps the return value using the declared return type as {@code staticType}, which is the scenario exercised by {@link SandboxWrapFactory#wrap}.
+     */
+    public static class StringArrayProvider
+    {
+        public String[] getItems()
+        {
+            return new String[]{"foo", "bar"};
+        }
+    }
 }

@@ -29,6 +29,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -211,8 +212,8 @@ public class MoveMethodTest
     @Test
     public void canRenameFoldersWhenNewNameMatchesShufflePattern() throws Exception
     {
-        when(davHelper.isRenameShuffle(destPath)).thenReturn(true);
-        when(davHelper.isRenameShuffle(sourcePath)).thenReturn(false);
+        lenient().when(davHelper.isRenameShuffle(destPath)).thenReturn(true);
+        lenient().when(davHelper.isRenameShuffle(sourcePath)).thenReturn(false);
         
         // Test: Perform the rename
         moveMethod.moveOrCopy(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, "dest.doc");
@@ -256,8 +257,8 @@ public class MoveMethodTest
         sourcePath = "/path/from/test.doc";
         moveMethod.m_strPath = sourcePath;
         
-        when(davHelper.getServiceRegistry()).thenReturn(mockServiceRegistry);
-        when(mockServiceRegistry.getContentService()).thenReturn(mockContentService);
+        lenient().when(davHelper.getServiceRegistry()).thenReturn(mockServiceRegistry);
+        lenient().when(mockServiceRegistry.getContentService()).thenReturn(mockContentService);
         
         List<String> sourcePathSplit = Arrays.asList("path", "from", "test.doc");
         when(davHelper.splitAllPaths(sourcePath)).thenReturn(sourcePathSplit);
@@ -376,7 +377,7 @@ public class MoveMethodTest
 
                     when(mockFileFolderService.resolveNamePath(rootNode, sourcePathSplit)).thenReturn(tmpFI);
                     when(davHelper.isRenameShuffle(destPath)).thenReturn(false);
-                    when(davHelper.isRenameShuffle(sourcePath)).thenReturn(true);
+                    lenient().when(davHelper.isRenameShuffle(sourcePath)).thenReturn(true);
 
                     moveMethod.moveOrCopy(atmpFI.getNodeRef(), companyHomeNodeRef, companyHomeNodeRef, bakFileName);
 

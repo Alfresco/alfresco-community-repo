@@ -31,7 +31,6 @@ import java.sql.Savepoint;
 import java.util.Map;
 import java.util.TreeMap;
 
-import junit.framework.AssertionFailedError;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -61,7 +60,7 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
     private ControlDAO controlDAO;
 
     @Before
-    protected void setUp() throws Exception
+    public void setUp() throws Exception
     {
         cache = new MemoryCache<Long, Object>();
         entityLookupCacheA = new EntityLookupCache<Long, Object, String>(cache, "A", this);
@@ -72,18 +71,10 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         Mockito.when(controlDAO.createSavepoint(Mockito.anyString())).thenReturn(Mockito.mock(Savepoint.class));
     }
 
-    @Test
+    @Test(expected = AssertionError.class)
     public void testLookupsUsingIncorrectValue() throws Exception
     {
-        try
-        {
-            // Keep the "database" empty
-            entityLookupCacheA.getByValue(this);
-        }
-        catch (AssertionFailedError e)
-        {
-            // Expected
-        }
+        entityLookupCacheA.getByValue(this);
     }
 
     @Test

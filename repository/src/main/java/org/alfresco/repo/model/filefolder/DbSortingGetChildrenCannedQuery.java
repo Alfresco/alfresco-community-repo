@@ -26,12 +26,14 @@
 package org.alfresco.repo.model.filefolder;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
@@ -62,12 +64,14 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
     private static final Log LOG = LogFactory.getLog(DbSortingGetChildrenCannedQuery.class);
     private static final String QUERY_COUNT_GET_CHILDREN_WITH_PROPS_SORTED = "count_GetChildrenCannedQueryWithPropsSorted";
     private static final String QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED = "select_GetChildrenCannedQueryWithPropsSorted";
+    private final DictionaryService dictionaryService;
 
     private int totalCount;
 
     public DbSortingGetChildrenCannedQuery(NodeDAO nodeDAO, QNameDAO qnameDAO, CannedQueryDAO cannedQueryDAO, NodePropertyHelper nodePropertyHelper, TenantService tenantService, NodeService nodeService, MethodSecurityBean<NodeRef> methodSecurity, CannedQueryParameters params, HiddenAspect hiddenAspect, DictionaryService dictionaryService, Set<QName> ignoreAspectQNames)
     {
         super(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, params, hiddenAspect, dictionaryService, ignoreAspectQNames);
+        this.dictionaryService = dictionaryService;
     }
 
     @Override
@@ -79,7 +83,9 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
 
     private void addFolderTypes(FilterSortNodeEntity params)
     {
-        Set<QName> folderQNames = nodePropertyHelper.buildFolderTypes();
+        Set<QName> folderQNames = new HashSet<>(50);
+        folderQNames.addAll(dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true));
+        folderQNames.add(ContentModel.TYPE_FOLDER);
         Set<Long> folderTypeQNameIds = qnameDAO.convertQNamesToIds(folderQNames, false);
         params.setFolderTypeQNameIds(folderTypeQNameIds);
     }

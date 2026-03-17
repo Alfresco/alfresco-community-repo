@@ -986,7 +986,7 @@
 
     <!-- GetChildren - count of matching rows with same conditions as select_GetChildrenCannedQueryWithPropsSorted -->
     <select id="count_GetChildrenCannedQueryWithPropsSorted" parameterType="FilterSortNode" resultType="long">
-        select distinct count(*)
+        select count(distinct childNode.id)
         from
         alf_child_assoc assoc
         join alf_node childNode on (childNode.id = assoc.child_node_id)

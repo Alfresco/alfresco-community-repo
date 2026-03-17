@@ -29,11 +29,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -41,7 +39,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -689,13 +686,5 @@ public class NodePropertyHelper
                             "   property value: " + propertyValue,
                     e);
         }
-    }
-
-    public Set<QName> buildFolderTypes()
-    {
-        Set<QName> folderTypeQNames = new HashSet<>(50);
-        folderTypeQNames.addAll(dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true));
-        folderTypeQNames.add(ContentModel.TYPE_FOLDER);
-        return folderTypeQNames;
     }
 }

@@ -86,7 +86,7 @@ public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchi
         CannedQuerySortDetails sortDetails = parameters.getSortDetails();
         var sortPairs = sortDetails.getSortPairs();
         return sortPairs.size() == 2
-                && sortPairs.contains(new Pair<>(SORT_QNAME_NODE_IS_FOLDER, SortOrder.DESCENDING))
-                && sortPairs.contains(new Pair<>(ContentModel.PROP_NAME, SortOrder.ASCENDING));
+                && sortPairs.get(0).equals(new Pair<>(SORT_QNAME_NODE_IS_FOLDER, SortOrder.DESCENDING))
+                && sortPairs.get(1).equals(new Pair<>(ContentModel.PROP_NAME, SortOrder.ASCENDING));
     }
 }

@@ -83,6 +83,7 @@
         <dependency.log4j.version>2.25.3</dependency.log4j.version>
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
         <dependency.tika.version>3.2.3</dependency.tika.version>
+        <dependency.junrar.version>7.5.8</dependency.junrar.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.4.0</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
@@ -706,6 +707,11 @@
                 <version>2.19.0</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
+            <dependency>
+                <groupId>com.github.junrar</groupId>
+                <artifactId>junrar</artifactId>
+                <version>${dependency.junrar.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>

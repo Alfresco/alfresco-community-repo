@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.model.filefolder;
 
+import static org.alfresco.repo.node.getchildren.GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER;
+
 import java.util.List;
 import java.util.Set;
 
@@ -49,8 +51,6 @@ import org.alfresco.util.Pair;
  */
 public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory
 {
-    private static final QName SORT_QNAME_NODE_IS_FOLDER = QName.createQName("", "IS_FOLDER");
-
     private HiddenAspect hiddenAspect;
     private Set<QName> ignoreAspectQNames;
 

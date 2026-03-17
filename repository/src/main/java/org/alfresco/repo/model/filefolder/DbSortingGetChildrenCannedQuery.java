@@ -78,7 +78,10 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
     protected List<NodeRef> executeQuery(List<FilterProp> filterProps, List<Pair<QName, CannedQuerySortDetails.SortOrder>> sortPairs, FilterSortNodeEntity params, GetChildrenCannedQueryParams paramBean, int filterSortPropCnt)
     {
         addFolderTypes(params);
-        return doExecute(params);
+        LOG.trace("Executing DB sorting get children canned query for " + params.getParentNodeId() + " with default sorting");
+        fetchTotalCount(params);
+        List<FilterSortNode> children = fetchPagedChildren(params);
+        return toNodeRefs(children);
     }
 
     private void addFolderTypes(FilterSortNodeEntity params)
@@ -90,13 +93,14 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
         params.setFolderTypeQNameIds(folderTypeQNameIds);
     }
 
-    private List<NodeRef> doExecute(FilterSortNodeEntity params)
+    private void fetchTotalCount(FilterSortNodeEntity params)
     {
-        LOG.trace("Executing DB sorting get children canned query for " + params.getParentNodeId() + " with default sorting");
-
         totalCount = cannedQueryDAO.executeCountQuery(QUERY_NAMESPACE, QUERY_COUNT_GET_CHILDREN_WITH_PROPS_SORTED, params).intValue();
         LOG.trace("Total children count for " + params.getParentNodeId() + ": " + totalCount);
+    }
 
+    private List<FilterSortNode> fetchPagedChildren(FilterSortNodeEntity params)
+    {
         CannedQueryPageDetails pageDetails = parameters.getPageDetails();
         final List<FilterSortNode> children = new ArrayList<>(100);
         int requestedCount = pageDetails.getPageSize();
@@ -105,9 +109,12 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
         int skipResults = pageDetails.getSkipResults();
         cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS_SORTED, params, skipResults, Integer.MAX_VALUE, resultHandler);
         resultHandler.done();
-
         LOG.trace(children.size() + " children found for " + params.getParentNodeId() + " total count: " + totalCount);
+        return children;
+    }
 
+    private List<NodeRef> toNodeRefs(List<FilterSortNode> children)
+    {
         List<NodeRef> result = new ArrayList<>(children.size());
         for (FilterSortNode child : children)
         {

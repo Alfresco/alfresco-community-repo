@@ -43,7 +43,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
- * GetChidren canned query factory for files and folders. 
+ * GetChidren canned query factory for files and folders.
  * 
  * @since 4.1.1
  * @author steveglover, janv
@@ -53,19 +53,19 @@ public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchi
 {
     private HiddenAspect hiddenAspect;
     private Set<QName> ignoreAspectQNames;
-    
+
     public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
         this.hiddenAspect = hiddenAspect;
     }
-    
+
     public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, Set<QName> ignoreAspectQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         this.ignoreAspectQNames = ignoreAspectQNames;
-        
+
         return super.getCannedQuery(parentRef, pattern, assocTypeQNames, childTypeQNames, filterProps, sortProps, pagingRequest);
     }
-    
+
     @Override
     public CannedQuery<NodeRef> getCannedQuery(CannedQueryParameters parameters)
     {
@@ -84,7 +84,7 @@ public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchi
     private boolean isDefaultSorting(CannedQueryParameters parameters)
     {
         CannedQuerySortDetails sortDetails = parameters.getSortDetails();
-        var sortPairs = sortDetails.getSortPairs();
+        List<Pair<?, SortOrder>> sortPairs = sortDetails.getSortPairs();
         return sortPairs.size() == 2
                 && sortPairs.get(0).equals(new Pair<>(SORT_QNAME_NODE_IS_FOLDER, SortOrder.DESCENDING))
                 && sortPairs.get(1).equals(new Pair<>(ContentModel.PROP_NAME, SortOrder.ASCENDING));

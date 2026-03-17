@@ -138,7 +138,7 @@ public class DbSortingGetChildrenCannedQuery extends GetChildrenCannedQuery
     @Override
     protected CannedQueryResults<NodeRef> createCannedQueryResults(List<List<NodeRef>> finalPages, List<NodeRef> rawResults)
     {
-        return new CannedQueryResults<>() {
+        return new CannedQueryResults<NodeRef>() {
             @Override
             public CannedQuery<NodeRef> getOriginatingQuery()
             {

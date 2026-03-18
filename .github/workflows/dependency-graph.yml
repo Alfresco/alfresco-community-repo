@@ -20,7 +20,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: Alfresco/alfresco-build-tools/.github/actions/maven-dependency-scan@v15.9.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/maven-dependency-scan@v15.12.0
         with:
           java-version: '21'
           maven-version: '3.9.9'
@@ -30,7 +30,7 @@ jobs:
           maven-settings-path: ".ci.settings.xml"
 
       - name: Submit dependency graph
-        uses: advanced-security/maven-dependency-submission-action@v4
+        uses: advanced-security/maven-dependency-submission-action@v5
         with:
           settings-file: ".ci.settings.xml"
         env:

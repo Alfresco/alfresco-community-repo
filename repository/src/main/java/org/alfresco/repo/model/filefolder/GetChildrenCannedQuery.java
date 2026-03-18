@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.model.filefolder;
 
+import static org.alfresco.repo.node.getchildren.GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER;
+import static org.alfresco.repo.node.getchildren.GetChildrenCannedQuery.SORT_QNAME_NODE_TYPE;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -129,7 +132,7 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
             super.handle(node);
 
             Map<QName, Serializable> propVals = node.getPropVals();
-            QName nodeTypeQName = (QName) propVals.get(GetChildrenCannedQuery.SORT_QNAME_NODE_TYPE);
+            QName nodeTypeQName = (QName) propVals.get(SORT_QNAME_NODE_TYPE);
 
             if (nodeTypeQName != null)
             {
@@ -141,7 +144,7 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
                     isTypeFolderMap.put(nodeTypeQName, isFolder);
                 }
 
-                propVals.put(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, isFolder);
+                propVals.put(SORT_QNAME_NODE_IS_FOLDER, isFolder);
             }
         }
     }

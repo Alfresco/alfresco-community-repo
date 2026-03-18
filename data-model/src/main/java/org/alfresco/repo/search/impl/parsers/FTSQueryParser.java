@@ -1688,8 +1688,7 @@ public class FTSQueryParser
     }
 
     /**
-     * Replace typographical (smart) quotes with their standard ASCII equivalents
-     * so the FTS lexer can correctly parse phrase queries that contain them.
+     * Replace typographical (smart) quotes with their standard ASCII equivalents so the FTS lexer can correctly parse phrase queries that contain them.
      */
     static String normalizeTypographicalQuotes(String input)
     {

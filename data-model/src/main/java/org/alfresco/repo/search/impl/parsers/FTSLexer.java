@@ -202,7 +202,8 @@ public class FTSLexer extends Lexer
     }
 
     // $ANTLR start "FTSPHRASE"
-    // Hand-edited to add support for typographical/smart quotes (\u201C \u201D \u2018 \u2019)
+    // Hand-edited to add support for right typographical/smart quotes (\u201D \u2019)
+    // Issue is that there exists a lot more quotes ( e.g ‟ , ‟ , ‶ , “ , ” , ‴ ) code will get lot bigger
     public final void mFTSPHRASE() throws RecognitionException
     {
         try
@@ -220,12 +221,12 @@ public class FTSLexer extends Lexer
             {
                 alt3 = 2;
             }
-            // Hand-edited: added smart quote alternatives
-            else if ((LA3_0 == '\u201C'))
+            // Hand-edited: added right smart quote alternatives
+            else if ((LA3_0 == '\u201D'))
             {
                 alt3 = 3;
             }
-            else if ((LA3_0 == '\u2018'))
+            else if ((LA3_0 == '\u2019'))
             {
                 alt3 = 4;
             }
@@ -369,25 +370,25 @@ public class FTSLexer extends Lexer
                     return;
             }
                 break;
-            // Hand-edited: added case 3 and case 4 for smart/typographical quotes
-            case 3: // Left double smart quote \u201C ... right double smart quote \u201D
+            // Hand-edited: case 3 - Right double smart quote \u201D used as both opener and closer
+            case 3:
             {
-                match('\u201C');
+                match('\u201D');
                 if (state.failed)
                     return;
-                loop201c: while (true)
+                loop201d: while (true)
                 {
-                    int altSQ1 = 3;
-                    int LASQ1_0 = input.LA(1);
-                    if ((LASQ1_0 == '\\'))
+                    int altSQ3 = 3;
+                    int LASQ3_0 = input.LA(1);
+                    if ((LASQ3_0 == '\\'))
                     {
-                        altSQ1 = 1;
+                        altSQ3 = 1;
                     }
-                    else if (((LASQ1_0 >= '\u0000' && LASQ1_0 <= '[') || (LASQ1_0 >= ']' && LASQ1_0 <= '\u201C') || (LASQ1_0 >= '\u201E' && LASQ1_0 <= '\uFFFF')))
+                    else if (((LASQ3_0 >= '\u0000' && LASQ3_0 <= '[') || (LASQ3_0 >= ']' && LASQ3_0 <= '\u201C') || (LASQ3_0 >= '\u201E' && LASQ3_0 <= '\uFFFF')))
                     {
-                        altSQ1 = 2;
+                        altSQ3 = 2;
                     }
-                    switch (altSQ1)
+                    switch (altSQ3)
                     {
                     case 1:
                     {
@@ -417,7 +418,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     default:
-                        break loop201c;
+                        break loop201d;
                     }
                 }
                 match('\u201D');
@@ -425,24 +426,25 @@ public class FTSLexer extends Lexer
                     return;
             }
                 break;
-            case 4: // Left single smart quote \u2018 ... right single smart quote \u2019
+            // Hand-edited: case 4 - Right single smart quote \u2019 used as both opener and closer
+            case 4:
             {
-                match('\u2018');
+                match('\u2019');
                 if (state.failed)
                     return;
-                loop2018: while (true)
+                loop2019: while (true)
                 {
-                    int altSQ2 = 3;
-                    int LASQ2_0 = input.LA(1);
-                    if ((LASQ2_0 == '\\'))
+                    int altSQ4 = 3;
+                    int LASQ4_0 = input.LA(1);
+                    if ((LASQ4_0 == '\\'))
                     {
-                        altSQ2 = 1;
+                        altSQ4 = 1;
                     }
-                    else if (((LASQ2_0 >= '\u0000' && LASQ2_0 <= '[') || (LASQ2_0 >= ']' && LASQ2_0 <= '\u2018') || (LASQ2_0 >= '\u201A' && LASQ2_0 <= '\uFFFF')))
+                    else if (((LASQ4_0 >= '\u0000' && LASQ4_0 <= '[') || (LASQ4_0 >= ']' && LASQ4_0 <= '\u2018') || (LASQ4_0 >= '\u201A' && LASQ4_0 <= '\uFFFF')))
                     {
-                        altSQ2 = 2;
+                        altSQ4 = 2;
                     }
-                    switch (altSQ2)
+                    switch (altSQ4)
                     {
                     case 1:
                     {
@@ -472,7 +474,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     default:
-                        break loop2018;
+                        break loop2019;
                     }
                 }
                 match('\u2019');
@@ -6080,10 +6082,11 @@ public class FTSLexer extends Lexer
     @Override
     public void mTokens() throws RecognitionException
     {
-        // Hand-edited: intercept typographical/smart quote openers before DFA prediction.
-        // The DFA63 transition tables do not cover \u201C or \u2018.
+        // Hand-edited: intercept right typographical/smart quote characters before DFA prediction.
+        // The DFA63 transition tables do not cover smart/typographical quotes.
+        // Some keyboards/browsers produce right quotes (\u201D, \u2019) for both opening and closing.
         int laForSmartQuoteCheck = input.LA(1);
-        if (laForSmartQuoteCheck == '\u201C' || laForSmartQuoteCheck == '\u2018')
+        if (laForSmartQuoteCheck == '\u201D' || laForSmartQuoteCheck == '\u2019')
         {
             mFTSPHRASE();
             return;

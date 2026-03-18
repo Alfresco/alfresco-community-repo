@@ -6019,9 +6019,7 @@ public class FTSLexer extends Lexer
     @Override
     public void mTokens() throws RecognitionException
     {
-        // Hand-edited: intercept right typographical/smart quote characters before DFA prediction.
-        // The DFA63 transition tables do not cover smart/typographical quotes.
-        // Some keyboards/browsers produce right quotes (\u201D, \u2019) for both opening and closing.
+        // The DFA63 transition tables do not cover smart/typographical quotes, DFA#predict() internally calls transition table which is why calling mFTSPHRASE() if smart quote is seen
         int laForSmartQuoteCheck = input.LA(1);
         if (laForSmartQuoteCheck == '\u201D')
         {

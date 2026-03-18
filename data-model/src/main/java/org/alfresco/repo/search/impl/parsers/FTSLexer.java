@@ -202,7 +202,7 @@ public class FTSLexer extends Lexer
     }
 
     // $ANTLR start "FTSPHRASE"
-    // Issue is that there exists a lot more quotes ( e.g ‟ , ‟ , ‶ , “ , ‴ , ⁗) , code will get lot bigger
+    // Currently handled for ” ,there exists a lot more quotes ( e.g ‟ , ‟ , ‶ , “ , ‴ , ⁗ etc) and they can be used with different combination, code will get lot bigger
     public final void mFTSPHRASE() throws RecognitionException
     {
         try
@@ -6019,7 +6019,7 @@ public class FTSLexer extends Lexer
     @Override
     public void mTokens() throws RecognitionException
     {
-        // The DFA63 transition tables do not cover smart/typographical quotes, DFA#predict() internally calls transition table which is why calling mFTSPHRASE() if smart quote is seen
+        // The DFA63 transition tables were generated without smart quote support, so DFA63.predict() cannot route \u201D to FTSPHRASE, handling it here before the DFA runs to avoid NoViableAltException.
         int laForSmartQuoteCheck = input.LA(1);
         if (laForSmartQuoteCheck == '\u201D')
         {

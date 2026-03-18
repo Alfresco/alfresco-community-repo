@@ -202,6 +202,7 @@ public class FTSLexer extends Lexer
     }
 
     // $ANTLR start "FTSPHRASE"
+    // Hand-edited to add support for typographical/smart quotes (\u201C \u201D \u2018 \u2019)
     public final void mFTSPHRASE() throws RecognitionException
     {
         try
@@ -209,7 +210,7 @@ public class FTSLexer extends Lexer
             int _type = FTSPHRASE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:970:9: ( '\"' ( F_ESC |~ ( '\\\\' | '\"' ) )* '\"' | '\\'' ( F_ESC |~ ( '\\\\' | '\\'' ) )* '\\'' )
-            int alt3 = 2;
+            int alt3 = 0; // Hand-edited: changed from 2 to 0 to support 4 alternatives
             int LA3_0 = input.LA(1);
             if ((LA3_0 == '\"'))
             {
@@ -218,6 +219,15 @@ public class FTSLexer extends Lexer
             else if ((LA3_0 == '\''))
             {
                 alt3 = 2;
+            }
+            // Hand-edited: added smart quote alternatives
+            else if ((LA3_0 == '\u201C'))
+            {
+                alt3 = 3;
+            }
+            else if ((LA3_0 == '\u2018'))
+            {
+                alt3 = 4;
             }
 
             else
@@ -359,7 +369,117 @@ public class FTSLexer extends Lexer
                     return;
             }
                 break;
-
+            // Hand-edited: added case 3 and case 4 for smart/typographical quotes
+            case 3: // Left double smart quote \u201C ... right double smart quote \u201D
+            {
+                match('\u201C');
+                if (state.failed)
+                    return;
+                loop201c: while (true)
+                {
+                    int altSQ1 = 3;
+                    int LASQ1_0 = input.LA(1);
+                    if ((LASQ1_0 == '\\'))
+                    {
+                        altSQ1 = 1;
+                    }
+                    else if (((LASQ1_0 >= '\u0000' && LASQ1_0 <= '[') || (LASQ1_0 >= ']' && LASQ1_0 <= '\u201C') || (LASQ1_0 >= '\u201E' && LASQ1_0 <= '\uFFFF')))
+                    {
+                        altSQ1 = 2;
+                    }
+                    switch (altSQ1)
+                    {
+                    case 1:
+                    {
+                        mF_ESC();
+                        if (state.failed)
+                            return;
+                    }
+                        break;
+                    case 2:
+                    {
+                        if ((input.LA(1) >= '\u0000' && input.LA(1) <= '[') || (input.LA(1) >= ']' && input.LA(1) <= '\u201C') || (input.LA(1) >= '\u201E' && input.LA(1) <= '\uFFFF'))
+                        {
+                            input.consume();
+                            state.failed = false;
+                        }
+                        else
+                        {
+                            if (state.backtracking > 0)
+                            {
+                                state.failed = true;
+                                return;
+                            }
+                            MismatchedSetException mse = new MismatchedSetException(null, input);
+                            recover(mse);
+                            throw mse;
+                        }
+                    }
+                        break;
+                    default:
+                        break loop201c;
+                    }
+                }
+                match('\u201D');
+                if (state.failed)
+                    return;
+            }
+                break;
+            case 4: // Left single smart quote \u2018 ... right single smart quote \u2019
+            {
+                match('\u2018');
+                if (state.failed)
+                    return;
+                loop2018: while (true)
+                {
+                    int altSQ2 = 3;
+                    int LASQ2_0 = input.LA(1);
+                    if ((LASQ2_0 == '\\'))
+                    {
+                        altSQ2 = 1;
+                    }
+                    else if (((LASQ2_0 >= '\u0000' && LASQ2_0 <= '[') || (LASQ2_0 >= ']' && LASQ2_0 <= '\u2018') || (LASQ2_0 >= '\u201A' && LASQ2_0 <= '\uFFFF')))
+                    {
+                        altSQ2 = 2;
+                    }
+                    switch (altSQ2)
+                    {
+                    case 1:
+                    {
+                        mF_ESC();
+                        if (state.failed)
+                            return;
+                    }
+                        break;
+                    case 2:
+                    {
+                        if ((input.LA(1) >= '\u0000' && input.LA(1) <= '[') || (input.LA(1) >= ']' && input.LA(1) <= '\u2018') || (input.LA(1) >= '\u201A' && input.LA(1) <= '\uFFFF'))
+                        {
+                            input.consume();
+                            state.failed = false;
+                        }
+                        else
+                        {
+                            if (state.backtracking > 0)
+                            {
+                                state.failed = true;
+                                return;
+                            }
+                            MismatchedSetException mse = new MismatchedSetException(null, input);
+                            recover(mse);
+                            throw mse;
+                        }
+                    }
+                        break;
+                    default:
+                        break loop2018;
+                    }
+                }
+                match('\u2019');
+                if (state.failed)
+                    return;
+            }
+                break;
             }
             state.type = _type;
             state.channel = _channel;
@@ -5960,6 +6080,14 @@ public class FTSLexer extends Lexer
     @Override
     public void mTokens() throws RecognitionException
     {
+        // Hand-edited: intercept typographical/smart quote openers before DFA prediction.
+        // The DFA63 transition tables do not cover \u201C or \u2018.
+        int laForSmartQuoteCheck = input.LA(1);
+        if (laForSmartQuoteCheck == '\u201C' || laForSmartQuoteCheck == '\u2018')
+        {
+            mFTSPHRASE();
+            return;
+        }
         // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:8: ( FTSPHRASE | URI | DATETIME | OR | AND | NOT | TILDA | LPAREN | RPAREN | PLUS | MINUS | COLON | STAR | AMP | EXCLAMATION | BAR | EQUALS | QUESTION_MARK | LCURL | RCURL | LSQUARE | RSQUARE | TO | COMMA | CARAT | DOLLAR | GT | LT | AT | PERCENT | ID | FLOATING_POINT_LITERAL | FTSWORD | FTSPRE | FTSWILD | WS )
         int alt63 = 36;
         alt63 = dfa63.predict(input);

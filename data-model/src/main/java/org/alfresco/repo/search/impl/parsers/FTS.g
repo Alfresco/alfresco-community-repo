@@ -998,16 +998,6 @@ FTSPHRASE
                  )
         )*
         '\u201D'
-        | '\u2019'
-        (
-                F_ESC
-                |
-                ~(
-                        '\\'
-                        | '\u2019'
-                 )
-        )*
-        '\u2019'
         ;
 /*
  * Basic URI pattern based on the regular expression patttern taken from the RFC (it it not full URI parsing)

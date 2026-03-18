@@ -202,8 +202,7 @@ public class FTSLexer extends Lexer
     }
 
     // $ANTLR start "FTSPHRASE"
-    // Hand-edited to add support for right typographical/smart quotes (\u201D \u2019)
-    // Issue is that there exists a lot more quotes ( e.g ‟ , ‟ , ‶ , “ , ” , ‴ ) code will get lot bigger
+    // Issue is that there exists a lot more quotes ( e.g ‟ , ‟ , ‶ , “ , ‴ , ⁗) , code will get lot bigger
     public final void mFTSPHRASE() throws RecognitionException
     {
         try
@@ -211,7 +210,7 @@ public class FTSLexer extends Lexer
             int _type = FTSPHRASE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:970:9: ( '\"' ( F_ESC |~ ( '\\\\' | '\"' ) )* '\"' | '\\'' ( F_ESC |~ ( '\\\\' | '\\'' ) )* '\\'' )
-            int alt3 = 0; // Hand-edited: changed from 2 to 0 to support 4 alternatives
+            int alt3 = 0;
             int LA3_0 = input.LA(1);
             if ((LA3_0 == '\"'))
             {
@@ -221,14 +220,9 @@ public class FTSLexer extends Lexer
             {
                 alt3 = 2;
             }
-            // Hand-edited: added right smart quote alternatives
             else if ((LA3_0 == '\u201D'))
             {
                 alt3 = 3;
-            }
-            else if ((LA3_0 == '\u2019'))
-            {
-                alt3 = 4;
             }
 
             else
@@ -370,7 +364,6 @@ public class FTSLexer extends Lexer
                     return;
             }
                 break;
-            // Hand-edited: case 3 - Right double smart quote \u201D used as both opener and closer
             case 3:
             {
                 match('\u201D');
@@ -422,62 +415,6 @@ public class FTSLexer extends Lexer
                     }
                 }
                 match('\u201D');
-                if (state.failed)
-                    return;
-            }
-                break;
-            // Hand-edited: case 4 - Right single smart quote \u2019 used as both opener and closer
-            case 4:
-            {
-                match('\u2019');
-                if (state.failed)
-                    return;
-                loop2019: while (true)
-                {
-                    int altSQ4 = 3;
-                    int LASQ4_0 = input.LA(1);
-                    if ((LASQ4_0 == '\\'))
-                    {
-                        altSQ4 = 1;
-                    }
-                    else if (((LASQ4_0 >= '\u0000' && LASQ4_0 <= '[') || (LASQ4_0 >= ']' && LASQ4_0 <= '\u2018') || (LASQ4_0 >= '\u201A' && LASQ4_0 <= '\uFFFF')))
-                    {
-                        altSQ4 = 2;
-                    }
-                    switch (altSQ4)
-                    {
-                    case 1:
-                    {
-                        mF_ESC();
-                        if (state.failed)
-                            return;
-                    }
-                        break;
-                    case 2:
-                    {
-                        if ((input.LA(1) >= '\u0000' && input.LA(1) <= '[') || (input.LA(1) >= ']' && input.LA(1) <= '\u2018') || (input.LA(1) >= '\u201A' && input.LA(1) <= '\uFFFF'))
-                        {
-                            input.consume();
-                            state.failed = false;
-                        }
-                        else
-                        {
-                            if (state.backtracking > 0)
-                            {
-                                state.failed = true;
-                                return;
-                            }
-                            MismatchedSetException mse = new MismatchedSetException(null, input);
-                            recover(mse);
-                            throw mse;
-                        }
-                    }
-                        break;
-                    default:
-                        break loop2019;
-                    }
-                }
-                match('\u2019');
                 if (state.failed)
                     return;
             }
@@ -6086,7 +6023,7 @@ public class FTSLexer extends Lexer
         // The DFA63 transition tables do not cover smart/typographical quotes.
         // Some keyboards/browsers produce right quotes (\u201D, \u2019) for both opening and closing.
         int laForSmartQuoteCheck = input.LA(1);
-        if (laForSmartQuoteCheck == '\u201D' || laForSmartQuoteCheck == '\u2019')
+        if (laForSmartQuoteCheck == '\u201D')
         {
             mFTSPHRASE();
             return;

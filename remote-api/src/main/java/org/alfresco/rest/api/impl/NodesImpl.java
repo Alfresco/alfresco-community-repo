@@ -1897,6 +1897,8 @@ public class NodesImpl implements Nodes
      * <p>
      * Returns the default sort order.
      * </p>
+     * 
+     * Before any changes please keep in mind that there is at least one implementation depending on default sorting. See GetChildrenCannedQueryFactory.isDefaultSorting() method.
      *
      * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort properties.
      */

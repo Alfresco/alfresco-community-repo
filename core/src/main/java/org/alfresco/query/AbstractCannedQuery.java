@@ -36,16 +36,17 @@ import org.alfresco.util.ParameterCheck;
  */
 public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
 {
-    private final CannedQueryParameters parameters;
-    private final String queryExecutionId;
+    protected final CannedQueryParameters parameters;
+    protected final String queryExecutionId;
     private CannedQueryResults<R> results;
-    
+
     /**
      * Construct the canned query given the original parameters applied.
      * <p/>
      * A random GUID query execution ID will be generated.
      * 
-     * @param parameters            the original query parameters
+     * @param parameters
+     *            the original query parameters
      */
     protected AbstractCannedQuery(CannedQueryParameters parameters)
     {
@@ -59,7 +60,7 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
     {
         return parameters;
     }
-    
+
     @Override
     public String toString()
     {
@@ -74,22 +75,22 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
         {
             throw new IllegalStateException(
                     "This query instance has already by used." +
-                    "  It can only be used to query once.");
+                            "  It can only be used to query once.");
         }
-        
+
         // Get the raw query results
         List<R> rawResults = queryAndFilter(parameters);
         if (rawResults == null)
         {
             throw new AlfrescoRuntimeException("Execution returned 'null' results");
         }
-        
+
         // Apply sorting
         if (isApplyPostQuerySorting())
         {
             rawResults = applyPostQuerySorting(rawResults, parameters.getSortDetails());
         }
-        
+
         // Apply permissions
         if (isApplyPostQueryPermissions())
         {
@@ -98,9 +99,6 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
             rawResults = applyPostQueryPermissions(rawResults, requestedCount);
         }
 
-        // Get total count
-        final Pair<Integer, Integer> totalCount = getTotalResultCount(rawResults);
-        
         // Apply paging
         CannedQueryPageDetails pagingDetails = parameters.getPageDetails();
         List<List<R>> pages = Collections.singletonList(rawResults);
@@ -108,27 +106,175 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
         {
             pages = applyPostQueryPaging(rawResults, pagingDetails);
         }
-        
-        // Construct results object
-        final List<List<R>> finalPages = pages;
-        
+
+        return createCannedQueryResults(pages, rawResults);
+    }
+
+    /**
+     * Implement the basic query, returning either filtered or all results.
+     * <p/>
+     * The implementation may optimally select, filter, sort and apply permissions. If not, however, the subsequent post-query methods ({@link #applyPostQuerySorting(List, CannedQuerySortDetails)}, {@link #applyPostQueryPermissions(List, int)} and {@link #applyPostQueryPaging(List, CannedQueryPageDetails)}) can be used to trim the results as required.
+     * 
+     * @param parameters
+     *            the full parameters to be used for execution
+     */
+    protected abstract List<R> queryAndFilter(CannedQueryParameters parameters);
+
+    /**
+     * Override to get post-query calls to do sorting.
+     * 
+     * @return <tt>true</tt> to get a post-query call to sort (default <tt>false</tt>)
+     */
+    protected boolean isApplyPostQuerySorting()
+    {
+        return false;
+    }
+
+    /**
+     * Called before {@link #applyPostQueryPermissions(List, int)} to allow the results to be sorted prior to permission checks. Note that the query implementation may optimally sort results during retrieval, in which case this method does not need to be implemented.
+     * 
+     * @param results
+     *            the results to sort
+     * @param sortDetails
+     *            details of the sorting requirements
+     * @return the results according to the new sort order
+     */
+    protected List<R> applyPostQuerySorting(List<R> results, CannedQuerySortDetails sortDetails)
+    {
+        throw new UnsupportedOperationException("Override this method if post-query sorting is required.");
+    }
+
+    /**
+     * Override to get post-query calls to apply permission filters.
+     * 
+     * @return <tt>true</tt> to get a post-query call to apply permissions (default <tt>false</tt>)
+     */
+    protected boolean isApplyPostQueryPermissions()
+    {
+        return false;
+    }
+
+    /**
+     * Called after the query to filter out results based on permissions. Note that the query implementation may optimally only select results based on available privileges, in which case this method does not need to be implemented.
+     * <p/>
+     * Permission evaluations should continue until the requested number of results are retrieved or all available results have been examined.
+     * 
+     * @param results
+     *            the results to apply permissions to
+     * @param requestedCount
+     *            the minimum number of results to pass the permission checks in order to fully satisfy the paging requirements
+     * @return the remaining results (as a single "page") after permissions have been applied
+     */
+    protected List<R> applyPostQueryPermissions(List<R> results, int requestedCount)
+    {
+        throw new UnsupportedOperationException("Override this method if post-query filtering is required.");
+    }
+
+    /**
+     * Get the total number of available results after querying, filtering, sorting and permission checking.
+     * <p/>
+     * The default implementation assumes that the given results are the final total possible.
+     * 
+     * @param results
+     *            the results after filtering and sorting, but before paging
+     * @return pair representing (a) the total number of results and (b) the estimated (or actual) number of maximum results possible for this query.
+     * 
+     * @see CannedQueryParameters#getTotalResultCountMax()
+     */
+    protected Pair<Integer, Integer> getTotalResultCount(List<R> results)
+    {
+        Integer size = results.size();
+        return new Pair<Integer, Integer>(size, size);
+    }
+
+    /**
+     * Override to get post-query calls to do pull out paged results.
+     * 
+     * @return <tt>true</tt> to get a post-query call to page (default <tt>true</tt>)
+     */
+    protected boolean isApplyPostQueryPaging()
+    {
+        return true;
+    }
+
+    /**
+     * Called after the {@link #applyPostQuerySorting(List, CannedQuerySortDetails) sorting phase} to pull out results specific to the required pages. Note that the query implementation may optimally create page-specific results, in which case this method does not need to be implemented.
+     * <p/>
+     * The base implementation assumes that results are not paged and that the current results are all the available results i.e. that paging still needs to be applied.
+     * 
+     * @param results
+     *            full results (all or excess pages)
+     * @param pageDetails
+     *            details of the paging requirements
+     * @return the specific page of results as per the query parameters
+     */
+    protected List<List<R>> applyPostQueryPaging(List<R> results, CannedQueryPageDetails pageDetails)
+    {
+        int skipResults = pageDetails.getSkipResults();
+        int pageSize = pageDetails.getPageSize();
+        int pageCount = pageDetails.getPageCount();
+        int pageNumber = pageDetails.getPageNumber();
+
+        int availableResults = results.size();
+        int totalResults = pageSize * pageCount;
+        int firstResult = skipResults + ((pageNumber - 1) * pageSize); // first of window
+
+        List<List<R>> pages = new ArrayList<List<R>>(pageCount);
+
+        // First some shortcuts
+        if (skipResults == 0 && pageSize > availableResults)
+        {
+            return Collections.singletonList(results); // Requesting more results in one page than are available
+        }
+        else if (firstResult > availableResults)
+        {
+            return pages; // Start of first page is after all results
+        }
+
+        // Build results
+        Iterator<R> iterator = results.listIterator(firstResult);
+        int countTotal = 0;
+        List<R> page = new ArrayList<R>(Math.min(results.size(), pageSize)); // Prevent memory blow-out
+        pages.add(page);
+        while (iterator.hasNext() && countTotal < totalResults)
+        {
+            if (page.size() == pageSize)
+            {
+                // Create a page and add it to the results
+                page = new ArrayList<R>(pageSize);
+                pages.add(page);
+            }
+            R next = iterator.next();
+            page.add(next);
+
+            countTotal++;
+        }
+
+        // Done
+        return pages;
+    }
+
+    protected CannedQueryResults<R> createCannedQueryResults(List<List<R>> finalPages, List<R> rawResults)
+    {
+        CannedQueryPageDetails pagingDetails = parameters.getPageDetails();
+        // Get total count
+        final Pair<Integer, Integer> totalCount = getTotalResultCount(rawResults);
         // Has more items beyond requested pages ? ... ie. at least one more page (with at least one result)
         final boolean hasMoreItems = (rawResults.size() > pagingDetails.getResultsRequiredForPaging()) || (totalCount.getFirst() > pagingDetails.getResultsRequiredForPaging());
-        
-        results = new CannedQueryResults<R>()
-        {
+
+        results = new CannedQueryResults<>() {
             @Override
             public CannedQuery<R> getOriginatingQuery()
             {
                 return AbstractCannedQuery.this;
             }
-            
+
             @Override
             public String getQueryExecutionId()
             {
                 return queryExecutionId;
             }
-            
+
             @Override
             public Pair<Integer, Integer> getTotalResultCount()
             {
@@ -141,7 +287,7 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
                     throw new IllegalStateException("Total results were not requested in parameters.");
                 }
             }
-            
+
             @Override
             public int getPagedResultCount()
             {
@@ -152,13 +298,13 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
                 }
                 return finalPagedCount;
             }
-            
+
             @Override
             public int getPageCount()
             {
                 return finalPages.size();
             }
-            
+
             @Override
             public R getSingleResult()
             {
@@ -168,7 +314,7 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
                 }
                 return finalPages.get(0).get(0);
             }
-            
+
             @Override
             public List<R> getPage()
             {
@@ -178,13 +324,13 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
                 }
                 return finalPages.get(0);
             }
-            
+
             @Override
             public List<List<R>> getPages()
             {
                 return finalPages;
             }
-            
+
             @Override
             public boolean hasMoreItems()
             {
@@ -192,156 +338,5 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
             }
         };
         return results;
-    }
-    
-    /**
-     * Implement the basic query, returning either filtered or all results.
-     * <p/>
-     * The implementation may optimally select, filter, sort and apply permissions.
-     * If not, however, the subsequent post-query methods
-     * ({@link #applyPostQuerySorting(List, CannedQuerySortDetails)},
-     *  {@link #applyPostQueryPermissions(List, int)} and
-     *  {@link #applyPostQueryPaging(List, CannedQueryPageDetails)}) can
-     * be used to trim the results as required.
-     * 
-     * @param parameters            the full parameters to be used for execution
-     */
-    protected abstract List<R> queryAndFilter(CannedQueryParameters parameters);
-    
-    /**
-     * Override to get post-query calls to do sorting.
-     * 
-     * @return              <tt>true</tt> to get a post-query call to sort (default <tt>false</tt>)
-     */
-    protected boolean isApplyPostQuerySorting()
-    {
-        return false;
-    }
-    
-    /**
-     * Called before {@link #applyPostQueryPermissions(List, int)} to allow the results to be sorted prior to permission checks.
-     * Note that the query implementation may optimally sort results during retrieval, in which case this method does not need to be implemented.
-     * 
-     * @param results               the results to sort
-     * @param sortDetails           details of the sorting requirements
-     * @return                      the results according to the new sort order
-     */
-    protected List<R> applyPostQuerySorting(List<R> results, CannedQuerySortDetails sortDetails)
-    {
-        throw new UnsupportedOperationException("Override this method if post-query sorting is required.");
-    }
-    
-    /**
-     * Override to get post-query calls to apply permission filters.
-     * 
-     * @return              <tt>true</tt> to get a post-query call to apply permissions (default <tt>false</tt>)
-     */
-    protected boolean isApplyPostQueryPermissions()
-    {
-        return false;
-    }
-    
-    /**
-     * Called after the query to filter out results based on permissions.
-     * Note that the query implementation may optimally only select results
-     * based on available privileges, in which case this method does not need to be implemented.
-     * <p/>
-     * Permission evaluations should continue until the requested number of results are retrieved
-     * or all available results have been examined.
-     * 
-     * @param results               the results to apply permissions to
-     * @param requestedCount        the minimum number of results to pass the permission checks
-     *                              in order to fully satisfy the paging requirements
-     * @return                      the remaining results (as a single "page") after permissions have been applied
-     */
-    protected List<R> applyPostQueryPermissions(List<R> results, int requestedCount)
-    {
-        throw new UnsupportedOperationException("Override this method if post-query filtering is required.");
-    }
-    
-    /**
-     * Get the total number of available results after querying, filtering, sorting and permission checking.
-     * <p/>
-     * The default implementation assumes that the given results are the final total possible.
-     * 
-     * @param results               the results after filtering and sorting, but before paging
-     * @return                      pair representing (a) the total number of results and
-     *                              (b) the estimated (or actual) number of maximum results
-     *                              possible for this query.
-     * 
-     * @see CannedQueryParameters#getTotalResultCountMax()
-     */
-    protected Pair<Integer, Integer> getTotalResultCount(List<R> results)
-    {
-        Integer size = results.size();
-        return new Pair<Integer, Integer>(size, size);
-    }
-    
-    /**
-     * Override to get post-query calls to do pull out paged results.
-     * 
-     * @return              <tt>true</tt> to get a post-query call to page (default <tt>true</tt>)
-     */
-    protected boolean isApplyPostQueryPaging()
-    {
-        return true;
-    }
-    
-    /**
-     * Called after the {@link #applyPostQuerySorting(List, CannedQuerySortDetails) sorting phase} to pull out results specific
-     * to the required pages.  Note that the query implementation may optimally
-     * create page-specific results, in which case this method does not need to be implemented.
-     * <p/>
-     * The base implementation assumes that results are not paged and that the current results
-     * are all the available results i.e. that paging still needs to be applied.
-     * 
-     * @param results               full results (all or excess pages)
-     * @param pageDetails           details of the paging requirements
-     * @return                      the specific page of results as per the query parameters
-     */
-    protected List<List<R>> applyPostQueryPaging(List<R> results, CannedQueryPageDetails pageDetails)
-    {
-        int skipResults = pageDetails.getSkipResults();
-        int pageSize = pageDetails.getPageSize();
-        int pageCount = pageDetails.getPageCount();
-        int pageNumber = pageDetails.getPageNumber();
-        
-        int availableResults = results.size();
-        int totalResults = pageSize * pageCount;
-        int firstResult = skipResults + ((pageNumber-1) * pageSize);            // first of window
-        
-        List<List<R>> pages = new ArrayList<List<R>>(pageCount);
-        
-        // First some shortcuts
-        if (skipResults == 0 && pageSize > availableResults)
-        {
-            return Collections.singletonList(results);  // Requesting more results in one page than are available
-        }
-        else if (firstResult > availableResults)
-        {
-            return pages;                               // Start of first page is after all results
-        }
-        
-        // Build results
-        Iterator<R> iterator = results.listIterator(firstResult);
-        int countTotal = 0;
-        List<R> page = new ArrayList<R>(Math.min(results.size(), pageSize));    // Prevent memory blow-out
-        pages.add(page);
-        while (iterator.hasNext() && countTotal < totalResults)
-        {
-            if (page.size() == pageSize)
-            {
-                // Create a page and add it to the results
-                page = new ArrayList<R>(pageSize);
-                pages.add(page);
-            }
-            R next = iterator.next();
-            page.add(next);
-            
-            countTotal++;
-        }
-        
-        // Done
-        return pages;
     }
 }

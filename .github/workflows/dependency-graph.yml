@@ -30,7 +30,7 @@ jobs:
           maven-settings-path: ".ci.settings.xml"
 
       - name: Submit dependency graph
-        uses: advanced-security/maven-dependency-submission-action@v4
+        uses: advanced-security/maven-dependency-submission-action@v5
         with:
           settings-file: ".ci.settings.xml"
         env:

@@ -988,6 +988,16 @@ FTSPHRASE
                  )
         )*
         '\''
+        | '\u201D'
+        (
+                F_ESC
+                |
+                ~(
+                        '\\'
+                        | '\u201D'
+                 )
+        )*
+        '\u201D'
         ;
 /*
  * Basic URI pattern based on the regular expression patttern taken from the RFC (it it not full URI parsing)

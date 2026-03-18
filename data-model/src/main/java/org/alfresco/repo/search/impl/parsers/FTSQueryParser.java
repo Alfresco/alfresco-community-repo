@@ -134,6 +134,7 @@ public class FTSQueryParser
         FTSParser parser = null;
         try
         {
+            // ftsExpression = normalizeTypographicalQuotes(ftsExpression);
             CharStream cs = new ANTLRStringStream(ftsExpression);
             FTSLexer lexer = new FTSLexer(cs);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -1684,5 +1685,21 @@ public class FTSQueryParser
         }
 
         return builder.toString();
+    }
+
+    /**
+     * Replace typographical (smart) quotes with their standard ASCII equivalents so the FTS lexer can correctly parse phrase queries that contain them.
+     */
+    static String normalizeTypographicalQuotes(String input)
+    {
+        if (input == null)
+        {
+            return null;
+        }
+        return input
+                .replace('“', '"')
+                .replace('”', '"')
+                .replace('‘', '\'')
+                .replace('’', '\'');
     }
 }

@@ -37,24 +37,30 @@ import org.alfresco.service.namespace.QName;
 @AlfrescoPublicApi
 public class PermissionContext
 {
-    private QName type;
+    private final QName type;
 
-    private HashSet<QName> aspects = new HashSet<QName>();
+    private final Set<QName> aspects;
 
-    private Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+    private final Map<QName, Serializable> properties = new HashMap<>();
 
-    private Map<String, Set<String>> dynamicAuthorityAssignment = new HashMap<String, Set<String>>();
+    private final Map<String, Set<String>> dynamicAuthorityAssignment = new HashMap<>();
 
-    private Map<String, Object> additionalContext = new HashMap<String, Object>();
+    private final Map<String, Object> additionalContext = new HashMap<>();
 
     private Long storeAcl = null;
 
     public PermissionContext(QName type)
     {
-        this.type = type;
+        this(type, new HashSet<>());
     }
 
-    public HashSet<QName> getAspects()
+    public PermissionContext(QName type, Set<QName> aspects)
+    {
+        this.type = type;
+        this.aspects = aspects;
+    }
+
+    public Set<QName> getAspects()
     {
         return aspects;
     }
@@ -66,12 +72,7 @@ public class PermissionContext
 
     public void addDynamicAuthorityAssignment(String user, String dynamicAuthority)
     {
-        Set<String> dynamicAuthorities = dynamicAuthorityAssignment.get(user);
-        if (dynamicAuthorities == null)
-        {
-            dynamicAuthorities = new HashSet<String>();
-            dynamicAuthorityAssignment.put(user, dynamicAuthorities);
-        }
+        Set<String> dynamicAuthorities = dynamicAuthorityAssignment.computeIfAbsent(user, k -> new HashSet<>());
         dynamicAuthorities.add(dynamicAuthority);
     }
 

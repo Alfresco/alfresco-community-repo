@@ -5350,7 +5350,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 logger.warn("Child node ID " + childNodeId + " has no parent associations - cannot cache parent associations");
                 continue;
             }
-            
+
             Node childNode = getNodeNotNull(childNodeId, false);
             boolean isRoot = hasNodeAspect(childNodeId, ContentModel.ASPECT_ROOT);
             boolean isStoreRoot = getNodeType(childNodeId).equals(ContentModel.TYPE_STOREROOT);
@@ -5369,7 +5369,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     isRoot,
                     isStoreRoot,
                     childAssocs);
-            
+
             parentAssocsCache.put(cacheKey, parentAssocsInfo);
         }
     }

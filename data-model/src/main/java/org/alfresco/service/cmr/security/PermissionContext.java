@@ -39,7 +39,7 @@ public class PermissionContext
 {
     private final QName type;
 
-    private final Set<QName> aspects;
+    private final HashSet<QName> aspects = new HashSet<>();
 
     private final Map<QName, Serializable> properties = new HashMap<>();
 
@@ -51,16 +51,10 @@ public class PermissionContext
 
     public PermissionContext(QName type)
     {
-        this(type, new HashSet<>());
-    }
-
-    public PermissionContext(QName type, Set<QName> aspects)
-    {
         this.type = type;
-        this.aspects = aspects;
     }
 
-    public Set<QName> getAspects()
+    public HashSet<QName> getAspects()
     {
         return aspects;
     }

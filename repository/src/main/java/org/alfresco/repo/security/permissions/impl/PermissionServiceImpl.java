@@ -593,7 +593,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         {
             QName typeQname = nodeService.getType(nodeRef);
             Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
-            PermissionContext context = new PermissionContext(typeQname, aspectQNames);
+            PermissionContext context = new PermissionContext(typeQname);
+            context.getAspects().addAll(aspectQNames);
             Authentication auth = AuthenticationUtil.getRunAsAuthentication();
             if (auth != null)
             {
@@ -1272,9 +1273,9 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             {
                 String authority = dynamicAuthority.getAuthority();
                 Set<PermissionReference> requiredFor = dynamicAuthority.requiredFor();
-                if (authority != PermissionService.OWNER_AUTHORITY &&
-                        authority != PermissionService.ADMINISTRATOR_AUTHORITY &&
-                        authority != PermissionService.LOCK_OWNER_AUTHORITY &&
+                if (!PermissionService.OWNER_AUTHORITY.equals(authority) &&
+                        !PermissionService.ADMINISTRATOR_AUTHORITY.equals(authority) &&
+                        !PermissionService.LOCK_OWNER_AUTHORITY.equals(authority) &&
                         (requiredFor == null ||
                                 requiredFor.contains(fullControlPermissionReference) ||
                                 requiredFor.contains(readPermissionReference)))

@@ -193,6 +193,16 @@
                         <tokenised>false</tokenised>
                     </index>
                 </property>
+                <property name="cdict:locCountry">
+                    <title>Country</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
             </properties>
         </aspect>
     </aspects>

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -516,10 +516,9 @@ public class MessageServiceImpl implements MessageService
                                 String key = enumKeys.nextElement();
                                 props.put(key, resourcebundle.getString(key));
                             }
-
-                            loadedBundles.add(resBundlePath);
                             count++;
                         }
+                        loadedBundles.add(resBundlePath);
                     }
                 }
 

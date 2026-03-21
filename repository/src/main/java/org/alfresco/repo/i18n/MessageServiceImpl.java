@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -313,12 +313,12 @@ public class MessageServiceImpl implements MessageService
                 {
                     Locale locale = itr.next();
 
-                    Set<String> loadedBundles = loadedResourceBundlesForAllLocales.get(locale);
+                    Set<String> attemptedBundles = loadedResourceBundlesForAllLocales.get(locale);
                     Map<String, String> props = cachedMessagesForAllLocales.get(locale);
 
-                    if ((loadedBundles != null) && (props != null))
+                    if ((attemptedBundles != null) && (props != null))
                     {
-                        if (loadedBundles.contains(resBundlePath))
+                        if (attemptedBundles.contains(resBundlePath))
                         {
                             ResourceBundle resourcebundle = null;
 
@@ -361,7 +361,7 @@ public class MessageServiceImpl implements MessageService
                                 }
                             }
 
-                            loadedBundles.remove(resBundlePath);
+                            attemptedBundles.remove(resBundlePath);
                         }
                     }
                 }
@@ -400,10 +400,10 @@ public class MessageServiceImpl implements MessageService
      */
     private Map<String, String> getLocaleProperties(Locale locale)
     {
-        Set<String> loadedBundles = null;
+        Set<String> attemptedBundles = null;
         Map<String, String> props = null;
 
-        int loadedBundleCount = 0;
+        int registeredBundleCount = 0;
 
         String tenantDomain = getTenantDomain();
         boolean init = false;
@@ -416,26 +416,26 @@ public class MessageServiceImpl implements MessageService
         try
         {
             tenantLoadedResourceBundles = getLoadedResourceBundles(tenantDomain, true);
-            loadedBundles = tenantLoadedResourceBundles.get(locale);
+            attemptedBundles = tenantLoadedResourceBundles.get(locale);
 
             tenantCachedMessages = getMessages(tenantDomain, true);
             props = tenantCachedMessages.get(locale);
 
             tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain, false, false);
-            loadedBundleCount = tenantResourceBundleBaseNames.size();
+            registeredBundleCount = tenantResourceBundleBaseNames.size();
         }
         finally
         {
             readLock.unlock();
         }
 
-        if (loadedBundles == null)
+        if (attemptedBundles == null)
         {
             LockHelper.tryLock(writeLock, tryLockTimeout, "adding resource bundle for locale in 'MessageServiceImpl.getLocaleProperties()'");
             try
             {
-                loadedBundles = new HashSet<String>();
-                tenantLoadedResourceBundles.put(locale, loadedBundles);
+                attemptedBundles = new HashSet<String>();
+                tenantLoadedResourceBundles.put(locale, attemptedBundles);
                 putLoadedResourceBundles(tenantDomain, tenantLoadedResourceBundles);
                 init = true;
             }
@@ -462,7 +462,7 @@ public class MessageServiceImpl implements MessageService
             }
         }
 
-        if ((loadedBundles.size() != loadedBundleCount) || (init == true))
+        if ((attemptedBundles.size() != registeredBundleCount) || (init == true))
         {
             LockHelper.tryLock(writeLock, tryLockTimeout,
                     "searching resource bundle and adding new resource bundle for locale if the bundle is not found in 'MessageServiceImpl.getLocaleProperties()'");
@@ -476,7 +476,7 @@ public class MessageServiceImpl implements MessageService
                 // load resource bundles for given locale (by tenant, if applicable)
                 for (String resBundlePath : resBundleBaseNames)
                 {
-                    if (loadedBundles.contains(resBundlePath) == false)
+                    if (attemptedBundles.contains(resBundlePath) == false)
                     {
                         ResourceBundle resourcebundle = null;
 
@@ -516,10 +516,9 @@ public class MessageServiceImpl implements MessageService
                                 String key = enumKeys.nextElement();
                                 props.put(key, resourcebundle.getString(key));
                             }
-
-                            loadedBundles.add(resBundlePath);
                             count++;
                         }
+                        attemptedBundles.add(resBundlePath);
                     }
                 }
 

@@ -36,6 +36,7 @@ import java.util.Set;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -108,7 +109,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         String methodName = invocation.getMethod().getName();
         Object[] args = invocation.getArguments();
 
-        if (globalContentPropertyRestrictions && !isCallerWhiteListed())
+        if (globalContentPropertyRestrictions && !isReadOnlyTransaction() && !isCallerWhiteListed())
         {
             if (methodName.equals("setProperties"))
             {
@@ -200,6 +201,11 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         }
 
         return invocation.proceed();
+    }
+
+    private boolean isReadOnlyTransaction()
+    {
+        return AlfrescoTransactionSupport.getTransactionReadState() == AlfrescoTransactionSupport.TxnReadState.TXN_READ_ONLY;
     }
 
     private boolean isContentChanged(NodeRef nodeRef, QName qname, Serializable newValue)

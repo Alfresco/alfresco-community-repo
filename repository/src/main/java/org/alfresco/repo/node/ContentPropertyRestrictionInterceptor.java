@@ -32,6 +32,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -40,15 +45,11 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * Interceptor that enforces restrictions on updates of properties of type content (cm:content and alike) on NodeService.
  * <p/>
- * Can be configured by using global enabled flag - <code>contentPropertyRestrictions.enabled</code>,
- * or comma separated white list of callers <code>contentPropertyRestrictions.whitelist</code>,
- * which can be either packages or fully qualified class names.
+ * Can be configured by using global enabled flag - <code>contentPropertyRestrictions.enabled</code>, or comma separated white list of callers <code>contentPropertyRestrictions.whitelist</code>, which can be either packages or fully qualified class names.
  *
  * @author Alex Mukha
  * @author David Edwards
@@ -61,26 +62,25 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
     private boolean globalContentPropertyRestrictions = true;
 
     @SuppressWarnings("deprecation")
-    private Class[] defaultWhiteList = new Class[]
-            {
-                    org.alfresco.filesys.repo.CifsHelper.class,
-                    org.alfresco.filesys.repo.ContentDiskDriver.class,
-                    org.alfresco.filesys.repo.ContentDiskDriver2.class,
-                    org.alfresco.filesys.repo.ContentNetworkFile.class,
-                    org.alfresco.opencmis.AlfrescoCmisServiceImpl.class,
-                    org.alfresco.repo.action.ActionServiceImpl.class,
-                    org.alfresco.repo.action.executer.ContentMetadataExtracter.class,
-                    org.alfresco.repo.coci.WorkingCopyAspect.class,
-                    org.alfresco.repo.copy.CopyServiceImpl.class,
-                    org.alfresco.repo.forms.processor.node.ContentModelFormProcessor.class,
-                    org.alfresco.repo.forum.CommentServiceImpl.class,
-                    org.alfresco.repo.importer.FileImporterImpl.class,
-                    org.alfresco.repo.jscript.ScriptNode.ScriptContentData.class,
-                    org.alfresco.repo.rendition.RenditionNodeManager.class,
-                    org.alfresco.repo.transfer.RepoPrimaryManifestProcessorImpl.class,
-                    org.alfresco.repo.version.Version2ServiceImpl.class,
-                    org.alfresco.repo.workflow.WorkflowDeployer.class
-            };
+    private Class[] defaultWhiteList = new Class[]{
+            org.alfresco.filesys.repo.CifsHelper.class,
+            org.alfresco.filesys.repo.ContentDiskDriver.class,
+            org.alfresco.filesys.repo.ContentDiskDriver2.class,
+            org.alfresco.filesys.repo.ContentNetworkFile.class,
+            org.alfresco.opencmis.AlfrescoCmisServiceImpl.class,
+            org.alfresco.repo.action.ActionServiceImpl.class,
+            org.alfresco.repo.action.executer.ContentMetadataExtracter.class,
+            org.alfresco.repo.coci.WorkingCopyAspect.class,
+            org.alfresco.repo.copy.CopyServiceImpl.class,
+            org.alfresco.repo.forms.processor.node.ContentModelFormProcessor.class,
+            org.alfresco.repo.forum.CommentServiceImpl.class,
+            org.alfresco.repo.importer.FileImporterImpl.class,
+            org.alfresco.repo.jscript.ScriptNode.ScriptContentData.class,
+            org.alfresco.repo.rendition.RenditionNodeManager.class,
+            org.alfresco.repo.transfer.RepoPrimaryManifestProcessorImpl.class,
+            org.alfresco.repo.version.Version2ServiceImpl.class,
+            org.alfresco.repo.workflow.WorkflowDeployer.class
+    };
 
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -109,12 +109,11 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         String methodName = invocation.getMethod().getName();
         Object[] args = invocation.getArguments();
 
-        if (globalContentPropertyRestrictions && !isCallerWhiteListed())
+        if (globalContentPropertyRestrictions && !isReadOnlyTransaction() && !isCallerWhiteListed())
         {
             if (methodName.equals("setProperties"))
             {
-                Map<QName, Serializable> properties = args[1] != null ?
-                        Collections.unmodifiableMap((Map<QName, Serializable>) args[1]) : Collections.emptyMap();
+                Map<QName, Serializable> properties = args[1] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[1]) : Collections.emptyMap();
                 NodeRef nodeRef = (NodeRef) args[0];
                 if (nodeRef != null)
                 {
@@ -133,8 +132,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
             }
             else if (methodName.equals("addProperties"))
             {
-                Map<QName, Serializable> properties = args[1] != null ?
-                        Collections.unmodifiableMap((Map<QName, Serializable>) args[1]) : Collections.emptyMap();
+                Map<QName, Serializable> properties = args[1] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[1]) : Collections.emptyMap();
                 NodeRef nodeRef = (NodeRef) args[0];
                 if (nodeRef != null)
                 {
@@ -153,8 +151,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
             }
             else if (methodName.equals("createNode") && args.length == 5)
             {
-                Map<QName, Serializable> properties = args[4] != null ?
-                        Collections.unmodifiableMap((Map<QName, Serializable>) args[4]) : Collections.emptyMap();
+                Map<QName, Serializable> properties = args[4] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[4]) : Collections.emptyMap();
                 for (QName propQname : properties.keySet())
                 {
                     if (isContentProperty(propQname, properties.get(propQname)) && isContentNotNullOrEmpty(properties.get(propQname)))
@@ -184,8 +181,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
             }
             else if (methodName.equals("addAspect"))
             {
-                Map<QName, Serializable> properties = args[2] != null ?
-                        Collections.unmodifiableMap((Map<QName, Serializable>) args[2]) : Collections.emptyMap();
+                Map<QName, Serializable> properties = args[2] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[2]) : Collections.emptyMap();
                 NodeRef nodeRef = (NodeRef) args[0];
                 if (nodeRef != null)
                 {
@@ -205,6 +201,11 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         }
 
         return invocation.proceed();
+    }
+
+    private boolean isReadOnlyTransaction()
+    {
+        return AlfrescoTransactionSupport.getTransactionReadState() == AlfrescoTransactionSupport.TxnReadState.TXN_READ_ONLY;
     }
 
     private boolean isContentChanged(NodeRef nodeRef, QName qname, Serializable newValue)
@@ -258,11 +259,10 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
     private boolean isCallerWhiteListed()
     {
         StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
-        Optional<String> callerClass = walker.walk(s ->
-                s.map(StackWalker.StackFrame::getDeclaringClass)
-                        .map(Class::getName)
-                        .filter(globalContentPropertyRestrictionWhiteList::contains)
-                        .findFirst());
+        Optional<String> callerClass = walker.walk(s -> s.map(StackWalker.StackFrame::getDeclaringClass)
+                .map(Class::getName)
+                .filter(globalContentPropertyRestrictionWhiteList::contains)
+                .findFirst());
 
         return callerClass.isPresent();
     }
@@ -272,7 +272,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         Set<String> whiteListSet = new HashSet<>();
 
         whiteList = whiteList == null ? "" : whiteList.trim();
-        if(whiteList.length() > 0)
+        if (whiteList.length() > 0)
         {
             String[] classes = whiteList.split(",");
             for (String className : classes)

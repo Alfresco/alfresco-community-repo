@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -169,6 +170,62 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     }
 
     @Override
+    public Map<NodeRef, Map<QName, Serializable>> getPropertiesForNodeRefs(List<NodeRef> nodeRefs)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting properties for " + nodeRefs.size() + " virtual node references.");
+        }
+
+        List<NodeRef> physicalNodeRefs = new ArrayList<>();
+        Map<NodeRef, Map<QName, Serializable>> result = new HashMap<>();
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("  Processing node reference: " + nodeRef);
+            }
+            Reference reference = Reference.fromNodeRef(nodeRef);
+            if (reference != null)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    It is a virtual node reference.");
+                }
+
+                result.put(nodeRef, getVirtualProperties(reference));
+            }
+            else
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    It is a physical node reference.");
+                }
+
+                physicalNodeRefs.add(nodeRef);
+            }
+        }
+
+        if (!physicalNodeRefs.isEmpty())
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Retrieving properties for " + physicalNodeRefs.size() + " physical node references.");
+            }
+
+            Map<NodeRef, Map<QName, Serializable>> physicalProperties = getTrait().getPropertiesForNodeRefs(physicalNodeRefs);
+            result.putAll(physicalProperties);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Returning properties for " + result.size() + " node references.");
+        }
+
+        return result;
+    }
+
+    @Override
     public Serializable getProperty(NodeRef nodeRef, QName qname)
     {
         Reference reference = Reference.fromNodeRef(nodeRef);
@@ -199,6 +256,28 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             return theTrait.getAspects(nodeRef);
         }
+    }
+
+    @Override
+    public Map<NodeRef, Set<QName>> getAspects(List<NodeRef> nodeRefs)
+    {
+        NodeServiceTrait theTrait = getTrait();
+        Map<NodeRef, Set<QName>> aspectsMap = new HashMap<>();
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            Reference reference = Reference.fromNodeRef(nodeRef);
+            if (reference != null)
+            {
+                GetAspectsMethod method = new GetAspectsMethod(theTrait,
+                        environment);
+                aspectsMap.put(nodeRef, reference.execute(method));
+            }
+            else
+            {
+                aspectsMap.put(nodeRef, theTrait.getAspects(nodeRef));
+            }
+        }
+        return aspectsMap;
     }
 
     @Override
@@ -247,6 +326,33 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         {
             return getTrait().exists(nodeRef);
         }
+    }
+
+    @Override
+    public List<NodeRef> exists(List<NodeRef> nodeRefs)
+    {
+        List<NodeRef> existingRefs = new ArrayList<>();
+        List<NodeRef> nonExistingRefs = new ArrayList<>();
+
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            Reference reference = Reference.fromNodeRef(nodeRef);
+            if (reference != null)
+            {
+                // For now references last forever (i.e. there is no expiration
+                // mechanism )
+                existingRefs.add(nodeRef);
+            }
+            else
+            {
+                nonExistingRefs.add(nodeRef);
+            }
+        }
+
+        // Now check the rest with the actual node service
+        List<NodeRef> allExistingRefs = getTrait().exists(nonExistingRefs);
+        existingRefs.addAll(allExistingRefs);
+        return existingRefs;
     }
 
     @Override
@@ -1254,6 +1360,12 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     public NodeRef getNodeRef(Long nodeId)
     {
         return getTrait().getNodeRef(nodeId);
+    }
+
+    @Override
+    public List<NodeRef> getNodeRefs(List<Long> nodeIds)
+    {
+        return getTrait().getNodeRefs(nodeIds);
     }
 
     @Override

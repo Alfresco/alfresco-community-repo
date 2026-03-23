@@ -30,10 +30,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -53,6 +56,8 @@ import org.alfresco.util.PropertyCheck;
  */
 public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
 {
+    private static final Log logger = LogFactory.getLog(NodeRefPropertyMethodInterceptor.class);
+
     private boolean filterOnGet = true;
 
     private boolean filterOnSet = true;
@@ -230,6 +235,45 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
                     return invocation.proceed();
                 }
             }
+            else if (methodName.equals("getPropertiesForNodeRefs"))
+            {
+                if (filterOnGet)
+                {
+                    // Not sure why this is here but it is refereced in the original code
+                    List<NodeRef> nodeRefs = (List<NodeRef>) args[0];
+
+                    Map<NodeRef, Map<QName, Serializable>> propertyMap = (Map<NodeRef, Map<QName, Serializable>>) invocation.proceed();
+
+                    if (propertyMap == null)
+                    {
+                        return null;
+                    }
+
+                    Map<NodeRef, Map<QName, Serializable>> convertedProperties = new HashMap<>(propertyMap.size() * 2);
+
+                    for (Map.Entry<NodeRef, Map<QName, Serializable>> entry : propertyMap.entrySet())
+                    {
+                        NodeRef nodeRef = entry.getKey();
+                        Map<QName, Serializable> properties = entry.getValue();
+
+                        Map<QName, Serializable> convertedNodeProperties = new HashMap<>(properties.size() * 2);
+                        for (Map.Entry<QName, Serializable> propEntry : properties.entrySet())
+                        {
+                            QName propertyQName = propEntry.getKey();
+                            Serializable value = propEntry.getValue();
+                            Serializable convertedValue = getValue(propertyQName, value);
+                            convertedNodeProperties.put(propertyQName, convertedValue);
+                        }
+                        convertedProperties.put(nodeRef, convertedNodeProperties);
+                    }
+
+                    return convertedProperties;
+                }
+                else
+                {
+                    return invocation.proceed();
+                }
+            }
             else if (methodName.equals("setProperties"))
             {
                 if (filterOnSet)
@@ -271,9 +315,22 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
             }
             else
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("The method " + methodName + " is not being filtered by NodeRefPropertyMethodInterceptor");
+                }
+
                 return invocation.proceed();
             }
 
+        }
+        catch (Exception e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Exception in NodeRefPropertyMethodInterceptor on method " + methodName, e);
+            }
+            throw e;
         }
         finally
         {

@@ -36,6 +36,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -185,6 +186,11 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
             // Handle StoreRedirector Interface
             if (method.getDeclaringClass().equals(StoreRedirector.class))
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Invoking StoreRedirector method " + method);
+                }
+
                 return method.invoke(this, args);
             }
 
@@ -217,15 +223,26 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
             }
 
             if (logger.isDebugEnabled())
+            {
                 logger.debug("Redirecting method " + method + " based on store type " + storeRef);
+            }
 
             try
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Invoking method " + method + " on binding " + AopProxyUtils.ultimateTargetClass(binding).getName());
+                }
+
                 // Invoke the appropriate binding
                 return method.invoke(binding, args);
             }
             catch (InvocationTargetException e)
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Invocation of method " + method + " on binding " + AopProxyUtils.ultimateTargetClass(binding).getName() + " threw exception", e.getTargetException());
+                }
                 throw e.getTargetException();
             }
         }

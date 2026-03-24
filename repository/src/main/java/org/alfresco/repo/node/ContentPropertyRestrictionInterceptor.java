@@ -113,6 +113,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         {
             whiteListSet.addAll(Arrays.stream(whitelist.split(","))
                     .map(String::trim)
+                    .filter(s -> !s.isEmpty())
                     .toList());
         }
 
@@ -181,11 +182,13 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         NodeRef nodeRef = (NodeRef) args[0];
         if (nodeRef != null)
         {
-            for (QName propQname : properties.keySet())
+            for (Map.Entry<QName, Serializable> entry : properties.entrySet())
             {
-                if (isContentProperty(propQname, properties.get(propQname)) &&
-                        isContentNotNullOrEmpty(properties.get(propQname)) &&
-                        isContentChanged(nodeRef, propQname, properties.get(propQname)))
+                QName propQname = entry.getKey();
+                Serializable value = entry.getValue();
+                if (isContentProperty(propQname, value) &&
+                        isContentNotNullOrEmpty(value) &&
+                        isContentChanged(nodeRef, propQname, value))
                 {
                     throw new InvalidTypeException("The node's content can't be updated via NodeService#%s directly: \n   node: %s\n   property name: %s".formatted(methodName, args[0], propQname.getLocalName()), propQname);
                 }
@@ -201,9 +204,11 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
             return;
         }
         Map<QName, Serializable> properties = args[4] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[4]) : Collections.emptyMap();
-        for (QName propQname : properties.keySet())
+        for (Map.Entry<QName, Serializable> entry : properties.entrySet())
         {
-            if (isContentProperty(propQname, properties.get(propQname)) && isContentNotNullOrEmpty(properties.get(propQname)))
+            QName propQname = entry.getKey();
+            Serializable value = entry.getValue();
+            if (isContentProperty(propQname, value) && isContentNotNullOrEmpty(value))
             {
                 throw new InvalidTypeException("The node's content can't be updated via NodeService#createNode directly: \n" +
                         "   node: " + args[0] + "\n" +
@@ -237,11 +242,13 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         NodeRef nodeRef = (NodeRef) args[0];
         if (nodeRef != null)
         {
-            for (QName propQname : properties.keySet())
+            for (Map.Entry<QName, Serializable> entry : properties.entrySet())
             {
-                if (isContentProperty(propQname, properties.get(propQname)) &&
-                        isContentNotNullOrEmpty(properties.get(propQname)) &&
-                        isContentChanged(nodeRef, propQname, properties.get(propQname)))
+                QName propQname = entry.getKey();
+                Serializable value = entry.getValue();
+                if (isContentProperty(propQname, value) &&
+                        isContentNotNullOrEmpty(value) &&
+                        isContentChanged(nodeRef, propQname, value))
                 {
                     throw new InvalidTypeException("The node's content can't be updated via NodeService#addAspect directly: \n" +
                             "   node: " + args[0] + "\n" +

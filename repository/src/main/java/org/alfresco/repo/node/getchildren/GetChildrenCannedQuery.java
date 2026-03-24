@@ -833,10 +833,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
 
         /**
-         * Groups rows by node ID so that d:mltext properties with multiple locale
-         * values (which produce one SQL row per locale via the LEFT JOIN on
-         * alf_node_properties) are aggregated into a single MLText before conversion
-         * to String. This ensures locale-aware resolution and emits one callback per node.
+         * Groups rows by node ID so that d:mltext properties with multiple locale values (which produce one SQL row per locale via the LEFT JOIN on alf_node_properties) are aggregated into a single MLText before conversion to String. This ensures locale-aware resolution and emits one callback per node.
          */
         private void filterSort()
         {

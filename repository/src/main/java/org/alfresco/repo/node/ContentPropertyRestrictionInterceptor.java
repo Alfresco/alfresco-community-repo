@@ -26,13 +26,16 @@
 package org.alfresco.repo.node;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -70,7 +73,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
             "addAspect", this::addAspectCheck);
 
     @SuppressWarnings("deprecation")
-    private final Class<?>[] defaultWhiteList = new Class[]{
+    private final List<Class<?>> defaultWhiteList = List.of(
             org.alfresco.filesys.repo.CifsHelper.class,
             org.alfresco.filesys.repo.ContentDiskDriver.class,
             org.alfresco.filesys.repo.ContentDiskDriver2.class,
@@ -87,8 +90,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
             org.alfresco.repo.rendition.RenditionNodeManager.class,
             org.alfresco.repo.transfer.RepoPrimaryManifestProcessorImpl.class,
             org.alfresco.repo.version.Version2ServiceImpl.class,
-            org.alfresco.repo.workflow.WorkflowDeployer.class
-    };
+            org.alfresco.repo.workflow.WorkflowDeployer.class);
 
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -102,22 +104,17 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
 
     public void setGlobalContentPropertyRestrictionWhiteList(String whitelist)
     {
-        Set<String> whiteListSet = new HashSet<>();
+        Set<String> whiteListSet = defaultWhiteList.stream()
+                .map(Class::getName)
+                .collect(Collectors.toCollection(HashSet::new));
 
         whitelist = whitelist == null ? "" : whitelist.trim();
         if (!whitelist.isEmpty())
         {
-            String[] classes = whitelist.split(",");
-            for (String className : classes)
-            {
-                className = className.trim();
-
-                whiteListSet.add(className);
-            }
+            whiteListSet.addAll(Arrays.stream(whitelist.split(","))
+                    .map(String::trim)
+                    .toList());
         }
-
-        // Combine default list with property values
-        Set.of(defaultWhiteList).forEach(item -> whiteListSet.add(item.getName()));
 
         this.globalContentPropertyRestrictionWhiteList = whiteListSet;
     }
@@ -167,12 +164,12 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         return callerClass.isPresent();
     }
 
-    private void setPropertiesCheck(Object[] args)
+    private void setPropertiesCheck(Object... args)
     {
         addSetPropertiesCheck(args, "setProperties");
     }
 
-    private void addPropertiesCheck(Object[] args)
+    private void addPropertiesCheck(Object... args)
     {
         addSetPropertiesCheck(args, "addProperties");
     }
@@ -197,7 +194,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
     }
 
     @SuppressWarnings("unchecked")
-    private void createNodeCheck(Object[] args)
+    private void createNodeCheck(Object... args)
     {
         if (args.length != 5)
         {
@@ -215,7 +212,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         }
     }
 
-    private void setPropertyCheck(Object[] args)
+    private void setPropertyCheck(Object... args)
     {
         QName propQname = (QName) args[1];
         Serializable value = (Serializable) args[2];
@@ -234,7 +231,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
     }
 
     @SuppressWarnings("unchecked")
-    private void addAspectCheck(Object[] args)
+    private void addAspectCheck(Object... args)
     {
         Map<QName, Serializable> properties = args[2] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[2]) : Collections.emptyMap();
         NodeRef nodeRef = (NodeRef) args[0];

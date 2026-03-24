@@ -771,6 +771,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
         private static final int BATCH_SIZE = 256 * 4;
         private final List<FilterSortNodeEntity> currentBatch;
+        private final Set<NodeRef> seenNodeRefs = new HashSet<>();
 
         public FilterSortResultHandler(FilterSortChildQueryCallback resultsCallback)
         {
@@ -828,6 +829,13 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             for (FilterSortNodeEntity result : currentBatch)
             {
                 NodeRef nodeRef = result.createNodeRef();
+
+                // MNT-25631 Skip duplicate nodes that can occur when sorting by d:mltext properties
+                // (e.g. cm:description/ cm:title ) with multiple locale values
+                if (!seenNodeRefs.add(nodeRef))
+                {
+                    continue;
+                }
 
                 Map<NodePropertyKey, NodePropertyValue> propertyValues = new HashMap<NodePropertyKey, NodePropertyValue>(3);
 

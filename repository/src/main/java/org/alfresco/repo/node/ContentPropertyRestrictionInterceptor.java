@@ -26,12 +26,16 @@
 package org.alfresco.repo.node;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -61,8 +65,15 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
     private Set<String> globalContentPropertyRestrictionWhiteList;
     private boolean globalContentPropertyRestrictions = true;
 
+    private final Map<String, Consumer<Object[]>> methodCheckMap = Map.of(
+            "setProperties", this::setPropertiesCheck,
+            "addProperties", this::addPropertiesCheck,
+            "createNode", this::createNodeCheck,
+            "setProperty", this::setPropertyCheck,
+            "addAspect", this::addAspectCheck);
+
     @SuppressWarnings("deprecation")
-    private Class[] defaultWhiteList = new Class[]{
+    private final List<Class<?>> defaultWhiteList = List.of(
             org.alfresco.filesys.repo.CifsHelper.class,
             org.alfresco.filesys.repo.ContentDiskDriver.class,
             org.alfresco.filesys.repo.ContentDiskDriver2.class,
@@ -79,8 +90,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
             org.alfresco.repo.rendition.RenditionNodeManager.class,
             org.alfresco.repo.transfer.RepoPrimaryManifestProcessorImpl.class,
             org.alfresco.repo.version.Version2ServiceImpl.class,
-            org.alfresco.repo.workflow.WorkflowDeployer.class
-    };
+            org.alfresco.repo.workflow.WorkflowDeployer.class);
 
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -94,7 +104,20 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
 
     public void setGlobalContentPropertyRestrictionWhiteList(String whitelist)
     {
-        this.globalContentPropertyRestrictionWhiteList = getWhiteList(whitelist);
+        Set<String> whiteListSet = defaultWhiteList.stream()
+                .map(Class::getName)
+                .collect(Collectors.toCollection(HashSet::new));
+
+        whitelist = whitelist == null ? "" : whitelist.trim();
+        if (!whitelist.isEmpty())
+        {
+            whiteListSet.addAll(Arrays.stream(whitelist.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toList());
+        }
+
+        this.globalContentPropertyRestrictionWhiteList = whiteListSet;
     }
 
     public void setNodeService(NodeService nodeService)
@@ -103,109 +126,136 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
         String methodName = invocation.getMethod().getName();
         Object[] args = invocation.getArguments();
 
-        if (globalContentPropertyRestrictions && !isReadOnlyTransaction() && !isCallerWhiteListed())
+        if (isInterceptorEnabled() && isMethodIntercepted(methodName) && !isReadOnlyTransaction() && !isCallerWhiteListed())
         {
-            if (methodName.equals("setProperties"))
-            {
-                Map<QName, Serializable> properties = args[1] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[1]) : Collections.emptyMap();
-                NodeRef nodeRef = (NodeRef) args[0];
-                if (nodeRef != null)
-                {
-                    for (QName propQname : properties.keySet())
-                    {
-                        if (isContentProperty(propQname, properties.get(propQname)) &&
-                                isContentNotNullOrEmpty(properties.get(propQname)) &&
-                                isContentChanged(nodeRef, propQname, properties.get(propQname)))
-                        {
-                            throw new InvalidTypeException("The node's content can't be updated via NodeService#setProperties directly: \n" +
-                                    "   node: " + args[0] + "\n" +
-                                    "   property name: " + propQname.getLocalName(), propQname);
-                        }
-                    }
-                }
-            }
-            else if (methodName.equals("addProperties"))
-            {
-                Map<QName, Serializable> properties = args[1] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[1]) : Collections.emptyMap();
-                NodeRef nodeRef = (NodeRef) args[0];
-                if (nodeRef != null)
-                {
-                    for (QName propQname : properties.keySet())
-                    {
-                        if (isContentProperty(propQname, properties.get(propQname)) &&
-                                isContentNotNullOrEmpty(properties.get(propQname)) &&
-                                isContentChanged(nodeRef, propQname, properties.get(propQname)))
-                        {
-                            throw new InvalidTypeException("The node's content can't be updated via NodeService#addProperties directly: \n" +
-                                    "   node: " + args[0] + "\n" +
-                                    "   property name: " + propQname.getLocalName(), propQname);
-                        }
-                    }
-                }
-            }
-            else if (methodName.equals("createNode") && args.length == 5)
-            {
-                Map<QName, Serializable> properties = args[4] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[4]) : Collections.emptyMap();
-                for (QName propQname : properties.keySet())
-                {
-                    if (isContentProperty(propQname, properties.get(propQname)) && isContentNotNullOrEmpty(properties.get(propQname)))
-                    {
-                        throw new InvalidTypeException("The node's content can't be updated via NodeService#createNode directly: \n" +
-                                "   node: " + args[0] + "\n" +
-                                "   property name: " + propQname.getLocalName(), propQname);
-                    }
-                }
-            }
-            else if (methodName.equals("setProperty"))
-            {
-                QName propQname = (QName) args[1];
-                Serializable value = (Serializable) args[2];
-                NodeRef nodeRef = (NodeRef) args[0];
-                if (nodeRef != null)
-                {
-                    if (isContentProperty(propQname, value) &&
-                            isContentNotNullOrEmpty(value) &&
-                            isContentChanged(nodeRef, propQname, value))
-                    {
-                        throw new InvalidTypeException("The node's content can't be updated via NodeService#setProperty directly: \n" +
-                                "   node: " + args[0] + "\n" +
-                                "   property name: " + propQname.getLocalName(), propQname);
-                    }
-                }
-            }
-            else if (methodName.equals("addAspect"))
-            {
-                Map<QName, Serializable> properties = args[2] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[2]) : Collections.emptyMap();
-                NodeRef nodeRef = (NodeRef) args[0];
-                if (nodeRef != null)
-                {
-                    for (QName propQname : properties.keySet())
-                    {
-                        if (isContentProperty(propQname, properties.get(propQname)) &&
-                                isContentNotNullOrEmpty(properties.get(propQname)) &&
-                                isContentChanged(nodeRef, propQname, properties.get(propQname)))
-                        {
-                            throw new InvalidTypeException("The node's content can't be updated via NodeService#addAspect directly: \n" +
-                                    "   node: " + args[0] + "\n" +
-                                    "   property name: " + propQname.getLocalName(), propQname);
-                        }
-                    }
-                }
-            }
+            methodCheckMap.get(methodName).accept(args);
         }
 
         return invocation.proceed();
     }
 
+    private boolean isInterceptorEnabled()
+    {
+        return globalContentPropertyRestrictions;
+    }
+
+    private boolean isMethodIntercepted(String methodName)
+    {
+        return methodCheckMap.containsKey(methodName);
+    }
+
     private boolean isReadOnlyTransaction()
     {
         return AlfrescoTransactionSupport.getTransactionReadState() == AlfrescoTransactionSupport.TxnReadState.TXN_READ_ONLY;
+    }
+
+    private boolean isCallerWhiteListed()
+    {
+        StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+        Optional<String> callerClass = walker.walk(s -> s.map(StackWalker.StackFrame::getDeclaringClass)
+                .map(Class::getName)
+                .filter(globalContentPropertyRestrictionWhiteList::contains)
+                .findFirst());
+
+        return callerClass.isPresent();
+    }
+
+    private void setPropertiesCheck(Object... args)
+    {
+        addSetPropertiesCheck(args, "setProperties");
+    }
+
+    private void addPropertiesCheck(Object... args)
+    {
+        addSetPropertiesCheck(args, "addProperties");
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addSetPropertiesCheck(Object[] args, String methodName)
+    {
+        Map<QName, Serializable> properties = args[1] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[1]) : Collections.emptyMap();
+        NodeRef nodeRef = (NodeRef) args[0];
+        if (nodeRef != null)
+        {
+            for (Map.Entry<QName, Serializable> entry : properties.entrySet())
+            {
+                QName propQname = entry.getKey();
+                Serializable value = entry.getValue();
+                if (isContentProperty(propQname, value) &&
+                        isContentNotNullOrEmpty(value) &&
+                        isContentChanged(nodeRef, propQname, value))
+                {
+                    throw new InvalidTypeException("The node's content can't be updated via NodeService#%s directly: \n   node: %s\n   property name: %s".formatted(methodName, args[0], propQname.getLocalName()), propQname);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void createNodeCheck(Object... args)
+    {
+        if (args.length != 5)
+        {
+            return;
+        }
+        Map<QName, Serializable> properties = args[4] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[4]) : Collections.emptyMap();
+        for (Map.Entry<QName, Serializable> entry : properties.entrySet())
+        {
+            QName propQname = entry.getKey();
+            Serializable value = entry.getValue();
+            if (isContentProperty(propQname, value) && isContentNotNullOrEmpty(value))
+            {
+                throw new InvalidTypeException("The node's content can't be updated via NodeService#createNode directly: \n" +
+                        "   node: " + args[0] + "\n" +
+                        "   property name: " + propQname.getLocalName(), propQname);
+            }
+        }
+    }
+
+    private void setPropertyCheck(Object... args)
+    {
+        QName propQname = (QName) args[1];
+        Serializable value = (Serializable) args[2];
+        NodeRef nodeRef = (NodeRef) args[0];
+        if (nodeRef != null)
+        {
+            if (isContentProperty(propQname, value) &&
+                    isContentNotNullOrEmpty(value) &&
+                    isContentChanged(nodeRef, propQname, value))
+            {
+                throw new InvalidTypeException("The node's content can't be updated via NodeService#setProperty directly: \n" +
+                        "   node: " + args[0] + "\n" +
+                        "   property name: " + propQname.getLocalName(), propQname);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addAspectCheck(Object... args)
+    {
+        Map<QName, Serializable> properties = args[2] != null ? Collections.unmodifiableMap((Map<QName, Serializable>) args[2]) : Collections.emptyMap();
+        NodeRef nodeRef = (NodeRef) args[0];
+        if (nodeRef != null)
+        {
+            for (Map.Entry<QName, Serializable> entry : properties.entrySet())
+            {
+                QName propQname = entry.getKey();
+                Serializable value = entry.getValue();
+                if (isContentProperty(propQname, value) &&
+                        isContentNotNullOrEmpty(value) &&
+                        isContentChanged(nodeRef, propQname, value))
+                {
+                    throw new InvalidTypeException("The node's content can't be updated via NodeService#addAspect directly: \n" +
+                            "   node: " + args[0] + "\n" +
+                            "   property name: " + propQname.getLocalName(), propQname);
+                }
+            }
+        }
     }
 
     private boolean isContentChanged(NodeRef nodeRef, QName qname, Serializable newValue)
@@ -254,38 +304,5 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
 
         PropertyDefinition contentPropDef = dictionaryService.getProperty(propertyQName);
         return contentPropDef != null && contentPropDef.getDataType().getName().equals(DataTypeDefinition.CONTENT);
-    }
-
-    private boolean isCallerWhiteListed()
-    {
-        StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
-        Optional<String> callerClass = walker.walk(s -> s.map(StackWalker.StackFrame::getDeclaringClass)
-                .map(Class::getName)
-                .filter(globalContentPropertyRestrictionWhiteList::contains)
-                .findFirst());
-
-        return callerClass.isPresent();
-    }
-
-    private Set<String> getWhiteList(String whiteList)
-    {
-        Set<String> whiteListSet = new HashSet<>();
-
-        whiteList = whiteList == null ? "" : whiteList.trim();
-        if (whiteList.length() > 0)
-        {
-            String[] classes = whiteList.split(",");
-            for (String className : classes)
-            {
-                className = className.trim();
-
-                whiteListSet.add(className);
-            }
-        }
-
-        // Combine default list with property values
-        Set.of(defaultWhiteList).forEach(item -> whiteListSet.add(item.getName()));
-
-        return whiteListSet;
     }
 }

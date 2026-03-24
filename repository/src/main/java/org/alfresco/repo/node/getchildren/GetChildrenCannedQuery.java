@@ -790,16 +790,21 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 return false;
             }
 
-            currentBatch.add(result);
-
-            int remainingNeeded = resultsCallback.remainingNeeded();
             int currentBatchSize = currentBatch.size();
-            if (currentBatchSize >= BATCH_SIZE || currentBatchSize >= remainingNeeded)
+            boolean thresholdReached = currentBatchSize >= BATCH_SIZE
+                    || currentBatchSize >= resultsCallback.remainingNeeded();
+
+            // Flush only at a node boundary so that all locale rows for a d:mltext
+            // property (which the SQL ORDER BY childNode.id keeps contiguous) are
+            // grouped together in the same batch.
+            if (thresholdReached && currentBatchSize > 0
+                    && !result.getId().equals(currentBatch.get(currentBatchSize - 1).getId()))
             {
-                // batch
                 preloadNodes();
                 filterSort();
             }
+
+            currentBatch.add(result);
 
             return resultsCallback.needsMore();
         }
@@ -858,7 +863,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
                 // Merge property values from all locale rows so that
                 // NodePropertyHelper can build a complete MLText per property.
-                Map<NodePropertyKey, NodePropertyValue> propertyValues = HashMap.newHashMap(3 * rows.size());
+                Map<NodePropertyKey, NodePropertyValue> propertyValues = new HashMap<>(3 * rows.size());
                 for (FilterSortNodeEntity row : rows)
                 {
                     NodePropertyEntity prop1 = row.getProp1();

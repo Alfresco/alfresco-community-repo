@@ -367,12 +367,12 @@ public class LinksServiceImpl implements LinksService
 
         // Build the query
         StringBuilder luceneQuery = new StringBuilder();
-        luceneQuery.append(" +TYPE:\"" + LinksModel.TYPE_LINK + "\"");
-        luceneQuery.append(" +PATH:\"" + nodeService.getPath(container).toPrefixString(namespaceService) + "/*\"");
+        luceneQuery.append("TYPE:\"" + LinksModel.TYPE_LINK + "\"");
+        luceneQuery.append(" AND PATH:\"" + nodeService.getPath(container).toPrefixString(namespaceService) + "/*\"");
 
         if (user != null)
         {
-            luceneQuery.append(" +@cm\\:creator:\"" + user + "\"");
+            luceneQuery.append(" AND cm:creator:\"" + user + "\"");
         }
         if (from != null && to != null)
         {
@@ -381,7 +381,7 @@ public class LinksServiceImpl implements LinksService
         }
         if (tag != null)
         {
-            luceneQuery.append(" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
+            luceneQuery.append(" AND TAG:\"" + tag + "\"");
         }
 
         String sortOn = "@{http://www.alfresco.org/model/content/1.0}created";
@@ -389,7 +389,7 @@ public class LinksServiceImpl implements LinksService
         // Query
         SearchParameters sp = new SearchParameters();
         sp.addStore(container.getStoreRef());
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery(luceneQuery.toString());
         sp.addSort(sortOn, false);
         if (paging.getSkipCount() > 0)

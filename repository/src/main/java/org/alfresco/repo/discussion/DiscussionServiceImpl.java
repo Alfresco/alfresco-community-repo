@@ -717,26 +717,23 @@ public class DiscussionServiceImpl implements DiscussionService
     {
         // Build the query
         StringBuilder luceneQuery = new StringBuilder();
-        luceneQuery.append(" +TYPE:\"" + ForumModel.TYPE_TOPIC + "\"");
-        luceneQuery.append(" +PATH:\"" + nodeService.getPath(nodeRef).toPrefixString(namespaceService) + "/*\"");
+        luceneQuery.append("TYPE:\"" + ForumModel.TYPE_TOPIC.toPrefixString(namespaceService) + "\"");
+        luceneQuery.append(" AND PATH:\"" + nodeService.getPath(nodeRef).toPrefixString(namespaceService) + "//*\"");
 
         if (username != null)
         {
-            luceneQuery.append(" +@cm\\:creator:\"" + username + "\"");
+            luceneQuery.append(" AND cm:creator:\"" + username + "\"");
         }
         if (tag != null)
         {
-            luceneQuery.append(" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
+            luceneQuery.append(" AND TAG:\"" + tag + "\"");
         }
 
-        String sortOn = "@{http://www.alfresco.org/model/content/1.0}created";
-
-        // Query
         SearchParameters sp = new SearchParameters();
         sp.addStore(nodeRef.getStoreRef());
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery(luceneQuery.toString());
-        sp.addSort(sortOn, sortAscending);
+        sp.addSort("cm:created", sortAscending);
         if (paging.getSkipCount() > 0)
         {
             sp.setSkipCount(paging.getSkipCount());

@@ -476,7 +476,7 @@ public class MessageServiceImpl implements MessageService
                 // load resource bundles for given locale (by tenant, if applicable)
                 for (String resBundlePath : resBundleBaseNames)
                 {
-                    if (attemptedBundles.contains(resBundlePath) == false)
+                    if (!attemptedBundles.contains(resBundlePath))
                     {
                         ResourceBundle resourcebundle = null;
 

@@ -33,7 +33,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -504,7 +508,8 @@ public class BlogServiceImpl implements BlogService
                 .append(" AND PARENT:\"").append(blogContainerNode.toString()).append("\"");
         if (tag != null && !tag.trim().isEmpty())
         {
-            query.append(" AND TAG:\"").append(tag).append("\"");
+            String safeTag = SearchLanguageConversion.escapeLuceneQuery(tag);
+            query.append(" AND TAG:\"").append(safeTag).append("\"");
         }
         if (dateRange != null)
         {
@@ -514,13 +519,17 @@ public class BlogServiceImpl implements BlogService
             Date from = dateRange.getFromDate();
             Date to = dateRange.getToDate();
 
+            DateTimeFormatter formatter = DateTimeFormatter
+                    .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                    .withLocale(Locale.ENGLISH)
+                    .withZone(ZoneOffset.UTC);
+
             String fromStr = (from != null)
-                    ? new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                            .format(from)
+                    ? formatter.format(from.toInstant())
                     : "MIN";
+
             String toStr = (to != null)
-                    ? new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                            .format(to)
+                    ? formatter.format(to.toInstant())
                     : "MAX";
 
             query.append(" AND ").append(datePropStr)
@@ -534,12 +543,12 @@ public class BlogServiceImpl implements BlogService
         sp.addSort("cm:published", false);
         sp.setMaxItems(pagingReq.getMaxItems() * MIN_NUMBER_OF_PAGES_FOR_THE_USER_TO_LOOP_THROUGH);
         sp.setSkipCount(pagingReq.getSkipCount());
-        ResultSet luceneResults = null;
+        ResultSet resultSet = null;
         PagingResults<BlogPostInfo> results = null;
         try
         {
-            luceneResults = searchService.query(sp);
-            final ResultSet finalLuceneResults = luceneResults;
+            resultSet = searchService.query(sp);
+            final ResultSet finalLuceneResults = resultSet;
             final List<NodeRef> nodeRefs = finalLuceneResults.getNodeRefs().subList(
                     0, min(pagingReq.getMaxItems(), finalLuceneResults.length()));
 
@@ -579,8 +588,8 @@ public class BlogServiceImpl implements BlogService
         }
         finally
         {
-            if (luceneResults != null)
-                luceneResults.close();
+            if (resultSet != null)
+                resultSet.close();
         }
 
         return results;

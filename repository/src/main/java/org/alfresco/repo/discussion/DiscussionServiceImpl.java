@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -725,7 +726,8 @@ public class DiscussionServiceImpl implements DiscussionService
         }
         if (tag != null)
         {
-            luceneQuery.append(" AND TAG:\"" + tag + "\"");
+            String safeTag = SearchLanguageConversion.escapeLuceneQuery(tag);
+            luceneQuery.append(" AND TAG:\"" + safeTag + "\"");
         }
 
         SearchParameters sp = new SearchParameters();

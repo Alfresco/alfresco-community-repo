@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -380,10 +381,11 @@ public class LinksServiceImpl implements LinksService
         }
         if (tag != null)
         {
-            luceneQuery.append(" AND TAG:\"" + tag + "\"");
+            String safeUser = SearchLanguageConversion.escapeLuceneQuery(tag);
+            luceneQuery.append(" AND cm:creator:\"" + safeUser + "\"");
         }
 
-        String sortOn = "@{http://www.alfresco.org/model/content/1.0}created";
+        String sortOn = ContentModel.PROP_CREATED.toPrefixString(namespaceService);
 
         // Query
         SearchParameters sp = new SearchParameters();

@@ -790,16 +790,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 return false;
             }
 
-            int currentBatchSize = currentBatch.size();
-            boolean thresholdReached = currentBatchSize >= BATCH_SIZE
-                    || currentBatchSize >= resultsCallback.remainingNeeded();
-
-            // Flush only at a node boundary so that all rows for the same node
-            // (for example, multiple locale rows for a d:mltext property) are
-            // kept together in the same batch. This relies on the underlying
-            // query returning all rows for a given node id contiguously.
-            if (thresholdReached && currentBatchSize > 0
-                    && !result.getId().equals(currentBatch.get(currentBatchSize - 1).getId()))
+            if (shouldFlushBatch(result))
             {
                 preloadNodes();
                 filterSort();
@@ -808,6 +799,22 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             currentBatch.add(result);
 
             return resultsCallback.needsMore();
+        }
+
+        /**
+         * Flushes only at a node boundary so that all rows for the same node (e.g. multiple locale rows for a d:mltext property, kept contiguous by the SQL ORDER BY childNode.id) are grouped in the same batch.
+         */
+        private boolean shouldFlushBatch(FilterSortNodeEntity incoming)
+        {
+            int size = currentBatch.size();
+            if (size == 0)
+            {
+                return false;
+            }
+            boolean thresholdReached = size >= BATCH_SIZE
+                    || size >= resultsCallback.remainingNeeded();
+            return thresholdReached
+                    && !incoming.getId().equals(currentBatch.get(size - 1).getId());
         }
 
         public void done()

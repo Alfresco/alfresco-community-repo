@@ -45,6 +45,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -1509,9 +1510,10 @@ public class GetChildrenCannedQueryTest extends TestCase
     }
 
     /**
-     * Regression test: sorting by a d:mltext property (cm:description) with multiple locale values must not produce duplicate rows. The LEFT JOIN on alf_node_properties returns one SQL row per locale, and the canned query must aggregate them into a single result per node with locale-appropriate sort value.
+     * Regression test: sorting by a d:mltext property (cm:description) with multiple locale values must not produce duplicate rows.
      */
-    public void testSortByMLTextDescription_NoDuplicates() throws Exception
+    @Test
+    public void testSortByMLTextDescriptionNoDuplicates() throws Exception
     {
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());

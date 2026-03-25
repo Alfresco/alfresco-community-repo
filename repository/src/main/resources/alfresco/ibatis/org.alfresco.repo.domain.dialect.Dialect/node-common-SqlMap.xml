@@ -1029,28 +1029,9 @@
     <select id="select_GetChildrenCannedQueryWithPropsSorted" parameterType="FilterSortNode" resultMap="result_FilterSortNode">
         select
         childNode.id             as id,
-        childNode.version        as version,
-        childStore.id            as store_id,
         childStore.protocol      as protocol,
         childStore.identifier    as identifier,
         childNode.uuid           as uuid,
-        childNode.type_qname_id  as type_qname_id,
-        childNode.locale_id      as locale_id,
-        childNode.acl_id         as acl_id,
-        childTxn.id              as txn_id,
-        childTxn.change_txn_id   as txn_change_id,
-        childNode.audit_creator  as audit_creator,
-        childNode.audit_created  as audit_created,
-        childNode.audit_modifier as audit_modifier,
-        childNode.audit_modified as audit_modified,
-        childNode.audit_accessed as audit_accessed,
-        prop1.node_id            as prop1_node_id,
-        prop1.qname_id           as prop1_qname_id,
-        prop1.locale_id          as prop1_locale_id,
-        prop1.list_index         as prop1_list_index,
-        prop1.actual_type_n      as prop1_actual_type_n,
-        prop1.persisted_type_n   as prop1_persisted_type_n,
-        prop1.string_value       as prop1_string_value,
         CASE
             WHEN childNode.type_qname_id IN
             <foreach item="id" collection="folderTypeQNameIds" open="(" separator="," close=")">
@@ -1093,7 +1074,6 @@
         ) childNodeIds
         join alf_node childNode on (childNode.id = childNodeIds.id)
         left join alf_store childStore on (childStore.id = childNode.store_id)
-        join alf_transaction childTxn on (childTxn.id = childNode.transaction_id)
         left join alf_node_properties prop1 on (prop1.node_id = childNode.id and prop1.qname_id = #{prop1qnameId})
         ORDER BY
             sort_folder_first,
@@ -1105,16 +1085,10 @@
     <select id="select_GetChildrenCannedQueryWithProps" parameterType="FilterSortNode" resultMap="result_FilterSortNode">
        select
             childNode.id             as id,
-            childNode.version        as version,
-            childStore.id            as store_id,
             childStore.protocol      as protocol,
             childStore.identifier    as identifier,
             childNode.uuid           as uuid,
             childNode.type_qname_id  as type_qname_id,
-            childNode.locale_id      as locale_id,
-            childNode.acl_id         as acl_id,
-            childTxn.id              as txn_id,
-            childTxn.change_txn_id   as txn_change_id,
             childNode.audit_creator  as audit_creator,
             childNode.audit_created  as audit_created,
             childNode.audit_modifier as audit_modifier,
@@ -1189,7 +1163,6 @@
         ) childNodeIds
             join alf_node childNode on (childNode.id = childNodeIds.id)
             left join alf_store childStore on (childStore.id = childNode.store_id)
-            join alf_transaction childTxn on (childTxn.id = childNode.transaction_id)
             <if test="prop1qnameId != null">
             left join alf_node_properties prop1 on (prop1.node_id = childNode.id and prop1.qname_id = #{prop1qnameId})
             </if>

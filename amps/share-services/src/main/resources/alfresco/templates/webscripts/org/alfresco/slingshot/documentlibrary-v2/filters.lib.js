@@ -286,7 +286,7 @@ var Filters =
       {
          filterParams.query += " " + (Filters.TYPE_MAP[parsedArgs.type] || "");
       }
-      if(logger.isWarnLoggingEnabled()) {
+      if(logger.isDebugLoggingEnabled()) {
           logger.debug("Final Query : " + filterParams.query);
       }
       return filterParams;

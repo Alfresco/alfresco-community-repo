@@ -44,6 +44,7 @@ import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditSe
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
@@ -132,6 +133,8 @@ public abstract class RMActionExecuterAbstractBase extends PropertySubActionExec
 
     /** Identifier service */
     private IdentifierService identifierService;
+
+    private FilePlanService filePlanService;
 
     /** List of kinds for which this action is applicable */
     protected Set<FilePlanComponentKind> applicableKinds = new HashSet<>();
@@ -533,6 +536,27 @@ public abstract class RMActionExecuterAbstractBase extends PropertySubActionExec
     public void setIdentifierService(IdentifierService identifierService)
     {
         this.identifierService = identifierService;
+    }
+
+    /**
+     * Gets the file plan service
+     *
+     * @return The file plan service
+     */
+    public FilePlanService getFilePlanService()
+    {
+        return filePlanService;
+    }
+
+    /**
+     * Sets the file plan service
+     *
+     * @param filePlanService
+     *            the file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
     }
 
     /**

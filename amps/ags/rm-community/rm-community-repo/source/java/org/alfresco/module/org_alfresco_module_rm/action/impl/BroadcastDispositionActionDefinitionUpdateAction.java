@@ -38,6 +38,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
@@ -63,6 +64,8 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
 
     public static final String NAME = "broadcastDispositionActionDefinitionUpdate";
     public static final String CHANGED_PROPERTIES = "changedProperties";
+    public static final String BATCHING_ENABLED = "isBatchingEnabled";
+    public static final String BATCHING_SIZE = "batchSize";
 
     private BehaviourFilter behaviourFilter;
 
@@ -84,6 +87,9 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         }
 
         List<QName> changedProps = (List<QName>) action.getParameterValue(CHANGED_PROPERTIES);
+        boolean isBatchingEnabled = Boolean.TRUE.equals(action.getParameterValue(BATCHING_ENABLED));
+        Integer batchSizeParam = (Integer) action.getParameterValue(BATCHING_SIZE);
+        int batchSize = batchSizeParam != null ? batchSizeParam : 1000;
 
         // Navigate up the containment hierarchy to get the record category grandparent and schedule.
         NodeRef dispositionScheduleNode = getNodeService().getPrimaryParent(actionedUponNodeRef).getParentRef();
@@ -91,17 +97,77 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         DispositionSchedule dispositionSchedule = getDispositionService().getAssociatedDispositionSchedule(rmContainer);
 
         behaviourFilter.disableBehaviour();
+
+        if (!isBatchingEnabled)
+        {
+            try
+            {
+                List<NodeRef> disposableItems = getDispositionService().getDisposableItems(dispositionSchedule);
+                for (NodeRef disposableItem : disposableItems)
+                {
+                    updateDisposableItem(dispositionSchedule, disposableItem, actionedUponNodeRef, changedProps);
+                }
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour();
+            }
+
+            return;
+        }
+
+        logger.info("Batching is enabled for disposition action definition update action with batch size of " + batchSize);
+
+        // Instead of calling getDispositionService().getDisposableItems that gets all disposable items in the tree,
+        // we will crawl the tree and process the items in batches (processDisposableItemsInBatch)
+        boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();
+        NodeRef nodeRef = getDispositionService().getAssociatedRecordsManagementContainer(dispositionSchedule);
+        DispositionActionBatchProcessor batchProcessor = new DispositionActionBatchProcessor(batchSize, this, dispositionSchedule,
+                actionedUponNodeRef, changedProps, getTransactionService());
+
         try
         {
-            List<NodeRef> disposableItems = getDispositionService().getDisposableItems(dispositionSchedule);
-            for (NodeRef disposableItem : disposableItems)
-            {
-                updateDisposableItem(dispositionSchedule, disposableItem, actionedUponNodeRef, changedProps);
-            }
+            processDisposableItemsInBatch(isRecordLevelDisposition, nodeRef, batchProcessor);
+            batchProcessor.processRemainingItems();
         }
         finally
         {
             behaviourFilter.enableBehaviour();
+        }
+
+        logger.info("Disposition action batch run summary: " + "queuedItems: " + batchProcessor.getTotalQueued()
+                + "; processedItems: " + batchProcessor.getTotalProcessed()
+                + "; failedItems: " + batchProcessor.getTotalFailed());
+
+        if (batchProcessor.isHasError())
+        {
+            throw new AlfrescoRuntimeException("Disposition action update had " + batchProcessor.getTotalFailed()
+                    + " failed items. Processed " + batchProcessor.getTotalProcessed()
+                    + " items successfully. See the logs for more details.");
+        }
+    }
+
+    private void processDisposableItemsInBatch(boolean isRecordLevelDisposition, NodeRef rmContainer, DispositionActionBatchProcessor batchProcessor)
+    {
+        List<NodeRef> items = getFilePlanService().getAllContained(rmContainer);
+
+        for (NodeRef item : items)
+        {
+            if (getRecordFolderService().isRecordFolder(item))
+            {
+                if (isRecordLevelDisposition)
+                {
+                    batchProcessor.addAllItems(getRecordService().getRecords(item));
+                }
+                else
+                {
+                    batchProcessor.addItem(item);
+                }
+            }
+            else if (getFilePlanService().isRecordCategory(item) && getDispositionService().getAssociatedDispositionSchedule(item) == null)
+            {
+                processDisposableItemsInBatch(isRecordLevelDisposition, item, batchProcessor);
+            }
         }
     }
 
@@ -112,7 +178,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
      * @param dispositionActionDefinition
      * @param changedProps
      */
-    private void updateDisposableItem(DispositionSchedule ds, NodeRef disposableItem, NodeRef dispositionActionDefinition, List<QName> changedProps)
+    protected void updateDisposableItem(DispositionSchedule ds, NodeRef disposableItem, NodeRef dispositionActionDefinition, List<QName> changedProps)
     {
         // We need to check that this folder is under the management of the disposition schedule that
         // has been updated

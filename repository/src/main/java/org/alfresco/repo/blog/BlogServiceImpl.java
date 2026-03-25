@@ -516,11 +516,11 @@ public class BlogServiceImpl implements BlogService
 
             String fromStr = (from != null)
                     ? new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                    .format(from)
+                            .format(from)
                     : "MIN";
             String toStr = (to != null)
                     ? new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                    .format(to)
+                            .format(to)
                     : "MAX";
 
             query.append(" AND ").append(datePropStr)

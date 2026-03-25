@@ -45,7 +45,6 @@ import java.util.Set;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -104,6 +103,7 @@ import org.alfresco.util.testing.category.DBTests;
  * @since 4.0
  */
 @Category({OwnJVMTestsCategory.class, DBTests.class})
+@SuppressWarnings({"PMD.UnitTestShouldUseTestAnnotation", "PMD.UnitTestShouldUseBeforeAnnotation "})
 public class GetChildrenCannedQueryTest extends TestCase
 {
     private Log logger = LogFactory.getLog(getClass());
@@ -1512,7 +1512,6 @@ public class GetChildrenCannedQueryTest extends TestCase
     /**
      * Regression test: sorting by a d:mltext property (cm:description) with multiple locale values must not produce duplicate rows.
      */
-    @Test
     public void testSortByMLTextDescriptionNoDuplicates() throws Exception
     {
         AuthenticationUtil.pushAuthentication();

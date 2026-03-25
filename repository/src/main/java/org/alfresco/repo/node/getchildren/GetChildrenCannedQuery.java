@@ -794,9 +794,10 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             boolean thresholdReached = currentBatchSize >= BATCH_SIZE
                     || currentBatchSize >= resultsCallback.remainingNeeded();
 
-            // Flush only at a node boundary so that all locale rows for a d:mltext
-            // property (which the SQL ORDER BY childNode.id keeps contiguous) are
-            // grouped together in the same batch.
+            // Flush only at a node boundary so that all rows for the same node
+            // (for example, multiple locale rows for a d:mltext property) are
+            // kept together in the same batch. This relies on the underlying
+            // query returning all rows for a given node id contiguously.
             if (thresholdReached && currentBatchSize > 0
                     && !result.getId().equals(currentBatch.get(currentBatchSize - 1).getId()))
             {

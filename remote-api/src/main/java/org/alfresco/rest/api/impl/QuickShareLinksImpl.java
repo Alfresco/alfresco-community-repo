@@ -82,6 +82,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.SearchLanguageConversion;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -516,6 +517,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
         sp.setSkipCount(pagingRequest.getSkipCount());
         sp.setMaxItems(pagingRequest.getMaxItems());
+        sp.setLimit(pagingRequest.getMaxItems());
+        sp.setLimitBy(LimitBy.FINAL_SIZE);
 
         sp.addSort("@" + ContentModel.PROP_MODIFIED, false);
 

@@ -101,6 +101,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.SearchLanguageConversion;
+import org.alfresco.service.cmr.search.LimitBy;
 
 /**
  * Centralises access to shared link (public "quick share") services and maps between representations.
@@ -511,6 +512,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
         sp.setSkipCount(pagingRequest.getSkipCount());
         sp.setMaxItems(pagingRequest.getMaxItems());
+        sp.setLimit(pagingRequest.getMaxItems());
+        sp.setLimitBy(LimitBy.FINAL_SIZE);
 
         sp.addSort("@" + ContentModel.PROP_MODIFIED, false);
 

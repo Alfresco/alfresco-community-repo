@@ -41,7 +41,7 @@ import org.alfresco.service.transaction.TransactionService;
 
 public class DispositionActionBatchProcessor
 {
-    private static final Log logger = LogFactory.getLog(DispositionActionBatchProcessor.class);
+    private static final Log LOGGER = LogFactory.getLog(DispositionActionBatchProcessor.class);
 
     private final int batchSize;
     private final List<NodeRef> batch = new ArrayList<>();
@@ -133,7 +133,7 @@ public class DispositionActionBatchProcessor
         {
             hasError = true;
             totalFailed += currentBatch.size();
-            logger.error("Failed to process batch of " + currentBatch.size() + " items", e);
+            LOGGER.error("Failed to process batch of " + currentBatch.size() + " items", e);
             return;
         }
         finally
@@ -142,6 +142,6 @@ public class DispositionActionBatchProcessor
         }
 
         totalProcessed += currentBatch.size();
-        logger.info("Disposition action update: processed " + totalProcessed + " items so far.");
+        LOGGER.info("Disposition action update: processed " + totalProcessed + " items so far.");
     }
 }

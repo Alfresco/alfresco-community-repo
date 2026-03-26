@@ -59,7 +59,7 @@ import org.alfresco.service.namespace.QName;
 public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionExecuterAbstractBase
 {
     /** Logger */
-    private static final Log logger = LogFactory.getLog(BroadcastDispositionActionDefinitionUpdateAction.class);
+    private static final Log LOGGER = LogFactory.getLog(BroadcastDispositionActionDefinitionUpdateAction.class);
 
     public static final String NAME = "broadcastDispositionActionDefinitionUpdate";
     public static final String CHANGED_PROPERTIES = "changedProperties";
@@ -115,7 +115,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             return;
         }
 
-        logger.info("Batching is enabled for disposition action definition update action with batch size of " + batchSize);
+        LOGGER.info("Batching is enabled for disposition action definition update action with batch size of " + batchSize);
 
         // Instead of calling getDispositionService().getDisposableItems that gets all disposable items in the tree,
         // we will crawl the tree and process the items in batches (processDisposableItemsInBatch)
@@ -134,7 +134,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             behaviourFilter.enableBehaviour();
         }
 
-        logger.info("Disposition action batch run summary: " + "queuedItems: " + batchProcessor.getTotalQueued()
+        LOGGER.info("Disposition action batch run summary: " + "queuedItems: " + batchProcessor.getTotalQueued()
                 + "; processedItems: " + batchProcessor.getTotalProcessed()
                 + "; failedItems: " + batchProcessor.getTotalFailed());
 
@@ -323,9 +323,9 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         DispositionActionDefinition definition = nextAction.getDispositionActionDefinition();
         Date newAsOfDate = getDispositionService().calculateAsOfDate(dispositionedNode, definition);
 
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("Set disposition as of date for next action '" + nextAction.getName() +
+            LOGGER.debug("Set disposition as of date for next action '" + nextAction.getName() +
                     "' (" + nextAction.getNodeRef() + ") to: " + newAsOfDate);
         }
 

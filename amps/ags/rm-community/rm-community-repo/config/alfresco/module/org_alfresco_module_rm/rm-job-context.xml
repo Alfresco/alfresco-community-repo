@@ -111,7 +111,7 @@
          <list>
             <bean id="scheduledPublishUpdatesJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
                      <property name="jobDetail" ref="scheduledPublishUpdatesJobDetail" />
-                     <property name="cronExpression" value="${rm.publishupdates.cronexpression:0/30 * * * * ?}"/>
+                     <property name="cronExpression" value="${rm.publishupdates.cronexpression}"/>
             </bean>
          </list>
       </property>
@@ -135,8 +135,8 @@
    	  <property name="rmActionService"  ref="recordsManagementActionService"/>
 	  <property name="nodeService"  ref="nodeService"/>
 	  <property name="publishExecutorRegistry" ref="publishExecutorRegistry"/>
-     <property name="batchingEnabled" value="${rm.publishupdates.batching.enabled:false}"/>
-     <property name="batchSize" value="${rm.publishupdates.batching.batchsize:1000}"/>
+     <property name="batchingEnabled" value="${rm.publishupdates.batching.enabled}"/>
+     <property name="batchSize" value="${rm.publishupdates.batching.batchsize}"/>
    </bean>
 
 </beans>

@@ -129,6 +129,8 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.activities.ActivitiesTransactionListener;
 import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.activities.ActivityPoster;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -215,6 +217,7 @@ public class NodesImpl implements Nodes
     private ActivityPoster poster;
     private RetryingTransactionHelper retryingTransactionHelper;
     private LockService lockService;
+    private CheckOutCheckInService checkOutCheckInService;
     private VirtualStore smartStore; // note: remove as part of REPO-1173
     private ClassDefinitionMapper classDefinitionMapper;
     private RuleService ruleService;
@@ -277,6 +280,7 @@ public class NodesImpl implements Nodes
         this.siteService = sr.getSiteService();
         this.retryingTransactionHelper = sr.getRetryingTransactionHelper();
         this.lockService = sr.getLockService();
+        this.checkOutCheckInService = sr.getCheckOutCheckInService();
 
         if (defaultIgnoreTypesAndAspects != null)
         {
@@ -3835,8 +3839,39 @@ public class NodesImpl implements Nodes
             throw new IntegrityException("Can't unlock node " + nodeId + " because it isn't locked", null);
         }
 
-        lockService.unlock(nodeRef);
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
+        {
+            cancelCheckoutForLockedNode(nodeRef);
+        }
+        else
+        {
+            lockService.unlock(nodeRef);
+        }
+
         return getFolderOrDocument(nodeId, parameters);
+    }
+
+    private void cancelCheckoutForLockedNode(NodeRef nodeRef)
+    {
+        NodeRef workingCopyRef = checkOutCheckInService.getWorkingCopy(nodeRef);
+        if (workingCopyRef != null)
+        {
+            try
+            {
+                checkOutCheckInService.cancelCheckout(workingCopyRef);
+            }
+            catch (CheckOutCheckInServiceException e)
+            {
+                throw new PermissionDeniedException("Cannot cancel checkout for node " + nodeRef);
+            }
+        }
+        else
+        {
+            // Orphaned checked-out state: no working copy found.
+            // Fall back to simple unlock and aspect cleanup.
+            lockService.unlock(nodeRef);
+            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT);
+        }
     }
 
     /**

@@ -846,12 +846,33 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
 
         /**
-         * Groups rows by node ID so that d:mltext properties with multiple locale values (which produce one SQL row per locale via the LEFT JOIN on alf_node_properties) are aggregated into a single MLText before conversion to String. This ensures locale-aware resolution and emits one callback per node.
+         * Groups rows by node ID so that d:mltext properties with multiple locale values (one SQL row per locale from the LEFT JOIN on alf_node_properties) are aggregated into a single MLText, then emits one callback per node.
          */
         private void filterSort()
         {
-            // Group rows by node ID, preserving insertion order for deterministic results.
-            // Nodes already processed in a previous batch are skipped entirely.
+            Map<Long, List<FilterSortNodeEntity>> nodeGroups = groupByNodeId();
+
+            for (Map.Entry<Long, List<FilterSortNodeEntity>> nodeGroup : nodeGroups.entrySet())
+            {
+                seenNodeIds.add(nodeGroup.getKey());
+                List<FilterSortNodeEntity> rows = nodeGroup.getValue();
+                FilterSortNodeEntity firstRow = rows.getFirst();
+                NodeRef nodeRef = firstRow.createNodeRef();
+
+                Map<QName, Serializable> propVals = buildNodeProperties(rows, firstRow, nodeRef);
+
+                resultsCallback.handle(new FilterSortNode(nodeRef, propVals));
+                if (resultsCallback.doesntNeedMore())
+                {
+                    break;
+                }
+            }
+
+            currentBatch.clear();
+        }
+
+        private Map<Long, List<FilterSortNodeEntity>> groupByNodeId()
+        {
             Map<Long, List<FilterSortNodeEntity>> nodeGroups = new LinkedHashMap<>();
             for (FilterSortNodeEntity result : currentBatch)
             {
@@ -861,92 +882,93 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                     nodeGroups.computeIfAbsent(nodeId, k -> new ArrayList<>(2)).add(result);
                 }
             }
+            return nodeGroups;
+        }
 
-            for (Map.Entry<Long, List<FilterSortNodeEntity>> nodeGroup : nodeGroups.entrySet())
+        private Map<QName, Serializable> buildNodeProperties(
+                List<FilterSortNodeEntity> rows, FilterSortNodeEntity firstRow, NodeRef nodeRef)
+        {
+            Map<NodePropertyKey, NodePropertyValue> rawProps = mergeLocaleProperties(rows);
+            Map<QName, Serializable> propVals = nodePropertyHelper.convertToPublicProperties(rawProps);
+
+            ReferenceablePropertiesEntity.addReferenceableProperties(firstRow.getId(), nodeRef, propVals);
+            resolveMLTextValues(propVals);
+            addContentDataSortProps(propVals);
+            addAuditableProps(propVals, firstRow);
+            addNodeTypeProp(propVals, firstRow);
+
+            return propVals;
+        }
+
+        /**
+         * Merges property key/value pairs from all locale rows so that NodePropertyHelper can construct a complete MLText per property.
+         */
+        private Map<NodePropertyKey, NodePropertyValue> mergeLocaleProperties(
+                List<FilterSortNodeEntity> rows)
+        {
+            Map<NodePropertyKey, NodePropertyValue> props = new HashMap<>(3 * rows.size());
+            for (FilterSortNodeEntity row : rows)
             {
-                seenNodeIds.add(nodeGroup.getKey());
-                List<FilterSortNodeEntity> rows = nodeGroup.getValue();
-                FilterSortNodeEntity firstRow = rows.getFirst();
-                NodeRef nodeRef = firstRow.createNodeRef();
+                collectProp(props, row.getProp1());
+                collectProp(props, row.getProp2());
+                collectProp(props, row.getProp3());
+            }
+            return props;
+        }
 
-                // Merge property values from all locale rows so that
-                // NodePropertyHelper can build a complete MLText per property.
-                Map<NodePropertyKey, NodePropertyValue> propertyValues = new HashMap<>(3 * rows.size());
-                for (FilterSortNodeEntity row : rows)
+        private void collectProp(Map<NodePropertyKey, NodePropertyValue> target,
+                NodePropertyEntity prop)
+        {
+            if (prop != null)
+            {
+                target.put(prop.getKey(), prop.getValue());
+            }
+        }
+
+        private void resolveMLTextValues(Map<QName, Serializable> propVals)
+        {
+            for (Map.Entry<QName, Serializable> entry : propVals.entrySet())
+            {
+                if (entry.getValue() instanceof MLText)
                 {
-                    NodePropertyEntity prop1 = row.getProp1();
-                    if (prop1 != null)
-                    {
-                        propertyValues.put(prop1.getKey(), prop1.getValue());
-                    }
-
-                    NodePropertyEntity prop2 = row.getProp2();
-                    if (prop2 != null)
-                    {
-                        propertyValues.put(prop2.getKey(), prop2.getValue());
-                    }
-
-                    NodePropertyEntity prop3 = row.getProp3();
-                    if (prop3 != null)
-                    {
-                        propertyValues.put(prop3.getKey(), prop3.getValue());
-                    }
-                }
-
-                Map<QName, Serializable> propVals = nodePropertyHelper.convertToPublicProperties(propertyValues);
-
-                // Add referenceable / spoofed properties (including spoofed name if null)
-                ReferenceablePropertiesEntity.addReferenceableProperties(firstRow.getId(), nodeRef, propVals);
-
-                // special cases
-
-                // MLText (eg. cm:title, cm:description, ...)
-                for (Map.Entry<QName, Serializable> propEntry : propVals.entrySet())
-                {
-                    if (propEntry.getValue() instanceof MLText)
-                    {
-                        propVals.put(propEntry.getKey(), DefaultTypeConverter.INSTANCE.convert(String.class, (MLText) propEntry.getValue()));
-                    }
-                }
-
-                // ContentData (eg. cm:content.size, cm:content.mimetype)
-                ContentData contentData = (ContentData) propVals.get(ContentModel.PROP_CONTENT);
-                if (contentData != null)
-                {
-                    propVals.put(SORT_QNAME_CONTENT_SIZE, contentData.getSize());
-                    propVals.put(SORT_QNAME_CONTENT_MIMETYPE, contentData.getMimetype());
-                }
-
-                // Auditable props (eg. cm:creator, cm:created, cm:modifier, cm:modified, ...)
-                AuditablePropertiesEntity auditableProps = firstRow.getAuditablePropertiesEntity();
-                if (auditableProps != null)
-                {
-                    for (Map.Entry<QName, Serializable> propEntry : auditableProps.getAuditableProperties().entrySet())
-                    {
-                        propVals.put(propEntry.getKey(), propEntry.getValue());
-                    }
-                }
-
-                // Node type
-                Long nodeTypeQNameId = firstRow.getTypeQNameId();
-                if (nodeTypeQNameId != null)
-                {
-                    Pair<Long, QName> pair = qnameDAO.getQName(nodeTypeQNameId);
-                    if (pair != null)
-                    {
-                        propVals.put(SORT_QNAME_NODE_TYPE, pair.getSecond());
-                    }
-                }
-
-                // Call back
-                resultsCallback.handle(new FilterSortNode(nodeRef, propVals));
-                if (resultsCallback.doesntNeedMore())
-                {
-                    break;
+                    propVals.put(entry.getKey(),
+                            DefaultTypeConverter.INSTANCE.convert(String.class, (MLText) entry.getValue()));
                 }
             }
+        }
 
-            currentBatch.clear();
+        private void addContentDataSortProps(Map<QName, Serializable> propVals)
+        {
+            ContentData contentData = (ContentData) propVals.get(ContentModel.PROP_CONTENT);
+            if (contentData != null)
+            {
+                propVals.put(SORT_QNAME_CONTENT_SIZE, contentData.getSize());
+                propVals.put(SORT_QNAME_CONTENT_MIMETYPE, contentData.getMimetype());
+            }
+        }
+
+        private void addAuditableProps(Map<QName, Serializable> propVals,
+                FilterSortNodeEntity row)
+        {
+            AuditablePropertiesEntity auditableProps = row.getAuditablePropertiesEntity();
+            if (auditableProps != null)
+            {
+                propVals.putAll(auditableProps.getAuditableProperties());
+            }
+        }
+
+        private void addNodeTypeProp(Map<QName, Serializable> propVals,
+                FilterSortNodeEntity row)
+        {
+            Long nodeTypeQNameId = row.getTypeQNameId();
+            if (nodeTypeQNameId != null)
+            {
+                Pair<Long, QName> pair = qnameDAO.getQName(nodeTypeQNameId);
+                if (pair != null)
+                {
+                    propVals.put(SORT_QNAME_NODE_TYPE, pair.getSecond());
+                }
+            }
         }
     }
 

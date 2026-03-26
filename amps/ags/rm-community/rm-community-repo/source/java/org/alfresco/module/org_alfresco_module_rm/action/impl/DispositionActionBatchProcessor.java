@@ -41,14 +41,14 @@ import org.alfresco.service.transaction.TransactionService;
 
 public class DispositionActionBatchProcessor
 {
-    private static Log logger = LogFactory.getLog(DispositionActionBatchProcessor.class);
+    private static final Log logger = LogFactory.getLog(DispositionActionBatchProcessor.class);
 
     private final int batchSize;
     private final List<NodeRef> batch = new ArrayList<>();
     private boolean hasError;
-    private int totalQueued = 0;
-    private int totalProcessed = 0;
-    private int totalFailed = 0;
+    private int totalQueued;
+    private int totalProcessed;
+    private int totalFailed;
 
     private final BroadcastDispositionActionDefinitionUpdateAction action;
     private final DispositionSchedule dispositionSchedule;

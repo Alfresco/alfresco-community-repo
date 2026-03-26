@@ -72,6 +72,7 @@ import org.alfresco.util.PropertyCheck;
  *
  * @author Roy Wetherall
  */
+@SuppressWarnings("PMD.TooManyFields")
 public abstract class RMActionExecuterAbstractBase extends PropertySubActionExecuterAbstractBase
         implements RecordsManagementAction,
         RecordsManagementModel,

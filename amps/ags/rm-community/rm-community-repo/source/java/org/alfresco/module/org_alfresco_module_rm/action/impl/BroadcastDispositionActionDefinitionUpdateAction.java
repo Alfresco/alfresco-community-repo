@@ -44,7 +44,6 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -60,7 +59,7 @@ import org.alfresco.service.namespace.QName;
 public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionExecuterAbstractBase
 {
     /** Logger */
-    private static Log logger = LogFactory.getLog(BroadcastDispositionActionDefinitionUpdateAction.class);
+    private static final Log logger = LogFactory.getLog(BroadcastDispositionActionDefinitionUpdateAction.class);
 
     public static final String NAME = "broadcastDispositionActionDefinitionUpdate";
     public static final String CHANGED_PROPERTIES = "changedProperties";
@@ -81,7 +80,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (!RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION.equals(getNodeService().getType(actionedUponNodeRef)))
+        if (!TYPE_DISPOSITION_ACTION_DEFINITION.equals(getNodeService().getType(actionedUponNodeRef)))
         {
             return;
         }

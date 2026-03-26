@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -36,7 +36,6 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
 import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
@@ -44,9 +43,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private Log logger = LogFactory.getLog(AuthenticationServiceImpl.class);
     AuthenticationComponent authenticationComponent;
     TicketComponent ticketComponent;
-
-    /** a serviceInstanceId identifying this unique instance */
-    private String serviceInstanceId;
 
     private String domain;
     private boolean allowsUserCreation = true;
@@ -58,7 +54,13 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private int protectionPeriodSeconds;
     private boolean protectionEnabled;
     private int protectionLimit;
+    private String authSubSystemContextName;
     private SimpleCache<String, ProtectedUser> protectedUsersCache;
+
+    public void setAuthSubSystemContextName(String authSubSystemContextName)
+    {
+        this.authSubSystemContextName = authSubSystemContextName;
+    }
 
     private PersonService personService;
 
@@ -95,8 +97,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     public AuthenticationServiceImpl()
     {
         super();
-
-        this.serviceInstanceId = GUID.generate();
     }
 
     public void setTicketComponent(TicketComponent ticketComponent)
@@ -225,7 +225,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         {
             userName = userName.toLowerCase();
         }
-        return serviceInstanceId + "@@" + userName;
+        return authSubSystemContextName + "@@" + userName; // using service instance id in the key to ensure that cache entries are not shared across cluster nodes (as they contain timestamps which could cause incorrect protection behaviour if shared across nodes)
     }
 
     public String getCurrentUserName() throws AuthenticationException
@@ -290,7 +290,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
 
     /**
      * This method is called from the {@link #validate(String)} method. If this method returns null then the user's tenant will be obtained from the username. This is generally correct in the case where the user can be associated with just one tenant. Override this method in order to force the selection of a different tenant (for whatever reason).
-     * 
+     *
      * @return String
      */
     protected String getPrevalidationTenantDomain()

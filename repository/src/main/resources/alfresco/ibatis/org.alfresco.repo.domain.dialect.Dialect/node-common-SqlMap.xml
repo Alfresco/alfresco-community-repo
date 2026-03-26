@@ -1196,6 +1196,7 @@
                     #{item}
                 </foreach>
             </if>
+        ORDER BY childNode.id
     </select>
     
     <!-- GetChildren - with no explicit sorting (or prop filtering) - note: still filtered by child type (and optionally primary or secondary) -->

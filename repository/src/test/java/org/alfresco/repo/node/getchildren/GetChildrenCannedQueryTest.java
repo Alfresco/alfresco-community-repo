@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -102,6 +103,7 @@ import org.alfresco.util.testing.category.DBTests;
  * @since 4.0
  */
 @Category({OwnJVMTestsCategory.class, DBTests.class})
+@SuppressWarnings({"PMD.UnitTestShouldUseTestAnnotation", "PMD.UnitTestShouldUseBeforeAnnotation "})
 public class GetChildrenCannedQueryTest extends TestCase
 {
     private Log logger = LogFactory.getLog(getClass());
@@ -1504,6 +1506,92 @@ public class GetChildrenCannedQueryTest extends TestCase
             ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
 
             personService.createPerson(ppOne);
+        }
+    }
+
+    /**
+     * Regression test: sorting by a d:mltext property (cm:description) with multiple locale values must not produce duplicate rows.
+     */
+    public void testSortByMLTextDescriptionNoDuplicates() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        Locale originalLocale = I18NUtil.getLocale();
+        try
+        {
+            NodeRef parentFolder = createFolder(
+                    repositoryHelper.getCompanyHome(),
+                    "GetChildrenCannedQueryTest-MLText-" + TEST_RUN_ID,
+                    ContentModel.TYPE_FOLDER);
+
+            // folder1: single-locale description
+            NodeRef folder1 = createFolder(parentFolder, "mltext-folder-A", ContentModel.TYPE_FOLDER);
+            I18NUtil.setLocale(Locale.ENGLISH);
+            nodeService.setProperty(folder1, ContentModel.PROP_DESCRIPTION, "Alpha");
+
+            // folder2: descriptions in English and French (the scenario from the bug report)
+            NodeRef folder2 = createFolder(parentFolder, "mltext-folder-B", ContentModel.TYPE_FOLDER);
+            I18NUtil.setLocale(Locale.ENGLISH);
+            nodeService.setProperty(folder2, ContentModel.PROP_DESCRIPTION, "Bravo");
+            I18NUtil.setLocale(Locale.FRENCH);
+            nodeService.setProperty(folder2, ContentModel.PROP_DESCRIPTION, "Bravo-FR");
+
+            // folder3: single-locale description
+            NodeRef folder3 = createFolder(parentFolder, "mltext-folder-C", ContentModel.TYPE_FOLDER);
+            I18NUtil.setLocale(Locale.ENGLISH);
+            nodeService.setProperty(folder3, ContentModel.PROP_DESCRIPTION, "Charlie");
+
+            // folder4: descriptions in three locales
+            NodeRef folder4 = createFolder(parentFolder, "mltext-folder-D", ContentModel.TYPE_FOLDER);
+            I18NUtil.setLocale(Locale.ENGLISH);
+            nodeService.setProperty(folder4, ContentModel.PROP_DESCRIPTION, "Delta");
+            I18NUtil.setLocale(Locale.FRENCH);
+            nodeService.setProperty(folder4, ContentModel.PROP_DESCRIPTION, "Delta-FR");
+            I18NUtil.setLocale(Locale.GERMAN);
+            nodeService.setProperty(folder4, ContentModel.PROP_DESCRIPTION, "Delta-DE");
+
+            // Sort ascending by cm:description with English locale
+            I18NUtil.setLocale(Locale.ENGLISH);
+
+            List<Pair<QName, Boolean>> sortPairs = new ArrayList<>(1);
+            sortPairs.add(new Pair<>(ContentModel.PROP_DESCRIPTION, true));
+
+            PagingResults<NodeRef> results = list(parentFolder, -1, -1, 0, null, null, sortPairs);
+            List<NodeRef> resultNodes = results.getPage();
+
+            assertEquals("Each of the 4 folders must appear exactly once", 4, resultNodes.size());
+
+            Set<NodeRef> uniqueNodes = new HashSet<>(resultNodes);
+            assertEquals("Duplicate nodes found in sort results", resultNodes.size(), uniqueNodes.size());
+
+            // Verify ascending sort order by English locale values: Alpha < Bravo < Charlie < Delta
+            assertEquals("mltext-folder-A", nodeService.getProperty(resultNodes.get(0), ContentModel.PROP_NAME));
+            assertEquals("mltext-folder-B", nodeService.getProperty(resultNodes.get(1), ContentModel.PROP_NAME));
+            assertEquals("mltext-folder-C", nodeService.getProperty(resultNodes.get(2), ContentModel.PROP_NAME));
+            assertEquals("mltext-folder-D", nodeService.getProperty(resultNodes.get(3), ContentModel.PROP_NAME));
+
+            // Verify descending sort also produces no duplicates
+            sortPairs = new ArrayList<>(1);
+            sortPairs.add(new Pair<>(ContentModel.PROP_DESCRIPTION, false));
+
+            results = list(parentFolder, -1, -1, 0, null, null, sortPairs);
+            resultNodes = results.getPage();
+
+            assertEquals("Expected exactly 4 unique nodes (descending)", 4, resultNodes.size());
+            uniqueNodes = new HashSet<>(resultNodes);
+            assertEquals("Duplicate nodes found in descending sort results", resultNodes.size(), uniqueNodes.size());
+
+            // Verify descending sort order: Delta > Charlie > Bravo > Alpha
+            assertEquals("mltext-folder-D", nodeService.getProperty(resultNodes.get(0), ContentModel.PROP_NAME));
+            assertEquals("mltext-folder-C", nodeService.getProperty(resultNodes.get(1), ContentModel.PROP_NAME));
+            assertEquals("mltext-folder-B", nodeService.getProperty(resultNodes.get(2), ContentModel.PROP_NAME));
+            assertEquals("mltext-folder-A", nodeService.getProperty(resultNodes.get(3), ContentModel.PROP_NAME));
+        }
+        finally
+        {
+            I18NUtil.setLocale(originalLocale);
+            AuthenticationUtil.popAuthentication();
         }
     }
 

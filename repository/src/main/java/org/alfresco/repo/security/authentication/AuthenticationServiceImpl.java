@@ -56,13 +56,12 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private int protectionLimit;
     private String authSubSystemContextName;
     private SimpleCache<String, ProtectedUser> protectedUsersCache;
+    private PersonService personService;
 
     public void setAuthSubSystemContextName(String authSubSystemContextName)
     {
         this.authSubSystemContextName = authSubSystemContextName;
     }
-
-    private PersonService personService;
 
     public void setProtectionPeriodSeconds(int protectionPeriodSeconds)
     {

@@ -584,6 +584,13 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(shared1Id, sharedLinks.get(1).getId());
         assertEquals(d1Id, sharedLinks.get(1).getNodeId());
 
+        // check with same user shared links results with maxItems as 1, the results should be only 1
+        response = getAll(URL_SHARED_LINKS, getPaging(0, 1), 200);
+        sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals(1, sharedLinks.size());
+        assertEquals(shared2Id, sharedLinks.get(0).getId());
+        assertEquals(d2Id, sharedLinks.get(0).getNodeId());
+
         setRequestContext(user2);
 
         response = getAll(URL_SHARED_LINKS, paging, 200);

@@ -1172,6 +1172,7 @@
             <if test="prop1qnameId != null and prop2qnameId != null and prop3qnameId != null">
             left join alf_node_properties prop3 on (prop3.node_id = childNode.id and prop3.qname_id = #{prop3qnameId})
             </if>
+        ORDER BY childNode.id
     </select>
     
     <!-- GetChildren - with no explicit sorting (or prop filtering) - note: still filtered by child type (and optionally primary or secondary) -->

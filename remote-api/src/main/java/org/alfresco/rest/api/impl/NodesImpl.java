@@ -3856,20 +3856,13 @@ public class NodesImpl implements Nodes
         NodeRef workingCopyRef = checkOutCheckInService.getWorkingCopy(nodeRef);
         if (workingCopyRef != null)
         {
-            try
-            {
-                checkOutCheckInService.cancelCheckout(workingCopyRef);
-            }
-            catch (CheckOutCheckInServiceException e)
-            {
-                throw new PermissionDeniedException("Cannot cancel checkout for node " + nodeRef);
-            }
+            checkOutCheckInService.cancelCheckout(workingCopyRef);
         }
         else
         {
             // Orphaned checked-out state: no working copy found.
             // Fall back to simple unlock and aspect cleanup.
-            lockService.unlock(nodeRef);
+            lockService.unlock(nodeRef, false, true);
             nodeService.removeAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT);
         }
     }

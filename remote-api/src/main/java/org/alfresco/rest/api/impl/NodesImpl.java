@@ -130,7 +130,6 @@ import org.alfresco.service.cmr.activities.ActivitiesTransactionListener;
 import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;

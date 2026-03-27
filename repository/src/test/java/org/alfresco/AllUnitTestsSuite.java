@@ -72,6 +72,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.invitation.site.InviteSenderTest.class,
         org.alfresco.repo.invitation.site.InviteModeratedSenderTest.class,
         org.alfresco.repo.jscript.ScriptSearchTest.class,
+        org.alfresco.repo.i18n.MessageServiceImplMissingBundleTest.class,
         org.alfresco.repo.lock.LockUtilsTest.class,
         org.alfresco.repo.lock.mem.LockStoreImplTest.class,
         org.alfresco.repo.management.CheckRequiredClassesForLoggingConsoleUnitTest.class,

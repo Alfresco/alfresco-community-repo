@@ -78,8 +78,8 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
+import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.util.registry.NamedObjectRegistry;
 
 /**
@@ -717,26 +717,32 @@ public class DiscussionServiceImpl implements DiscussionService
     {
         // Build the query
         StringBuilder luceneQuery = new StringBuilder();
-        luceneQuery.append(" +TYPE:\"" + ForumModel.TYPE_TOPIC + "\"");
-        luceneQuery.append(" +PATH:\"" + nodeService.getPath(nodeRef).toPrefixString(namespaceService) + "/*\"");
+        luceneQuery.append("TYPE:\"")
+                .append(ForumModel.TYPE_TOPIC.toPrefixString(namespaceService))
+                .append("\"")
+                .append(" AND PATH:\"")
+                .append(nodeService.getPath(nodeRef).toPrefixString(namespaceService))
+                .append("//*\"");
 
         if (username != null)
         {
-            luceneQuery.append(" +@cm\\:creator:\"" + username + "\"");
+            luceneQuery.append(" AND cm:creator:\"")
+                    .append(username)
+                    .append("\"");
         }
         if (tag != null)
         {
-            luceneQuery.append(" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
+            String safeTag = SearchLanguageConversion.escapeLuceneQuery(tag);
+            luceneQuery.append(" AND TAG:\"")
+                    .append(safeTag)
+                    .append("\"");
         }
 
-        String sortOn = "@{http://www.alfresco.org/model/content/1.0}created";
-
-        // Query
         SearchParameters sp = new SearchParameters();
         sp.addStore(nodeRef.getStoreRef());
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery(luceneQuery.toString());
-        sp.addSort(sortOn, sortAscending);
+        sp.addSort("cm:created", sortAscending);
         if (paging.getSkipCount() > 0)
         {
             sp.setSkipCount(paging.getSkipCount());

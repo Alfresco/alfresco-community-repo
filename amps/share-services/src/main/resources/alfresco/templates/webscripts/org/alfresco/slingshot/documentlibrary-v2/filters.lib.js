@@ -286,8 +286,8 @@ var Filters =
       {
          filterParams.query += " " + (Filters.TYPE_MAP[parsedArgs.type] || "");
       }
-      if(logger.isWarnLoggingEnabled()) {
-          logger.warn("Final Query : " + filterParams.query);
+      if(logger.isDebugLoggingEnabled()) {
+          logger.debug("Final Query : " + filterParams.query);
       }
       return filterParams;
    },

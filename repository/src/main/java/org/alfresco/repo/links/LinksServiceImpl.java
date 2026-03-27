@@ -367,22 +367,31 @@ public class LinksServiceImpl implements LinksService
 
         // Build the query
         StringBuilder luceneQuery = new StringBuilder();
-        luceneQuery.append("TYPE:\"" + LinksModel.TYPE_LINK + "\"");
-        luceneQuery.append(" AND PATH:\"" + nodeService.getPath(container).toPrefixString(namespaceService) + "/*\"");
+        luceneQuery.append("TYPE:\"")
+                .append(LinksModel.TYPE_LINK)
+                .append("\"")
+                .append(" AND PATH:\"")
+                .append(nodeService.getPath(container).toPrefixString(namespaceService))
+                .append("/*\"");
 
         if (user != null)
         {
-            luceneQuery.append(" AND cm:creator:\"" + user + "\"");
+            luceneQuery.append(" AND cm:creator:\"")
+                    .append(user)
+                    .append("\"");
         }
         if (from != null && to != null)
         {
-            luceneQuery.append(LuceneUtils.createDateRangeQuery(
-                    from, to, ContentModel.PROP_CREATED, dictionaryService, namespaceService));
+            luceneQuery.append(
+                    LuceneUtils.createDateRangeQuery(
+                            from, to, ContentModel.PROP_CREATED, dictionaryService, namespaceService));
         }
         if (tag != null)
         {
-            String safeUser = SearchLanguageConversion.escapeLuceneQuery(tag);
-            luceneQuery.append(" AND cm:creator:\"" + safeUser + "\"");
+            String safeTag = SearchLanguageConversion.escapeLuceneQuery(tag);
+            luceneQuery.append(" AND TAG:\"")
+                    .append(safeTag)
+                    .append("\"");
         }
 
         String sortOn = ContentModel.PROP_CREATED.toPrefixString(namespaceService);

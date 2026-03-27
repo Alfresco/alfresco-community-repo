@@ -589,7 +589,9 @@ public class BlogServiceImpl implements BlogService
         finally
         {
             if (resultSet != null)
+            {
                 resultSet.close();
+            }
         }
 
         return results;

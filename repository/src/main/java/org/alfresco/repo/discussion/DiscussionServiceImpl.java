@@ -717,17 +717,25 @@ public class DiscussionServiceImpl implements DiscussionService
     {
         // Build the query
         StringBuilder luceneQuery = new StringBuilder();
-        luceneQuery.append("TYPE:\"" + ForumModel.TYPE_TOPIC.toPrefixString(namespaceService) + "\"");
-        luceneQuery.append(" AND PATH:\"" + nodeService.getPath(nodeRef).toPrefixString(namespaceService) + "//*\"");
+        luceneQuery.append("TYPE:\"")
+                .append(ForumModel.TYPE_TOPIC.toPrefixString(namespaceService))
+                .append("\"")
+                .append(" AND PATH:\"")
+                .append(nodeService.getPath(nodeRef).toPrefixString(namespaceService))
+                .append("//*\"");
 
         if (username != null)
         {
-            luceneQuery.append(" AND cm:creator:\"" + username + "\"");
+            luceneQuery.append(" AND cm:creator:\"")
+                    .append(username)
+                    .append("\"");
         }
         if (tag != null)
         {
             String safeTag = SearchLanguageConversion.escapeLuceneQuery(tag);
-            luceneQuery.append(" AND TAG:\"" + safeTag + "\"");
+            luceneQuery.append(" AND TAG:\"")
+                    .append(safeTag)
+                    .append("\"");
         }
 
         SearchParameters sp = new SearchParameters();

@@ -214,9 +214,9 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
      *
      * @param sharedId
      * @param renditionId
-     *              - optional
+     *             - optional
      * @param parameters
-     *              {@link Parameters}
+     *             {@link Parameters}
      * @return
      * @throws EntityNotFoundException
      */
@@ -269,7 +269,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
      * Requires authenticated access.
      *
      * @param sharedId
- *                  String id of the quick share
+ *                 String id of the quick share
      */
     public void delete(String sharedId, Parameters parameters)
     {
@@ -470,7 +470,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
     // Helper find (search) method
 
-    private final static Set<String> FIND_SHARED_LINKS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] {PARAM_SHAREDBY}));
+    private final static Set<String> FIND_SHARED_LINKS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[]{PARAM_SHAREDBY}));
 
     public CollectionWithPagingInfo<QuickShareLink> findLinks(Parameters parameters)
     {

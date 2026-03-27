@@ -52,6 +52,19 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
     /** Records management action service */
     private RecordsManagementActionService rmActionService;
 
+    private boolean batchingEnabled;
+    private int batchSize;
+
+    public void setBatchingEnabled(boolean batchingEnabled)
+    {
+        this.batchingEnabled = batchingEnabled;
+    }
+
+    public void setBatchSize(int batchSize)
+    {
+        this.batchSize = batchSize > 0 ? batchSize : 100;
+    }
+
     /**
      * Set node service
      * 
@@ -95,6 +108,8 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
         {
             Map<String, Serializable> params = new HashMap<>();
             params.put(BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES, (Serializable) updatedProps);
+            params.put(BroadcastDispositionActionDefinitionUpdateAction.BATCHING_ENABLED, (Serializable) batchingEnabled);
+            params.put(BroadcastDispositionActionDefinitionUpdateAction.BATCHING_SIZE, (Serializable) batchSize);
             rmActionService.executeRecordsManagementAction(nodeRef, BroadcastDispositionActionDefinitionUpdateAction.NAME, params);
         }
     }

@@ -89,9 +89,6 @@
       <property name="triggers">
          <bean id="scheduledDispositionLifecyceleJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
                <property name="jobDetail" ref ="scheduledDispositionLifecyceleJobDetail" />
-               <!-- run at 3am -->
-               <!-- <value>0 30 3 * * ?</value> -->
-               <!-- <value>0/30 * * * * ?</value> -->
                <property name="cronExpression" value="${rm.dispositionlifecycletrigger.cronexpression}"/>
          </bean>
       </property >
@@ -114,10 +111,7 @@
          <list>
             <bean id="scheduledPublishUpdatesJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
                      <property name="jobDetail" ref="scheduledPublishUpdatesJobDetail" />
-                     <property name="cronExpression">
-                        <!-- <value>0 30 3 * * ?</value> -->
-                        <value>0/30 * * * * ?</value>
-                     </property>
+                     <property name="cronExpression" value="${rm.publishupdates.cronexpression}"/>
             </bean>
          </list>
       </property>
@@ -127,7 +121,7 @@
          class="org.alfresco.module.org_alfresco_module_rm.job.PublishUpdatesJobExecuter"
          parent="baseRMJobExecuter">
       <property name="nodeService" ref="nodeService" />
-      <property name="searchService" ref="searchService" />
+      <property name="nodeDAO" ref="nodeDAO" />
       <property name="publishExecutorRegistry" ref="publishExecutorRegistry" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
       <property name="dictionaryService" ref="dictionaryService" />
@@ -141,6 +135,8 @@
    	  <property name="rmActionService"  ref="recordsManagementActionService"/>
 	  <property name="nodeService"  ref="nodeService"/>
 	  <property name="publishExecutorRegistry" ref="publishExecutorRegistry"/>
+     <property name="batchingEnabled" value="${rm.publishupdates.batching.enabled}"/>
+     <property name="batchSize" value="${rm.publishupdates.batching.batchsize}"/>
    </bean>
 
 </beans>

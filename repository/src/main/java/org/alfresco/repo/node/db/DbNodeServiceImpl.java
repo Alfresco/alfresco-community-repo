@@ -125,6 +125,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     private BehaviourFilter policyBehaviourFilter;
     private boolean enableTimestampPropagation;
     private final ExtendedTrait<NodeServiceTrait> nodeServiceTrait;
+    private boolean eagerOrphanCleanup;
 
     public DbNodeServiceImpl()
     {
@@ -171,6 +172,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     public void setEnableTimestampPropagation(boolean enableTimestampPropagation)
     {
         this.enableTimestampPropagation = enableTimestampPropagation;
+    }
+
+    /**
+     * + * @param eagerOrphanCleanup + * <tt>true</tt> to enable this component, otherwise <tt>false</tt> +
+     */
+    public void setEagerOrphanCleanup(boolean eagerOrphanCleanup)
+    {
+        this.eagerOrphanCleanup = eagerOrphanCleanup;
     }
 
     /**
@@ -1159,7 +1168,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void deleteNode(NodeRef nodeRef)
     {
-        deleteNode(nodeRef, true);
+        boolean allowArchival = !eagerOrphanCleanup;
+        deleteNode(nodeRef, allowArchival);
     }
 
     /**

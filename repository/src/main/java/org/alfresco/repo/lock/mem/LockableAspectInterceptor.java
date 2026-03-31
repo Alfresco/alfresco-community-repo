@@ -174,6 +174,9 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
                 LockState lockState = getLockState(nodeRef);
                 if (isEphemeralLock(lockState))
                 {
+                    // Create a mutable copy — the map may be unmodifiable
+                    properties = new HashMap<>(properties);
+                    entry.setValue(properties);
                     String userName = lockState.getOwner();
                     properties.put(ContentModel.PROP_LOCK_OWNER, userName);
                     properties.put(ContentModel.PROP_LOCK_TYPE, lockState.getLockType().toString());
@@ -185,6 +188,9 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
                     // Persistent lock, ensure lifetime property is present.
                     if (!properties.containsKey(ContentModel.PROP_LOCK_LIFETIME))
                     {
+                        // Create a mutable copy — the map may be unmodifiable
+                        properties = new HashMap<>(properties);
+                        entry.setValue(properties);
                         properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.PERSISTENT.toString());
                     }
                 }

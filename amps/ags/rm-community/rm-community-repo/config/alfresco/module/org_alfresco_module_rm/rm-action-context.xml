@@ -143,6 +143,7 @@
       <property name="recordFolderService" ref="RecordFolderService" />
       <property name="holdService" ref="HoldService" />
       <property name="identifierService" ref="recordsManagementIdentifierService"/>
+      <property name="filePlanService" ref="filePlanService" />
    </bean>
 
    <bean id="rmProxyAction"
@@ -1155,4 +1156,3 @@
        <property name="auditable" value="false"/>
    </bean>
 </beans>
-

@@ -135,6 +135,9 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             QuickShareModel.PROP_QSHARE_SHAREDBY,
             QuickShareModel.PROP_QSHARE_SHAREDID);
 
+    // Helper find (search) method
+    private static final Set<String> SHARED_LINKS_QUERY_PROPS = new HashSet<>(Collections.singletonList(PARAM_SHAREDBY));
+
     public void setServiceRegistry(ServiceRegistry sr)
     {
         this.sr = sr;
@@ -189,13 +192,10 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
             String networkTenantDomain = pair.getFirst();
 
-            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<QuickShareLink>() {
-                public QuickShareLink doWork() throws Exception
-                {
-                    // note: assume noAuth here (rather than rely on getRunAsUser which will be null in non-MT)
-                    return getQuickShareInfo(sharedId, true, parameters.getInclude());
-                }
-            }, networkTenantDomain);
+            return TenantUtil.runAsSystemTenant(
+                    () -> getQuickShareInfo(sharedId, true, parameters.getInclude()),
+                    networkTenantDomain
+            );
         }
         catch (InvalidSharedIdException ex)
         {
@@ -465,9 +465,6 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
         }
     }
 
-    // Helper find (search) method
-
-    private final static Set<String> FIND_SHARED_LINKS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[]{PARAM_SHAREDBY}));
 
     public CollectionWithPagingInfo<QuickShareLink> findLinks(Parameters parameters)
     {
@@ -482,7 +479,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
         if (q != null)
         {
             // filtering via "where" clause
-            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(FIND_SHARED_LINKS_QUERY_PROPERTIES, null);
+            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(SHARED_LINKS_QUERY_PROPS, null);
             QueryHelper.walk(q, propertyWalker);
 
             String sharedByUserId = propertyWalker.getProperty(PARAM_SHAREDBY, WhereClauseParser.EQUALS, String.class);

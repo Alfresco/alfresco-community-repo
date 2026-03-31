@@ -1279,7 +1279,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         when(mockSearchService.query(any())).thenReturn(mockResultSet);
         quickShareLinks.afterPropertiesSet();
 
-        HttpResponse response = response = getAll(URL_SHARED_LINKS, paging, null, 200);
+        HttpResponse response = getAll(URL_SHARED_LINKS, paging, null, 200);
         List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals(2, sharedLinks.size());
         QuickShareLink resQuickShareLink1 = sharedLinks.get(0);

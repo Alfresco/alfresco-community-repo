@@ -27,12 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.job;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutor;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutorRegistry;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -41,13 +44,9 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.QueryConsistency;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.alfresco.util.Pair;
 
 /**
  * Job to publish any pending updates on marked node references.
@@ -62,8 +61,8 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     /** Node service */
     private NodeService nodeService;
 
-    /** Search service */
-    private SearchService searchService;
+    /** Node DAO */
+    private NodeDAO nodeDAO;
 
     /** Publish executor register */
     private PublishExecutorRegistry publishExecutorRegistry;
@@ -83,11 +82,12 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     }
 
     /**
-     * @param searchService search service
+     * @param nodeDAO
+     *            node DAO
      */
-    public void setSearchService(SearchService searchService)
+    public void setNodeDAO(NodeDAO nodeDAO)
     {
-        this.searchService = searchService;
+        this.nodeDAO = nodeDAO;
     }
 
     /**
@@ -206,8 +206,9 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     }
 
     /**
-     * Get a list of the nodes with updates pending publish
-     * @return  List<NodeRef>   list of node refences with updates pending publication
+     * Get a list of the nodes with updates pending publish.
+     * 
+     * @return List<NodeRef> list of node references with updates pending publication
      */
     private List<NodeRef> getUpdatedNodes()
     {
@@ -217,44 +218,20 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                 @Override
                 public List<NodeRef> execute()
                 {
-                    // Build the query string
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("ASPECT:\"rma:").append(ASPECT_UNPUBLISHED_UPDATE.getLocalName()).append("\"");
-                    String query = sb.toString();
+                final List<NodeRef> resultNodes = new ArrayList<>();
 
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Executing query " + query);
-                    }
-
-                    // Execute query to find updates awaiting publishing
-                    List<NodeRef> resultNodes = null;
-
-                    SearchParameters searchParameters = new SearchParameters();
-                    searchParameters.setQuery(query);
-                    searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-                    searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-
-                    try
-                    {
-                        ResultSet results = searchService.query(searchParameters);
-                    try
-                    {
-                        resultNodes = results.getNodeRefs();
-                    }
-                    finally
-                    {
-                        results.close();
-                    }
-                    }
-                    catch (AlfrescoRuntimeException exception)
-                    {
-                        if (logger.isDebugEnabled())
+                nodeDAO.getNodesWithAspects(
+                        Collections.singleton(ASPECT_UNPUBLISHED_UPDATE),
+                        Long.MIN_VALUE,
+                        Long.MAX_VALUE,
+                        new NodeDAO.NodeRefQueryCallback() {
+                            @Override
+                            public boolean handle(Pair<Long, NodeRef> nodePair)
                         {
-                            logger.debug("Error executing query, " + exception.getMessage());
-                        }
-                        throw exception;
+                                resultNodes.add(nodePair.getSecond());
+                                return true;
                     }
+                        });
 
                     if (logger.isDebugEnabled())
                     {

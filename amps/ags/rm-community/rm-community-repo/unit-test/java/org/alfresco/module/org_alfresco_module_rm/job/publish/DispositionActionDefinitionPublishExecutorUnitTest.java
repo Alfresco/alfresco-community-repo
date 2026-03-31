@@ -30,11 +30,13 @@ package org.alfresco.module.org_alfresco_module_rm.job.publish;
 import static java.util.Collections.singletonList;
 import static org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction.BATCHING_ENABLED;
 import static org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction.BATCHING_SIZE;
+import static org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction.BATCHING_THREADS;
 import static org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
@@ -114,5 +116,84 @@ public class DispositionActionDefinitionPublishExecutorUnitTest
                 paramsCaptor.capture());
 
         assertEquals(100, paramsCaptor.getValue().get(BATCHING_SIZE));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testPublishPassesWorkerThreadsParameter()
+    {
+        List<QName> updatedProps = singletonList(RecordsManagementModel.PROP_DISPOSITION_PERIOD);
+        when(nodeService.getProperty(actionDefinitionNode, RecordsManagementModel.PROP_UPDATED_PROPERTIES))
+                .thenReturn((Serializable) updatedProps);
+
+        executor.setBatchingEnabled(true);
+        executor.setBatchSize(100);
+        executor.setWorkerThreads(8);
+
+        executor.publish(actionDefinitionNode);
+
+        ArgumentCaptor<Map<String, Serializable>> paramsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(rmActionService).executeRecordsManagementAction(
+                eq(actionDefinitionNode),
+                eq(BroadcastDispositionActionDefinitionUpdateAction.NAME),
+                paramsCaptor.capture());
+
+        assertEquals(8, paramsCaptor.getValue().get(BATCHING_THREADS));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testPublishUsesDefaultWorkerThreadsWhenConfiguredValueIsInvalid()
+    {
+        List<QName> updatedProps = singletonList(RecordsManagementModel.PROP_DISPOSITION_PERIOD);
+        when(nodeService.getProperty(actionDefinitionNode, RecordsManagementModel.PROP_UPDATED_PROPERTIES))
+                .thenReturn((Serializable) updatedProps);
+
+        executor.setBatchingEnabled(true);
+        executor.setBatchSize(100);
+        executor.setWorkerThreads(0);
+
+        executor.publish(actionDefinitionNode);
+
+        ArgumentCaptor<Map<String, Serializable>> paramsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(rmActionService).executeRecordsManagementAction(
+                eq(actionDefinitionNode),
+                eq(BroadcastDispositionActionDefinitionUpdateAction.NAME),
+                paramsCaptor.capture());
+
+        assertEquals(4, paramsCaptor.getValue().get(BATCHING_THREADS));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testPublishPassesBatchingDisabledParameter()
+    {
+        List<QName> updatedProps = singletonList(RecordsManagementModel.PROP_DISPOSITION_PERIOD);
+        when(nodeService.getProperty(actionDefinitionNode, RecordsManagementModel.PROP_UPDATED_PROPERTIES))
+                .thenReturn((Serializable) updatedProps);
+
+        executor.setBatchingEnabled(false);
+        executor.setBatchSize(100);
+
+        executor.publish(actionDefinitionNode);
+
+        ArgumentCaptor<Map<String, Serializable>> paramsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(rmActionService).executeRecordsManagementAction(
+                eq(actionDefinitionNode),
+                eq(BroadcastDispositionActionDefinitionUpdateAction.NAME),
+                paramsCaptor.capture());
+
+        assertEquals(Boolean.FALSE, paramsCaptor.getValue().get(BATCHING_ENABLED));
+    }
+
+    @Test
+    public void testPublishSkipsActionWhenUpdatedPropsIsNull()
+    {
+        when(nodeService.getProperty(actionDefinitionNode, RecordsManagementModel.PROP_UPDATED_PROPERTIES))
+                .thenReturn(null);
+
+        executor.publish(actionDefinitionNode);
+
+        verifyNoInteractions(rmActionService);
     }
 }

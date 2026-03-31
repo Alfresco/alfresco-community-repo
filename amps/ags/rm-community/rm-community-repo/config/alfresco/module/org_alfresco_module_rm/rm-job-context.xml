@@ -136,7 +136,8 @@
 	  <property name="nodeService"  ref="nodeService"/>
 	  <property name="publishExecutorRegistry" ref="publishExecutorRegistry"/>
      <property name="batchingEnabled" value="${rm.publishupdates.batching.enabled}"/>
-     <property name="batchSize" value="${rm.publishupdates.batching.batchsize}"/>
+     <property name="batchSize" value="${rm.publishupdates.batching.batchSize}"/>
+     <property name="workerThreads" value="${rm.publishupdates.batching.numThreads}"/>
    </bean>
 
 </beans>

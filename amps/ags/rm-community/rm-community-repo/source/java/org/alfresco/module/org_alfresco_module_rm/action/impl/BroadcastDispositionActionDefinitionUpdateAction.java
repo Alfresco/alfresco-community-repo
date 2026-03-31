@@ -44,7 +44,9 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
+import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -65,6 +67,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     public static final String CHANGED_PROPERTIES = "changedProperties";
     public static final String BATCHING_ENABLED = "isBatchingEnabled";
     public static final String BATCHING_SIZE = "batchSize";
+    public static final String BATCHING_THREADS = "workerThreads";
 
     private BehaviourFilter behaviourFilter;
 
@@ -88,17 +91,16 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         List<QName> changedProps = (List<QName>) action.getParameterValue(CHANGED_PROPERTIES);
         boolean isBatchingEnabled = Boolean.TRUE.equals(action.getParameterValue(BATCHING_ENABLED));
         Integer batchSizeParam = (Integer) action.getParameterValue(BATCHING_SIZE);
-        int batchSize = batchSizeParam != null ? batchSizeParam : 1000;
+        int batchSize = batchSizeParam != null ? batchSizeParam : 100;
 
         // Navigate up the containment hierarchy to get the record category grandparent and schedule.
         NodeRef dispositionScheduleNode = getNodeService().getPrimaryParent(actionedUponNodeRef).getParentRef();
         NodeRef rmContainer = getNodeService().getPrimaryParent(dispositionScheduleNode).getParentRef();
         DispositionSchedule dispositionSchedule = getDispositionService().getAssociatedDispositionSchedule(rmContainer);
 
-        behaviourFilter.disableBehaviour();
-
         if (!isBatchingEnabled)
         {
+            behaviourFilter.disableBehaviour();
             try
             {
                 List<NodeRef> disposableItems = getDispositionService().getDisposableItems(dispositionSchedule);
@@ -106,6 +108,8 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
                 {
                     updateDisposableItem(dispositionSchedule, disposableItem, actionedUponNodeRef, changedProps);
                 }
+                LOGGER.info("Updated " + disposableItems.size() + " disposable items for disposition schedule " + dispositionSchedule.getNodeRef()
+                        + " as a consequence of changes to disposition action definition " + actionedUponNodeRef);
             }
             finally
             {
@@ -115,58 +119,56 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             return;
         }
 
-        LOGGER.info("Batching is enabled for disposition action definition update action with batch size of " + batchSize);
+        Integer workerThreadsParam = (Integer) action.getParameterValue(BATCHING_THREADS);
+        int workerThreads = workerThreadsParam != null ? workerThreadsParam : 4;
 
-        // Instead of calling getDispositionService().getDisposableItems that gets all disposable items in the tree,
-        // we will crawl the tree and process the items in batches (processDisposableItemsInBatch)
-        boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();
-        NodeRef nodeRef = getDispositionService().getAssociatedRecordsManagementContainer(dispositionSchedule);
-        DispositionActionBatchProcessor batchProcessor = new DispositionActionBatchProcessor(batchSize, this, dispositionSchedule,
-                actionedUponNodeRef, changedProps, getTransactionService());
+        LOGGER.info("Batching is enabled for disposition action definition update action with batch size of " + batchSize
+                + " and " + workerThreads + " worker threads.");
 
-        try
-        {
-            processDisposableItemsInBatch(isRecordLevelDisposition, nodeRef, batchProcessor);
-            batchProcessor.processRemainingItems();
-        }
-        finally
-        {
-            behaviourFilter.enableBehaviour();
-        }
-
-        LOGGER.info("Disposition action batch run summary: " + "queuedItems: " + batchProcessor.getTotalQueued()
-                + "; processedItems: " + batchProcessor.getTotalProcessed()
-                + "; failedItems: " + batchProcessor.getTotalFailed());
-
-        if (batchProcessor.isHasError())
-        {
-            throw new AlfrescoRuntimeException("Disposition action update had " + batchProcessor.getTotalFailed()
-                    + " failed items. Processed " + batchProcessor.getTotalProcessed()
-                    + " items successfully. See the logs for more details.");
-        }
+        updateDisposableItemsInBatches(dispositionSchedule, actionedUponNodeRef, changedProps, batchSize, workerThreads);
     }
 
-    private void processDisposableItemsInBatch(boolean isRecordLevelDisposition, NodeRef rmContainer, DispositionActionBatchProcessor batchProcessor)
+    private void updateDisposableItemsInBatches(DispositionSchedule dispositionSchedule, NodeRef actionedUponNodeRef, List<QName> changedProps, int batchSize, int workerThreads)
     {
-        List<NodeRef> items = getFilePlanService().getAllContained(rmContainer);
+        boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();
+        NodeRef nodeRef = getDispositionService().getAssociatedRecordsManagementContainer(dispositionSchedule);
+        DisposableActionBatchWorkProvider workProvider = new DisposableActionBatchWorkProvider(isRecordLevelDisposition, nodeRef,
+                batchSize, getFilePlanService(), getRecordFolderService(), getRecordService(),
+                getDispositionService(), getTransactionService().getRetryingTransactionHelper());
 
-        for (NodeRef item : items)
+        BatchProcessor.BatchProcessWorkerAdaptor<NodeRef> worker = new BatchProcessor.BatchProcessWorkerAdaptor<NodeRef>() {
+            @Override
+            public void beforeProcess()
+            {
+                AuthenticationUtil.setRunAsUserSystem();
+                behaviourFilter.disableBehaviour();
+            }
+
+            @Override
+            public void process(NodeRef item) throws Throwable
+            {
+                updateDisposableItem(dispositionSchedule, item, actionedUponNodeRef, changedProps);
+            }
+
+            @Override
+            public void afterProcess()
+            {
+                behaviourFilter.enableBehaviour();
+                AuthenticationUtil.clearCurrentSecurityContext();
+            }
+        };
+
+        BatchProcessor<NodeRef> processor = new BatchProcessor<>("BroadcastDispositionActionDefinitionUpdate",
+                getTransactionService().getRetryingTransactionHelper(), workProvider, workerThreads, batchSize, null, LOGGER,
+                1000);
+        processor.processLong(worker, true);
+
+        LOGGER.info("Disposition action batch run summary: failedItems: " + processor.getTotalErrorsLong());
+
+        if (processor.getTotalErrorsLong() > 0)
         {
-            if (getRecordFolderService().isRecordFolder(item))
-            {
-                if (isRecordLevelDisposition)
-                {
-                    batchProcessor.addAllItems(getRecordService().getRecords(item));
-                }
-                else
-                {
-                    batchProcessor.addItem(item);
-                }
-            }
-            else if (getFilePlanService().isRecordCategory(item) && getDispositionService().getAssociatedDispositionSchedule(item) == null)
-            {
-                processDisposableItemsInBatch(isRecordLevelDisposition, item, batchProcessor);
-            }
+            throw new AlfrescoRuntimeException("Disposition action update had " + processor.getTotalErrorsLong()
+                    + " failed items. See the logs for more details.");
         }
     }
 

@@ -54,6 +54,7 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
 
     private boolean batchingEnabled;
     private int batchSize;
+    private int workerThreads;
 
     public void setBatchingEnabled(boolean batchingEnabled)
     {
@@ -63,6 +64,11 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
     public void setBatchSize(int batchSize)
     {
         this.batchSize = batchSize > 0 ? batchSize : 100;
+    }
+
+    public void setWorkerThreads(int workerThreads)
+    {
+        this.workerThreads = workerThreads > 0 ? workerThreads : 4;
     }
 
     /**
@@ -110,6 +116,7 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
             params.put(BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES, (Serializable) updatedProps);
             params.put(BroadcastDispositionActionDefinitionUpdateAction.BATCHING_ENABLED, (Serializable) batchingEnabled);
             params.put(BroadcastDispositionActionDefinitionUpdateAction.BATCHING_SIZE, (Serializable) batchSize);
+            params.put(BroadcastDispositionActionDefinitionUpdateAction.BATCHING_THREADS, (Serializable) workerThreads);
             rmActionService.executeRecordsManagementAction(nodeRef, BroadcastDispositionActionDefinitionUpdateAction.NAME, params);
         }
     }

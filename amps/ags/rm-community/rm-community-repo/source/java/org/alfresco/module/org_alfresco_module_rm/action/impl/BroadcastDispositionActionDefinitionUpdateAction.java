@@ -90,8 +90,6 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
 
         List<QName> changedProps = (List<QName>) action.getParameterValue(CHANGED_PROPERTIES);
         boolean isBatchingEnabled = Boolean.TRUE.equals(action.getParameterValue(BATCHING_ENABLED));
-        Integer batchSizeParam = (Integer) action.getParameterValue(BATCHING_SIZE);
-        int batchSize = batchSizeParam != null ? batchSizeParam : 100;
 
         // Navigate up the containment hierarchy to get the record category grandparent and schedule.
         NodeRef dispositionScheduleNode = getNodeService().getPrimaryParent(actionedUponNodeRef).getParentRef();
@@ -108,8 +106,11 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
                 {
                     updateDisposableItem(dispositionSchedule, disposableItem, actionedUponNodeRef, changedProps);
                 }
-                LOGGER.info("Updated " + disposableItems.size() + " disposable items for disposition schedule " + dispositionSchedule.getNodeRef()
-                        + " as a consequence of changes to disposition action definition " + actionedUponNodeRef);
+                if (LOGGER.isInfoEnabled())
+                {
+                    LOGGER.info("Updated " + disposableItems.size() + " disposable items for disposition schedule " + dispositionSchedule.getNodeRef()
+                            + " as a consequence of changes to disposition action definition " + actionedUponNodeRef);
+                }
             }
             finally
             {
@@ -119,15 +120,35 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             return;
         }
 
+        // Batching is enabled
+        Integer batchSizeParam = (Integer) action.getParameterValue(BATCHING_SIZE);
+        int batchSize = batchSizeParam != null ? batchSizeParam : 100;
         Integer workerThreadsParam = (Integer) action.getParameterValue(BATCHING_THREADS);
         int workerThreads = workerThreadsParam != null ? workerThreadsParam : 4;
 
-        LOGGER.info("Batching is enabled for disposition action definition update action with batch size of " + batchSize
-                + " and " + workerThreads + " worker threads.");
+        if (LOGGER.isInfoEnabled())
+        {
+            LOGGER.info("Batching is enabled for disposition action definition update action with batch size of " + batchSize
+                    + " and " + workerThreads + " worker threads.");
+        }
 
         updateDisposableItemsInBatches(dispositionSchedule, actionedUponNodeRef, changedProps, batchSize, workerThreads);
     }
 
+    /**
+     * Updates the disposable items associated with the given disposition schedule in batches using BatchProcessor.
+     *
+     * @param dispositionSchedule
+     *            the disposition schedule
+     * @param actionedUponNodeRef
+     *            the node reference of the actioned upon node
+     * @param changedProps
+     *            the list of changed properties
+     * @param batchSize
+     *            the size of each batch
+     * @param workerThreads
+     *            the number of worker threads
+     */
     private void updateDisposableItemsInBatches(DispositionSchedule dispositionSchedule, NodeRef actionedUponNodeRef, List<QName> changedProps, int batchSize, int workerThreads)
     {
         boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();

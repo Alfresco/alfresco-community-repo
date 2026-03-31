@@ -194,8 +194,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
             return TenantUtil.runAsSystemTenant(
                     () -> getQuickShareInfo(sharedId, true, parameters.getInclude()),
-                    networkTenantDomain
-            );
+                    networkTenantDomain);
         }
         catch (InvalidSharedIdException ex)
         {
@@ -464,7 +463,6 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             throw new EntityNotFoundException(sharedId);
         }
     }
-
 
     public CollectionWithPagingInfo<QuickShareLink> findLinks(Parameters parameters)
     {

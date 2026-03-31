@@ -103,7 +103,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.SearchLanguageConversion;
 
-
 /**
  * Centralises access to shared link (public "quick share") services and maps between representations.
  *
@@ -136,12 +135,10 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             QuickShareModel.PROP_QSHARE_SHAREDBY,
             QuickShareModel.PROP_QSHARE_SHAREDID);
 
-
     public void setServiceRegistry(ServiceRegistry sr)
     {
         this.sr = sr;
     }
-
 
     public void setQuickShareService(QuickShareService quickShareService)
     {
@@ -214,9 +211,9 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
      *
      * @param sharedId
      * @param renditionId
-     *             - optional
+     *            - optional
      * @param parameters
-     *             {@link Parameters}
+     *            {@link Parameters}
      * @return
      * @throws EntityNotFoundException
      */
@@ -269,7 +266,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
      * Requires authenticated access.
      *
      * @param sharedId
- *                 String id of the quick share
+     *            String id of the quick share
      */
     public void delete(String sharedId, Parameters parameters)
     {
@@ -540,7 +537,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
     private QuickShareLink getQuickShareInfo(String sharedId, boolean noAuth, List<String> includeParam)
     {
         checkValidShareId(sharedId);
-        
+
         Map<String, Object> map = (Map<String, Object>) quickShareService.getMetaData(sharedId).get("item");
         NodeRef nodeRef = new NodeRef((String) map.get("nodeRef"));
 

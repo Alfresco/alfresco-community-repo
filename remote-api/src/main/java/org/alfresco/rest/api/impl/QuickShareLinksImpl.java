@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +135,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             QuickShareModel.PROP_QSHARE_SHAREDID);
 
     // Helper find (search) method
-    private static final Set<String> SHARED_LINKS_QUERY_PROPS = new HashSet<>(Collections.singletonList(PARAM_SHAREDBY));
+    private static final Set<String> SHARED_LINKS_QUERY_PROPS = Set.of(PARAM_SHAREDBY);
 
     public void setServiceRegistry(ServiceRegistry sr)
     {
@@ -193,6 +192,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             String networkTenantDomain = pair.getFirst();
 
             return TenantUtil.runAsSystemTenant(
+                    // note: assume noAuth here (rather than rely on getRunAsUser which will be null in non-MT)
                     () -> getQuickShareInfo(sharedId, true, parameters.getInclude()),
                     networkTenantDomain);
         }

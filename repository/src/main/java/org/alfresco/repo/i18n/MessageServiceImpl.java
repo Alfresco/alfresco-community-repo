@@ -515,10 +515,9 @@ public class MessageServiceImpl implements MessageService
                                 String key = enumKeys.nextElement();
                                 props.put(key, resourcebundle.getString(key));
                             }
-
-                            attemptedBundles.add(resBundlePath);
                             count++;
                         }
+                        attemptedBundles.add(resBundlePath);
                     }
                 }
 

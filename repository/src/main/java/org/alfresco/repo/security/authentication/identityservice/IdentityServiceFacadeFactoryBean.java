@@ -632,42 +632,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private void reconfigureJWKSCache(ConfigurableJWTProcessor<SecurityContext> jwtProcessor)
         {
-            final Optional<RemoteJWKSet<SecurityContext>> jwkSource = ofNullable(jwtProcessor)
-                    .map(ConfigurableJWTProcessor::getJWSKeySelector)
-                    .filter(JWSVerificationKeySelector.class::isInstance)
-                    .map(o -> (JWSVerificationKeySelector<SecurityContext>) o)
-                    .map(JWSVerificationKeySelector::getJWKSource)
-                    .filter(RemoteJWKSet.class::isInstance).map(o -> (RemoteJWKSet<SecurityContext>) o);
-            if (jwkSource.isEmpty())
-            {
-                LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
-                return;
-            }
-
-            final Optional<URL> jwkSetUrl = jwkSource.map(RemoteJWKSet::getJWKSetURL);
-            if (jwkSetUrl.isEmpty())
-            {
-                LOGGER.warn("Not able to reconfigure the JWK Cache. Unknown JWKSetURL.");
-                return;
-            }
-
-            final Optional<ResourceRetriever> resourceRetriever = jwkSource.map(RemoteJWKSet::getResourceRetriever);
-            if (resourceRetriever.isEmpty())
-            {
-                LOGGER.warn("Not able to reconfigure the JWK Cache. Unknown ResourceRetriever.");
-                return;
-            }
-
-            final DefaultJWKSetCache cache = new DefaultJWKSetCache(config.getPublicKeyCacheTtl(), -1,
-                    TimeUnit.SECONDS);
-            final JWKSource<SecurityContext> cachingJWKSource = new RemoteJWKSet<>(jwkSetUrl.get(),
-                    resourceRetriever.get(), cache);
-
-            jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
-                    signatureAlgorithms.stream()
-                            .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
-                            .collect(Collectors.toSet()),
-                    cachingJWKSource));
             jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
         }
 

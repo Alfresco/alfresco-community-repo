@@ -44,7 +44,11 @@
             <artifactId>lucene-analysis-common</artifactId>
             <version>${dependency.lucene.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-elasticsearch-shared</artifactId>
+            <version>${dependency.elasticsearch-shared.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>

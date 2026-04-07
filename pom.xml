@@ -94,6 +94,7 @@
 
         <!-- Elasticsearch / OpenSearch search support -->
         <dependency.opensearch.version>2.21.0</dependency.opensearch.version>
+        <dependency.elasticsearch-shared.version>5.4.0</dependency.elasticsearch-shared.version>
         <dependency.lucene.version>9.7.0</dependency.lucene.version>
         <dependency.swagger-ui.version>4.1.3</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.73</dependency.swagger-parser.version>

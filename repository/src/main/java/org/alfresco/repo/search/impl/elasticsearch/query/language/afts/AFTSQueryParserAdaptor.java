@@ -44,6 +44,7 @@ import org.opensearch.client.opensearch._types.query_dsl.MatchNoneQuery;
 import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.QueryBuilders;
 
+import org.alfresco.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.repo.search.adaptor.AnalysisMode;
@@ -57,7 +58,6 @@ import org.alfresco.repo.search.impl.elasticsearch.query.StoreRefStripper;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.EsTypeResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.FieldQueryTransformer;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.LuceneQueryParser;
-import org.alfresco.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Ordering;
 import org.alfresco.service.cmr.dictionary.DictionaryService;

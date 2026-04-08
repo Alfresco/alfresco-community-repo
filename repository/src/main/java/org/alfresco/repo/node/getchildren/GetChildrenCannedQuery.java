@@ -856,7 +856,11 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             {
                 seenNodeIds.add(nodeGroup.getKey());
                 List<FilterSortNodeEntity> rows = nodeGroup.getValue();
-                FilterSortNodeEntity firstRow = rows.getFirst();
+                if (rows == null || rows.isEmpty())
+                {
+                    continue;
+                }
+                FilterSortNodeEntity firstRow = rows.get(0);
                 NodeRef nodeRef = firstRow.createNodeRef();
 
                 Map<QName, Serializable> propVals = buildNodeProperties(rows, firstRow, nodeRef);
@@ -942,7 +946,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             ContentData contentData = (ContentData) propVals.get(ContentModel.PROP_CONTENT);
             if (contentData != null)
             {
-                propVals.put(SORT_QNAME_CONTENT_SIZE, contentData.getSize());
+                propVals.put(SORT_QNAME_CONTENT_SIZE, Long.valueOf(contentData.getSize()));
                 propVals.put(SORT_QNAME_CONTENT_MIMETYPE, contentData.getMimetype());
             }
         }

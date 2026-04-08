@@ -510,6 +510,16 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private Set<String> getSupportedScopes(Scope scopes)
         {
+            if (config.isScopeValidationDisabled())
+            {
+                // Bypass filtering: combine all configured scopes and send as-is.
+                // Required for IDPs like MS Entra that do not list custom API scopes in their scopes_supported discovery document.
+                Set<String> allScopes = new java.util.LinkedHashSet<>();
+                allScopes.addAll(config.getAdminConsoleScopes());
+                allScopes.addAll(config.getWebScriptsHomeScopes());
+                allScopes.addAll(config.getPasswordGrantScopes());
+                return allScopes;
+            }
             return scopes.stream()
                     .filter(this::hasPasswordGrantScope)
                     .map(Identifier::getValue)

@@ -137,13 +137,19 @@ public abstract class AbstractIdentityServiceAuthenticator implements ExternalUs
         ClientRegistration clientRegistration = identityServiceFacade.getClientRegistration();
         State state = new State();
 
+        // Generate a secure random nonce for OIDC
+        String nonce = java.util.UUID.randomUUID().toString();
+        // Optionally store the nonce in the session for later validation
+        request.getSession().setAttribute("OIDC_NONCE", nonce);
+
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails()
                 .getAuthorizationUri())
                 .queryParam("client_id", clientRegistration.getClientId())
                 .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join("+", getConfiguredScopes(clientRegistration)))
-                .queryParam("state", state.toString());
+                .queryParam("state", state.toString())
+                .queryParam("nonce", nonce);
 
         if (StringUtils.isNotBlank(identityServiceConfig.getAudience()))
         {
@@ -156,6 +162,11 @@ public abstract class AbstractIdentityServiceAuthenticator implements ExternalUs
 
     private Set<String> getConfiguredScopes(ClientRegistration clientRegistration)
     {
+        if (identityServiceConfig.isScopeValidationDisabled())
+        {
+            // Bypass filtering: send configured scopes as-is
+            return getConfiguredScopes();
+        }
         return Optional.ofNullable(clientRegistration.getProviderDetails())
                 .map(ProviderDetails::getConfigurationMetadata)
                 .map(metadata -> metadata.get(SCOPES_SUPPORTED.getValue()))

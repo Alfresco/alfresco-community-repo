@@ -78,6 +78,12 @@ public class IdentityServiceConfig
     private long jwtClockSkewMs;
     private String webScriptsHomeRedirectPath;
     private String webScriptsHomeScopes;
+    private boolean scopeValidationDisabled;
+
+    public boolean isScopeValidationDisabled()
+    {
+        return scopeValidationDisabled;
+    }
 
     public String getWebScriptsHomeRedirectPath()
     {
@@ -433,5 +439,10 @@ public class IdentityServiceConfig
     public long getJwtClockSkewMs()
     {
         return jwtClockSkewMs;
+    }
+
+    public void setScopeValidationDisabled(boolean scopeValidationDisabled)
+    {
+        this.scopeValidationDisabled = scopeValidationDisabled;
     }
 }

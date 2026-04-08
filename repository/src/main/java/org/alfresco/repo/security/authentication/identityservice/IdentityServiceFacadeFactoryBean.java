@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
@@ -60,14 +59,11 @@ import java.util.stream.Collectors;
 
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.jwk.source.DefaultJWKSetCache;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.jwk.source.RemoteJWKSet;
+import com.nimbusds.jose.jwk.source.*;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
-import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.Identifier;
@@ -632,6 +628,46 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private void reconfigureJWKSCache(ConfigurableJWTProcessor<SecurityContext> jwtProcessor)
         {
+            if (jwtProcessor == null)
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Missing JWT processor.");
+                return;
+            }
+
+            if (!(jwtProcessor.getJWSKeySelector() instanceof JWSVerificationKeySelector<?> selector))
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
+                return;
+            }
+
+            if (!(selector.getJWKSource() instanceof JWKSetBasedJWKSource<?> jwkSetBasedSource))
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
+                return;
+            }
+
+            @SuppressWarnings("unchecked")
+            final JWKSetSource<SecurityContext> jwkSetSource = ((JWKSetBasedJWKSource<SecurityContext>) jwkSetBasedSource).getJWKSetSource();
+
+            if (jwkSetSource == null)
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Missing JWKSetSource.");
+                return;
+            }
+
+            final JWKSource<SecurityContext> newJWKSCache = JWKSourceBuilder.create(jwkSetSource)
+                    .cache(config.getPublicKeyCacheTtl() * 1000L, -1) // TTL provided in config is in seconds.
+                    .rateLimited(false)
+                    .refreshAheadCache(false)
+                    .retrying(true)
+                    .build();
+
+            jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
+                    signatureAlgorithms.stream()
+                            .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
+                            .collect(Collectors.toSet()),
+                    newJWKSCache));
+
             jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
         }
 

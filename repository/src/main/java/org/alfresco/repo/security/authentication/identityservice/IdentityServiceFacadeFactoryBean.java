@@ -634,17 +634,19 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 return;
             }
 
-            if (!(jwtProcessor.getJWSKeySelector() instanceof JWSVerificationKeySelector<?> selector))
+            if (!(jwtProcessor.getJWSKeySelector() instanceof JWSVerificationKeySelector))
             {
                 LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
                 return;
             }
+            final JWSVerificationKeySelector<?> selector = (JWSVerificationKeySelector<?>) jwtProcessor.getJWSKeySelector();
 
-            if (!(selector.getJWKSource() instanceof JWKSetBasedJWKSource<?> jwkSetBasedSource))
+            if (!(selector.getJWKSource() instanceof JWKSetBasedJWKSource))
             {
                 LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
                 return;
             }
+            final JWKSetBasedJWKSource<?> jwkSetBasedSource = (JWKSetBasedJWKSource<?>) selector.getJWKSource();
 
             @SuppressWarnings("unchecked")
             final JWKSetSource<SecurityContext> jwkSetSource = ((JWKSetBasedJWKSource<SecurityContext>) jwkSetBasedSource).getJWKSetSource();

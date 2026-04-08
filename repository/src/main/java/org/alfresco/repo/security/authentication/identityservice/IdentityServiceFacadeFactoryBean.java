@@ -469,6 +469,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
             final var usernameAttribute = StringUtils.isNotBlank(config.getPrincipalAttribute()) ? config.getPrincipalAttribute() : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
 
+            // The redirectUri is required by Spring Security's ClientRegistration builder for AUTHORIZATION_CODE grant type validation.
+            final String redirectUri = StringUtils.isNotBlank(config.getAdminConsoleRedirectPath())
+                    ? config.getAdminConsoleRedirectPath()
+                    : "/alfresco";
+
             return ClientRegistration
                     .withRegistrationId("ids")
                     .authorizationUri(authUri)
@@ -479,7 +484,8 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .userNameAttributeName(usernameAttribute)
                     .scope(getSupportedScopes(metadata.getScopes()))
                     .providerConfigurationMetadata(createMetadata(metadata))
-                    .authorizationGrantType(AuthorizationGrantType.TOKEN_EXCHANGE);
+                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                    .redirectUri(redirectUri);
         }
 
         private Map<String, Object> createMetadata(OIDCProviderMetadata metadata)
@@ -512,14 +518,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         {
             if (config.isScopeValidationDisabled())
             {
-                // Bypass filtering: combine all configured scopes and send as-is.
-                // Required for IDPs like MS Entra that do not list custom API scopes in their scopes_supported discovery document.
-                Set<String> allScopes = new java.util.LinkedHashSet<>();
-                allScopes.addAll(config.getAdminConsoleScopes());
-                allScopes.addAll(config.getWebScriptsHomeScopes());
-                allScopes.addAll(config.getPasswordGrantScopes());
-                return allScopes;
+                // Bypass scope filtering against the IDP's scopes_supported discovery metadata.
+                // Required for IDPs like MS Entra that do not advertise custom API scopes
+                return new java.util.LinkedHashSet<>(config.getAdminConsoleScopes());
             }
+            // Default: filter configured scopes against IDP's scopes_supported
             return scopes.stream()
                     .filter(this::hasPasswordGrantScope)
                     .map(Identifier::getValue)

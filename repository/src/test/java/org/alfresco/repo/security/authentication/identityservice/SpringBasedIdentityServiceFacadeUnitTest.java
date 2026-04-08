@@ -97,7 +97,8 @@ public class SpringBasedIdentityServiceFacadeUnitTest
                 .clientId("test")
                 .clientSecret("test-secret")
                 .userInfoUri("http://localhost/userinfo")
-                .authorizationGrantType(AuthorizationGrantType.TOKEN_EXCHANGE)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri("/alfresco")
                 .build();
     }
 }

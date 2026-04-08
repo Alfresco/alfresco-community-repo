@@ -577,7 +577,7 @@ Admin.addEventListener(window, 'load', function() {
          <div class="main-wrapper">
          
             <div class="title">
-               <span class="logo"><img src="${url.context}/images/logo/logo.png" width="145" height="48" alt="" /></span>
+               <span class="logo"><img src="${url.context}/images/logo/logo.svg" width="145" height="48" alt="" /></span>
                <span class="logo-separator">&nbsp;</span>
                <h1>${title?html}</h1>
             </div>
@@ -632,7 +632,7 @@ Admin.addEventListener(window, 'load', function() {
          <div>
          
             <div class="title">
-               <span class="logo"><img src="${url.context}/images/logo/logo.png" width="145" height="48" alt="" /></span>
+               <span class="logo"><img src="${url.context}/images/logo/logo.svg" width="145" height="48" alt="" /></span>
                <span class="logo-separator">&nbsp;</span>
                <h1>${title?html}</h1>
             </div>

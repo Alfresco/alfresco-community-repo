@@ -171,6 +171,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- CVE-2025-67030: Override vulnerable plexus-utils 3.5.1 (transitive from maven-artifact) -->
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>4.0.3</version>
+            </dependency>
             <!-- v1.10 has 0BSD license it must be consulted with Legal -->
             <dependency>
                 <groupId>org.tukaani</groupId>

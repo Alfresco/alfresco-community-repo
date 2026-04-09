@@ -33,6 +33,7 @@ import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
@@ -92,6 +93,10 @@ public class ElasticsearchHttpClientFactory
     // Connection and request timeout
     private int connectionTimeout;
     private int socketTimeout;
+    private int responseTimeout;
+
+    // Built RequestConfig instance (set once during client creation)
+    private RequestConfig builtRequestConfig;
 
     /**
      * Initialize SSL Truststore for https connections using "encryption.ssl.truststore.*" properties
@@ -147,6 +152,25 @@ public class ElasticsearchHttpClientFactory
     }
 
     /**
+     * Builds and caches the RequestConfig with the configured response timeout.
+     */
+    private RequestConfig buildRequestConfig()
+    {
+        this.builtRequestConfig = RequestConfig.custom()
+                .setResponseTimeout(Timeout.ofMilliseconds(responseTimeout))
+                .build();
+        return this.builtRequestConfig;
+    }
+
+    /**
+     * Returns the built RequestConfig instance, or null if not built yet.
+     */
+    RequestConfig getRequestConfig()
+    {
+        return builtRequestConfig;
+    }
+
+    /**
      * Apply pooling options, credentials and SSL settings to Elasticsearch client
      *
      * @param httpClientBuilder
@@ -192,6 +216,8 @@ public class ElasticsearchHttpClientFactory
 
         httpClientBuilder.setUserAgent(StringUtils.EMPTY).setConnectionManager(connectionBuilder.build());
 
+        // Build and set the HTTP/2 response timeout using the configured responseTimeout property
+        httpClientBuilder.setDefaultRequestConfig(buildRequestConfig());
         return httpClientBuilder;
     }
 
@@ -277,6 +303,11 @@ public class ElasticsearchHttpClientFactory
     public void setSocketTimeout(int socketTimeout)
     {
         this.socketTimeout = socketTimeout;
+    }
+
+    public void setResponseTimeout(int responseTimeout)
+    {
+        this.responseTimeout = responseTimeout;
     }
 
     public void setSslEncryptionParameters(SSLEncryptionParameters sslEncryptionParameters)

@@ -137,10 +137,8 @@ public abstract class AbstractIdentityServiceAuthenticator implements ExternalUs
         ClientRegistration clientRegistration = identityServiceFacade.getClientRegistration();
         State state = new State();
 
-        // Generate a secure random nonce for OIDC
+        // Generate a secure random nonce for OIDC compatibility (required by some IDPs like MS Entra).
         String nonce = java.util.UUID.randomUUID().toString();
-        // Optionally store the nonce in the session for later validation
-        request.getSession().setAttribute("OIDC_NONCE", nonce);
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails()
                 .getAuthorizationUri())

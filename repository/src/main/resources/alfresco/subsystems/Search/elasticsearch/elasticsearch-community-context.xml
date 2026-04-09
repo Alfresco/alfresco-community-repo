@@ -69,6 +69,7 @@
         <property name="maxHostConnections" value="${elasticsearch.max.host.connections}" />
         <property name="socketTimeout" value="${elasticsearch.http.socket.timeout}" />
         <property name="connectionTimeout" value="${elasticsearch.http.connection.timeout}" />
+        <property name="responseTimeout" value="${elasticsearch.http.response.timeout}" />
         <property name="threadCount" value="${elasticsearch.io.threadCount:0}" />
         <property name="hostNameVerification" value="${elasticsearch.ssl.host.name.verification}" />
         <property name="sslEncryptionParameters" ref="sslEncryptionParameters" />

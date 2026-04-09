@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,6 +42,9 @@ import static org.mockito.Mockito.when;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -49,27 +53,25 @@ import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServi
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Unit tests for {@link DisposableActionBatchWorkProvider}.
  */
 public class DisposableActionBatchWorkProviderUnitTest
 {
-    private static final NodeRef ROOT      = new NodeRef("workspace://SpacesStore/root");
-    private static final NodeRef FOLDER_1  = new NodeRef("workspace://SpacesStore/folder-1");
-    private static final NodeRef FOLDER_2  = new NodeRef("workspace://SpacesStore/folder-2");
-    private static final NodeRef FOLDER_3  = new NodeRef("workspace://SpacesStore/folder-3");
-    private static final NodeRef RECORD_1  = new NodeRef("workspace://SpacesStore/record-1");
-    private static final NodeRef RECORD_2  = new NodeRef("workspace://SpacesStore/record-2");
-    private static final NodeRef CATEGORY  = new NodeRef("workspace://SpacesStore/category");
+    private static final NodeRef ROOT = new NodeRef("workspace://SpacesStore/root");
+    private static final NodeRef FOLDER_1 = new NodeRef("workspace://SpacesStore/folder-1");
+    private static final NodeRef FOLDER_2 = new NodeRef("workspace://SpacesStore/folder-2");
+    private static final NodeRef FOLDER_3 = new NodeRef("workspace://SpacesStore/folder-3");
+    private static final NodeRef RECORD_1 = new NodeRef("workspace://SpacesStore/record-1");
+    private static final NodeRef RECORD_2 = new NodeRef("workspace://SpacesStore/record-2");
+    private static final NodeRef CATEGORY = new NodeRef("workspace://SpacesStore/category");
 
-    private final FilePlanService filePlanService           = mock(FilePlanService.class);
-    private final RecordFolderService recordFolderService   = mock(RecordFolderService.class);
+    private final FilePlanService filePlanService = mock(FilePlanService.class);
+    private final RecordFolderService recordFolderService = mock(RecordFolderService.class);
     private final RecordService recordService = mock(RecordService.class);
     private final DispositionService dispositionService = mock(DispositionService.class);
-    private final RetryingTransactionHelper retryingTransactionHelper     = mock(RetryingTransactionHelper.class);
+    private final RetryingTransactionHelper retryingTransactionHelper = mock(RetryingTransactionHelper.class);
 
     @Before
     @SuppressWarnings("unchecked")

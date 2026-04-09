@@ -52,9 +52,30 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
     /** Records management action service */
     private RecordsManagementActionService rmActionService;
 
+    private boolean batchingEnabled;
+    private int batchSize;
+    private int workerThreads;
+
+    public void setBatchingEnabled(boolean batchingEnabled)
+    {
+        this.batchingEnabled = batchingEnabled;
+    }
+
+    public void setBatchSize(int batchSize)
+    {
+        this.batchSize = batchSize > 0 ? batchSize : 100;
+    }
+
+    public void setWorkerThreads(int workerThreads)
+    {
+        this.workerThreads = workerThreads > 0 ? workerThreads : 4;
+    }
+
     /**
      * Set node service
-     * @param nodeService   node service
+     * 
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -63,7 +84,9 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
 
     /**
      * Set records management service
-     * @param rmActionService   records management service
+     * 
+     * @param rmActionService
+     *            records management service
      */
     public void setRmActionService(RecordsManagementActionService rmActionService)
     {
@@ -86,11 +109,14 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
     @Override
     public void publish(NodeRef nodeRef)
     {
-        List<QName> updatedProps = (List<QName>)nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_UPDATED_PROPERTIES);
+        List<QName> updatedProps = (List<QName>) nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_UPDATED_PROPERTIES);
         if (updatedProps != null)
         {
             Map<String, Serializable> params = new HashMap<>();
-            params.put(BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES, (Serializable)updatedProps);
+            params.put(BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES, (Serializable) updatedProps);
+            params.put(BroadcastDispositionActionDefinitionUpdateAction.BATCHING_ENABLED, (Serializable) batchingEnabled);
+            params.put(BroadcastDispositionActionDefinitionUpdateAction.BATCHING_SIZE, (Serializable) batchSize);
+            params.put(BroadcastDispositionActionDefinitionUpdateAction.BATCHING_THREADS, (Serializable) workerThreads);
             rmActionService.executeRecordsManagementAction(nodeRef, BroadcastDispositionActionDefinitionUpdateAction.NAME, params);
         }
     }

@@ -4564,6 +4564,80 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         }
     }
 
+    @Test
+    public void testRetrievePermissionsAuthorityDisplayName() throws Exception
+    {
+        try
+        {
+            createAuthorityContext(user1);
+
+            setRequestContext(user1);
+
+            String postUrl = createFolder();
+            String docId = createDocument(postUrl);
+
+            Map<String, String> params = new HashMap<>();
+            params.put("include", "permissions");
+
+            // Set permissions for a group on the document
+            Document dUpdate = new Document();
+            NodePermissions nodePermissions = new NodePermissions();
+            List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+            locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
+            nodePermissions.setLocallySet(locallySetPermissions);
+            dUpdate.setPermissions(nodePermissions);
+
+            // PUT to set the permissions
+            put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+
+            // GET the node with include=permissions
+            HttpResponse response = getSingle(NodesEntityResource.class, docId, params, 200);
+            Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+            assertNotNull(documentResp.getPermissions());
+            assertNotNull(documentResp.getPermissions().getLocallySet());
+            assertTrue(documentResp.getPermissions().getLocallySet().size() >= 1);
+
+            // Verify authorityDisplayName is returned for the group
+            NodePermissions.NodePermission groupPerm = findPermissionByAuthorityId(documentResp.getPermissions().getLocallySet(), groupA);
+            assertNotNull(groupPerm);
+            assertNotNull(groupPerm.getAuthorityDisplayName());
+            assertFalse(groupPerm.getAuthorityDisplayName().isEmpty());
+            String expectedGroupDisplayName = authorityService.getAuthorityDisplayName(groupA);
+            assertEquals(expectedGroupDisplayName, groupPerm.getAuthorityDisplayName());
+
+            // Verify authorityDisplayName is returned for inherited permissions
+            if (documentResp.getPermissions().getInherited() != null)
+            {
+                for (NodePermissions.NodePermission inheritedPerm : documentResp.getPermissions().getInherited())
+                {
+                    assertNotNull(inheritedPerm.getAuthorityDisplayName());
+                    assertFalse(inheritedPerm.getAuthorityDisplayName().isEmpty());
+                }
+            }
+        }
+        finally
+        {
+            clearAuthorityContext();
+        }
+    }
+
+    private NodePermissions.NodePermission findPermissionByAuthorityId(List<NodePermissions.NodePermission> permissions, String authorityId)
+    {
+        if (permissions == null)
+        {
+            return null;
+        }
+        for (NodePermissions.NodePermission perm : permissions)
+        {
+            if (authorityId.equals(perm.getAuthorityId()))
+            {
+                return perm;
+            }
+        }
+        return null;
+    }
+
     /**
      * Test retrieve node permissions for special nodes like:
      * 'Company Home', 'Data Dictionary', 'Shared', 'Sites', 'User Home'

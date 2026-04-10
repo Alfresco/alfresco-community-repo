@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -514,7 +515,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             {
                 // Bypass scope filtering against the IDP's scopes_supported discovery metadata.
                 // Required for IDPs like MS Entra that do not advertise custom API scopes
-                return new java.util.LinkedHashSet<>(config.getAdminConsoleScopes());
+                Set<String> allScopes = new LinkedHashSet<>();
+                allScopes.addAll(config.getAdminConsoleScopes());
+                allScopes.addAll(config.getWebScriptsHomeScopes());
+                allScopes.addAll(config.getPasswordGrantScopes());
+                return allScopes;
             }
             // Default: filter configured scopes against IDP's scopes_supported
             return scopes.stream()

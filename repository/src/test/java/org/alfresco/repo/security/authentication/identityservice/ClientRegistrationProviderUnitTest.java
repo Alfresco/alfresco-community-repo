@@ -310,6 +310,8 @@ public class ClientRegistrationProviderUnitTest
         config.setIssuerUrl("https://login.serviceonline.alfresco/alfresco/v2.0");
         config.setScopeValidationDisabled(true);
         config.setAdminConsoleScopes("openid,profile,email," + CUSTOM_API_SCOPE);
+        config.setWebScriptsHomeScopes("openid,profile,email");
+        config.setPasswordGrantScopes("openid,profile,email");
 
         try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
         {

@@ -61,7 +61,7 @@ public class ClientRegistrationProviderUnitTest
     private static final String ADMIN_CONSOLE_SCOPES = "openid,email,profile,offline_access";
     private static final String PSSWD_GRANT_SCOPES = "openid,email,profile";
     private static final String ISSUER_ATRR = "issuer";
-    private static final String ENTRA_CUSTOM_API_SCOPE = "api://client-id/alf_access";
+    private static final String CUSTOM_API_SCOPE = "api://client-id/alf_access";
 
     private IdentityServiceConfig config;
     private RestTemplate restTemplate;
@@ -303,21 +303,17 @@ public class ClientRegistrationProviderUnitTest
         }
     }
 
-    // =====================================================
-    // MS Entra-specific test cases for scope validation toggle
-    // =====================================================
-
     @Test
     public void shouldBypassScopeFilteringWhenScopeValidationDisabled()
     {
-        // Configure for MS Entra: scope validation disabled, custom API scope included
+        // Configure: scope validation disabled, custom API scope included
         config.setIssuerUrl("https://login.serviceonline.alfresco/alfresco/v2.0");
         config.setScopeValidationDisabled(true);
-        config.setAdminConsoleScopes("openid,profile,email," + ENTRA_CUSTOM_API_SCOPE);
+        config.setAdminConsoleScopes("openid,profile,email," + CUSTOM_API_SCOPE);
 
         try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
         {
-            // Simulate Entra: scopes_supported does NOT include custom API scope
+            // Simulate: scopes_supported does NOT include custom API scope
             when(oidcResponse.getScopes()).thenReturn(new Scope("openid", "profile", "email", "offline_access"));
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
@@ -325,7 +321,7 @@ public class ClientRegistrationProviderUnitTest
                     restTemplate);
 
             // Custom API scope should be included when scope validation is disabled
-            assertThat(clientRegistration.getScopes()).contains(ENTRA_CUSTOM_API_SCOPE);
+            assertThat(clientRegistration.getScopes()).contains(CUSTOM_API_SCOPE);
             assertThat(clientRegistration.getScopes()).contains("openid", "profile", "email");
         }
     }
@@ -336,7 +332,7 @@ public class ClientRegistrationProviderUnitTest
         // Configure with scope validation enabled (default behavior)
         config.setIssuerUrl("https://login.serviceonline.alfresco/alfresco/v2.0");
         config.setScopeValidationDisabled(false);
-        config.setAdminConsoleScopes("openid,profile,email," + ENTRA_CUSTOM_API_SCOPE);
+        config.setAdminConsoleScopes("openid,profile,email," + CUSTOM_API_SCOPE);
         config.setPasswordGrantScopes("openid,profile,email");
 
         try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
@@ -349,7 +345,7 @@ public class ClientRegistrationProviderUnitTest
                     restTemplate);
 
             // Custom API scope should be filtered out when scope validation is enabled
-            assertThat(clientRegistration.getScopes()).doesNotContain(ENTRA_CUSTOM_API_SCOPE);
+            assertThat(clientRegistration.getScopes()).doesNotContain(CUSTOM_API_SCOPE);
             assertThat(clientRegistration.getScopes()).contains("openid", "profile", "email");
         }
     }

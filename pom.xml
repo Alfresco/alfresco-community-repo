@@ -57,8 +57,8 @@
         <dependency.acs-event-model.version>0.0.33</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
-        <dependency.spring.version>6.2.11</dependency.spring.version>
-        <dependency.spring-security.version>6.4.11</dependency.spring-security.version>
+        <dependency.spring.version>6.2.17</dependency.spring.version>
+        <dependency.spring-security.version>6.5.9</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.17.2</dependency.jackson.version>
         <dependency.cxf.version>4.1.2</dependency.cxf.version>
@@ -171,6 +171,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- CVE-2025-67030: Override vulnerable plexus-utils 3.5.1 (transitive from maven-artifact) -->
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>4.0.3</version>
+            </dependency>
             <!-- v1.10 has 0BSD license it must be consulted with Legal -->
             <dependency>
                 <groupId>org.tukaani</groupId>

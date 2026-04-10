@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1024,7 +1024,9 @@ public class NodesImpl implements Nodes
             {
                 for (AccessPermission accessPerm : permissionService.getAllSetPermissions(nodeRef))
                 {
-                    NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(accessPerm.getAuthority(), accessPerm.getPermission(), accessPerm.getAccessStatus().toString());
+                    String authority = accessPerm.getAuthority();
+                    String displayName = resolveAuthorityDisplayName(authority);
+                    NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(authority, accessPerm.getPermission(), accessPerm.getAccessStatus().toString(), displayName);
                     if (accessPerm.isSetDirectly())
                     {
                         setDirectlyPerms.add(nodePerm);
@@ -1337,7 +1339,9 @@ public class NodesImpl implements Nodes
                 {
                     for (AccessPermission accessPerm : permissionService.getAllSetPermissions(nodeRef))
                     {
-                        NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(accessPerm.getAuthority(), accessPerm.getPermission(), accessPerm.getAccessStatus().toString());
+                        String authority = accessPerm.getAuthority();
+                        String displayName = resolveAuthorityDisplayName(authority);
+                        NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(authority, accessPerm.getPermission(), accessPerm.getAccessStatus().toString(), displayName);
                         if (accessPerm.isSetDirectly())
                         {
                             setDirectlyPerms.add(nodePerm);
@@ -3851,6 +3855,16 @@ public class NodesImpl implements Nodes
             throw new DisabledServiceException("Direct access url isn't available.");
         }
         return directAccessUrl;
+    }
+
+    private String resolveAuthorityDisplayName(String authority)
+    {
+        String displayName = authorityService.getAuthorityDisplayName(authority);
+        if (displayName == null || displayName.isEmpty())
+        {
+            displayName = authority;
+        }
+        return displayName;
     }
 
     /**

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.alfresco.service.cmr.security.AccessStatus;
 
-
 /**
  * Representation of Node Permissions
  *
@@ -44,13 +43,12 @@ public class NodePermissions
     private Set<String> settable;
 
     public NodePermissions()
-    {
-    }
+    {}
 
-    public NodePermissions(Boolean inherit, 
-                           List<NodePermission> inherited,
-                           List<NodePermission> locallySet,
-                           Set<String> settable)
+    public NodePermissions(Boolean inherit,
+            List<NodePermission> inherited,
+            List<NodePermission> locallySet,
+            Set<String> settable)
     {
         this.inherit = inherit;
         this.inherited = inherited;
@@ -93,10 +91,10 @@ public class NodePermissions
     {
         final StringBuilder sb = new StringBuilder(120);
         sb.append("PathInfo [isInheritanceEnabled=").append(inherit)
-                    .append(", inherited=").append(getInherited())
-                    .append(", locallySet=").append(getLocallySet())
-                    .append(", settable=").append(getSettable())
-                    .append(']');
+                .append(", inherited=").append(getInherited())
+                .append(", locallySet=").append(getLocallySet())
+                .append(", settable=").append(getSettable())
+                .append(']');
         return sb.toString();
     }
 
@@ -106,16 +104,22 @@ public class NodePermissions
         private String authorityId;
         private String name;
         private String accessStatus;
+        private String authorityDisplayName;
 
         public NodePermission()
-        {
-        }
+        {}
 
         public NodePermission(String authorityId, String name, String accessStatus)
+        {
+            this(authorityId, name, accessStatus, null);
+        }
+
+        public NodePermission(String authorityId, String name, String accessStatus, String authorityDisplayName)
         {
             this.authorityId = authorityId;
             this.name = name;
             this.accessStatus = accessStatus != null ? accessStatus : AccessStatus.ALLOWED.toString();
+            this.authorityDisplayName = authorityDisplayName;
         }
 
         public String getName()
@@ -133,14 +137,20 @@ public class NodePermissions
             return accessStatus;
         }
 
+        public String getAuthorityDisplayName()
+        {
+            return authorityDisplayName;
+        }
+
         @Override
         public String toString()
         {
             final StringBuilder sb = new StringBuilder(250);
             sb.append("NodePermission [authorityId=").append(authorityId)
-                        .append(", name=").append(name)
-                        .append(", accessStatus=").append(accessStatus)
-                        .append(']');
+                    .append(", name=").append(name)
+                    .append(", accessStatus=").append(accessStatus)
+                    .append(", authorityDisplayName=").append(authorityDisplayName)
+                    .append(']');
             return sb.toString();
         }
 

@@ -469,11 +469,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
             final var usernameAttribute = StringUtils.isNotBlank(config.getPrincipalAttribute()) ? config.getPrincipalAttribute() : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
 
-            // The redirectUri is required by Spring Security's ClientRegistration builder for AUTHORIZATION_CODE grant type validation.
-            final String redirectUri = StringUtils.isNotBlank(config.getAdminConsoleRedirectPath())
-                    ? config.getAdminConsoleRedirectPath()
-                    : "/alfresco";
-
             return ClientRegistration
                     .withRegistrationId("ids")
                     .authorizationUri(authUri)
@@ -484,8 +479,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .userNameAttributeName(usernameAttribute)
                     .scope(getSupportedScopes(metadata.getScopes()))
                     .providerConfigurationMetadata(createMetadata(metadata))
-                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                    .redirectUri(redirectUri);
+                    .authorizationGrantType(AuthorizationGrantType.TOKEN_EXCHANGE);
         }
 
         private Map<String, Object> createMetadata(OIDCProviderMetadata metadata)

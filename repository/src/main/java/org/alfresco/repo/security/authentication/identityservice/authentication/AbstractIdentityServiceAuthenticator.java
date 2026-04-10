@@ -137,17 +137,13 @@ public abstract class AbstractIdentityServiceAuthenticator implements ExternalUs
         ClientRegistration clientRegistration = identityServiceFacade.getClientRegistration();
         State state = new State();
 
-        // Generate a secure random nonce for OIDC compatibility (required by some IDPs like MS Entra).
-        String nonce = java.util.UUID.randomUUID().toString();
-
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails()
                 .getAuthorizationUri())
                 .queryParam("client_id", clientRegistration.getClientId())
                 .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join("+", getConfiguredScopes(clientRegistration)))
-                .queryParam("state", state.toString())
-                .queryParam("nonce", nonce);
+                .queryParam("state", state.toString());
 
         if (StringUtils.isNotBlank(identityServiceConfig.getAudience()))
         {

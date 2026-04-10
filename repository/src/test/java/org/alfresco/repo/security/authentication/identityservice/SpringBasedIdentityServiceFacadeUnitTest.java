@@ -94,12 +94,10 @@ public class SpringBasedIdentityServiceFacadeUnitTest
     {
         return ClientRegistration.withRegistrationId("test")
                 .tokenUri("http://localhost")
-                .authorizationUri("http://localhost/auth")
                 .clientId("test")
                 .clientSecret("test-secret")
                 .userInfoUri("http://localhost/userinfo")
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUri("/alfresco")
+                .authorizationGrantType(AuthorizationGrantType.TOKEN_EXCHANGE)
                 .build();
     }
 }

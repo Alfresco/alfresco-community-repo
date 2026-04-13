@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,11 +28,11 @@ package org.alfresco.rest.rm.community.model.hold.v0;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import org.alfresco.utility.model.TestModel;
 
 /**
@@ -45,12 +45,12 @@ import org.alfresco.utility.model.TestModel;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties (ignoreUnknown = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HoldEntry extends TestModel
 {
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String name;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String nodeRef;
 }

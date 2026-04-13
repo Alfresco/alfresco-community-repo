@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,6 +28,10 @@ package org.alfresco.rest.rm.community.audit;
 
 import static java.util.Arrays.asList;
 
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM_HOLD;
@@ -38,14 +42,16 @@ import static org.alfresco.utility.Utility.buildPath;
 import static org.alfresco.utility.Utility.removeLastSlash;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -64,11 +70,6 @@ import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 /**
  * This class contains the tests that check the remove from hold event is audited
@@ -76,7 +77,7 @@ import org.testng.annotations.Test;
  * @author Claudia Agache
  * @since 3.3
  */
-@AlfrescoTest (jira = "RM-6859")
+@AlfrescoTest(jira = "RM-6859")
 public class AuditRemoveFromHoldTests extends BaseRMRestTest
 {
     private final String PREFIX = generateTestPrefix(AuditRemoveFromHoldTests.class);
@@ -101,7 +102,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     private String hold2NodeRef;
     private String hold3NodeRef;
 
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void preconditionForAuditRemoveFromHoldTests()
     {
         STEP("Create an user with full rights to remove content from a hold.");
@@ -112,17 +113,17 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
 
         STEP("Create new holds.");
         hold1NodeRef = getRestAPIFactory()
-            .getFilePlansAPI(rmAdmin)
-            .createHold(Hold.builder().name(HOLD1).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
-            .getId();
+                .getFilePlansAPI(rmAdmin)
+                .createHold(Hold.builder().name(HOLD1).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+                .getId();
         hold2NodeRef = getRestAPIFactory()
-            .getFilePlansAPI(rmAdmin)
-            .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
-            .getId();
+                .getFilePlansAPI(rmAdmin)
+                .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+                .getId();
         hold3NodeRef = getRestAPIFactory()
-            .getFilePlansAPI(rmAdmin)
-            .createHold(Hold.builder().name(HOLD3).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
-            .getId();
+                .getFilePlansAPI(rmAdmin)
+                .createHold(Hold.builder().name(HOLD3).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+                .getId();
         holdsListRef = asList(hold1NodeRef, hold2NodeRef, hold3NodeRef);
 
         STEP("Create a new record category with a record folder.");
@@ -131,12 +132,11 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
 
         STEP("Create some held items");
         heldContent = dataContent.usingAdmin().usingSite(privateSite)
-                                 .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         heldRecordFolder = createRecordFolder(recordCategory.getId(), PREFIX + "heldRecFolder");
         heldRecord = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
 
-        holdsListRef.forEach(holdRef ->
-        {
+        holdsListRef.forEach(holdRef -> {
             getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(heldContent.getNodeRefWithoutVersion()).build(), holdRef);
             getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(heldRecordFolder.getId()).build(), holdRef);
             getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(heldRecord.getId()).build(), holdRef);
@@ -154,7 +154,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
      *
      * @return the node id, the node name and the node path
      */
-    @DataProvider (name = "validNodesForRemoveFromHold")
+    @DataProvider(name = "validNodesForRemoveFromHold")
     public Object[][] getValidNodesForRemoveFromHold()
     {
         String recordFolderPath = removeLastSlash(buildPath(FILE_PLAN_PATH, recordCategory.getName(),
@@ -163,28 +163,20 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
                 recordFolder.getName(), heldRecord.getName()));
         String contentPath = "/Company Home" + heldContent.getCmisLocation();
 
-        return new String[][]
-        {
-            // a record folder
-            { heldRecordFolder.getId(), heldRecordFolder.getName(), recordFolderPath },
-            // a record
-            { heldRecord.getId(), heldRecord.getName(), recordPath },
-            //an active content,
-            { heldContent.getNodeRefWithoutVersion(), heldContent.getName(), contentPath }
+        return new String[][]{
+                // a record folder
+                {heldRecordFolder.getId(), heldRecordFolder.getName(), recordFolderPath},
+                // a record
+                {heldRecord.getId(), heldRecord.getName(), recordPath},
+                // an active content,
+                {heldContent.getNodeRefWithoutVersion(), heldContent.getName(), contentPath}
         };
     }
 
     /**
-     * Given a document/record/record folder is removed from a hold
-     * When I view the audit log
-     * Then an entry has been created in the audit log that contains the following:
-     *      name of the hold
-     *      name of the document/record/record folder removed
-     *      user who removed the content
-     *      date the content was removed
-     *      path of the node
+     * Given a document/record/record folder is removed from a hold When I view the audit log Then an entry has been created in the audit log that contains the following: name of the hold name of the document/record/record folder removed user who removed the content date the content was removed path of the node
      */
-    @Test (dataProvider = "validNodesForRemoveFromHold")
+    @Test(dataProvider = "validNodesForRemoveFromHold")
     public void removeFromHoldEventIsAudited(String nodeId, String nodeName, String nodePath)
     {
         rmAuditService.clearAuditLog();
@@ -199,9 +191,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given an unsuccessful remove from hold action
-     * When I view the audit log
-     * Then the remove from hold event isn't audited
+     * Given an unsuccessful remove from hold action When I view the audit log Then the remove from hold event isn't audited
      */
     @Test
     public void unsuccessfulRemoveFromHoldIsNotAudited()
@@ -218,9 +208,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a not empty record folder is removed from a hold
-     * When I view the audit log
-     * Then only an entry has been created in the audit log for the record folder removed
+     * Given a not empty record folder is removed from a hold When I view the audit log Then only an entry has been created in the audit log for the record folder removed
      */
     @Test
     public void removeFromHoldNotAuditedForRecordFolderChildren()
@@ -247,9 +235,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a record folder is removed from multiple holds
-     * When I view the audit log
-     * Then multiple entries have been created in the audit log for each remove from hold event
+     * Given a record folder is removed from multiple holds When I view the audit log Then multiple entries have been created in the audit log for each remove from hold event
      */
     @Test
     public void removeFromHoldIsAuditedInBulkRemoval()
@@ -275,16 +261,14 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a document/record/record folder is removed from a hold
-     * When I view the audit log as an user with no Read permissions over the node
-     * Then the remove from hold entry isn't visible
+     * Given a document/record/record folder is removed from a hold When I view the audit log as an user with no Read permissions over the node Then the remove from hold entry isn't visible
      */
     @Test
     public void removeFromHoldAuditEntryNotVisible()
     {
         STEP("Add content to a hold.");
         FileModel heldFile = dataContent.usingAdmin().usingSite(privateSite)
-                                           .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(heldFile.getNodeRefWithoutVersion()).build(), hold1NodeRef);
 
         rmAuditService.clearAuditLog();
@@ -298,16 +282,14 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a document/record/record folder is removed from a hold
-     * When I view the audit log as an user with no Read permissions over the hold
-     * Then the the hold name is replaced in the remove from hold entry
+     * Given a document/record/record folder is removed from a hold When I view the audit log as an user with no Read permissions over the hold Then the the hold name is replaced in the remove from hold entry
      */
     @Test
     public void removeFromHoldAuditEntryHoldNameNotVisible()
     {
         STEP("Add content to a hold.");
         FileModel heldFile = dataContent.usingAdmin().usingSite(privateSite)
-                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(heldFile.getNodeRefWithoutVersion()).build(), hold1NodeRef);
 
         rmAuditService.clearAuditLog();
@@ -321,11 +303,11 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         String replacementHoldName = "You don't have permission to view this hold.";
         assertEquals("The list of events should contain the Remove from Hold entry", 1, auditEntries.size());
         assertTrue("The hold name should not be visible in the Remove from Hold entry ",
-            auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
-                ImmutableMap.of("new", "", "previous", replacementHoldName, "name", "Hold Name"))));
+                auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
+                        ImmutableMap.of("new", "", "previous", replacementHoldName, "name", "Hold Name"))));
     }
 
-    @AfterClass (alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void cleanUpAuditRemoveFromHoldTests()
     {
         holdsListRef.forEach(holdRef -> getRestAPIFactory().getHoldsAPI(rmAdmin).deleteHold(holdRef));

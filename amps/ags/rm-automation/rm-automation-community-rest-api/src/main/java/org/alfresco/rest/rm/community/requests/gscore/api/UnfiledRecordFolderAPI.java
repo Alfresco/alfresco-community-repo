@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,18 +26,19 @@
  */
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
-import static org.alfresco.rest.core.RestRequest.requestWithBody;
-import static org.alfresco.rest.core.RestRequest.simpleRequest;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
-import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
-import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
-import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
+
+import static org.alfresco.rest.core.RestRequest.requestWithBody;
+import static org.alfresco.rest.core.RestRequest.simpleRequest;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +65,8 @@ import org.alfresco.rest.rm.community.util.UnfiledContainerChildMixin;
 public class UnfiledRecordFolderAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper RM REST Wrapper
+     * @param rmRestWrapper
+     *            RM REST Wrapper
      */
     public UnfiledRecordFolderAPI(RMRestWrapper rmRestWrapper)
     {
@@ -84,16 +86,19 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
     /**
      * Gets an unfiled record folder.
      *
-     * @param unfiledRecordFolderId The identifier of a unfiled record folder
-     * @param parameters The URL parameters to add
+     * @param unfiledRecordFolderId
+     *            The identifier of a unfiled record folder
+     * @param parameters
+     *            The URL parameters to add
      * @return The {@link UnfiledRecordFolder} for the given {@code unfiledRecordFolderId}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code unfiledRecordFolderId} is not a valid format</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code unfiledRecordFolderId}</li>
-     *  <li>{@code unfiledRecordFolderId} does not exist</li>
-     * </ul>
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>{@code unfiledRecordFolderId} is not a valid format</li>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to read {@code unfiledRecordFolderId}</li>
+     *             <li>{@code unfiledRecordFolderId} does not exist</li>
+     *             </ul>
      */
     public UnfiledRecordFolder getUnfiledRecordFolder(String unfiledRecordFolderId, String parameters)
     {
@@ -103,8 +108,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
                 GET,
                 "unfiled-record-folders/{unfiledRecordFolderId}?{parameters}",
                 unfiledRecordFolderId,
-                parameters
-        ));
+                parameters));
     }
 
     /**
@@ -120,26 +124,28 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
     /**
      * Gets the children of an unfiled record folder
      *
-     * @param unfiledRecordFolderId The identifier of an unfiled records folder
-     * @param parameters The URL parameters to add
+     * @param unfiledRecordFolderId
+     *            The identifier of an unfiled records folder
+     * @param parameters
+     *            The URL parameters to add
      * @return The {@link UnfiledRecordFolderChildCollection} for the given {@code unfiledRecordFolderId}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code unfiledRecordFolderId}</li>
-     *  <li>{@code unfiledRecordFolderId} does not exist</li>
-     *</ul>
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to read {@code unfiledRecordFolderId}</li>
+     *             <li>{@code unfiledRecordFolderId} does not exist</li>
+     *             </ul>
      */
     public UnfiledContainerChildCollection getUnfiledRecordFolderChildren(String unfiledRecordFolderId, String parameters)
     {
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
         return getRmRestWrapper().processModels(UnfiledContainerChildCollection.class, simpleRequest(
-            GET,
-            "unfiled-record-folders/{unfiledRecordFolderId}/children?{parameters}",
-            unfiledRecordFolderId,
-            parameters
-        ));
+                GET,
+                "unfiled-record-folders/{unfiledRecordFolderId}/children?{parameters}",
+                unfiledRecordFolderId,
+                parameters));
     }
 
     /**
@@ -156,19 +162,23 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
     /**
      * Creates an unfiled record folder child. Can be a record or an unfiled record folder.
      *
-     * @param unfiledRecordFolderChildModel The unfiled folder child model which holds the information
-     * @param unfiledRecordFolderId The identifier of an unfiled folder
-     * @param parameters The URL parameters to add
+     * @param unfiledRecordFolderChildModel
+     *            The unfiled folder child model which holds the information
+     * @param unfiledRecordFolderId
+     *            The identifier of an unfiled folder
+     * @param parameters
+     *            The URL parameters to add
      * @return The created {@link UnfiledRecordFolderChild}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code unfiledRecordFolderId} is not a valid format or {@code unfiledRecordFolderChildModel} is invalid</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to add children to {@code unfiledRecordFolderId}</li>
-     *  <li>{@code unfiledRecordFolderId} does not exist</li>
-     *  <li>new name clashes with an existing node in the current parent container</li>
-     *  <li>model integrity exception, including node name with invalid characters</li>
-     * </ul>
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>{@code unfiledRecordFolderId} is not a valid format or {@code unfiledRecordFolderChildModel} is invalid</li>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to add children to {@code unfiledRecordFolderId}</li>
+     *             <li>{@code unfiledRecordFolderId} does not exist</li>
+     *             <li>new name clashes with an existing node in the current parent container</li>
+     *             <li>model integrity exception, including node name with invalid characters</li>
+     *             </ul>
      */
     public UnfiledContainerChild createUnfiledRecordFolderChild(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId, String parameters)
     {
@@ -180,18 +190,21 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
                 toJson(unfiledRecordFolderChildModel),
                 "unfiled-record-folders/{unfiledRecordFolderId}/children?{parameters}",
                 unfiledRecordFolderId,
-                parameters
-        ));
+                parameters));
     }
 
     /**
      * Create a record from file resource
      *
-     * @param unfiledRecordFolderChildModel {@link UnfiledContainerChild} for electronic record to be created
-     * @param unfiledRecordFolderChildContent {@link File} pointing to the content of the electronic record to be created
-     * @param unfiledRecordFolderId The identifier of a unfiled record folder
+     * @param unfiledRecordFolderChildModel
+     *            {@link UnfiledContainerChild} for electronic record to be created
+     * @param unfiledRecordFolderChildContent
+     *            {@link File} pointing to the content of the electronic record to be created
+     * @param unfiledRecordFolderId
+     *            The identifier of a unfiled record folder
      * @return newly created {@link UnfiledContainerChild}
-     * @throws RuntimeException for invalid recordModel JSON strings
+     * @throws RuntimeException
+     *             for invalid recordModel JSON strings
      */
     public UnfiledContainerChild uploadRecord(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId, File unfiledRecordFolderChildContent)
     {
@@ -204,10 +217,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
             fail("Only electronic records are supported");
         }
 
-        /*
-         * For file uploads nodeBodyCreate is ignored hence can't be used. Append all Record fields
-         * to the request.
-         */
+        /* For file uploads nodeBodyCreate is ignored hence can't be used. Append all Record fields to the request. */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
         JsonNode root;
         try
@@ -245,19 +255,24 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
     /**
      * Updates an unfiled record folder
      *
-     * @param unfiledRecordFolderModel The unfiled record folder model which holds the information
-     * @param unfiledRecordFolderId The identifier of an unfiled record folder
-     * @param parameters The URL parameters to add
-     * @param returns The updated {@link UnfiledRecordFolder}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>the update request is invalid or {@code unfiledRecordFolderId} is not a valid format or {@code unfiledRecordFolderModel} is invalid</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to update {@code unfiledRecordFolderId}</li>
-     *  <li>{@code unfiledRecordFolderId} does not exist</li>
-     *  <li>the updated name clashes with an existing root category of special container in the current fileplan</li>
-     *  <li>model integrity exception, including file name with invalid characters</li>
-     * </ul>
+     * @param unfiledRecordFolderModel
+     *            The unfiled record folder model which holds the information
+     * @param unfiledRecordFolderId
+     *            The identifier of an unfiled record folder
+     * @param parameters
+     *            The URL parameters to add
+     * @param returns
+     *            The updated {@link UnfiledRecordFolder}
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>the update request is invalid or {@code unfiledRecordFolderId} is not a valid format or {@code unfiledRecordFolderModel} is invalid</li>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to update {@code unfiledRecordFolderId}</li>
+     *             <li>{@code unfiledRecordFolderId} does not exist</li>
+     *             <li>the updated name clashes with an existing root category of special container in the current fileplan</li>
+     *             <li>model integrity exception, including file name with invalid characters</li>
+     *             </ul>
      */
     public UnfiledRecordFolder updateUnfiledRecordFolder(UnfiledRecordFolder unfiledRecordFolderModel, String unfiledRecordFolderId, String parameters)
     {
@@ -269,22 +284,23 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
                 toJson(unfiledRecordFolderModel),
                 "unfiled-record-folders/{unfiledRecordFolderId}?{parameters}",
                 unfiledRecordFolderId,
-                parameters
-        ));
+                parameters));
     }
 
     /**
      * Deletes an unfiled record folder.
      *
-     * @param unfiledRecordFolderId The identifier of a unfiled record folder
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code unfiledRecordFolderId} is not a valid format</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to delete {@code unfiledRecordFolderId}</li>
-     *  <li>{@code unfiledRecordFolderId} does not exist</li>
-     *  <li>{@code unfiledRecordFolderId} is locked and cannot be deleted</li>
-     * </ul>
+     * @param unfiledRecordFolderId
+     *            The identifier of a unfiled record folder
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>{@code unfiledRecordFolderId} is not a valid format</li>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to delete {@code unfiledRecordFolderId}</li>
+     *             <li>{@code unfiledRecordFolderId} does not exist</li>
+     *             <li>{@code unfiledRecordFolderId} is locked and cannot be deleted</li>
+     *             </ul>
      */
     public void deleteUnfiledRecordFolder(String unfiledRecordFolderId)
     {
@@ -293,8 +309,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
         getRmRestWrapper().processEmptyModel(simpleRequest(
                 DELETE,
                 "unfiled-record-folders/{recordFolderId}",
-                unfiledRecordFolderId
-        ));
+                unfiledRecordFolderId));
     }
 
 }

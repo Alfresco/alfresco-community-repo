@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,10 +30,6 @@ package org.alfresco.rest.v0;
 import java.io.IOException;
 import java.text.MessageFormat;
 
-import org.alfresco.dataprep.AlfrescoHttpClient;
-import org.alfresco.dataprep.AlfrescoHttpClientFactory;
-import org.alfresco.rest.core.v0.BaseAPI;
-import org.alfresco.utility.model.UserModel;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -43,6 +39,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import org.alfresco.dataprep.AlfrescoHttpClient;
+import org.alfresco.dataprep.AlfrescoHttpClientFactory;
+import org.alfresco.rest.core.v0.BaseAPI;
+import org.alfresco.utility.model.UserModel;
 
 /**
  * The v0 API to get the node properties
@@ -66,14 +67,14 @@ public class NodePropertiesAPI extends BaseAPI
      * @param username
      * @param password
      * @param nodeId
-     * @return JSONArray  object
+     * @return JSONArray object
      */
     protected JSONArray getNodeProperties(String username, String password, String nodeId)
     {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
         String requestURL = MessageFormat.format(GET_NODE_API, client.getAlfrescoUrl(), NODE_PREFIX + nodeId);
 
-        // doRequest from BaseAPI cannot be used as  parsing the  response body to org.json.JSONObject is throwing an
+        // doRequest from BaseAPI cannot be used as parsing the response body to org.json.JSONObject is throwing an
         // JSONException
         // construct a get request
         HttpGet get = new HttpGet(requestURL);
@@ -107,7 +108,7 @@ public class NodePropertiesAPI extends BaseAPI
         if (contentProperty != null)
         {
             // get the first element before the first |
-            // e.g.  "contentUrl=s3://-system-/fc077fe8-1742-4c45-a153-8309c857996b
+            // e.g. "contentUrl=s3://-system-/fc077fe8-1742-4c45-a153-8309c857996b
             // .bin|mimetype=text/plain|size=19|encoding=ISO-8859-2|locale=en_US_|id=508"
             contentProperty = contentProperty.split("\\|")[0];
             return contentProperty.replaceAll("contentUrl=", "");

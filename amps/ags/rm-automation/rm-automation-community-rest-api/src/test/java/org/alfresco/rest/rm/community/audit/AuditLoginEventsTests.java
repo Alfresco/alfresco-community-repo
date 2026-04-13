@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,20 +26,22 @@
  */
 package org.alfresco.rest.rm.community.audit;
 
+import static org.testng.AssertJUnit.assertTrue;
+
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.LOGIN_SUCCESSFUL;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.LOGIN_UNSUCCESSFUL;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.Test;
 
 /**
  * This class contains the tests that check the login events are audited
@@ -47,16 +49,14 @@ import org.testng.annotations.Test;
  * @author Claudia Agache
  * @since 2.7
  */
-@AlfrescoTest (jira = "RM-5234")
+@AlfrescoTest(jira = "RM-5234")
 public class AuditLoginEventsTests extends BaseRMRestTest
 {
     @Autowired
     private RMAuditService rmAuditService;
 
     /**
-     * Given I have tried to login using invalid credentials
-     * When I view the RM audit filtered by Login unsuccessful event
-     * Then the audit log contains only the entries for the Login unsuccessful event
+     * Given I have tried to login using invalid credentials When I view the RM audit filtered by Login unsuccessful event Then the audit log contains only the entries for the Login unsuccessful event
      */
     @Test
     public void filterByLoginUnsuccessful() throws Exception
@@ -75,9 +75,7 @@ public class AuditLoginEventsTests extends BaseRMRestTest
     }
 
     /**
-     * Given I have tried to login using valid credentials
-     * When I view the RM audit filtered by Login successful event
-     * Then the audit log contains only the entries for the Login successful event
+     * Given I have tried to login using valid credentials When I view the RM audit filtered by Login successful event Then the audit log contains only the entries for the Login successful event
      */
     @Test
     public void filterByLoginSuccessful() throws Exception

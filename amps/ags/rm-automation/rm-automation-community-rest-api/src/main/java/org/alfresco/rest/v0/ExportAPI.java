@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,11 +30,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+
+import org.alfresco.rest.core.v0.BaseAPI;
 
 /**
  * Methods to make API requests using v0 API for Exporting Items
@@ -54,10 +55,14 @@ public class ExportAPI extends BaseAPI
     /**
      * Export a single Record/Record Folder/Record Category using V0 Export API
      *
-     * @param user               User performing the export
-     * @param password           User's Password
-     * @param expectedStatusCode Expected Response Code
-     * @param nodeID             ID of the Node(Record/RecordFolder) to be exported
+     * @param user
+     *            User performing the export
+     * @param password
+     *            User's Password
+     * @param expectedStatusCode
+     *            Expected Response Code
+     * @param nodeID
+     *            ID of the Node(Record/RecordFolder) to be exported
      * @return HTTP Response
      */
     public HttpResponse exportRMNode(String user, String password, int expectedStatusCode, String nodeID)
@@ -68,17 +73,20 @@ public class ExportAPI extends BaseAPI
     /**
      * Export a list of nodes using V0 Export API
      *
-     * @param user               User performing the export
-     * @param password           User's Password
-     * @param expectedStatusCode Expected Response Code
-     * @param nodeIDList         List of the nodes to be exported
+     * @param user
+     *            User performing the export
+     * @param password
+     *            User's Password
+     * @param expectedStatusCode
+     *            Expected Response Code
+     * @param nodeIDList
+     *            List of the nodes to be exported
      * @return HTTP Response
      */
     public HttpResponse exportRMNodes(String user, String password, int expectedStatusCode, List<String> nodeIDList)
     {
 
-        List<String> nodeRefs =
-                nodeIDList.stream().map(nodeID -> getNodeRefSpacesStore() + nodeID).collect(Collectors.toList());
+        List<String> nodeRefs = nodeIDList.stream().map(nodeID -> getNodeRefSpacesStore() + nodeID).collect(Collectors.toList());
 
         return export(user, password, expectedStatusCode, nodeRefs);
     }
@@ -86,10 +94,14 @@ public class ExportAPI extends BaseAPI
     /**
      * Export API function to perform Export Operation on items with given noderefs using V0 Export Rest API
      *
-     * @param user               User performing the export
-     * @param password           User's Password
-     * @param expectedStatusCode Expected Response Code
-     * @param nodeRefs           list of the noderefs for the items to be exported
+     * @param user
+     *            User performing the export
+     * @param password
+     *            User's Password
+     * @param expectedStatusCode
+     *            Expected Response Code
+     * @param nodeRefs
+     *            list of the noderefs for the items to be exported
      * @return Rest API Post Request
      */
     public HttpResponse export(String user, String password, int expectedStatusCode, List<String> nodeRefs)

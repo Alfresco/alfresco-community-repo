@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,13 +29,14 @@ package org.alfresco.rest.v0;
 import java.text.MessageFormat;
 import java.util.List;
 
-import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import org.alfresco.rest.core.v0.BaseAPI;
 
 /**
  * The v0 REST API for copy-to (which supports multi-item copy).
@@ -54,14 +55,17 @@ public class CopyToAPI extends BaseAPI
     /**
      * Copy a list of nodes to the target container.
      *
-     * @param user The username of the user to use.
-     * @param password The password of the user.
-     * @param targetContainerPath The destination to copy the nodes to. This should be in the format
-     * "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}",
-     * "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
-     * @param nodeRefs The list of nodes to copy.
+     * @param user
+     *            The username of the user to use.
+     * @param password
+     *            The password of the user.
+     * @param targetContainerPath
+     *            The destination to copy the nodes to. This should be in the format "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}", "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
+     * @param nodeRefs
+     *            The list of nodes to copy.
      * @return The HTTP Response.
-     * @throws AssertionError If the API call didn't return a 200 response.
+     * @throws AssertionError
+     *             If the API call didn't return a 200 response.
      */
     public HttpResponse copyTo(String user, String password, String targetContainerPath, List<String> nodeRefs)
     {
@@ -71,15 +75,19 @@ public class CopyToAPI extends BaseAPI
     /**
      * Copy a list of nodes to the target container.
      *
-     * @param user The username of the user to use.
-     * @param password The password of the user.
-     * @param expectedStatusCode The expected return status code.
-     * @param targetContainerPath The destination to copy the nodes to. This should be in the format
-     * "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}",
-     * "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
-     * @param nodeRefs The list of nodes to copy.
+     * @param user
+     *            The username of the user to use.
+     * @param password
+     *            The password of the user.
+     * @param expectedStatusCode
+     *            The expected return status code.
+     * @param targetContainerPath
+     *            The destination to copy the nodes to. This should be in the format "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}", "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
+     * @param nodeRefs
+     *            The list of nodes to copy.
      * @return The HTTP Response.
-     * @throws AssertionError If the API didn't return the expected status code.
+     * @throws AssertionError
+     *             If the API didn't return the expected status code.
      */
     public HttpResponse copyTo(String user, String password, int expectedStatusCode, String targetContainerPath, List<String> nodeRefs)
     {
@@ -87,6 +95,6 @@ public class CopyToAPI extends BaseAPI
         requestParams.put("nodeRefs", new JSONArray(nodeRefs));
 
         return doSlingshotPostJsonRequest(user, password, expectedStatusCode, requestParams,
-                    MessageFormat.format(COPY_TO_API, "{0}", targetContainerPath));
+                MessageFormat.format(COPY_TO_API, "{0}", targetContainerPath));
     }
 }

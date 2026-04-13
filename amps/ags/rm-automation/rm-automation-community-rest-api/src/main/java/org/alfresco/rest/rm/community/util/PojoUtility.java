@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -35,7 +35,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -71,11 +70,15 @@ public class PojoUtility
     /**
      * Converting object to JSON string
      *
-     * @param model The java object model to convert
-     * @param target Class (or interface) whose annotations to effectively override
-     * @param mixinSource Class (or interface) whose annotations are to be "added" to target's annotations, overriding as necessary
+     * @param model
+     *            The java object model to convert
+     * @param target
+     *            Class (or interface) whose annotations to effectively override
+     * @param mixinSource
+     *            Class (or interface) whose annotations are to be "added" to target's annotations, overriding as necessary
      * @return The converted java object as JSON string
-     * @throws JsonProcessingException  Throws exceptions if the given object doesn't match to the POJO class model
+     * @throws JsonProcessingException
+     *             Throws exceptions if the given object doesn't match to the POJO class model
      */
     public static String toJson(Object model, Class<?> target, Class<?> mixinSource)
     {
@@ -85,15 +88,15 @@ public class PojoUtility
 
         if (target != null && mixinSource != null)
         {
-            //inject the "mix-in" annotations  from FilePlanComponentMix to
+            // inject the "mix-in" annotations from FilePlanComponentMix to
             // FilePlanComponent POJO class when converting to json
             mapper.addMixIn(target, mixinSource);
         }
 
-        //include only non null values
+        // include only non null values
         mapper.setSerializationInclusion(Include.NON_NULL);
 
-        //return the json object
+        // return the json object
         try
         {
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
@@ -105,12 +108,15 @@ public class PojoUtility
     }
 
     /**
-     * Converting json to  java object
+     * Converting json to java object
      *
-     * @param json   The json object to convert
-     * @param classz Class  for the java object
+     * @param json
+     *            The json object to convert
+     * @param classz
+     *            Class for the java object
      * @return The converted java object
-     * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
+     * @throws JsonProcessingException
+     *             Throws exceptions if the given object doesn't match to the POJO class model
      */
     public static <T> T jsonToObject(JSONObject json, Class<T> classz)
     {
@@ -135,10 +141,13 @@ public class PojoUtility
     /**
      * Converting json array into a list of java objects
      *
-     * @param json   The json array to convert
-     * @param classz Class  for the java object
+     * @param json
+     *            The json array to convert
+     * @param classz
+     *            Class for the java object
      * @return The list of converted java objects
-     * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
+     * @throws JsonProcessingException
+     *             Throws exceptions if the given object doesn't match to the POJO class model
      */
     public static <T> List<T> jsonToObject(JSONArray json, Class<T> classz)
     {
@@ -158,7 +167,6 @@ public class PojoUtility
         {
             LOGGER.error("Unable to convert the json array into a java collection.", e);
         }
-
 
         return asList;
     }

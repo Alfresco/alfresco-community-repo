@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -47,7 +47,7 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_VITAL_RECORD_INDICATOR = "rma:vitalRecordIndicator";
     public static final String PROPERTIES_REVIEW_PERIOD = "rma:reviewPeriod";
     public static final String PROPERTIES_OWNER = "cm:owner";
-    public static final String PROPERTIES_AUTHOR="cm:author";
+    public static final String PROPERTIES_AUTHOR = "cm:author";
 
     /** Common properties for record folders and records */
     public static final String PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE = "rma:recordSearchHasDispositionSchedule";

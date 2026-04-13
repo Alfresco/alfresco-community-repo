@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,11 +27,10 @@
 package org.alfresco.rest.rm.community.model.recordcategory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.rest.core.RestModels;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import org.alfresco.rest.core.RestModels;
 
 /**
  * POJO for record category child entry

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,8 +32,6 @@ import static org.testng.AssertJUnit.assertTrue;
 import java.text.MessageFormat;
 import java.util.Map;
 
-import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpResponse;
@@ -42,6 +40,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import org.alfresco.dataprep.CMISUtil.DocumentType;
+import org.alfresco.rest.core.v0.BaseAPI;
 
 /**
  * Methods to make API requests using v0 API on records
@@ -60,10 +61,14 @@ public class RecordsAPI extends BaseAPI
     /**
      * Declare documents as records
      *
-     * @param user         the user declaring the document as record
-     * @param password     the user's password
-     * @param siteID       the site id in which the document exists
-     * @param documentName the document name
+     * @param user
+     *            the user declaring the document as record
+     * @param password
+     *            the user's password
+     * @param siteID
+     *            the site id in which the document exists
+     * @param documentName
+     *            the document name
      * @return The HTTP Response.
      */
     public HttpResponse declareDocumentAsRecord(String user, String password, String siteID, String documentName)
@@ -80,9 +85,12 @@ public class RecordsAPI extends BaseAPI
     /**
      * Completes the record given as parameter
      *
-     * @param user       the user declaring the document as record
-     * @param password   the user's password
-     * @param recordName the record name
+     * @param user
+     *            the user declaring the document as record
+     * @param password
+     *            the user's password
+     * @param recordName
+     *            the record name
      * @return The HTTP Response.
      */
     public HttpResponse completeRecord(String user, String password, String recordName)
@@ -99,12 +107,17 @@ public class RecordsAPI extends BaseAPI
     /**
      * Reject the record given as parameter
      *
-     * @param user       the user declaring the document as record
-     * @param password   the user's password
-     * @param recordName the record name
-     * @param reason     reject reason
+     * @param user
+     *            the user declaring the document as record
+     * @param password
+     *            the user's password
+     * @param recordName
+     *            the record name
+     * @param reason
+     *            reject reason
      * @return The HTTP Response.
-     * @throws AssertionError If the POST call is not successful.
+     * @throws AssertionError
+     *             If the POST call is not successful.
      */
     public HttpResponse rejectRecord(String user, String password, String recordName, String reason)
     {
@@ -114,13 +127,19 @@ public class RecordsAPI extends BaseAPI
     /**
      * Reject the record given as parameter
      *
-     * @param user               the user declaring the document as record
-     * @param password           the user's password
-     * @param expectedStatusCode The expected return status code.
-     * @param recordName         the record name
-     * @param reason             reject reason
+     * @param user
+     *            the user declaring the document as record
+     * @param password
+     *            the user's password
+     * @param expectedStatusCode
+     *            The expected return status code.
+     * @param recordName
+     *            the record name
+     * @param reason
+     *            reject reason
      * @return The HTTP Response.
-     * @throws AssertionError If the expectedStatusCode was not returned.
+     * @throws AssertionError
+     *             If the expectedStatusCode was not returned.
      */
     public HttpResponse rejectRecord(String user, String password, int expectedStatusCode, String recordName, String reason)
     {
@@ -138,10 +157,14 @@ public class RecordsAPI extends BaseAPI
     /**
      * Declare document version as record
      *
-     * @param user         the user declaring the document version as record
-     * @param password     the user's password
-     * @param siteID       the site id in which the document exists
-     * @param documentName the document name
+     * @param user
+     *            the user declaring the document version as record
+     * @param password
+     *            the user's password
+     * @param siteID
+     *            the site id in which the document exists
+     * @param documentName
+     *            the document name
      * @return The HTTP Response.
      */
     public HttpResponse declareDocumentVersionAsRecord(String user, String password, String siteID, String documentName)
@@ -158,16 +181,20 @@ public class RecordsAPI extends BaseAPI
     /**
      * Creates a non-electronic record
      * <ul>
-     * <li>eg. of usage for Unfiled records  with folder : createNonElectronicRecord(getAdminName(), getAdminPassword(), properties, UNFILED_RECORDS_BREADCRUMB, "unfiled records folder");
+     * <li>eg. of usage for Unfiled records with folder : createNonElectronicRecord(getAdminName(), getAdminPassword(), properties, UNFILED_RECORDS_BREADCRUMB, "unfiled records folder");
      * <li>eg. of usage for creating record directly in Unfiled Records : createNonElectronicRecord(getAdminName(), getAdminPassword(), properties, UNFILED_RECORDS_BREADCRUMB, "");
      * </ul>
      *
-     * @param username     the username
-     * @param password     the password
-     * @param properties   a map of record properties and their values
-     * @param categoryName the category that contains the record, in the case in which the container would be Unfiled records use UNFILED_RECORDS_BREADCRUMB as value
-     * @param folderName   the folder inside which the record exists, in the case in which the folder name is "", the record will be created directly in the specified container
-     *                     this case is useful when trying to create a record directly in Unfiled Records
+     * @param username
+     *            the username
+     * @param password
+     *            the password
+     * @param properties
+     *            a map of record properties and their values
+     * @param categoryName
+     *            the category that contains the record, in the case in which the container would be Unfiled records use UNFILED_RECORDS_BREADCRUMB as value
+     * @param folderName
+     *            the folder inside which the record exists, in the case in which the folder name is "", the record will be created directly in the specified container this case is useful when trying to create a record directly in Unfiled Records
      * @return The HTTP Response (or null if the request was not needed).
      */
     public <K extends Enum<?>> HttpResponse createNonElectronicRecord(String username, String password, Map<K, String> properties, String categoryName, String folderName)
@@ -222,11 +249,16 @@ public class RecordsAPI extends BaseAPI
      * <p>
      * eg. of usage for creating record directly in Unfiled Records : uploadElectronicRecord(getAdminName(), getAdminPassword(), recordPropertiesStringMap, UNFILED_RECORDS_BREADCRUMB, DocumentType.HTML)
      *
-     * @param username   the username
-     * @param password   the password
-     * @param properties a map of record properties and their values
-     * @param folderName the folder inside which the record will be created, it needs to have a unique name, as this method doesn't check other containers than the folder name
-     * @throws AssertionError if the upload was unsuccessful.
+     * @param username
+     *            the username
+     * @param password
+     *            the password
+     * @param properties
+     *            a map of record properties and their values
+     * @param folderName
+     *            the folder inside which the record will be created, it needs to have a unique name, as this method doesn't check other containers than the folder name
+     * @throws AssertionError
+     *             if the upload was unsuccessful.
      */
     public void uploadElectronicRecord(String username, String password, Map<RMProperty, String> properties, String folderName, DocumentType documentType)
     {
@@ -243,12 +275,18 @@ public class RecordsAPI extends BaseAPI
      * <li>eg. of usage in the case in which the record is created directly in Unfiled Records : deleteRecord(getAdminName(), getAdminPassword(), "f1 (2016-1472716888713)", UNFILED_RECORDS_BREADCRUMB, "");
      * </ul>
      *
-     * @param username     user's username
-     * @param password     its password
-     * @param recordName   the record name
-     * @param categoryName the name of the category in which the folder is, in case of unfiled record, this will have UNFILED_RECORDS_BREADCRUMB as container
-     * @param folderName   folder name, in case in which trying to delete a record in Unfiled records directly, this will be ""
-     * @throws AssertionError If the record could not be deleted.
+     * @param username
+     *            user's username
+     * @param password
+     *            its password
+     * @param recordName
+     *            the record name
+     * @param categoryName
+     *            the name of the category in which the folder is, in case of unfiled record, this will have UNFILED_RECORDS_BREADCRUMB as container
+     * @param folderName
+     *            folder name, in case in which trying to delete a record in Unfiled records directly, this will be ""
+     * @throws AssertionError
+     *             If the record could not be deleted.
      */
     public void deleteRecord(String username, String password, String recordName, String categoryName, String folderName)
     {
@@ -263,10 +301,14 @@ public class RecordsAPI extends BaseAPI
     /**
      * Retrieves the record object in case it exists
      *
-     * @param username   the user's username
-     * @param password   its password
-     * @param folderName the folder in which the record is supposed to exist
-     * @param recordName the String with which the record name starts
+     * @param username
+     *            the user's username
+     * @param password
+     *            its password
+     * @param folderName
+     *            the folder in which the record is supposed to exist
+     * @param recordName
+     *            the String with which the record name starts
      * @return the record object in case it exists, null otherwise
      */
     public CmisObject getRecord(String username, String password, String folderName, String recordName)
@@ -284,10 +326,14 @@ public class RecordsAPI extends BaseAPI
     /**
      * Retrieves record full name for given partial name
      *
-     * @param username          the user's username
-     * @param password          its password
-     * @param folderName        the folder in which the record is supposed to exist
-     * @param recordPartialName the String with which the record name starts
+     * @param username
+     *            the user's username
+     * @param password
+     *            its password
+     * @param folderName
+     *            the folder in which the record is supposed to exist
+     * @param recordPartialName
+     *            the String with which the record name starts
      * @return the record name in case it exists, empty String otherwise
      */
     public String getRecordFullName(String username, String password, String folderName, String recordPartialName)
@@ -300,15 +346,16 @@ public class RecordsAPI extends BaseAPI
         return "";
     }
 
-
     /**
      * Share a document
      *
-     * @param user     the user sharing the file
-     * @param password the user's password
-     * @param nodeId   the node id of the file
-     * @return {@link Pair}. on success will be true and the shareId.
-     * on failure will be false and the response status code.
+     * @param user
+     *            the user sharing the file
+     * @param password
+     *            the user's password
+     * @param nodeId
+     *            the node id of the file
+     * @return {@link Pair}. on success will be true and the shareId. on failure will be false and the response status code.
      */
     public Pair<Boolean, String> shareDocument(String user, String password, String nodeId) throws JSONException
     {
@@ -320,7 +367,8 @@ public class RecordsAPI extends BaseAPI
             {
                 return Pair.of(true, response.getString("sharedId"));
             }
-        } catch (JSONException e)
+        }
+        catch (JSONException e)
         {
             LOGGER.info("Unable to extract response parameter", e);
         }
@@ -330,9 +378,12 @@ public class RecordsAPI extends BaseAPI
     /**
      * Hide in place record
      *
-     * @param user     the user
-     * @param password the user's password
-     * @param nodeId   the in place record node id
+     * @param user
+     *            the user
+     * @param password
+     *            the user's password
+     * @param nodeId
+     *            the in place record node id
      * @return The HTTP Response.
      */
     public HttpResponse hideRecord(String user, String password, String nodeId)
@@ -346,14 +397,17 @@ public class RecordsAPI extends BaseAPI
         return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
     }
 
-
     /**
      * Retrieves the record's nodeRef
      *
-     * @param username   the user's username
-     * @param password   its password
-     * @param recordName the record full name
-     * @param recordPath the String with which the record name starts
+     * @param username
+     *            the user's username
+     * @param password
+     *            its password
+     * @param recordName
+     *            the record full name
+     * @param recordPath
+     *            the String with which the record name starts
      * @return the record nodeRef in case it exists, empty string otherwise
      */
     public String getRecordNodeRef(String username, String password, String recordName, String recordPath)
@@ -364,9 +418,12 @@ public class RecordsAPI extends BaseAPI
     /**
      * Reopens the record given as parameter
      *
-     * @param user       the user declaring the document as record
-     * @param password   the user's password
-     * @param recordName the record name
+     * @param user
+     *            the user declaring the document as record
+     * @param password
+     *            the user's password
+     * @param recordName
+     *            the record name
      * @return The HTTP Response.
      */
 

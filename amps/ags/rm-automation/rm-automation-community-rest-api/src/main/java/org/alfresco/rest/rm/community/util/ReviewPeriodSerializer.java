@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,16 +44,19 @@ import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
 public class ReviewPeriodSerializer extends JsonSerializer<ReviewPeriod>
 {
     /**
-     * @param value The Review Period value that is being serialized.
-     * @param gen Jackson utility is responsible for writing JSON
-     * @param serializers Provider for getting access to other serializers and configurations registered with the ObjectMapper.
+     * @param value
+     *            The Review Period value that is being serialized.
+     * @param gen
+     *            Jackson utility is responsible for writing JSON
+     * @param serializers
+     *            Provider for getting access to other serializers and configurations registered with the ObjectMapper.
      * @throws IOException
      * @throws JsonProcessingException
      */
     @Override
     public void serialize(ReviewPeriod value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException
     {
-        //create the custom  string value for the Review Period type
-       gen.writeString(new StringBuilder().append(value.getPeriodType()).append("|").append(value.getExpression()).toString());
+        // create the custom string value for the Review Period type
+        gen.writeString(new StringBuilder().append(value.getPeriodType()).append("|").append(value.getExpression()).toString());
     }
 }

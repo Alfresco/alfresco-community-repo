@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,15 +27,8 @@
 
 package org.alfresco.rest.rm.community.smoke;
 
-import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.v0.RMRolesAndActionsAPI;
-import org.alfresco.test.AlfrescoTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import static org.springframework.http.HttpStatus.OK;
+import static org.testng.Assert.assertEquals;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
@@ -44,11 +37,20 @@ import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.junit.Assert.assertFalse;
-import static org.springframework.http.HttpStatus.OK;
-import static org.testng.Assert.assertEquals;
 
-public class CreateCategoriesTests extends BaseRMRestTest {
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
+import org.alfresco.test.AlfrescoTest;
+
+public class CreateCategoriesTests extends BaseRMRestTest
+{
 
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
@@ -68,13 +70,13 @@ public class CreateCategoriesTests extends BaseRMRestTest {
 
         STEP("Create RM Admin user");
         rmRolesAndActionsAPI.createUserAndAssignToRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_ADMIN,
-            getAdminUser().getPassword(),
-            "Administrator");
+                getAdminUser().getPassword(),
+                "Administrator");
 
         STEP("Create two category");
         Category1 = createRootCategory(getRandomName("Category1"));
 
-        Category2= createRootCategory(getRandomName("Category2"));
+        Category2 = createRootCategory(getRandomName("Category2"));
 
         STEP("Create Sub category");
         RecordCategoryChild subCategory1 = createRecordCategory(Category1.getId(), getRandomName("subCategory1"));
@@ -82,9 +84,10 @@ public class CreateCategoriesTests extends BaseRMRestTest {
 
     }
 
-
-    @Test @AlfrescoTest(jira = "RM-2756")
-    public void createCategories() throws Exception {
+    @Test
+    @AlfrescoTest(jira = "RM-2756")
+    public void createCategories() throws Exception
+    {
 
         FilePlan filePlan = getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS);
 
@@ -97,17 +100,16 @@ public class CreateCategoriesTests extends BaseRMRestTest {
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
 
-
         // Create the root record category
         RecordCategory Category1 = createRootCategory(categoryName, categoryTitle);
 
         String newCategoryName = "Rename " + categoryName;
 
         // Build the properties which will be updated
-        RecordCategory  recordCategoryUpdated = Category1.builder().name(newCategoryName).build();
+        RecordCategory recordCategoryUpdated = Category1.builder().name(newCategoryName).build();
 
         // Update the record category
-        RecordCategory renamedRecordCategory = getRestAPIFactory().getRecordCategoryAPI().updateRecordCategory(recordCategoryUpdated,Category1.getId());
+        RecordCategory renamedRecordCategory = getRestAPIFactory().getRecordCategoryAPI().updateRecordCategory(recordCategoryUpdated, Category1.getId());
         // Verify the status code
         assertStatusCode(OK);
 

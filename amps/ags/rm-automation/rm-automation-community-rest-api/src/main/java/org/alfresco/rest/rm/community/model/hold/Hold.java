@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,11 +29,11 @@ package org.alfresco.rest.rm.community.model.hold;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import org.alfresco.utility.model.TestModel;
 
 /**
@@ -72,7 +72,7 @@ public class Hold extends TestModel
         }
         Hold hold = (Hold) o;
         return Objects.equals(id, hold.id) && Objects.equals(name, hold.name)
-            && Objects.equals(description, hold.description) && Objects.equals(reason, hold.reason);
+                && Objects.equals(description, hold.description) && Objects.equals(reason, hold.reason);
     }
 
     @Override

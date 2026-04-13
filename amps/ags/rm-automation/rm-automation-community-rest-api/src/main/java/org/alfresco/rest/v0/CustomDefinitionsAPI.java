@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,19 +26,22 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertTrue;
+
 import java.text.MessageFormat;
 
-import org.alfresco.rest.core.v0.BaseAPI;
-import org.alfresco.rest.rm.community.model.custom.CustomDefinitions;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertNotNull;
+
+import org.alfresco.rest.core.v0.BaseAPI;
+import org.alfresco.rest.rm.community.model.custom.CustomDefinitions;
+
 /**
  * Methods to make API requests using v0 API on Records Management Custom Model Reference Definitions
  *
@@ -68,11 +71,13 @@ public class CustomDefinitionsAPI extends BaseAPI
     /**
      * Helper method to get the reference id for a custom reference
      *
-     * @param adminUser        user with administrative privileges
-     * @param adminPassword    password for adminUser
-     * @param customDefinition custom reference definition name
-     * @return  <code>reference id</code>   if the customDefinition is found
-     *          <code> null </code> otherwise
+     * @param adminUser
+     *            user with administrative privileges
+     * @param adminPassword
+     *            password for adminUser
+     * @param customDefinition
+     *            custom reference definition name
+     * @return <code>reference id</code> if the customDefinition is found <code> null </code> otherwise
      *
      */
     public String getCustomReferenceId(String adminUser, String adminPassword, String customDefinition)
@@ -88,17 +93,14 @@ public class CustomDefinitionsAPI extends BaseAPI
                 {
                     JSONObject item = customDefinitions.getJSONObject(i);
                     boolean hasSource = customDefinition.equalsIgnoreCase(
-                            item.has("source") ? item.getString("source") : null
-                                                                         );
+                            item.has("source") ? item.getString("source") : null);
 
                     boolean hasTarget = customDefinition.equalsIgnoreCase(
-                            item.has("target") ? item.getString("target") : null
-                                                                         );
+                            item.has("target") ? item.getString("target") : null);
 
                     boolean hasLabel = customDefinition.equalsIgnoreCase(
-                            item.has("label") ? item.getString("label") : null
-                                                                        );
-                    if ( hasSource || hasTarget || hasLabel)
+                            item.has("label") ? item.getString("label") : null);
+                    if (hasSource || hasTarget || hasLabel)
                     {
                         return item.getString("refId");
                     }
@@ -116,12 +118,18 @@ public class CustomDefinitionsAPI extends BaseAPI
     /**
      * Helper method to add custom reference instance to the specified record node
      *
-     * @param adminUser     user with administrative privileges
-     * @param adminPassword password for adminUser
-     * @param recordNodeIdFrom node ref to set a custom reference
-     * @param recordNodeIdTo        node ref of the to record
-     * @param   relationshipType    relation type to be created
-     * @throws AssertionError if the creation fails.
+     * @param adminUser
+     *            user with administrative privileges
+     * @param adminPassword
+     *            password for adminUser
+     * @param recordNodeIdFrom
+     *            node ref to set a custom reference
+     * @param recordNodeIdTo
+     *            node ref of the to record
+     * @param relationshipType
+     *            relation type to be created
+     * @throws AssertionError
+     *             if the creation fails.
      */
     public void createRelationship(
             String adminUser,
@@ -130,60 +138,63 @@ public class CustomDefinitionsAPI extends BaseAPI
             String recordNodeIdTo,
             CustomDefinitions relationshipType)
     {
-       //create the request body
+        // create the request body
         JSONObject requestParams = new JSONObject();
         requestParams.put("toNode", NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdTo);
         requestParams.put("refId", getCustomReferenceId(adminUser, adminPassword, relationshipType
                 .getDefinition()));
-        //send the API request to create the relationship
+        // send the API request to create the relationship
         JSONObject setRelationshipStatus = doPostRequest(adminUser, adminPassword, requestParams,
                 MessageFormat.format(CREATE_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + recordNodeIdFrom));
-        //check the response
+        // check the response
         boolean success = (setRelationshipStatus != null) && setRelationshipStatus.getBoolean("success");
         assertTrue("Creating relationship from " + recordNodeIdFrom + " to " + recordNodeIdTo + " failed.", success);
     }
 
     public void createRelationship(
-        String adminUser,
-        String adminPassword,
-        int expectedStatus,
-        String recordNodeIdFrom,
-        String recordNodeIdTo,
-        CustomDefinitions relationshipType) {
-        //create the request body
+            String adminUser,
+            String adminPassword,
+            int expectedStatus,
+            String recordNodeIdFrom,
+            String recordNodeIdTo,
+            CustomDefinitions relationshipType)
+    {
+        // create the request body
         JSONObject requestParams = new JSONObject();
         requestParams.put("toNode", NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdTo);
         requestParams.put("refId", getCustomReferenceId(adminUser, adminPassword, relationshipType
-            .getDefinition()));
-        //send the API request to create the relationship
+                .getDefinition()));
+        // send the API request to create the relationship
         JSONObject setRelationshipStatus = doPostRequest(adminUser, adminPassword, requestParams,
-            MessageFormat.format(CREATE_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + recordNodeIdFrom));
-        //check the response
+                MessageFormat.format(CREATE_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + recordNodeIdFrom));
+        // check the response
         assertEquals("POST request for createRelationship was not successful.", expectedStatus, setRelationshipStatus.getJSONObject("status").get("code"));
     }
 
     public JSONObject getRelationshipDetails(
-        String adminUser,
-        String adminPassword,
-        String nodeRef) {
-        //send the API request to create the relationship
+            String adminUser,
+            String adminPassword,
+            String nodeRef)
+    {
+        // send the API request to create the relationship
         JSONObject relationshipDetails = doGetRequest(adminUser, adminPassword,
-            MessageFormat.format(GET_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + nodeRef));
-        //check the response
+                MessageFormat.format(GET_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + nodeRef));
+        // check the response
         assertNotNull("The Relationship detail is not found for the Noderef " + nodeRef, relationshipDetails);
         return relationshipDetails;
     }
 
     public void deleteRelationship(
-        String adminUser,
-        String adminPassword,
-        String recordNodeIdFrom,
-        String recordNodeIdTo,
-        String relationshipUniqueName) {
-        //send the API request to create the relationship
+            String adminUser,
+            String adminPassword,
+            String recordNodeIdFrom,
+            String recordNodeIdTo,
+            String relationshipUniqueName)
+    {
+        // send the API request to create the relationship
         JSONObject setRelationshipStatus = doDeleteRequest(adminUser, adminPassword,
-            MessageFormat.format(DELETE_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + recordNodeIdFrom,NODE_PREFIX + recordNodeIdTo,relationshipUniqueName));
-        //check the response
+                MessageFormat.format(DELETE_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + recordNodeIdFrom, NODE_PREFIX + recordNodeIdTo, relationshipUniqueName));
+        // check the response
         boolean success = (setRelationshipStatus != null) && setRelationshipStatus.getBoolean("success");
         assertTrue("Deleting relationship from " + recordNodeIdFrom + " to " + recordNodeIdTo + " failed.", success);
     }

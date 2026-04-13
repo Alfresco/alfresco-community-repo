@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,16 +26,17 @@
  */
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
-import static org.alfresco.rest.core.RestRequest.requestWithBody;
-import static org.alfresco.rest.core.RestRequest.simpleRequest;
-import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
-import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
-import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
+
+import static org.alfresco.rest.core.RestRequest.requestWithBody;
+import static org.alfresco.rest.core.RestRequest.simpleRequest;
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
@@ -54,7 +55,8 @@ public class RecordCategoryAPI extends RMModelRequest
     /**
      * Constructor.
      *
-     * @param rmRestWrapper RM REST Wrapper
+     * @param rmRestWrapper
+     *            RM REST Wrapper
      */
     public RecordCategoryAPI(RMRestWrapper rmRestWrapper)
     {
@@ -64,15 +66,17 @@ public class RecordCategoryAPI extends RMModelRequest
     /**
      * Deletes a record category.
      *
-     * @param recordCategoryId The identifier of a record category
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code recordCategoryId} is not a valid format</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to delete {@code recordCategoryId}</li>
-     *  <li>{@code recordCategoryId} does not exist</li>
-     *  <li>{@code recordCategoryId} is locked and cannot be deleted</li>
-     * </ul>
+     * @param recordCategoryId
+     *            The identifier of a record category
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>{@code recordCategoryId} is not a valid format</li>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to delete {@code recordCategoryId}</li>
+     *             <li>{@code recordCategoryId} does not exist</li>
+     *             <li>{@code recordCategoryId} is locked and cannot be deleted</li>
+     *             </ul>
      */
     public void deleteRecordCategory(String recordCategoryId)
     {
@@ -81,8 +85,7 @@ public class RecordCategoryAPI extends RMModelRequest
         getRmRestWrapper().processEmptyModel(simpleRequest(
                 DELETE,
                 "record-categories/{recordCategoryId}",
-                recordCategoryId
-        ));
+                recordCategoryId));
     }
 
     /**
@@ -98,16 +101,19 @@ public class RecordCategoryAPI extends RMModelRequest
     /**
      * Gets a record category.
      *
-     * @param recordCategoryId The identifier of a record category
-     * @param parameters The URL parameters to add
+     * @param recordCategoryId
+     *            The identifier of a record category
+     * @param parameters
+     *            The URL parameters to add
      * @return The {@link RecordCategory} for the given {@code recordCategoryId}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code recordCategoryId} is not a valid format</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code recordCategoryId}</li>
-     *  <li>{@code recordCategoryId} does not exist</li>
-     * </ul>
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>{@code recordCategoryId} is not a valid format</li>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to read {@code recordCategoryId}</li>
+     *             <li>{@code recordCategoryId} does not exist</li>
+     *             </ul>
      */
     public RecordCategory getRecordCategory(String recordCategoryId, String parameters)
     {
@@ -117,8 +123,7 @@ public class RecordCategoryAPI extends RMModelRequest
                 GET,
                 "record-categories/{recordCategoryId}?{parameters}",
                 recordCategoryId,
-                parameters
-        ));
+                parameters));
     }
 
     /**
@@ -135,19 +140,24 @@ public class RecordCategoryAPI extends RMModelRequest
     /**
      * Updates a record category.
      *
-     * @param recordCategoryModel The record category model which holds the information
-     * @param recordCategoryId The identifier of a record category
-     * @param parameters The URL parameters to add
-     * @param returns The updated {@link RecordCategory}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>the update request is invalid or {@code recordCategoryId} is not a valid format or {@code recordCategoryModel} is invalid</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to update {@code recordCategoryId}</li>
-     *  <li>{@code recordCategoryId} does not exist</li>
-     *  <li>the updated name clashes with an existing record category in the current parent category</li>
-     *  <li>model integrity exception, including file name with invalid characters</li>
-     * </ul>
+     * @param recordCategoryModel
+     *            The record category model which holds the information
+     * @param recordCategoryId
+     *            The identifier of a record category
+     * @param parameters
+     *            The URL parameters to add
+     * @param returns
+     *            The updated {@link RecordCategory}
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>the update request is invalid or {@code recordCategoryId} is not a valid format or {@code recordCategoryModel} is invalid</li>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to update {@code recordCategoryId}</li>
+     *             <li>{@code recordCategoryId} does not exist</li>
+     *             <li>the updated name clashes with an existing record category in the current parent category</li>
+     *             <li>model integrity exception, including file name with invalid characters</li>
+     *             </ul>
      */
     public RecordCategory updateRecordCategory(RecordCategory recordCategoryModel, String recordCategoryId, String parameters)
     {
@@ -159,8 +169,7 @@ public class RecordCategoryAPI extends RMModelRequest
                 toJson(recordCategoryModel),
                 "record-categories/{recordCategoryId}?{parameters}",
                 recordCategoryId,
-                parameters
-        ));
+                parameters));
     }
 
     /**
@@ -176,26 +185,28 @@ public class RecordCategoryAPI extends RMModelRequest
     /**
      * Gets the children of a record category.
      *
-     * @param recordCategoryId The identifier of a record category
-     * @param parameters The URL parameters to add
+     * @param recordCategoryId
+     *            The identifier of a record category
+     * @param parameters
+     *            The URL parameters to add
      * @return The {@link RecordCategoryChildCollection} for the given {@code recordCategoryId}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code recordCategoryId}</li>
-     *  <li>{@code recordCategoryId} does not exist</li>
-     *</ul>
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to read {@code recordCategoryId}</li>
+     *             <li>{@code recordCategoryId} does not exist</li>
+     *             </ul>
      */
     public RecordCategoryChildCollection getRecordCategoryChildren(String recordCategoryId, String parameters)
     {
         mandatoryString("recordCategoryId", recordCategoryId);
 
         return getRmRestWrapper().processModels(RecordCategoryChildCollection.class, simpleRequest(
-            GET,
-            "record-categories/{recordCategoryId}/children?{parameters}",
-            recordCategoryId,
-            parameters
-        ));
+                GET,
+                "record-categories/{recordCategoryId}/children?{parameters}",
+                recordCategoryId,
+                parameters));
     }
 
     /**
@@ -212,19 +223,23 @@ public class RecordCategoryAPI extends RMModelRequest
     /**
      * Creates a record category child. Can be a record category or a record folder.
      *
-     * @param recordCategoryChildModel The record category child model which holds the information
-     * @param recordCategoryId The identifier of a record category
-     * @param parameters The URL parameters to add
+     * @param recordCategoryChildModel
+     *            The record category child model which holds the information
+     * @param recordCategoryId
+     *            The identifier of a record category
+     * @param parameters
+     *            The URL parameters to add
      * @return The created {@link RecordCategoryChild}
-     * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code recordCategoryId} is not a valid format or {@code recordCategoryChildModel} is invalid</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to add children to {@code recordCategoryId}</li>
-     *  <li>{@code recordCategoryId} does not exist</li>
-     *  <li>new name clashes with an existing node in the current parent container</li>
-     *  <li>model integrity exception, including node name with invalid characters</li>
-     * </ul>
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>{@code recordCategoryId} is not a valid format or {@code recordCategoryChildModel} is invalid</li>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to add children to {@code recordCategoryId}</li>
+     *             <li>{@code recordCategoryId} does not exist</li>
+     *             <li>new name clashes with an existing node in the current parent container</li>
+     *             <li>model integrity exception, including node name with invalid characters</li>
+     *             </ul>
      */
     public RecordCategoryChild createRecordCategoryChild(RecordCategoryChild recordCategoryChildModel, String recordCategoryId, String parameters)
     {
@@ -236,7 +251,6 @@ public class RecordCategoryAPI extends RMModelRequest
                 toJson(recordCategoryChildModel),
                 "record-categories/{recordCategoryId}/children?{parameters}",
                 recordCategoryId,
-                parameters
-        ));
+                parameters));
     }
 }

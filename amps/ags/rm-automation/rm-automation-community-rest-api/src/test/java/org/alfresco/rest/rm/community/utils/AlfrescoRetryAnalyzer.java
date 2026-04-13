@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,7 +31,8 @@ import org.testng.util.RetryAnalyzerCount;
 
 public class AlfrescoRetryAnalyzer extends RetryAnalyzerCount
 {
-    public AlfrescoRetryAnalyzer() {
+    public AlfrescoRetryAnalyzer()
+    {
         super();
         setCount(3);
     }

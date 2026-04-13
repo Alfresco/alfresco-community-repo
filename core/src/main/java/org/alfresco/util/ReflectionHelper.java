@@ -33,20 +33,19 @@ import org.apache.commons.logging.LogFactory;
 public class ReflectionHelper
 {
     private static Log logger = LogFactory.getLog(ReflectionHelper.class);
-    
+
     private ReflectionHelper()
-    {
-    }
+    {}
 
     /**
-     * Constructs a new object for the given class name.
-     * The construction takes no arguments.
+     * Constructs a new object for the given class name. The construction takes no arguments.
      * 
      * If an exception occurs during construction, null is returned.
      * 
      * All exceptions are written to the Log instance for this class.
      * 
-     * @param className String
+     * @param className
+     *            String
      * @return Object
      */
     public static Object newObject(String className)
@@ -74,33 +73,32 @@ public class ReflectionHelper
     }
 
     /**
-     * Constructs a new object for the given class name and with the given
-     * arguments.  The arguments must be specified in terms of their Class[]
-     * types and their Object[] values.
+     * Constructs a new object for the given class name and with the given arguments. The arguments must be specified in terms of their Class[] types and their Object[] values.
      * 
      * Example:
      * 
-     *   String s = newObject("java.lang.String", new Class[] { String.class},
-     *              new String[] { "test"});
-     *              
+     * String s = newObject("java.lang.String", new Class[] { String.class}, new String[] { "test"});
+     * 
      * is equivalent to:
      * 
-     *   String s = new String("test");
+     * String s = new String("test");
      * 
      * If an exception occurs during construction, null is returned.
      * 
      * All exceptions are written to the Log instance for this class.
-
-     * @param className String
-     * @param argTypes Class[]
-     * @param args Object[]
+     * 
+     * @param className
+     *            String
+     * @param argTypes
+     *            Class[]
+     * @param args
+     *            Object[]
      * @return Object
      */
     public static Object newObject(String className, Class[] argTypes, Object[] args)
     {
         /**
-         * We have some mercy here - if they called and did not pass in any
-         * arguments, then we will call through to the pure newObject() method.
+         * We have some mercy here - if they called and did not pass in any arguments, then we will call through to the pure newObject() method.
          */
         if (args == null || args.length == 0)
         {
@@ -145,13 +143,16 @@ public class ReflectionHelper
     }
 
     /**
-     * Invokes a method on the given object by passing the given arguments
-     * into the method.
+     * Invokes a method on the given object by passing the given arguments into the method.
      * 
-     * @param obj Object
-     * @param method String
-     * @param argTypes Class[]
-     * @param args Object[]
+     * @param obj
+     *            Object
+     * @param method
+     *            String
+     * @param argTypes
+     *            Class[]
+     * @param args
+     *            Object[]
      * @return Object
      */
     public static Object invoke(Object obj, String method, Class[] argTypes, Object[] args)
@@ -160,7 +161,7 @@ public class ReflectionHelper
         {
             throw new IllegalArgumentException("Object and Method must be supplied.");
         }
-        
+
         /**
          * Try to invoke the method.
          * 
@@ -169,24 +170,24 @@ public class ReflectionHelper
         try
         {
             Method m = obj.getClass().getMethod(method, argTypes);
-            if(m != null)
+            if (m != null)
             {
                 return m.invoke(obj, args);
             }
         }
-        catch(NoSuchMethodException nsme)
+        catch (NoSuchMethodException nsme)
         {
             logger.debug(nsme);
         }
-        catch(IllegalAccessException iae)
+        catch (IllegalAccessException iae)
         {
             logger.debug(iae);
         }
-        catch(InvocationTargetException ite)
+        catch (InvocationTargetException ite)
         {
             logger.debug(ite);
         }
-        
+
         return null;
     }
 }

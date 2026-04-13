@@ -35,14 +35,14 @@ import java.util.List;
 import java.util.Properties;
 import java.util.zip.CRC32;
 
-import org.alfresco.service.cmr.dictionary.DictionaryException;
-import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
 
+import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.cmr.dictionary.ModelDefinition;
 
 /**
  * Model Definition.
@@ -60,7 +60,7 @@ public class M2Model
     private String author = null;
     private Date published = null;
     private String version;
-    private String  analyserResourceBundleName = null;
+    private String analyserResourceBundleName = null;
 
     private List<M2Namespace> namespaces = new ArrayList<M2Namespace>();
     private List<M2Namespace> imports = new ArrayList<M2Namespace>();
@@ -70,15 +70,14 @@ public class M2Model
     private List<M2Constraint> constraints = new ArrayList<M2Constraint>();
 
     private M2Model()
-    {
-    }
-
+    {}
 
     /**
      * Construct an empty model
      * 
-     * @param name  the name of the model
-     * @return  the model
+     * @param name
+     *            the name of the model
+     * @return the model
      */
     public static M2Model createModel(String name)
     {
@@ -87,18 +86,18 @@ public class M2Model
         return model;
     }
 
-    
     /**
      * Construct a model from a dictionary xml specification
      * 
-     * @param xml  the dictionary xml
-     * @return  the model representation of the xml
+     * @param xml
+     *            the dictionary xml
+     * @return the model representation of the xml
      */
     public static M2Model createModel(InputStream xml)
     {
         return createModel("default", xml);
     }
-    
+
     public static M2Model createModel(String bindingName, InputStream xml)
     {
         try
@@ -106,42 +105,41 @@ public class M2Model
             IBindingFactory factory = BindingDirectory.getFactory(bindingName, M2Model.class);
             IUnmarshallingContext context = factory.createUnmarshallingContext();
             Object obj = context.unmarshalDocument(xml, null);
-            return (M2Model)obj;
+            return (M2Model) obj;
         }
-        catch(JiBXException e)
+        catch (JiBXException e)
         {
             throw new DictionaryException(ERR_PARSE_FAILURE, e);
-        }        
+        }
     }
 
-    
     /**
      * Render the model to dictionary XML
      * 
-     * @param xml  the dictionary xml representation of the model
+     * @param xml
+     *            the dictionary xml representation of the model
      */
     public void toXML(OutputStream xml)
     {
         toXML(null, xml);
     }
-    
+
     public void toXML(ModelDefinition.XMLBindingType bindingType, OutputStream xml)
     {
         try
         {
-        	if(bindingType == null)
-        	{
-        		bindingType = ModelDefinition.XMLBindingType.DEFAULT;
-        	}
+            if (bindingType == null)
+            {
+                bindingType = ModelDefinition.XMLBindingType.DEFAULT;
+            }
 
-        	String bindingName = bindingType.toString();
-            IBindingFactory factory = (bindingName != null) ? BindingDirectory.getFactory(bindingName, M2Model.class) :
-            	BindingDirectory.getFactory("default", M2Model.class);
+            String bindingName = bindingType.toString();
+            IBindingFactory factory = (bindingName != null) ? BindingDirectory.getFactory(bindingName, M2Model.class) : BindingDirectory.getFactory("default", M2Model.class);
             IMarshallingContext context = factory.createMarshallingContext();
             context.setIndent(4);
             context.marshalDocument(this, "UTF-8", null, xml);
         }
-        catch(JiBXException e)
+        catch (JiBXException e)
         {
             throw new DictionaryException(ERR_CREATE_M2MODEL_FAILURE, e);
         }
@@ -161,13 +159,15 @@ public class M2Model
 
         return crc.getValue();
     }
-    
+
     /**
      * Create a compiled form of this model
      * 
-     * @param dictionaryDAO  dictionary DAO
-     * @param namespaceDAO  namespace DAO
-     * @return  the compiled form of the model
+     * @param dictionaryDAO
+     *            dictionary DAO
+     * @param namespaceDAO
+     *            namespace DAO
+     * @return the compiled form of the model
      */
     public CompiledModel compile(DictionaryDAO dictionaryDAO, NamespaceDAO namespaceDAO, boolean enableConstraintClassLoading)
     {
@@ -175,67 +175,56 @@ public class M2Model
         return compiledModel;
     }
 
-    
     public String getName()
     {
         return name;
     }
-    
-    
+
     public void setName(String name)
     {
         this.name = name;
     }
-    
-    
+
     public String getDescription()
     {
         return description;
     }
-    
-    
+
     public void setDescription(String description)
     {
         this.description = description;
     }
-    
-    
+
     public String getAuthor()
     {
         return author;
     }
-    
-    
+
     public void setAuthor(String author)
     {
         this.author = author;
     }
-    
-    
+
     public Date getPublishedDate()
     {
         return published;
     }
-    
-    
+
     public void setPublishedDate(Date published)
     {
         this.published = published;
     }
-    
-    
+
     public String getVersion()
     {
         return version;
     }
-    
-    
+
     public void setVersion(String version)
     {
         this.version = version;
     }
 
-    
     public M2Type createType(String name)
     {
         M2Type type = new M2Type();
@@ -243,8 +232,7 @@ public class M2Model
         types.add(type);
         return type;
     }
-    
-    
+
     public void removeType(String name)
     {
         M2Type type = getType(name);
@@ -253,14 +241,12 @@ public class M2Model
             types.remove(type);
         }
     }
-    
-    
+
     public List<M2Type> getTypes()
     {
         return Collections.unmodifiableList(types);
     }
 
-    
     public M2Type getType(String name)
     {
         for (M2Type candidate : types)
@@ -272,8 +258,7 @@ public class M2Model
         }
         return null;
     }
-    
-    
+
     public M2Aspect createAspect(String name)
     {
         M2Aspect aspect = new M2Aspect();
@@ -281,8 +266,7 @@ public class M2Model
         aspects.add(aspect);
         return aspect;
     }
-    
-    
+
     public void removeAspect(String name)
     {
         M2Aspect aspect = getAspect(name);
@@ -292,13 +276,11 @@ public class M2Model
         }
     }
 
-    
     public List<M2Aspect> getAspects()
     {
         return Collections.unmodifiableList(aspects);
     }
 
-    
     public M2Aspect getAspect(String name)
     {
         for (M2Aspect candidate : aspects)
@@ -310,8 +292,7 @@ public class M2Model
         }
         return null;
     }
-    
-    
+
     public M2DataType createPropertyType(String name)
     {
         M2DataType type = new M2DataType();
@@ -319,7 +300,6 @@ public class M2Model
         dataTypes.add(type);
         return type;
     }
-    
 
     public void removePropertyType(String name)
     {
@@ -330,13 +310,11 @@ public class M2Model
         }
     }
 
-
     public List<M2DataType> getPropertyTypes()
     {
         return Collections.unmodifiableList(dataTypes);
     }
 
-    
     public M2DataType getPropertyType(String name)
     {
         for (M2DataType candidate : dataTypes)
@@ -349,7 +327,6 @@ public class M2Model
         return null;
     }
 
-    
     public M2Namespace createNamespace(String uri, String prefix)
     {
         M2Namespace namespace = new M2Namespace();
@@ -358,8 +335,7 @@ public class M2Model
         namespaces.add(namespace);
         return namespace;
     }
-    
-    
+
     public void removeNamespace(String uri)
     {
         M2Namespace namespace = getNamespace(uri);
@@ -369,12 +345,10 @@ public class M2Model
         }
     }
 
-    
     public List<M2Namespace> getNamespaces()
     {
         return Collections.unmodifiableList(namespaces);
     }
-
 
     public M2Namespace getNamespace(String uri)
     {
@@ -387,8 +361,7 @@ public class M2Model
         }
         return null;
     }
-    
-    
+
     public M2Namespace createImport(String uri, String prefix)
     {
         M2Namespace namespace = new M2Namespace();
@@ -397,8 +370,7 @@ public class M2Model
         imports.add(namespace);
         return namespace;
     }
-    
-    
+
     public void removeImport(String uri)
     {
         M2Namespace namespace = getImport(uri);
@@ -408,13 +380,11 @@ public class M2Model
         }
     }
 
-
     public List<M2Namespace> getImports()
     {
         return Collections.unmodifiableList(imports);
     }
 
-    
     public M2Namespace getImport(String uri)
     {
         for (M2Namespace candidate : imports)
@@ -431,7 +401,7 @@ public class M2Model
     {
         return Collections.unmodifiableList(constraints);
     }
-    
+
     public M2Constraint getConstraint(String name)
     {
         for (M2Constraint candidate : constraints)
@@ -443,7 +413,7 @@ public class M2Model
         }
         return null;
     }
-    
+
     public M2Constraint createConstraint(String name, String type)
     {
         M2Constraint constraint = new M2Constraint();
@@ -452,7 +422,7 @@ public class M2Model
         constraints.add(constraint);
         return constraint;
     }
-    
+
     public void removeConstraint(String name)
     {
         M2Constraint constraint = getConstraint(name);
@@ -461,7 +431,7 @@ public class M2Model
             constraints.remove(constraint);
         }
     }
-    
+
     // Do not delete: referenced by m2binding.xml
     @SuppressWarnings("unused")
     private static List createList()

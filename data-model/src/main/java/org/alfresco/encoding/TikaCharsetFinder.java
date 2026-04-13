@@ -42,9 +42,9 @@ import org.apache.tika.parser.txt.CharsetMatch;
 public class TikaCharsetFinder extends AbstractCharactersetFinder
 {
     private static Log logger = LogFactory.getLog(TikaCharsetFinder.class);
-    
+
     private int threshold = 35;
-    
+
     @Override
     protected Charset detectCharsetImpl(byte[] buffer) throws Exception
     {
@@ -52,13 +52,13 @@ public class TikaCharsetFinder extends AbstractCharactersetFinder
         detector.setText(buffer);
         CharsetMatch match = detector.detect();
 
-        if(match != null && match.getConfidence() > threshold)
+        if (match != null && match.getConfidence() > threshold)
         {
             try
             {
                 return Charset.forName(match.getName());
             }
-            catch(UnsupportedCharsetException e)
+            catch (UnsupportedCharsetException e)
             {
                 logger.info("Charset detected as " + match.getName() + " but the JVM does not support this, detection skipped");
             }
@@ -67,9 +67,7 @@ public class TikaCharsetFinder extends AbstractCharactersetFinder
     }
 
     /**
-     * Return the matching threshold before we decide that
-     *  what we detected is a good match. In the range
-     *  0-100.
+     * Return the matching threshold before we decide that what we detected is a good match. In the range 0-100.
      */
     public int getThreshold()
     {
@@ -77,19 +75,16 @@ public class TikaCharsetFinder extends AbstractCharactersetFinder
     }
 
     /**
-     * At what point do we decide our match is good enough?
-     * In the range 0-100. If we don't reach the threshold,
-     *  we'll decline, and either another finder will work on
-     *  it or the fallback encoding will be taken.
+     * At what point do we decide our match is good enough? In the range 0-100. If we don't reach the threshold, we'll decline, and either another finder will work on it or the fallback encoding will be taken.
      */
     public void setThreshold(int threshold)
     {
-        if(threshold < 0)
+        if (threshold < 0)
             threshold = 0;
-        if(threshold > 100)
+        if (threshold > 100)
             threshold = 100;
-        
+
         this.threshold = threshold;
     }
-    
+
 }

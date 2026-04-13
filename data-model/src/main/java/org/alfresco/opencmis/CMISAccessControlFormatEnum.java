@@ -35,29 +35,28 @@ public enum CMISAccessControlFormatEnum implements EnumLabel
      * Report only CMIS basic permissions
      */
     CMIS_BASIC_PERMISSIONS("onlyBasicPermissions"),
-    
+
     /**
-     * May report CMIS basic permission, repository specific permissions or a mixture of both. 
+     * May report CMIS basic permission, repository specific permissions or a mixture of both.
      */
     REPOSITORY_SPECIFIC_PERMISSIONS("repositorySpecificPermissions");
-    
+
     private String label;
 
     /**
      * Construct
      * 
-     * @param label String
+     * @param label
+     *            String
      */
     CMISAccessControlFormatEnum(String label)
     {
         this.label = label;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.EnumLabel#label()
-     */
+     * @see org.alfresco.cmis.EnumLabel#label() */
     public String getLabel()
     {
         return label;

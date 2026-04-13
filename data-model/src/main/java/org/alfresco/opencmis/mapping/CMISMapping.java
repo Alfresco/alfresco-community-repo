@@ -31,6 +31,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
+import org.apache.chemistry.opencmis.commons.enums.PropertyType;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISAccessControlFormatEnum;
 import org.alfresco.opencmis.dictionary.QNameFilter;
@@ -43,16 +50,9 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
-import org.apache.chemistry.opencmis.commons.enums.PropertyType;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
- * CMIS <-> Alfresco mappings. It additionally excludes a list of QNames based
- * on a user defined list
+ * CMIS <-> Alfresco mappings. It additionally excludes a list of QNames based on a user defined list
  * 
  * @author andyh
  */
@@ -114,27 +114,24 @@ public class CMISMapping implements InitializingBean
     private Map<QName, QName> mapAlfrescoQNameToCmisQName = new HashMap<QName, QName>();
     private Map<QName, PropertyType> mapAlfrescoToCmisDataType = new HashMap<QName, PropertyType>();
     private Map<PropertyType, QName> mapCmisDataTypeToAlfresco = new HashMap<PropertyType, QName>();
-    
+
     private QNameFilter filter;
 
     private CmisVersion cmisVersion;
-    
+
     public void setCmisVersion(CmisVersion cmisVersion)
     {
-		this.cmisVersion = cmisVersion;
-	}
-    
+        this.cmisVersion = cmisVersion;
+    }
+
     public CmisVersion getCmisVersion()
     {
-		return cmisVersion;
-	}
+        return cmisVersion;
+    }
 
-	/*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     public void afterPropertiesSet()
     {
         //
@@ -203,7 +200,8 @@ public class CMISMapping implements InitializingBean
     }
 
     /**
-     * @param dictionaryService dictionaryService
+     * @param dictionaryService
+     *            dictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -211,7 +209,8 @@ public class CMISMapping implements InitializingBean
     }
 
     /**
-     * @param namespaceService service
+     * @param namespaceService
+     *            service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -234,57 +233,56 @@ public class CMISMapping implements InitializingBean
         return dictionaryService;
     }
 
-    /*
-     * Is the type excluded from the CMIS dictionary and therefore not visible to clients?
-     */
+    /* Is the type excluded from the CMIS dictionary and therefore not visible to clients? */
     public boolean isExcluded(QName typeQName)
     {
-    	boolean isExcluded = false;
+        boolean isExcluded = false;
 
-		// check for exclusion of the type and, if necessary, its parents
-    	if(filter != null && typeQName != null)
-    	{
-    		isExcluded = filter.isExcluded(typeQName);
-    		if(!isExcluded)
-    		{
+        // check for exclusion of the type and, if necessary, its parents
+        if (filter != null && typeQName != null)
+        {
+            isExcluded = filter.isExcluded(typeQName);
+            if (!isExcluded)
+            {
 
-    			// check parent, if any
-	    		AspectDefinition aspectDef = dictionaryService.getAspect(typeQName);
-	    		QName parentType = null;
-	    		if(aspectDef != null)
-	    		{
-	    			parentType = aspectDef.getParentName();
-	    		}
-	    		else
-	    		{
-	    	    	TypeDefinition typeDef = dictionaryService.getType(typeQName);
-	    	    	if(typeDef != null)
-	    	    	{
-	    	    		parentType = typeDef.getParentName();
-	    	    	}
-		    		else
-		    		{
-		    			parentType = null;
-		    		}
-	    		}
-	    		if(parentType != null)
-	    		{
-	    			isExcluded = isExcluded(parentType);
-	    		}
-    		}
+                // check parent, if any
+                AspectDefinition aspectDef = dictionaryService.getAspect(typeQName);
+                QName parentType = null;
+                if (aspectDef != null)
+                {
+                    parentType = aspectDef.getParentName();
+                }
+                else
+                {
+                    TypeDefinition typeDef = dictionaryService.getType(typeQName);
+                    if (typeDef != null)
+                    {
+                        parentType = typeDef.getParentName();
+                    }
+                    else
+                    {
+                        parentType = null;
+                    }
+                }
+                if (parentType != null)
+                {
+                    isExcluded = isExcluded(parentType);
+                }
+            }
 
-        	filter.setExcluded(typeQName, Boolean.valueOf(isExcluded));
-    	}
+            filter.setExcluded(typeQName, Boolean.valueOf(isExcluded));
+        }
 
-    	return isExcluded;
+        return isExcluded;
     }
-    
+
     /**
-     * Gets the CMIS Type Id given the Alfresco QName for the type in any
-     * Alfresco model
+     * Gets the CMIS Type Id given the Alfresco QName for the type in any Alfresco model
      * 
-     * @param scope BaseTypeId
-     * @param typeQName QName
+     * @param scope
+     *            BaseTypeId
+     * @param typeQName
+     *            QName
      * @return String
      */
     public String getCmisTypeId(BaseTypeId scope, QName typeQName)
@@ -318,7 +316,7 @@ public class CMISMapping implements InitializingBean
             }
 
             return p + ":" + typeQName.toPrefixString(namespaceService);
-        } 
+        }
         else
         {
             return typeId;
@@ -411,20 +409,21 @@ public class CMISMapping implements InitializingBean
 
         return false;
     }
-    
+
     /**
      * Is this a valid CMIS folder type?
      * 
-     * @param typeQName QName
+     * @param typeQName
+     *            QName
      * @return boolean
      */
     public boolean isValidCmisFolder(QName typeQName)
     {
-    	if(isExcluded(typeQName))
-    	{
+        if (isExcluded(typeQName))
+        {
             return false;
         }
-        
+
         if (typeQName == null)
         {
             return false;
@@ -439,7 +438,8 @@ public class CMISMapping implements InitializingBean
             if (typeQName.equals(ContentModel.TYPE_FOLDER))
             {
                 return false;
-            } else
+            }
+            else
             {
                 return true;
             }
@@ -447,17 +447,18 @@ public class CMISMapping implements InitializingBean
 
         return false;
     }
-    
+
     /**
      * Is this a valid CMIS document type?
      * 
-     * @param typeQName QName
+     * @param typeQName
+     *            QName
      * @return boolean
      */
     public boolean isValidCmisDocument(QName typeQName)
     {
-    	if(isExcluded(typeQName))
-    	{
+        if (isExcluded(typeQName))
+        {
             return false;
         }
 
@@ -475,24 +476,26 @@ public class CMISMapping implements InitializingBean
             if (typeQName.equals(ContentModel.TYPE_CONTENT))
             {
                 return false;
-            } else
+            }
+            else
             {
                 return true;
             }
         }
         return false;
     }
-    
+
     /**
      * Is this a valid CMIS secondary type?
      * 
-     * @param typeQName QName
+     * @param typeQName
+     *            QName
      * @return boolean
      */
     public boolean isValidCmisSecondaryType(QName typeQName)
     {
-    	if(isExcluded(typeQName))
-    	{
+        if (isExcluded(typeQName))
+        {
             return false;
         }
 
@@ -512,9 +515,9 @@ public class CMISMapping implements InitializingBean
             return false;
         }
 
-        // Anything derived from the aspects here would at some point have to linked up with an invalid parent so exclude these aspects 
+        // Anything derived from the aspects here would at some point have to linked up with an invalid parent so exclude these aspects
         // AND any that are derived from them.
-        if (       dictionaryService.isSubClass(aspectDef.getName(), ContentModel.ASPECT_VERSIONABLE)
+        if (dictionaryService.isSubClass(aspectDef.getName(), ContentModel.ASPECT_VERSIONABLE)
                 || dictionaryService.isSubClass(aspectDef.getName(), ContentModel.ASPECT_AUDITABLE)
                 || dictionaryService.isSubClass(aspectDef.getName(), ContentModel.ASPECT_REFERENCEABLE))
         {
@@ -526,11 +529,13 @@ public class CMISMapping implements InitializingBean
     /**
      * Is this a valid CMIS policy type?
      * 
-     * @param typeQName QName
+     * @param typeQName
+     *            QName
      * @return boolean
      */
     public boolean isValidCmisPolicy(QName typeQName)
-    {        if (typeQName == null)
+    {
+        if (typeQName == null)
         {
             return false;
         }
@@ -538,41 +543,41 @@ public class CMISMapping implements InitializingBean
         {
             return true;
         }
-        
-        if(cmisVersion.equals(CmisVersion.CMIS_1_0))
+
+        if (cmisVersion.equals(CmisVersion.CMIS_1_0))
         {
-        	if (typeQName.equals(ASPECTS_QNAME))
-        	{
-        		return true;
-        	}
+            if (typeQName.equals(ASPECTS_QNAME))
+            {
+                return true;
+            }
 
-        	AspectDefinition aspectDef = dictionaryService.getAspect(typeQName);
-        	if (aspectDef == null)
-        	{
-        		return false;
-        	}
+            AspectDefinition aspectDef = dictionaryService.getAspect(typeQName);
+            if (aspectDef == null)
+            {
+                return false;
+            }
 
-        	// Anything derived from the aspects here would at some point have to linked up with an invalid parent so exclude these aspects 
-        	// AND any that are derived from them.
-        	if (       dictionaryService.isSubClass(aspectDef.getName(), ContentModel.ASPECT_VERSIONABLE)
-        			|| dictionaryService.isSubClass(aspectDef.getName(), ContentModel.ASPECT_AUDITABLE)
-        			|| dictionaryService.isSubClass(aspectDef.getName(), ContentModel.ASPECT_REFERENCEABLE))
-        	{
-        		return false;
-        	}
-        	return true;
+            // Anything derived from the aspects here would at some point have to linked up with an invalid parent so exclude these aspects
+            // AND any that are derived from them.
+            if (dictionaryService.isSubClass(aspectDef.getName(), ContentModel.ASPECT_VERSIONABLE)
+                    || dictionaryService.isSubClass(aspectDef.getName(), ContentModel.ASPECT_AUDITABLE)
+                    || dictionaryService.isSubClass(aspectDef.getName(), ContentModel.ASPECT_REFERENCEABLE))
+            {
+                return false;
+            }
+            return true;
         }
         else
         {
-        	return false;
+            return false;
         }
     }
 
     /**
-     * Is an association valid in CMIS? It must be a non-child relationship and
-     * the source and target must both be valid CMIS types.
+     * Is an association valid in CMIS? It must be a non-child relationship and the source and target must both be valid CMIS types.
      * 
-     * @param associationQName QName
+     * @param associationQName
+     *            QName
      * @return boolean
      */
     public boolean isValidCmisRelationship(QName associationQName)
@@ -595,30 +600,29 @@ public class CMISMapping implements InitializingBean
         {
             return false;
         }
-        if(!isValidCmisRelationshipEndPoint(associationDefinition.getTargetClass().getName()))
+        if (!isValidCmisRelationshipEndPoint(associationDefinition.getTargetClass().getName()))
         {
             return false;
         }
-        if(!isValidCmisRelationshipEndPoint(associationDefinition.getSourceClass().getName()))
+        if (!isValidCmisRelationshipEndPoint(associationDefinition.getSourceClass().getName()))
         {
             return false;
         }
         return true;
     }
-    
+
     public boolean isValidCmisRelationshipEndPoint(QName typeQName)
     {
-        if(dictionaryService.getClass(typeQName).isAspect())
+        if (dictionaryService.getClass(typeQName).isAspect())
         {
             return true;
         }
-        
+
         if (typeQName.equals(FOLDER_QNAME))
         {
             return true;
         }
 
-        
         if (typeQName.equals(DOCUMENT_QNAME))
         {
             return true;
@@ -630,17 +634,18 @@ public class CMISMapping implements InitializingBean
         }
         return false;
     }
-    
+
     /**
      * Is this a valid CMIS item type?
      * 
-     * @param typeQName QName
+     * @param typeQName
+     *            QName
      * @return boolean
      */
     public boolean isValidCmisItem(QName typeQName)
     {
-    	if(isExcluded(typeQName))
-    	{
+        if (isExcluded(typeQName))
+        {
             return false;
         }
 
@@ -648,53 +653,50 @@ public class CMISMapping implements InitializingBean
         {
             return false;
         }
-        
-        if(typeQName.equals(ITEM_QNAME))
+
+        if (typeQName.equals(ITEM_QNAME))
         {
-        	return true;
+            return true;
         }
-        
-        if(typeQName.equals(ContentModel.TYPE_BASE))
+
+        if (typeQName.equals(ContentModel.TYPE_BASE))
         {
-        	return false;
+            return false;
         }
-        
+
         AspectDefinition aspectDef = dictionaryService.getAspect(typeQName);
         if (aspectDef != null)
         {
-        	// aspects are not items - this stops warning from getType
+            // aspects are not items - this stops warning from getType
             return false;
         }
-        
+
         TypeDefinition typeDef = dictionaryService.getType(typeQName);
         if (typeDef == null)
         {
-        	// type does not exist
+            // type does not exist
             return false;
         }
-        
+
         if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_BASE))
         {
-        	if(dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
-        	{
-        		return false;
-        	}
-        	if(dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
-        	{
-        		return false;
-        	}
-        	
-        	return true;
+            if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
+            {
+                return false;
+            }
+            if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+            {
+                return false;
+            }
+
+            return true;
         }
-        
+
         return false;
     }
 
-    
-    
     /**
-     * Given an Alfresco model type map it to the appropriate type. Maps
-     * cm:folder and cm:content to the CMIS definitions
+     * Given an Alfresco model type map it to the appropriate type. Maps cm:folder and cm:content to the CMIS definitions
      */
     public QName getCmisType(QName typeQName)
     {
@@ -717,7 +719,8 @@ public class CMISMapping implements InitializingBean
     /**
      * Given a CMIS model type map it to the appropriate Alfresco type.
      * 
-     * @param cmisTypeQName QName
+     * @param cmisTypeQName
+     *            QName
      * @return QName
      */
     public QName getAlfrescoClass(QName cmisTypeQName)
@@ -733,7 +736,8 @@ public class CMISMapping implements InitializingBean
     /**
      * Get the CMIS property type for a property
      * 
-     * @param datatype DataTypeDefinition
+     * @param datatype
+     *            DataTypeDefinition
      * @return PropertyType
      */
     public PropertyType getDataType(DataTypeDefinition datatype)
@@ -752,7 +756,8 @@ public class CMISMapping implements InitializingBean
     }
 
     /**
-     * @param propertyQName QName
+     * @param propertyQName
+     *            QName
      * @return String
      */
     public String getCmisPropertyId(QName propertyQName)
@@ -778,10 +783,12 @@ public class CMISMapping implements InitializingBean
             if (PermissionService.READ.equals(perm))
             {
                 answer.add(new Pair<String, Boolean>(CMIS_READ, false));
-            } else if (PermissionService.WRITE.equals(perm))
+            }
+            else if (PermissionService.WRITE.equals(perm))
             {
                 answer.add(new Pair<String, Boolean>(CMIS_WRITE, false));
-            } else if (PermissionService.ALL_PERMISSIONS.equals(perm))
+            }
+            else if (PermissionService.ALL_PERMISSIONS.equals(perm))
             {
                 answer.add(new Pair<String, Boolean>(CMIS_READ, false));
                 answer.add(new Pair<String, Boolean>(CMIS_WRITE, false));
@@ -804,30 +811,37 @@ public class CMISMapping implements InitializingBean
             {
                 answer.add(new Pair<String, Boolean>(CMIS_READ, false));
                 answer.add(new Pair<String, Boolean>(permission, isDirect));
-            } else if (PermissionService.WRITE.equals(permission))
+            }
+            else if (PermissionService.WRITE.equals(permission))
             {
                 answer.add(new Pair<String, Boolean>(CMIS_WRITE, false));
                 answer.add(new Pair<String, Boolean>(permission, isDirect));
-            } else if (PermissionService.ALL_PERMISSIONS.equals(permission))
+            }
+            else if (PermissionService.ALL_PERMISSIONS.equals(permission))
             {
                 answer.add(new Pair<String, Boolean>(CMIS_ALL, false));
                 answer.add(new Pair<String, Boolean>(permission, isDirect));
-            } else
+            }
+            else
             {
                 answer.add(new Pair<String, Boolean>(permission, isDirect));
             }
-        } else if (format == CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS)
+        }
+        else if (format == CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS)
         {
             if (PermissionService.READ.equals(permission))
             {
                 answer.add(new Pair<String, Boolean>(CMIS_READ, isDirect));
-            } else if (PermissionService.WRITE.equals(permission))
+            }
+            else if (PermissionService.WRITE.equals(permission))
             {
                 answer.add(new Pair<String, Boolean>(CMIS_WRITE, isDirect));
-            } else if (PermissionService.ALL_PERMISSIONS.equals(permission))
+            }
+            else if (PermissionService.ALL_PERMISSIONS.equals(permission))
             {
                 answer.add(new Pair<String, Boolean>(CMIS_ALL, isDirect));
-            } else
+            }
+            else
             {
                 // else nothing
             }
@@ -837,7 +851,8 @@ public class CMISMapping implements InitializingBean
     }
 
     /**
-     * @param permission String
+     * @param permission
+     *            String
      * @return permission to set
      */
     public String getSetPermission(String permission)
@@ -845,13 +860,16 @@ public class CMISMapping implements InitializingBean
         if (permission.equals(CMIS_READ))
         {
             return PermissionService.READ;
-        } else if (permission.equals(CMIS_WRITE))
+        }
+        else if (permission.equals(CMIS_WRITE))
         {
             return PermissionService.WRITE;
-        } else if (permission.equals(CMIS_ALL))
+        }
+        else if (permission.equals(CMIS_ALL))
         {
             return PermissionService.ALL_PERMISSIONS;
-        } else
+        }
+        else
         {
             return permission;
         }

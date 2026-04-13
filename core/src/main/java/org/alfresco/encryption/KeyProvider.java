@@ -37,12 +37,13 @@ public interface KeyProvider
      * Constant representing the keystore alias for keys to encrypt/decrypt SOLR transfer data
      */
     public static final String ALIAS_SOLR = "solr";
-    
+
     /**
      * Get an encryption key if available.
      * 
-     * @param keyAlias          the key alias
-     * @return                  the encryption key and a timestamp of when it was last changed
+     * @param keyAlias
+     *            the key alias
+     * @return the encryption key and a timestamp of when it was last changed
      */
     public Key getKey(String keyAlias);
 }

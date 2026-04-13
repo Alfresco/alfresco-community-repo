@@ -27,9 +27,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.Pair;
 
 /**
- * The fallback encryptor provides a fallback mechanism for decryption, first using the default
- * encryption keys and, if they fail (perhaps because they have been changed), falling back
- * to a backup set of keys.
+ * The fallback encryptor provides a fallback mechanism for decryption, first using the default encryption keys and, if they fail (perhaps because they have been changed), falling back to a backup set of keys.
  * 
  * Note that encryption will be performed only using the default encryption keys.
  * 
@@ -41,8 +39,7 @@ public class DefaultFallbackEncryptor implements FallbackEncryptor
     private Encryptor main;
 
     public DefaultFallbackEncryptor()
-    {
-    }
+    {}
 
     public DefaultFallbackEncryptor(Encryptor main, Encryptor fallback)
     {
@@ -50,7 +47,7 @@ public class DefaultFallbackEncryptor implements FallbackEncryptor
         this.main = main;
         this.fallback = fallback;
     }
-    
+
     public void setFallback(Encryptor fallback)
     {
         this.fallback = fallback;
@@ -88,14 +85,14 @@ public class DefaultFallbackEncryptor implements FallbackEncryptor
         {
             ret = main.decrypt(keyAlias, params, input);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             ret = fallback.decrypt(keyAlias, params, input);
         }
 
         return ret;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -111,14 +108,14 @@ public class DefaultFallbackEncryptor implements FallbackEncryptor
         {
             ret = main.decrypt(keyAlias, params, in);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             ret = fallback.decrypt(keyAlias, params, in);
         }
 
         return ret;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -146,7 +143,7 @@ public class DefaultFallbackEncryptor implements FallbackEncryptor
         {
             ret = main.decryptObject(keyAlias, params, input);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             ret = fallback.decryptObject(keyAlias, params, input);
         }
@@ -181,7 +178,7 @@ public class DefaultFallbackEncryptor implements FallbackEncryptor
         {
             ret = main.unsealObject(keyAlias, input);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             ret = fallback.unsealObject(keyAlias, input);
         }
@@ -202,7 +199,7 @@ public class DefaultFallbackEncryptor implements FallbackEncryptor
         {
             ret = main.decodeAlgorithmParameters(encoded);
         }
-        catch(AlfrescoRuntimeException e)
+        catch (AlfrescoRuntimeException e)
         {
             ret = fallback.decodeAlgorithmParameters(encoded);
         }

@@ -27,9 +27,10 @@ package org.alfresco.opencmis.dictionary;
 
 import java.util.List;
 
-import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.enums.PropertyType;
+
+import org.alfresco.service.namespace.QName;
 
 /**
  * Service to query the CMIS meta model
@@ -41,7 +42,8 @@ public interface CMISDictionaryService
     /**
      * Find type for type id
      * 
-     * @param typeId String
+     * @param typeId
+     *            String
      * @return TypeDefinitionWrapper
      */
     TypeDefinitionWrapper findType(String typeId);
@@ -49,11 +51,12 @@ public interface CMISDictionaryService
     List<TypeDefinitionWrapper> getChildren(String typeId);
 
     /**
-     * Find type for Alfresco class name. Optionally, constrain match to one of
-     * specified CMIS scopes
+     * Find type for Alfresco class name. Optionally, constrain match to one of specified CMIS scopes
      * 
-     * @param clazz QName
-     * @param matchingScopes BaseTypeId...
+     * @param clazz
+     *            QName
+     * @param matchingScopes
+     *            BaseTypeId...
      * @return TypeDefinitionWrapper
      */
     TypeDefinitionWrapper findTypeForClass(QName clazz, BaseTypeId... matchingScopes);
@@ -69,7 +72,8 @@ public interface CMISDictionaryService
     /**
      * Find a type by its query name
      * 
-     * @param queryName String
+     * @param queryName
+     *            String
      * @return TypeDefinitionWrapper
      */
     TypeDefinitionWrapper findTypeByQueryName(String queryName);
@@ -92,12 +96,13 @@ public interface CMISDictionaryService
     /**
      * Find data type
      * 
-     * @param dataType QName
+     * @param dataType
+     *            QName
      * @return PropertyType
      */
     PropertyType findDataType(QName dataType);
 
     QName findAlfrescoDataType(PropertyType propertyType);
-    
+
     boolean isExcluded(QName qname);
 }

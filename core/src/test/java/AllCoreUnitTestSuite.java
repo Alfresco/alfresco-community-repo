@@ -55,5 +55,5 @@ import org.junit.runners.Suite;
         org.alfresco.util.shard.ExplicitShardingPolicyTest.class,
         org.alfresco.util.transaction.SpringAwareUserTransactionTest.class
 })
-public class AllCoreUnitTestSuite {
-}
+public class AllCoreUnitTestSuite
+{}

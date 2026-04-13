@@ -20,8 +20,8 @@ package org.alfresco.util;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.io.ObjectInputStream.GetField;
+import java.io.Serializable;
 
 import org.alfresco.api.AlfrescoPublicApi;
 
@@ -31,67 +31,71 @@ import org.alfresco.api.AlfrescoPublicApi;
 @AlfrescoPublicApi
 public final class Pair<F, S> implements Serializable
 {
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static final Pair NULL_PAIR = new Pair(null, null);
-    
+
     @SuppressWarnings("unchecked")
     public static final <X, Y> Pair<X, Y> nullPair()
     {
         return NULL_PAIR;
     }
-    
+
     private static final long serialVersionUID = -7406248421185630612L;
 
     /**
      * The first member of the pair.
      */
     private F first;
-    
+
     /**
      * The second member of the pair.
      */
     private S second;
-    
+
     /**
      * Make a new one.
      * 
-     * @param first The first member.
-     * @param second The second member.
+     * @param first
+     *            The first member.
+     * @param second
+     *            The second member.
      */
     public Pair(F first, S second)
     {
         this.first = first;
         this.second = second;
     }
-    
+
     /**
      * Get the first member of the tuple.
+     * 
      * @return The first member.
      */
     public final F getFirst()
     {
         return first;
     }
-    
+
     /**
      * Get the second member of the tuple.
+     * 
      * @return The second member.
      */
     public final S getSecond()
     {
         return second;
     }
-    
+
     public final void setFirst(F first)
     {
         this.first = first;
     }
-    
+
     public final void setSecond(S second)
     {
         this.second = second;
     }
-    
+
     @Override
     public boolean equals(Object other)
     {
@@ -103,11 +107,11 @@ public final class Pair<F, S> implements Serializable
         {
             return false;
         }
-        Pair<?, ?> o = (Pair<?, ?>)other;
+        Pair<?, ?> o = (Pair<?, ?>) other;
         return EqualsHelper.nullSafeEquals(this.first, o.first) &&
-               EqualsHelper.nullSafeEquals(this.second, o.second);
+                EqualsHelper.nullSafeEquals(this.second, o.second);
     }
-    
+
     @Override
     public int hashCode()
     {

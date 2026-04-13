@@ -21,17 +21,15 @@ package org.alfresco.util.log;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 /**
- * A stand in for the org.apache.logging.log4j.ThreadContext class that avoids introducing runtime dependencies against the otherwise
- * optional log4j.
+ * A stand in for the org.apache.logging.log4j.ThreadContext class that avoids introducing runtime dependencies against the otherwise optional log4j.
  * 
  * @author dward
  */
 public class NDC
 {
     private static Log logger = LogFactory.getLog(NDC.class);
-    
+
     /** Log4J2 delegate for NDC */
     private static NDCDelegate ndcDelegate;
 

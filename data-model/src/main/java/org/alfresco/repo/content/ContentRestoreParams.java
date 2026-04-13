@@ -26,11 +26,8 @@
 
 package org.alfresco.repo.content;
 
-
 /**
- * Enumeration with values for archive-restore parameter keys.
- * Values of this enum should be used as keys when requesting for content restore from archive.
- * Subject to expand/change.
+ * Enumeration with values for archive-restore parameter keys. Values of this enum should be used as keys when requesting for content restore from archive. Subject to expand/change.
  *
  * @author mpichura
  */

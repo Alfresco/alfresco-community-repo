@@ -55,15 +55,18 @@ public interface CMISPropertyAccessor
     /**
      * Set the property value for a node
      * 
-     * @param nodeRef NodeRef
-     * @param value Serializable
+     * @param nodeRef
+     *            NodeRef
+     * @param value
+     *            Serializable
      */
     void setValue(NodeRef nodeRef, Serializable value);
 
     /**
      * Get the property value for a node or an association
      * 
-     * @param nodeInfo CMISNodeInfo
+     * @param nodeInfo
+     *            CMISNodeInfo
      * @return Serializable
      */
     Serializable getValue(CMISNodeInfo nodeInfo);

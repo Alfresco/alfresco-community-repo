@@ -97,7 +97,7 @@ public class ExplicitShardingPolicy
                 {
                     if (test % numNodes == nodeInstance - 1)
                     {
-                        if(shard % numShards == shardId)
+                        if (shard % numShards == shardId)
                         {
                             nodeInstances.add(nodeInstance);
                         }

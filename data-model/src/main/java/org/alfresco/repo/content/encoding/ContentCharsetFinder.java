@@ -45,43 +45,43 @@ public class ContentCharsetFinder
     private List<CharactersetFinder> charactersetFinders;
 
     /**
-     * Override the system default charset.  Where the characterset cannot be determined for
-     * a mimetype and input stream, this mimetype will be used.  The default is 'UTF-8'.
+     * Override the system default charset. Where the characterset cannot be determined for a mimetype and input stream, this mimetype will be used. The default is 'UTF-8'.
      * 
-     * @param defaultCharset            the default characterset
+     * @param defaultCharset
+     *            the default characterset
      */
     public void setDefaultCharset(String defaultCharset)
     {
         this.defaultCharset = Charset.forName(defaultCharset);
     }
-    
+
     /**
-     * Set the mimetype service that will help determine if a particular mimetype can be
-     * treated as encoded text or not.
+     * Set the mimetype service that will help determine if a particular mimetype can be treated as encoded text or not.
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
     }
-    
+
     /**
      * Set the list of characterset finder to execute, in order, for text based content.
-     * @param charactersetFinders       a list of finders
+     * 
+     * @param charactersetFinders
+     *            a list of finders
      */
     public void setCharactersetFinders(List<CharactersetFinder> charactersetFinders)
     {
         this.charactersetFinders = charactersetFinders;
     }
-    
+
     /**
-     * Gets the characterset from the stream, if the mimetype is text and the text
-     * has enough information to give the encoding away.  Otherwise, the default
-     * is returned.
+     * Gets the characterset from the stream, if the mimetype is text and the text has enough information to give the encoding away. Otherwise, the default is returned.
      * 
-     * @param is                a stream that will not be affected by the call, but must
-     *                          support marking
-     * @param mimetype          the mimetype of the stream data - <tt>null</tt> if not known
-     * @return                  returns a characterset and never <tt>null</tt>
+     * @param is
+     *            a stream that will not be affected by the call, but must support marking
+     * @param mimetype
+     *            the mimetype of the stream data - <tt>null</tt> if not known
+     * @return returns a characterset and never <tt>null</tt>
      */
     public Charset getCharset(InputStream is, String mimetype)
     {

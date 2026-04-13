@@ -59,7 +59,7 @@ public class CustomModelDefinitionImpl implements CustomModelDefinition
     private final Collection<AspectDefinition> aspectDefinitions;
     private final Collection<ConstraintDefinition> modelDefinedConstraints;
 
-    /* package */CustomModelDefinitionImpl(CompiledModel compiledModel, boolean active, MessageLookup messageLookup)
+    /* package */ CustomModelDefinitionImpl(CompiledModel compiledModel, boolean active, MessageLookup messageLookup)
     {
         this.m2ModelDefinition = compiledModel.getModelDefinition();
         this.active = active;
@@ -71,11 +71,10 @@ public class CustomModelDefinitionImpl implements CustomModelDefinition
     }
 
     /**
-     * Removes the inline constraints (i.e. defined within the property) from
-     * all constraints. The result will be constraints that have been defined
-     * within the model (Top level) itself.
+     * Removes the inline constraints (i.e. defined within the property) from all constraints. The result will be constraints that have been defined within the model (Top level) itself.
      *
-     * @param compiledModel the compiled model
+     * @param compiledModel
+     *            the compiled model
      * @return list of model defined constraints
      */
     public static List<ConstraintDefinition> removeInlineConstraints(CompiledModel compiledModel)
@@ -83,7 +82,7 @@ public class CustomModelDefinitionImpl implements CustomModelDefinition
         List<ConstraintDefinition> modelConstraints = new ArrayList<>();
 
         Set<QName> propertyConstraints = new HashSet<>();
-        for(PropertyDefinition propDef : compiledModel.getProperties())
+        for (PropertyDefinition propDef : compiledModel.getProperties())
         {
             if (propDef.getConstraints().size() > 0)
             {

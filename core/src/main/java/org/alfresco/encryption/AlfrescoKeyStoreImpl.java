@@ -39,7 +39,6 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -50,26 +49,24 @@ import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
-import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.alfresco.encryption.EncryptionKeysRegistry.KEY_STATUS;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.encryption.EncryptionKeysRegistry.KEY_STATUS;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * This wraps a Java Keystore and caches the encryption keys. It manages the loading and caching of the encryption keys
- * and their registration with and validation against the encryption key registry.
+ * This wraps a Java Keystore and caches the encryption keys. It manages the loading and caching of the encryption keys and their registration with and validation against the encryption key registry.
  * 
  * @since 4.0
  *
@@ -77,7 +74,7 @@ import org.apache.commons.logging.LogFactory;
 public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 {
     private static final Log logger = LogFactory.getLog(AlfrescoKeyStoreImpl.class);
-    
+
     protected KeyStoreParameters keyStoreParameters;
     protected KeyStoreParameters backupKeyStoreParameters;
     protected KeyResourceLoader keyResourceLoader;
@@ -109,7 +106,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
         safeInit();
     }
-    
+
     public void init()
     {
         writeLock.lock();
@@ -122,7 +119,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             writeLock.unlock();
         }
     }
-    
+
     public void setEncryptionKeysRegistry(
             EncryptionKeysRegistry encryptionKeysRegistry)
     {
@@ -169,7 +166,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
     {
         return keyResourceLoader;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -178,7 +175,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
     {
         return keyStoreParameters.getName();
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -196,7 +193,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
     {
         return keyStoreExists(getKeyStoreParameters().getLocation());
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -220,7 +217,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             writeLock.unlock();
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -229,7 +226,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
     {
         return new HashSet<String>(keys.getKeyAliases());
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -239,7 +236,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         writeLock.lock();
         try
         {
-            for(String keyAlias : keys.getKeyAliases())
+            for (String keyAlias : keys.getKeyAliases())
             {
                 backupKeys.setKey(keyAlias, keys.getKey(keyAlias));
             }
@@ -250,7 +247,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             writeLock.unlock();
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -259,7 +256,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
     {
         createKeyStore(keyStoreParameters, keys);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -276,7 +273,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             readLock.unlock();
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -294,7 +291,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             readLock.unlock();
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -311,7 +308,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             readLock.unlock();
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -327,24 +324,24 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
             logger.debug("Initializing key managers");
             KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            
+
             String keyStorePassword = keyInfoManager.getKeyStorePassword();
-            kmfactory.init(ks, keyStorePassword != null ? keyStorePassword.toCharArray(): null);
-            return kmfactory.getKeyManagers(); 
+            kmfactory.init(ks, keyStorePassword != null ? keyStorePassword.toCharArray() : null);
+            return kmfactory.getKeyManagers();
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Unable to create key manager", e);
         }
         finally
         {
-            if(keyInfoManager != null)
+            if (keyInfoManager != null)
             {
                 keyInfoManager.clear();
             }
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -364,13 +361,13 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             tmfactory.init(ks);
             return tmfactory.getTrustManagers();
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Unable to create key manager", e);
         }
         finally
         {
-            if(keyInfoManager != null)
+            if (keyInfoManager != null)
             {
                 keyInfoManager.clear();
             }
@@ -379,18 +376,18 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
     protected InputStream getKeyStoreStream(String location) throws FileNotFoundException
     {
-        if(location == null)
+        if (location == null)
         {
             return null;
         }
         return keyResourceLoader.getKeyStore(location);
     }
-    
+
     protected OutputStream getKeyStoreOutStream() throws FileNotFoundException
     {
         return new FileOutputStream(getKeyStoreParameters().getLocation());
     }
-    
+
     protected KeyInfoManager getKeyInfoManager(KeyStoreParameters keyStoreParameters) throws IOException
     {
         return new KeyInfoManager(keyStoreParameters, keyResourceLoader);
@@ -405,12 +402,12 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
     }
 
     protected KeyMap cacheKeys(KeyStore ks, KeyInfoManager keyInfoManager)
-    throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException
+            throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException
     {
         KeyMap keys = new KeyMap();
 
         // load and cache the keys
-        for(Entry<String, KeyInformation> keyEntry : keyInfoManager.getKeyInfo().entrySet())
+        for (Entry<String, KeyInformation> keyEntry : keyInfoManager.getKeyInfo().entrySet())
         {
             String keyAlias = keyEntry.getKey();
 
@@ -422,7 +419,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
             // Attempt to get the key
             key = ks.getKey(keyAlias, passwordStr == null ? null : passwordStr.toCharArray());
-            if(key != null)
+            if (key != null)
             {
                 keys.setKey(keyAlias, key);
             }
@@ -431,25 +428,25 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             {
                 logger.debug(
                         "Retrieved key from keystore: \n" +
-                        "   Location: " + getKeyStoreParameters().getLocation() + "\n" +
-                        "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
-                        "   Type:     " + getKeyStoreParameters().getType() + "\n" +
-                        "   Alias:    " + keyAlias + "\n" +
-                        "   Password?: " + (passwordStr != null));
+                                "   Location: " + getKeyStoreParameters().getLocation() + "\n" +
+                                "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
+                                "   Type:     " + getKeyStoreParameters().getType() + "\n" +
+                                "   Alias:    " + keyAlias + "\n" +
+                                "   Password?: " + (passwordStr != null));
 
                 Certificate[] certs = ks.getCertificateChain(keyAlias);
-                if(certs != null)
+                if (certs != null)
                 {
                     logger.debug("Certificate chain '" + keyAlias + "':");
-                    for(int c = 0; c < certs.length; c++)
+                    for (int c = 0; c < certs.length; c++)
                     {
-                        if(certs[c] instanceof X509Certificate)
+                        if (certs[c] instanceof X509Certificate)
                         {
-                            X509Certificate cert = (X509Certificate)certs[c];
+                            X509Certificate cert = (X509Certificate) certs[c];
                             logger.debug(" Certificate " + (c + 1) + ":");
                             logger.debug("  Subject DN: " + cert.getSubjectDN());
                             logger.debug("  Signature Algorithm: " + cert.getSigAlgName());
-                            logger.debug("  Valid from: " + cert.getNotBefore() );
+                            logger.debug("  Valid from: " + cert.getNotBefore());
                             logger.debug("  Valid until: " + cert.getNotAfter());
                             logger.debug("  Issuer: " + cert.getIssuerDN());
                         }
@@ -467,7 +464,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
         try
         {
-            if(provider == null || provider.equals(""))
+            if (provider == null || provider.equals(""))
             {
                 ks = KeyStore.getInstance(type);
             }
@@ -480,7 +477,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
             return ks;
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Unable to intialise key store", e);
         }
@@ -506,7 +503,12 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                 }
                 finally
                 {
-                    try {is.close(); } catch (Throwable e) {}
+                    try
+                    {
+                        is.close();
+                    }
+                    catch (Throwable e)
+                    {}
                 }
             }
             else
@@ -517,7 +519,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
             return ks;
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Unable to load key store: " + keyStoreParameters.getLocation(), e);
         }
@@ -535,7 +537,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         PropertyCheck.mandatory(this, "location", getKeyStoreParameters().getLocation());
 
         // Make sure we choose the default type, if required
-        if(getKeyStoreParameters().getType() == null)
+        if (getKeyStoreParameters().getType() == null)
         {
             keyStoreParameters.setType(KeyStore.getDefaultType());
         }
@@ -558,7 +560,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         KeyInfoManager keyInfoManager = null;
         KeyStore ks = null;
 
-        if(keyStoreParameters == null)
+        if (keyStoreParameters == null)
         {
             // empty key map
             return new KeyMap();
@@ -574,14 +576,14 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         {
             throw new AlfrescoRuntimeException(
                     "Failed to initialize keystore: \n" +
-                    "   Location: " + getKeyStoreParameters().getLocation() + "\n" +
-                    "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
-                    "   Type:     " + getKeyStoreParameters().getType(),
+                            "   Location: " + getKeyStoreParameters().getLocation() + "\n" +
+                            "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
+                            "   Type:     " + getKeyStoreParameters().getType(),
                     e);
         }
         finally
         {
-            if(keyInfoManager != null)
+            if (keyInfoManager != null)
             {
                 keyInfoManager.clearKeyStorePassword();
             }
@@ -594,35 +596,35 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                 }
                 catch (Throwable e)
                 {
-                    
+
                 }
             }
         }
-        
+
         try
         {
             // cache the keys from the keystore
             KeyMap keys = cacheKeys(ks, keyInfoManager);
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Initialized keystore: \n" +
-                        "   Location: " + getKeyStoreParameters().getLocation() + "\n" +
-                        "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
-                        "   Type:     " + getKeyStoreParameters().getType() + "\n" +
-                        keys.numKeys() + " keys found");
+                                "   Location: " + getKeyStoreParameters().getLocation() + "\n" +
+                                "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
+                                "   Type:     " + getKeyStoreParameters().getType() + "\n" +
+                                keys.numKeys() + " keys found");
             }
 
             return keys;
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException(
                     "Failed to retrieve keys from keystore: \n" +
-                    "   Location: " + getKeyStoreParameters().getLocation() + "\n" +
-                    "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
-                    "   Type:     " + getKeyStoreParameters().getType() + "\n",
+                            "   Location: " + getKeyStoreParameters().getLocation() + "\n" +
+                            "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
+                            "   Type:     " + getKeyStoreParameters().getType() + "\n",
                     e);
         }
         finally
@@ -631,7 +633,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             keyInfoManager.clear();
         }
     }
-    
+
     protected void createKey(String keyAlias)
     {
         KeyInfoManager keyInfoManager = null;
@@ -655,49 +657,49 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                     "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
                     "   Type:     " + getKeyStoreParameters().getType());
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException(
                     "Failed to create key: " + keyAlias + "\n in key store: \n" +
-                    "   Location: " + getKeyStoreParameters().getLocation() + "\n" +
-                    "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
-                    "   Type:     " + getKeyStoreParameters().getType(),
+                            "   Location: " + getKeyStoreParameters().getLocation() + "\n" +
+                            "   Provider: " + getKeyStoreParameters().getProvider() + "\n" +
+                            "   Type:     " + getKeyStoreParameters().getType(),
                     e);
         }
         finally
         {
-            if(keyInfoManager != null)
+            if (keyInfoManager != null)
             {
                 keyInfoManager.clear();
             }
         }
     }
-    
+
     protected void createKeyStore(KeyStoreParameters keyStoreParameters, KeyMap keys)
     {
         KeyInfoManager keyInfoManager = null;
 
         try
         {
-            if(!keyStoreExists(keyStoreParameters.getLocation()))
+            if (!keyStoreExists(keyStoreParameters.getLocation()))
             {
                 keyInfoManager = getKeyInfoManager(keyStoreParameters);
                 KeyStore ks = initialiseKeyStore(keyStoreParameters.getType(), keyStoreParameters.getProvider());
-    
+
                 String keyStorePassword = keyInfoManager.getKeyStorePassword();
-                if(keyStorePassword == null)
+                if (keyStorePassword == null)
                 {
                     throw new AlfrescoRuntimeException("Key store password is null for keystore at location "
                             + getKeyStoreParameters().getLocation()
                             + ". Either specify it as a JVM property or in key store meta data location.");
                 }
 
-                for(String keyAlias : keys.getKeyAliases())
+                for (String keyAlias : keys.getKeyAliases())
                 {
                     KeyInformation keyInfo = keyInfoManager.getKeyInformation(keyAlias);
 
                     Key key = keys.getKey(keyAlias);
-                    if(key == null)
+                    if (key == null)
                     {
                         logger.warn("Key with alias " + keyAlias + " is null when creating keystore at location " + keyStoreParameters.getLocation());
                     }
@@ -707,15 +709,15 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                     }
                 }
 
-//                try
-//                {
-//                    throw new Exception("Keystore creation: " + );
-//                }
-//                catch(Throwable e)
-//                {
-//                    logger.debug(e.getMessage());
-//                    e.printStackTrace();
-//                }
+                // try
+                // {
+                // throw new Exception("Keystore creation: " + );
+                // }
+                // catch(Throwable e)
+                // {
+                // logger.debug(e.getMessage());
+                // e.printStackTrace();
+                // }
 
                 OutputStream keyStoreOutStream = getKeyStoreOutStream();
                 ks.store(keyStoreOutStream, keyStorePassword.toCharArray());
@@ -727,31 +729,29 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                 logger.warn("Can't create key store " + keyStoreParameters.getLocation() + ", already exists.");
             }
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException(
                     "Failed to create keystore: \n" +
-                    "   Location: " + keyStoreParameters.getLocation() + "\n" +
-                    "   Provider: " + keyStoreParameters.getProvider() + "\n" +
-                    "   Type:     " + keyStoreParameters.getType(),
+                            "   Location: " + keyStoreParameters.getLocation() + "\n" +
+                            "   Provider: " + keyStoreParameters.getProvider() + "\n" +
+                            "   Type:     " + keyStoreParameters.getType(),
                     e);
         }
         finally
         {
-            if(keyInfoManager != null)
+            if (keyInfoManager != null)
             {
                 keyInfoManager.clear();
             }
         }
     }
 
-    /*
-     * For testing
-     */
-//    void createBackup()
-//    {
-//        createKeyStore(backupKeyStoreParameters, backupKeys);
-//    }
+    /* For testing */
+    // void createBackup()
+    // {
+    // createKeyStore(backupKeyStoreParameters, backupKeys);
+    // }
 
     private byte[] generateKeyData()
     {
@@ -762,7 +762,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             random.nextBytes(bytes);
             return bytes;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             throw new RuntimeException("Unable to generate secret key", e);
         }
@@ -777,9 +777,9 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
         byte[] keyData = keyInformation.getKeyData();
 
-        if(keyData == null)
+        if (keyData == null)
         {
-            if(keyInformation.getKeyAlgorithm().equals("DESede"))
+            if (keyInformation.getKeyAlgorithm().equals("DESede"))
             {
                 // no key data provided, generate key data automatically
                 keyData = generateKeyData();
@@ -795,9 +795,9 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         SecretKey secretKey = kf.generateSecret(keySpec);
         return secretKey;
     }
-    
+
     void importPrivateKey(String keyAlias, String keyPassword, InputStream fl, InputStream certstream)
-    throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, CertificateException, KeyStoreException
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, CertificateException, KeyStoreException
     {
         KeyInfoManager keyInfoManager = null;
 
@@ -814,23 +814,23 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             fl.close();
             PKCS8EncodedKeySpec keysp = new PKCS8EncodedKeySpec(keyBytes);
             PrivateKey key = kf.generatePrivate(keysp);
-    
+
             // loading CertificateChain
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
-    
+
             @SuppressWarnings("rawtypes")
-            Collection c = cf.generateCertificates(certstream) ;
+            Collection c = cf.generateCertificates(certstream);
             Certificate[] certs = new Certificate[c.toArray().length];
-    
-            certs = (Certificate[])c.toArray(new Certificate[0]);
-    
+
+            certs = (Certificate[]) c.toArray(new Certificate[0]);
+
             // storing keystore
             ks.setKeyEntry(keyAlias, key, keyPassword.toCharArray(), certs);
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Key and certificate stored.");
-                logger.debug("Alias:"+ keyAlias);
+                logger.debug("Alias:" + keyAlias);
             }
             OutputStream keyStoreOutStream = getKeyStoreOutStream();
             ks.store(keyStoreOutStream, keyPassword.toCharArray());
@@ -839,7 +839,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         }
         finally
         {
-            if(keyInfoManager != null)
+            if (keyInfoManager != null)
             {
                 keyInfoManager.clear();
             }
@@ -847,12 +847,12 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             writeLock.unlock();
         }
     }
-    
+
     public boolean backupExists()
     {
         return keyStoreExists(getBackupKeyStoreParameters().getLocation());
     }
-    
+
     protected boolean keyStoreExists(String location)
     {
         try
@@ -864,30 +864,29 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             }
             else
             {
-                try { is.close(); } catch (Throwable e) {}
+                try
+                {
+                    is.close();
+                }
+                catch (Throwable e)
+                {}
                 return true;
             }
         }
-        catch(FileNotFoundException e)
+        catch (FileNotFoundException e)
         {
             return false;
         }
     }
 
-    /*
-     * Validates the keystore keys against the key registry, throwing exceptions if the keys have been unintentionally changed.
+    /* Validates the keystore keys against the key registry, throwing exceptions if the keys have been unintentionally changed.
      * 
      * For each key to validate:
      * 
-     * (i) no main key, no backup key, the key is registered for the main keystore -> error, must re-instate the keystore
-     * (ii) no main key, no backup key, the key is not registered -> create the main key store and register the key
-     * (iii) main key exists but is not registered -> register the key
-     * (iv) main key exists, no backup key, the key is registered -> check that the key has not changed - if it has, throw an exception
-     * (v) main key exists, backup key exists, the key is registered -> check in the registry that the backup key has not changed and then re-register main key
-     */
+     * (i) no main key, no backup key, the key is registered for the main keystore -> error, must re-instate the keystore (ii) no main key, no backup key, the key is not registered -> create the main key store and register the key (iii) main key exists but is not registered -> register the key (iv) main key exists, no backup key, the key is registered -> check that the key has not changed - if it has, throw an exception (v) main key exists, backup key exists, the key is registered -> check in the registry that the backup key has not changed and then re-register main key */
     protected void validateKeys(KeyMap keys, KeyMap backupKeys) throws InvalidKeystoreException, MissingKeyException
     {
-        if(!validateKeyChanges)
+        if (!validateKeyChanges)
         {
             return;
         }
@@ -896,13 +895,13 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         try
         {
             // check for the existence of a key store first
-            for(String keyAlias : keysToValidate)
+            for (String keyAlias : keysToValidate)
             {
-                if(keys.getKey(keyAlias) == null)
+                if (keys.getKey(keyAlias) == null)
                 {
-                    if(backupKeys.getKey(keyAlias) == null)
+                    if (backupKeys.getKey(keyAlias) == null)
                     {
-                        if(encryptionKeysRegistry.isKeyRegistered(keyAlias))
+                        if (encryptionKeysRegistry.isKeyRegistered(keyAlias))
                         {
                             // The key is registered and neither key nor backup key exist -> throw
                             // an exception indicating that the key is missing and the keystore should
@@ -918,21 +917,21 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                 }
                 else
                 {
-                    if(!encryptionKeysRegistry.isKeyRegistered(keyAlias))
+                    if (!encryptionKeysRegistry.isKeyRegistered(keyAlias))
                     {
                         // The key is not registered, so register it
                         encryptionKeysRegistry.registerKey(keyAlias, keys.getKey(keyAlias));
                     }
-                    else if(backupKeys.getKey(keyAlias) == null && encryptionKeysRegistry.checkKey(keyAlias, keys.getKey(keyAlias)) == KEY_STATUS.CHANGED)
+                    else if (backupKeys.getKey(keyAlias) == null && encryptionKeysRegistry.checkKey(keyAlias, keys.getKey(keyAlias)) == KEY_STATUS.CHANGED)
                     {
                         // A key has been changed, indicating that the keystore has been un-intentionally changed.
                         // Note: this will halt the application bootstrap.
                         throw new InvalidKeystoreException("The key with alias " + keyAlias + " has been changed, re-instate the previous keystore");
                     }
-                    else if(backupKeys.getKey(keyAlias) != null && encryptionKeysRegistry.isKeyRegistered(keyAlias))
+                    else if (backupKeys.getKey(keyAlias) != null && encryptionKeysRegistry.isKeyRegistered(keyAlias))
                     {
                         // Both key and backup key exist and the key is registered.
-                        if(encryptionKeysRegistry.checkKey(keyAlias, backupKeys.getKey(keyAlias)) == KEY_STATUS.OK)
+                        if (encryptionKeysRegistry.checkKey(keyAlias, backupKeys.getKey(keyAlias)) == KEY_STATUS.OK)
                         {
                             // The registered key is the backup key so lets re-register the key in the main key store.
                             // Unregister the existing (now backup) key and re-register the main key.
@@ -948,7 +947,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             writeLock.unlock();
         }
     }
-    
+
     public static class KeyInformation
     {
         protected String alias;
@@ -969,7 +968,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         {
             return alias;
         }
-        
+
         public byte[] getKeyData()
         {
             return keyData;
@@ -986,10 +985,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         }
     }
 
-    /*
-     * Caches key meta data information such as password, seed.
-     *
-     */
+    /* Caches key meta data information such as password, seed. */
     public static class KeyInfoManager
     {
         private KeyResourceLoader keyResourceLoader;
@@ -1007,7 +1003,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         {
             this.keyResourceLoader = keyResourceLoader;
             keyInfo = new HashMap<String, KeyInformation>(2);
-            for(Map.Entry<String, String> password : passwords.entrySet())
+            for (Map.Entry<String, String> password : passwords.entrySet())
             {
                 keyInfo.put(password.getKey(), new KeyInformation(password.getKey(), null, password.getValue(), null));
             }
@@ -1030,20 +1026,20 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         /**
          * Set the map of key meta data (including passwords to access the keystore).
          * <p/>
-         * Where required, <tt>null</tt> values must be inserted into the map to indicate the presence
-         * of a key that is not protected by a password.  They entry for {@link #KEY_KEYSTORE_PASSWORD}
-         * is required if the keystore is password protected.
+         * Where required, <tt>null</tt> values must be inserted into the map to indicate the presence of a key that is not protected by a password. They entry for {@link #KEY_KEYSTORE_PASSWORD} is required if the keystore is password protected.
          *
          * WARNING. Storing passwords (keyMetaDataFileLocation) on the file system is not following best security practices.
          *
-         * <p/>Loading of keys info from system (JVM) properties takes precedence over metadata file.
-         * <p/>Set the unique ID of the keystore and remove the metadata file location property to use JVM properties lookup instead. The property lookup format is the following:
+         * <p/>
+         * Loading of keys info from system (JVM) properties takes precedence over metadata file.
+         * <p/>
+         * Set the unique ID of the keystore and remove the metadata file location property to use JVM properties lookup instead. The property lookup format is the following:
          * <ul>
-         *     <li>[keystore-id].password - keystore password</li>
-         *     <li>[keystore-id].aliases - comma separated list of aliases for the keys in the keystore</li>
-         *     <li>[keystore-id].[alias].keyData - key data bytes in base64</li>
-         *     <li>[keystore-id].[alias].algorithm - key algorithm</li>
-         *     <li>[keystore-id].[alias].password - key password</li>
+         * <li>[keystore-id].password - keystore password</li>
+         * <li>[keystore-id].aliases - comma separated list of aliases for the keys in the keystore</li>
+         * <li>[keystore-id].[alias].keyData - key data bytes in base64</li>
+         * <li>[keystore-id].[alias].algorithm - key algorithm</li>
+         * <li>[keystore-id].[alias].password - key password</li>
          * </ul>
          *
          */
@@ -1064,7 +1060,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                 else
                 {
                     StringTokenizer st = new StringTokenizer(aliases, ",");
-                    while(st.hasMoreTokens())
+                    while (st.hasMoreTokens())
                     {
                         String keyAlias = st.nextToken();
                         keyInfo.put(keyAlias, loadKeyInformation(jvmProperties, keyAlias, keyStoreParameters.getId() + "."));
@@ -1078,10 +1074,10 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                         " Please refer to documentation and use JVM properties instead");
 
                 keyProps = keyResourceLoader.loadKeyMetaData(keyStoreParameters.getKeyMetaDataFileLocation());
-                if(keyProps != null)
+                if (keyProps != null)
                 {
                     String aliases = keyProps.getProperty("aliases");
-                    if(aliases == null)
+                    if (aliases == null)
                     {
                         throw new AlfrescoRuntimeException("Passwords file must contain an aliases key");
                     }
@@ -1089,7 +1085,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                     this.keyStorePassword = keyProps.getProperty(KEY_KEYSTORE_PASSWORD);
 
                     StringTokenizer st = new StringTokenizer(aliases, ",");
-                    while(st.hasMoreTokens())
+                    while (st.hasMoreTokens())
                     {
                         String keyAlias = st.nextToken();
                         keyInfo.put(keyAlias, loadKeyInformation(keyProps, keyAlias, ""));
@@ -1098,15 +1094,15 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                 else
                 {
                     // TODO
-                    //throw new FileNotFoundException("Cannot find key metadata file " + getKeyMetaDataFileLocation());
+                    // throw new FileNotFoundException("Cannot find key metadata file " + getKeyMetaDataFileLocation());
                 }
             }
         }
-        
+
         public void clear()
         {
             this.keyStorePassword = null;
-            if(this.keyProps != null)
+            if (this.keyProps != null)
             {
                 this.keyProps.clear();
             }
@@ -1124,7 +1120,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             String keyAlgorithm = keyProps.getProperty(prefix + keyAlias + ".algorithm");
 
             byte[] keyDataBytes = null;
-            if(keyData != null && !keyData.equals(""))
+            if (keyData != null && !keyData.equals(""))
             {
                 keyDataBytes = Base64.decodeBase64(keyData);
             }
@@ -1136,7 +1132,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         {
             return keyStorePassword;
         }
-        
+
         public void clearKeyStorePassword()
         {
             this.keyStorePassword = null;

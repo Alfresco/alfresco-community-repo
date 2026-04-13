@@ -27,19 +27,6 @@ package org.alfresco.repo.search.adaptor;
 
 public enum AnalysisMode
 {
-    DEFAULT
-    ,
-    TOKENISE
-    ,
-    IDENTIFIER
-    ,
-    FUZZY
-    ,
-    PREFIX
-    , 
-    WILD
-    ,
-    LIKE
-    ;
+    DEFAULT, TOKENISE, IDENTIFIER, FUZZY, PREFIX, WILD, LIKE;
 
 }

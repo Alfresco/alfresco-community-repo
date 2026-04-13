@@ -18,7 +18,6 @@
  */
 package org.alfresco.util.transaction;
 
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -31,8 +30,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -42,44 +39,39 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.GUID;
+
 /**
- * Helper class to manage transaction synchronization.  This provides helpers to
- * ensure that the necessary <code>TransactionSynchronization</code> instances
- * are registered on behalf of the application code.
+ * Helper class to manage transaction synchronization. This provides helpers to ensure that the necessary <code>TransactionSynchronization</code> instances are registered on behalf of the application code.
  * 
  * @author mrogers
  */
 public abstract class TransactionSupportUtil
 {
     private static Log logger = LogFactory.getLog(TransactionSupportUtil.class);
-    
+
     private static final int SESSION_SYNCHRONIZATION_ORDER = 800;
     /** resource key to store the transaction synchronizer instance */
     private static final String RESOURCE_KEY_TXN_SYNCH = "AlfrescoTransactionSupport.txnSynch";
     /** resource key to store the transaction id, it needs to live even if the synchronization was cleared */
     private static final String RESOURCE_KEY_TXN_ID = "AlfrescoTransactionSupport.txnId";
     /**
-     *  <p>
-     *      As in Spring 5 the synchronisations are cleared after the transaction is committed or rolled back,
-     *      it is required to manage the txn resources in a separate thread local.
-     *      This is required to be able to use resources by afterCommit listeners.
-     *  </p>
-     *  <p>
-     *      If the transaction is suspended the resources are saved and restored afterwards.
-     *      See {@link TransactionSynchronizationImpl#suspend()} and {@link TransactionSynchronizationImpl#resume()}
-     *  </p>
+     * <p>
+     * As in Spring 5 the synchronisations are cleared after the transaction is committed or rolled back, it is required to manage the txn resources in a separate thread local. This is required to be able to use resources by afterCommit listeners.
+     * </p>
+     * <p>
+     * If the transaction is suspended the resources are saved and restored afterwards. See {@link TransactionSynchronizationImpl#suspend()} and {@link TransactionSynchronizationImpl#resume()}
+     * </p>
      */
-    private static final ThreadLocal<ResourcesHolder> txnResources =
-            ThreadLocal.withInitial(() -> new ResourcesHolder(new HashMap<>(3)));
+    private static final ThreadLocal<ResourcesHolder> txnResources = ThreadLocal.withInitial(() -> new ResourcesHolder(new HashMap<>(3)));
 
     /**
      * @return Returns the system time when the transaction started, or -1 if there is no current transaction.
      */
     public static long getTransactionStartTime()
     {
-        /*
-         * This method can be called outside of a transaction, so we can go direct to the synchronizations.
-         */
+        /* This method can be called outside of a transaction, so we can go direct to the synchronizations. */
         if (TransactionSynchronizationManager.isSynchronizationActive())
         {
             // need to lazily register synchronizations
@@ -87,34 +79,31 @@ public abstract class TransactionSupportUtil
         }
         else
         {
-            return -1;   // not in a transaction
+            return -1; // not in a transaction
         }
     }
-    
+
     /**
-     * Get a unique identifier associated with each transaction of each thread.  Null is returned if
-     * no transaction is currently active.
+     * Get a unique identifier associated with each transaction of each thread. Null is returned if no transaction is currently active.
      * 
      * @return Returns the transaction ID, or null if no transaction is present
      */
     public static String getTransactionId()
     {
-        /*
-         * Go direct to the synchronizations as we don't want to register a resource if one doesn't exist.
-         * This method is heavily used, so the simple Map lookup on the ThreadLocal is the fastest.
-         */
+        /* Go direct to the synchronizations as we don't want to register a resource if one doesn't exist. This method is heavily used, so the simple Map lookup on the ThreadLocal is the fastest. */
         return getResource(RESOURCE_KEY_TXN_ID);
     }
-    
+
     public static boolean isActualTransactionActive()
     {
         return TransactionSynchronizationManager.isActualTransactionActive();
     }
-    
+
     /**
      * Gets a resource associated with the current transaction
-     *  
-     * @param key the thread resource map key
+     * 
+     * @param key
+     *            the thread resource map key
      * @return Returns a thread resource of null if not present
      */
     @SuppressWarnings("unchecked")
@@ -139,8 +128,7 @@ public abstract class TransactionSupportUtil
     }
 
     /**
-     * Registers new transaction synchronization instance in {@link TransactionSynchronizationManager} and
-     * creates necessary resources, see {@link #txnResources}
+     * Registers new transaction synchronization instance in {@link TransactionSynchronizationManager} and creates necessary resources, see {@link #txnResources}
      * 
      * @return Returns new synchronization implementation
      */
@@ -205,8 +193,7 @@ public abstract class TransactionSupportUtil
     }
 
     /**
-     * Cleans up the resource holder if it is empty. This is required when transaction was suspended
-     * but none of application transactions were started before it was resumed.
+     * Cleans up the resource holder if it is empty. This is required when transaction was suspended but none of application transactions were started before it was resumed.
      */
     private static void resumeSynchronization()
     {
@@ -243,8 +230,10 @@ public abstract class TransactionSupportUtil
      * <p>
      * All necessary synchronization instances will be registered automatically, if required.
      * 
-     * @param key Object
-     * @param resource Object
+     * @param key
+     *            Object
+     * @param resource
+     *            Object
      */
     public static void bindResource(Object key, Object resource)
     {
@@ -263,10 +252,12 @@ public abstract class TransactionSupportUtil
                     "   resource: " + resource);
         }
     }
-    
+
     /**
      * Unbinds a resource from the current transaction, which must be active.
-     * @param key Object
+     * 
+     * @param key
+     *            Object
      */
     public static void unbindResource(Object key)
     {
@@ -278,15 +269,17 @@ public abstract class TransactionSupportUtil
                     "   key: " + key);
         }
     }
-    
+
     /**
-     * Bind listener to the specified priority.   Duplicate bindings
+     * Bind listener to the specified priority. Duplicate bindings
      * 
-     * The priority specifies the position for the listener during commit.   
-     * For example flushing of caches needs to happen very late. 
-     * @param listener the listener to bind.
-     * @param priority 0 = Normal priority
-     * @return true if the new listener was bound.  False if the listener was already bound.
+     * The priority specifies the position for the listener during commit. For example flushing of caches needs to happen very late.
+     * 
+     * @param listener
+     *            the listener to bind.
+     * @param priority
+     *            0 = Normal priority
+     * @return true if the new listener was bound. False if the listener was already bound.
      */
     public static boolean bindListener(TransactionListener listener, int priority)
     {
@@ -297,32 +290,27 @@ public abstract class TransactionSupportUtil
         TransactionSynchronizationImpl synch = TransactionSupportUtil.getSynchronization();
         return synch.addListener(listener, priority);
     }
-    
+
     /**
      * @return Returns all the listeners in a list disconnected from the original set
      */
     public static Set<TransactionListener> getListeners()
     {
-          // get the synchronization
+        // get the synchronization
         TransactionSynchronizationImpl txnSynch = TransactionSupportUtil.getSynchronization();
-      
+
         return txnSynch.getListenersIterable();
-        
+
     }
 
     /**
-     * Resource holder to link all necessary resources for the current transaction.
-     * Also holds the resources for outer transactions.
-     * This is used by {@link TransactionSynchronizationImpl#suspend()}
-     * and {@link TransactionSynchronizationImpl#resume()}
+     * Resource holder to link all necessary resources for the current transaction. Also holds the resources for outer transactions. This is used by {@link TransactionSynchronizationImpl#suspend()} and {@link TransactionSynchronizationImpl#resume()}
      *
      */
     private static class ResourcesHolder
     {
-        @Nullable
-        private ResourcesHolder previousResourceHolder;
-        @NonNull
-        private Map<Object, Object> resources;
+        @Nullable private ResourcesHolder previousResourceHolder;
+        @NonNull private Map<Object, Object> resources;
 
         ResourcesHolder(ResourcesHolder previousResourceHolder, Map<Object, Object> resources)
         {
@@ -339,8 +327,7 @@ public abstract class TransactionSupportUtil
     /**
      * Handler of txn synchronization callbacks specific to internal application requirements.
      * <p>
-     * This class is not thread safe.  It is expected to be used only for purposes of controlling listeners
-     * for a single thread per instance.
+     * This class is not thread safe. It is expected to be used only for purposes of controlling listeners for a single thread per instance.
      */
     private static class TransactionSynchronizationImpl extends TransactionSynchronizationAdapter
     {
@@ -350,12 +337,13 @@ public abstract class TransactionSupportUtil
         /**
          * priority to listeners
          */
-        private final Map<Integer, Set<TransactionListener>>priorityLookup = new HashMap<Integer, Set<TransactionListener>>();
-          
+        private final Map<Integer, Set<TransactionListener>> priorityLookup = new HashMap<Integer, Set<TransactionListener>>();
+
         /**
          * Sets up the resource map
          *
-         * @param txnId String
+         * @param txnId
+         *            String
          */
         public TransactionSynchronizationImpl(String txnId)
         {
@@ -363,7 +351,7 @@ public abstract class TransactionSupportUtil
             this.txnId = txnId;
             priorityLookup.put(0, new LinkedHashSet<TransactionListener>(5));
         }
-        
+
         public long getTransactionStartTime()
         {
             return txnStartTime;
@@ -372,12 +360,12 @@ public abstract class TransactionSupportUtil
         /**
          * Add a trasaction listener
          * 
-         * @return true if the listener was added,  false if it already existed.
+         * @return true if the listener was added, false if it already existed.
          */
         public boolean addListener(TransactionListener listener, int priority)
         {
             ParameterCheck.mandatory("listener", listener);
-            
+
             if (this.priorityLookup.containsKey(priority))
             {
                 Set<TransactionListener> listeners = priorityLookup.get(priority);
@@ -390,7 +378,7 @@ public abstract class TransactionSupportUtil
                 return listeners.add(listener);
             }
         }
-        
+
         /**
          * Return the level zero (normal) listeners
          * 
@@ -398,10 +386,10 @@ public abstract class TransactionSupportUtil
          */
         private List<TransactionListener> getLevelZeroListenersIterable()
         {
-            Set<TransactionListener>listeners = priorityLookup.get(0);
+            Set<TransactionListener> listeners = priorityLookup.get(0);
             return new ArrayList<TransactionListener>(listeners);
         }
-        
+
         /**
          * @return all the listeners regardless of priority
          */
@@ -409,12 +397,12 @@ public abstract class TransactionSupportUtil
         {
             Set<TransactionListener> ret = new LinkedHashSet<TransactionListener>();
             Set<Entry<Integer, Set<TransactionListener>>> entries = priorityLookup.entrySet();
-            
-            for(Entry<Integer, Set<TransactionListener>> entry : entries)
+
+            for (Entry<Integer, Set<TransactionListener>> entry : entries)
             {
-                ret.addAll((Set<TransactionListener>)entry.getValue());
+                ret.addAll((Set<TransactionListener>) entry.getValue());
             }
-            
+
             return ret;
         }
 
@@ -422,8 +410,8 @@ public abstract class TransactionSupportUtil
         {
             StringBuilder sb = new StringBuilder(50);
             sb.append("TransactionSychronizationImpl")
-              .append("[ txnId=").append(txnId)
-              .append("]");
+                    .append("[ txnId=").append(txnId)
+                    .append("]");
             return sb.toString();
         }
 
@@ -465,7 +453,7 @@ public abstract class TransactionSupportUtil
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Before commit " + (readOnly ? "read-only" : "" ) + this);
+                logger.debug("Before commit " + (readOnly ? "read-only" : "") + this);
             }
             // get the txn ID
             TransactionSynchronizationImpl synch = getResource(RESOURCE_KEY_TXN_SYNCH);
@@ -473,70 +461,71 @@ public abstract class TransactionSupportUtil
             {
                 throw new AlfrescoRuntimeException("No synchronization bound to thread");
             }
-            
+
             logger.trace("Before Prepare - level 0");
 
             // Run the priority 0 (normal) listeners
             // These are still considered part of the transaction so are executed here
             doBeforeCommit(readOnly);
-            
+
             // Now run the != 0 listeners beforeCommit
             Set<Integer> priorities = priorityLookup.keySet();
-            
+
             SortedSet<Integer> sortedPriorities = new ConcurrentSkipListSet<Integer>(FORWARD_INTEGER_ORDER);
             sortedPriorities.addAll(priorities);
-            sortedPriorities.remove(0);    //  already done level 0 above
-            
-            if(logger.isDebugEnabled())
+            sortedPriorities.remove(0); // already done level 0 above
+
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Before Prepare priorities:" + sortedPriorities);
             }
-            for(Integer priority : sortedPriorities)
+            for (Integer priority : sortedPriorities)
             {
                 Set<TransactionListener> listeners = priorityLookup.get(priority);
-                
-                for(TransactionListener listener : listeners)
+
+                for (TransactionListener listener : listeners)
                 {
                     listener.beforeCommit(readOnly);
                 }
             }
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Prepared");
             }
         }
-        
+
         /**
          * Execute the beforeCommit event handlers for the registered listeners
          * 
-         * @param readOnly    is read only
+         * @param readOnly
+         *            is read only
          */
         private void doBeforeCommit(boolean readOnly)
         {
             doBeforeCommit(new HashSet<TransactionListener>(), readOnly);
         }
-        
+
         /**
-         * Executes the beforeCommit event handlers for the outstanding listeners.
-         * This process is iterative as the process of calling listeners may lead to more listeners
-         * being added.  The new listeners will be processed until there no listeners remaining.
+         * Executes the beforeCommit event handlers for the outstanding listeners. This process is iterative as the process of calling listeners may lead to more listeners being added. The new listeners will be processed until there no listeners remaining.
          * 
-         * @param visitedListeners    a set containing the already visited listeners
-         * @param readOnly            is read only
+         * @param visitedListeners
+         *            a set containing the already visited listeners
+         * @param readOnly
+         *            is read only
          */
         private void doBeforeCommit(Set<TransactionListener> visitedListeners, boolean readOnly)
         {
             List<TransactionListener> pendingListeners = getLevelZeroListenersIterable();
             pendingListeners.removeAll(visitedListeners);
-            
+
             if (pendingListeners.size() != 0)
             {
-                for (TransactionListener listener : pendingListeners) 
+                for (TransactionListener listener : pendingListeners)
                 {
                     listener.beforeCommit(readOnly);
                     visitedListeners.add(listener);
                 }
-                
+
                 doBeforeCommit(visitedListeners, readOnly);
             }
         }
@@ -566,13 +555,13 @@ public abstract class TransactionSupportUtil
             String statusStr = "unknown";
             switch (status)
             {
-                case TransactionSynchronization.STATUS_COMMITTED:
-                    statusStr = "committed";
-                    break;
-                case TransactionSynchronization.STATUS_ROLLED_BACK:
-                    statusStr = "rolled-back";
-                    break;
-                default:
+            case TransactionSynchronization.STATUS_COMMITTED:
+                statusStr = "committed";
+                break;
+            case TransactionSynchronization.STATUS_ROLLED_BACK:
+                statusStr = "rolled-back";
+                break;
+            default:
             }
             if (logger.isDebugEnabled())
             {
@@ -585,15 +574,15 @@ public abstract class TransactionSupportUtil
             sortedPriorities.addAll(priorities);
 
             // Need to run these in reverse order cache,lucene,listeners
-            for(Integer priority : sortedPriorities)
+            for (Integer priority : sortedPriorities)
             {
                 Set<TransactionListener> listeners = new HashSet<TransactionListener>(priorityLookup.get(priority));
 
-                for(TransactionListener listener : listeners)
+                for (TransactionListener listener : listeners)
                 {
                     try
                     {
-                        if (status  == TransactionSynchronization.STATUS_COMMITTED)
+                        if (status == TransactionSynchronization.STATUS_COMMITTED)
                         {
                             listener.afterCommit();
                         }
@@ -608,7 +597,7 @@ public abstract class TransactionSupportUtil
                     }
                 }
             }
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("After Completion: DONE");
             }
@@ -616,23 +605,21 @@ public abstract class TransactionSupportUtil
             TransactionSupportUtil.clearResources();
         }
     }
-    
-    static private Comparator<Integer> FORWARD_INTEGER_ORDER = new Comparator<Integer>()
-    {
+
+    static private Comparator<Integer> FORWARD_INTEGER_ORDER = new Comparator<Integer>() {
         @Override
         public int compare(Integer arg0, Integer arg1)
         {
             return arg0.intValue() - arg1.intValue();
         }
-    } ;
-    
-    static private Comparator<Integer> REVERSE_INTEGER_ORDER = new Comparator<Integer>()
-    {
+    };
+
+    static private Comparator<Integer> REVERSE_INTEGER_ORDER = new Comparator<Integer>() {
         @Override
         public int compare(Integer arg0, Integer arg1)
         {
             return arg1.intValue() - arg0.intValue();
         }
-    } ;
+    };
 
 }

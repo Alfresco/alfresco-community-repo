@@ -18,13 +18,14 @@
  */
 package org.alfresco.util;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.apache.commons.logging.Log;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Utility class to assist with I18N of log messages.
  * <p>
  * Calls to this class should still be wrapped with the appropriate log level checks:
+ * 
  * <pre>
  * if (logger.isDebugEnabled())
  * {
@@ -42,11 +43,14 @@ public class LogUtil
     /**
      * Log an I18Nized message to DEBUG.
      * 
-     * @param logger        the logger to use
-     * @param messageKey    the message key
-     * @param args          the required message arguments
+     * @param logger
+     *            the logger to use
+     * @param messageKey
+     *            the message key
+     * @param args
+     *            the required message arguments
      */
-    public static final void debug(Log logger, String messageKey, Object ... args)
+    public static final void debug(Log logger, String messageKey, Object... args)
     {
         logger.debug(I18NUtil.getMessage(messageKey, args));
     }
@@ -54,48 +58,61 @@ public class LogUtil
     /**
      * Log an I18Nized message to INFO.
      * 
-     * @param logger        the logger to use
-     * @param messageKey    the message key
-     * @param args          the required message arguments
+     * @param logger
+     *            the logger to use
+     * @param messageKey
+     *            the message key
+     * @param args
+     *            the required message arguments
      */
-    public static final void info(Log logger, String messageKey, Object ... args)
+    public static final void info(Log logger, String messageKey, Object... args)
     {
         logger.info(I18NUtil.getMessage(messageKey, args));
     }
-    
+
     /**
      * Log an I18Nized message to WARN.
      * 
-     * @param logger        the logger to use
-     * @param messageKey    the message key
-     * @param args          the required message arguments
+     * @param logger
+     *            the logger to use
+     * @param messageKey
+     *            the message key
+     * @param args
+     *            the required message arguments
      */
-    public static final void warn(Log logger, String messageKey, Object ... args)
+    public static final void warn(Log logger, String messageKey, Object... args)
     {
         logger.warn(I18NUtil.getMessage(messageKey, args));
     }
-    
+
     /**
      * Log an I18Nized message to ERROR.
      * 
-     * @param logger        the logger to use
-     * @param messageKey    the message key
-     * @param args          the required message arguments
+     * @param logger
+     *            the logger to use
+     * @param messageKey
+     *            the message key
+     * @param args
+     *            the required message arguments
      */
-    public static final void error(Log logger, String messageKey, Object ... args)
+    public static final void error(Log logger, String messageKey, Object... args)
     {
         logger.error(I18NUtil.getMessage(messageKey, args));
     }
-    
+
     /**
      * Log an I18Nized message to ERROR with a given source error.
      * 
-     * @param logger        the logger to use
-     * @param e             the exception cause of the issue
-     * @param messageKey    the message key
-     * @param args          the required message arguments
+     * @param logger
+     *            the logger to use
+     * @param e
+     *            the exception cause of the issue
+     * @param messageKey
+     *            the message key
+     * @param args
+     *            the required message arguments
      */
-    public static final void error(Log logger, Throwable e, String messageKey, Object ... args)
+    public static final void error(Log logger, Throwable e, String messageKey, Object... args)
     {
         logger.error(I18NUtil.getMessage(messageKey, args), e);
     }

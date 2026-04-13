@@ -22,5 +22,4 @@ package org.alfresco.util.testing.category;
  * Category marker for tests that test specific DB flavor functionality
  */
 public interface DBTests
-{
-}
+{}

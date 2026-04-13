@@ -36,8 +36,10 @@ public class MaxSizeMap<K, V> extends LinkedHashMap<K, V>
     private final int maxSize;
 
     /**
-     * @param maxSize maximum size of the map.
-     * @param accessOrder <tt>true</tt> for access-order, <tt>false</tt> for insertion-order.
+     * @param maxSize
+     *            maximum size of the map.
+     * @param accessOrder
+     *            <tt>true</tt> for access-order, <tt>false</tt> for insertion-order.
      */
     public MaxSizeMap(int maxSize, boolean accessOrder)
     {

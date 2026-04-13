@@ -44,14 +44,18 @@ public class LockHelper
             super(msg);
         }
     }
-    
+
     /**
      * Try to get a lock in the given number of milliseconds or get an exception
      * 
-     * @param lock                          the lock to try
-     * @param timeoutMs                     the number of milliseconds to try
-     * @param useCase                       {@link String} value which specifies description of use case when lock is needed
-     * @throws LockTryException    the exception if the time is exceeded or the thread is interrupted
+     * @param lock
+     *            the lock to try
+     * @param timeoutMs
+     *            the number of milliseconds to try
+     * @param useCase
+     *            {@link String} value which specifies description of use case when lock is needed
+     * @throws LockTryException
+     *             the exception if the time is exceeded or the thread is interrupted
      */
     public static void tryLock(Lock lock, long timeoutMs, String useCase) throws LockTryException
     {

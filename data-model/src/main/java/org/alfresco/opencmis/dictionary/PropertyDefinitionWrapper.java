@@ -25,8 +25,9 @@
  */
 package org.alfresco.opencmis.dictionary;
 
-import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
+
+import org.alfresco.service.namespace.QName;
 
 public interface PropertyDefinitionWrapper
 {
@@ -39,6 +40,6 @@ public interface PropertyDefinitionWrapper
     TypeDefinitionWrapper getOwningType();
 
     CMISPropertyAccessor getPropertyAccessor();
-    
+
     CMISPropertyLuceneBuilder getPropertyLuceneBuilder();
 }

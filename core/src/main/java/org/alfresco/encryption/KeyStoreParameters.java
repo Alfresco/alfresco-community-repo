@@ -38,29 +38,35 @@ public class KeyStoreParameters
     private String location;
 
     public KeyStoreParameters()
-    {
-    }
+    {}
 
     /**
      * WARNING. Storing passwords (keyMetaDataFileLocation) on the file system is not following best security practices.
      *
-     * <p/>Set the unique ID of the keystore and aliases to use Java system properties lookup instead. The property lookup format is:
+     * <p/>
+     * Set the unique ID of the keystore and aliases to use Java system properties lookup instead. The property lookup format is:
      * <ul>
-     *     <li>[keystore-id].password - keystore password</li>
-     *     <li>[keystore-id].aliases - comma separated list of aliases for the keys in the keystore</li>
-     *     <li>[keystore-id].[alias].keydata - key data bytes in base64</li>
-     *     <li>[keystore-id].[alias].algorithm - key algorithm</li>
-     *     <li>[keystore-id].[alias].password - key password</li>
+     * <li>[keystore-id].password - keystore password</li>
+     * <li>[keystore-id].aliases - comma separated list of aliases for the keys in the keystore</li>
+     * <li>[keystore-id].[alias].keydata - key data bytes in base64</li>
+     * <li>[keystore-id].[alias].algorithm - key algorithm</li>
+     * <li>[keystore-id].[alias].password - key password</li>
      * </ul>
      *
      * Loading of keys info from system (JVM) properties takes precedence over metadata file.
      *
-     * @param id unique identifier of the keystore
-     * @param name human readable name of the keystore
-     * @param type type of the keystore
-     * @param keyStoreProvider keystore provider
-     * @param keyMetaDataFileLocation path to keystore metadata file on the file system
-     * @param location path to keystore on the file system
+     * @param id
+     *            unique identifier of the keystore
+     * @param name
+     *            human readable name of the keystore
+     * @param type
+     *            type of the keystore
+     * @param keyStoreProvider
+     *            keystore provider
+     * @param keyMetaDataFileLocation
+     *            path to keystore metadata file on the file system
+     * @param location
+     *            path to keystore on the file system
      */
     public KeyStoreParameters(String id, String name, String type, String keyStoreProvider,
             String keyMetaDataFileLocation, String location)
@@ -74,7 +80,7 @@ public class KeyStoreParameters
      */
     @Deprecated()
     public KeyStoreParameters(String name, String type, String keyStoreProvider,
-                              String keyMetaDataFileLocation, String location)
+            String keyMetaDataFileLocation, String location)
     {
         super();
         this.name = name;
@@ -83,7 +89,6 @@ public class KeyStoreParameters
         this.keyMetaDataFileLocation = keyMetaDataFileLocation;
         this.location = location;
     }
-
 
     public void init()
     {
@@ -106,7 +111,7 @@ public class KeyStoreParameters
         if (!PropertyCheck.isValidPropertyString(getKeyMetaDataFileLocation()))
         {
             setKeyMetaDataFileLocation(null);
-        }        
+        }
     }
 
     public String getId()

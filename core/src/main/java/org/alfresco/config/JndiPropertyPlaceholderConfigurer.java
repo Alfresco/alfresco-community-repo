@@ -19,15 +19,13 @@
 package org.alfresco.config;
 
 import java.util.Properties;
-
 import javax.naming.NamingException;
 
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.jndi.JndiTemplate;
 
 /**
- * An extended {@link PropertyPlaceholderConfigurer} that allows properties to be set through JNDI entries in
- * java:comp/env/properties/*. The precedence given to system properties is still as per the superclass.
+ * An extended {@link PropertyPlaceholderConfigurer} that allows properties to be set through JNDI entries in java:comp/env/properties/*. The precedence given to system properties is still as per the superclass.
  * 
  * @author dward
  */
@@ -48,8 +46,7 @@ public class JndiPropertyPlaceholderConfigurer extends PropertyPlaceholderConfig
             }
         }
         catch (NamingException e)
-        {
-        }
+        {}
         // Unfortunately, JBoss 4 wrongly expects every env-entry declared in web.xml to have an env-entry-value (even
         // though these are meant to be decided on deployment!). So we treat the empty string as null.
         return result == null || result.length() == 0 ? super.resolvePlaceholder(placeholder, props) : result;

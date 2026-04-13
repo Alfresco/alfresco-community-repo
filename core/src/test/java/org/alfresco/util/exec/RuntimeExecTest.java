@@ -23,9 +23,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
-
 import junit.framework.TestCase;
+
+import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 
 /**
  * @see org.alfresco.util.exec.RuntimeExec
@@ -37,19 +37,19 @@ public class RuntimeExecTest extends TestCase
     public void testStreams() throws Exception
     {
         RuntimeExec exec = new RuntimeExec();
-        
+
         // This test will return different results on Windows and Linux!
         // note that some Unix variants will error without a path
         HashMap<String, String[]> commandMap = new HashMap<String, String[]>(5);
-        commandMap.put("*", new String[] {"find", "/", "-maxdepth", "1", "-name", "var"});
-        commandMap.put("Windows.*", new String[] {"find", "/?"});
+        commandMap.put("*", new String[]{"find", "/", "-maxdepth", "1", "-name", "var"});
+        commandMap.put("Windows.*", new String[]{"find", "/?"});
         exec.setCommandsAndArguments(commandMap);
         // execute
         ExecutionResult ret = exec.execute();
-        
+
         String out = ret.getStdOut();
         String err = ret.getStdErr();
-        
+
         assertEquals("Didn't expect error code", 0, ret.getExitValue());
         assertEquals("Didn't expect any error output", 0, err.length());
         assertTrue("No output found", out.length() > 0);
@@ -63,11 +63,11 @@ public class RuntimeExecTest extends TestCase
         Map<String, String[]> commandMap = new HashMap<String, String[]>(3, 1.0f);
         commandMap.put(".*", (new String[]{"TEST"}));
         exec.setCommandsAndArguments(commandMap);
-        
+
         String[] commandStr = exec.getCommand();
-        assertTrue("Expected default match to work", Arrays.deepEquals(new String[] {"TEST"}, commandStr));
+        assertTrue("Expected default match to work", Arrays.deepEquals(new String[]{"TEST"}, commandStr));
     }
-    
+
     public void testWithProperties() throws Exception
     {
         RuntimeExec exec = new RuntimeExec();
@@ -75,16 +75,16 @@ public class RuntimeExecTest extends TestCase
         // set the command
         Map<String, String[]> commandMap = new HashMap<String, String[]>(3, 1.0f);
         commandMap.put("Windows.*", new String[]{"dir", "${path}"});
-        commandMap.put("Linux", new String[] {"ls", "${path}"});
+        commandMap.put("Linux", new String[]{"ls", "${path}"});
         commandMap.put("Mac OS X", new String[]{"ls", "${path}"});
         commandMap.put("*", new String[]{"wibble", "${path}"});
         exec.setCommandsAndArguments(commandMap);
-        
+
         // set the default properties
         Map<String, String> defaultProperties = new HashMap<String, String>(1, 1.0f);
         defaultProperties.put("path", ".");
         exec.setDefaultProperties(defaultProperties);
-        
+
         // check that the command lines generated are correct
         String defaultCommand[] = exec.getCommand();
         String dynamicCommand[] = exec.getCommand(Collections.singletonMap("path", "./"));
@@ -110,20 +110,20 @@ public class RuntimeExecTest extends TestCase
         assertTrue("Default command for OS " + os + " is incorrect", Arrays.deepEquals(defaultCommandCheck, defaultCommand));
         assertTrue("Dynamic command for OS " + os + " is incorrect", Arrays.deepEquals(dynamicCommandCheck, dynamicCommand));
     }
-    
+
     public void testNoTimeout() throws Exception
     {
         long timeout = -1;
         int runFor = 10000;
-        
+
         longishRunningProcess(runFor, timeout);
     }
-    
+
     public void testTimeout() throws Exception
     {
         long timeout = 5000;
         int runFor = 10000;
-        
+
         longishRunningProcess(runFor, timeout);
     }
 
@@ -132,31 +132,31 @@ public class RuntimeExecTest extends TestCase
         long marginOfError = 3000;
         boolean shouldComplete = timeout <= 0;
 
-        assertTrue("The timeout when set must be more than "+marginOfError+"ms", shouldComplete || timeout >= marginOfError);
-        assertTrue("The timeout when set plus "+marginOfError+"ms must less than the runFor value", shouldComplete || timeout+marginOfError <= runFor);
-        
+        assertTrue("The timeout when set must be more than " + marginOfError + "ms", shouldComplete || timeout >= marginOfError);
+        assertTrue("The timeout when set plus " + marginOfError + "ms must less than the runFor value", shouldComplete || timeout + marginOfError <= runFor);
+
         long minTime = (shouldComplete ? runFor : timeout) - marginOfError;
         long maxTime = (shouldComplete ? runFor : timeout) + marginOfError;
 
         RuntimeExec exec = new RuntimeExec();
-        
+
         // This test will return different results on Windows and Linux!
         // note that some Unix variants will error without a path
         HashMap<String, String[]> commandMap = new HashMap<String, String[]>();
-        commandMap.put("*", new String[] {"sleep", ""+(runFor/1000)});
-        commandMap.put("Windows.*", new String[] {"ping", "-n", ""+(runFor/1000+1), "127.0.0.1"}); // don't you just love Microsoft
+        commandMap.put("*", new String[]{"sleep", "" + (runFor / 1000)});
+        commandMap.put("Windows.*", new String[]{"ping", "-n", "" + (runFor / 1000 + 1), "127.0.0.1"}); // don't you just love Microsoft
 
         // execute
         exec.setCommandsAndArguments(commandMap);
         long time = System.currentTimeMillis();
-        ExecutionResult ret = exec.execute(Collections.<String,String>emptyMap(), timeout);
-        time = System.currentTimeMillis()-time;
-        
+        ExecutionResult ret = exec.execute(Collections.<String, String> emptyMap(), timeout);
+        time = System.currentTimeMillis() - time;
+
         String out = ret.getStdOut();
         String err = ret.getStdErr();
-        
-        assertTrue("Command was too fast "+time+"ms", time >= minTime);
-        assertTrue("Command was too slow "+time+"ms", time <= maxTime);
+
+        assertTrue("Command was too fast " + time + "ms", time >= minTime);
+        assertTrue("Command was too slow " + time + "ms", time <= maxTime);
 
         if (shouldComplete)
             assertEquals("Didn't expect error code", 0, ret.getExitValue());

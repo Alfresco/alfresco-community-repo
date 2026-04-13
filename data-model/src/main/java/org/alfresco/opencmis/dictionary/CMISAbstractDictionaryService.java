@@ -33,6 +33,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.PropertyType;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.opencmis.mapping.CMISMapping;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.dictionary.CompiledModel;
@@ -43,12 +50,6 @@ import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.enums.PropertyType;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Common CMIS Dictionary Support including registry of Types.
@@ -195,12 +196,9 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         return cmisRegistry;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#
-     * onBootstrap (org.springframework.context.ApplicationEvent)
-     */
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean# onBootstrap (org.springframework.context.ApplicationEvent) */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -217,17 +215,12 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown
-     * (org.springframework.context.ApplicationEvent)
-     */
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown (org.springframework.context.ApplicationEvent) */
     @Override
     protected void onShutdown(ApplicationEvent event)
-    {
-    }
+    {}
 
     private String getCacheKey()
     {
@@ -439,15 +432,12 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         return cmisMapping.getAlfrescoDataType(propertyType);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.dictionary.DictionaryListener#onInit()
-     */
+     * @see org.alfresco.repo.dictionary.DictionaryListener#onInit() */
     @Override
     public void onDictionaryInit()
-    {
-    }
+    {}
 
     @Override
     public void modelAdded(CompiledModel model, String tenantDomain)
@@ -455,23 +445,18 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         getRegistry(tenantDomain).addModel(model);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.dictionary.DictionaryListener#afterInit()
-     */
+     * @see org.alfresco.repo.dictionary.DictionaryListener#afterInit() */
     @Override
     public void afterDictionaryInit()
     {
         createDictionaryRegistryWithWriteLock();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.repo.dictionary.DictionaryListener#afterDictionaryDestroy()
-     */
+     * @see org.alfresco.repo.dictionary.DictionaryListener#afterDictionaryDestroy() */
     @Override
     public void afterDictionaryDestroy()
     {

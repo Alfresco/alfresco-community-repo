@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import junit.framework.TestCase;
-
 import org.junit.Assert;
 
 /**
@@ -45,9 +44,9 @@ public class GuidTest extends TestCase
             GUID.generate();
         }
     }
-    
+
     /**
-     * Tests the improvement added by using a SecureRandom pool when generating GUID's 
+     * Tests the improvement added by using a SecureRandom pool when generating GUID's
      */
     public void testGuid()
     {
@@ -56,14 +55,14 @@ public class GuidTest extends TestCase
 
         List<Thread> threads = new ArrayList<>();
         int n = 30;
-        
+
         for (int i = 0; i < n; i++)
         {
             Thread thread = new Thread(new GuidRunner());
             threads.add(thread);
             thread.start();
         }
-        
+
         Set<String> blocked = new HashSet<String>();
         Set<String> terminated = new HashSet<String>();
 
@@ -94,11 +93,10 @@ public class GuidTest extends TestCase
                 }
             }
         }
-        
-        //worst case scenario : max number of threads blocked at a moment = number of threads - 2 ( usually ~5 for 30 threads)
-        //the implementation without RandomSecure pool reaches constantly (number of threads - 1) max blocked threads  
-        Assert.assertTrue("Exceeded number of blocked threads : " + maxItemsBlocked, maxItemsBlocked < n-2);
+
+        // worst case scenario : max number of threads blocked at a moment = number of threads - 2 ( usually ~5 for 30 threads)
+        // the implementation without RandomSecure pool reaches constantly (number of threads - 1) max blocked threads
+        Assert.assertTrue("Exceeded number of blocked threads : " + maxItemsBlocked, maxItemsBlocked < n - 2);
     }
 
 }
-

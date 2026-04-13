@@ -35,7 +35,7 @@ public interface EnumLabel
     /**
      * Gets the enum label (as defined by CMIS)
      * 
-     * @return  enum label
+     * @return enum label
      */
     public String getLabel();
 }

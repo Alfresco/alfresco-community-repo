@@ -49,7 +49,8 @@ public class FixedValueLuceneBuilder extends BaseLuceneBuilder
     /**
      * Construct
      * 
-     * @param value Serializable
+     * @param value
+     *            Serializable
      */
     public FixedValueLuceneBuilder(Serializable value)
     {
@@ -187,7 +188,8 @@ public class FixedValueLuceneBuilder extends BaseLuceneBuilder
             Comparable<Serializable> comparable = (Comparable<Serializable>) value;
             if (comparable.compareTo(value) < 0)
             {
-                return lqpa.getMatchAllQuery();            }
+                return lqpa.getMatchAllQuery();
+            }
             else
             {
                 return lqpa.getMatchNoneQuery();

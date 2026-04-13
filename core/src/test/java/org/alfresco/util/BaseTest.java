@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
-
 import org.springframework.extensions.config.ConfigSource;
 import org.springframework.extensions.config.source.ClassPathConfigSource;
 import org.springframework.extensions.config.source.FileConfigSource;
@@ -38,9 +37,9 @@ import org.springframework.extensions.config.xml.XMLConfigService;
 public abstract class BaseTest extends TestCase
 {
     protected String resourcesDir;
-    
+
     protected boolean loadFromClasspath;
-    
+
     public BaseTest()
     {
         // GC: Added this to allow flexible test resources folder configuration
@@ -48,10 +47,10 @@ public abstract class BaseTest extends TestCase
         // backward compatible
         String resourcesDir = null;
         // This allows subclasses to override the getResourcesDir method (e.g. by passing classpath: )
-        if(getResourcesDir()==null)
+        if (getResourcesDir() == null)
         {
             resourcesDir = System.getProperty("alfresco.test.resources.dir");
-            if(resourcesDir == null || resourcesDir.equals(""))
+            if (resourcesDir == null || resourcesDir.equals(""))
             {
                 // defaults to source/test-resources
                 resourcesDir = System.getProperty("user.dir") + File.separator + "source" + File.separator + "test-resources";
@@ -62,36 +61,36 @@ public abstract class BaseTest extends TestCase
             resourcesDir = getResourcesDir();
         }
         loadFromClasspath = resourcesDir.startsWith("classpath:");
-        // Returns the resources dir with trailing separator or just the classpath: string in case that was specified  
-        this.resourcesDir = resourcesDir + ((loadFromClasspath) ? "" : File.separator); 
+        // Returns the resources dir with trailing separator or just the classpath: string in case that was specified
+        this.resourcesDir = resourcesDir + ((loadFromClasspath) ? "" : File.separator);
     }
 
     /**
-     * Override this method to pass a custom resource dir. 
-     * Valid values are a file system path or the string "classpath:"
+     * Override this method to pass a custom resource dir. Valid values are a file system path or the string "classpath:"
+     * 
      * @return
      */
     public String getResourcesDir()
     {
         return this.resourcesDir;
     }
-   
+
     /**
-     * Checks for validity of the resource location. 
+     * Checks for validity of the resource location.
      * 
-     * In case of file resource, provide the full file path
-     * In case of classpath resources, please pass the full resource URI, prepended with the classpath: string 
+     * In case of file resource, provide the full file path In case of classpath resources, please pass the full resource URI, prepended with the classpath: string
+     * 
      * @param fullFileName
      */
     protected void assertFileIsValid(String fullFileName)
     {
-        if(loadFromClasspath)
+        if (loadFromClasspath)
         {
             // if we load from classpath, we need to remove the "classpath:" trailing string
             String resourceName = fullFileName.substring(fullFileName.indexOf(":") + 1);
             assertNotNull(resourceName);
             URL configResourceUrl = getClass().getClassLoader().getResource(resourceName);
-            assertNotNull(configResourceUrl);            
+            assertNotNull(configResourceUrl);
         }
         else
         {
@@ -100,19 +99,19 @@ public abstract class BaseTest extends TestCase
             assertTrue("Required file not readable: " + fullFileName, f.canRead());
         }
     }
-    
+
     /**
      * Loads a config file from filesystem or classpath
-     *  
-     * In case of file resource, just provide the file name relative to resourceDir
-     * In case of classpath resources, just provide the resource URI, without with the prepending classpath: string 
+     * 
+     * In case of file resource, just provide the file name relative to resourceDir In case of classpath resources, just provide the resource URI, without with the prepending classpath: string
+     * 
      * @param xmlConfigFile
      * @return
      */
     protected XMLConfigService initXMLConfigService(String xmlConfigFile)
     {
         XMLConfigService svc = null;
-        if(loadFromClasspath)
+        if (loadFromClasspath)
         {
             svc = new XMLConfigService(new ClassPathConfigSource(xmlConfigFile));
         }
@@ -125,7 +124,7 @@ public abstract class BaseTest extends TestCase
         svc.initConfig();
         return svc;
     }
-    
+
     protected XMLConfigService initXMLConfigService(String xmlConfigFile, String overridingXmlConfigFile)
     {
         List<String> files = new ArrayList<String>(2);

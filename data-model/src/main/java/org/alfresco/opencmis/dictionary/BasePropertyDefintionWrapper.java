@@ -27,8 +27,9 @@ package org.alfresco.opencmis.dictionary;
 
 import java.io.Serializable;
 
-import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
+
+import org.alfresco.service.namespace.QName;
 
 public class BasePropertyDefintionWrapper implements PropertyDefinitionWrapper, Serializable
 {

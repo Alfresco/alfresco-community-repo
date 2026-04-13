@@ -31,7 +31,7 @@ import java.util.Map;
 import org.alfresco.service.cmr.dictionary.Constraint;
 
 /**
- * A registry of constraints. 
+ * A registry of constraints.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -39,11 +39,11 @@ import org.alfresco.service.cmr.dictionary.Constraint;
 public class ConstraintRegistry
 {
     private static ConstraintRegistry instance = new ConstraintRegistry();
-    
+
     private Map<String, Constraint> constraints;
 
     /**
-     * @return      Returns the singleton
+     * @return Returns the singleton
      */
     public static ConstraintRegistry getInstance()
     {
@@ -52,13 +52,14 @@ public class ConstraintRegistry
 
     /**
      * Private constructor
+     * 
      * @see #getInstance()
      */
     private ConstraintRegistry()
     {
         constraints = new HashMap<String, Constraint>(13);
     }
-    
+
     /**
      * Register the constraint by name
      */
@@ -73,12 +74,13 @@ public class ConstraintRegistry
             instance.register(name, constraint);
         }
     }
-    
+
     /**
      * Get the constraint by name
      * 
-     * @param name          the name by which the constraint was registered
-     * @return              Returns the constraint or <tt>null</tt> if it does not exist.
+     * @param name
+     *            the name by which the constraint was registered
+     * @return Returns the constraint or <tt>null</tt> if it does not exist.
      */
     public Constraint getConstraint(String name)
     {

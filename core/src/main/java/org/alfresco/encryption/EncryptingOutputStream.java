@@ -17,7 +17,6 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -27,11 +26,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * An output stream that encrypts data to another output stream. A lightweight yet secure hybrid encryption scheme is
- * used. A random symmetric key is generated and encrypted using the receiver's public key. The supplied data is then
- * encrypted using the symmetric key and sent to the underlying stream on a streaming basis. An HMAC checksum is also
- * computed on an ongoing basis and appended to the output when the stream is closed. This class can be used in
- * conjunction with {@link DecryptingInputStream} to transport data securely.
+ * An output stream that encrypts data to another output stream. A lightweight yet secure hybrid encryption scheme is used. A random symmetric key is generated and encrypted using the receiver's public key. The supplied data is then encrypted using the symmetric key and sent to the underlying stream on a streaming basis. An HMAC checksum is also computed on an ongoing basis and appended to the output when the stream is closed. This class can be used in conjunction with {@link DecryptingInputStream} to transport data securely.
  */
 public class EncryptingOutputStream extends OutputStream
 {
@@ -149,33 +144,29 @@ public class EncryptingOutputStream extends OutputStream
         writeBlock(this.outputCipher.doFinal(macKey.getEncoded()));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.io.OutputStream#write(int)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.io.OutputStream#write(int) */
     @Override
     public void write(final int b) throws IOException
     {
-        write(new byte[]
-        {
-            (byte) b
+        write(new byte[]{
+                (byte) b
         }, 0, 1);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.io.OutputStream#write(byte[])
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.io.OutputStream#write(byte[]) */
     @Override
     public void write(final byte b[]) throws IOException
     {
         write(b, 0, b.length);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.io.OutputStream#write(byte[], int, int)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.io.OutputStream#write(byte[], int, int) */
     @Override
     public void write(final byte b[], final int off, final int len) throws IOException
     {
@@ -217,20 +208,18 @@ public class EncryptingOutputStream extends OutputStream
         this.wrapped.write(block);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.io.OutputStream#flush()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.io.OutputStream#flush() */
     @Override
     public void flush() throws IOException
     {
         this.wrapped.flush();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.io.OutputStream#close()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.io.OutputStream#close() */
     @Override
     public void close() throws IOException
     {

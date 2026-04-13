@@ -20,13 +20,11 @@ package org.alfresco.util.transaction;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;
-
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
-
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
@@ -44,12 +42,12 @@ public class SpringAwareUserTransactionTest extends TestCase
     private DummyTransactionManager transactionManager;
     private FailingTransactionManager failingTransactionManager;
     private UserTransaction txn;
-    
+
     public SpringAwareUserTransactionTest()
     {
         super();
     }
-    
+
     @Override
     protected void setUp() throws Exception
     {
@@ -57,7 +55,7 @@ public class SpringAwareUserTransactionTest extends TestCase
         failingTransactionManager = new FailingTransactionManager();
         txn = getTxn();
     }
-    
+
     private UserTransaction getTxn()
     {
         return new SpringAwareUserTransaction(
@@ -67,13 +65,13 @@ public class SpringAwareUserTransactionTest extends TestCase
                 TransactionDefinition.PROPAGATION_REQUIRED,
                 TransactionDefinition.TIMEOUT_DEFAULT);
     }
-    
+
     public void testSetUp() throws Exception
     {
         assertNotNull(transactionManager);
         assertNotNull(txn);
     }
-    
+
     private void checkNoStatusOnThread()
     {
         try
@@ -86,7 +84,7 @@ public class SpringAwareUserTransactionTest extends TestCase
             // expected
         }
     }
-    
+
     public void testNoTxnStatus() throws Exception
     {
         checkNoStatusOnThread();
@@ -134,7 +132,7 @@ public class SpringAwareUserTransactionTest extends TestCase
         }
         checkNoStatusOnThread();
     }
-    
+
     public void testSimpleTxnWithRollback() throws Exception
     {
         testNoTxnStatus();
@@ -156,7 +154,7 @@ public class SpringAwareUserTransactionTest extends TestCase
                 transactionManager.getStatus());
         checkNoStatusOnThread();
     }
-    
+
     public void testNoBeginCommit() throws Exception
     {
         testNoTxnStatus();
@@ -171,7 +169,7 @@ public class SpringAwareUserTransactionTest extends TestCase
         }
         checkNoStatusOnThread();
     }
-    
+
     public void testPostRollbackCommitDetection() throws Exception
     {
         testNoTxnStatus();
@@ -189,7 +187,7 @@ public class SpringAwareUserTransactionTest extends TestCase
         }
         checkNoStatusOnThread();
     }
-    
+
     public void testPostSetRollbackOnlyCommitDetection() throws Exception
     {
         testNoTxnStatus();
@@ -208,7 +206,7 @@ public class SpringAwareUserTransactionTest extends TestCase
         }
         checkNoStatusOnThread();
     }
-    
+
     public void testMismatchedBeginCommit() throws Exception
     {
         UserTransaction txn1 = getTxn();
@@ -218,18 +216,18 @@ public class SpringAwareUserTransactionTest extends TestCase
 
         txn1.begin();
         txn2.begin();
-        
+
         txn2.commit();
         txn1.commit();
-        
+
         checkNoStatusOnThread();
-        
+
         txn1 = getTxn();
         txn2 = getTxn();
-        
+
         txn1.begin();
         txn2.begin();
-        
+
         try
         {
             txn1.commit();
@@ -246,18 +244,16 @@ public class SpringAwareUserTransactionTest extends TestCase
     }
 
     /**
-     * Test for leaked transactions (no guarantee it will succeed due to reliance
-     * on garbage collector), so disabled by default.
+     * Test for leaked transactions (no guarantee it will succeed due to reliance on garbage collector), so disabled by default.
      * 
-     * Also, if it succeeds, transaction call stack tracing will be enabled
-     * potentially hitting the performance of all subsequent tests.
+     * Also, if it succeeds, transaction call stack tracing will be enabled potentially hitting the performance of all subsequent tests.
      * 
      * @throws Exception
      */
     public void xtestLeakedTransactionLogging() throws Exception
     {
         assertFalse(SpringAwareUserTransaction.isCallStackTraced());
-        
+
         TrxThread t1 = new TrxThread();
         t1.start();
         System.gc();
@@ -267,9 +263,9 @@ public class SpringAwareUserTransactionTest extends TestCase
         t2.start();
         System.gc();
         Thread.sleep(1000);
-        
+
         assertTrue(SpringAwareUserTransaction.isCallStackTraced());
-        
+
         TrxThread t3 = new TrxThread();
         t3.start();
         System.gc();
@@ -277,7 +273,7 @@ public class SpringAwareUserTransactionTest extends TestCase
         System.gc();
         Thread.sleep(3000);
     }
-    
+
     private class TrxThread extends Thread
     {
         public void run()
@@ -286,9 +282,10 @@ public class SpringAwareUserTransactionTest extends TestCase
             {
                 getTrx();
             }
-            catch (Exception e) {}
+            catch (Exception e)
+            {}
         }
-        
+
         public void getTrx() throws Exception
         {
             UserTransaction txn = getTxn();
@@ -296,7 +293,7 @@ public class SpringAwareUserTransactionTest extends TestCase
             txn = null;
         }
     }
-    
+
     public void testConnectionPoolException() throws Exception
     {
         testNoTxnStatus();
@@ -311,7 +308,7 @@ public class SpringAwareUserTransactionTest extends TestCase
             // Expected fail
         }
     }
-    
+
     private UserTransaction getFailingTxn()
     {
         return new SpringAwareUserTransaction(
@@ -321,7 +318,7 @@ public class SpringAwareUserTransactionTest extends TestCase
                 TransactionDefinition.PROPAGATION_REQUIRED,
                 TransactionDefinition.TIMEOUT_DEFAULT);
     }
-    
+
     public void testTransactionListenerOrder() throws Throwable
     {
         testNoTxnStatus();
@@ -360,12 +357,12 @@ public class SpringAwareUserTransactionTest extends TestCase
         }
         checkNoStatusOnThread();
     }
-    
+
     private static class TestTransactionListener extends TransactionListenerAdapter
     {
         private final String name;
         private final StringBuffer buffer;
-        
+
         public TestTransactionListener(String name, StringBuffer buffer)
         {
             Objects.requireNonNull(name);
@@ -373,18 +370,18 @@ public class SpringAwareUserTransactionTest extends TestCase
             this.name = name;
             this.buffer = buffer;
         }
-        
+
         @Override
         public void beforeCommit(boolean readOnly)
         {
             buffer.append(name);
         }
-        
+
         public String getName()
         {
             return name;
         }
-        
+
         @Override
         public boolean equals(Object obj)
         {
@@ -394,14 +391,14 @@ public class SpringAwareUserTransactionTest extends TestCase
             }
             return false;
         }
-        
+
         @Override
         public int hashCode()
         {
             return name.hashCode();
         }
     }
-    
+
     /**
      * Used to check that the transaction manager is being called correctly
      * 
@@ -412,7 +409,7 @@ public class SpringAwareUserTransactionTest extends TestCase
     {
         private int status = Status.STATUS_NO_TRANSACTION;
         private Object txn = new Object();
-        
+
         /**
          * @return Returns one of the {@link Status Status.STATUS_XXX} constants
          */
@@ -441,7 +438,7 @@ public class SpringAwareUserTransactionTest extends TestCase
             status = Status.STATUS_ROLLEDBACK;
         }
     }
-    
+
     /**
      * Throws {@link NoSuchElementException} on begin()
      * 
@@ -452,7 +449,7 @@ public class SpringAwareUserTransactionTest extends TestCase
         private static final long serialVersionUID = 1L;
         private int status = Status.STATUS_NO_TRANSACTION;
         private Object txn = new Object();
-        
+
         /**
          * @return Returns one of the {@link Status Status.STATUS_XXX} constants
          */

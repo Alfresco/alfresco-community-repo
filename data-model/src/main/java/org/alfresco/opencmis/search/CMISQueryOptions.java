@@ -27,14 +27,15 @@ package org.alfresco.opencmis.search;
 
 import java.util.Locale;
 
+import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * The options for a CMIS query
@@ -75,25 +76,23 @@ public class CMISQueryOptions extends QueryOptions
         options.setStores(searchParameters.getStores());
         options.setUseInMemorySort(searchParameters.getUseInMemorySort());
         options.setMaxRawResultSetSizeForInMemorySort(searchParameters.getMaxRawResultSetSizeForInMemorySort());
-        //options.setQuery(); Done on conbstruction
-        //options.setQueryMode(); Should set afterwards
+        // options.setQuery(); Done on conbstruction
+        // options.setQueryMode(); Should set afterwards
         options.setQueryParameterDefinitions(searchParameters.getQueryParameterDefinitions());
         options.setDefaultFieldName(searchParameters.getDefaultFieldName());
         options.setBulkFetchEnabled(searchParameters.isBulkFetchEnabled());
         options.setExcludeTenantFilter(searchParameters.getExcludeTenantFilter());
         options.setSinceTxId(searchParameters.getSinceTxId());
-        for(String name : searchParameters.getQueryTemplates().keySet())
+        for (String name : searchParameters.getQueryTemplates().keySet())
         {
-        	String template = searchParameters.getQueryTemplates().get(name);
-        	options.addQueryTemplate(name, template);
+            String template = searchParameters.getQueryTemplates().get(name);
+            options.addQueryTemplate(name, template);
         }
         return options;
     }
-    
+
     /**
-     * Create a CMISQueryOptions instance with the default options other than
-     * the query and store ref. The query will be run using the locale returned
-     * by I18NUtil.getLocale()
+     * Create a CMISQueryOptions instance with the default options other than the query and store ref. The query will be run using the locale returned by I18NUtil.getLocale()
      * 
      * @param query
      *            - the query to run
@@ -106,8 +105,7 @@ public class CMISQueryOptions extends QueryOptions
     }
 
     /**
-     * Create a CMISQueryOptions instance with the default options other than
-     * the query, store ref and locale.
+     * Create a CMISQueryOptions instance with the default options other than the query, store ref and locale.
      * 
      * @param query
      *            - the query to run
@@ -121,15 +119,15 @@ public class CMISQueryOptions extends QueryOptions
 
     public CmisVersion getCmisVersion()
     {
-		return cmisVersion;
-	}
+        return cmisVersion;
+    }
 
-	public void setCmisVersion(CmisVersion cmisVersion)
-	{
-		this.cmisVersion = cmisVersion;
-	}
+    public void setCmisVersion(CmisVersion cmisVersion)
+    {
+        this.cmisVersion = cmisVersion;
+    }
 
-	/**
+    /**
      * Get the query mode.
      * 
      * @return the queryMode
@@ -161,7 +159,7 @@ public class CMISQueryOptions extends QueryOptions
         searchParameters.setDefaultFTSOperator(this.getDefaultFTSConnective() == Connective.OR ? SearchParameters.Operator.OR : SearchParameters.Operator.AND);
         searchParameters.setDefaultOperator(this.getDefaultFTSConnective() == Connective.OR ? SearchParameters.Operator.OR : SearchParameters.Operator.AND);
         searchParameters.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
-        if(this.getMaxItems() > 0)
+        if (this.getMaxItems() > 0)
         {
             searchParameters.setLimit(this.getMaxItems());
             searchParameters.setLimitBy(LimitBy.FINAL_SIZE);
@@ -170,33 +168,33 @@ public class CMISQueryOptions extends QueryOptions
         searchParameters.setMaxPermissionChecks(this.getMaxPermissionChecks());
         searchParameters.setMaxPermissionCheckTimeMillis(this.getMaxPermissionCheckTimeMillis());
         searchParameters.setMlAnalaysisMode(this.getMlAnalaysisMode());
-        //searchParameters.setNamespace()   TODO: Fix
-        //searchParameters.setPermissionEvaluation()
+        // searchParameters.setNamespace() TODO: Fix
+        // searchParameters.setPermissionEvaluation()
         searchParameters.setQuery(this.getQuery());
         searchParameters.setSkipCount(this.getSkipCount());
-        //searchParameters.addAllAttribute()
-        for(Locale locale : this.getLocales())
+        // searchParameters.addAllAttribute()
+        for (Locale locale : this.getLocales())
         {
             searchParameters.addLocale(locale);
         }
-        for(QueryParameterDefinition queryParameterDefinition: this.getQueryParameterDefinitions())
+        for (QueryParameterDefinition queryParameterDefinition : this.getQueryParameterDefinitions())
         {
             searchParameters.addQueryParameterDefinition(queryParameterDefinition);
         }
-        //searchParameters.addQueryTemplate(name, template)
-        //searchParameters.addSort()
-        for(StoreRef storeRef : this.getStores())
+        // searchParameters.addQueryTemplate(name, template)
+        // searchParameters.addSort()
+        for (StoreRef storeRef : this.getStores())
         {
             searchParameters.addStore(storeRef);
         }
-        //searchParameters.addTextAttribute()
+        // searchParameters.addTextAttribute()
         searchParameters.setBulkFetchEnabled(isBulkFetchEnabled());
         searchParameters.setQueryConsistency(this.getQueryConsistency());
         searchParameters.setSinceTxId(getSinceTxId());
-        for(String name : getQueryTemplates().keySet())
+        for (String name : getQueryTemplates().keySet())
         {
-        	String template = getQueryTemplates().get(name);
-        	searchParameters.addQueryTemplate(name, template);
+            String template = getQueryTemplates().get(name);
+            searchParameters.addQueryTemplate(name, template);
         }
         return searchParameters;
     }

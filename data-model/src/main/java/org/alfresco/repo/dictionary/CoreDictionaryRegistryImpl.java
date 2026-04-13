@@ -39,7 +39,7 @@ public class CoreDictionaryRegistryImpl extends AbstractDictionaryRegistry
 {
     public CoreDictionaryRegistryImpl(DictionaryDAO dictionaryDAO)
     {
-    	super(dictionaryDAO);
+        super(dictionaryDAO);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class CoreDictionaryRegistryImpl extends AbstractDictionaryRegistry
     @Override
     protected void initImpl()
     {
-    	long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
         // populate the dictionary based on registered sources (only for core registry)
         for (DictionaryListener dictionaryDeployer : dictionaryDAO.getDictionaryListeners())
@@ -62,35 +62,35 @@ public class CoreDictionaryRegistryImpl extends AbstractDictionaryRegistry
         // Done
         if (logger.isInfoEnabled())
         {
-        	Map<QName, CompiledModel> models = getCompiledModels(false);
-            logger.info("Init core dictionary: model count = "+(models != null ? models.size() : 0)
-            		+" in "+(System.currentTimeMillis()-startTime)+" msecs ["+Thread.currentThread()+"]");
+            Map<QName, CompiledModel> models = getCompiledModels(false);
+            logger.info("Init core dictionary: model count = " + (models != null ? models.size() : 0)
+                    + " in " + (System.currentTimeMillis() - startTime) + " msecs [" + Thread.currentThread() + "]");
         }
     }
 
-	@Override
-	public void remove()
-	{
-		for(DictionaryListener listener : dictionaryDAO.getDictionaryListeners())
-		{
-			listener.afterDictionaryDestroy();
-		}
-	}
+    @Override
+    public void remove()
+    {
+        for (DictionaryListener listener : dictionaryDAO.getDictionaryListeners())
+        {
+            listener.afterDictionaryDestroy();
+        }
+    }
 
-	@Override
+    @Override
     protected QName putModelImpl(CompiledModel model)
-	{
-		// TODO disallow model overrides for the core dictionary
-		QName qname = super.putModelImpl(model);
+    {
+        // TODO disallow model overrides for the core dictionary
+        QName qname = super.putModelImpl(model);
         return qname;
-	}
+    }
 
-	@Override
-	public void removeImpl()
-	{
-		for(DictionaryListener listener : dictionaryDAO.getDictionaryListeners())
-		{
-			listener.afterDictionaryDestroy();
-		}
-	}
+    @Override
+    public void removeImpl()
+    {
+        for (DictionaryListener listener : dictionaryDAO.getDictionaryListeners())
+        {
+            listener.afterDictionaryDestroy();
+        }
+    }
 }

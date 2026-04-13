@@ -20,7 +20,7 @@ package org.alfresco.util;
 
 import org.apache.commons.logging.Log;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Utility class to adapt a {@link Log} class.
@@ -33,9 +33,10 @@ import org.alfresco.api.AlfrescoPublicApi;
 public abstract class LogAdapter implements Log
 {
     final protected Log log;
-    
+
     /**
      * Constructor of an optional wrapped {@link Log}.
+     * 
      * @param log
      */
     protected LogAdapter(Log log)
@@ -48,7 +49,7 @@ public abstract class LogAdapter implements Log
     {
         trace(arg0, null);
     }
-    
+
     @Override
     public void trace(Object arg0, Throwable arg1)
     {

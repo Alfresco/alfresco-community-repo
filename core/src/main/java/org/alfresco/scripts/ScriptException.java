@@ -28,7 +28,8 @@ public class ScriptException extends AlfrescoRuntimeException
     private static final long serialVersionUID = 1739480648583299623L;
 
     /**
-     * @param msgId String
+     * @param msgId
+     *            String
      */
     public ScriptException(String msgId)
     {
@@ -36,27 +37,34 @@ public class ScriptException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId String
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param cause
+     *            Throwable
      */
     public ScriptException(String msgId, Throwable cause)
     {
         super(msgId, cause);
     }
-    
+
     /**
-     * @param msgId String
-     * @param params Object[]
+     * @param msgId
+     *            String
+     * @param params
+     *            Object[]
      */
     public ScriptException(String msgId, Object[] params)
     {
         super(msgId, params);
     }
-    
+
     /**
-     * @param msgId String
-     * @param msgParams Object[]
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
+     * @param cause
+     *            Throwable
      */
     public ScriptException(String msgId, Object[] msgParams, Throwable cause)
     {

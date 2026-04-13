@@ -19,14 +19,12 @@
 package org.alfresco.config;
 
 import java.util.Properties;
-
 import javax.naming.NamingException;
 
 import org.springframework.jndi.JndiTemplate;
 
 /**
- * An extended {@link SystemPropertiesFactoryBean} that allows properties to be set through JNDI entries in
- * java:comp/env/properties/*. The precedence given to system properties is still as per the superclass.
+ * An extended {@link SystemPropertiesFactoryBean} that allows properties to be set through JNDI entries in java:comp/env/properties/*. The precedence given to system properties is still as per the superclass.
  * 
  * @author dward
  */

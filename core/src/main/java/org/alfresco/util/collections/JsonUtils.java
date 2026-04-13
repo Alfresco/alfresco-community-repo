@@ -32,19 +32,19 @@ import org.json.JSONArray;
  */
 public class JsonUtils
 {
-    
+
     @SuppressWarnings("unchecked")
     public static <F, T> List<T> transform(JSONArray values, Function<F, ? extends T> transformer)
     {
-        if(values == null || values.length()<1)
+        if (values == null || values.length() < 1)
         {
-           return Collections.emptyList(); 
+            return Collections.emptyList();
         }
         ArrayList<T> results = new ArrayList<T>(values.length());
         for (int i = 0; i < values.length(); i++)
         {
-            T result = transformer.apply((F)values.opt(i));
-            if(result != null)
+            T result = transformer.apply((F) values.opt(i));
+            if (result != null)
             {
                 results.add(result);
             }

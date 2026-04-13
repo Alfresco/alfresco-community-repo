@@ -26,5 +26,5 @@ package org.alfresco.util.collections;
  */
 public interface Filter<F> extends Function<F, Boolean>
 {
-    //NOOP
+    // NOOP
 }

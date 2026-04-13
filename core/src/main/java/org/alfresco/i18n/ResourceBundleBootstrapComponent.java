@@ -32,10 +32,10 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class ResourceBundleBootstrapComponent
 {
     /**
-     * Set the resource bundles to be registered.  This should be a list of resource
-     * bundle base names whose content will be made available across the repository.
+     * Set the resource bundles to be registered. This should be a list of resource bundle base names whose content will be made available across the repository.
      * 
-     * @param resourceBundles   the resource bundles
+     * @param resourceBundles
+     *            the resource bundles
      */
     public void setResourceBundles(List<String> resourceBundles)
     {

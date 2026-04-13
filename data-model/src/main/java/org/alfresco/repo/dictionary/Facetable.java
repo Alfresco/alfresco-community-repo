@@ -45,21 +45,32 @@ public enum Facetable
      * FALSE - feceting is not required and will not be supported
      */
     FALSE;
-    
-    public static String serializer(Facetable facetable) {
+
+    public static String serializer(Facetable facetable)
+    {
         return facetable.toString();
     }
 
-    public static Facetable deserializer(String value) {
-        if (value == null) {
+    public static Facetable deserializer(String value)
+    {
+        if (value == null)
+        {
             return null;
-        } else if (value.equalsIgnoreCase(TRUE.toString())) {
+        }
+        else if (value.equalsIgnoreCase(TRUE.toString()))
+        {
             return TRUE;
-        } else if (value.equalsIgnoreCase(FALSE.toString())) {
+        }
+        else if (value.equalsIgnoreCase(FALSE.toString()))
+        {
             return FALSE;
-        } else if (value.equalsIgnoreCase(UNSET.toString())) {
+        }
+        else if (value.equalsIgnoreCase(UNSET.toString()))
+        {
             return UNSET;
-        } else {
+        }
+        else
+        {
             throw new IllegalArgumentException(
                     "Invalid facetable enum value: " + value);
         }

@@ -22,7 +22,6 @@ import static java.util.Collections.emptyList;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
@@ -31,8 +30,6 @@ import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.UserTransaction;
 
-import org.alfresco.error.StackTraceUtil;
-import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.transaction.CannotCreateTransactionException;
@@ -46,33 +43,21 @@ import org.springframework.transaction.interceptor.TransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionAttributeSource;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import org.alfresco.error.StackTraceUtil;
+import org.alfresco.util.GUID;
+
 /**
- * A <code>UserTransaction</code> that will allow the thread using it to participate
- * in transactions that are normally only begun and committed by the <b>SpringFramework</b>
- * transaction aware components.
+ * A <code>UserTransaction</code> that will allow the thread using it to participate in transactions that are normally only begun and committed by the <b>SpringFramework</b> transaction aware components.
  * <p>
- * Client code can use this class directly, but should be very careful to handle the exception
- * conditions with the appropriate <code>finally</code> blocks and <code>rollback</code> code.
- * It is recommended that clients use this class indirectly via an instance of the
- * {@link org.alfresco.repo.transaction.RetryingTransactionHelper}.
+ * Client code can use this class directly, but should be very careful to handle the exception conditions with the appropriate <code>finally</code> blocks and <code>rollback</code> code. It is recommended that clients use this class indirectly via an instance of the {@link org.alfresco.repo.transaction.RetryingTransactionHelper}.
  * <p>
- * This class is thread-safe in that it will detect multithreaded access and throw
- * exceptions.  Therefore </b>do not use on multiple threads</b>.  Instances should be
- * used only for the duration of the required user transaction and then discarded.
- * Any attempt to reuse an instance will result in failure.
+ * This class is thread-safe in that it will detect multithreaded access and throw exceptions. Therefore </b>do not use on multiple threads</b>. Instances should be used only for the duration of the required user transaction and then discarded. Any attempt to reuse an instance will result in failure.
  * <p>
  * Nested user transaction are allowed.
  * <p>
  * <b>Logging:</b><br/>
  * To dump exceptions during commits, turn debugging on for this class.<br/>
- * To log leaked transactions i.e. a begin() is not matched by a commit() or rollback(),
- * add <i>.trace</i> to the usual classname-based debug category and set to WARN log
- * level. This will log the first detection of a leaked transaction and automatically enable
- * transaction call stack logging for subsequent leaked transactions.  To enforce
- * call stack logging from the start set the <i>.trace</i> log level to DEBUG. Call stack
- * logging will hamper performance but is useful when it appears that something is eating
- * connections or holding onto resources - usually a sign that client code hasn't handled all
- * possible exception conditions.
+ * To log leaked transactions i.e. a begin() is not matched by a commit() or rollback(), add <i>.trace</i> to the usual classname-based debug category and set to WARN log level. This will log the first detection of a leaked transaction and automatically enable transaction call stack logging for subsequent leaked transactions. To enforce call stack logging from the start set the <i>.trace</i> log level to DEBUG. Call stack logging will hamper performance but is useful when it appears that something is eating connections or holding onto resources - usually a sign that client code hasn't handled all possible exception conditions.
  * 
  * @see org.springframework.transaction.PlatformTransactionManager
  * @see org.springframework.transaction.support.DefaultTransactionDefinition
@@ -83,27 +68,18 @@ public class SpringAwareUserTransaction
         extends TransactionAspectSupport
         implements UserTransaction, TransactionAttributeSource, TransactionAttribute
 {
-    /*
-     * There is some extra work in here to perform safety checks against the thread ID.
-     * This is because this class doesn't operate in an environment that guarantees that the
-     * thread coming into the begin() method is the same as the thread forcing commit() or
-     * rollback().
-     */
-        
+    /* There is some extra work in here to perform safety checks against the thread ID. This is because this class doesn't operate in an environment that guarantees that the thread coming into the begin() method is the same as the thread forcing commit() or rollback(). */
+
     private static final long serialVersionUID = 3762538897183224373L;
 
-
     private static final String NAME = "UserTransaction";
-    
+
     private static final Log logger = LogFactory.getLog(SpringAwareUserTransaction.class);
-    
-    
-    /*
-     * Leaked Transaction Logging
-     */
+
+    /* Leaked Transaction Logging */
     private static final Log traceLogger = LogFactory.getLog(SpringAwareUserTransaction.class.getName() + ".trace");
     private static volatile boolean isCallStackTraced = false;
-    
+
     static
     {
         if (traceLogger.isDebugEnabled())
@@ -112,24 +88,22 @@ public class SpringAwareUserTransaction
             traceLogger.warn("Logging of transaction call stack is enforced and will affect performance");
         }
     }
-    
-    
+
     static boolean isCallStackTraced()
     {
         return isCallStackTraced;
     }
-    
-    /** stores whether begin() & commit()/rollback() methods calls are balanced */ 
+
+    /** stores whether begin() & commit()/rollback() methods calls are balanced */
     private boolean isBeginMatched = true;
     /** stores the begin() call stack when auto tracing */
     private StackTraceElement[] beginCallStack;
 
-    
     private boolean readOnly;
     private int isolationLevel;
     private int propagationBehaviour;
     private int timeout;
-    
+
     /** Stores the user transaction current status as affected by explicit operations */
     private int internalStatus = Status.STATUS_NO_TRANSACTION;
     /** the transaction information used to check for mismatched begin/end */
@@ -144,15 +118,16 @@ public class SpringAwareUserTransaction
     /**
      * Creates a user transaction that defaults to {@link TransactionDefinition#PROPAGATION_REQUIRED}.
      * 
-     * @param transactionManager the transaction manager to use
-     * @param readOnly true to force a read-only transaction
-     * @param isolationLevel one of the
-     *      {@link TransactionDefinition#ISOLATION_DEFAULT TransactionDefinition.ISOLATION_XXX}
-     *      constants
-     * @param propagationBehaviour one of the
-     *      {@link TransactionDefinition#PROPAGATION_MANDATORY TransactionDefinition.PROPAGATION__XXX}
-     *      constants
-     * @param timeout the transaction timeout in seconds.
+     * @param transactionManager
+     *            the transaction manager to use
+     * @param readOnly
+     *            true to force a read-only transaction
+     * @param isolationLevel
+     *            one of the {@link TransactionDefinition#ISOLATION_DEFAULT TransactionDefinition.ISOLATION_XXX} constants
+     * @param propagationBehaviour
+     *            one of the {@link TransactionDefinition#PROPAGATION_MANDATORY TransactionDefinition.PROPAGATION__XXX} constants
+     * @param timeout
+     *            the transaction timeout in seconds.
      * 
      * @see TransactionDefinition#getTimeout()
      */
@@ -171,32 +146,30 @@ public class SpringAwareUserTransaction
         this.propagationBehaviour = propagationBehaviour;
         this.timeout = timeout;
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(256);
         sb.append("UserTransaction")
-          .append("[object=").append(super.toString())
-          .append(", status=").append(internalStatus)
-          .append("]");
+                .append("[object=").append(super.toString())
+                .append(", status=").append(internalStatus)
+                .append("]");
         return sb.toString();
     }
 
     /**
-     * This class carries all the information required to fullfil requests about the transaction
-     * attributes.  It acts as a source of the transaction attributes.
+     * This class carries all the information required to fullfil requests about the transaction attributes. It acts as a source of the transaction attributes.
      * 
      * @return Return <code>this</code> instance
      */
     public TransactionAttribute getTransactionAttribute(Method method, Class<?> targetClass)
     {
         return this;
-    }        
-    
+    }
+
     /**
-     * Return a qualifier value associated with this transaction attribute. This is not used as the transaction manager
-     * has been selected for us.
+     * Return a qualifier value associated with this transaction attribute. This is not used as the transaction manager has been selected for us.
      * 
      * @return null always
      */
@@ -207,10 +180,11 @@ public class SpringAwareUserTransaction
 
     /**
      * Associate one or more labels with this transaction attribute.
-     * <p>This may be used for applying specific transactional behavior
-     * or follow a purely descriptive nature.
+     * <p>
+     * This may be used for applying specific transactional behavior or follow a purely descriptive nature.
      */
-    public void setLabels(Collection<String> labels) {
+    public void setLabels(Collection<String> labels)
+    {
         this.labels = labels;
     }
 
@@ -221,10 +195,7 @@ public class SpringAwareUserTransaction
     }
 
     /**
-     * The {@link UserTransaction } must rollback regardless of the error.  The
-     * {@link #rollback() rollback} behaviour is implemented by simulating a caught
-     * exception.  As this method will always return <code>true</code>, the rollback
-     * behaviour will be to rollback the transaction or mark it for rollback.
+     * The {@link UserTransaction } must rollback regardless of the error. The {@link #rollback() rollback} behaviour is implemented by simulating a caught exception. As this method will always return <code>true</code>, the rollback behaviour will be to rollback the transaction or mark it for rollback.
      * 
      * @return Returns true always
      */
@@ -232,7 +203,7 @@ public class SpringAwareUserTransaction
     {
         return true;
     }
-    
+
     public String getName()
     {
         return Thread.currentThread().getName() + "-" + GUID.generate();
@@ -273,11 +244,7 @@ public class SpringAwareUserTransaction
     /**
      * Gets the current transaction info, or null if none exists.
      * <p>
-     * A check is done to ensure that the transaction info on the stack is exactly
-     * the same instance used when this transaction was started.
-     * The internal status is also checked against the transaction info.
-     * These checks ensure that the transaction demarcation is done correctly and that
-     * thread safety is adhered to.
+     * A check is done to ensure that the transaction info on the stack is exactly the same instance used when this transaction was started. The internal status is also checked against the transaction info. These checks ensure that the transaction demarcation is done correctly and that thread safety is adhered to.
      * 
      * @return Returns the current transaction
      */
@@ -292,7 +259,7 @@ public class SpringAwareUserTransaction
         {
             throw new RuntimeException("Transaction has not been started but a thread ID has been recorded");
         }
-        
+
         TransactionInfo txnInfo = null;
         try
         {
@@ -301,7 +268,7 @@ public class SpringAwareUserTransaction
         }
         catch (NoTransactionException e)
         {
-            // No transaction.  It is possible that the transaction threw an exception during commit.
+            // No transaction. It is possible that the transaction threw an exception during commit.
         }
         // perform checks for active transactions
         if (internalStatus == Status.STATUS_ACTIVE)
@@ -327,19 +294,18 @@ public class SpringAwareUserTransaction
     }
 
     /**
-     * This status is a combination of the internal status, as recorded during explicit operations,
-     * and the status provided by the Spring support.
+     * This status is a combination of the internal status, as recorded during explicit operations, and the status provided by the Spring support.
      * 
      * @see Status
      */
     public synchronized int getStatus() throws SystemException
     {
         TransactionInfo txnInfo = getTransactionInfo();
-        
+
         // if the txn info is null, then we are outside a transaction
         if (txnInfo == null)
         {
-            return internalStatus;      // this is checked in getTransactionInfo
+            return internalStatus; // this is checked in getTransactionInfo
         }
 
         // normally the internal status is correct, but we only need to double check
@@ -401,9 +367,10 @@ public class SpringAwareUserTransaction
             logger.debug("Set transaction status to rollback only: " + this);
         }
     }
-    
+
     /**
-     * @throws NotSupportedException if an attempt is made to reuse this instance
+     * @throws NotSupportedException
+     *             if an attempt is made to reuse this instance
      */
     public synchronized void begin() throws NotSupportedException, SystemException
     {
@@ -414,20 +381,19 @@ public class SpringAwareUserTransaction
         {
             throw new NotSupportedException("The UserTransaction may not be reused");
         }
-        
-        // check 
-        
-        if( (propagationBehaviour != TransactionDefinition.PROPAGATION_REQUIRES_NEW))
+
+        // check
+
+        if ((propagationBehaviour != TransactionDefinition.PROPAGATION_REQUIRES_NEW))
         {
-            if(!readOnly && 
-                    TransactionSynchronizationManager.isSynchronizationActive() &&  
-                    TransactionSynchronizationManager.isCurrentTransactionReadOnly()
-            )
+            if (!readOnly &&
+                    TransactionSynchronizationManager.isSynchronizationActive() &&
+                    TransactionSynchronizationManager.isCurrentTransactionReadOnly())
             {
                 throw new IllegalStateException("Nested writable transaction in a read only transaction");
             }
         }
-        
+
         // begin a transaction
         try
         {
@@ -439,16 +405,16 @@ public class SpringAwareUserTransaction
             }
 
             internalTxnInfo = createTransactionIfNecessary(
-                (PlatformTransactionManager) tm, getTransactionAttribute(null, null), getName());
+                    (PlatformTransactionManager) tm, getTransactionAttribute(null, null), getName());
         }
         catch (CannotCreateTransactionException e)
         {
             throw new ConnectionPoolException("The DB connection pool is depleted.", e);
         }
-        
+
         internalStatus = Status.STATUS_ACTIVE;
         threadId = Thread.currentThread().getId();
-        
+
         // Record that transaction details now that begin was successful
         isBeginMatched = false;
         if (isCallStackTraced)
@@ -465,9 +431,10 @@ public class SpringAwareUserTransaction
             logger.debug("Began user transaction: " + this);
         }
     }
-    
+
     /**
-     * @throws IllegalStateException if a transaction was not started
+     * @throws IllegalStateException
+     *             if a transaction was not started
      */
     public synchronized void commit()
             throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
@@ -498,7 +465,7 @@ public class SpringAwareUserTransaction
         {
             throw new IllegalStateException("No user transaction is active");
         }
-            
+
         if (!finalized)
         {
             try
@@ -529,13 +496,13 @@ public class SpringAwareUserTransaction
                 beginCallStack = null;
             }
         }
-        
+
         // regardless of whether the transaction was finally committed or not, the status
         // as far as UserTransaction is concerned should be 'committed'
-        
+
         // keep track that this UserTransaction was explicitly committed
         internalStatus = Status.STATUS_COMMITTED;
-        
+
         // done
         if (logger.isDebugEnabled())
         {
@@ -548,7 +515,7 @@ public class SpringAwareUserTransaction
     {
         // perform checks
         TransactionInfo txnInfo = getTransactionInfo();
-        
+
         int status = getStatus();
         // check the status
         if (status == Status.STATUS_ROLLING_BACK || status == Status.STATUS_ROLLEDBACK)
@@ -563,7 +530,7 @@ public class SpringAwareUserTransaction
         {
             throw new IllegalStateException("No user transaction is active");
         }
-    
+
         if (!finalized)
         {
             try
@@ -582,16 +549,16 @@ public class SpringAwareUserTransaction
             }
         }
 
-        // the internal status notes that we were specifically rolled back 
+        // the internal status notes that we were specifically rolled back
         internalStatus = Status.STATUS_ROLLEDBACK;
-        
+
         // done
         if (logger.isDebugEnabled())
         {
             logger.debug("Rolled back user transaction: " + this);
         }
     }
-    
+
     @Override
     protected void completeTransactionAfterThrowing(TransactionInfo txInfo, Throwable ex)
     {
@@ -611,8 +578,8 @@ public class SpringAwareUserTransaction
             {
                 if (beginCallStack == null)
                 {
-                    traceLogger.error("UserTransaction being garbage collected without a commit() or rollback(). " + 
-                                      "NOTE: Prior to transaction call stack logging.");
+                    traceLogger.error("UserTransaction being garbage collected without a commit() or rollback(). " +
+                            "NOTE: Prior to transaction call stack logging.");
                 }
                 else
                 {

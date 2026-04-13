@@ -34,8 +34,7 @@ public class RefreshableCacheRefreshedEvent extends AbstractRefreshableCacheEven
 
     /**
      * @param cacheId
-     * @param key
-     *            - the key/ tennant id
+     * @param key - the key/ tennant id
      */
     RefreshableCacheRefreshedEvent(String cacheId, String key)
     {

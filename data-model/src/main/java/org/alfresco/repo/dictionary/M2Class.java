@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public abstract class M2Class
 {
     public static final Pattern PROPERTY_PLACEHOLDER = Pattern.compile("\\$\\{.*\\}\\|.*");
-
+    
     private String name = null;
     private String title = null;
     private String description = null;
@@ -54,54 +54,64 @@ public abstract class M2Class
     private List<M2ClassAssociation> associations = new ArrayList<M2ClassAssociation>();
     private List<String> mandatoryAspects = new ArrayList<String>();
 
-    /* package */ M2Class()
-    {}
-
+    /*package*/ M2Class()
+    {
+    }
+    
     public boolean isAspect()
     {
         return this instanceof M2Aspect;
     }
 
+    
     public String getName()
     {
         return name;
     }
 
+    
     public void setName(String name)
     {
         this.name = name;
     }
 
+    
     public String getTitle()
     {
         return title;
     }
-
+    
+    
     public void setTitle(String title)
     {
         this.title = title;
     }
-
+    
+    
     public String getDescription()
     {
         return description;
     }
-
+    
+    
     public void setDescription(String description)
     {
         this.description = description;
     }
 
+    
     public String getParentName()
     {
         return parentName;
     }
-
+    
+    
     public void setParentName(String parentName)
     {
         this.parentName = parentName;
     }
-
+    
+    
     public Boolean getArchive()
     {
         return archive;
@@ -111,7 +121,7 @@ public abstract class M2Class
     {
         this.archive = Boolean.valueOf(archive);
     }
-
+    
     public Boolean getIncludedInSuperTypeQuery()
     {
         return includedInSuperTypeQuery;
@@ -129,7 +139,8 @@ public abstract class M2Class
         properties.add(property);
         return property;
     }
-
+    
+    
     public void removeProperty(String name)
     {
         M2Property property = getProperty(name);
@@ -139,11 +150,13 @@ public abstract class M2Class
         }
     }
 
+
     public List<M2Property> getProperties()
     {
         return Collections.unmodifiableList(properties);
     }
 
+    
     public M2Property getProperty(String name)
     {
         for (M2Property candidate : properties)
@@ -156,6 +169,7 @@ public abstract class M2Class
         return null;
     }
 
+    
     public M2Association createAssociation(String name)
     {
         M2Association association = new M2Association();
@@ -164,6 +178,7 @@ public abstract class M2Class
         return association;
     }
 
+    
     public M2ChildAssociation createChildAssociation(String name)
     {
         M2ChildAssociation association = new M2ChildAssociation();
@@ -171,7 +186,8 @@ public abstract class M2Class
         associations.add(association);
         return association;
     }
-
+    
+    
     public void removeAssociation(String name)
     {
         M2ClassAssociation association = getAssociation(name);
@@ -181,11 +197,13 @@ public abstract class M2Class
         }
     }
 
+    
     public List<M2ClassAssociation> getAssociations()
     {
         return Collections.unmodifiableList(associations);
     }
 
+    
     public M2ClassAssociation getAssociation(String name)
     {
         for (M2ClassAssociation candidate : associations)
@@ -197,7 +215,8 @@ public abstract class M2Class
         }
         return null;
     }
-
+    
+    
     public M2PropertyOverride createPropertyOverride(String name)
     {
         M2PropertyOverride property = new M2PropertyOverride();
@@ -205,7 +224,8 @@ public abstract class M2Class
         propertyOverrides.add(property);
         return property;
     }
-
+    
+    
     public void removePropertyOverride(String name)
     {
         M2PropertyOverride property = getPropertyOverride(name);
@@ -215,10 +235,12 @@ public abstract class M2Class
         }
     }
 
+    
     public List<M2PropertyOverride> getPropertyOverrides()
     {
         return Collections.unmodifiableList(propertyOverrides);
     }
+
 
     public M2PropertyOverride getPropertyOverride(String name)
     {
@@ -231,22 +253,24 @@ public abstract class M2Class
         }
         return null;
     }
-
+    
     public void addMandatoryAspect(String name)
     {
         mandatoryAspects.add(name);
     }
-
+    
+    
     public void removeMandatoryAspect(String name)
     {
         mandatoryAspects.remove(name);
     }
+    
 
     public List<String> getMandatoryAspects()
     {
         return Collections.unmodifiableList(mandatoryAspects);
     }
-
+    
     public void setConfigProperties(Properties configProperties)
     {
         if (properties != null)

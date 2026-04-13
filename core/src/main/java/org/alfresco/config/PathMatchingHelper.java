@@ -26,7 +26,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.PathMatcher;
 
 /**
- * An interface for plug ins to JBossEnabledResourcePatternResolver that avoids direct dependencies on application server specifics.
+ * An interface for plug ins to JBossEnabledResourcePatternResolver that avoids direct dependencies on
+ * application server specifics.
  * 
  * @author dward
  */
@@ -44,8 +45,7 @@ public interface PathMatchingHelper
     /**
      * Gets the resource at the given URL.
      * 
-     * @param url
-     *            URL
+     * @param url URL
      * @return the resource at the given URL
      * @throws IOException
      *             for any error

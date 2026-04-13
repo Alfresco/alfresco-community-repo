@@ -26,14 +26,14 @@
 package org.alfresco.opencmis.dictionary;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-
-import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
-import org.apache.chemistry.opencmis.commons.enums.Action;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
+import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
+import org.apache.chemistry.opencmis.commons.enums.Action;
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 
 public interface TypeDefinitionWrapper
 {
@@ -48,15 +48,13 @@ public interface TypeDefinitionWrapper
     QName getAlfrescoName();
 
     QName getAlfrescoClass();
-
     String getTenantId();
-
     TypeDefinitionWrapper getParent();
 
-    // List<TypeDefinitionWrapper> getChildren();
+//    List<TypeDefinitionWrapper> getChildren();
 
     Collection<PropertyDefinitionWrapper> getProperties();
-
+    
     Collection<PropertyDefinitionWrapper> getProperties(boolean update);
 
     PropertyDefinitionWrapper getPropertyById(String propertyId);

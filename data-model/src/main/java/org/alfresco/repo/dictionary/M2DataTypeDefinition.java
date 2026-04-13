@@ -25,13 +25,19 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.util.StringUtils;
 import org.alfresco.repo.i18n.StaticMessageLookup;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+
 
 /**
  * Compiled Property Type Definition
@@ -39,7 +45,7 @@ import org.alfresco.service.namespace.QName;
  * @author David Caruana
  *
  */
-/* package */ class M2DataTypeDefinition implements DataTypeDefinition
+/*package*/ class M2DataTypeDefinition implements DataTypeDefinition
 {
     private static final String ERR_NOT_DEFINED_NAMESPACE = "d_dictionary.data_type.namespace_not_defined";
     private static final String ERR_JAVA_CLASS_NOT_SPECIFIED = "d_dictionary.data_type.java_class_not_specified";
@@ -48,10 +54,11 @@ import org.alfresco.service.namespace.QName;
     private ModelDefinition model;
     private QName name;
     private M2DataType dataType;
-    private String analyserResourceBundleName;
+    private String  analyserResourceBundleName;
     private transient MessageLookup staticMessageLookup = new StaticMessageLookup();
-
-    /* package */ M2DataTypeDefinition(ModelDefinition model, M2DataType propertyType, NamespacePrefixResolver resolver)
+    
+    
+    /*package*/ M2DataTypeDefinition(ModelDefinition model, M2DataType propertyType, NamespacePrefixResolver resolver)
     {
         this.model = model;
         this.name = QName.createQName(propertyType.getName(), resolver);
@@ -62,7 +69,8 @@ import org.alfresco.service.namespace.QName;
         this.dataType = propertyType;
     }
 
-    /* package */ void resolveDependencies(ModelQuery query)
+
+    /*package*/ void resolveDependencies(ModelQuery query)
     {
         // Ensure java class has been specified
         String javaClass = dataType.getJavaClassName();
@@ -70,7 +78,7 @@ import org.alfresco.service.namespace.QName;
         {
             throw new DictionaryException(ERR_JAVA_CLASS_NOT_SPECIFIED, name.toPrefixString());
         }
-
+        
         // Ensure java class is valid and referenceable
         try
         {
@@ -81,7 +89,7 @@ import org.alfresco.service.namespace.QName;
             throw new DictionaryException(ERR_JAVA_CLASS_INVALID, javaClass, name.toPrefixString(), e);
         }
     }
-
+    
     /**
      * @see #getName()
      */
@@ -90,7 +98,7 @@ import org.alfresco.service.namespace.QName;
     {
         return getName().toString();
     }
-
+    
     @Override
     public ModelDefinition getModel()
     {
@@ -108,7 +116,7 @@ import org.alfresco.service.namespace.QName;
     {
         return getTitle(staticMessageLookup);
     }
-
+    
     @Override
     public String getDescription()
     {
@@ -118,25 +126,25 @@ import org.alfresco.service.namespace.QName;
     @Override
     public String getTitle(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(model, messageLookup, "datatype", name, "title");
+        String value = M2Label.getLabel(model, messageLookup, "datatype", name, "title"); 
         if (value == null)
         {
             value = dataType.getTitle();
         }
         return value;
     }
-
+    
     @Override
     public String getDescription(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(model, messageLookup, "datatype", name, "description");
+        String value = M2Label.getLabel(model, messageLookup, "datatype", name, "description"); 
         if (value == null)
         {
             value = dataType.getDescription();
         }
         return value;
     }
-
+   
     @Override
     public String getJavaClassName()
     {

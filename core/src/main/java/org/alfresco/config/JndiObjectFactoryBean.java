@@ -19,11 +19,13 @@
 package org.alfresco.config;
 
 import java.sql.Connection;
+
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 /**
- * An extended version of JndiObjectFactoryBean that actually tests a JNDI data source before falling back to its default object. Allows continued backward compatibility with old-style datasource configuration.
+ * An extended version of JndiObjectFactoryBean that actually tests a JNDI data source before falling back to its
+ * default object. Allows continued backward compatibility with old-style datasource configuration.
  * 
  * @author dward
  */
@@ -57,7 +59,8 @@ public class JndiObjectFactoryBean extends org.springframework.jndi.JndiObjectFa
                     }
                 }
                 catch (Exception e)
-                {}
+                {
+                }
             }
         }
         return candidate;

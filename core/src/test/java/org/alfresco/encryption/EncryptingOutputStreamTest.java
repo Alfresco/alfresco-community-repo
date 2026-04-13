@@ -25,7 +25,8 @@ public class EncryptingOutputStreamTest extends TestCase
 {
 
     /**
-     * Tests encryption / decryption by attempting to encrypt and decrypt the bytes forming this class definition and comparing it with the unencrypted bytes.
+     * Tests encryption / decryption by attempting to encrypt and decrypt the bytes forming this class definition and
+     * comparing it with the unencrypted bytes.
      * 
      * @throws Exception
      *             an exception

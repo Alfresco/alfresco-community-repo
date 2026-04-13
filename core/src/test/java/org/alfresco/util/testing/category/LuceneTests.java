@@ -21,7 +21,9 @@ package org.alfresco.util.testing.category;
 /**
  * Category marker for tests that use Lucene search.
  *
- * All tests marked with this category will eventually have to be transformed to not use lucene (mock the results if needed) or they will be move to another level of the testing scale: system/TAS testing;
+ * All tests marked with this category will eventually have to be transformed to not use lucene (mock the results if
+ * needed) or they will be move to another level of the testing scale: system/TAS testing;
  */
 public interface LuceneTests
-{}
+{
+}

@@ -31,8 +31,7 @@ public interface TriggerBeanSPI
     int getRepeatCount();
 
     /**
-     * @param repeatCount
-     *            int
+     * @param repeatCount int
      */
     void setRepeatCount(int repeatCount);
 
@@ -42,14 +41,12 @@ public interface TriggerBeanSPI
     long getRepeatInterval();
 
     /**
-     * @param repeatInterval
-     *            long
+     * @param repeatInterval long
      */
     void setRepeatInterval(long repeatInterval);
 
     /**
-     * @param repeatIntervalMinutes
-     *            long
+     * @param repeatIntervalMinutes long
      */
     void setRepeatIntervalMinutes(long repeatIntervalMinutes);
 
@@ -59,14 +56,12 @@ public interface TriggerBeanSPI
     long getStartDelay();
 
     /**
-     * @param startDelay
-     *            long
+     * @param startDelay long
      */
     void setStartDelay(long startDelay);
 
     /**
-     * @param startDelayMinutes
-     *            long
+     * @param startDelayMinutes long
      */
     void setStartDelayMinutes(long startDelayMinutes);
 

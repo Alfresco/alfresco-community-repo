@@ -27,10 +27,6 @@ package org.alfresco.opencmis.dictionary;
 
 import java.util.Collection;
 
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.enums.ContentStreamAllowed;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.DocumentTypeDefinitionImpl;
-
 import org.alfresco.opencmis.CMISUtils;
 import org.alfresco.opencmis.mapping.CMISMapping;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -38,6 +34,9 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.ContentStreamAllowed;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.DocumentTypeDefinitionImpl;
 
 public class DocumentTypeDefinitionWrapper extends ShadowTypeDefinitionWrapper
 {
@@ -47,7 +46,7 @@ public class DocumentTypeDefinitionWrapper extends ShadowTypeDefinitionWrapper
     private DocumentTypeDefinitionImpl typeDefInclProperties;
     private DictionaryService dictionaryService;
 
-    public DocumentTypeDefinitionWrapper(CMISMapping cmisMapping, PropertyAccessorMapping accessorMapping,
+    public DocumentTypeDefinitionWrapper(CMISMapping cmisMapping, PropertyAccessorMapping accessorMapping, 
             PropertyLuceneBuilderMapping luceneBuilderMapping, String typeId, DictionaryService dictionaryService, ClassDefinition cmisClassDef)
     {
         this.dictionaryService = dictionaryService;
@@ -65,8 +64,7 @@ public class DocumentTypeDefinitionWrapper extends ShadowTypeDefinitionWrapper
         {
             typeDef.setQueryName(ISO9075.encodeSQL(typeId));
             typeDef.setParentTypeId(null);
-        }
-        else
+        } else
         {
             typeDef.setQueryName(ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(alfrescoName)));
             QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
@@ -95,7 +93,7 @@ public class DocumentTypeDefinitionWrapper extends ShadowTypeDefinitionWrapper
         createOwningPropertyDefinitions(cmisMapping, accessorMapping, luceneBuilderMapping, dictionaryService, cmisClassDef);
         createActionEvaluators(accessorMapping, BaseTypeId.CMIS_DOCUMENT);
     }
-
+    
     @Override
     public void updateDefinition(DictionaryService dictionaryService)
     {
@@ -110,10 +108,10 @@ public class DocumentTypeDefinitionWrapper extends ShadowTypeDefinitionWrapper
         {
             super.updateDefinition(dictionaryService);
         }
-
+        
         updateTypeDefInclProperties();
     }
-
+    
     @Override
     public PropertyDefinitionWrapper getPropertyById(String propertyId)
     {
@@ -127,7 +125,7 @@ public class DocumentTypeDefinitionWrapper extends ShadowTypeDefinitionWrapper
         updateProperties(dictionaryService);
         return propertiesById.values();
     }
-
+    
     @Override
     public Collection<PropertyDefinitionWrapper> getProperties(boolean update)
     {

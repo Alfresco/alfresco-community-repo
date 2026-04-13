@@ -24,9 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Test;
-
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.junit.Test;
 
 /**
  * @author Andy
@@ -46,7 +45,7 @@ public class ExplicitShardingPolicyTest
             assertTrue(shardIds.contains(i));
         }
         assertEquals(0, policy.getShardIdsForNode(2).size());
-
+        
         for (int i = 0; i < 10; i++)
         {
             List<Integer> nodeInstances = policy.getNodeInstancesForShardId(i);
@@ -67,12 +66,12 @@ public class ExplicitShardingPolicyTest
             assertTrue(shardIds.contains(i));
         }
         assertEquals(0, policy.getShardIdsForNode(11).size());
-
+        
         for (int i = 0; i < 10; i++)
         {
             List<Integer> nodeInstances = policy.getNodeInstancesForShardId(i);
             assertEquals(1, nodeInstances.size());
-
+            
         }
     }
 
@@ -90,12 +89,12 @@ public class ExplicitShardingPolicyTest
             assertTrue(shardIds.contains((i + 1) % 10));
         }
         assertEquals(0, policy.getShardIdsForNode(11).size());
-
+        
         for (int i = 0; i < 10; i++)
         {
             List<Integer> nodeInstances = policy.getNodeInstancesForShardId(i);
             assertEquals(2, nodeInstances.size());
-
+            
         }
     }
 
@@ -113,9 +112,9 @@ public class ExplicitShardingPolicyTest
         buildAndTest(24, 3, 4);
         buildAndTest(24, 3, 3);
     }
-
+    
     @Test
-
+    
     public void failing()
     {
         buildAndTest(10, 2, 4);
@@ -129,12 +128,12 @@ public class ExplicitShardingPolicyTest
     }
 
     /** ExplicitShardingPolicy algorithm fails for 4 shards, 3 replicas, 6 nodes. (See SEARCH-1785) */
-    @Test(expected = AlfrescoRuntimeException.class)
+    @Test (expected = AlfrescoRuntimeException.class)
     public void search1785_436()
     {
         buildAndTest(4, 3, 6);
     }
-
+    
     @Test
     public void check_10_2()
     {
@@ -144,7 +143,7 @@ public class ExplicitShardingPolicyTest
         buildAndTest(10, 2, 4);
         buildAndTest(10, 2, 2);
     }
-
+    
     @Test
     public void check_12_2()
     {
@@ -191,15 +190,16 @@ public class ExplicitShardingPolicyTest
         }
         check(found, replicationFactor);
         assertEquals(0, policy.getShardIdsForNode(numNodes + 1).size());
-
-        int[] nodes = new int[numNodes];
-        for (int i = 0; i < numShards; i++)
+        
+        
+        int[] nodes  = new int[numNodes];
+        for(int i = 0; i < numShards; i++)
         {
             List<Integer> nodeInstances = policy.getNodeInstancesForShardId(i);
             assertEquals(replicationFactor, nodeInstances.size());
             for (Integer nodeInstance : nodeInstances)
             {
-                nodes[nodeInstance - 1]++;
+                nodes[nodeInstance-1]++;
             }
         }
         check(nodes, numShards * replicationFactor / numNodes);

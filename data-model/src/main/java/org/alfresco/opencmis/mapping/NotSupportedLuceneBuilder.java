@@ -25,6 +25,7 @@
  */
 package org.alfresco.opencmis.mapping;
 
+
 /**
  * Lucene Builder for properties which do not support query
  * 
@@ -36,5 +37,6 @@ public class NotSupportedLuceneBuilder extends BaseLuceneBuilder
      * Construct
      */
     public NotSupportedLuceneBuilder()
-    {}
+    {
+    }
 }

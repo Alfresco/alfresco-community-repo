@@ -20,6 +20,7 @@ package org.alfresco.encryption;
 
 import java.io.IOException;
 import java.security.AlgorithmParameters;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -49,9 +50,10 @@ public interface EncryptionUtils
      * @throws IOException
      */
     public byte[] decryptBody(HttpServletRequest req) throws IOException;
-
+    
     /**
-     * Authenticate the http method response: validate the MAC, check that the remote IP is as expected and that the timestamp is recent.
+     * Authenticate the http method response: validate the MAC, check that the remote IP is
+     * as expected and that the timestamp is recent.
      * 
      * @param method
      * @param remoteIP
@@ -61,14 +63,15 @@ public interface EncryptionUtils
     public boolean authenticateResponse(HttpMethod method, String remoteIP, byte[] decryptedBody);
 
     /**
-     * Authenticate the http request: validate the MAC, check that the remote IP is as expected and that the timestamp is recent.
+     * Authenticate the http request: validate the MAC, check that the remote IP is
+     * as expected and that the timestamp is recent.
      * 
      * @param req
      * @param decryptedBody
      * @return true if the method request is authentic, false otherwise
      */
     public boolean authenticate(HttpServletRequest req, byte[] decryptedBody);
-
+    
     /**
      * Encrypt the http method request body
      * 
@@ -89,7 +92,7 @@ public interface EncryptionUtils
      */
     public void setResponseAuthentication(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
             byte[] responseBody, AlgorithmParameters params) throws IOException;
-
+    
     /**
      * Set the algorithm parameters header on the method request
      * 

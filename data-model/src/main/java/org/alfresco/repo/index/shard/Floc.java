@@ -40,22 +40,23 @@ public class Floc implements Serializable
     private static final long serialVersionUID = 3198471269440656171L;
 
     private HashSet<StoreRef> storeRefs = new HashSet<StoreRef>();
-
+    
     private int numberOfShards;
-
+    
     ShardMethodEnum shardMethod;
 
     private String template;
-
+   
     private boolean hasContent;
-
+    
     private HashMap<String, String> propertyBag = new HashMap<String, String>();
-
+    
     /**
      * 
      */
     public Floc()
-    {}
+    {
+    }
 
     /**
      * @return the storeRefs
@@ -66,8 +67,7 @@ public class Floc implements Serializable
     }
 
     /**
-     * @param storeRefs
-     *            the storeRefs to set
+     * @param storeRefs the storeRefs to set
      */
     public void setStoreRefs(HashSet<StoreRef> storeRefs)
     {
@@ -83,8 +83,7 @@ public class Floc implements Serializable
     }
 
     /**
-     * @param numberOfShards
-     *            the numberOfShards to set
+     * @param numberOfShards the numberOfShards to set
      */
     public void setNumberOfShards(int numberOfShards)
     {
@@ -100,8 +99,7 @@ public class Floc implements Serializable
     }
 
     /**
-     * @param shardMethod
-     *            the shardMethod to set
+     * @param shardMethod the shardMethod to set
      */
     public void setShardMethod(ShardMethodEnum shardMethod)
     {
@@ -117,8 +115,7 @@ public class Floc implements Serializable
     }
 
     /**
-     * @param template
-     *            the template to set
+     * @param template the template to set
      */
     public void setTemplate(String template)
     {
@@ -134,8 +131,7 @@ public class Floc implements Serializable
     }
 
     /**
-     * @param hasContent
-     *            the hasContent to set
+     * @param hasContent the hasContent to set
      */
     public void setHasContent(boolean hasContent)
     {
@@ -151,8 +147,7 @@ public class Floc implements Serializable
     }
 
     /**
-     * @param propertyBag
-     *            the propertyBag to set
+     * @param propertyBag the propertyBag to set
      */
     public void setPropertyBag(HashMap<String, String> propertyBag)
     {
@@ -160,8 +155,8 @@ public class Floc implements Serializable
     }
 
     /* (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode() */
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode()
     {
@@ -177,8 +172,8 @@ public class Floc implements Serializable
     }
 
     /* (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object) */
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj)
     {
@@ -220,8 +215,8 @@ public class Floc implements Serializable
     }
 
     /* (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString() */
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString()
     {
@@ -229,5 +224,7 @@ public class Floc implements Serializable
                 + storeRefs + ", numberOfShards=" + numberOfShards + ", shardMethod=" + shardMethod + ", template=" + template + ", hasContent=" + hasContent + ", propertyBag="
                 + propertyBag + "]";
     }
+    
+    
 
 }

@@ -18,6 +18,7 @@
  */
 package org.alfresco.error;
 
+
 /**
  * Helper class around outputting stack traces.
  * 
@@ -27,7 +28,6 @@ public class StackTraceUtil
 {
     /**
      * Builds a message with the stack trace of the form:
-     * 
      * <pre>
      *    SOME MESSAGE:
      *       Started at:
@@ -36,14 +36,10 @@ public class StackTraceUtil
      *          ...
      * </pre>
      * 
-     * @param msg
-     *            the initial error message
-     * @param stackTraceElements
-     *            the stack trace elements
-     * @param sb
-     *            the buffer to append to
-     * @param maxDepth
-     *            the maximum number of trace elements to output. 0 or less means output all.
+     * @param msg the initial error message
+     * @param stackTraceElements the stack trace elements
+     * @param sb the buffer to append to
+     * @param maxDepth the maximum number of trace elements to output.  0 or less means output all.
      */
     public static void buildStackTrace(
             String msg,
@@ -54,7 +50,7 @@ public class StackTraceUtil
         String lineEnding = System.getProperty("line.separator", "\n");
 
         sb.append(msg).append(" ").append(lineEnding)
-                .append("   Started at: ").append(lineEnding);
+          .append("   Started at: ").append(lineEnding);
         for (int i = 0; i < stackTraceElements.length; i++)
         {
             if (i > maxDepth && maxDepth > 0)

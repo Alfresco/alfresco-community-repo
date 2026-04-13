@@ -72,7 +72,9 @@ public class OneToManyHashBiMap<K, V> implements Map<K, Set<V>>, OneToManyBiMap<
         return map.get(key);
     }
 
-    /* @see org.alfresco.util.OneToManyBiMap#getKey(V) */
+    /*
+     * @see org.alfresco.util.OneToManyBiMap#getKey(V)
+     */
     public K getKey(V value)
     {
         return inverse.get(value);
@@ -136,14 +138,15 @@ public class OneToManyHashBiMap<K, V> implements Map<K, Set<V>>, OneToManyBiMap<
         return values;
     }
 
-    /* @see org.alfresco.util.OneToManyBiMap#removeValue(V) */
+    /*
+     * @see org.alfresco.util.OneToManyBiMap#removeValue(V)
+     */
     public K removeValue(V value)
     {
         K key = inverse.remove(value);
         Set<V> values = map.get(key);
         values.remove(value);
-        if (values.size() == 0)
-            map.remove(key);
+        if (values.size() == 0) map.remove(key);
         return key;
     }
 

@@ -32,6 +32,7 @@ import java.util.List;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 
+
 /**
  * Namespace Definition.
  * 
@@ -42,8 +43,9 @@ public class M2NamespaceDefinition implements NamespaceDefinition
     ModelDefinition model = null;
     private String uri = null;
     private String prefix = null;
-
-    /* package */ M2NamespaceDefinition(ModelDefinition model, String uri, String prefix)
+   
+    
+    /*package*/ M2NamespaceDefinition(ModelDefinition model, String uri, String prefix)
     {
         this.model = model;
         this.uri = uri;
@@ -54,7 +56,7 @@ public class M2NamespaceDefinition implements NamespaceDefinition
     {
         return model;
     }
-
+    
     public String getUri()
     {
         return uri;
@@ -69,14 +71,14 @@ public class M2NamespaceDefinition implements NamespaceDefinition
     {
         List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
 
-        for (NamespaceDefinition previousNamespace : previousNamespaces)
+        for (NamespaceDefinition previousNamespace: previousNamespaces)
         {
             boolean found = false;
             for (NamespaceDefinition newNamespace : newNamespaces)
             {
                 if (newNamespace.getUri().equals(previousNamespace.getUri()))
                 {
-                    if (!newNamespace.getPrefix().equals(previousNamespace.getPrefix()))
+                    if(!newNamespace.getPrefix().equals(previousNamespace.getPrefix()))
                     {
                         modelDiffs.add(new M2ModelDiff(newNamespace.getModel().getName(), newNamespace, M2ModelDiff.TYPE_NAMESPACE, M2ModelDiff.DIFF_UPDATED));
                     }
@@ -102,7 +104,7 @@ public class M2NamespaceDefinition implements NamespaceDefinition
                     break;
                 }
             }
-
+            
             if (!found)
             {
                 modelDiffs.add(new M2ModelDiff(newNamespace.getModel().getName(), newNamespace, M2ModelDiff.TYPE_NAMESPACE, M2ModelDiff.DIFF_CREATED));

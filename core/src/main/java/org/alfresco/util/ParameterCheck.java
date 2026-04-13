@@ -28,12 +28,11 @@ import java.util.Collection;
 public final class ParameterCheck
 {
     /**
-     * Checks that the parameter with the given name has content i.e. it is not null
+     * Checks that the parameter with the given name has content i.e. it is not
+     * null
      * 
-     * @param strParamName
-     *            Name of parameter to check
-     * @param object
-     *            Value of the parameter to check
+     * @param strParamName Name of parameter to check
+     * @param object Value of the parameter to check
      */
     public static final void mandatory(final String strParamName, final Object object)
     {
@@ -45,12 +44,11 @@ public final class ParameterCheck
     }
 
     /**
-     * Checks that the string parameter with the given name has content i.e. it is not null and not zero length
+     * Checks that the string parameter with the given name has content i.e. it
+     * is not null and not zero length
      * 
-     * @param strParamName
-     *            Name of parameter to check
-     * @param strParamValue
-     *            Value of the parameter to check
+     * @param strParamName Name of parameter to check
+     * @param strParamValue Value of the parameter to check
      */
     public static final void mandatoryString(final String strParamName, final String strParamValue)
     {
@@ -64,10 +62,8 @@ public final class ParameterCheck
     /**
      * Checks that the collection parameter contains at least one item.
      * 
-     * @param strParamName
-     *            Name of parameter to check
-     * @param coll
-     *            collection to check
+     * @param strParamName Name of parameter to check
+     * @param coll collection to check
      */
     public static final void mandatoryCollection(final String strParamName, final Collection coll)
     {

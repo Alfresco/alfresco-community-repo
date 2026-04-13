@@ -34,7 +34,6 @@ package org.alfresco.repo.index.shard;
 
 import java.util.HashMap;
 import java.util.HashSet;
-
 import org.alfresco.service.cmr.repository.StoreRef;
 
 public class ShardStateBuilder extends ShardStateBuilderBase<ShardStateBuilder>

@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 
@@ -48,7 +49,7 @@ public class DefaultEncryptor extends AbstractEncryptor
     {
         threadCipher = new ThreadLocal<Map<CipherKey, CachedCipher>>();
     }
-
+    
     /**
      * Convenience constructor for tests
      */
@@ -59,20 +60,20 @@ public class DefaultEncryptor extends AbstractEncryptor
         setCipherAlgorithm(cipherAlgorithm);
         setCipherProvider(cipherProvider);
     }
-
+    
     public void init()
     {
         super.init();
         PropertyCheck.mandatory(this, "cipherAlgorithm", cipherAlgorithm);
     }
-
+    
     public void setCacheCiphers(boolean cacheCiphers)
     {
         this.cacheCiphers = cacheCiphers;
     }
 
     protected Cipher createCipher(int mode, String algorithm, String provider, Key key, AlgorithmParameters params)
-            throws NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException, InvalidKeyException, InvalidAlgorithmParameterException
+    throws NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException, InvalidKeyException, InvalidAlgorithmParameterException
     {
         Cipher cipher = null;
 
@@ -85,24 +86,24 @@ public class DefaultEncryptor extends AbstractEncryptor
             cipher = Cipher.getInstance(algorithm, provider);
         }
         cipher.init(mode, key, params);
-
+        
         return cipher;
     }
 
     protected Cipher getCachedCipher(String keyAlias, int mode, AlgorithmParameters params, Key key)
-            throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException, InvalidAlgorithmParameterException
+    throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException, InvalidAlgorithmParameterException
     {
         CachedCipher cipherInfo = null;
         Cipher cipher = null;
 
         Map<CipherKey, CachedCipher> ciphers = threadCipher.get();
-        if (ciphers == null)
+        if(ciphers == null)
         {
             ciphers = new HashMap<CipherKey, CachedCipher>(5);
             threadCipher.set(ciphers);
         }
         cipherInfo = ciphers.get(new CipherKey(keyAlias, mode));
-        if (cipherInfo == null)
+        if(cipherInfo == null)
         {
             cipher = createCipher(mode, cipherAlgorithm, cipherProvider, key, params);
             ciphers.put(new CipherKey(keyAlias, mode), new CachedCipher(cipher, key));
@@ -116,7 +117,7 @@ public class DefaultEncryptor extends AbstractEncryptor
         else
         {
             // the key has changed, re-construct the cipher
-            if (cipherInfo.getKey() != key)
+            if(cipherInfo.getKey() != key)
             {
                 // key has changed, rendering the cached cipher out of date. Re-create the cipher with
                 // the new key.
@@ -128,7 +129,7 @@ public class DefaultEncryptor extends AbstractEncryptor
                 cipher = cipherInfo.getCipher();
             }
         }
-
+        
         return cipher;
     }
 
@@ -139,7 +140,7 @@ public class DefaultEncryptor extends AbstractEncryptor
 
         // Get the encryption key
         Key key = keyProvider.getKey(keyAlias);
-        if (key == null)
+        if(key == null)
         {
             // No encryption possible
             return null;
@@ -147,7 +148,7 @@ public class DefaultEncryptor extends AbstractEncryptor
 
         try
         {
-            if (cacheCiphers)
+            if(cacheCiphers)
             {
                 cipher = getCachedCipher(keyAlias, mode, params, key);
             }
@@ -165,7 +166,7 @@ public class DefaultEncryptor extends AbstractEncryptor
 
         return cipher;
     }
-
+    
     public boolean keyAvailable(String keyAlias)
     {
         return keyProvider.getKey(keyAlias) != null;
@@ -182,7 +183,7 @@ public class DefaultEncryptor extends AbstractEncryptor
             this.keyAlias = keyAlias;
             this.mode = mode;
         }
-
+        
         public String getKeyAlias()
         {
             return keyAlias;
@@ -203,34 +204,34 @@ public class DefaultEncryptor extends AbstractEncryptor
             result = prime * result + mode;
             return result;
         }
-
+        
         @Override
         public boolean equals(Object obj)
         {
-            if (this == obj)
+            if(this == obj)
             {
                 return true;
             }
-
-            if (!(obj instanceof CipherKey))
+            
+            if(!(obj instanceof CipherKey))
             {
                 return false;
             }
 
-            CipherKey other = (CipherKey) obj;
-            if (keyAlias == null)
+            CipherKey other = (CipherKey)obj;
+            if(keyAlias == null)
             {
                 if (other.keyAlias != null)
                 {
                     return false;
                 }
             }
-            else if (!keyAlias.equals(other.keyAlias))
+            else if(!keyAlias.equals(other.keyAlias))
             {
                 return false;
             }
-
-            if (mode != other.mode)
+            
+            if(mode != other.mode)
             {
                 return false;
             }
@@ -239,7 +240,9 @@ public class DefaultEncryptor extends AbstractEncryptor
         }
     }
 
-    /* Stores a cipher and the key used to construct it. */
+    /*
+     * Stores a cipher and the key used to construct it.
+     */
     private static class CachedCipher
     {
         private Key key;
@@ -251,7 +254,7 @@ public class DefaultEncryptor extends AbstractEncryptor
             this.cipher = cipher;
             this.key = key;
         }
-
+        
         public Cipher getCipher()
         {
             return cipher;

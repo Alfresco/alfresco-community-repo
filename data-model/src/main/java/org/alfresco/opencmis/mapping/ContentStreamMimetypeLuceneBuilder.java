@@ -41,12 +41,11 @@ import org.alfresco.service.namespace.QName;
 public class ContentStreamMimetypeLuceneBuilder extends AbstractSimpleLuceneBuilder
 {
     private DictionaryService dictionaryService;
-
+    
     /**
      * Construct
      * 
-     * @param dictionaryService
-     *            DictionaryService
+     * @param dictionaryService DictionaryService
      */
     public ContentStreamMimetypeLuceneBuilder(DictionaryService dictionaryService)
     {

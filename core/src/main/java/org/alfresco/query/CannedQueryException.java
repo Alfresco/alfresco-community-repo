@@ -31,8 +31,7 @@ public class CannedQueryException extends AlfrescoRuntimeException
     private static final long serialVersionUID = -4985399145374964458L;
 
     /**
-     * @param msg
-     *            the message
+     * @param msg           the message
      */
     public CannedQueryException(String msg)
     {
@@ -40,10 +39,8 @@ public class CannedQueryException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msg
-     *            the message
-     * @param cause
-     *            the exception cause
+     * @param msg           the message
+     * @param cause         the exception cause
      */
     public CannedQueryException(String msg, Throwable cause)
     {
@@ -51,10 +48,8 @@ public class CannedQueryException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId
-     *            the message id
-     * @param msgParams
-     *            the message parameters
+     * @param msgId         the message id
+     * @param msgParams     the message parameters
      */
     public CannedQueryException(String msgId, Object[] msgParams)
     {
@@ -62,12 +57,9 @@ public class CannedQueryException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId
-     *            the message id
-     * @param msgParams
-     *            the message parameters
-     * @param cause
-     *            the exception cause
+     * @param msgId         the message id
+     * @param msgParams     the message parameters
+     * @param cause         the exception cause
      */
     public CannedQueryException(String msgId, Object[] msgParams, Throwable cause)
     {

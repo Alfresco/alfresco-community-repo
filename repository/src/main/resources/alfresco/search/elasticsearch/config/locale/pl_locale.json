@@ -1,0 +1,36 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "locale_content": {
+          "type": "polish"
+        },
+        "locale_text_index": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "flatten_graph",
+            "polish_stemmer_multiplexer"
+          ]
+        },
+        "locale_text_query": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "polish_stemmer_multiplexer"
+          ]
+        }
+      },
+      "filter": {
+        "polish_stemmer_multiplexer": {
+          "type": "multiplexer",
+          "filters": [ "polish_stem" ]
+        }
+      }
+    }
+  }
+}

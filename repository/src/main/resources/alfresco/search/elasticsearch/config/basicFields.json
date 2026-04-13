@@ -1,0 +1,146 @@
+{
+    "dynamic": false,
+    "properties": {
+        "PATH": {
+            "type": "text",
+            "analyzer": "path_emulator",
+            "fields": {
+                "keyword": {
+                    "type": "keyword"
+                }
+            }
+        },
+        "UNPREFIXED_PATH": {
+            "type": "keyword",
+            "copy_to": "PATH"
+        },
+        "ANAME": {
+            "type": "keyword"
+        },
+        "PNAME": {
+            "type": "keyword"
+        },
+        "APATH": {
+            "type": "keyword"
+        },
+        "NPATH": {
+            "type": "keyword"
+        },
+        "ALIVE": {
+            "type": "boolean"
+        },
+        "READER": {
+            "type": "keyword"
+        },
+        "READER_untokenized": {
+            "type": "alias",
+            "path": "READER"
+        },
+        "DENIED": {
+            "type": "keyword"
+        },
+        "DENIED_untokenized": {
+            "type": "alias",
+            "path": "DENIED"
+        },
+        "OWNER": {
+            "type": "keyword"
+        },
+        "OWNER_untokenized": {
+            "type": "alias",
+            "path": "OWNER"
+        },
+        "SITE": {
+            "type": "keyword"
+        },
+        "SITE_untokenized": {
+            "type": "alias",
+            "path": "SITE"
+        },
+        "primaryHierarchy": {
+            "type": "keyword"
+        },
+        "PRIMARYPARENT": {
+            "type": "keyword"
+        },
+        "PARENT": {
+            "type": "keyword"
+        },
+        "ANCESTOR": {
+            "type": "keyword"
+        },
+        "STANDARD_ANCESTOR": {
+            "type": "keyword",
+            "copy_to": "ANCESTOR"
+        },
+        "CATEGORY_ANCESTOR": {
+            "type": "keyword",
+            "copy_to": "ANCESTOR"
+        },
+        "TAG": {
+            "type": "keyword"
+        },
+        "TAG_untokenized": {
+            "type": "alias",
+            "path": "TAG"
+        },
+        "TYPE": {
+            "type": "keyword"
+        },
+        "TYPE_untokenized": {
+            "type": "alias",
+            "path": "TYPE"
+        },
+        "ASPECT": {
+            "type": "keyword"
+        },
+        "ASPECT_untokenized": {
+            "type": "alias",
+            "path": "ASPECT"
+        },
+        "PROPERTIES": {
+            "type": "keyword"
+        },
+        "PROPERTIES_untokenized": {
+            "type": "alias",
+            "path": "PROPERTIES"
+        },
+        "METADATA_INDEXING_LAST_UPDATE": {
+            "type": "long"
+        },
+        "CONTENT_INDEXING_LAST_UPDATE": {
+            "type": "long"
+        },
+        "PATH_INDEXING_LAST_UPDATE": {
+            "type": "long"
+        },
+        "cm%3Acontent%2Eencoding": {
+            "type": "keyword"
+        },
+        "cm%3Acontent%2Eencoding_untokenized": {
+            "type": "alias",
+            "path": "cm%3Acontent%2Eencoding"
+        },
+        "cm%3Acontent%2Emimetype": {
+            "type": "keyword"
+        },
+        "cm%3Acontent%2Emimetype_untokenized": {
+            "type": "alias",
+            "path": "cm%3Acontent%2Emimetype"
+        },
+        "cm%3Acontent%2Esize": {
+            "type": "long"
+        },
+        "cm%3Acontent%2Esize_untokenized": {
+            "type": "alias",
+            "path": "cm%3Acontent%2Esize"
+        },
+        "cm%3Acontent%2Etr_status": {
+            "type": "keyword"
+        },
+        "cm%3Acontent%2Etr_ex": {
+            "type": "keyword",
+            "index": false
+        }
+    }
+}

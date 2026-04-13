@@ -1,0 +1,54 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "locale_content": {
+          "char_filter": {
+            "normalize": {
+              "type": "icu_normalizer",
+              "name": "nfkc",
+              "mode": "compose"
+            }
+          },
+          "tokenizer": "kuromoji_tokenizer",
+          "filter": [
+            "kuromoji_baseform",
+            "kuromoji_part_of_speech",
+            "cjk_width",
+            "ja_stop",
+            "kuromoji_stemmer_multiplexer",
+            "lowercase"
+          ]
+        },
+        "locale_text_index": {
+          "tokenizer": "kuromoji_tokenizer",
+          "filter": [
+            "kuromoji_baseform",
+            "kuromoji_part_of_speech",
+            "cjk_width",
+            "ja_stop",
+            "kuromoji_stemmer_multiplexer",
+            "lowercase"
+          ]
+        },
+        "locale_text_query": {
+          "tokenizer": "kuromoji_tokenizer",
+          "filter": [
+            "kuromoji_baseform",
+            "kuromoji_part_of_speech",
+            "cjk_width",
+            "ja_stop",
+            "kuromoji_stemmer_multiplexer",
+            "lowercase"
+          ]
+        }
+      },
+      "filter": {
+        "kuromoji_stemmer_multiplexer": {
+          "type": "multiplexer",
+          "filters": [ "kuromoji_stemmer" ]
+        }
+      }
+    }
+  }
+}

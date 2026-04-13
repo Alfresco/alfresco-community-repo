@@ -1,0 +1,34 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "locale_content": {
+          "char_filter": {
+            "normalize": {
+              "type": "icu_normalizer",
+              "name": "nfkc",
+              "mode": "compose"
+            }
+          },
+          "tokenizer": "smartcn_tokenizer",
+          "filter": [
+            "smartcn_stop",
+            "lowercase"
+          ]
+        },
+        "locale_text_index": {
+          "tokenizer": "smartcn_tokenizer",
+          "filter": [
+            "asciifolding"
+          ]
+        },
+        "locale_text_query": {
+          "tokenizer": "smartcn_tokenizer",
+          "filter": [
+            "asciifolding"
+          ]
+        }
+      }
+    }
+  }
+}

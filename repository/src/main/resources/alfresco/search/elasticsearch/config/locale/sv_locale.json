@@ -1,0 +1,40 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "locale_content": {
+          "type": "swedish"
+        },
+        "locale_text_index": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "flatten_graph",
+            "swedish_stemmer_multiplexer"
+          ]
+        },
+        "locale_text_query": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "swedish_stemmer_multiplexer"
+          ]
+        }
+      },
+      "filter": {
+        "swedish_stemmer": {
+          "type": "stemmer",
+          "language": "swedish"
+        },
+        "swedish_stemmer_multiplexer": {
+          "type": "multiplexer",
+          "filters": [ "swedish_stemmer" ]
+        }
+      }
+    }
+  }
+}

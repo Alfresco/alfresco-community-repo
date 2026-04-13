@@ -309,9 +309,7 @@ public class ClientRegistrationProviderUnitTest
         // Configure: scope validation disabled, custom API scope included
         config.setIssuerUrl("https://login.serviceonline.alfresco/alfresco/v2.0");
         config.setScopeValidationDisabled(true);
-        config.setAdminConsoleScopes("openid,profile,email," + CUSTOM_API_SCOPE);
-        config.setWebScriptsHomeScopes("openid,profile,email");
-        config.setPasswordGrantScopes("openid,profile,email");
+        config.setPasswordGrantScopes("openid,profile,email," + CUSTOM_API_SCOPE);
 
         try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
         {
@@ -334,8 +332,7 @@ public class ClientRegistrationProviderUnitTest
         // Configure with scope validation enabled (default behavior)
         config.setIssuerUrl("https://login.serviceonline.alfresco/alfresco/v2.0");
         config.setScopeValidationDisabled(false);
-        config.setAdminConsoleScopes("openid,profile,email," + CUSTOM_API_SCOPE);
-        config.setPasswordGrantScopes("openid,profile,email");
+        config.setPasswordGrantScopes("openid,profile,email," + CUSTOM_API_SCOPE);
 
         try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
         {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -321,8 +321,7 @@ public class ClientRegistrationProviderUnitTest
                     restTemplate);
 
             // Custom API scope should be included when scope validation is disabled
-            assertThat(clientRegistration.getScopes()).contains(CUSTOM_API_SCOPE);
-            assertThat(clientRegistration.getScopes()).contains("openid", "profile", "email");
+            assertThat(clientRegistration.getScopes()).containsExactlyInAnyOrder("openid", "profile", "email", CUSTOM_API_SCOPE);
         }
     }
 
@@ -344,8 +343,7 @@ public class ClientRegistrationProviderUnitTest
                     restTemplate);
 
             // Custom API scope should be filtered out when scope validation is enabled
-            assertThat(clientRegistration.getScopes()).doesNotContain(CUSTOM_API_SCOPE);
-            assertThat(clientRegistration.getScopes()).contains("openid", "profile", "email");
+            assertThat(clientRegistration.getScopes()).containsExactlyInAnyOrder("openid", "profile", "email");
         }
     }
 

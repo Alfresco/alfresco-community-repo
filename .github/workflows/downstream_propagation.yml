@@ -1,0 +1,18 @@
+name: Downstream artifacts propagation
+on:
+  pull_request:
+    types: [labeled]
+    branches:
+      - master
+      - release/**
+
+jobs:
+  downstream-propagation:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: Alfresco/alfresco-build-tools/.github/actions/automate-propagation@661ab6a0d23f6a269da039831907cffad37cc061 # v15.12.1
+        with:
+          auto-merge-token: ${{ secrets.BOT_GITHUB_TOKEN }}
+          approval-token: ${{ secrets.GITHUB_TOKEN }}

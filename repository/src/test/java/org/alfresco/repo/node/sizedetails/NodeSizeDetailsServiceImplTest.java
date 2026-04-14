@@ -63,8 +63,7 @@ public class NodeSizeDetailsServiceImplTest
         nodeSizeService.setDefaultItems(DEFAULT_ITEMS);
     }
 
-    private void mockResults(NodeRef nodeRef, String jobId,
-            List<Pair<String, Integer>> facets)
+    private void mockResults(List<Pair<String, Integer>> facets)
     {
         ResultSet firstResult = mock(ResultSet.class);
         when(firstResult.getNumberFound()).thenReturn((long) facets.size());
@@ -84,7 +83,7 @@ public class NodeSizeDetailsServiceImplTest
                 new Pair<>("100", 1),
                 new Pair<>("200", 2));
 
-        mockResults(nodeRef, "job-1", facets);
+        mockResults(facets);
         NodeSizeDetails result = nodeSizeService.calculateTotalSizeFromFacet(nodeRef, "job-1");
 
         assertNotNull(result);
@@ -102,7 +101,7 @@ public class NodeSizeDetailsServiceImplTest
                 new Pair<>("200", 2),
                 new Pair<>("300", 1));
 
-        mockResults(nodeRef, "job-2", facets);
+        mockResults(facets);
         NodeSizeDetails result = nodeSizeService.calculateTotalSizeFromFacet(nodeRef, "job-2");
 
         assertNotNull(result);
@@ -122,7 +121,7 @@ public class NodeSizeDetailsServiceImplTest
                 new Pair<>("400", 3),
                 new Pair<>("500", 2));
 
-        mockResults(nodeRef, "job-3", facets);
+        mockResults(facets);
         NodeSizeDetails result = nodeSizeService.calculateTotalSizeFromFacet(nodeRef, "job-3");
 
         assertNotNull(result);

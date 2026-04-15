@@ -96,13 +96,17 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
                                     }
                                     catch (RuntimeException e)
                                     {
-                                        completeTransactionAfterThrowing(txInfo, e);
+                                        completeTransactionAfterThrowing(txInfo, () -> {
+                                            throw e;
+                                        }, e);
                                         throw e;
                                     }
                                     catch (Throwable e)
                                     {
                                         // Wrap non-runtime exceptions so that they can be preserved
-                                        completeTransactionAfterThrowing(txInfo, e);
+                                        completeTransactionAfterThrowing(txInfo, () -> {
+                                            throw e;
+                                        }, e);
                                         throw new WrapperException(e);
                                     }
                                     finally

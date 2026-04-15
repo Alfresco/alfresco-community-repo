@@ -81,6 +81,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.module.ModuleVersionNumberTest.class,
         org.alfresco.repo.module.DeprecatedModulesValidatorTest.class,
         org.alfresco.repo.node.integrity.IntegrityEventTest.class,
+        org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImplTest.class,
         org.alfresco.repo.policy.MTPolicyComponentTest.class,
         org.alfresco.repo.policy.PolicyComponentTest.class,
         org.alfresco.repo.rendition.RenditionNodeManagerTest.class,

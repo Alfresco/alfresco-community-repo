@@ -31,24 +31,29 @@ import static org.alfresco.module.org_alfresco_module_rm.action.RMDispositionAct
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
+import org.alfresco.repo.batch.BatchProcessor;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.QueryConsistency;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * The Disposition Lifecycle Job Finds all disposition action nodes which are for disposition actions specified Where asOf &gt; now OR dispositionEventsEligible = true; Runs the cut off or retain action for eligible records.
@@ -85,6 +90,9 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** freeze service */
     private FreezeService freezeService;
 
+    /** when true, query conditions are pushed into ES filter context (unscored, cacheable) for better performance */
+    private boolean enableElasticOptimization = false;
+
     /**
      * @param freezeService
      *            freeze service
@@ -92,6 +100,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     public void setFreezeService(FreezeService freezeService)
     {
         this.freezeService = freezeService;
+    }
+
+    public void setEnableElasticOptimization(boolean enableElasticOptimization)
+    {
+        this.enableElasticOptimization = enableElasticOptimization;
     }
 
     /**
@@ -179,6 +192,23 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         return query;
     }
 
+    private String getActionFilterQuery()
+    {
+        String actionFilterQuery=null;
+        StringBuilder sb = new StringBuilder("@rma\\:dispositionAction:(");
+        boolean first = true;
+        for (String dispositionAction : dispositionActions)
+        {
+            if (!first) sb.append(" OR ");
+            sb.append("\"").append(dispositionAction).append("\"");
+            first = false;
+        }
+        actionFilterQuery = sb.append(")").toString();
+
+        return actionFilterQuery;
+    }
+
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#execute()
      */
@@ -197,7 +227,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             boolean hasMore = true;
             int skipCount = 0;
-            List<NodeRef> resultNodes = new ArrayList<>();
 
             if (batchSize < 1)
             {
@@ -212,27 +241,68 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 SearchParameters params = new SearchParameters();
                 params.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
                 params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-                params.setQuery(getQuery());
+
+                if (enableElasticOptimization)
+                {
+                    // Lean main query + dedicated filter clauses — ES places these in
+                    // filter context (unscored, cacheable), improving query performance.
+                    params.setQuery("TYPE:\"rma:dispositionAction\"");
+                    params.addFilterQuery(getActionFilterQuery());
+                    params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
+                    params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR @rma\\:dispositionAsOf:[MIN TO NOW])");
+                    params.setTrackScore(false);
+                }
+                else
+                {
+                    // Original combined FTS query — safe default, works with Solr and DB fallback.
+                    params.setQuery(getQuery());
+                }
+
                 params.setSkipCount(skipCount);
                 params.setMaxItems(batchSize);
 
                 // execute search
                 ResultSet results = searchService.query(params);
-                if (results != null)
+                if (results == null)
                 {
-                    // filtering out the hold/freezed cases from the result set
-                    resultNodes = results.getNodeRefs().stream().filter(node -> nodeService.getPrimaryParent(node) == null ? !freezeService.isFrozenOrHasFrozenChildren(node) : !freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(node).getParentRef())).collect(Collectors.toList());
+                    log.warn("Disposition lifecycle search returned null; stopping pagination.");
+                    break;
                 }
-                hasMore = results.hasMore();
-                skipCount += resultNodes.size(); // increase by page size
-                results.close();
+                // Declared outside try so it remains in scope after results.close().
+                Map<NodeRef, ChildAssociationRef> eligibleNodes;
+                try
+                {
+                    List<NodeRef> rawPage = results.getNodeRefs();
+                    // Advance skip by raw hit count so paging stays aligned with the index; post-search
+                    // freeze filtering must not shrink the skip step (would duplicate or skip hits).
+                    int rawPageLength = rawPage.size();
+                    hasMore = results.hasMore();
+                    skipCount += rawPageLength;
 
-                log.debug("Processing " + resultNodes.size() + " nodes");
+                    // Single getPrimaryParent call per node: result is carried forward so
+                    // executeAction can reuse it without a second DB round-trip.
+                    eligibleNodes = new LinkedHashMap<>(rawPageLength);
+                    for (NodeRef node : rawPage)
+                    {
+                        ChildAssociationRef parent = nodeService.getPrimaryParent(node);
+                        NodeRef freezeTarget = parent != null ? parent.getParentRef() : node;
+                        if (!freezeService.isFrozenOrHasFrozenChildren(freezeTarget))
+                        {
+                            eligibleNodes.put(node, parent);
+                        }
+                    }
+                }
+                finally
+                {
+                    results.close();
+                }
+
+                log.debug("Processing " + eligibleNodes.size() + " nodes");
 
                 // process search results
-                if (!resultNodes.isEmpty())
+                if (!eligibleNodes.isEmpty())
                 {
-                    executeAction(resultNodes);
+                    executeAction(eligibleNodes);
                 }
             }
             log.debug("Job Finished");
@@ -246,14 +316,18 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * Helper method that executes a disposition action
      *
-     * @param actionNodes
-     *            - the disposition actions to execute
+     * @param eligibleNodes
+     *            map of disposition action node to its pre-computed primary parent;
      */
-    private void executeAction(final List<NodeRef> actionNodes)
+    private void executeAction(final Map<NodeRef, ChildAssociationRef> eligibleNodes)
     {
         RetryingTransactionCallback<Boolean> processTranCB = () -> {
-            for (NodeRef actionNode : actionNodes)
+            for (Map.Entry<NodeRef, ChildAssociationRef> entry : eligibleNodes.entrySet())
             {
+                NodeRef actionNode = entry.getKey();
+                // Reuse the parent computed during the freeze-filter pass — no extra DB call.
+                ChildAssociationRef parent = entry.getValue();
+
                 if (!nodeService.exists(actionNode))
                 {
                     continue;
@@ -267,8 +341,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     continue;
                 }
 
-                ChildAssociationRef parent = nodeService.getPrimaryParent(actionNode);
-                if (!parent.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
+                if (parent == null || !parent.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
                 {
                     continue;
                 }

@@ -536,7 +536,10 @@ public class SpringAwareUserTransaction
             try
             {
                 // force a rollback by generating an exception that will trigger a rollback
-                completeTransactionAfterThrowing(txnInfo, new Exception());
+                final Exception ex = new Exception();
+                completeTransactionAfterThrowing(txnInfo, () -> {
+                    throw ex;
+                }, ex);
             }
             finally
             {
@@ -560,13 +563,13 @@ public class SpringAwareUserTransaction
     }
 
     @Override
-    protected void completeTransactionAfterThrowing(TransactionInfo txInfo, Throwable ex)
+    protected void completeTransactionAfterThrowing(TransactionInfo txInfo, InvocationCallback invocationCallback, Throwable ex)
     {
         if (logger.isDebugEnabled())
         {
             logger.debug("Exception attempting to pass transaction boundaries.", ex);
         }
-        super.completeTransactionAfterThrowing(txInfo, ex);
+        super.completeTransactionAfterThrowing(txInfo, invocationCallback, ex);
     }
 
     @Override

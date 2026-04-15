@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -76,7 +76,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         NodeSizeDetails details = simpleCache.get(id);
         return Optional.ofNullable(details)
                 .or(() -> {
-                    LOG.error("No Size details found for ID: " + id);
+                    LOG.error("No Size details found in cache for ID: " + id);
                     return Optional.empty();
                 });
     }
@@ -158,42 +158,46 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         });
     }
 
-    private NodeSizeDetails calculateTotalSizeFromFacet(NodeRef nodeRef, String jobId)
+    protected NodeSizeDetails calculateTotalSizeFromFacet(NodeRef nodeRef, String jobId)
     {
         long totalSizeFromFacet = 0;
         int skipCount = 0;
-        int totalItems = defaultItems;
         boolean isCalculationCompleted = false;
 
         try
         {
             ResultSet results = facetQuery(nodeRef);
-            int resultsSize = results.getFieldFacet(FIELD_FACET)
-                    .size();
+            int resultSize = results.getFieldFacet(FIELD_FACET).size();
+            int totalItems = Math.min(resultSize, defaultItems);
+            int remainingItems = resultSize;
+
+            LOG.debug("Total facets to process: {}, processing in batches of: {}", resultSize, defaultItems);
 
             while (!isCalculationCompleted)
             {
-                List<Pair<String, Integer>> facetPairs = results.getFieldFacet(FIELD_FACET)
-                        .subList(skipCount, Math.min(totalItems, resultsSize));
-                totalSizeFromFacet += facetPairs.parallelStream()
+                List<Pair<String, Integer>> facetPairs = results.getFieldFacet(FIELD_FACET).subList(skipCount, totalItems);
+                totalSizeFromFacet += facetPairs
+                        .parallelStream()
                         .mapToLong(pair -> Long.parseLong(pair.getFirst()) * pair.getSecond())
                         .sum();
 
-                if (resultsSize <= totalItems || resultsSize <= defaultItems)
+                LOG.debug("Processed facets: {} of {}, Total size calculated so far: {}", totalItems, resultSize, totalSizeFromFacet);
+
+                if (resultSize <= totalItems)
                 {
                     isCalculationCompleted = true;
                 }
                 else
                 {
                     skipCount += defaultItems;
-                    resultsSize -= totalItems;
-                    totalItems += Math.min(resultsSize, defaultItems);
+                    remainingItems -= defaultItems;
+                    totalItems += Math.min(remainingItems, defaultItems);
                 }
             }
+
             Date calculationDate = new Date(System.currentTimeMillis());
             NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), totalSizeFromFacet, calculationDate,
-                    (int) results.getNumberFound(), STATUS.COMPLETED,
-                    jobId);
+                    (int) results.getNumberFound(), STATUS.COMPLETED, jobId);
             return nodeSizeDetails;
         }
         catch (Exception e)

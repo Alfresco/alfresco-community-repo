@@ -82,6 +82,7 @@
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
       <property name="freezeService" ref="freezeService"/>
       <property name="batchSize" value="${rm.dispositionlifecycletrigger.batchsize}"/>
+      <property name="enableElasticOptimization" value="${rm.dispositionlifecycletrigger.enableElasticOptimization}"/>
    </bean>
 
    <bean id="scheduledDispositionLifecyceleSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">

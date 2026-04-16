@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 import static org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,6 +53,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.DateUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -244,13 +246,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
                 if (enableElasticOptimization)
                 {
-                    // Lean main query + dedicated filter clauses — ES places these in
-                    // filter context (unscored, cacheable), improving query performance.
                     params.setQuery("TYPE:\"rma:dispositionAction\"");
                     params.addFilterQuery(getActionFilterQuery());
                     params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
-                    params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR @rma\\:dispositionAsOf:[MIN TO NOW])");
-                    params.setTrackScore(false);
+                    String tomorrow = LocalDate.now().plusDays(1).toString();
+                    params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR -@rma\\:dispositionAsOf:[" + tomorrow + " TO MAX])");
                 }
                 else
                 {

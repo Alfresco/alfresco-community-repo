@@ -349,7 +349,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 }
 
                 // execute search
-                ResultSet results = searchService.query(params);
+                ResultSet results = executeSearch(params,batchNumber);
                 if (results == null)
                 {
                     log.warn("Disposition lifecycle search returned null; stopping pagination.");
@@ -470,7 +470,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 // the async-indexing lag and the need for skip arithmetic.
                 params.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
 
-                ResultSet results = searchService.query(params);
+                ResultSet results = executeSearch(params,batchNumber);
                 if (results == null)
                 {
                     log.warn("Disposition lifecycle CMIS query returned null; stopping.");
@@ -543,6 +543,17 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         {
             log.debug(exception.getMessage());
         }
+    }
+
+    private ResultSet executeSearch(SearchParameters params, int batchNumber)
+    {
+        long start = System.currentTimeMillis();
+
+        ResultSet results = searchService.query(params);
+
+        long elapsed = System.currentTimeMillis() - start;
+        log.debug("Executed batch-{} search results in {} ms.", batchNumber, elapsed);
+        return results;
     }
 
     /**

@@ -64,8 +64,8 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
+import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.util.registry.NamedObjectRegistry;
 
 /**
@@ -367,29 +367,39 @@ public class LinksServiceImpl implements LinksService
 
         // Build the query
         StringBuilder luceneQuery = new StringBuilder();
-        luceneQuery.append(" +TYPE:\"" + LinksModel.TYPE_LINK + "\"");
-        luceneQuery.append(" +PATH:\"" + nodeService.getPath(container).toPrefixString(namespaceService) + "/*\"");
+        luceneQuery.append("TYPE:\"")
+                .append(LinksModel.TYPE_LINK)
+                .append("\"")
+                .append(" AND PATH:\"")
+                .append(nodeService.getPath(container).toPrefixString(namespaceService))
+                .append("/*\"");
 
         if (user != null)
         {
-            luceneQuery.append(" +@cm\\:creator:\"" + user + "\"");
+            luceneQuery.append(" AND cm:creator:\"")
+                    .append(user)
+                    .append("\"");
         }
         if (from != null && to != null)
         {
-            luceneQuery.append(LuceneUtils.createDateRangeQuery(
-                    from, to, ContentModel.PROP_CREATED, dictionaryService, namespaceService));
+            luceneQuery.append(
+                    LuceneUtils.createDateRangeQuery(
+                            from, to, ContentModel.PROP_CREATED, dictionaryService, namespaceService));
         }
         if (tag != null)
         {
-            luceneQuery.append(" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
+            String safeTag = SearchLanguageConversion.escapeLuceneQuery(tag);
+            luceneQuery.append(" AND TAG:\"")
+                    .append(safeTag)
+                    .append("\"");
         }
 
-        String sortOn = "@{http://www.alfresco.org/model/content/1.0}created";
+        String sortOn = ContentModel.PROP_CREATED.toPrefixString(namespaceService);
 
         // Query
         SearchParameters sp = new SearchParameters();
         sp.addStore(container.getStoreRef());
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         sp.setQuery(luceneQuery.toString());
         sp.addSort(sortOn, false);
         if (paging.getSkipCount() > 0)

@@ -537,9 +537,7 @@ public class SpringAwareUserTransaction
             {
                 // force a rollback by generating an exception that will trigger a rollback
                 final Exception ex = new Exception();
-                completeTransactionAfterThrowing(txnInfo, () -> {
-                    throw ex;
-                }, ex);
+                completeTransactionAfterThrowing(txnInfo, () -> null, ex);
             }
             finally
             {

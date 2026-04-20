@@ -227,7 +227,7 @@
                            <fileset dir="${project.build.outputDirectory}/alfresco" />
                         </move>
                         <copy file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
-                        <copy file="${project.build.directory}/generated-sources/license/THIRD-PARTY.txt" todir="${project.build.directory}/${project.build.finalName}/licenses/${artifactId}" />
+                        <copy file="${project.build.directory}/generated-sources/license/THIRD-PARTY.txt" todir="${project.build.directory}/${project.build.finalName}/licenses/${project.artifactId}" />
                      </target>
                   </configuration>
                </execution>
@@ -309,6 +309,7 @@
          <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>
             <artifactId>alfresco-maven-plugin</artifactId>
+            <version>4.6.0</version>
          </plugin>
 
          <plugin>

@@ -74,6 +74,8 @@ public class SpringAwareUserTransaction
 
     private static final String NAME = "UserTransaction";
 
+    private static final InvocationCallback NO_OP = () -> null;
+
     private static final Log logger = LogFactory.getLog(SpringAwareUserTransaction.class);
 
     /* Leaked Transaction Logging */
@@ -536,8 +538,7 @@ public class SpringAwareUserTransaction
             try
             {
                 // force a rollback by generating an exception that will trigger a rollback
-                final Exception ex = new Exception();
-                completeTransactionAfterThrowing(txnInfo, () -> null, ex);
+                completeTransactionAfterThrowing(txnInfo, NO_OP, new Exception());
             }
             finally
             {

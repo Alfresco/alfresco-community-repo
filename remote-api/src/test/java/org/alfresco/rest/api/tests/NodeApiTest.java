@@ -6829,10 +6829,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         final File file = getResourceFile("quick-1.txt");
 
         // Upload with aspectNames containing whitespace
-        // The MultiPartBuilder will create comma-separated string, but we want to test trimming
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
                 .setFileData(new FileData(fileName, file))
-                .setAspects(Arrays.asList("cm:titled", "cm:author"));
+                .setAspects(Arrays.asList("cm:titled", " cm:author  "));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         HttpResponse response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);

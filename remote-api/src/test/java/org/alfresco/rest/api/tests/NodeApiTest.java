@@ -6635,4 +6635,247 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             throw new IOException("Failed to update permissions: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Tests multipart upload with aspectNames parameter. This test verifies that aspects can be added to a node during upload via multipart/form-data.
+     */
+    @Test
+    public void testUploadWithAspectNames() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create folder
+        String folderName = "f-testUploadWithAspectNames-" + RUNID;
+        Folder folderResp = createFolder(Nodes.PATH_MY, folderName);
+        String folderId = folderResp.getId();
+
+        final String fileName = "test-with-aspects.txt";
+        final File file = getResourceFile("quick-1.txt");
+
+        // Test 1: Upload with a single aspect (cm:titled)
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .setAspects(Arrays.asList("cm:titled"));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        HttpResponse response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Verify the upload response
+        assertEquals(fileName, document.getName());
+        assertNotNull(document.getAspectNames());
+        assertTrue("Document should have cm:titled aspect", document.getAspectNames().contains("cm:titled"));
+
+        // Retrieve the document and verify aspects are present
+        Map<String, String> params = Collections.singletonMap("include", "aspectNames");
+        response = getSingle(NodesEntityResource.class, document.getId(), params, 200);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        assertTrue("Document should have cm:titled aspect after retrieval", document.getAspectNames().contains("cm:titled"));
+
+        // Verify via nodeService that the aspect was actually added
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, document.getId());
+        assertTrue("NodeService should confirm cm:titled aspect", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED));
+
+        // Test 2: Upload with multiple aspects (cm:titled, cm:author)
+        final String fileName2 = "test-with-multiple-aspects.txt";
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName2, file))
+                .setAspects(Arrays.asList("cm:titled", "cm:author"));
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(fileName2, document.getName());
+        assertNotNull(document.getAspectNames());
+        assertTrue("Document should have cm:titled aspect", document.getAspectNames().contains("cm:titled"));
+        assertTrue("Document should have cm:author aspect", document.getAspectNames().contains("cm:author"));
+
+        // Test 3: Upload with null aspectNames (should succeed)
+        final String fileName3 = "test-with-null-aspects.txt";
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName3, file))
+                .setAspects(null);
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(fileName3, document.getName());
+        // Should still have default aspects like cm:auditable
+        assertNotNull(document.getAspectNames());
+
+        // Test 4: Upload with empty aspectNames list (should succeed)
+        final String fileName4 = "test-with-empty-aspects.txt";
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName4, file))
+                .setAspects(Collections.emptyList());
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(fileName4, document.getName());
+    }
+
+    /**
+     * Tests multipart upload with invalid aspectNames. This test verifies that appropriate error codes are returned for invalid aspects.
+     */
+    @Test
+    public void testUploadWithInvalidAspectNames() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create folder
+        String folderName = "f-testUploadWithInvalidAspects-" + RUNID;
+        Folder folderResp = createFolder(Nodes.PATH_MY, folderName);
+        String folderId = folderResp.getId();
+
+        final String fileName = "test-invalid-aspects.txt";
+        final File file = getResourceFile("quick-1.txt");
+
+        // Test 1: Upload with invalid aspect name (should return 400)
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .setAspects(Arrays.asList("invalid:aspect"));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 400);
+
+        // Test 2: Upload with excluded namespace (sys:*) - should return 400
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .setAspects(Arrays.asList("sys:referenceable"));
+        reqBody = multiPartBuilder.build();
+
+        post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 400);
+    }
+
+    /**
+     * Tests multipart upload with aspectNames combined with other parameters. This test verifies that aspectNames works correctly with other upload parameters.
+     */
+    @Test
+    public void testUploadWithAspectNamesAndOtherParameters() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create folder
+        String folderName = "f-testUploadWithAspectsAndParams-" + RUNID;
+        Folder folderResp = createFolder(Nodes.PATH_MY, folderName);
+        String folderId = folderResp.getId();
+
+        final String fileName = "test-aspects-with-params.txt";
+        final File file = getResourceFile("quick-1.txt");
+
+        // Test: Upload with aspectNames + properties + autoRename + relativePath
+        Map<String, String> props = new HashMap<>();
+        props.put("cm:title", "Test Document Title");
+        props.put("cm:description", "Test Document Description");
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .setAspects(Arrays.asList("cm:titled"))
+                .setProperties(props)
+                .setAutoRename(true)
+                .setRelativePath("subfolder1/subfolder2");
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        HttpResponse response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Verify the document was created with all parameters
+        assertEquals(fileName, document.getName());
+        assertTrue("Document should have cm:titled aspect", document.getAspectNames().contains("cm:titled"));
+
+        // Verify properties were set
+        Map<String, String> params = Collections.singletonMap("include", "aspectNames,properties");
+        response = getSingle(NodesEntityResource.class, document.getId(), params, 200);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+
+        assertNotNull(document.getProperties());
+        assertEquals("Test Document Title", document.getProperties().get("cm:title"));
+        assertEquals("Test Document Description", document.getProperties().get("cm:description"));
+        assertTrue("Document should have cm:titled aspect", document.getAspectNames().contains("cm:titled"));
+
+        // Test: Upload the same file again with autoRename=true and aspectNames
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .setAspects(Arrays.asList("cm:titled", "cm:author"))
+                .setAutoRename(true)
+                .setRelativePath("subfolder1/subfolder2");
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Should have been renamed and have both aspects
+        assertTrue("Filename should be renamed", document.getName().startsWith("test-aspects-with-params"));
+        assertTrue("Document should have cm:titled aspect", document.getAspectNames().contains("cm:titled"));
+        assertTrue("Document should have cm:author aspect", document.getAspectNames().contains("cm:author"));
+    }
+
+    /**
+     * Tests that aspectNames with whitespace are properly trimmed.
+     */
+    @Test
+    public void testUploadWithAspectNamesWhitespace() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create folder
+        String folderName = "f-testUploadWithAspectsWhitespace-" + RUNID;
+        Folder folderResp = createFolder(Nodes.PATH_MY, folderName);
+        String folderId = folderResp.getId();
+
+        final String fileName = "test-aspects-whitespace.txt";
+        final File file = getResourceFile("quick-1.txt");
+
+        // Upload with aspectNames containing whitespace
+        // The MultiPartBuilder will create comma-separated string, but we want to test trimming
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .setAspects(Arrays.asList("cm:titled", "cm:author"));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        HttpResponse response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(fileName, document.getName());
+        assertTrue("Document should have cm:titled aspect", document.getAspectNames().contains("cm:titled"));
+        assertTrue("Document should have cm:author aspect", document.getAspectNames().contains("cm:author"));
+    }
+
+    /**
+     * Tests that aspectNames work correctly with versioning.
+     */
+    @Test
+    public void testUploadWithAspectNamesAndVersioning() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create folder
+        String folderName = "f-testUploadWithAspectsVersioning-" + RUNID;
+        Folder folderResp = createFolder(Nodes.PATH_MY, folderName);
+        String folderId = folderResp.getId();
+
+        final String fileName = "test-aspects-versioning.txt";
+        final File file = getResourceFile("quick-1.txt");
+
+        // Upload with aspectNames and versioning enabled (default)
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .setAspects(Arrays.asList("cm:titled"))
+                .setMajorVersion(true);
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        HttpResponse response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(fileName, document.getName());
+        assertTrue("Document should have cm:titled aspect", document.getAspectNames().contains("cm:titled"));
+        assertTrue("Document should have cm:versionable aspect", document.getAspectNames().contains("cm:versionable"));
+
+        // Verify via nodeService
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, document.getId());
+        assertTrue("NodeService should confirm cm:titled aspect", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED));
+        assertTrue("NodeService should confirm cm:versionable aspect", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE));
+    }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -78,6 +78,17 @@ public class IdentityServiceConfig
     private long jwtClockSkewMs;
     private String webScriptsHomeRedirectPath;
     private String webScriptsHomeScopes;
+    private boolean scopeValidationDisabled;
+
+    public boolean isScopeValidationDisabled()
+    {
+        return scopeValidationDisabled;
+    }
+
+    public void setScopeValidationDisabled(boolean scopeValidationDisabled)
+    {
+        this.scopeValidationDisabled = scopeValidationDisabled;
+    }
 
     public String getWebScriptsHomeRedirectPath()
     {

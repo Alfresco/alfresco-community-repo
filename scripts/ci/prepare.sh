@@ -23,6 +23,11 @@ if [ $M2_REPO_EXPIRED -eq 1 ];then
   rm -rf "$M2_REPO_DIR"
 fi
 
+# Re-install acs-event-model after potential cache wipe above,
+# so 1.1.1-A.1-SNAPSHOT is available for the build below.
+bash "$(dirname "${BASH_SOURCE[0]}")/build_acs_event_model.sh"
+
+
 echo "Verifying compilation and ensuring maven cache populated."
 export BUILD_PROFILES="-Pall-tas-tests,ags"
 export BUILD_OPTIONS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dmaven.artifact.threads=8"

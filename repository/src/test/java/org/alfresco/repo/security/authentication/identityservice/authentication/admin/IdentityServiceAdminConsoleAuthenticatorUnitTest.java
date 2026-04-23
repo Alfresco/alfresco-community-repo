@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.security.authentication.identityservice.authentication.admin;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -67,6 +68,8 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
     private static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
     private static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
+    private static final String REDIRECT_PATH = "/alfresco/s/admin/admin-communitysummary";
+    private static final String CUSTOM_API_SCOPE = "api://client-id/alf_access";
 
     @Mock
     HttpServletRequest request;
@@ -155,13 +158,11 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Test
     public void shouldCallAuthChallenge() throws IOException
     {
-        String redirectPath = "/alfresco/s/admin/admin-communitysummary";
-
         when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
-        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn("/alfresco/s/admin/admin-communitysummary");
+        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
-                .formatted("http://localhost:8080", redirectPath);
+                .formatted("http://localhost:8080", REDIRECT_PATH);
 
         authenticator.requestAuthentication(request, response);
 
@@ -178,13 +179,12 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     public void shouldCallAuthChallengeWithAudience() throws IOException
     {
         String audience = "http://localhost:8082";
-        String redirectPath = "/alfresco/s/admin/admin-communitysummary";
         when(identityServiceConfig.getAudience()).thenReturn(audience);
-        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(redirectPath);
+        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
         when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
-                .formatted("http://localhost:8080", redirectPath);
+                .formatted("http://localhost:8080", REDIRECT_PATH);
 
         authenticator.requestAuthentication(request, response);
 
@@ -245,5 +245,33 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         String username = authenticator.getUserId(request, response);
 
         assertEquals("admin", username);
+    }
+
+    @Test
+    public void shouldReturnAllConfiguredScopesWhenScopeValidationIsDisabled() throws IOException
+    {
+        when(identityServiceConfig.isScopeValidationDisabled()).thenReturn(true);
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "profile", CUSTOM_API_SCOPE));
+        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+
+        authenticator.requestAuthentication(request, response);
+
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertThat(authenticationRequest.getValue()).contains("openid", "profile", CUSTOM_API_SCOPE);
+    }
+
+    @Test
+    public void shouldFilterScopesAgainstProviderWhenValidationEnabled() throws IOException
+    {
+        when(identityServiceConfig.isScopeValidationDisabled()).thenReturn(false);
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "profile", CUSTOM_API_SCOPE));
+        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+
+        authenticator.requestAuthentication(request, response);
+
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertThat(authenticationRequest.getValue()).contains("openid", "profile").doesNotContain(CUSTOM_API_SCOPE);
     }
 }

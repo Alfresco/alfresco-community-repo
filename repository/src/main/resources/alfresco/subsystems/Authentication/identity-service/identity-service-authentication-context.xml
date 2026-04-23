@@ -185,6 +185,9 @@
        <property name="webScriptsHomeRedirectPath">
            <value>${identity-service.webscripts-home.redirect-path}</value>
        </property>
+       <property name="scopeValidationDisabled">
+           <value>${identity-service.scope-validation.disabled:false}</value>
+       </property>
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->

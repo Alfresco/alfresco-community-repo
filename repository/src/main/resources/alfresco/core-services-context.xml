@@ -754,9 +754,6 @@
                 <!-- Cascading Dictionary Model -->
                 <value>alfresco/model/cascadingDictionaryModel.xml</value>
 
-                <!-- PoC Example of custom Cascading Dictionaries aspects and types -->
-                <value>alfresco/model/customDictModel.xml</value>
-
             </list>
         </property>
         <property name="labels">

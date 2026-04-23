@@ -281,6 +281,7 @@
          <ref bean="storesToIgnorePolicies"/>
       </property>
       <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
+      <property name="eagerOrphanCleanup" value="${system.content.eagerOrphanCleanup}" />
    </bean>
    
    <bean id="nodeAuditor" class="org.alfresco.repo.node.NodeAuditor">

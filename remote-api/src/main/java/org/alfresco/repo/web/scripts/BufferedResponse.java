@@ -261,7 +261,33 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
         }
         catch (IOException e)
         {
-            throw new AlfrescoRuntimeException("Failed to commit buffered response", e);
+            String message = e.getMessage();
+            boolean isClientAbort = false;
+            try
+            {
+                Class<?> clientAbortException = Class.forName("org.apache.catalina.connector.ClientAbortException");
+                isClientAbort = clientAbortException.isInstance(e);
+            }
+            catch (ClassNotFoundException cnfe)
+            {
+                // do nothing
+            }
+            if (isClientAbort && message != null
+                    && (message.contains("Broken pipe") || message.contains("Connection reset by peer")))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.warn("Client aborted connection while committing buffered response", e);
+                }
+                else
+                {
+                    logger.info("Client aborted connection while committing buffered response");
+                }
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("Failed to commit buffered response", e);
+            }
         }
     }
 

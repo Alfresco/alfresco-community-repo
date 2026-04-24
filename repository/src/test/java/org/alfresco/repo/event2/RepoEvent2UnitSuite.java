@@ -34,6 +34,7 @@ import org.junit.runners.Suite.SuiteClasses;
         EventConsolidatorUnitTest.class,
         EventJSONSchemaUnitTest.class,
         EnqueuingEventSenderUnitTest.class,
+        EventSenderFactoryBeanTest.class,
         NodeResourceHelperUnitTest.class,
         PropertyMapperUnitTest.class,
         QNameMatcherUnitTest.class,

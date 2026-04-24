@@ -32,11 +32,13 @@ import jakarta.annotation.Nonnull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.core.env.PropertyResolver;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.PropertyCheck;
 
-public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
+public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender> implements SmartLifecycle
 {
     static final String LEGACY_SKIP_QUEUE_PROPERTY = "repo.event2.queue.skip";
     static final String EVENT_SEND_STRATEGY_PROPERTY = "repo.event2.send.strategy";
@@ -50,6 +52,8 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
 
     private String configuredSenderName;
     private boolean legacySkipQueueConfig;
+
+    private volatile boolean running;
 
     public EventSenderFactoryBean(@Autowired PropertyResolver propertyResolver, Event2MessageProducer event2MessageProducer,
             Executor enqueueThreadPoolExecutor, Executor dequeueThreadPoolExecutor)
@@ -87,11 +91,7 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
     @Nonnull
     protected EventSender createInstance() throws Exception
     {
-        EventSender sender = instantiateConfiguredSender();
-
-        sender.initialize();
-
-        return sender;
+        return instantiateConfiguredSender();
     }
 
     private EventSender instantiateConfiguredSender()
@@ -164,5 +164,35 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
         {
             eventSender.destroy();
         }
+    }
+
+    @Override
+    public boolean isRunning()
+    {
+        return running;
+    }
+
+    @Override
+    public void start()
+    {
+        try
+        {
+            if (!isRunning())
+            {
+                EventSender sender = getObject();
+                sender.initialize();
+                running = true;
+            }
+        }
+        catch (Exception e)
+        {
+            throw new AlfrescoRuntimeException("Failed to start EventSender: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void stop()
+    {
+        running = false;
     }
 }

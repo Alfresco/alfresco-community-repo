@@ -275,14 +275,7 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
             if (isClientAbort && message != null
                     && (message.contains("Broken pipe") || message.contains("Connection reset by peer")))
             {
-                if (logger.isDebugEnabled())
-                {
-                    logger.warn("Client aborted connection while committing buffered response", e);
-                }
-                else
-                {
-                    logger.info("Client aborted connection while committing buffered response");
-                }
+                logger.warn("Client aborted connection while committing buffered response");
             }
             else
             {

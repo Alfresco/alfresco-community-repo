@@ -27,6 +27,7 @@ package org.alfresco.repo.event2;
 
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,7 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender> imp
     private String configuredSenderName;
     private boolean legacySkipQueueConfig;
 
-    private volatile boolean running;
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
     public EventSenderFactoryBean(@Autowired PropertyResolver propertyResolver, Event2MessageProducer event2MessageProducer,
             Executor enqueueThreadPoolExecutor, Executor dequeueThreadPoolExecutor)
@@ -169,30 +170,39 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender> imp
     @Override
     public boolean isRunning()
     {
-        return running;
+        return running.get();
     }
 
     @Override
     public void start()
     {
-        try
+        if (running.compareAndSet(false, true))
         {
-            if (!isRunning())
+            try
             {
-                EventSender sender = getObject();
-                sender.initialize();
-                running = true;
+                getObject().initialize();
             }
-        }
-        catch (Exception e)
-        {
-            throw new AlfrescoRuntimeException("Failed to start EventSender: " + e.getMessage(), e);
+            catch (Exception e)
+            {
+                running.set(false);
+                throw new AlfrescoRuntimeException("Failed to start EventSender", e);
+            }
         }
     }
 
     @Override
     public void stop()
     {
-        running = false;
+        if (running.compareAndSet(true, false))
+        {
+            try
+            {
+                getObject().stop();
+            }
+            catch (Exception e)
+            {
+                throw new AlfrescoRuntimeException("Failed to stop EventSender", e);
+            }
+        }
     }
 }

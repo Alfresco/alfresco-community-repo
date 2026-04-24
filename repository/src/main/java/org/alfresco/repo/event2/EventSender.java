@@ -44,11 +44,19 @@ public interface EventSender
     void accept(Callable<Optional<RepoEvent<?>>> eventProducer);
 
     /**
-     * Called by {@link org.alfresco.repo.event2.EventSenderFactoryBean} during {@link org.springframework.context.SmartLifecycle} start method. It's called after all beans are fully initialized. It might be used to initialize the sender implementation.
+     * Called by {@link org.alfresco.repo.event2.EventSenderFactoryBean} during application context startup ({@link org.springframework.context.SmartLifecycle} start). It might be used to initialize the sender implementation.
      */
     default void initialize()
     {
         // no initialization by default
+    }
+
+    /**
+     * Called by {@link org.alfresco.repo.event2.EventSenderFactoryBean} during application context shutdown ({@link org.springframework.context.SmartLifecycle} stop).
+     */
+    default void stop()
+    {
+        // no-op by default
     }
 
     /**

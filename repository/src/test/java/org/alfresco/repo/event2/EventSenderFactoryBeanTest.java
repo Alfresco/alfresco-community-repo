@@ -98,6 +98,7 @@ public class EventSenderFactoryBeanTest
     {
         factory.start();
         factory.stop();
+        verify(eventSender).stop();
         verify(eventSender, never()).destroy();
     }
 
@@ -118,7 +119,7 @@ public class EventSenderFactoryBeanTest
     public void shouldNotMarkAsRunningWhenInitializeThrows()
     {
         doThrow(new RuntimeException("init failed")).when(eventSender).initialize();
-        assertThatExceptionOfType(AlfrescoRuntimeException.class).isThrownBy(() -> factory.start());
+        assertThatExceptionOfType(AlfrescoRuntimeException.class).isThrownBy(factory::start);
         assertThat(factory.isRunning()).isFalse();
     }
 
@@ -136,7 +137,7 @@ public class EventSenderFactoryBeanTest
         factory.start();
         factory.stop();
         factory.start();
-
         verify(eventSender, times(2)).initialize();
+        verify(eventSender).stop();
     }
 }

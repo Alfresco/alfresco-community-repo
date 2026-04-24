@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
@@ -60,14 +59,14 @@ import java.util.stream.Collectors;
 
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.jwk.source.DefaultJWKSetCache;
+import com.nimbusds.jose.jwk.source.JWKSetBasedJWKSource;
+import com.nimbusds.jose.jwk.source.JWKSetSource;
 import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.jwk.source.RemoteJWKSet;
+import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
-import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.Identifier;
@@ -475,7 +474,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .userNameAttributeName(usernameAttribute)
                     .scope(getSupportedScopes(metadata.getScopes()))
                     .providerConfigurationMetadata(createMetadata(metadata))
-                    .authorizationGrantType(AuthorizationGrantType.PASSWORD);
+                    .authorizationGrantType(AuthorizationGrantType.TOKEN_EXCHANGE);
         }
 
         private Map<String, Object> createMetadata(OIDCProviderMetadata metadata)
@@ -632,42 +631,46 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private void reconfigureJWKSCache(ConfigurableJWTProcessor<SecurityContext> jwtProcessor)
         {
-            final Optional<RemoteJWKSet<SecurityContext>> jwkSource = ofNullable(jwtProcessor)
-                    .map(ConfigurableJWTProcessor::getJWSKeySelector)
-                    .filter(JWSVerificationKeySelector.class::isInstance)
-                    .map(o -> (JWSVerificationKeySelector<SecurityContext>) o)
-                    .map(JWSVerificationKeySelector::getJWKSource)
-                    .filter(RemoteJWKSet.class::isInstance).map(o -> (RemoteJWKSet<SecurityContext>) o);
-            if (jwkSource.isEmpty())
+            if (jwtProcessor == null)
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Missing JWT processor.");
+                return;
+            }
+
+            if (!(jwtProcessor.getJWSKeySelector() instanceof JWSVerificationKeySelector<?> selector))
             {
                 LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
                 return;
             }
 
-            final Optional<URL> jwkSetUrl = jwkSource.map(RemoteJWKSet::getJWKSetURL);
-            if (jwkSetUrl.isEmpty())
+            if (!(selector.getJWKSource() instanceof JWKSetBasedJWKSource<?> jwkSetBasedSource))
             {
-                LOGGER.warn("Not able to reconfigure the JWK Cache. Unknown JWKSetURL.");
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
                 return;
             }
 
-            final Optional<ResourceRetriever> resourceRetriever = jwkSource.map(RemoteJWKSet::getResourceRetriever);
-            if (resourceRetriever.isEmpty())
+            @SuppressWarnings("unchecked")
+            final JWKSetSource<SecurityContext> jwkSetSource = ((JWKSetBasedJWKSource<SecurityContext>) jwkSetBasedSource).getJWKSetSource();
+
+            if (jwkSetSource == null)
             {
-                LOGGER.warn("Not able to reconfigure the JWK Cache. Unknown ResourceRetriever.");
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Missing JWKSetSource.");
                 return;
             }
 
-            final DefaultJWKSetCache cache = new DefaultJWKSetCache(config.getPublicKeyCacheTtl(), -1,
-                    TimeUnit.SECONDS);
-            final JWKSource<SecurityContext> cachingJWKSource = new RemoteJWKSet<>(jwkSetUrl.get(),
-                    resourceRetriever.get(), cache);
+            final JWKSource<SecurityContext> newJWKSCache = JWKSourceBuilder.create(jwkSetSource)
+                    .cache(config.getPublicKeyCacheTtl() * 1000L, -1) // TTL provided in config is in seconds.
+                    .rateLimited(false)
+                    .refreshAheadCache(false)
+                    .retrying(true)
+                    .build();
 
             jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
                     signatureAlgorithms.stream()
                             .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
                             .collect(Collectors.toSet()),
-                    cachingJWKSource));
+                    newJWKSCache));
+
             jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
         }
 

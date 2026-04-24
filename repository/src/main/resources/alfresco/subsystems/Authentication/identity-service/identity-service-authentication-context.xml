@@ -34,7 +34,7 @@
          <ref bean="identityServiceConfig" />
       </property>
       <property name="enabled">
-         <value>${identity-service.authentication.enable-username-password-authentication:true}</value>
+         <value>${identity-service.authentication.enable-username-password-authentication:false}</value>
       </property>
    </bean>
 

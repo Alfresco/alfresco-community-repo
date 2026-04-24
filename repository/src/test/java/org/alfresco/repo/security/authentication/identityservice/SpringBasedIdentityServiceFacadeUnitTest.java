@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,7 +27,6 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,7 +34,8 @@ import org.junit.Test;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.RestTemplate;
 
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
@@ -52,25 +52,25 @@ public class SpringBasedIdentityServiceFacadeUnitTest
     @Test
     public void shouldThrowVerificationExceptionOnFailure()
     {
-        final RestOperations restOperations = mock(RestOperations.class);
+        final RestTemplate restTemplate = mock(RestTemplate.class);
+        when(restTemplate.getErrorHandler()).thenReturn(new DefaultResponseErrorHandler());
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
-        when(restOperations.exchange(any(), any(Class.class))).thenThrow(new RuntimeException("Expected"));
 
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restOperations, testRegistration(), jwtDecoder);
-
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restTemplate, testRegistration(), jwtDecoder);
         assertThatExceptionOfType(AuthorizationException.class)
                 .isThrownBy(() -> facade.authorize(AuthorizationGrant.password(USER_NAME, PASSWORD)))
-                .havingCause().withNoCause().withMessage("Expected");
+                .withMessageContaining("Failed to obtain access token");
     }
 
     @Test
     public void shouldThrowTokenExceptionOnFailure()
     {
-        final RestOperations restOperations = mock(RestOperations.class);
+        final RestTemplate restTemplate = mock(RestTemplate.class);
+        when(restTemplate.getErrorHandler()).thenReturn(new DefaultResponseErrorHandler());
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
         when(jwtDecoder.decode(TOKEN)).thenThrow(new RuntimeException("Expected"));
 
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restOperations, testRegistration(), jwtDecoder);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restTemplate, testRegistration(), jwtDecoder);
 
         assertThatExceptionOfType(TokenDecodingException.class)
                 .isThrownBy(() -> facade.decodeToken(TOKEN))
@@ -80,9 +80,10 @@ public class SpringBasedIdentityServiceFacadeUnitTest
     @Test
     public void shouldReturnEmptyOptionalOnFailure()
     {
-        final RestOperations restOperations = mock(RestOperations.class);
+        final RestTemplate restTemplate = mock(RestTemplate.class);
+        when(restTemplate.getErrorHandler()).thenReturn(new DefaultResponseErrorHandler());
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restOperations, testRegistration(), jwtDecoder);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restTemplate, testRegistration(), jwtDecoder);
 
         assertThat(facade.getUserInfo(TOKEN, USER_INFO_ATTR_MAPPING).isEmpty()).isTrue();
     }
@@ -93,7 +94,7 @@ public class SpringBasedIdentityServiceFacadeUnitTest
                 .tokenUri("http://localhost")
                 .clientId("test")
                 .userInfoUri("http://localhost/userinfo")
-                .authorizationGrantType(AuthorizationGrantType.PASSWORD)
+                .authorizationGrantType(AuthorizationGrantType.TOKEN_EXCHANGE)
                 .build();
     }
 }

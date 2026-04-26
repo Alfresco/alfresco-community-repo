@@ -102,6 +102,7 @@ public class IdentityServiceFacadeFactoryBeanTest
     {
         when(config.isClientIdValidationDisabled()).thenReturn(true);
         when(config.getSignatureAlgorithms()).thenReturn(Set.of(SignatureAlgorithm.PS256, SignatureAlgorithm.ES512));
+        when(config.getPublicKeyCacheTtl()).thenReturn(5);
         when(restOperations.exchange(any(), any(Class.class))).thenReturn(responseEntity);
 
         final RSAKey rsaKey = getRsaKey();
@@ -153,10 +154,11 @@ public class IdentityServiceFacadeFactoryBeanTest
     }
 
     @Test
-    public void shouldFailWithNotAllowedJOSEHeaderTyp() throws JOSEException
+    public void shouldFailWithNotAllowedJOSEHeaderType() throws JOSEException
     {
         when(config.isClientIdValidationDisabled()).thenReturn(true);
         when(config.getSignatureAlgorithms()).thenReturn(Set.of(SignatureAlgorithm.PS256));
+        when(config.getPublicKeyCacheTtl()).thenReturn(5);
         when(restOperations.exchange(any(), any(Class.class))).thenReturn(responseEntity);
 
         final RSAKey rsaKey = getRsaKey();

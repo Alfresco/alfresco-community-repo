@@ -93,6 +93,7 @@ public class SpringBasedIdentityServiceFacadeUnitTest
         return ClientRegistration.withRegistrationId("test")
                 .tokenUri("http://localhost")
                 .clientId("test")
+                .clientSecret("test-secret")
                 .userInfoUri("http://localhost/userinfo")
                 .authorizationGrantType(AuthorizationGrantType.TOKEN_EXCHANGE)
                 .build();

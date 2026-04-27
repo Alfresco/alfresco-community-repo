@@ -28,6 +28,7 @@ package org.alfresco.repo.web.scripts;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.net.SocketException;
 import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
@@ -40,6 +41,7 @@ import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
 import org.springframework.util.FileCopyUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.error.ExceptionStackUtil;
 
 /**
  * Transactional Buffered Response
@@ -261,8 +263,44 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
         }
         catch (IOException e)
         {
-            throw new AlfrescoRuntimeException("Failed to commit buffered response", e);
+            if (isClientDisconnect(e))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.warn("Client aborted connection while committing buffered response", e);
+                }
+                else
+                {
+                    logger.info("Client aborted connection while committing buffered response");
+                }
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("Failed to commit buffered response", e);
+            }
         }
+    }
+
+    private static boolean isClientDisconnect(IOException e)
+    {
+        Throwable socketException = ExceptionStackUtil.getCause(e, SocketException.class);
+        if (socketException != null && socketException.getMessage() != null
+                && (socketException.getMessage().contains("Broken pipe")
+                        || socketException.getMessage().contains("Connection reset")))
+        {
+            return true;
+        }
+
+        Class<?> clientAbortException = null;
+        try
+        {
+            clientAbortException = Class.forName("org.apache.catalina.connector.ClientAbortException");
+        }
+        catch (ClassNotFoundException cnfe)
+        {
+            // do nothing
+        }
+        return clientAbortException != null && ExceptionStackUtil.getCause(e, clientAbortException) != null;
     }
 
     @Override

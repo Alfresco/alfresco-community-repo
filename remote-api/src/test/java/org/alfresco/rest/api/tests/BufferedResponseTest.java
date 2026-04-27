@@ -146,7 +146,6 @@ public class BufferedResponseTest
         {
             response.getOutputStream().write("test content".getBytes(java.nio.charset.StandardCharsets.UTF_8));
             response.writeResponse();
-            Assert.assertTrue("writeResponse() should not throw for client disconnect", true);
         }
     }
 

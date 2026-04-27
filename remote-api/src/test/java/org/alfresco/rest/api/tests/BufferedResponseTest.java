@@ -26,22 +26,29 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.alfresco.repo.web.scripts.BufferedResponse;
-import org.alfresco.repo.web.scripts.TempOutputStream;
-import org.alfresco.util.TempFileProvider;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.web.scripts.BufferedResponse;
+import org.alfresco.repo.web.scripts.TempOutputStream;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * Test that BufferedResponse uses a temp file instead of buffering the entire output stream in memory
@@ -75,15 +82,14 @@ public class BufferedResponseTest
     }
 
     /**
-     * Test that the output stream creates a temp file to cache its content when file size was bigger than its memory threshold ( 5 > 4 MB )
-     * MNT-19833
+     * Test that the output stream creates a temp file to cache its content when file size was bigger than its memory threshold ( 5 > 4 MB ) MNT-19833
      */
     @Test
     public void testOutputStream() throws IOException
     {
         File bufferTempDirectory = TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME);
         Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory,
-            MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
+                MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
 
         final long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
 
@@ -113,7 +119,7 @@ public class BufferedResponseTest
     private void createRandomFileInDirectory(String path, String fileName, int size) throws IOException
     {
         String fullPath = new File(path, fileName).getPath();
-        RandomAccessFile file = new RandomAccessFile(fullPath,"rw");
+        RandomAccessFile file = new RandomAccessFile(fullPath, "rw");
         file.setLength(size);
         file.close();
     }
@@ -121,7 +127,46 @@ public class BufferedResponseTest
     private long countFilesInDirectoryWithPrefix(File directory, String filePrefix) throws IOException
     {
         Stream<File> fileStream = Arrays.stream(directory.listFiles());
-        return fileStream.filter( f -> f.getName().startsWith(filePrefix)).count();
+        return fileStream.filter(f -> f.getName().startsWith(filePrefix)).count();
     }
-}
 
+    /**
+     * MNT-25523: writeResponse() should suppress ClientAbortException and not throw AlfrescoRuntimeException.
+     */
+    @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
+    public void writeResponseShouldNotThrowOnClientAbortException() throws IOException
+    {
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(
+                TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME), MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
+
+        WebScriptResponse mockRes = mock(WebScriptResponse.class);
+        when(mockRes.getOutputStream()).thenThrow(new IOException("Broken pipe", new SocketException("Broken pipe")));
+
+        try (BufferedResponse response = new BufferedResponse(mockRes, MEMORY_THRESHOLD, streamFactory))
+        {
+            response.getOutputStream().write("test content".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            response.writeResponse();
+        }
+    }
+
+    /**
+     * MNT-25523: writeResponse() should still throw AlfrescoRuntimeException for non-client-abort IOExceptions.
+     */
+    @Test(expected = AlfrescoRuntimeException.class)
+    public void writeResponseShouldThrowOnRegularIOException() throws IOException
+    {
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(
+                TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME), MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
+
+        WebScriptResponse mockRes = mock(WebScriptResponse.class);
+        when(mockRes.getOutputStream()).thenThrow(new IOException("Disk full"));
+
+        try (BufferedResponse response = new BufferedResponse(mockRes, MEMORY_THRESHOLD, streamFactory))
+        {
+            response.getOutputStream().write("test content".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            response.writeResponse();
+        }
+    }
+
+}

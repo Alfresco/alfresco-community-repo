@@ -3659,10 +3659,10 @@ public class NodesImpl implements Nodes
 
         for (String name : nameArray)
         {
-            name = name.trim();
-            if (!name.isEmpty())
+            String trimmedName = name.trim();
+            if (!trimmedName.isEmpty())
             {
-                names.add(name);
+                names.add(trimmedName);
             }
         }
 

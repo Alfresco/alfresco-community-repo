@@ -6643,6 +6643,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     public void testUploadWithAspectNames() throws Exception
     {
         setRequestContext(user1);
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         // Create folder
         String folderName = "f-testUploadWithAspectNames-" + RUNID;
@@ -6738,7 +6739,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
                 .setAspects(Arrays.asList("invalid:aspect"));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
-        post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 400);
+        // Verify that invalid aspect name returns 400 Bad Request
+        HttpResponse response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 400);
+        assertNotNull("Response should not be null for invalid aspect", response);
 
         // Test 2: Upload with excluded namespace (sys:*) - should return 400
         multiPartBuilder = MultiPartBuilder.create()
@@ -6746,7 +6749,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
                 .setAspects(Arrays.asList("sys:referenceable"));
         reqBody = multiPartBuilder.build();
 
-        post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 400);
+        // Verify that excluded namespace returns 400 Bad Request
+        response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 400);
+        assertNotNull("Response should not be null for excluded namespace", response);
     }
 
     /**
@@ -6849,6 +6854,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     public void testUploadWithAspectNamesAndVersioning() throws Exception
     {
         setRequestContext(user1);
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         // Create folder
         String folderName = "f-testUploadWithAspectsVersioning-" + RUNID;

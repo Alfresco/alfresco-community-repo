@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.function.Supplier;
@@ -139,7 +140,7 @@ public class BufferedResponseTest
                 TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME), MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
 
         WebScriptResponse mockRes = mock(WebScriptResponse.class);
-        when(mockRes.getOutputStream()).thenThrow(new ClientAbortException("Broken pipe"));
+        when(mockRes.getOutputStream()).thenThrow(new IOException("Broken pipe", new SocketException("Broken pipe")));
 
         try (BufferedResponse response = new BufferedResponse(mockRes, MEMORY_THRESHOLD, streamFactory))
         {
@@ -174,12 +175,4 @@ public class BufferedResponseTest
         }
     }
 
-    // Fake ClientAbortException class - to emulate Tomcat's and JBOSS's ClientAbortException.
-    private static class ClientAbortException extends IOException
-    {
-        ClientAbortException(String message)
-        {
-            super(message);
-        }
-    }
 }

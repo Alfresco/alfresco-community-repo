@@ -201,6 +201,7 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender> imp
             }
             catch (Exception e)
             {
+                running.set(true);
                 throw new AlfrescoRuntimeException("Failed to stop EventSender", e);
             }
         }

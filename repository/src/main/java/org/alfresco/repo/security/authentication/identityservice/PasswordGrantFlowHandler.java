@@ -28,13 +28,11 @@ package org.alfresco.repo.security.authentication.identityservice;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
-import com.nimbusds.oauth2.sdk.AuthorizationGrant;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.ResourceOwnerPasswordCredentialsGrant;
 import com.nimbusds.oauth2.sdk.Scope;
@@ -108,17 +106,15 @@ public class PasswordGrantFlowHandler
     {
         Scope scope = Scope.parse(clientRegistration.getScopes());
 
-        URI tokenUri = URI.create(clientRegistration.getProviderDetails().getTokenUri());
-        ClientAuthentication clientAuth = createClientAuthentication();
-        AuthorizationGrant passwordGrant = createPasswordGrant(authorizationGrant);
+        var tokenRequestBuilder = new TokenRequest.Builder(
+                URI.create(clientRegistration.getProviderDetails().getTokenUri()),
+                createClientAuthentication(),
+                createPasswordGrant(authorizationGrant))
+                .scope(scope);
 
-        TokenRequest tokenRequest = new TokenRequest(tokenUri, clientAuth, passwordGrant, scope);
+        createRequestMetadata().forEach(tokenRequestBuilder::customParameter);
 
-        createRequestMetadata().forEach((key, values) -> {
-            tokenRequest.getCustomParameters().put(key, Arrays.asList(values));
-        });
-
-        return tokenRequest;
+        return tokenRequestBuilder.build();
     }
 
     private ResourceOwnerPasswordCredentialsGrant createPasswordGrant(IdentityServiceFacade.AuthorizationGrant authorizationGrant)

@@ -110,7 +110,7 @@ public class PasswordGrantFlowHandler
                 URI.create(clientRegistration.getProviderDetails().getTokenUri()),
                 createClientAuthentication(),
                 createPasswordGrant(authorizationGrant))
-                .scope(scope);
+                        .scope(scope);
 
         createRequestMetadata().forEach(tokenRequestBuilder::customParameter);
 

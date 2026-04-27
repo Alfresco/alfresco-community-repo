@@ -134,6 +134,7 @@ public class BufferedResponseTest
      * MNT-25523: writeResponse() should suppress ClientAbortException and not throw AlfrescoRuntimeException.
      */
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     public void writeResponseShouldNotThrowOnClientAbortException() throws IOException
     {
         Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(

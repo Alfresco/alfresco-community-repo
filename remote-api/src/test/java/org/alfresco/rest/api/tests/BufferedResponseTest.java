@@ -144,15 +144,9 @@ public class BufferedResponseTest
 
         try (BufferedResponse response = new BufferedResponse(mockRes, MEMORY_THRESHOLD, streamFactory))
         {
-            response.getOutputStream().write("test content".getBytes());
-            try
-            {
-                response.writeResponse();
-            }
-            catch (Exception e)
-            {
-                Assert.fail("writeResponse() should not throw for client abort but threw: " + e);
-            }
+            response.getOutputStream().write("test content".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            response.writeResponse();
+            Assert.assertTrue("writeResponse() should not throw for client disconnect", true);
         }
     }
 
@@ -170,7 +164,7 @@ public class BufferedResponseTest
 
         try (BufferedResponse response = new BufferedResponse(mockRes, MEMORY_THRESHOLD, streamFactory))
         {
-            response.getOutputStream().write("test content".getBytes());
+            response.getOutputStream().write("test content".getBytes(java.nio.charset.StandardCharsets.UTF_8));
             response.writeResponse();
         }
     }

@@ -144,7 +144,14 @@ public class BufferedResponseTest
         try (BufferedResponse response = new BufferedResponse(mockRes, MEMORY_THRESHOLD, streamFactory))
         {
             response.getOutputStream().write("test content".getBytes());
-            response.writeResponse();
+            try
+            {
+                response.writeResponse();
+            }
+            catch (Exception e)
+            {
+                Assert.fail("writeResponse() should not throw for client abort but threw: " + e);
+            }
         }
     }
 

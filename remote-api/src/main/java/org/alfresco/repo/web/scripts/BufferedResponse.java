@@ -263,20 +263,7 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
         }
         catch (IOException e)
         {
-            Throwable socketException = ExceptionStackUtil.getCause(e, SocketException.class);
-            Class<?> clientAbortException = null;
-            try
-            {
-                clientAbortException = Class.forName("org.apache.catalina.connector.ClientAbortException");
-            }
-            catch (ClassNotFoundException cnfe)
-            {
-                // do nothing
-            }
-            if ((socketException != null && socketException.getMessage() != null
-                    && (socketException.getMessage().contains("Broken pipe")
-                            || socketException.getMessage().contains("Connection reset")))
-                    || (clientAbortException != null && ExceptionStackUtil.getCause(e, clientAbortException) != null))
+            if (isClientDisconnect(e))
             {
                 if (logger.isDebugEnabled())
                 {
@@ -292,6 +279,28 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
                 throw new AlfrescoRuntimeException("Failed to commit buffered response", e);
             }
         }
+    }
+
+    private static boolean isClientDisconnect(IOException e)
+    {
+        Throwable socketException = ExceptionStackUtil.getCause(e, SocketException.class);
+        if (socketException != null && socketException.getMessage() != null
+                && (socketException.getMessage().contains("Broken pipe")
+                        || socketException.getMessage().contains("Connection reset")))
+        {
+            return true;
+        }
+
+        Class<?> clientAbortException = null;
+        try
+        {
+            clientAbortException = Class.forName("org.apache.catalina.connector.ClientAbortException");
+        }
+        catch (ClassNotFoundException cnfe)
+        {
+            // do nothing
+        }
+        return clientAbortException != null && ExceptionStackUtil.getCause(e, clientAbortException) != null;
     }
 
     @Override

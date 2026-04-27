@@ -28,6 +28,7 @@ package org.alfresco.repo.web.scripts;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.net.SocketException;
 import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
@@ -40,6 +41,7 @@ import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
 import org.springframework.util.FileCopyUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.error.ExceptionStackUtil;
 
 /**
  * Transactional Buffered Response
@@ -261,21 +263,29 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
         }
         catch (IOException e)
         {
-            String message = e.getMessage();
-            boolean isClientAbort = false;
+            Throwable socketException = ExceptionStackUtil.getCause(e, SocketException.class);
+            Class<?> clientAbortException = null;
             try
             {
-                Class<?> clientAbortException = Class.forName("org.apache.catalina.connector.ClientAbortException");
-                isClientAbort = clientAbortException.isInstance(e);
+                clientAbortException = Class.forName("org.apache.catalina.connector.ClientAbortException");
             }
             catch (ClassNotFoundException cnfe)
             {
                 // do nothing
             }
-            if (isClientAbort && message != null
-                    && (message.contains("Broken pipe") || message.contains("Connection reset by peer")))
+            if ((socketException != null && socketException.getMessage() != null
+                    && (socketException.getMessage().contains("Broken pipe")
+                            || socketException.getMessage().contains("Connection reset")))
+                    || (clientAbortException != null && ExceptionStackUtil.getCause(e, clientAbortException) != null))
             {
-                logger.warn("Client aborted connection while committing buffered response");
+                if (logger.isDebugEnabled())
+                {
+                    logger.warn("Client aborted connection while committing buffered response", e);
+                }
+                else
+                {
+                    logger.info("Client aborted connection while committing buffered response");
+                }
             }
             else
             {

@@ -37,11 +37,11 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -51,7 +51,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * The Disposition Lifecycle Job Finds all disposition action nodes which are for disposition actions specified Where asOf &gt; now OR dispositionEventsEligible = true; Runs the cut off or retain action for eligible records.
@@ -82,7 +81,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         }
     }
 
-
     /** batching properties */
     private int batchSize;
     public static final int DEFAULT_BATCH_SIZE = 500;
@@ -110,15 +108,14 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
     private QueryMode queryMode;
 
-
     /**
      *
      * @param queryMode
      */
-    public void setQueryMode(String queryMode) {
+    public void setQueryMode(String queryMode)
+    {
         this.queryMode = QueryMode.getQueryMode(queryMode);
     }
-
 
     /**
      * @param freezeService
@@ -216,12 +213,13 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
     private String getActionFilterQuery()
     {
-        String actionFilterQuery=null;
+        String actionFilterQuery = null;
         StringBuilder sb = new StringBuilder("@rma\\:dispositionAction:(");
         boolean first = true;
         for (String dispositionAction : dispositionActions)
         {
-            if (!first) sb.append(" OR ");
+            if (!first)
+                sb.append(" OR ");
             sb.append("\"").append(dispositionAction).append("\"");
             first = false;
         }
@@ -231,9 +229,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * Builds a transactional CMIS query for eligible disposition action nodes.
-     * The date cutoff is evaluated at call time so each job run uses the current date.
-     * Never cached — unlike {@link #getQuery()} — because the timestamp changes every run.
+     * Builds a transactional CMIS query for eligible disposition action nodes. The date cutoff is evaluated at call time so each job run uses the current date. Never cached — unlike {@link #getQuery()} — because the timestamp changes every run.
      *
      * @return CMIS SQL string
      */
@@ -248,7 +244,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         boolean first = true;
         for (String action : dispositionActions)
         {
-            if (!first) sb.append(",");
+            if (!first)
+                sb.append(",");
             sb.append("'").append(action).append("'");
             first = false;
         }
@@ -269,22 +266,20 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     {
         switch (queryMode)
         {
-            case CMIS:
-                executeImplCmis();
-                break;
-            case FTS_OPTIMIZED_QUERY:
-            case FTS_OPTIMIZED_CUTOFF:
-            case FTS_DEFAULT:
-            default:
-                executeImplFts();
-                break;
+        case CMIS:
+            executeImplCmis();
+            break;
+        case FTS_OPTIMIZED_QUERY:
+        case FTS_OPTIMIZED_CUTOFF:
+        case FTS_DEFAULT:
+        default:
+            executeImplFts();
+            break;
         }
     }
 
     /**
-     * FTS/index-based execution path (default).
-     * Paginates through search results using skipCount, relying on the search index
-     * (Elasticsearch or Solr) to resolve eligible nodes.
+     * FTS/index-based execution path (default). Paginates through search results using skipCount, relying on the search index (Elasticsearch or Solr) to resolve eligible nodes.
      */
     private void executeImplFts()
     {
@@ -325,31 +320,31 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 params.setMaxItems(batchSize);
                 switch (queryMode)
                 {
-                    case FTS_OPTIMIZED_QUERY:
-                        params.setQuery("TYPE:\"rma:dispositionAction\"");
-                        params.addFilterQuery(getActionFilterQuery());
-                        params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
-                        params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR @rma\\:dispositionAsOf:[MIN TO NOW])");
-                        params.setTrackScore(false);
-                        break;
-                    case FTS_OPTIMIZED_CUTOFF:
-                        params.setQuery("TYPE:\"rma:dispositionAction\"");
-                        params.addFilterQuery(getActionFilterQuery());
-                        params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
-                        // Negated future range — semantically equivalent to [MIN TO NOW] but may
-                        // produce a different ES execution plan worth benchmarking.
-                        params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR -@rma\\:dispositionAsOf:["
-                                + LocalDate.now().plusDays(1) + " TO MAX])");
-                        params.setTrackScore(false);
-                        break;
-                    case FTS_DEFAULT:
-                    default:
-                        params.setQuery(getQuery());
-                        break;
+                case FTS_OPTIMIZED_QUERY:
+                    params.setQuery("TYPE:\"rma:dispositionAction\"");
+                    params.addFilterQuery(getActionFilterQuery());
+                    params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
+                    params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR @rma\\:dispositionAsOf:[MIN TO NOW])");
+                    params.setTrackScore(false);
+                    break;
+                case FTS_OPTIMIZED_CUTOFF:
+                    params.setQuery("TYPE:\"rma:dispositionAction\"");
+                    params.addFilterQuery(getActionFilterQuery());
+                    params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
+                    // Negated future range — semantically equivalent to [MIN TO NOW] but may
+                    // produce a different ES execution plan worth benchmarking.
+                    params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR -@rma\\:dispositionAsOf:["
+                            + LocalDate.now().plusDays(1) + " TO MAX])");
+                    params.setTrackScore(false);
+                    break;
+                case FTS_DEFAULT:
+                default:
+                    params.setQuery(getQuery());
+                    break;
                 }
 
                 // execute search
-                ResultSet results = executeSearch(params,batchNumber);
+                ResultSet results = executeSearch(params, batchNumber);
                 if (results == null)
                 {
                     log.warn("Disposition lifecycle search returned null; stopping pagination.");
@@ -414,19 +409,14 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * CMIS/DB-based execution path (enabled by {@code useDbQuery=true}).
      *
-     * <p>Key differences from the FTS path:</p>
+     * <p>
+     * Key differences from the FTS path:
+     * </p>
      * <ul>
-     *   <li><b>Transactional consistency</b>: {@link QueryConsistency#TRANSACTIONAL} is forced
-     *       so the query always hits the DB. Processed nodes (with {@code dispositionActionCompletedAt}
-     *       set) are immediately invisible to the next query — no risk of re-processing.</li>
-     *   <li><b>Skip reset on progress</b>: When at least one node is actioned, skip resets to 0
-     *       because those nodes have vanished from the result set. The next query naturally returns
-     *       the next page of eligible nodes from the beginning.</li>
-     *   <li><b>Skip advance on no progress</b>: When a non-empty batch yields zero actioned nodes
-     *       (all frozen, deleted, or malformed) the skip advances by the raw page size. This prevents
-     *       an infinite loop over unprocessable records.</li>
-     *   <li><b>No index cap</b>: The 10 000-record Elasticsearch limit does not apply; the batch
-     *       size is the only cap and is fully configurable.</li>
+     * <li><b>Transactional consistency</b>: {@link QueryConsistency#TRANSACTIONAL} is forced so the query always hits the DB. Processed nodes (with {@code dispositionActionCompletedAt} set) are immediately invisible to the next query — no risk of re-processing.</li>
+     * <li><b>Skip reset on progress</b>: When at least one node is actioned, skip resets to 0 because those nodes have vanished from the result set. The next query naturally returns the next page of eligible nodes from the beginning.</li>
+     * <li><b>Skip advance on no progress</b>: When a non-empty batch yields zero actioned nodes (all frozen, deleted, or malformed) the skip advances by the raw page size. This prevents an infinite loop over unprocessable records.</li>
+     * <li><b>No index cap</b>: The 10 000-record Elasticsearch limit does not apply; the batch size is the only cap and is fully configurable.</li>
      * </ul>
      */
     private void executeImplCmis()
@@ -459,67 +449,19 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             {
                 batchNumber++;
 
-                SearchParameters params = new SearchParameters();
-                params.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-                params.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
-                params.setQuery(getCmisQuery());
-                params.setMaxItems(batchSize);
-                params.setSkipCount(skipCount);
-                // Force DB routing. CMIS goes to the DB by default but being explicit here
-                // guards against any future routing change that could silently reintroduce
-                // the async-indexing lag and the need for skip arithmetic.
-                params.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
+                int[] batch = runCmisBatch(skipCount, batchNumber);
+                int rawPageSize = batch[0];
+                int eligible = batch[1];
+                int processed = batch[2];
 
-                ResultSet results = executeSearch(params,batchNumber);
-                if (results == null)
+                if (rawPageSize == 0)
                 {
-                    log.warn("Disposition lifecycle CMIS query returned null; stopping.");
+                    log.debug("No more eligible nodes found; job complete.");
                     break;
                 }
-
-                int rawPageSize;
-                Map<NodeRef, ChildAssociationRef> eligibleNodes;
-                try
-                {
-                    List<NodeRef> rawPage = results.getNodeRefs();
-                    rawPageSize = rawPage.size();
-                    if (rawPageSize == 0)
-                    {
-                        log.debug("No more eligible nodes found; job complete.");
-                        break;
-                    }
-                    totalReturned += rawPageSize;
-
-                    eligibleNodes = new LinkedHashMap<>(rawPageSize);
-                    for (NodeRef node : rawPage)
-                    {
-                        ChildAssociationRef parent = nodeService.getPrimaryParent(node);
-                        NodeRef freezeTarget = parent != null ? parent.getParentRef() : node;
-                        if (!freezeService.isFrozenOrHasFrozenChildren(freezeTarget))
-                        {
-                            eligibleNodes.put(node, parent);
-                        }
-                    }
-                }
-                finally
-                {
-                    results.close();
-                }
-
-                int batchEligible = eligibleNodes.size();
-                totalEligible += batchEligible;
-
-                log.debug("Batch {} — returned: {}, eligible (not frozen): {}, skip: {}",
-                        batchNumber, rawPageSize, batchEligible, skipCount);
-
-                int processed = 0;
-                if (!eligibleNodes.isEmpty())
-                {
-                    processed = executeAction(eligibleNodes);
-                }
+                totalReturned += rawPageSize;
+                totalEligible += eligible;
                 totalProcessed += processed;
-
-                log.debug("Batch {} — actioned: {}", batchNumber, processed);
 
                 if (processed > 0)
                 {
@@ -545,6 +487,70 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         }
     }
 
+    /**
+     * Runs one CMIS batch — search, freeze filter, and action execution — inside a single transaction.
+     *
+     * @param skipCount
+     *            current pagination offset
+     * @param batchNumber
+     *            1-based batch index used in log messages
+     * @return int[3] — {rawPageSize, eligible, processed}; all zeros when no results found
+     */
+    private int[] runCmisBatch(int skipCount, int batchNumber)
+    {
+        return retryingTransactionHelper.doInTransaction(() -> {
+            SearchParameters params = new SearchParameters();
+            params.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+            params.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
+            params.setQuery(getCmisQuery());
+            params.setMaxItems(batchSize);
+            params.setSkipCount(skipCount);
+            // Force DB routing. CMIS goes to the DB by default but being explicit here
+            // guards against any future routing change that could silently reintroduce
+            // the async-indexing lag and the need for skip arithmetic.
+            params.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
+
+            ResultSet results = executeSearch(params, batchNumber);
+            if (results == null)
+            {
+                log.warn("Disposition lifecycle CMIS query returned null; stopping.");
+                return new int[]{0, 0, 0};
+            }
+            try
+            {
+                List<NodeRef> rawPage = results.getNodeRefs();
+                int rawPageSize = rawPage.size();
+                if (rawPageSize == 0)
+                {
+                    return new int[]{0, 0, 0};
+                }
+
+                Map<NodeRef, ChildAssociationRef> eligibleNodes = new LinkedHashMap<>(rawPageSize);
+                for (NodeRef node : rawPage)
+                {
+                    ChildAssociationRef parent = nodeService.getPrimaryParent(node);
+                    NodeRef freezeTarget = parent != null ? parent.getParentRef() : node;
+                    if (!freezeService.isFrozenOrHasFrozenChildren(freezeTarget))
+                    {
+                        eligibleNodes.put(node, parent);
+                    }
+                }
+                int eligible = eligibleNodes.size();
+                log.debug("Batch {} — returned: {}, eligible (not frozen): {}, skip: {}",
+                        batchNumber, rawPageSize, eligible, skipCount);
+
+                int processed = eligibleNodes.isEmpty() ? 0 : executeAction(eligibleNodes);
+                log.debug("Batch {} — actioned: {}", batchNumber, processed);
+
+                return new int[]{rawPageSize, eligible, processed};
+            }
+            finally
+            {
+                results.close();
+            }
+        }, false, true); // readOnly=false, requiresNew=true
+    }
+
     private ResultSet executeSearch(SearchParameters params, int batchNumber)
     {
         long start = System.currentTimeMillis();
@@ -559,62 +565,56 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * Executes the disposition action for each eligible node.
      *
-     * <p>Returns the number of nodes for which the action was actually executed.
-     * Nodes discarded by the three internal guards (does not exist, wrong action,
-     * wrong parent association) are not counted. The caller uses this count to
-     * detect a stuck batch — a non-empty batch that yields zero processed nodes —
-     * and advance the skip offset accordingly.</p>
+     * <p>
+     * Returns the number of nodes for which the action was actually executed. Nodes discarded by the three internal guards (does not exist, wrong action, wrong parent association) are not counted. The caller uses this count to detect a stuck batch — a non-empty batch that yields zero processed nodes — and advance the skip offset accordingly.
+     * </p>
      *
-     * @param eligibleNodes map of disposition action node to its pre-computed primary parent
+     * @param eligibleNodes
+     *            map of disposition action node to its pre-computed primary parent
      * @return number of nodes for which the disposition action was successfully invoked
      */
     private int executeAction(final Map<NodeRef, ChildAssociationRef> eligibleNodes)
     {
-        // int[] used so the lambda can mutate the counter.
-        final int[] processedCount = {0};
+        int processedCount = 0;
 
-        RetryingTransactionCallback<Boolean> processTranCB = () -> {
-            for (Map.Entry<NodeRef, ChildAssociationRef> entry : eligibleNodes.entrySet())
+        for (Map.Entry<NodeRef, ChildAssociationRef> entry : eligibleNodes.entrySet())
+        {
+            NodeRef actionNode = entry.getKey();
+            // Reuse the parent computed during the freeze-filter pass — no extra DB call.
+            ChildAssociationRef parent = entry.getValue();
+
+            if (!nodeService.exists(actionNode))
             {
-                NodeRef actionNode = entry.getKey();
-                // Reuse the parent computed during the freeze-filter pass — no extra DB call.
-                ChildAssociationRef parent = entry.getValue();
-
-                if (!nodeService.exists(actionNode))
-                {
-                    continue;
-                }
-
-                final String dispAction = (String) nodeService.getProperty(actionNode, PROP_DISPOSITION_ACTION);
-
-                // Run disposition action
-                if (dispAction == null || !dispositionActions.contains(dispAction))
-                {
-                    continue;
-                }
-
-                if (parent == null || !parent.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
-                {
-                    continue;
-                }
-                Map<String, Serializable> props = Map.of(PARAM_NO_ERROR_CHECK, false);
-
-                try
-                {
-                    recordsManagementActionService
-                            .executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
-                    processedCount[0]++;
-                    log.trace("Processed action: {} on {}", dispAction, parent);
-                }
-                catch (AlfrescoRuntimeException exception)
-                {
-                    log.debug(exception.getMessage());
-                }
+                continue;
             }
-            return Boolean.TRUE;
-        };
-        retryingTransactionHelper.doInTransaction(processTranCB, false, true);
-        return processedCount[0];
+
+            final String dispAction = (String) nodeService.getProperty(actionNode, PROP_DISPOSITION_ACTION);
+
+            // Run disposition action
+            if (dispAction == null || !dispositionActions.contains(dispAction))
+            {
+                continue;
+            }
+
+            if (parent == null || !parent.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
+            {
+                continue;
+            }
+            Map<String, Serializable> props = Map.of(PARAM_NO_ERROR_CHECK, false);
+
+            try
+            {
+                recordsManagementActionService
+                        .executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
+                processedCount++;
+                log.trace("Processed action: {} on {}", dispAction, parent);
+            }
+            catch (AlfrescoRuntimeException exception)
+            {
+                log.debug(exception.getMessage());
+            }
+        }
+        return processedCount;
     }
 
     public PersonService getPersonService()

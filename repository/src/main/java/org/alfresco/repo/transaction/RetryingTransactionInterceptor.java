@@ -47,6 +47,8 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
     private TransactionService transactionService;
     private List<Class<?>> extraExceptions;
 
+    private static final InvocationCallback NO_OP = () -> null;
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -96,13 +98,13 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
                                     }
                                     catch (RuntimeException e)
                                     {
-                                        completeTransactionAfterThrowing(txInfo, e);
+                                        completeTransactionAfterThrowing(txInfo, NO_OP, e);
                                         throw e;
                                     }
                                     catch (Throwable e)
                                     {
                                         // Wrap non-runtime exceptions so that they can be preserved
-                                        completeTransactionAfterThrowing(txInfo, e);
+                                        completeTransactionAfterThrowing(txInfo, NO_OP, e);
                                         throw new WrapperException(e);
                                     }
                                     finally

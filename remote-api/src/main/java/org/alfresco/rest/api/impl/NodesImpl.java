@@ -3376,6 +3376,7 @@ public class NodesImpl implements Nodes
         String versionComment = null;
         String relativePath = null;
         String renditionNames = null;
+        String aspectNames = null;
         boolean versioningEnabled = true;
 
         Map<String, Object> qnameStrProps = new HashMap<>();
@@ -3433,6 +3434,11 @@ public class NodesImpl implements Nodes
             case "renditions":
                 renditionNames = getStringOrNull(field.getValue());
                 break;
+
+            case "aspectnames":
+                aspectNames = getStringOrNull(field.getValue());
+                break;
+
             case "versioningenabled":
                 String versioningEnabledStringValue = getStringOrNull(field.getValue());
                 if (null != versioningEnabledStringValue)
@@ -3483,6 +3489,8 @@ public class NodesImpl implements Nodes
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
         final Set<String> renditions = getRequestedRenditions(renditionNames);
 
+        final List<String> aspects = parseCommaSeparatedList(aspectNames);
+        validateAspects(aspects, EXCLUDED_NS, EXCLUDED_ASPECTS);
         validateProperties(qnameStrProps, EXCLUDED_NS, Arrays.asList());
         try
         {
@@ -3527,6 +3535,8 @@ public class NodesImpl implements Nodes
 
             // Create a new file.
             NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, versionMajor, versionComment);
+
+            addCustomAspects(nodeRef, aspects, EXCLUDED_ASPECTS);
 
             // Create the response
             final Node fileNode = getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters);
@@ -3628,6 +3638,35 @@ public class NodesImpl implements Nodes
             }
         }
         return renditions;
+    }
+
+    /**
+     * Parse a comma-separated list of names into a List. This is used for parsing aspectNames and similar parameters.
+     *
+     * @param namesParam
+     *            comma-separated string (e.g., "cm:titled,cm:author")
+     * @return List of trimmed, non-empty names, or an empty list if input is null
+     */
+    static List<String> parseCommaSeparatedList(String namesParam)
+    {
+        if (namesParam == null)
+        {
+            return Collections.emptyList();
+        }
+
+        String[] nameArray = namesParam.split(",");
+        List<String> names = new ArrayList<>(nameArray.length);
+
+        for (String name : nameArray)
+        {
+            String trimmedName = name.trim();
+            if (!trimmedName.isEmpty())
+            {
+                names.add(trimmedName);
+            }
+        }
+
+        return names.isEmpty() ? Collections.emptyList() : names;
     }
 
     private void requestRenditions(Set<String> renditionNames, Node fileNode)

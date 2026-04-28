@@ -182,10 +182,15 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender> imp
             {
                 getObject().initialize();
             }
-            catch (Throwable t)
+            catch (Exception e)
             {
                 running.set(false);
-                throw new AlfrescoRuntimeException("Failed to start EventSender", t);
+                throw new AlfrescoRuntimeException("Failed to start EventSender", e);
+            }
+            catch (Error e)
+            {
+                running.set(false);
+                throw e;
             }
         }
     }
@@ -199,10 +204,15 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender> imp
             {
                 getObject().stop();
             }
-            catch (Throwable t)
+            catch (Exception e)
             {
                 running.set(true);
-                throw new AlfrescoRuntimeException("Failed to stop EventSender", t);
+                throw new AlfrescoRuntimeException("Failed to stop EventSender", e);
+            }
+            catch (Error e)
+            {
+                running.set(true);
+                throw e;
             }
         }
     }

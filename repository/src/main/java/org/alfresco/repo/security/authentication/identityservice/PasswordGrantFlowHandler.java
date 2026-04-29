@@ -74,7 +74,7 @@ public class PasswordGrantFlowHandler
      * @throws ParseException
      *             if parsing the token response fails
      */
-    @Deprecated(since = "26.1")
+    @Deprecated(since = "25.5")
     public IdentityServiceFacade.AccessTokenAuthorization passwordGrantFlow(IdentityServiceFacade.AuthorizationGrant authorizationGrant) throws IOException, ParseException
     {
         TokenRequest tokenRequest = prepareTokenRequest(authorizationGrant);

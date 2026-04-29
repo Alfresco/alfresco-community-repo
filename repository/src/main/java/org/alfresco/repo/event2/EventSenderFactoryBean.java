@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,16 +27,19 @@ package org.alfresco.repo.event2;
 
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.core.env.PropertyResolver;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.PropertyCheck;
 
-public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
+public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender> implements SmartLifecycle
 {
     static final String LEGACY_SKIP_QUEUE_PROPERTY = "repo.event2.queue.skip";
     static final String EVENT_SEND_STRATEGY_PROPERTY = "repo.event2.send.strategy";
@@ -50,6 +53,8 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
 
     private String configuredSenderName;
     private boolean legacySkipQueueConfig;
+
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
     public EventSenderFactoryBean(@Autowired PropertyResolver propertyResolver, Event2MessageProducer event2MessageProducer,
             Executor enqueueThreadPoolExecutor, Executor dequeueThreadPoolExecutor)
@@ -87,11 +92,7 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
     @Nonnull
     protected EventSender createInstance() throws Exception
     {
-        EventSender sender = instantiateConfiguredSender();
-
-        sender.initialize();
-
-        return sender;
+        return instantiateConfiguredSender();
     }
 
     private EventSender instantiateConfiguredSender()
@@ -163,6 +164,56 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
         if (eventSender != null)
         {
             eventSender.destroy();
+        }
+    }
+
+    @Override
+    public boolean isRunning()
+    {
+        return running.get();
+    }
+
+    @Override
+    public void start()
+    {
+        if (running.compareAndSet(false, true))
+        {
+            try
+            {
+                getObject().initialize();
+            }
+            catch (Exception e)
+            {
+                running.set(false);
+                throw new AlfrescoRuntimeException("Failed to start EventSender", e);
+            }
+            catch (Error e)
+            {
+                running.set(false);
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public void stop()
+    {
+        if (running.compareAndSet(true, false))
+        {
+            try
+            {
+                getObject().stop();
+            }
+            catch (Exception e)
+            {
+                running.set(true);
+                throw new AlfrescoRuntimeException("Failed to stop EventSender", e);
+            }
+            catch (Error e)
+            {
+                running.set(true);
+                throw e;
+            }
         }
     }
 }

@@ -131,11 +131,11 @@ public class BufferedResponseTest
     }
 
     /**
-     * MNT-25523: writeResponse() should suppress ClientAbortException and not throw AlfrescoRuntimeException.
+     * MNT-25523: writeResponse() should suppress client-disconnect IOExceptions (e.g. an IOException caused by a {@link SocketException} with a "Broken pipe" message) and not throw AlfrescoRuntimeException.
      */
     @Test
     @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
-    public void writeResponseShouldNotThrowOnClientAbortException() throws IOException
+    public void writeResponseShouldNotThrowOnClientDisconnect() throws IOException
     {
         Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(
                 TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME), MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);

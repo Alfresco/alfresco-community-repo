@@ -283,7 +283,7 @@ public class MultiPartBuilder
         addPartIfNotNull(parts, "description", description);
         addPartIfNotNull(parts, "contenttype", contentTypeQNameStr);
         addPartIfNotNull(parts, "versioningenabled", versioningEnabled);
-        addPartIfNotNull(parts, "aspects", getCommaSeparated(aspects));
+        addPartIfNotNull(parts, "aspectnames", aspects == null ? null : getCommaSeparated(aspects));
         addPartIfNotNull(parts, "majorversion", majorVersion);
         addPartIfNotNull(parts, "overwrite", overwrite);
         addPartIfNotNull(parts, "autorename", autoRename);

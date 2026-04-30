@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -41,6 +41,7 @@ import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
 import org.alfresco.rest.requests.Actions;
 import org.alfresco.rest.requests.Audit;
+import org.alfresco.rest.requests.CascadingDictionaries;
 import org.alfresco.rest.requests.Categories;
 import org.alfresco.rest.requests.ContentStorageInformation;
 import org.alfresco.rest.requests.Downloads;
@@ -267,5 +268,10 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
     public Downloads usingDownloads(RestDownloadsModel downloadsModel)
     {
         return new Downloads(downloadsModel, restWrapper);
+    }
+
+    public CascadingDictionaries usingCascadingDictionaries()
+    {
+        return new CascadingDictionaries(restWrapper);
     }
 }

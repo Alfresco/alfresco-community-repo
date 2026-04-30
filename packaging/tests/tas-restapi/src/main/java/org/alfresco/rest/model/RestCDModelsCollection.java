@@ -28,9 +28,7 @@ package org.alfresco.rest.model;
 import org.alfresco.rest.core.RestModels;
 
 /**
- * TAS collection model for a paged list of {@link RestCDModel} entries.
- * Used when deserializing the {@code GET /cascading-dictionaries} list response.
+ * TAS collection model for a paged list of {@link RestCDModel} entries. Used when deserializing the {@code GET /cascading-dictionaries} list response.
  */
 public class RestCDModelsCollection extends RestModels<RestCDModel, RestCDModelsCollection>
-{
-}
+{}

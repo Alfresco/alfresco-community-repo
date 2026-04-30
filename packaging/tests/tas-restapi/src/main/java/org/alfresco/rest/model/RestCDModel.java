@@ -34,9 +34,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * TAS model representing a cascading dictionary entry.
- * Maps to {@code CDResponse} returned by {@code GET /cascading-dictionaries} and
- * {@code GET /cascading-dictionaries/{aspectId}} REST API endpoints.
+ * TAS model representing a cascading dictionary entry. Maps to {@code CDResponse} returned by {@code GET /cascading-dictionaries} and {@code GET /cascading-dictionaries/{aspectId}} REST API endpoints.
  */
 public class RestCDModel extends TestModel implements IRestModel<RestCDModel>
 {

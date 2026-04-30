@@ -34,12 +34,7 @@ import org.alfresco.rest.model.RestCDModel;
 import org.alfresco.rest.model.RestCDModelsCollection;
 
 /**
- * REST request wrapper for the {@code /cascading-dictionaries} Core API endpoints.
- *
- * <p>Obtain an instance via:
- * <pre>
- *   restClient.authenticateUser(adminUser).withCoreAPI().usingCascadingDictionaries()
- * </pre>
+ * Declares all Rest API under the /cascading-dictionaries path
  */
 public class CascadingDictionaries extends ModelRequest<CascadingDictionaries>
 {
@@ -51,11 +46,11 @@ public class CascadingDictionaries extends ModelRequest<CascadingDictionaries>
     }
 
     /**
-     * Lists all registered cascading dictionaries.
-     * {@code GET /cascading-dictionaries}
+     * Lists all registered cascading dictionaries. {@code GET /cascading-dictionaries}
      *
      * @return paged collection of {@link RestCDModel}
-     * @throws JsonToModelConversionException if the response cannot be deserialized
+     * @throws JsonToModelConversionException
+     *             if the response cannot be deserialized
      */
     public RestCDModelsCollection getCascadingDictionaries() throws JsonToModelConversionException
     {
@@ -64,12 +59,13 @@ public class CascadingDictionaries extends ModelRequest<CascadingDictionaries>
     }
 
     /**
-     * Retrieves a single cascading dictionary by its aspect prefixed name.
-     * {@code GET /cascading-dictionaries/{aspectId}}
+     * Retrieves a single cascading dictionary by its aspect prefixed name. {@code GET /cascading-dictionaries/{aspectId}}
      *
-     * @param aspectId the prefixed aspect name (e.g. {@code "custom:myAspect"})
+     * @param aspectId
+     *            the prefixed aspect name (e.g. {@code "custom:myAspect"})
      * @return the {@link RestCDModel} for the given aspect
-     * @throws JsonToModelConversionException if the response cannot be deserialized
+     * @throws JsonToModelConversionException
+     *             if the response cannot be deserialized
      */
     public RestCDModel getCascadingDictionary(String aspectId) throws JsonToModelConversionException
     {
@@ -78,13 +74,15 @@ public class CascadingDictionaries extends ModelRequest<CascadingDictionaries>
     }
 
     /**
-     * Retrieves a specific version of a cascading dictionary.
-     * {@code GET /cascading-dictionaries/{aspectId}/versions/{version}}
+     * Retrieves a specific version of a cascading dictionary. {@code GET /cascading-dictionaries/{aspectId}/versions/{version}}
      *
-     * @param aspectId the prefixed aspect name (e.g. {@code "cdict:account"})
-     * @param version  the version string (e.g. {@code "1.0"})
+     * @param aspectId
+     *            the prefixed aspect name (e.g. {@code "cdict:account"})
+     * @param version
+     *            the version string (e.g. {@code "1.0"})
      * @return the {@link RestCDModel} for the given aspect and version
-     * @throws JsonToModelConversionException if the response cannot be deserialized
+     * @throws JsonToModelConversionException
+     *             if the response cannot be deserialized
      */
     public RestCDModel getCascadingDictionaryVersion(String aspectId, String version) throws JsonToModelConversionException
     {

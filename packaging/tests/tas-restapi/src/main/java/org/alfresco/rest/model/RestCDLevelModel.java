@@ -28,8 +28,7 @@ package org.alfresco.rest.model;
 import java.util.List;
 
 /**
- * TAS model representing a single level in a cascading dictionary.
- * Maps to the {@code levels} array items in the cascading-dictionaries REST API response.
+ * TAS model representing a single level in a cascading dictionary. Maps to the {@code levels} array items in the cascading-dictionaries REST API response.
  */
 public class RestCDLevelModel
 {

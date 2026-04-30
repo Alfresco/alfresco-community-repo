@@ -3,7 +3,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,10 +26,14 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.function.Supplier;
@@ -39,7 +43,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.web.scripts.BufferedResponse;
 import org.alfresco.repo.web.scripts.TempOutputStream;
 import org.alfresco.util.TempFileProvider;
@@ -123,4 +129,44 @@ public class BufferedResponseTest
         Stream<File> fileStream = Arrays.stream(directory.listFiles());
         return fileStream.filter(f -> f.getName().startsWith(filePrefix)).count();
     }
+
+    /**
+     * MNT-25523: writeResponse() should suppress client-disconnect IOExceptions (e.g. an IOException caused by a {@link SocketException} with a "Broken pipe" message) and not throw AlfrescoRuntimeException.
+     */
+    @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
+    public void writeResponseShouldNotThrowOnClientDisconnect() throws IOException
+    {
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(
+                TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME), MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
+
+        WebScriptResponse mockRes = mock(WebScriptResponse.class);
+        when(mockRes.getOutputStream()).thenThrow(new IOException("Broken pipe", new SocketException("Broken pipe")));
+
+        try (BufferedResponse response = new BufferedResponse(mockRes, MEMORY_THRESHOLD, streamFactory))
+        {
+            response.getOutputStream().write("test content".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            response.writeResponse();
+        }
+    }
+
+    /**
+     * MNT-25523: writeResponse() should still throw AlfrescoRuntimeException for non-client-abort IOExceptions.
+     */
+    @Test(expected = AlfrescoRuntimeException.class)
+    public void writeResponseShouldThrowOnRegularIOException() throws IOException
+    {
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(
+                TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME), MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
+
+        WebScriptResponse mockRes = mock(WebScriptResponse.class);
+        when(mockRes.getOutputStream()).thenThrow(new IOException("Disk full"));
+
+        try (BufferedResponse response = new BufferedResponse(mockRes, MEMORY_THRESHOLD, streamFactory))
+        {
+            response.getOutputStream().write("test content".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            response.writeResponse();
+        }
+    }
+
 }

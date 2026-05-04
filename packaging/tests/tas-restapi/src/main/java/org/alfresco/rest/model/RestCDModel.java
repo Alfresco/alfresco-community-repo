@@ -38,14 +38,8 @@ import org.alfresco.utility.model.TestModel;
  */
 public class RestCDModel extends TestModel implements IRestModel<RestCDModel>
 {
-    @JsonProperty(value = "entry")
+    @JsonProperty("entry")
     RestCDModel model;
-
-    @Override
-    public RestCDModel onModel()
-    {
-        return model;
-    }
 
     private String name;
     private String aspect;
@@ -55,6 +49,12 @@ public class RestCDModel extends TestModel implements IRestModel<RestCDModel>
     private Date createdAt;
     private Date modifiedAt;
     private List<RestCDLevelModel> levels;
+
+    @Override
+    public RestCDModel onModel()
+    {
+        return model;
+    }
 
     public String getName()
     {

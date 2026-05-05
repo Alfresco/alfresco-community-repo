@@ -49,6 +49,7 @@ public class RestCDModel extends TestModel implements IRestModel<RestCDModel>
     private Date createdAt;
     private Date modifiedAt;
     private List<RestCDLevelModel> levels;
+    private List<RestCDNodeModel> data;
 
     @Override
     public RestCDModel onModel()
@@ -134,5 +135,15 @@ public class RestCDModel extends TestModel implements IRestModel<RestCDModel>
     public void setLevels(List<RestCDLevelModel> levels)
     {
         this.levels = levels;
+    }
+
+    public List<RestCDNodeModel> getData()
+    {
+        return data;
+    }
+
+    public void setData(List<RestCDNodeModel> data)
+    {
+        this.data = data;
     }
 }

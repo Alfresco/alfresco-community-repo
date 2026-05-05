@@ -1,0 +1,40 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "locale_content": {
+          "type": "german"
+        },
+        "locale_text_index": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "flatten_graph",
+            "german_stemmer_multiplexer"
+          ]
+        },
+        "locale_text_query": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "german_stemmer_multiplexer"
+          ]
+        }
+      },
+      "filter": {
+        "german_stemmer": {
+          "type": "stemmer",
+          "language": "light_german"
+        },
+        "german_stemmer_multiplexer": {
+          "type": "multiplexer",
+          "filters": [ "german_stemmer" ]
+        }
+      }
+    }
+  }
+}

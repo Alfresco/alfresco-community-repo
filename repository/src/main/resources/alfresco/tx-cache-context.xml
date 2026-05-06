@@ -17,7 +17,7 @@
       </property>
       <property name="maxCacheSize" value="${cache.propertyValueCache.tx.maxItems}" />
       <property name="mutable" value="true" />
-      <property name="allowEqualsChecks" value="${cache.propertyValueCache.tx.allowEqualsChecks}"  />
+      <property name="allowEqualsChecks" value="${cache.propertyValueCache.tx.allowEqualsChecks}" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
       <property name="tenantAware" value="false" />
       <property name="cacheStats" ref="cacheStatistics"/>

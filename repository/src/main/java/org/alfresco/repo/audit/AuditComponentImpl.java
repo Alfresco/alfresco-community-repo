@@ -239,7 +239,6 @@ public class AuditComponentImpl implements AuditComponent
      *            the audit application object
      * @return Returns a copy of the set of disabled paths associated with the application
      */
-    @SuppressWarnings("unchecked")
     private Set<String> getDisabledPaths(AuditApplication application)
     {
         try
@@ -1016,6 +1015,7 @@ public class AuditComponentImpl implements AuditComponent
         return auditDAO.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
     }
 
+    @SuppressWarnings("unchecked")
     private Set<String> getDisabledPaths(Long disabledPathsId)
     {
         Set<String> disabledPaths = disabledPathsCache.get(disabledPathsId);

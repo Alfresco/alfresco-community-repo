@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -37,6 +38,17 @@ import org.alfresco.service.namespace.QName;
  */
 public interface PropertyExtender
 {
+    /**
+     * Calculate additional node properties.
+     *
+     * @param context
+     *            the context of the calculation, which contains the properties that are being added/updated on a node
+     * @return result containing calculated properties mapping. Empty map when no relevant properties were provided in the context.
+     * @throws AlfrescoRuntimeException
+     *             for expected calculation process failures.
+     * @throws RuntimeException
+     *             for any unexpected errors during the calculation process.
+     */
     CalculationResult calculate(CalculationContext context);
 
     /**
@@ -63,6 +75,8 @@ public interface PropertyExtender
      */
     record CalculationResult(Map<QName, Serializable> calculatedProperties)
     {
+        public static CalculationResult NO_OP = new CalculationResult(Collections.emptyMap());
+
         public CalculationResult
         {
             calculatedProperties = Optional.ofNullable(calculatedProperties)

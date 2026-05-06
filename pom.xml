@@ -80,7 +80,7 @@
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.16</dependency.slf4j.version>
-        <dependency.log4j.version>2.25.3</dependency.log4j.version>
+        <dependency.log4j.version>2.25.4</dependency.log4j.version>
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
         <dependency.tika.version>3.2.3</dependency.tika.version>
         <dependency.junrar.version>7.5.8</dependency.junrar.version>
@@ -273,6 +273,14 @@
                 <groupId>org.eclipse.parsson</groupId>
                 <artifactId>parsson</artifactId>
                 <version>${dependency.jakarta-ee-json-impl.version}</version>
+            </dependency>
+
+            <!-- This dependency was added because latest maven-artifact uses vulnerable version of plexus-utils. (PRODSEC-11515) -->
+            <!-- This should be removed once the clean maven-artifact will be released. -->
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>3.6.1</version>
             </dependency>
 
             <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->

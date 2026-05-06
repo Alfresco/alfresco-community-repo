@@ -137,7 +137,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 {
     private static final Log LOGGER = LogFactory.getLog(IdentityServiceFacadeFactoryBean.class);
 
-    private static final JOSEObjectType AT_JWT = new JOSEObjectType("at+jwt");
     private static final String DEFAULT_ISSUER_ATTR = "issuer";
 
     private boolean enabled;
@@ -674,7 +673,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                             .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
                             .collect(Collectors.toSet()),
                     cachingJWKSource));
-            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
+            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT));
         }
 
         private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)

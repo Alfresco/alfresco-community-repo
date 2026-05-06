@@ -109,7 +109,7 @@ public class IdentityServiceFacadeFactoryBeanTest
         when(responseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
         when(responseEntity.getBody()).thenReturn(String.format("{\"keys\": [%s]}", rsaPublicJWK.toJSONString()));
 
-        final SignedJWT signedJWT = getSignedJWT(rsaKey, "at+jwt", "userA", "https://my.issuer");
+        final SignedJWT signedJWT = getSignedJWT(rsaKey, "jwt", "userA", "https://my.issuer");
         signedJWT.sign(new RSASSASigner(rsaKey));
 
         when(providerDetails.getIssuerUri()).thenReturn("https://my.issuer");
@@ -140,7 +140,7 @@ public class IdentityServiceFacadeFactoryBeanTest
         when(responseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
         when(responseEntity.getBody()).thenReturn(String.format("{\"keys\": [%s]}", rsaPublicJWK.toJSONString()));
 
-        final SignedJWT signedJWT = getSignedJWT(rsaKey, "at+jwt", "userA", "https://my.issuer");
+        final SignedJWT signedJWT = getSignedJWT(rsaKey, "jwt", "userA", "https://my.issuer");
         signedJWT.sign(new RSASSASigner(rsaKey));
 
         when(providerDetails.getIssuerUri()).thenReturn("https://my.issuer");

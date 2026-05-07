@@ -625,9 +625,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 final RSAPublicKey publicKey = parsePublicKey(config.getRealmKey());
                 return NimbusJwtDecoder.withPublicKey(publicKey)
                         .signatureAlgorithm(DEFAULT_SIGNATURE_ALGORITHM)
-                        .jwtProcessorCustomizer(jwtProcessor -> {
-                            jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(JOSEObjectType.JWT, AT_JWT, null));
-                        })
+                        .jwtProcessorCustomizer(jwtProcessor -> jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(JOSEObjectType.JWT, AT_JWT, null)))
                         .build();
             }
             final String jwkSetUri = requireValidJwkSetUri(providerDetails);

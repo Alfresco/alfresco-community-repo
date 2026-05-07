@@ -46,7 +46,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -627,7 +626,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 return NimbusJwtDecoder.withPublicKey(publicKey)
                         .signatureAlgorithm(DEFAULT_SIGNATURE_ALGORITHM)
                         .jwtProcessorCustomizer((ConfigurableJWTProcessor<SecurityContext> jwtProcessor) -> {
-                            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT, null));
+                            jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(JOSEObjectType.JWT, AT_JWT, null));
                         })
                         .build();
             }
@@ -826,7 +825,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     {
         public CustomJOSEObjectTypeVerifier(JOSEObjectType... allowedTypes)
         {
-            super(new HashSet<>(Arrays.asList(allowedTypes)));
+            super(Set.of(allowedTypes));
         }
 
         @Override

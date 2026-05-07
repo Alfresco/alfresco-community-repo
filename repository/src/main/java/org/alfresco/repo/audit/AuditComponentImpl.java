@@ -84,6 +84,7 @@ public class AuditComponentImpl implements AuditComponent
     private UserAuditFilter userAuditFilter;
     private AuditRecordReporter auditRecordReporter;
     private SimpleCache<Long, Set<String>> disabledPathsCache;
+    private boolean disabledPathsCacheEnabled;
 
     /**
      * Default constructor
@@ -150,6 +151,11 @@ public class AuditComponentImpl implements AuditComponent
     public void setDisabledPathsCache(SimpleCache<Long, Set<String>> disabledPathsCache)
     {
         this.disabledPathsCache = disabledPathsCache;
+    }
+
+    public void setDisabledPathsCacheEnabled(boolean disabledPathsCacheEnabled)
+    {
+        this.disabledPathsCacheEnabled = disabledPathsCacheEnabled;
     }
 
     /**
@@ -1018,17 +1024,31 @@ public class AuditComponentImpl implements AuditComponent
     @SuppressWarnings("unchecked")
     private Set<String> getDisabledPaths(Long disabledPathsId)
     {
-        Set<String> disabledPaths = disabledPathsCache.get(disabledPathsId);
+        Set<String> disabledPaths = null;
+
+        if (disabledPathsCacheEnabled)
+        {
+            disabledPaths = disabledPathsCache.get(disabledPathsId);
+        }
+
         if (disabledPaths == null)
         {
             disabledPaths = (Set<String>) propertyValueDAO.getPropertyById(disabledPathsId);
-            disabledPathsCache.put(disabledPathsId, disabledPaths);
+
+            if (disabledPathsCacheEnabled)
+            {
+                disabledPathsCache.put(disabledPathsId, disabledPaths);
+            }
         }
+
         return disabledPaths;
     }
 
     private void removeCachedDisabledPaths(Long disabledPathsId)
     {
-        disabledPathsCache.remove(disabledPathsId);
+        if (disabledPathsCacheEnabled)
+        {
+            disabledPathsCache.remove(disabledPathsId);
+        }
     }
 }

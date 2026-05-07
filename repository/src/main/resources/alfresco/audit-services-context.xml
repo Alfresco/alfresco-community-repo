@@ -39,6 +39,7 @@
         </property>
         <property name="auditRecordReporter" ref="auditRecordReporter"/>
         <property name="disabledPathsCache" ref="auditDisabledPathsCache"/>
+        <property name="disabledPathsCacheEnabled" value="${audit.disabled-paths-cache.enabled}" />
     </bean>
 
     <!-- User Audit Filter -->

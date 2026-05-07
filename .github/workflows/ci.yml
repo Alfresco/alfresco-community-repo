@@ -45,7 +45,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v8.16.0
       - name: "Init"
@@ -66,7 +66,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v8.16.0
         with:
@@ -107,7 +107,7 @@ jobs:
           mkdir temp-dir-for-sast
           bash ./scripts/ci/remove-sast-exclusions.sh ./packaging/war/target/alfresco.war temp-dir-for-sast/reduced.war
       - name: "Run SAST Scan"
-        uses: veracode/Veracode-pipeline-scan-action@v1.0.16
+        uses: veracode/Veracode-pipeline-scan-action@v1.0.20
         with:
           vid: ${{ secrets.VERACODE_API_ID }}
           vkey: ${{ secrets.VERACODE_API_KEY }}
@@ -146,7 +146,7 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - uses: Alfresco/ya-pmd-scan@v4.3.0
         with:
@@ -179,7 +179,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -259,7 +259,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -338,7 +338,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -409,7 +409,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -480,7 +480,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -550,7 +550,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -620,7 +620,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -690,7 +690,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -758,7 +758,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -858,7 +858,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -972,7 +972,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -1054,7 +1054,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
@@ -1128,7 +1128,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -1174,7 +1174,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -1216,7 +1216,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -1306,7 +1306,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.16.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v12.1.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}

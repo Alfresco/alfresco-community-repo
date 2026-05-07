@@ -105,6 +105,7 @@ public class CascadingDictionaries extends ModelRequest<CascadingDictionaries>
      * @throws JsonToModelConversionException
      *             if the response cannot be deserialized
      */
+    @SuppressWarnings("PMD.UseObjectForClearerAPI") // four distinct semantic parameters — a wrapper object adds no clarity here
     public RestCDModel createCascadingDictionary(String name, String aspect, String keyProperty, String versionProperty)
             throws JsonToModelConversionException
     {

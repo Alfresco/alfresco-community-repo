@@ -46,6 +46,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -625,7 +626,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 final RSAPublicKey publicKey = parsePublicKey(config.getRealmKey());
                 return NimbusJwtDecoder.withPublicKey(publicKey)
                         .signatureAlgorithm(DEFAULT_SIGNATURE_ALGORITHM)
-                        .jwtProcessorCustomizer(this::reconfigureJWKSCache)
+                        .jwtProcessorCustomizer((ConfigurableJWTProcessor<SecurityContext> jwtProcessor) -> {
+                            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT, null));
+                        })
                         .build();
             }
             final String jwkSetUri = requireValidJwkSetUri(providerDetails);
@@ -823,16 +826,12 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     {
         public CustomJOSEObjectTypeVerifier(JOSEObjectType... allowedTypes)
         {
-            super(Set.of(allowedTypes));
+            super(new HashSet<>(Arrays.asList(allowedTypes)));
         }
 
         @Override
         public void verify(JOSEObjectType type, SecurityContext context) throws BadJOSEException
         {
-            if (type == null)
-            {
-                return;
-            }
             super.verify(type, context);
         }
     }

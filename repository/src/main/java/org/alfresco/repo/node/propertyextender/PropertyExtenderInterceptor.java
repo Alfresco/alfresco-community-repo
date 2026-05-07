@@ -107,7 +107,7 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
         return extendedProps;
     }
 
-    CalculationResult runCalculation(PropertyExtender extender, Map<QName, Serializable> newProperties)
+    private CalculationResult runCalculation(PropertyExtender extender, Map<QName, Serializable> newProperties)
     {
         try
         {

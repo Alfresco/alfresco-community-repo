@@ -75,7 +75,7 @@ public interface PropertyExtender
      */
     record CalculationResult(Map<QName, Serializable> calculatedProperties)
     {
-        public static CalculationResult NO_OP = new CalculationResult(Collections.emptyMap());
+        public static final CalculationResult NO_OP = new CalculationResult(Collections.emptyMap());
 
         public CalculationResult
         {

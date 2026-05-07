@@ -96,6 +96,8 @@ public class AuditComponentImplUnitTest
         given(auditApplication.getDisabledPathsId()).willReturn(DISABLED_PATHS_ID);
         given(auditApplication.getApplicationKey()).willReturn(APP_KEY);
 
+        auditComponent.setDisabledPathsCacheEnabled(true);
+
         mockedTxnSupport = mockStatic(AlfrescoTransactionSupport.class);
 
         // Allow write-transaction check to pass without a real transaction context.
@@ -189,5 +191,56 @@ public class AuditComponentImplUnitTest
 
         then(propertyValueDAO).should().updateProperty(eq(DISABLED_PATHS_ID), any(Serializable.class));
         then(disabledPathsCache).should().remove(DISABLED_PATHS_ID);
+    }
+
+    @Test
+    public void testGetDisabledPaths_cacheDisabled_alwaysCallsDAO()
+    {
+        auditComponent.setDisabledPathsCacheEnabled(false);
+        Set<String> disabledPaths = new HashSet<>();
+        given(propertyValueDAO.getPropertyById(DISABLED_PATHS_ID)).willReturn((Serializable) disabledPaths);
+
+        auditComponent.enableAudit(APPLICATION_NAME, null);
+
+        then(propertyValueDAO).should().getPropertyById(DISABLED_PATHS_ID);
+        then(disabledPathsCache).should(never()).get(any());
+        then(disabledPathsCache).should(never()).put(any(), any());
+    }
+
+    @Test
+    public void testCacheNotInvalidated_afterEnableAudit_whenCacheDisabled()
+    {
+        auditComponent.setDisabledPathsCacheEnabled(false);
+        Set<String> disabledPaths = new HashSet<>();
+        disabledPaths.add("/" + APP_KEY);
+        given(propertyValueDAO.getPropertyById(DISABLED_PATHS_ID)).willReturn((Serializable) disabledPaths);
+
+        auditComponent.enableAudit(APPLICATION_NAME, null);
+
+        then(propertyValueDAO).should().updateProperty(eq(DISABLED_PATHS_ID), any(Serializable.class));
+        then(disabledPathsCache).should(never()).remove(any());
+    }
+
+    @Test
+    public void testCacheNotInvalidated_afterDisableAudit_whenCacheDisabled()
+    {
+        auditComponent.setDisabledPathsCacheEnabled(false);
+        given(propertyValueDAO.getPropertyById(DISABLED_PATHS_ID)).willReturn((Serializable) new HashSet<>());
+
+        auditComponent.disableAudit(APPLICATION_NAME, null);
+
+        then(propertyValueDAO).should().updateProperty(eq(DISABLED_PATHS_ID), any(Serializable.class));
+        then(disabledPathsCache).should(never()).remove(any());
+    }
+
+    @Test
+    public void testCacheNotInvalidated_afterResetDisabledPaths_whenCacheDisabled()
+    {
+        auditComponent.setDisabledPathsCacheEnabled(false);
+
+        auditComponent.resetDisabledPaths(APPLICATION_NAME);
+
+        then(propertyValueDAO).should().updateProperty(eq(DISABLED_PATHS_ID), any(Serializable.class));
+        then(disabledPathsCache).should(never()).remove(any());
     }
 }

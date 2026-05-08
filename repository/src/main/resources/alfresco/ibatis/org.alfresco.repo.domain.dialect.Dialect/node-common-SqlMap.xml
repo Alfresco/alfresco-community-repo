@@ -665,7 +665,15 @@
             join alf_store store on (store.id = node.store_id)
             join alf_transaction txn on (txn.id = node.transaction_id)
         where
-            node.store_id = #{storeId} and
+            <choose>
+                <when test="storeId != null">node.store_id = #{storeId} and</when>
+                <otherwise>
+                    node.store_id in
+                    <foreach item="item" index="index" collection="storeIds" open="(" separator="," close=") and">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
             node.uuid in 
             <foreach item="item" index="index" collection="uuids" open="(" separator="," close=")">
                 #{item}
@@ -762,13 +770,15 @@
             alf_node node
             join alf_node_aspects aspects on (aspects.node_id = node.id)
         <where>
-            <if test="nodeId != null">aspects.node_id = #{nodeId}</if>
-            <if test="nodeIds != null">
-                and aspects.node_id in 
+            <choose>
+                <when test="nodeId != null">aspects.node_id = #{nodeId}</when>
+                <when test="nodeIds != null">
+                    aspects.node_id in
                 <foreach item="item" index="index" collection="nodeIds" open="(" separator="," close=")">
                     #{item}
                 </foreach>
-            </if>
+                </when>
+            </choose>
         </where>
     </select>
     
@@ -984,20 +994,101 @@
             and assoc.is_primary = #{isPrimary}
     </select>
 
+    <!-- GetChildren - count of matching rows with same conditions as select_GetChildrenCannedQueryWithPropsSorted -->
+    <select id="count_GetChildrenCannedQueryWithPropsSorted" parameterType="FilterSortNode" resultType="long">
+        select count(distinct childNode.id)
+        from
+        alf_child_assoc assoc
+        join alf_node childNode on (childNode.id = assoc.child_node_id)
+        <if test="pattern != null">
+            join alf_node_properties prop4 on (prop4.node_id = childNode.id and prop4.qname_id = #{namePropertyQNameId})
+        </if>
+        where
+        assoc.parent_node_id = #{parentNodeId}
+        <if test="isPrimary != null">
+            and assoc.is_primary = #{isPrimary}
+        </if>
+        <if test="childNodeTypeQNameIds != null">
+            and childNode.type_qname_id in
+            <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="pattern != null">
+            and prop4.string_value like #{pattern} <include refid="alfresco.util.escape"/>
+        </if>
+        <if test="assocTypeQNameIds != null">
+            and assoc.type_qname_id in
+            <foreach item="item" index="index" collection="assocTypeQNameIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- GetChildren - with explicit prop filtering and DEFAULT sorting -->
+    <select id="select_GetChildrenCannedQueryWithPropsSorted" parameterType="FilterSortNode" resultMap="result_FilterSortNode">
+        select
+        childNode.id             as id,
+        childStore.protocol      as protocol,
+        childStore.identifier    as identifier,
+        childNode.uuid           as uuid,
+        CASE
+            WHEN childNode.type_qname_id IN
+            <foreach item="id" collection="folderTypeQNameIds" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+            THEN 0
+            ELSE 1
+        END                      as sort_folder_first,
+        CASE
+            WHEN prop1.string_value IS NULL THEN 0
+            ELSE 1
+        END                      as sort_null_prop1_first
+        from (
+            select distinct cn.id
+            from alf_child_assoc assoc
+            join alf_node cn on (cn.id = assoc.child_node_id)
+            <if test="pattern != null">
+                join alf_node_properties prop4 on (prop4.node_id = cn.id and prop4.qname_id = #{namePropertyQNameId})
+            </if>
+            where
+            assoc.parent_node_id = #{parentNodeId}
+            <if test="isPrimary != null">
+                and assoc.is_primary = #{isPrimary}
+            </if>
+            <if test="childNodeTypeQNameIds != null">
+                and cn.type_qname_id in
+                <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="pattern != null">
+                and prop4.string_value like #{pattern} <include refid="alfresco.util.escape"/>
+            </if>
+            <if test="assocTypeQNameIds != null">
+                and assoc.type_qname_id in
+                <foreach item="item" index="index" collection="assocTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        ) childNodeIds
+        join alf_node childNode on (childNode.id = childNodeIds.id)
+        left join alf_store childStore on (childStore.id = childNode.store_id)
+        left join alf_node_properties prop1 on (prop1.node_id = childNode.id and prop1.qname_id = #{prop1qnameId})
+        ORDER BY
+            sort_folder_first,
+            sort_null_prop1_first,
+            prop1.string_value ASC
+    </select>
+    
     <!-- GetChildren - with explicit prop filtering and/or sorting -->
-    <select id="select_GetChildrenCannedQueryWithProps" parameterType="FilterSortNode" resultMap="result_FilterSortNode" flushCache="true">
-       select distinct
+    <select id="select_GetChildrenCannedQueryWithProps" parameterType="FilterSortNode" resultMap="result_FilterSortNode">
+       select
             childNode.id             as id,
-            childNode.version        as version,
-            childStore.id            as store_id,
             childStore.protocol      as protocol,
             childStore.identifier    as identifier,
             childNode.uuid           as uuid,
             childNode.type_qname_id  as type_qname_id,
-            childNode.locale_id      as locale_id,
-            childNode.acl_id         as acl_id,
-            childTxn.id              as txn_id,
-            childTxn.change_txn_id   as txn_change_id,
             childNode.audit_creator  as audit_creator,
             childNode.audit_created  as audit_created,
             childNode.audit_modifier as audit_modifier,
@@ -1042,11 +1133,36 @@
             prop3.double_value       as prop3_double_value,
             prop3.string_value       as prop3_string_value
             </if>
-        from
-            alf_child_assoc assoc
-            join alf_node childNode on (childNode.id = assoc.child_node_id)
+        from (
+            select distinct cn.id
+            from alf_child_assoc assoc
+            join alf_node cn on (cn.id = assoc.child_node_id)
+            <if test="pattern != null">
+            join alf_node_properties prop4 on (prop4.node_id = cn.id and prop4.qname_id = #{namePropertyQNameId})
+            </if>
+            where
+            assoc.parent_node_id = #{parentNodeId}
+            <if test="isPrimary != null">
+            and assoc.is_primary = #{isPrimary}
+            </if>
+            <if test="childNodeTypeQNameIds != null">
+            and cn.type_qname_id in
+                <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="pattern != null">
+            and prop4.string_value like #{pattern} <include refid="alfresco.util.escape"/>
+            </if>
+            <if test="assocTypeQNameIds != null">
+            and assoc.type_qname_id in
+                <foreach item="item" index="index" collection="assocTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        ) childNodeIds
+            join alf_node childNode on (childNode.id = childNodeIds.id)
             left join alf_store childStore on (childStore.id = childNode.store_id)
-            join alf_transaction childTxn on (childTxn.id = childNode.transaction_id)
             <if test="prop1qnameId != null">
             left join alf_node_properties prop1 on (prop1.node_id = childNode.id and prop1.qname_id = #{prop1qnameId})
             </if>
@@ -1056,30 +1172,7 @@
             <if test="prop1qnameId != null and prop2qnameId != null and prop3qnameId != null">
             left join alf_node_properties prop3 on (prop3.node_id = childNode.id and prop3.qname_id = #{prop3qnameId})
             </if>
-            <if test="pattern != null">
-            join alf_node_properties prop4 on (prop4.node_id = childNode.id)
-            join alf_qname qname on (prop4.qname_id = qname.id and qname.id = #{namePropertyQNameId})
-            </if>
-        where
-            assoc.parent_node_id = #{parentNodeId}
-            <if test="isPrimary != null">
-            and assoc.is_primary = #{isPrimary}
-            </if>
-            <if test="childNodeTypeQNameIds != null">
-            and childNode.type_qname_id in 
-                <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="pattern != null">
-            and prop4.string_value like #{pattern} <include refid="alfresco.util.escape"/>
-            </if>
-            <if test="assocTypeQNameIds != null">
-            and assoc.type_qname_id in 
-                <foreach item="item" index="index" collection="assocTypeQNameIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
+        ORDER BY childNode.id
     </select>
     
     <!-- GetChildren - with no explicit sorting (or prop filtering) - note: still filtered by child type (and optionally primary or secondary) -->
@@ -1094,8 +1187,7 @@
             join alf_node childNode on (childNode.id = assoc.child_node_id)
             left join alf_store childStore on (childStore.id = childNode.store_id)
             <if test="pattern != null">
-            join alf_node_properties prop4 on (prop4.node_id = childNode.id)
-            join alf_qname qname on (prop4.qname_id = qname.id and qname.id = #{namePropertyQNameId})
+            join alf_node_properties prop4 on (prop4.node_id = childNode.id and prop4.qname_id = #{namePropertyQNameId})
             </if>
         where
             assoc.parent_node_id = #{parentNodeId}

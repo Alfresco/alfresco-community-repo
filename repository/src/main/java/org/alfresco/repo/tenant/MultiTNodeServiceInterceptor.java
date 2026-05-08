@@ -106,6 +106,10 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         // See if we can shortcut
         if (!AuthenticationUtil.isMtEnabled())
         {
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("MT is not enabled - skipping interception for method " + invocation.getMethod().getName());
+            }
             return invocation.proceed();
         }
 

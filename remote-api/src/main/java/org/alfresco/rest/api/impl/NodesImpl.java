@@ -422,6 +422,34 @@ public class NodesImpl implements Nodes
     }
 
     @Override
+    public List<NodeRef> validateNodes(StoreRef storeRef, List<String> nodeIds)
+    {
+        List<NodeRef> nodeRefs = new ArrayList<>(nodeIds.size());
+
+        for (String nodeId : nodeIds)
+        {
+            String versionLabel;
+            String id = nodeId;
+
+            int idx = nodeId.indexOf(';');
+            if (idx != -1)
+            {
+                versionLabel = nodeId.substring(idx + 1);
+                id = nodeId.substring(0, idx);
+                if (versionLabel.equals("pwc"))
+                {
+                    continue; // skip pwc
+                }
+            }
+
+            NodeRef nodeRef = new NodeRef(storeRef, id);
+            nodeRefs.add(nodeRef);
+        }
+
+        return validateNodes(nodeRefs);
+    }
+
+    @Override
     public NodeRef validateNode(NodeRef nodeRef)
     {
         if (!nodeService.exists(nodeRef))
@@ -430,6 +458,17 @@ public class NodesImpl implements Nodes
         }
 
         return nodeRef;
+    }
+
+    public List<NodeRef> validateNodes(List<NodeRef> nodeRefs)
+    {
+        List<NodeRef> nodes = nodeService.exists(nodeRefs);
+        if (nodes.isEmpty())
+        {
+            throw new EntityNotFoundException("None of the specified nodes were found.");
+        }
+
+        return nodes;
     }
 
     /* Check that nodes exists and matches given expected/excluded type(s). */
@@ -837,6 +876,22 @@ public class NodesImpl implements Nodes
     }
 
     @Override
+    public List<Node> getFoldersOrDocumentsFullInfo(List<NodeRef> nodeRefs, Parameters parameters, Map<String, UserInfo> mapUserInfo)
+    {
+        List<String> includeParam = new ArrayList<>();
+        if (parameters != null)
+        {
+            includeParam.addAll(parameters.getInclude());
+        }
+
+        // Add basic info for single get (above & beyond minimal that is used for listing collections)
+        includeParam.add(PARAM_INCLUDE_ASPECTNAMES);
+        includeParam.add(PARAM_INCLUDE_PROPERTIES);
+
+        return getFoldersOrDocuments(nodeRefs, includeParam, mapUserInfo);
+    }
+
+    @Override
     public Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String, UserInfo> mapUserInfo)
     {
         if (mapUserInfo == null)
@@ -969,7 +1024,9 @@ public class NodesImpl implements Nodes
             {
                 for (AccessPermission accessPerm : permissionService.getAllSetPermissions(nodeRef))
                 {
-                    NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(accessPerm.getAuthority(), accessPerm.getPermission(), accessPerm.getAccessStatus().toString());
+                    String authority = accessPerm.getAuthority();
+                    String displayName = resolveAuthorityDisplayName(authority);
+                    NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(authority, accessPerm.getPermission(), accessPerm.getAccessStatus().toString(), displayName);
                     if (accessPerm.isSetDirectly())
                     {
                         setDirectlyPerms.add(nodePerm);
@@ -1042,6 +1099,360 @@ public class NodesImpl implements Nodes
         node.setPath(pathInfo);
 
         return node;
+    }
+
+    @Override
+    public List<Node> getFoldersOrDocuments(final List<NodeRef> nodeRefs, List<String> includeParam, Map<String, UserInfo> mapUserInfo)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting full info for nodes");
+        }
+
+        List<Node> results = new ArrayList<>(nodeRefs.size());
+
+        if (mapUserInfo == null)
+        {
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("    No user info map provided, initializing empty map");
+            }
+
+            mapUserInfo = new HashMap<>(2);
+        }
+
+        if (includeParam == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("    No included parameters specified, defaulting to empty list");
+            }
+
+            includeParam = Collections.emptyList();
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("    Retrieving properties for node references");
+        }
+
+        Map<NodeRef, Map<QName, Serializable>> properties = nodeService.getPropertiesForNodeRefs(nodeRefs);
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("    Retrieved properties for node references, processing each node." + properties.size() + " nodes found.");
+        }
+
+        for (NodeRef nodeRef : properties.keySet())
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("    Processing node: " + nodeRef);
+            }
+
+            Node node;
+            Map<QName, Serializable> props = properties.get(nodeRef);
+
+            if (logger.isDebugEnabled() && (props != null && !props.isEmpty()))
+            {
+                logger.debug("    Retrieved properties for node");
+            }
+
+            PathInfo pathInfo = null;
+            if (includeParam.contains(PARAM_INCLUDE_PATH))
+            {
+                ChildAssociationRef archivedParentAssoc = (ChildAssociationRef) props.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+                pathInfo = lookupPathInfo(nodeRef, archivedParentAssoc);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include path info for node. PathInfo: " + pathInfo);
+                }
+            }
+
+            QName nodeTypeQName = getNodeType(nodeRef);
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("    Node type for node is: " + nodeTypeQName);
+            }
+
+            NodeRef parentNodeRef = getParentNodeRef(nodeRef);
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("    Parent node ref for node is: " + parentNodeRef);
+            }
+
+            Type type = getType(nodeTypeQName, nodeRef);
+
+            if (logger.isDebugEnabled() && type != null)
+            {
+                logger.debug("    Determined type for node is: " + type);
+            }
+
+            if (type == null)
+            {
+                // not direct folder (or file) ...
+                // might be sub-type of cm:cmobject (or a cm:link pointing to cm:cmobject or possibly even another cm:link)
+                node = new Node(nodeRef, parentNodeRef, props, mapUserInfo, sr);
+                node.setIsFolder(false);
+                node.setIsFile(false);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Generic Node for node: " + nodeRef + " as type is unknown");
+                }
+            }
+            else if (type.equals(Type.DOCUMENT))
+            {
+                node = new Document(nodeRef, parentNodeRef, props, mapUserInfo, sr);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Document node: " + nodeRef);
+                }
+            }
+            else if (type.equals(Type.FOLDER))
+            {
+                node = new Folder(nodeRef, parentNodeRef, props, mapUserInfo, sr);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Folder node: " + nodeRef);
+                }
+            }
+            else
+            {
+                logger.info("Unexpected type for node: " + nodeRef + " type: " + type);
+                continue;
+            }
+
+            if (!includeParam.isEmpty())
+            {
+                node.setProperties(mapFromNodeProperties(props, includeParam, mapUserInfo, EXCLUDED_NS, EXCLUDED_PROPS));
+            }
+
+            // TODO: Optimize to batch get aspects for all nodes
+            Set<QName> aspects = null;
+            if (includeParam.contains(PARAM_INCLUDE_ASPECTNAMES))
+            {
+                aspects = nodeService.getAspects(nodeRef);
+                node.setAspectNames(mapFromNodeAspects(aspects, EXCLUDED_NS, EXCLUDED_ASPECTS));
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include aspect names for node: " + nodeRef);
+                }
+            }
+
+            if (includeParam.contains(PARAM_INCLUDE_ISLINK))
+            {
+                boolean isLink = isSubClass(nodeTypeQName, ContentModel.TYPE_LINK);
+                node.setIsLink(isLink);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include isLink=" + isLink + " for node: " + nodeRef);
+                }
+            }
+
+            if (includeParam.contains(PARAM_INCLUDE_ISLOCKED))
+            {
+                boolean isLocked = isLocked(nodeRef, aspects);
+                node.setIsLocked(isLocked);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include isLocked=" + isLocked + " for node: " + nodeRef);
+                }
+            }
+
+            // TODO: Optimize to batch get favorites for all nodes
+            if (includeParam.contains(PARAM_INCLUDE_ISFAVORITE))
+            {
+                boolean isFavorite = isFavorite(nodeRef);
+                node.setIsFavorite(isFavorite);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include isFavorite=" + isFavorite + " for node: " + nodeRef);
+                }
+            }
+
+            // TODO: Optimize to batch get allowable operations for all nodes
+            if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Calculating allowable operations for node: " + nodeRef);
+                }
+                // note: refactor when requirements change
+                Map<String, String> mapPermsToOps = new HashMap<>(3);
+                mapPermsToOps.put(PermissionService.DELETE, OP_DELETE);
+                mapPermsToOps.put(PermissionService.ADD_CHILDREN, OP_CREATE);
+                mapPermsToOps.put(PermissionService.WRITE, OP_UPDATE);
+                mapPermsToOps.put(PermissionService.CHANGE_PERMISSIONS, OP_UPDATE_PERMISSIONS);
+
+                List<String> allowableOperations = new ArrayList<>(3);
+                for (Entry<String, String> kv : mapPermsToOps.entrySet())
+                {
+                    String perm = kv.getKey();
+                    String op = kv.getValue();
+
+                    if (perm.equals(PermissionService.ADD_CHILDREN) && Type.DOCUMENT.equals(type))
+                    {
+                        // special case: do not return "create" (as an allowable op) for file/content types - note: 'type' can be null
+                        continue;
+                    }
+                    else if (perm.equals(PermissionService.DELETE) && isSpecialNode(nodeRef, nodeTypeQName))
+                    {
+                        // special case: do not return "delete" (as an allowable op) for specific system nodes
+                        continue;
+                    }
+                    else if (permissionService.hasPermission(nodeRef, perm) == AccessStatus.ALLOWED)
+                    {
+                        allowableOperations.add(op);
+                    }
+                }
+
+                node.setAllowableOperations((!allowableOperations.isEmpty()) ? allowableOperations : null);
+            }
+
+            // TODO: Optimize to batch get permissions for all nodes
+            if (includeParam.contains(PARAM_INCLUDE_PERMISSIONS))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Retrieving permissions for node: " + nodeRef);
+                }
+
+                Boolean inherit = permissionService.getInheritParentPermissions(nodeRef);
+
+                List<NodePermissions.NodePermission> inheritedPerms = new ArrayList<>(5);
+                List<NodePermissions.NodePermission> setDirectlyPerms = new ArrayList<>(5);
+                Set<String> settablePerms = null;
+                boolean allowRetrievePermission = true;
+
+                try
+                {
+                    for (AccessPermission accessPerm : permissionService.getAllSetPermissions(nodeRef))
+                    {
+                        String authority = accessPerm.getAuthority();
+                        String displayName = resolveAuthorityDisplayName(authority);
+                        NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(authority, accessPerm.getPermission(), accessPerm.getAccessStatus().toString(), displayName);
+                        if (accessPerm.isSetDirectly())
+                        {
+                            setDirectlyPerms.add(nodePerm);
+                        }
+                        else
+                        {
+                            inheritedPerms.add(nodePerm);
+                        }
+                    }
+
+                    settablePerms = permissionService.getSettablePermissions(nodeRef);
+                }
+                catch (AccessDeniedException ade)
+                {
+                    // ignore - ie. denied access to retrieve permissions, eg. non-admin on root (Company Home)
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("    AccessDeniedException while retrieving permissions for node: " + nodeRef);
+                    }
+
+                    allowRetrievePermission = false;
+                }
+
+                // If the user does not have read permissions at
+                // least on a special node then do not include permissions and
+                // returned only node info that he's allowed to see
+                if (allowRetrievePermission)
+                {
+                    NodePermissions nodePerms = new NodePermissions(inherit, inheritedPerms, setDirectlyPerms, settablePerms);
+                    node.setPermissions(nodePerms);
+
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("    Added permissions for node: " + nodeRef);
+                    }
+                }
+            }
+
+            // TODO: Optimize to batch get associations for all nodes
+            if (includeParam.contains(PARAM_INCLUDE_ASSOCIATION))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Retrieving association for node: " + nodeRef);
+                }
+
+                // Ugh ... can we optimise this and return the actual assoc directly (via FileFolderService/GetChildrenCQ) ?
+                ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
+
+                // note: parentAssocRef.parentRef can be null for -root- node !
+                if ((parentAssocRef == null) || (parentAssocRef.getParentRef() == null) || (!parentAssocRef.getParentRef().equals(parentNodeRef)))
+                {
+                    List<ChildAssociationRef> parentAssocRefs = nodeService.getParentAssocs(nodeRef);
+                    for (ChildAssociationRef pAssocRef : parentAssocRefs)
+                    {
+                        if (pAssocRef.getParentRef().equals(parentNodeRef))
+                        {
+                            // for now, assume same parent/child cannot appear more than once (due to unique name)
+                            parentAssocRef = pAssocRef;
+                            break;
+                        }
+                    }
+                }
+
+                if (parentAssocRef != null)
+                {
+                    QName assocTypeQName = parentAssocRef.getTypeQName();
+                    if ((assocTypeQName != null) && (!EXCLUDED_NS.contains(assocTypeQName.getNamespaceURI())))
+                    {
+                        AssocChild childAssoc = new AssocChild(
+                                assocTypeQName.toPrefixString(namespaceService),
+                                parentAssocRef.isPrimary());
+
+                        node.setAssociation(childAssoc);
+                    }
+                }
+            }
+
+            // TODO: Optimize to batch get definitions for all nodes
+            if (includeParam.contains(PARAM_INCLUDE_DEFINITION))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("    Include definition for node: " + nodeRef);
+                }
+                ClassDefinition classDefinition = classDefinitionMapper.fromDictionaryClassDefinition(getTypeDefinition(nodeRef), dictionaryService);
+                node.setDefinition(classDefinition);
+            }
+
+            node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
+            node.setPath(pathInfo);
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Set node type and path info for node: " + nodeRef + " NodeType: " + nodeTypeQName.toPrefixString(namespaceService) + " PathInfo: " + pathInfo);
+            }
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Completed processing for node: " + nodeRef);
+            }
+
+            results.add(node);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Completed getting full info for nodes. " + results.size() + " nodes processed.");
+        }
+
+        return results;
     }
 
     private TypeDefinition getTypeDefinition(NodeRef nodeRef)
@@ -1197,6 +1608,11 @@ public class NodesImpl implements Nodes
 
         if ((selectParam.size() == 0) || selectParam.contains(PARAM_INCLUDE_PROPERTIES))
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No specific properties selected, returning all properties except excluded ones.");
+            }
+
             // return all properties
             selectedProperties = new ArrayList<>(nodeProps.size());
             for (QName propQName : nodeProps.keySet())
@@ -1209,6 +1625,11 @@ public class NodesImpl implements Nodes
         }
         else
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Specific properties selected: " + selectParam);
+            }
+
             // return selected properties
             selectedProperties = createQNames(selectParam, excludedProps);
         }
@@ -1241,6 +1662,11 @@ public class NodesImpl implements Nodes
             }
             if (props.isEmpty())
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("All selected properties were null or empty after processing, setting props to null");
+                }
+
                 props = null; // set to null so it doesn't show up as an empty object in the JSON response.
             }
         }
@@ -1475,6 +1901,8 @@ public class NodesImpl implements Nodes
      * <p>
      * Returns the default sort order.
      * </p>
+     * 
+     * Before any changes please keep in mind that there is at least one implementation depending on default sorting. See GetChildrenCannedQueryFactory.isDefaultSorting() method.
      *
      * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort properties.
      */
@@ -2948,6 +3376,7 @@ public class NodesImpl implements Nodes
         String versionComment = null;
         String relativePath = null;
         String renditionNames = null;
+        String aspectNames = null;
         boolean versioningEnabled = true;
 
         Map<String, Object> qnameStrProps = new HashMap<>();
@@ -3005,6 +3434,11 @@ public class NodesImpl implements Nodes
             case "renditions":
                 renditionNames = getStringOrNull(field.getValue());
                 break;
+
+            case "aspectnames":
+                aspectNames = getStringOrNull(field.getValue());
+                break;
+
             case "versioningenabled":
                 String versioningEnabledStringValue = getStringOrNull(field.getValue());
                 if (null != versioningEnabledStringValue)
@@ -3055,6 +3489,8 @@ public class NodesImpl implements Nodes
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
         final Set<String> renditions = getRequestedRenditions(renditionNames);
 
+        final List<String> aspects = parseCommaSeparatedList(aspectNames);
+        validateAspects(aspects, EXCLUDED_NS, EXCLUDED_ASPECTS);
         validateProperties(qnameStrProps, EXCLUDED_NS, Arrays.asList());
         try
         {
@@ -3099,6 +3535,8 @@ public class NodesImpl implements Nodes
 
             // Create a new file.
             NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, versionMajor, versionComment);
+
+            addCustomAspects(nodeRef, aspects, EXCLUDED_ASPECTS);
 
             // Create the response
             final Node fileNode = getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters);
@@ -3200,6 +3638,35 @@ public class NodesImpl implements Nodes
             }
         }
         return renditions;
+    }
+
+    /**
+     * Parse a comma-separated list of names into a List. This is used for parsing aspectNames and similar parameters.
+     *
+     * @param namesParam
+     *            comma-separated string (e.g., "cm:titled,cm:author")
+     * @return List of trimmed, non-empty names, or an empty list if input is null
+     */
+    static List<String> parseCommaSeparatedList(String namesParam)
+    {
+        if (namesParam == null)
+        {
+            return Collections.emptyList();
+        }
+
+        String[] nameArray = namesParam.split(",");
+        List<String> names = new ArrayList<>(nameArray.length);
+
+        for (String name : nameArray)
+        {
+            String trimmedName = name.trim();
+            if (!trimmedName.isEmpty())
+            {
+                names.add(trimmedName);
+            }
+        }
+
+        return names.isEmpty() ? Collections.emptyList() : names;
     }
 
     private void requestRenditions(Set<String> renditionNames, Node fileNode)
@@ -3427,6 +3894,16 @@ public class NodesImpl implements Nodes
             throw new DisabledServiceException("Direct access url isn't available.");
         }
         return directAccessUrl;
+    }
+
+    private String resolveAuthorityDisplayName(String authority)
+    {
+        String displayName = authorityService.getAuthorityDisplayName(authority);
+        if (displayName == null || displayName.isEmpty())
+        {
+            displayName = authority;
+        }
+        return displayName;
     }
 
     /**

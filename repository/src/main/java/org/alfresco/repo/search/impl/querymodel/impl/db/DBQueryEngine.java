@@ -384,7 +384,7 @@ public class DBQueryEngine implements QueryEngine
                 addStoreInfo(node);
 
                 boolean shouldCache = shouldCache(options, nodes, requiredNodes);
-                if (shouldCache)
+                if (shouldCache && !options.isBulkFetchEnabled())
                 {
                     logger.debug("- selected node " + nodes.size() + ": " + node.getUuid() + " " + node.getId());
                     nodesCache.setValue(node.getId(), node);
@@ -433,7 +433,29 @@ public class DBQueryEngine implements QueryEngine
         FilteringResultSet frs = new FilteringResultSet(rs, formInclusionMask(nodes));
         frs.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, rs.getResultSetMetaData().getSearchParameters()));
 
-        logger.debug("- query is completed, " + nodes.size() + " nodes loaded");
+        // Bulk Load
+        if (rs.getResultSetMetaData().getSearchParameters().isBulkFetchEnabled())
+        {
+            List<Long> rawDbids = new ArrayList<>();
+            for (Node node : nodes)
+            {
+                if (node != null)
+                {
+                    rawDbids.add(node.getId());
+                }
+            }
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("- bulk loading node data: " + rawDbids.size());
+            }
+            nodeDAO.cacheNodesById(rawDbids);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("- query is completed, " + nodes.size() + " nodes loaded");
+        }
+
         return frs;
     }
 
@@ -566,9 +588,21 @@ public class DBQueryEngine implements QueryEngine
         }
 
         @Override
+        public List<Pair<Long, Node>> findByKeys(List<Long> nodeIds)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for Nodes.");
+        }
+
+        @Override
         public NodeRef getValueKey(Node value)
         {
             return value.getNodeRef();
+        }
+
+        @Override
+        public List<Pair<Long, Node>> findByValues(List<Node> values)
+        {
+            throw new UnsupportedOperationException("Batch lookup not supported for Nodes.");
         }
     }
 

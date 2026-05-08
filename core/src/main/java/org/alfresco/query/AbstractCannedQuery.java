@@ -36,8 +36,8 @@ import org.alfresco.util.ParameterCheck;
  */
 public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
 {
-    private final CannedQueryParameters parameters;
-    private final String queryExecutionId;
+    protected final CannedQueryParameters parameters;
+    protected final String queryExecutionId;
     private CannedQueryResults<R> results;
 
     /**
@@ -99,9 +99,6 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
             rawResults = applyPostQueryPermissions(rawResults, requestedCount);
         }
 
-        // Get total count
-        final Pair<Integer, Integer> totalCount = getTotalResultCount(rawResults);
-
         // Apply paging
         CannedQueryPageDetails pagingDetails = parameters.getPageDetails();
         List<List<R>> pages = Collections.singletonList(rawResults);
@@ -110,88 +107,7 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
             pages = applyPostQueryPaging(rawResults, pagingDetails);
         }
 
-        // Construct results object
-        final List<List<R>> finalPages = pages;
-
-        // Has more items beyond requested pages ? ... ie. at least one more page (with at least one result)
-        final boolean hasMoreItems = (rawResults.size() > pagingDetails.getResultsRequiredForPaging()) || (totalCount.getFirst() > pagingDetails.getResultsRequiredForPaging());
-
-        results = new CannedQueryResults<R>() {
-            @Override
-            public CannedQuery<R> getOriginatingQuery()
-            {
-                return AbstractCannedQuery.this;
-            }
-
-            @Override
-            public String getQueryExecutionId()
-            {
-                return queryExecutionId;
-            }
-
-            @Override
-            public Pair<Integer, Integer> getTotalResultCount()
-            {
-                if (parameters.getTotalResultCountMax() > 0)
-                {
-                    return totalCount;
-                }
-                else
-                {
-                    throw new IllegalStateException("Total results were not requested in parameters.");
-                }
-            }
-
-            @Override
-            public int getPagedResultCount()
-            {
-                int finalPagedCount = 0;
-                for (List<R> page : finalPages)
-                {
-                    finalPagedCount += page.size();
-                }
-                return finalPagedCount;
-            }
-
-            @Override
-            public int getPageCount()
-            {
-                return finalPages.size();
-            }
-
-            @Override
-            public R getSingleResult()
-            {
-                if (finalPages.size() != 1 && finalPages.get(0).size() != 1)
-                {
-                    throw new IllegalStateException("There must be exactly one page of one result available.");
-                }
-                return finalPages.get(0).get(0);
-            }
-
-            @Override
-            public List<R> getPage()
-            {
-                if (finalPages.size() != 1)
-                {
-                    throw new IllegalStateException("There must be exactly one page of results available.");
-                }
-                return finalPages.get(0);
-            }
-
-            @Override
-            public List<List<R>> getPages()
-            {
-                return finalPages;
-            }
-
-            @Override
-            public boolean hasMoreItems()
-            {
-                return hasMoreItems;
-            }
-        };
-        return results;
+        return createCannedQueryResults(pages, rawResults);
     }
 
     /**
@@ -336,5 +252,91 @@ public abstract class AbstractCannedQuery<R> implements CannedQuery<R>
 
         // Done
         return pages;
+    }
+
+    protected CannedQueryResults<R> createCannedQueryResults(List<List<R>> finalPages, List<R> rawResults)
+    {
+        CannedQueryPageDetails pagingDetails = parameters.getPageDetails();
+        // Get total count
+        final Pair<Integer, Integer> totalCount = getTotalResultCount(rawResults);
+        // Has more items beyond requested pages ? ... ie. at least one more page (with at least one result)
+        final boolean hasMoreItems = (rawResults.size() > pagingDetails.getResultsRequiredForPaging()) || (totalCount.getFirst() > pagingDetails.getResultsRequiredForPaging());
+
+        results = new CannedQueryResults<>() {
+            @Override
+            public CannedQuery<R> getOriginatingQuery()
+            {
+                return AbstractCannedQuery.this;
+            }
+
+            @Override
+            public String getQueryExecutionId()
+            {
+                return queryExecutionId;
+            }
+
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                if (parameters.getTotalResultCountMax() > 0)
+                {
+                    return totalCount;
+                }
+                else
+                {
+                    throw new IllegalStateException("Total results were not requested in parameters.");
+                }
+            }
+
+            @Override
+            public int getPagedResultCount()
+            {
+                int finalPagedCount = 0;
+                for (List<R> page : finalPages)
+                {
+                    finalPagedCount += page.size();
+                }
+                return finalPagedCount;
+            }
+
+            @Override
+            public int getPageCount()
+            {
+                return finalPages.size();
+            }
+
+            @Override
+            public R getSingleResult()
+            {
+                if (finalPages.size() != 1 && finalPages.get(0).size() != 1)
+                {
+                    throw new IllegalStateException("There must be exactly one page of one result available.");
+                }
+                return finalPages.get(0).get(0);
+            }
+
+            @Override
+            public List<R> getPage()
+            {
+                if (finalPages.size() != 1)
+                {
+                    throw new IllegalStateException("There must be exactly one page of results available.");
+                }
+                return finalPages.get(0);
+            }
+
+            @Override
+            public List<List<R>> getPages()
+            {
+                return finalPages;
+            }
+
+            @Override
+            public boolean hasMoreItems()
+            {
+                return hasMoreItems;
+            }
+        };
+        return results;
     }
 }

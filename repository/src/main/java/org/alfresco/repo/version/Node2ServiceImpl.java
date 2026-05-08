@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -132,7 +133,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
                 NodeRef childRef = childAssocRef.getChildRef();
                 NodeRef referencedNode = (NodeRef) this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE);
 
-                if (this.dbNodeService.exists(referencedNode))
+                if (Objects.nonNull(referencedNode) && this.dbNodeService.exists(referencedNode))
                 {
                     // Build a child assoc ref to add to the returned list
                     ChildAssociationRef newChildAssocRef = new ChildAssociationRef(

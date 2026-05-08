@@ -1430,6 +1430,38 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(pubAuthorityService.getAuthorityDisplayName("Monkey"), "Monkey");
     }
 
+    /**
+     * MNT-25474: Verify that getAuthorityDisplayName returns firstName + lastName for person authorities instead of the user ID.
+     */
+    @Test
+    public void testAuthorityDisplayNameForPerson()
+    {
+        // Person with both firstName and lastName
+        personService.createPerson(createDefaultProperties("testUser1", "Mike", "Jackson", "mike@test.com", "Org1", null));
+        assertEquals("Mike Jackson", pubAuthorityService.getAuthorityDisplayName("testUser1"));
+
+        // Person with only firstName (empty lastName)
+        personService.createPerson(createDefaultProperties("testUser2", "Madonna", "", "madonna@test.com", "Org1", null));
+        assertEquals("Madonna", pubAuthorityService.getAuthorityDisplayName("testUser2"));
+
+        // Person with only lastName (empty firstName)
+        personService.createPerson(createDefaultProperties("testUser3", "", "Smith", "smith@test.com", "Org1", null));
+        assertEquals("Smith", pubAuthorityService.getAuthorityDisplayName("testUser3"));
+
+        // Group display name should remain unchanged
+        String testGroup = pubAuthorityService.createAuthority(AuthorityType.GROUP, "TestDisplayGroup", "My Test Group", authorityService.getDefaultZones());
+        assertEquals("My Test Group", pubAuthorityService.getAuthorityDisplayName(testGroup));
+
+        // Non-existent person should still fall back to short name
+        assertEquals("NonExistentUser", pubAuthorityService.getAuthorityDisplayName("NonExistentUser"));
+
+        // Cleanup
+        personService.deletePerson("testUser1");
+        personService.deletePerson("testUser2");
+        personService.deletePerson("testUser3");
+        pubAuthorityService.deleteAuthority(testGroup);
+    }
+
     public void testGetAuthoritiesFilteringSorting()
     {
         String TEST_RUN = System.currentTimeMillis() + "-";

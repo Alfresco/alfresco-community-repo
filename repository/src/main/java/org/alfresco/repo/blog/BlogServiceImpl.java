@@ -28,10 +28,13 @@ package org.alfresco.repo.blog;
 import static java.lang.Math.min;
 
 import java.io.Serializable;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -73,9 +76,9 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.util.registry.NamedObjectRegistry;
 
 /**
@@ -500,34 +503,54 @@ public class BlogServiceImpl implements BlogService
             final NodeRef blogContainerNode, final RangedDateProperty dateRange,
             final String tag, final PagingRequest pagingReq)
     {
-        StringBuilder luceneQuery = new StringBuilder();
-        luceneQuery.append("+TYPE:\"").append(ContentModel.TYPE_CONTENT).append("\" ")
-                .append("+PARENT:\"").append(blogContainerNode.toString()).append("\" ");
+        StringBuilder query = new StringBuilder();
+        query.append("TYPE:\"cm:content\"")
+                .append(" AND PARENT:\"").append(blogContainerNode.toString()).append("\"");
         if (tag != null && !tag.trim().isEmpty())
         {
-            luceneQuery.append("+PATH:\"/cm:taggable/cm:").append(ISO9075.encode(tag)).append("/member\"");
+            String safeTag = SearchLanguageConversion.escapeLuceneQuery(tag);
+            query.append(" AND TAG:\"").append(safeTag).append("\"");
         }
         if (dateRange != null)
         {
-            luceneQuery.append(createDateRangeQuery(dateRange.getFromDate(), dateRange.getToDate(), dateRange.getDateProperty()));
+            QName dateProp = dateRange.getDateProperty();
+            String datePropStr = dateProp.toPrefixString(namespaceService);
+
+            Date from = dateRange.getFromDate();
+            Date to = dateRange.getToDate();
+
+            DateTimeFormatter formatter = DateTimeFormatter
+                    .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                    .withLocale(Locale.ENGLISH)
+                    .withZone(ZoneOffset.UTC);
+
+            String fromStr = (from != null)
+                    ? formatter.format(from.toInstant())
+                    : "MIN";
+
+            String toStr = (to != null)
+                    ? formatter.format(to.toInstant())
+                    : "MAX";
+
+            query.append(" AND ").append(datePropStr)
+                    .append(":[\"").append(fromStr).append("\" TO \"").append(toStr).append("\"]");
         }
 
         SearchParameters sp = new SearchParameters();
         sp.addStore(blogContainerNode.getStoreRef());
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery(luceneQuery.toString());
-        sp.addSort(ContentModel.PROP_PUBLISHED.toString(), false);
-
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery(query.toString());
+        sp.addSort("cm:published", false);
         sp.setMaxItems(pagingReq.getMaxItems() * MIN_NUMBER_OF_PAGES_FOR_THE_USER_TO_LOOP_THROUGH);
         sp.setSkipCount(pagingReq.getSkipCount());
-        ResultSet luceneResults = null;
+        ResultSet resultSet = null;
         PagingResults<BlogPostInfo> results = null;
         try
         {
-            luceneResults = searchService.query(sp);
-            final ResultSet finalLuceneResults = luceneResults;
-
-            final List<NodeRef> nodeRefs = finalLuceneResults.getNodeRefs().subList(0, min(pagingReq.getMaxItems(), finalLuceneResults.length()));
+            resultSet = searchService.query(sp);
+            final ResultSet finalLuceneResults = resultSet;
+            final List<NodeRef> nodeRefs = finalLuceneResults.getNodeRefs().subList(
+                    0, min(pagingReq.getMaxItems(), finalLuceneResults.length()));
 
             results = new PagingResults<BlogPostInfo>() {
 
@@ -553,7 +576,6 @@ public class BlogServiceImpl implements BlogService
                 public Pair<Integer, Integer> getTotalResultCount()
                 {
                     long totalResultCount = finalLuceneResults.getNumberFound();
-                    /* if (finalLuceneResults.hasMore()){ totalResultCount++; } */
                     return new Pair<Integer, Integer>((int) totalResultCount, (int) totalResultCount);
                 }
 
@@ -566,8 +588,10 @@ public class BlogServiceImpl implements BlogService
         }
         finally
         {
-            if (luceneResults != null)
-                luceneResults.close();
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
         }
 
         return results;

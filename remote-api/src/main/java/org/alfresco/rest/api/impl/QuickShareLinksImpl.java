@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -90,6 +90,7 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -511,6 +512,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
         sp.setSkipCount(pagingRequest.getSkipCount());
         sp.setMaxItems(pagingRequest.getMaxItems());
+        sp.setLimit(pagingRequest.getMaxItems());
+        sp.setLimitBy(LimitBy.FINAL_SIZE);
 
         sp.addSort("@" + ContentModel.PROP_MODIFIED, false);
 

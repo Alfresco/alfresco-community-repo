@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -719,6 +719,21 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      */
     private static class SandboxWrapFactory extends RhinoWrapFactory
     {
+        @Override
+        public Object wrap(Context cx, Scriptable scope, Object obj, Class<?> staticType)
+        {
+            if (wrapArray(obj, staticType))
+            {
+                return new SandboxNativeJavaArray(scope, obj);
+            }
+            return super.wrap(cx, scope, obj, staticType);
+        }
+
+        private boolean wrapArray(Object obj, Class<?> staticType)
+        {
+            return staticType != null && !staticType.isPrimitive() && isJavaPrimitiveWrap() && obj != null && obj.getClass().isArray();
+        }
+
         /* (non-Javadoc)
          * 
          * @see org.mozilla.javascript.WrapFactory#wrapAsJavaObject(org.mozilla.javascript.Context, org.mozilla.javascript.Scriptable, java.lang.Object, java.lang.Class) */

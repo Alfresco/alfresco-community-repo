@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -61,6 +61,7 @@ public class ClientRegistrationProviderUnitTest
     private static final String ADMIN_CONSOLE_SCOPES = "openid,email,profile,offline_access";
     private static final String PSSWD_GRANT_SCOPES = "openid,email,profile";
     private static final String ISSUER_ATRR = "issuer";
+    private static final String CUSTOM_API_SCOPE = "api://client-id/alf_access";
 
     private IdentityServiceConfig config;
     private RestTemplate restTemplate;
@@ -299,6 +300,50 @@ public class ClientRegistrationProviderUnitTest
                     restTemplate);
             assertThat(clientRegistration.getProviderDetails().getIssuerUri()).isEqualTo("https://login.serviceonline.alfresco/alfresco/v2.0/at_trust");
 
+        }
+    }
+
+    @Test
+    public void shouldBypassScopeFilteringWhenScopeValidationDisabled()
+    {
+        // Configure: scope validation disabled, custom API scope included
+        config.setIssuerUrl("https://login.serviceonline.alfresco/alfresco/v2.0");
+        config.setScopeValidationDisabled(true);
+        config.setPasswordGrantScopes("openid,profile,email," + CUSTOM_API_SCOPE);
+
+        try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
+        {
+            // Simulate: scopes_supported does NOT include custom API scope
+            when(oidcResponse.getScopes()).thenReturn(new Scope("openid", "profile", "email", "offline_access"));
+            providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
+
+            ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
+                    restTemplate);
+
+            // Custom API scope should be included when scope validation is disabled
+            assertThat(clientRegistration.getScopes()).containsExactlyInAnyOrder("openid", "profile", "email", CUSTOM_API_SCOPE);
+        }
+    }
+
+    @Test
+    public void shouldFilterCustomApiScopeWhenScopeValidationEnabled()
+    {
+        // Configure with scope validation enabled (default behavior)
+        config.setIssuerUrl("https://login.serviceonline.alfresco/alfresco/v2.0");
+        config.setScopeValidationDisabled(false);
+        config.setPasswordGrantScopes("openid,profile,email," + CUSTOM_API_SCOPE);
+
+        try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
+        {
+            // Simulate IDP: scopes_supported does NOT include custom API scope
+            when(oidcResponse.getScopes()).thenReturn(new Scope("openid", "profile", "email", "offline_access"));
+            providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
+
+            ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
+                    restTemplate);
+
+            // Custom API scope should be filtered out when scope validation is enabled
+            assertThat(clientRegistration.getScopes()).containsExactlyInAnyOrder("openid", "profile", "email");
         }
     }
 

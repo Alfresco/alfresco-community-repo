@@ -170,7 +170,7 @@ public class GroupsTests extends RestTest
 
         // MembershipCreation
         restClient.withCoreAPI().usingGroups().createGroupMembership("GROUP_" + groupName, groupMembershipBodyCreate)
-                .assertThat().field("displayName").is(userModel.getUsername())
+                .assertThat().field("displayName").is(userModel.getFirstName() + " " + userModel.getLastName())
                 .and().field("id").is(userModel.getUsername())
                 .and().field("memberType").is("PERSON");
         restClient.assertStatusCodeIs(HttpStatus.CREATED);

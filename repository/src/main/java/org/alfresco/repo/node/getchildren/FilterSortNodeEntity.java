@@ -69,6 +69,8 @@ public class FilterSortNodeEntity
 
     private Boolean isPrimary;
 
+    private Set<Long> folderTypeQNameIds;
+
     /**
      * Default constructor
      */
@@ -303,6 +305,16 @@ public class FilterSortNodeEntity
     public void setIsPrimary(Boolean isPrimary)
     {
         this.isPrimary = isPrimary;
+    }
+
+    public Set<Long> getFolderTypeQNameIds()
+    {
+        return folderTypeQNameIds;
+    }
+
+    public void setFolderTypeQNameIds(Set<Long> folderTypeQNameIds)
+    {
+        this.folderTypeQNameIds = folderTypeQNameIds;
     }
 
     public NodeRef createNodeRef()

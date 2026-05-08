@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -156,6 +156,11 @@ public abstract class AbstractIdentityServiceAuthenticator implements ExternalUs
 
     private Set<String> getConfiguredScopes(ClientRegistration clientRegistration)
     {
+        if (identityServiceConfig.isScopeValidationDisabled())
+        {
+            // Bypass filtering: send configured scopes as-is
+            return getConfiguredScopes();
+        }
         return Optional.ofNullable(clientRegistration.getProviderDetails())
                 .map(ProviderDetails::getConfigurationMetadata)
                 .map(metadata -> metadata.get(SCOPES_SUPPORTED.getValue()))

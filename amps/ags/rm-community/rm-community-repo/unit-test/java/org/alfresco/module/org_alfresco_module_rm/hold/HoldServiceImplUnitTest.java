@@ -455,7 +455,12 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test
     public void addToHoldAlreadyInHold()
     {
-        doReturn(asList(recordFolder, activeContent)).when(holdService).getHeld(hold);
+        doReturn(Collections.singletonList(
+            new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, recordFolder, true, 1)
+        )).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        doReturn(Collections.singletonList(
+            new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, activeContent, true, 1)
+        )).when(mockedNodeService).getParentAssocs(activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
 
         holdService.addToHold(hold, recordFolder);
 
@@ -576,7 +581,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test
     public void removeFromHold()
     {
-        doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold);
+        doReturn(Collections.singletonList(
+            new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, recordFolder, true, 1)
+        )).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        doAnswer(invocation -> {
+            doReturn(Collections.emptyList()).when(mockedNodeService)
+                .getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+            return null;
+        }).when(mockedNodeService).removeChild(hold, recordFolder);
         doReturn(true).when(mockedNodeService).hasAspect(recordFolder, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_FROZEN);
 
@@ -592,8 +604,21 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test
     public void removeFromHolds()
     {
-        doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold);
-        doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold2);
+        doReturn(asList(
+            new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, recordFolder, true, 1),
+            new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, recordFolder, true, 2)
+        )).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        doAnswer(invocation -> {
+            doReturn(Collections.singletonList(
+                new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, recordFolder, true, 2)
+            )).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+            return null;
+        }).when(mockedNodeService).removeChild(hold, recordFolder);
+        doAnswer(invocation -> {
+            doReturn(Collections.emptyList()).when(mockedNodeService)
+                .getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+            return null;
+        }).when(mockedNodeService).removeChild(hold2, recordFolder);
         doReturn(true).when(mockedNodeService).hasAspect(recordFolder, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_FROZEN);
 
@@ -620,11 +645,20 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holds.add(hold);
         holds.add(hold2);
 
+        // initial parent assocs: recordFolder is in both holds
+        doReturn(asList(
+            new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, recordFolder, true, 1),
+            new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, recordFolder, true, 2)
+        )).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+
         doAnswer(new Answer<Void>()
         {
             public Void answer(InvocationOnMock invocation)
             {
                 doReturn(Collections.singletonList(hold2)).when(holdService).heldBy(recordFolder, true);
+                doReturn(Collections.singletonList(
+                    new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, recordFolder, true, 2)
+                )).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
                 return null;
             }
 
@@ -637,6 +671,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
             public Void answer(InvocationOnMock invocation)
             {
                 doReturn(new ArrayList<NodeRef>()).when(holdService).heldBy(recordFolder, true);
+                doReturn(Collections.emptyList()).when(mockedNodeService)
+                    .getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
                 return null;
             }
 
@@ -644,8 +680,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         // define interactions
         doReturn(holds).when(holdService).heldBy(recordFolder, true);
-        doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold);
-        doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold2);
         doReturn(true).when(mockedNodeService).hasAspect(recordFolder, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_FROZEN);
 
@@ -662,8 +696,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
      @Test (expected = AccessDeniedException.class)
     public void removeActiveContentFromHoldsNoPermissionsOnHold()
     {
-        doReturn(Collections.singletonList(activeContent)).when(holdService).getHeld(hold);
-        doReturn(Collections.singletonList(activeContent)).when(holdService).getHeld(hold2);
         doReturn(true).when(mockedNodeService).hasAspect(activeContent, ASPECT_FROZEN);
         when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.REMOVE_FROM_HOLD)).thenReturn(AccessStatus.DENIED);
         // build a list of holds

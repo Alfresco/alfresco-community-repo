@@ -62,6 +62,7 @@ import org.alfresco.util.ParameterCheck;
 public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
 {
     private static final String SELECT_CONTENT_URL_BY_ID = "alfresco.content.select_ContentUrlById";
+    private static final String SELECT_CONTENT_URLS_BY_IDS = "alfresco.content.select_ContentUrlsByIds";
     private static final String SELECT_CONTENT_URL_BY_KEY = "alfresco.content.select_ContentUrlByKey";
     private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "alfresco.content.select_ContentUrlByKeyUnreferenced";
     private static final String SELECT_CONTENT_URLS_ORPHANED = "alfresco.content.select.select_ContentUrlsOrphaned";
@@ -130,6 +131,18 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_ID, contentUrlEntity);
         // Done
         return contentUrlEntity;
+    }
+
+    @Override
+    protected List<ContentUrlEntity> getContentUrlEntities(List<Long> ids)
+    {
+        if (ids == null || ids.isEmpty())
+        {
+            return Collections.emptyList();
+        }
+        List<ContentUrlEntity> contentUrlEntities = template.selectList(SELECT_CONTENT_URLS_BY_IDS, ids);
+        // Done
+        return contentUrlEntities;
     }
 
     @Override

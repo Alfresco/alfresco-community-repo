@@ -147,6 +147,10 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
     protected PermissionReference allPermissionReference;
 
+    protected PermissionReference fullControlPermissionReference;
+
+    protected PermissionReference readPermissionReference;
+
     protected FixedAclUpdater fixedAclUpdater;
 
     protected boolean anyDenyDenies = false;
@@ -387,6 +391,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         PropertyCheck.mandatory(this, "aclDaoComponent", aclDaoComponent);
 
         allPermissionReference = getPermissionReference(ALL_PERMISSIONS);
+        fullControlPermissionReference = getPermissionReference(FULL_CONTROL);
+        readPermissionReference = getPermissionReference(READ);
     }
 
     /**
@@ -1267,12 +1273,12 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             {
                 String authority = dynamicAuthority.getAuthority();
                 Set<PermissionReference> requiredFor = dynamicAuthority.requiredFor();
-                if (authority != PermissionService.OWNER_AUTHORITY &&
-                        authority != PermissionService.ADMINISTRATOR_AUTHORITY &&
-                        authority != PermissionService.LOCK_OWNER_AUTHORITY &&
+                if (!PermissionService.OWNER_AUTHORITY.equals(authority) &&
+                        !PermissionService.ADMINISTRATOR_AUTHORITY.equals(authority) &&
+                        !PermissionService.LOCK_OWNER_AUTHORITY.equals(authority) &&
                         (requiredFor == null ||
-                                requiredFor.contains(modelDAO.getPermissionReference(null, PermissionService.FULL_CONTROL)) ||
-                                requiredFor.contains(modelDAO.getPermissionReference(null, PermissionService.READ))))
+                                requiredFor.contains(fullControlPermissionReference) ||
+                                requiredFor.contains(readPermissionReference)))
                 {
                     forceHasPermission = Boolean.TRUE;
                     break;
@@ -1283,7 +1289,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
         if (forceHasPermission == Boolean.TRUE)
         {
-            return hasPermission(nodeRef, PermissionService.READ);
+            return hasPermission(nodeRef, readPermissionReference);
         }
 
         Long aclID = nodeService.getNodeAclId(nodeRef);
@@ -1291,7 +1297,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         {
             // ACLID is null - need to call default permissions evaluation
             // This will end up calling the old-style ACL code that walks up the ACL tree
-            status = hasPermission(nodeRef, getPermissionReference(null, PermissionService.READ));
+            status = hasPermission(nodeRef, readPermissionReference);
         }
         else
         {
@@ -1373,7 +1379,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
         for (String authority : assigned)
         {
-            UnconditionalAclTest test = new UnconditionalAclTest(getPermissionReference(PermissionService.READ));
+            UnconditionalAclTest test = new UnconditionalAclTest(readPermissionReference);
             if (test.evaluate(authority, aclId))
             {
                 readers.add(authority);
@@ -1415,7 +1421,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
         for (String authority : assigned)
         {
-            UnconditionalDeniedAclTest test = new UnconditionalDeniedAclTest(getPermissionReference(PermissionService.READ));
+            UnconditionalDeniedAclTest test = new UnconditionalDeniedAclTest(readPermissionReference);
             if (test.evaluate(authority, aclId))
             {
                 denied.add(authority);
@@ -1504,9 +1510,9 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             this.aspectQNames = aspectQNames;
 
             // Set the required node permissions
-            if (required.equals(getPermissionReference(ALL_PERMISSIONS)))
+            if (required.equals(allPermissionReference))
             {
-                nodeRequirements = modelDAO.getRequiredPermissions(getPermissionReference(PermissionService.FULL_CONTROL), typeQName, aspectQNames, RequiredPermission.On.NODE);
+                nodeRequirements = modelDAO.getRequiredPermissions(fullControlPermissionReference, typeQName, aspectQNames, RequiredPermission.On.NODE);
             }
             else
             {
@@ -1973,9 +1979,9 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             this.aspectQNames = aspectQNames;
 
             // Set the required node permissions
-            if (required.equals(getPermissionReference(ALL_PERMISSIONS)))
+            if (required.equals(allPermissionReference))
             {
-                nodeRequirements = modelDAO.getRequiredPermissions(getPermissionReference(PermissionService.FULL_CONTROL), typeQName, aspectQNames, RequiredPermission.On.NODE);
+                nodeRequirements = modelDAO.getRequiredPermissions(fullControlPermissionReference, typeQName, aspectQNames, RequiredPermission.On.NODE);
             }
             else
             {
@@ -2317,9 +2323,9 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             this.required = required;
 
             // Set the required node permissions
-            if (required.equals(getPermissionReference(ALL_PERMISSIONS)))
+            if (required.equals(allPermissionReference))
             {
-                nodeRequirements = modelDAO.getUnconditionalRequiredPermissions(getPermissionReference(PermissionService.FULL_CONTROL), RequiredPermission.On.NODE);
+                nodeRequirements = modelDAO.getUnconditionalRequiredPermissions(fullControlPermissionReference, RequiredPermission.On.NODE);
             }
             else
             {
@@ -2573,9 +2579,9 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             this.required = required;
 
             // Set the required node permissions
-            if (required.equals(getPermissionReference(ALL_PERMISSIONS)))
+            if (required.equals(allPermissionReference))
             {
-                nodeRequirements = modelDAO.getUnconditionalRequiredPermissions(getPermissionReference(PermissionService.FULL_CONTROL), RequiredPermission.On.NODE);
+                nodeRequirements = modelDAO.getUnconditionalRequiredPermissions(fullControlPermissionReference, RequiredPermission.On.NODE);
             }
             else
             {

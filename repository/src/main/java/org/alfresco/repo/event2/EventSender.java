@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -44,11 +44,19 @@ public interface EventSender
     void accept(Callable<Optional<RepoEvent<?>>> eventProducer);
 
     /**
-     * It's called right after event sender instantiation (see {@link org.alfresco.repo.event2.EventSenderFactoryBean}). It might be used to initialize the sender implementation.
+     * Called by {@link org.alfresco.repo.event2.EventSenderFactoryBean} during {@link org.springframework.context.SmartLifecycle#start()}. It might be used to initialize the sender implementation.
      */
     default void initialize()
     {
         // no initialization by default
+    }
+
+    /**
+     * Called by {@link org.alfresco.repo.event2.EventSenderFactoryBean} during {@link org.springframework.context.SmartLifecycle#stop()}.
+     */
+    default void stop()
+    {
+        // no-op by default
     }
 
     /**

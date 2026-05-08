@@ -115,6 +115,8 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
 
     protected Comparator<Version> versionComparatorDesc;
 
+    protected boolean preserveUnsetProperties;
+
     /**
      * Sets the db node service, used as the version store implementation
      *
@@ -164,11 +166,19 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
             catch (Exception e)
             {
                 throw new AlfrescoRuntimeException(
-                        "Failed to create a Comparator<Version> using the class name " +
-                                versionComparatorClass,
-                        e);
+                        "Failed to create a Comparator<Version> using the class name " + versionComparatorClass, e);
             }
         }
+    }
+
+    public void setPreserveUnsetProperties(boolean preserveUnsetProperties)
+    {
+        this.preserveUnsetProperties = preserveUnsetProperties;
+    }
+
+    public boolean shouldPreserveUnsetProperties()
+    {
+        return preserveUnsetProperties;
     }
 
     /**
@@ -1400,10 +1410,14 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
             {
                 // Copy the properties (along with their aspect)
                 Map<QName, PropertyDefinition> propertyDefinitions = classDefinition.getProperties();
+                Map<QName, Serializable> sourceProperties = this.nodeService.getProperties(nodeRef);
                 for (QName propertyName : propertyDefinitions.keySet())
                 {
-                    Serializable propValue = this.nodeService.getProperty(nodeRef, propertyName);
-                    nodeDetails.addProperty(classRef, propertyName, propValue);
+                    Serializable propValue = sourceProperties.get(propertyName);
+                    if (sourceProperties.containsKey(propertyName) || !shouldPreserveUnsetProperties())
+                    {
+                        nodeDetails.addProperty(classRef, propertyName, propValue);
+                    }
                 }
                 // Also copy the aspect with no properties in its definition
                 if (classDefinition.isAspect() && !nodeDetails.getAspects().contains(classRef))

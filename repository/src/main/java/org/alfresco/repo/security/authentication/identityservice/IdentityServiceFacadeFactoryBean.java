@@ -625,6 +625,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 final RSAPublicKey publicKey = parsePublicKey(config.getRealmKey());
                 return NimbusJwtDecoder.withPublicKey(publicKey)
                         .signatureAlgorithm(DEFAULT_SIGNATURE_ALGORITHM)
+                        .jwtProcessorCustomizer(jwtProcessor -> jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(JOSEObjectType.JWT, AT_JWT, null)))
                         .build();
             }
             final String jwkSetUri = requireValidJwkSetUri(providerDetails);
@@ -638,6 +639,8 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private void reconfigureJWKSCache(ConfigurableJWTProcessor<SecurityContext> jwtProcessor)
         {
+            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
+
             final Optional<RemoteJWKSet<SecurityContext>> jwkSource = ofNullable(jwtProcessor)
                     .map(ConfigurableJWTProcessor::getJWSKeySelector)
                     .filter(JWSVerificationKeySelector.class::isInstance)
@@ -674,7 +677,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                             .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
                             .collect(Collectors.toSet()),
                     cachingJWKSource));
-            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
         }
 
         private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)

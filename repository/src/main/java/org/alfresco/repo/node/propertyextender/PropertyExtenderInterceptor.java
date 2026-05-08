@@ -34,6 +34,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.jspecify.annotations.Nullable;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.propertyextender.PropertyExtender.CalculationContext;
 import org.alfresco.repo.node.propertyextender.PropertyExtender.CalculationResult;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -91,7 +92,7 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
     {
         var extenders = extendersHolder.getExtenders();
         var calculatedProps = extenders.stream()
-                .map(ext -> ext.calculate(new CalculationContext(newProperties)))
+                .map(ext -> this.runCalculation(ext, newProperties))
                 .map(CalculationResult::calculatedProperties)
                 .filter(Predicate.not(Map::isEmpty))
                 .toList();
@@ -104,5 +105,21 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
         var extendedProps = new HashMap<>(newProperties);
         calculatedProps.forEach(extendedProps::putAll);
         return extendedProps;
+    }
+
+    private CalculationResult runCalculation(PropertyExtender extender, Map<QName, Serializable> newProperties)
+    {
+        try
+        {
+            return extender.calculate(new CalculationContext(newProperties));
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            throw e;
+        }
+        catch (RuntimeException e)
+        {
+            throw new AlfrescoRuntimeException("Unexpected failure during properties calculation process", e);
+        }
     }
 }

@@ -194,8 +194,12 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
      * <p>
      * When JIT provisioning is disabled ({@code createMissingPeople == false}), or when no {@link org.alfresco.service.cmr.security.PersonService} is wired, behaviour is unchanged from the pre-cache flow: the existence check is skipped because a fresh authorize() would not create the Person either.
      * </p>
+     *
+     * <p>
+     * Visibility is {@code protected} so tests can override the decision in isolation without having to substitute the {@link org.alfresco.service.cmr.security.PersonService} bean (which is also consumed by {@link #setCurrentUser(String)}).
+     * </p>
      */
-    private boolean cachedPrincipalIsStillProvisioned(String normalizedUsername)
+    protected boolean cachedPrincipalIsStillProvisioned(String normalizedUsername)
     {
         try
         {

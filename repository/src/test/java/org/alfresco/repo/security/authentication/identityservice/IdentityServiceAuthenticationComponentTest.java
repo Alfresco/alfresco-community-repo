@@ -60,7 +60,20 @@ import org.alfresco.util.BaseSpringTest;
 
 public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
 {
-    private final IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent();
+    /**
+     * Test-controllable stub for {@link IdentityServiceAuthenticationComponent#cachedPrincipalIsStillProvisioned(String)} so cache-hit/fall-through scenarios can be exercised without substituting the real Spring {@link PersonService} (which {@link IdentityServiceAuthenticationComponent#setCurrentUser(String)} also depends on for {@link org.alfresco.service.cmr.repository.NodeRef} resolution and auto-import via {@code UserRegistrySynchronizer}).
+     */
+    private Boolean cachedPrincipalProvisionedOverride = null;
+
+    private final IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent() {
+        @Override
+        protected boolean cachedPrincipalIsStillProvisioned(String normalizedUsername)
+        {
+            return cachedPrincipalProvisionedOverride != null
+                    ? cachedPrincipalProvisionedOverride.booleanValue()
+                    : super.cachedPrincipalIsStillProvisioned(normalizedUsername);
+        }
+    };
 
     @Autowired
     private AuthenticationContext authenticationContext;
@@ -93,6 +106,8 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         mockIdentityServiceFacade = mock(IdentityServiceFacade.class);
         authComponent.setJitProvisioningHandler(jitProvisioning);
         authComponent.setIdentityServiceFacade(mockIdentityServiceFacade);
+
+        cachedPrincipalProvisionedOverride = null;
     }
 
     @After
@@ -184,7 +199,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     {
         DefaultCredentialValidationCache cache = newCache();
         authComponent.setCredentialValidationCache(cache);
-        authComponent.setPersonService(personServiceWith("username", true, true));
+        cachedPrincipalProvisionedOverride = Boolean.TRUE;
 
         long validUntil = System.currentTimeMillis() + 30_000L;
         cache.put("username", "password".toCharArray(),
@@ -202,7 +217,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     {
         DefaultCredentialValidationCache cache = newCache();
         authComponent.setCredentialValidationCache(cache);
-        authComponent.setPersonService(personServiceWith("username", true, true));
+        cachedPrincipalProvisionedOverride = Boolean.TRUE;
 
         AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
         AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
@@ -231,7 +246,6 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     {
         DefaultCredentialValidationCache cache = newCache();
         authComponent.setCredentialValidationCache(cache);
-        authComponent.setPersonService(personServiceWith("username", true, true));
 
         AuthorizationGrant grant = AuthorizationGrant.password("username", "wrong-password");
         doThrow(new AuthorizationException("Failed")).when(mockIdentityServiceFacade).authorize(grant);
@@ -258,8 +272,8 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     {
         DefaultCredentialValidationCache cache = newCache();
         authComponent.setCredentialValidationCache(cache);
-        // createMissingPeople = true, but the Person itself does not exist -> must invalidate and re-authorize
-        authComponent.setPersonService(personServiceWith("username", true, false));
+        // Simulate "Person no longer exists" - this is what happens after admin deletes a JIT user
+        cachedPrincipalProvisionedOverride = Boolean.FALSE;
 
         long validUntil = System.currentTimeMillis() + 30_000L;
         cache.put("username", "password".toCharArray(),
@@ -285,36 +299,40 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     }
 
     /**
-     * When JIT provisioning is disabled ({@code createMissingPeople == false}) the cache HIT must be honoured even if the local Person is missing, because a fresh authorize() would not create the Person either - the behaviour must match the non-cached path.
+     * Pure unit verification of the helper itself: when JIT provisioning is disabled ({@code createMissingPeople == false}), {@link IdentityServiceAuthenticationComponent#cachedPrincipalIsStillProvisioned(String)} must short-circuit to {@code true} without consulting {@link PersonService#personExists(String)}, because a fresh authorize() would not create the Person either.
      */
     @Test
-    public void testCacheHitHonouredWhenCreateMissingPeopleIsDisabled()
+    public void testCachedPrincipalCheckSkippedWhenCreateMissingPeopleIsDisabled()
     {
-        DefaultCredentialValidationCache cache = newCache();
-        authComponent.setCredentialValidationCache(cache);
-        authComponent.setPersonService(personServiceWith("username", false, false));
+        IdentityServiceAuthenticationComponent component = new IdentityServiceAuthenticationComponent();
+        PersonService spied = mock(PersonService.class);
+        when(spied.createMissingPeople()).thenReturn(false);
+        component.setPersonService(spied);
 
-        long validUntil = System.currentTimeMillis() + 30_000L;
-        cache.put("username", "password".toCharArray(),
-                new CredentialValidationCacheEntry("username", validUntil));
+        assertTrue("Helper must honour cache when JIT is disabled",
+                component.cachedPrincipalIsStillProvisioned("username"));
+        verify(spied, never()).personExists(any());
+    }
 
-        authComponent.authenticateImpl("username", "password".toCharArray());
+    /**
+     * Pure unit verification of the helper itself: when JIT provisioning is enabled and the Person is missing, the helper must report {@code false} so the cache entry is discarded.
+     */
+    @Test
+    public void testCachedPrincipalCheckReportsMissingPerson()
+    {
+        IdentityServiceAuthenticationComponent component = new IdentityServiceAuthenticationComponent();
+        PersonService spied = mock(PersonService.class);
+        when(spied.createMissingPeople()).thenReturn(true);
+        when(spied.personExists("username")).thenReturn(false);
+        component.setPersonService(spied);
 
-        assertEquals("username", authenticationContext.getCurrentUserName());
-        verify(mockIdentityServiceFacade, never()).authorize(any());
+        assertFalse("Helper must report missing Person",
+                component.cachedPrincipalIsStillProvisioned("username"));
     }
 
     private static DefaultCredentialValidationCache newCache()
     {
         return new DefaultCredentialValidationCache(
                 new MemoryCache<>(), true, "shared-secret", 1_000L, 1_000L, 60_000L);
-    }
-
-    private static PersonService personServiceWith(String userName, boolean createMissingPeople, boolean exists)
-    {
-        PersonService mockPersonService = mock(PersonService.class);
-        when(mockPersonService.createMissingPeople()).thenReturn(createMissingPeople);
-        when(mockPersonService.personExists(userName)).thenReturn(exists);
-        return mockPersonService;
     }
 }

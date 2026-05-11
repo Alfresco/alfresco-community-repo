@@ -105,12 +105,27 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
             final Optional<CredentialValidationCacheEntry> cached = credentialValidationCache.get(userName, password);
             if (cached.isPresent())
             {
+                final String cachedNormalizedUsername = cached.get().getNormalizedUsername();
+                if (cachedPrincipalIsStillProvisioned(cachedNormalizedUsername))
+                {
+                    if (LOGGER.isDebugEnabled())
+                    {
+                        LOGGER.debug("Credential validation cache HIT for user '" + userName + "'. Skipping authorization request.");
+                    }
+                    setCurrentUser(cachedNormalizedUsername);
+                    return;
+                }
+                // The cached principal no longer has a backing Person node, but JIT provisioning
+                // is enabled and could (re-)create it. Invalidate the entry and fall through to
+                // the regular authorize / JIT-provisioning path below so the local user state is
+                // restored.
                 if (LOGGER.isDebugEnabled())
                 {
-                    LOGGER.debug("Credential validation cache HIT for user '" + userName + "'. Skipping authorization request.");
+                    LOGGER.debug("Credential validation cache HIT for user '" + userName
+                            + "' but local Person '" + cachedNormalizedUsername
+                            + "' no longer exists. Invalidating entry and re-authorizing.");
                 }
-                setCurrentUser(cached.get().getNormalizedUsername());
-                return;
+                credentialValidationCache.invalidate(userName, password);
             }
         }
 
@@ -171,5 +186,34 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     protected boolean implementationAllowsGuestLogin()
     {
         return allowGuestLogin;
+    }
+
+    /**
+     * Defensive check used on credential validation cache HITs so the shortcut never authenticates a principal whose backing Person node has been deleted (or was never created because the originating transaction was read-only). When JIT provisioning is enabled but the Person is missing, the cache HIT must be discarded so the regular authorize/JIT path can re-establish local user state.
+     *
+     * <p>
+     * When JIT provisioning is disabled ({@code createMissingPeople == false}), or when no {@link org.alfresco.service.cmr.security.PersonService} is wired, behaviour is unchanged from the pre-cache flow: the existence check is skipped because a fresh authorize() would not create the Person either.
+     * </p>
+     */
+    private boolean cachedPrincipalIsStillProvisioned(String normalizedUsername)
+    {
+        try
+        {
+            final org.alfresco.service.cmr.security.PersonService personService = getPersonService();
+            if (personService == null || !personService.createMissingPeople())
+            {
+                return true;
+            }
+            return personService.personExists(normalizedUsername);
+        }
+        catch (RuntimeException ex)
+        {
+            // If the Person check itself fails (e.g. transient DB issue) honour the cache HIT
+            // rather than penalising the authentication path. This is the same posture the rest
+            // of the cache uses: degrade gracefully toward existing behaviour.
+            LOGGER.warn("Failed to verify Person existence for cached credential validation; honouring cache HIT defensively. "
+                    + ex.getMessage());
+            return true;
+        }
     }
 }

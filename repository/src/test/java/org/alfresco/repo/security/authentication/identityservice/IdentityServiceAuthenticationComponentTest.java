@@ -182,9 +182,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test
     public void testCacheHitSkipsFacadeAuthorization()
     {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                new MemoryCache<>(), true, "shared-secret", 1_000L, 1_000L, 60_000L);
+        DefaultCredentialValidationCache cache = newCache();
         authComponent.setCredentialValidationCache(cache);
+        authComponent.setPersonService(personServiceWith("username", true, true));
 
         long validUntil = System.currentTimeMillis() + 30_000L;
         cache.put("username", "password".toCharArray(),
@@ -200,9 +200,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test
     public void testCacheMissPopulatesCacheAfterSuccessfulAuthorization()
     {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                new MemoryCache<>(), true, "shared-secret", 1_000L, 1_000L, 60_000L);
+        DefaultCredentialValidationCache cache = newCache();
         authComponent.setCredentialValidationCache(cache);
+        authComponent.setPersonService(personServiceWith("username", true, true));
 
         AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
         AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
@@ -229,9 +229,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test
     public void testFailedAuthorizationDoesNotPopulateCache()
     {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                new MemoryCache<>(), true, "shared-secret", 1_000L, 1_000L, 60_000L);
+        DefaultCredentialValidationCache cache = newCache();
         authComponent.setCredentialValidationCache(cache);
+        authComponent.setPersonService(personServiceWith("username", true, true));
 
         AuthorizationGrant grant = AuthorizationGrant.password("username", "wrong-password");
         doThrow(new AuthorizationException("Failed")).when(mockIdentityServiceFacade).authorize(grant);
@@ -248,5 +248,73 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
 
         assertFalse("Failed credentials must not be cached",
                 cache.get("username", "wrong-password".toCharArray()).isPresent());
+    }
+
+    /**
+     * If the cached principal's Person node has been deleted (or was never created because the originating transaction was read-only) the cache HIT must be discarded and the regular authorize/JIT path must run so the local user state can be re-established.
+     */
+    @Test
+    public void testCacheHitFallsThroughWhenLocalPersonIsMissing()
+    {
+        DefaultCredentialValidationCache cache = newCache();
+        authComponent.setCredentialValidationCache(cache);
+        // createMissingPeople = true, but the Person itself does not exist -> must invalidate and re-authorize
+        authComponent.setPersonService(personServiceWith("username", true, false));
+
+        long validUntil = System.currentTimeMillis() + 30_000L;
+        cache.put("username", "password".toCharArray(),
+                new CredentialValidationCacheEntry("username", validUntil));
+
+        AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
+        AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
+        IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
+        when(authorization.getAccessToken()).thenReturn(accessToken);
+        when(accessToken.getTokenValue()).thenReturn("JWT_TOKEN");
+        when(accessToken.getExpiresAt()).thenReturn(Instant.now().plusSeconds(30));
+        when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
+        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN"))
+                .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
+
+        authComponent.authenticateImpl("username", "password".toCharArray());
+
+        assertEquals("username", authenticationContext.getCurrentUserName());
+        verify(mockIdentityServiceFacade, times(1)).authorize(grant);
+        verify(jitProvisioning, times(1)).extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN");
+        assertFalse("Stale cache entry must have been invalidated",
+                cache.get("username", "password".toCharArray()).isPresent());
+    }
+
+    /**
+     * When JIT provisioning is disabled ({@code createMissingPeople == false}) the cache HIT must be honoured even if the local Person is missing, because a fresh authorize() would not create the Person either - the behaviour must match the non-cached path.
+     */
+    @Test
+    public void testCacheHitHonouredWhenCreateMissingPeopleIsDisabled()
+    {
+        DefaultCredentialValidationCache cache = newCache();
+        authComponent.setCredentialValidationCache(cache);
+        authComponent.setPersonService(personServiceWith("username", false, false));
+
+        long validUntil = System.currentTimeMillis() + 30_000L;
+        cache.put("username", "password".toCharArray(),
+                new CredentialValidationCacheEntry("username", validUntil));
+
+        authComponent.authenticateImpl("username", "password".toCharArray());
+
+        assertEquals("username", authenticationContext.getCurrentUserName());
+        verify(mockIdentityServiceFacade, never()).authorize(any());
+    }
+
+    private static DefaultCredentialValidationCache newCache()
+    {
+        return new DefaultCredentialValidationCache(
+                new MemoryCache<>(), true, "shared-secret", 1_000L, 1_000L, 60_000L);
+    }
+
+    private static PersonService personServiceWith(String userName, boolean createMissingPeople, boolean exists)
+    {
+        PersonService mockPersonService = mock(PersonService.class);
+        when(mockPersonService.createMissingPeople()).thenReturn(createMissingPeople);
+        when(mockPersonService.personExists(userName)).thenReturn(exists);
+        return mockPersonService;
     }
 }

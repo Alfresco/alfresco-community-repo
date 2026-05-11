@@ -48,7 +48,7 @@
    <bean id="identityServiceCredentialValidationCache"
          class="org.alfresco.repo.security.authentication.identityservice.cache.DefaultCredentialValidationCache">
       <constructor-arg ref="identityServiceCredentialValidationBackingCache" />
-      <constructor-arg value="${identity-service.authentication.credentialValidationCache.enabled:}" />
+      <constructor-arg value="${identity-service.authentication.credentialValidationCache.enabled:false}" />
       <constructor-arg value="${identity-service.authentication.credentialValidationCache.sharedSecret:}" />
       <constructor-arg value="${identity-service.authentication.credentialValidationCache.clockSkewMs:5000}" />
       <constructor-arg value="${identity-service.authentication.credentialValidationCache.minTtlMs:10000}" />

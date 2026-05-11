@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import java.time.Instant;
+import java.util.Optional;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -33,6 +36,8 @@ import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
+import org.alfresco.repo.security.authentication.identityservice.cache.CredentialValidationCache;
+import org.alfresco.repo.security.authentication.identityservice.cache.CredentialValidationCacheEntry;
 import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
 
 /**
@@ -53,6 +58,11 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
 
     private boolean allowGuestLogin;
 
+    /**
+     * Optional cache that records the outcome of a successful credential validation against the Identity Service so that subsequent identical credential presentations within the token-lifetime window can skip the round-trip to the Authorization Server. May be {@code null} when the cache is not wired or disabled.
+     */
+    private CredentialValidationCache credentialValidationCache;
+
     public void setIdentityServiceFacade(IdentityServiceFacade identityServiceFacade)
     {
         this.identityServiceFacade = identityServiceFacade;
@@ -68,6 +78,11 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         this.jitProvisioningHandler = jitProvisioningHandler;
     }
 
+    public void setCredentialValidationCache(CredentialValidationCache credentialValidationCache)
+    {
+        this.credentialValidationCache = credentialValidationCache;
+    }
+
     @Override
     public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
@@ -81,6 +96,24 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
             throw new AuthenticationException("User not authenticated because IdentityServiceFacade was not set.");
         }
 
+        // Cache lookup: skip the round-trip to the Identity Provider when this exact credential
+        // pair has been validated recently and the recorded validity window has not yet elapsed.
+        // The cache stores neither the password nor any access/refresh token.
+        final boolean cacheActive = credentialValidationCache != null && credentialValidationCache.isEnabled();
+        if (cacheActive)
+        {
+            final Optional<CredentialValidationCacheEntry> cached = credentialValidationCache.get(userName, password);
+            if (cached.isPresent())
+            {
+                if (LOGGER.isDebugEnabled())
+                {
+                    LOGGER.debug("Credential validation cache HIT for user '" + userName + "'. Skipping authorization request.");
+                }
+                setCurrentUser(cached.get().getNormalizedUsername());
+                return;
+            }
+        }
+
         try
         {
             // Attempt to verify user credentials
@@ -89,15 +122,36 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
             String normalizedUsername = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue())
                     .map(OIDCUserInfo::username)
                     .orElseThrow(() -> new AuthenticationException("Failed to extract username from token and user info endpoint."));
+
+            // Record the successful validation. Validity is bounded by the access-token expiration
+            // returned by the Identity Provider so the cache view stays aligned with IdP configuration.
+            if (cacheActive)
+            {
+                final Instant expiresAt = accessTokenAuthorization.getAccessToken().getExpiresAt();
+                if (expiresAt != null)
+                {
+                    credentialValidationCache.put(userName, password,
+                            new CredentialValidationCacheEntry(normalizedUsername, expiresAt.toEpochMilli()));
+                }
+            }
+
             // Verification was successful so treat as authenticated user
             setCurrentUser(normalizedUsername);
         }
         catch (IdentityServiceFacadeException e)
         {
+            if (cacheActive)
+            {
+                credentialValidationCache.invalidate(userName, password);
+            }
             throw new AuthenticationException("Failed to verify user credentials against the OAuth2 Authorization Server.", e);
         }
         catch (RuntimeException e)
         {
+            if (cacheActive)
+            {
+                credentialValidationCache.invalidate(userName, password);
+            }
             throw new AuthenticationException("Failed to verify user credentials.", e);
         }
     }

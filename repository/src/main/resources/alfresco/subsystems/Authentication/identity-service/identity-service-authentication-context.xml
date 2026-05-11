@@ -27,6 +27,32 @@
       <property name="jitProvisioningHandler">
          <ref bean="jitProvisioningHandler" />
       </property>
+      <property name="credentialValidationCache">
+         <ref bean="identityServiceCredentialValidationCache" />
+      </property>
+   </bean>
+
+   <!--
+      Optional cache that records the outcome of a successful credential validation against the
+      Identity Service so that subsequent identical credential presentations within the
+      access-token-lifetime window can skip the round-trip to the Authorization Server.
+
+      The cache stores only an HMAC-SHA256-derived key and a small non-secret entry recording the
+      normalized principal name and the validity-until timestamp. It MUST NOT contain passwords
+      or access/refresh tokens. The cache is disabled by default and fails closed when the shared
+      secret is not configured.
+
+      Backing cache region: cache.identityServiceCredentialValidationCache (cache-context.xml,
+      caches.properties).
+   -->
+   <bean id="identityServiceCredentialValidationCache"
+         class="org.alfresco.repo.security.authentication.identityservice.cache.DefaultCredentialValidationCache">
+      <constructor-arg ref="identityServiceCredentialValidationBackingCache" />
+      <constructor-arg value="${identity-service.authentication.credentialValidationCache.enabled:}" />
+      <constructor-arg value="${identity-service.authentication.credentialValidationCache.sharedSecret:}" />
+      <constructor-arg value="${identity-service.authentication.credentialValidationCache.clockSkewMs:5000}" />
+      <constructor-arg value="${identity-service.authentication.credentialValidationCache.minTtlMs:10000}" />
+      <constructor-arg value="${identity-service.authentication.credentialValidationCache.maxTtlMs:900000}" />
    </bean>
 
    <bean name="identityServiceFacade" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean">

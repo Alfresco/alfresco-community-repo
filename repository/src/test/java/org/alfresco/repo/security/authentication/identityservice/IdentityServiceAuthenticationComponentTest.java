@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,11 +25,16 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.net.ConnectException;
+import java.time.Instant;
 import java.util.Optional;
 
 import org.junit.After;
@@ -38,11 +43,14 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.alfresco.error.ExceptionStackUtil;
+import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.alfresco.repo.security.authentication.identityservice.cache.CredentialValidationCacheEntry;
+import org.alfresco.repo.security.authentication.identityservice.cache.DefaultCredentialValidationCache;
 import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -169,5 +177,76 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
 
         authComponent.setAllowGuestLogin(false);
         assertFalse(authComponent.guestUserAuthenticationAllowed());
+    }
+
+    @Test
+    public void testCacheHitSkipsFacadeAuthorization()
+    {
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
+                new MemoryCache<>(), true, "shared-secret", 1_000L, 1_000L, 60_000L);
+        authComponent.setCredentialValidationCache(cache);
+
+        long validUntil = System.currentTimeMillis() + 30_000L;
+        cache.put("username", "password".toCharArray(),
+                new CredentialValidationCacheEntry("username", validUntil));
+
+        authComponent.authenticateImpl("username", "password".toCharArray());
+
+        assertEquals("Cached principal must be set as current user",
+                "username", authenticationContext.getCurrentUserName());
+        verify(mockIdentityServiceFacade, never()).authorize(any());
+    }
+
+    @Test
+    public void testCacheMissPopulatesCacheAfterSuccessfulAuthorization()
+    {
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
+                new MemoryCache<>(), true, "shared-secret", 1_000L, 1_000L, 60_000L);
+        authComponent.setCredentialValidationCache(cache);
+
+        AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
+        AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
+        IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
+        when(authorization.getAccessToken()).thenReturn(accessToken);
+        when(accessToken.getTokenValue()).thenReturn("JWT_TOKEN");
+        when(accessToken.getExpiresAt()).thenReturn(Instant.now().plusSeconds(30));
+        when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
+        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN"))
+                .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
+
+        authComponent.authenticateImpl("username", "password".toCharArray());
+        assertEquals("username", authenticationContext.getCurrentUserName());
+
+        authenticationContext.clearCurrentSecurityContext();
+
+        // Second call with the same credentials must be served by the cache
+        authComponent.authenticateImpl("username", "password".toCharArray());
+        assertEquals("username", authenticationContext.getCurrentUserName());
+
+        verify(mockIdentityServiceFacade, times(1)).authorize(grant);
+    }
+
+    @Test
+    public void testFailedAuthorizationDoesNotPopulateCache()
+    {
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
+                new MemoryCache<>(), true, "shared-secret", 1_000L, 1_000L, 60_000L);
+        authComponent.setCredentialValidationCache(cache);
+
+        AuthorizationGrant grant = AuthorizationGrant.password("username", "wrong-password");
+        doThrow(new AuthorizationException("Failed")).when(mockIdentityServiceFacade).authorize(grant);
+
+        try
+        {
+            authComponent.authenticateImpl("username", "wrong-password".toCharArray());
+            fail("Expected AuthenticationException");
+        }
+        catch (AuthenticationException expected)
+        {
+            // expected
+        }
+
+        assertFalse("Failed credentials must not be cached",
+                cache.get("username", "wrong-password".toCharArray()).isPresent());
     }
 }

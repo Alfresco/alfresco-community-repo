@@ -496,6 +496,14 @@
       <constructor-arg value="cache.protectedUsersCache"/>
    </bean>
 
+   <!-- Backing cache region for the Identity Service credential validation cache.
+        The values stored here are non-secret CredentialValidationCacheEntry instances; keys are
+        opaque HMAC-derived strings. See cache.identityServiceCredentialValidationCache in
+        caches.properties for sizing and cluster configuration. -->
+   <bean name="identityServiceCredentialValidationBackingCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.identityServiceCredentialValidationCache"/>
+   </bean>
+
     <!-- The cross-transaction shared cache for heartbeat data on cluster usage -->
 
    <bean name="hbClusterUsageCache" factory-bean="cacheFactory" factory-method="createCache">

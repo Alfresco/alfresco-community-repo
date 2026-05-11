@@ -528,4 +528,13 @@
       <constructor-arg value="cache.folderSizeSharedCache"/>
    </bean>
 
+   <!-- ===================================== -->
+   <!-- Audit Disabled Paths Cache            -->
+   <!-- ===================================== -->
+
+   <!-- The cache for audit disabled paths -->
+   <bean name="auditDisabledPathsCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.auditDisabledPathsCache"/>
+   </bean>
+
 </beans>

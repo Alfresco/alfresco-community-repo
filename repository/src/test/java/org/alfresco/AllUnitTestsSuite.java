@@ -210,6 +210,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.action.executer.TransformActionExecuterTest.class,
         org.alfresco.repo.action.executer.ImporterActionExecutorUnitTest.class,
         org.alfresco.repo.audit.AuditableAnnotationTest.class,
+        org.alfresco.repo.audit.AuditComponentImplUnitTest.class,
         org.alfresco.repo.audit.PropertyAuditFilterTest.class,
         org.alfresco.repo.audit.access.NodeChangeTest.class,
         org.alfresco.repo.content.ContentServiceImplUnitTest.class,

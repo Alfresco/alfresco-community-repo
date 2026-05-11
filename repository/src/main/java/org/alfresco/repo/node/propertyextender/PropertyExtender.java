@@ -25,16 +25,16 @@
  */
 package org.alfresco.repo.node.propertyextender;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Interface for implementing property extenders. A property extender is used to calculate additional properties based on the properties that are being added on a node.
+ * <p>
+ * Contract:
+ * <p>
+ * By implementing this interface you take the responsibility to correctly implement {@link Object#equals} and {@link Object#hashCode()} methods. This is required to ensure that only one instance of the extender is registered for specific business case, even if the {@link PropertyExtendersHolder#registerExtender(PropertyExtender)} is invoked many times.
+ * <p>
+ * The {@link Object#toString()} method should be implemented for logging purposes.
  */
 public interface PropertyExtender
 {
@@ -50,38 +50,4 @@ public interface PropertyExtender
      *             for any unexpected errors during the calculation process.
      */
     CalculationResult calculate(CalculationContext context);
-
-    /**
-     * The context for the property extender calculation.
-     *
-     * @param newProperties
-     *            map of properties that are being added on a node
-     */
-    record CalculationContext(Map<QName, Serializable> newProperties)
-    {
-        public CalculationContext
-        {
-            newProperties = Optional.ofNullable(newProperties)
-                    .map(Collections::unmodifiableMap)
-                    .orElse(Collections.emptyMap());
-        }
-    }
-
-    /**
-     * The result of the property extender calculation.
-     *
-     * @param calculatedProperties
-     *            the additional properties calculated by the property extender, which will be added to the node together with the new properties
-     */
-    record CalculationResult(Map<QName, Serializable> calculatedProperties)
-    {
-        public static final CalculationResult NO_OP = new CalculationResult(Collections.emptyMap());
-
-        public CalculationResult
-        {
-            calculatedProperties = Optional.ofNullable(calculatedProperties)
-                    .map(Collections::unmodifiableMap)
-                    .orElse(Collections.emptyMap());
-        }
-    }
 }

@@ -25,25 +25,39 @@
  */
 package org.alfresco.repo.node.propertyextender;
 
-import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSet;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Holder for the registered property extenders. Other Spring components can use it to register custom property extenders. All extenders will be invoked by the {@link PropertyExtenderInterceptor} when properties are being added on a node, to calculate the additional properties that need to be added together with the new properties.
+ * Holder for the registered property extenders. Other Spring components can use it to register custom property extenders.
+ * <p>
+ * All extenders will be invoked by the {@link PropertyExtenderInterceptor} when properties are being added on a node, to calculate the additional properties that need to be added together with the new properties.
  */
 public class PropertyExtendersHolder
 {
-    private final List<PropertyExtender> extenders = new CopyOnWriteArrayList<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(PropertyExtendersHolder.class);
 
-    public List<PropertyExtender> getExtenders()
+    private final Set<PropertyExtender> extenders = ConcurrentHashMap.newKeySet();
+
+    public Set<PropertyExtender> getExtenders()
     {
-        return unmodifiableList(extenders);
+        return unmodifiableSet(extenders);
     }
 
     public void registerExtender(PropertyExtender extender)
     {
-        extenders.add(extender);
+        if (extenders.add(extender))
+        {
+            LOGGER.debug("Registered property extender: {}", extender);
+        }
+        else
+        {
+            LOGGER.debug("Property extender {} is already registered, skipping registration.", extender);
+        }
     }
 }

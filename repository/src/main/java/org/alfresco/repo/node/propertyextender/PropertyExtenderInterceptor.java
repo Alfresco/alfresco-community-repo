@@ -28,15 +28,15 @@ package org.alfresco.repo.node.propertyextender;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.jspecify.annotations.Nullable;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.node.propertyextender.PropertyExtender.CalculationContext;
-import org.alfresco.repo.node.propertyextender.PropertyExtender.CalculationResult;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -71,6 +71,13 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
             var extendedProps = calculateProperties((Map<QName, Serializable>) newProperties);
             nodeService.addProperties(nodeRef, extendedProps);
         }
+        else if (methodName.equals("setProperties") && args.length == 2 &&
+                args[0] instanceof NodeRef nodeRef &&
+                args[1] instanceof Map newProperties)
+        {
+            var extendedProps = calculateProperties((Map<QName, Serializable>) newProperties);
+            nodeService.setProperties(nodeRef, extendedProps);
+        }
         else if (methodName.equals("createNode") && args.length == 5 &&
                 args[0] instanceof NodeRef parentNodeRef &&
                 args[1] instanceof QName assocTypeQName &&
@@ -80,6 +87,21 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
         {
             var extendedProps = calculateProperties((Map<QName, Serializable>) newProperties);
             ret = nodeService.createNode(parentNodeRef, assocTypeQName, assocQName, nodeTypeQName, extendedProps);
+        }
+        else if (methodName.equals("setProperty") && args.length == 3 &&
+                args[0] instanceof NodeRef nodeRef &&
+                args[1] instanceof QName propertyQName &&
+                args[2] instanceof Serializable propertyValue)
+        {
+            checkNoPropertiesCalculated(propertyQName, propertyValue);
+            nodeService.setProperty(nodeRef, propertyQName, propertyValue);
+        }
+        else if (methodName.equals("removeProperty") && args.length == 2 &&
+                args[0] instanceof NodeRef nodeRef &&
+                args[1] instanceof QName propertyQName)
+        {
+            checkNoPropertiesCalculated(propertyQName, null);
+            nodeService.removeProperty(nodeRef, propertyQName);
         }
         else
         {
@@ -120,6 +142,24 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
         catch (RuntimeException e)
         {
             throw new AlfrescoRuntimeException("Unexpected failure during properties calculation process", e);
+        }
+    }
+
+    private void checkNoPropertiesCalculated(QName propertyName, Serializable propertyValue)
+    {
+        var extenders = extendersHolder.getExtenders();
+        var calculatedProps = extenders.stream()
+                .map(ext -> this.runCalculation(ext, Map.of(propertyName, propertyValue)))
+                .filter(Predicate.not(res -> res.calculatedProperties().isEmpty()))
+                .toList();
+        if (!calculatedProps.isEmpty())
+        {
+            throw new AlfrescoRuntimeException("Property extenders are not available for single property modification. In given context, more properties were calculated: " + calculatedProps.stream()
+                    .map(CalculationResult::calculatedProperties)
+                    .map(Map::keySet)
+                    .flatMap(Set::stream)
+                    .map(QName::toPrefixString)
+                    .collect(Collectors.joining(", ")));
         }
     }
 }

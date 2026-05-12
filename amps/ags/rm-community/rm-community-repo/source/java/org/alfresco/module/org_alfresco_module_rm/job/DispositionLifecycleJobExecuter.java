@@ -35,6 +35,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -64,7 +65,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
     public enum QueryMode
     {
-        FTS_DEFAULT, FTS_OPTIMIZED_QUERY, FTS_OPTIMIZED_CUTOFF, CMIS;
+        FTS_DEFAULT,CMIS;
 
         public static QueryMode getQueryMode(String queryMode)
         {
@@ -84,6 +85,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** batching properties */
     private int batchSize;
     public static final int DEFAULT_BATCH_SIZE = 500;
+    private static final int CMIS_QUERY_LIMIT = 100000;
 
     /** list of disposition actions to automatically execute */
     private List<String> dispositionActions;
@@ -169,47 +171,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         this.searchService = searchService;
     }
 
-    /**
-     * Get the search query string.
-     *
-     * @return job query string
-     */
-    protected String getQuery()
-    {
-        if (query == null)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.append("TYPE:\"rma:dispositionAction\" AND ");
-            sb.append("(@rma\\:dispositionAction:(");
-
-            boolean bFirst = true;
-            for (String dispositionAction : dispositionActions)
-            {
-                if (bFirst)
-                {
-                    bFirst = false;
-                }
-                else
-                {
-                    sb.append(" OR ");
-                }
-
-                sb.append("\"").append(dispositionAction).append("\"");
-            }
-
-            sb.append("))");
-            sb.append(" AND ISUNSET:\"rma:dispositionActionCompletedAt\" ");
-            sb.append(" AND ( ");
-            sb.append("@rma\\:dispositionEventsEligible:true ");
-            sb.append("OR @rma\\:dispositionAsOf:[MIN TO NOW] ");
-            sb.append(") ");
-
-            query = sb.toString();
-        }
-
-        return query;
-    }
 
     private String getActionFilterQuery()
     {
@@ -229,7 +190,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * Builds a transactional CMIS query for eligible disposition action nodes. The date cutoff is evaluated at call time so each job run uses the current date. Never cached — unlike {@link #getQuery()} — because the timestamp changes every run.
+     * Builds a transactional CMIS query for eligible disposition action nodes.
+     * The date cutoff is evaluated at call time so each job run uses the current date.
      *
      * @return CMIS SQL string
      */
@@ -264,17 +226,10 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     @Override
     public void executeImpl()
     {
-        switch (queryMode)
-        {
-        case CMIS:
+        if (Objects.requireNonNull(queryMode) == QueryMode.CMIS) {
             executeImplCmis();
-            break;
-        case FTS_OPTIMIZED_QUERY:
-        case FTS_OPTIMIZED_CUTOFF:
-        case FTS_DEFAULT:
-        default:
+        } else {
             executeImplFts();
-            break;
         }
     }
 
@@ -318,30 +273,15 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
                 params.setSkipCount(skipCount);
                 params.setMaxItems(batchSize);
-                switch (queryMode)
-                {
-                case FTS_OPTIMIZED_QUERY:
-                    params.setQuery("TYPE:\"rma:dispositionAction\"");
-                    params.addFilterQuery(getActionFilterQuery());
-                    params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
-                    params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR @rma\\:dispositionAsOf:[MIN TO NOW])");
-                    params.setTrackScore(false);
-                    break;
-                case FTS_OPTIMIZED_CUTOFF:
-                    params.setQuery("TYPE:\"rma:dispositionAction\"");
-                    params.addFilterQuery(getActionFilterQuery());
-                    params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
-                    // Negated future range — semantically equivalent to [MIN TO NOW] but may
-                    // produce a different ES execution plan worth benchmarking.
-                    params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR -@rma\\:dispositionAsOf:["
-                            + LocalDate.now().plusDays(1) + " TO MAX])");
-                    params.setTrackScore(false);
-                    break;
-                case FTS_DEFAULT:
-                default:
-                    params.setQuery(getQuery());
-                    break;
-                }
+
+                //set query
+                params.setQuery("TYPE:\"rma:dispositionAction\"");
+                params.addFilterQuery(getActionFilterQuery());
+                params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
+                // Negated future range — semantically equivalent to [MIN TO NOW] but may
+                params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR -@rma\\:dispositionAsOf:["
+                        + LocalDate.now().plusDays(1) + " TO MAX])");
+                params.setTrackScore(false);
 
                 // execute search
                 ResultSet results = executeSearch(params, batchNumber);
@@ -445,7 +385,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             int totalEligible = 0;
             int totalProcessed = 0;
 
-            while (true)
+            while (totalReturned < CMIS_QUERY_LIMIT)
             {
                 batchNumber++;
 

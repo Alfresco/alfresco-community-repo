@@ -65,7 +65,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
     public enum QueryMode
     {
-        FTS_DEFAULT,CMIS;
+        FTS_DEFAULT, CMIS;
 
         public static QueryMode getQueryMode(String queryMode)
         {
@@ -171,7 +171,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         this.searchService = searchService;
     }
 
-
     private String getActionFilterQuery()
     {
         String actionFilterQuery = null;
@@ -190,8 +189,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * Builds a transactional CMIS query for eligible disposition action nodes.
-     * The date cutoff is evaluated at call time so each job run uses the current date.
+     * Builds a transactional CMIS query for eligible disposition action nodes. The date cutoff is evaluated at call time so each job run uses the current date.
      *
      * @return CMIS SQL string
      */
@@ -226,9 +224,12 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     @Override
     public void executeImpl()
     {
-        if (Objects.requireNonNull(queryMode) == QueryMode.CMIS) {
+        if (Objects.requireNonNull(queryMode) == QueryMode.CMIS)
+        {
             executeImplCmis();
-        } else {
+        }
+        else
+        {
             executeImplFts();
         }
     }
@@ -274,7 +275,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 params.setSkipCount(skipCount);
                 params.setMaxItems(batchSize);
 
-                //set query
+                // set query
                 params.setQuery("TYPE:\"rma:dispositionAction\"");
                 params.addFilterQuery(getActionFilterQuery());
                 params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");

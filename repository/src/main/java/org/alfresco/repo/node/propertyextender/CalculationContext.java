@@ -35,14 +35,14 @@ import org.alfresco.service.namespace.QName;
 /**
  * The context for the property extender calculation.
  *
- * @param newProperties
- *            map of properties that are being added on a node
+ * @param propertyChanges
+ *            mapping of properties that are being changed on a node (added, updated or removed). A removed property has a null value.
  */
-public record CalculationContext(Map<QName, Serializable> newProperties)
+public record CalculationContext(Map<QName, Serializable> propertyChanges)
 {
     public CalculationContext
     {
-        newProperties = Optional.ofNullable(newProperties)
+        propertyChanges = Optional.ofNullable(propertyChanges)
                 .map(Collections::unmodifiableMap)
                 .orElse(Collections.emptyMap());
     }

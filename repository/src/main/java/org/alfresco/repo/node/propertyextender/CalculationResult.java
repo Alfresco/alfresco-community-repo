@@ -35,16 +35,16 @@ import org.alfresco.service.namespace.QName;
 /**
  * The result of the property extender calculation.
  *
- * @param calculatedProperties
- *            the additional properties calculated by the property extender, which will be added to the node together with the new properties
+ * @param additionalProperties
+ *            the additional properties calculated by the property extender, which will be applied to the node together with the original property changes.
  */
-public record CalculationResult(Map<QName, Serializable> calculatedProperties)
+public record CalculationResult(Map<QName, Serializable> additionalProperties)
 {
     public static final CalculationResult NO_OP = new CalculationResult(Collections.emptyMap());
 
     public CalculationResult
     {
-        calculatedProperties = Optional.ofNullable(calculatedProperties)
+        additionalProperties = Optional.ofNullable(additionalProperties)
                 .map(Collections::unmodifiableMap)
                 .orElse(Collections.emptyMap());
     }

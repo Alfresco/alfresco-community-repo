@@ -28,7 +28,7 @@ package org.alfresco.repo.node.propertyextender;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Interface for implementing property extenders. A property extender is used to calculate additional properties based on the properties that are being added on a node.
+ * Interface for implementing property extenders. A property extender is used to calculate additional properties based on the properties that are being changed on a node.
  * <p>
  * Contract:
  * <p>
@@ -42,8 +42,8 @@ public interface PropertyExtender
      * Calculate additional node properties.
      *
      * @param context
-     *            the context of the calculation, which contains the properties that are being added/updated on a node
-     * @return result containing calculated properties mapping. Empty map when no relevant properties were provided in the context.
+     *            the context of the calculation, which contains the property changes on a node.
+     * @return result containing calculated additional properties mapping. Empty map when no relevant properties were provided in the context.
      * @throws AlfrescoRuntimeException
      *             for expected calculation process failures.
      * @throws RuntimeException

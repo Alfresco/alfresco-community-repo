@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Holder for the registered property extenders. Other Spring components can use it to register custom property extenders.
  * <p>
- * All extenders will be invoked by the {@link PropertyExtenderInterceptor} when properties are being added on a node, to calculate the additional properties that need to be added together with the new properties.
+ * All extenders will be invoked by the {@link PropertyExtenderInterceptor} when properties are being changed on a node, to calculate the additional properties that need to be applied together.
  */
 public class PropertyExtendersHolder
 {

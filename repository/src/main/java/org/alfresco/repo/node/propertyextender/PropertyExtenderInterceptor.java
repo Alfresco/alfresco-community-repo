@@ -26,15 +26,15 @@
 package org.alfresco.repo.node.propertyextender;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -42,10 +42,14 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * This interceptor is used to extend the properties that are being added on a node. It invokes the registered property extenders to calculate the additional properties and add them together to the node.
+ * This interceptor is used to extend the properties that are being changed on a node.
+ * <p>
+ * It invokes the registered property extenders to calculate the additional properties and handle them accordingly.
  */
 public class PropertyExtenderInterceptor implements MethodInterceptor
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PropertyExtenderInterceptor.class);
+
     private final NodeService nodeService;
     private final PropertyExtendersHolder extendersHolder;
 
@@ -66,41 +70,49 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
 
         if (methodName.equals("addProperties") && args.length == 2 &&
                 args[0] instanceof NodeRef nodeRef &&
-                args[1] instanceof Map newProperties)
+                args[1] instanceof Map propertyChanges)
         {
-            var extendedProps = calculateProperties((Map<QName, Serializable>) newProperties);
-            nodeService.addProperties(nodeRef, extendedProps);
+            var extendedProps = calculateProperties((Map<QName, Serializable>) propertyChanges);
+            nodeService.addProperties(nodeRef, extendedProps.mergeProperties());
         }
         else if (methodName.equals("setProperties") && args.length == 2 &&
                 args[0] instanceof NodeRef nodeRef &&
-                args[1] instanceof Map newProperties)
+                args[1] instanceof Map propertyChanges)
         {
-            var extendedProps = calculateProperties((Map<QName, Serializable>) newProperties);
-            nodeService.setProperties(nodeRef, extendedProps);
+            var extendedProps = calculateProperties((Map<QName, Serializable>) propertyChanges);
+            nodeService.setProperties(nodeRef, extendedProps.mergeProperties());
         }
         else if (methodName.equals("createNode") && args.length == 5 &&
                 args[0] instanceof NodeRef parentNodeRef &&
                 args[1] instanceof QName assocTypeQName &&
                 args[2] instanceof QName assocQName &&
                 args[3] instanceof QName nodeTypeQName &&
-                args[4] instanceof Map newProperties)
+                args[4] instanceof Map propertyChanges)
         {
-            var extendedProps = calculateProperties((Map<QName, Serializable>) newProperties);
-            ret = nodeService.createNode(parentNodeRef, assocTypeQName, assocQName, nodeTypeQName, extendedProps);
+            var extendedProps = calculateProperties((Map<QName, Serializable>) propertyChanges);
+            ret = nodeService.createNode(parentNodeRef, assocTypeQName, assocQName, nodeTypeQName, extendedProps.mergeProperties());
         }
         else if (methodName.equals("setProperty") && args.length == 3 &&
                 args[0] instanceof NodeRef nodeRef &&
                 args[1] instanceof QName propertyQName &&
                 args[2] instanceof Serializable propertyValue)
         {
-            checkNoPropertiesCalculated(propertyQName, propertyValue);
+            var extendedProps = calculateProperties(Collections.singletonMap(propertyQName, propertyValue));
+            if (extendedProps.isExtended())
+            {
+                nodeService.addProperties(nodeRef, extendedProps.additionalProperties());
+            }
             nodeService.setProperty(nodeRef, propertyQName, propertyValue);
         }
         else if (methodName.equals("removeProperty") && args.length == 2 &&
                 args[0] instanceof NodeRef nodeRef &&
                 args[1] instanceof QName propertyQName)
         {
-            checkNoPropertiesCalculated(propertyQName, null);
+            var extendedProps = calculateProperties(Collections.singletonMap(propertyQName, null));
+            if (extendedProps.isExtended())
+            {
+                nodeService.addProperties(nodeRef, extendedProps.additionalProperties());
+            }
             nodeService.removeProperty(nodeRef, propertyQName);
         }
         else
@@ -110,23 +122,37 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
         return ret;
     }
 
-    private Map<QName, Serializable> calculateProperties(Map<QName, Serializable> newProperties)
+    private ExtendedProperties calculateProperties(Map<QName, Serializable> propertyChanges)
     {
         var extenders = extendersHolder.getExtenders();
-        var calculatedProps = extenders.stream()
-                .map(ext -> this.runCalculation(ext, newProperties))
-                .map(CalculationResult::calculatedProperties)
-                .filter(Predicate.not(Map::isEmpty))
-                .toList();
-
-        if (calculatedProps.isEmpty())
+        if (propertyChanges.isEmpty() || extenders.isEmpty())
         {
-            return newProperties;
+            return new ExtendedProperties(propertyChanges, Collections.emptyMap());
         }
 
-        var extendedProps = new HashMap<>(newProperties);
-        calculatedProps.forEach(extendedProps::putAll);
-        return extendedProps;
+        if (LOGGER.isTraceEnabled())
+        {
+            LOGGER.trace("Calculating additional properties for: {}", propertyChanges.keySet().stream()
+                    .map(QName::toPrefixString)
+                    .toList());
+        }
+        Map<QName, Serializable> calculated = extenders.stream()
+                .map(ext -> runCalculation(ext, propertyChanges))
+                .flatMap(result -> result.additionalProperties().entrySet().stream())
+                .collect(HashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), HashMap::putAll);
+        if (calculated.isEmpty())
+        {
+            LOGGER.trace("No additional properties calculated");
+            return new ExtendedProperties(propertyChanges, Collections.emptyMap());
+        }
+
+        if (LOGGER.isTraceEnabled())
+        {
+            LOGGER.trace("Additional properties were calculated: {}", calculated.keySet().stream()
+                    .map(QName::toPrefixString)
+                    .toList());
+        }
+        return new ExtendedProperties(propertyChanges, calculated);
     }
 
     private CalculationResult runCalculation(PropertyExtender extender, Map<QName, Serializable> newProperties)
@@ -145,21 +171,24 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
         }
     }
 
-    private void checkNoPropertiesCalculated(QName propertyName, Serializable propertyValue)
+    private record ExtendedProperties(
+            Map<QName, Serializable> originalProperties,
+            Map<QName, Serializable> additionalProperties)
     {
-        var extenders = extendersHolder.getExtenders();
-        var calculatedProps = extenders.stream()
-                .map(ext -> this.runCalculation(ext, Map.of(propertyName, propertyValue)))
-                .filter(Predicate.not(res -> res.calculatedProperties().isEmpty()))
-                .toList();
-        if (!calculatedProps.isEmpty())
+        boolean isExtended()
         {
-            throw new AlfrescoRuntimeException("Property extenders are not available for single property modification. In given context, more properties were calculated: " + calculatedProps.stream()
-                    .map(CalculationResult::calculatedProperties)
-                    .map(Map::keySet)
-                    .flatMap(Set::stream)
-                    .map(QName::toPrefixString)
-                    .collect(Collectors.joining(", ")));
+            return !additionalProperties.isEmpty();
+        }
+
+        Map<QName, Serializable> mergeProperties()
+        {
+            if (isExtended())
+            {
+                var merged = new HashMap<>(originalProperties);
+                merged.putAll(additionalProperties);
+                return merged;
+            }
+            return originalProperties;
         }
     }
 }

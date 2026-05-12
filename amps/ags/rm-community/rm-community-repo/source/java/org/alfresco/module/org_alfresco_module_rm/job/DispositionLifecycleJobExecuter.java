@@ -338,7 +338,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 int batchProcessed = 0;
                 if (!eligibleNodes.isEmpty())
                 {
-                    batchProcessed = executeAction(eligibleNodes);
+                    batchProcessed = retryingTransactionHelper.doInTransaction(() -> executeAction(eligibleNodes), false, true);
                 }
                 totalProcessed += batchProcessed;
 

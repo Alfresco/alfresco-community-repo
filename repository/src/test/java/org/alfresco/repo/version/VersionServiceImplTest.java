@@ -3303,4 +3303,90 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     {
         return versions.stream().map(Version::getVersionLabel).toList();
     }
+
+    /**
+     * With preserveUnsetProperties disabled (default), a type property that was never set on the source node (and has no model default) is still written to the version node with a null value.
+     */
+    @Test
+    public void testPreserveUnsetPropertiesDisabled()
+    {
+        // MULTI_PROP has no <default> in the model so it is absent when not set
+        NodeRef node = createNodeWithoutMultiProp();
+
+        Version version = this.versionService.createVersion(node, this.versionProperties);
+
+        Map<QName, Serializable> frozenProps = dbNodeService.getProperties(VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()));
+        assertTrue("PROP_1 should be in the version node", frozenProps.containsKey(PROP_1));
+        assertEquals("PROP_1 value should match source", VALUE_1, frozenProps.get(PROP_1));
+        assertTrue("Unset MULTI_PROP should be present in the version node with null value when preserveUnsetProperties is disabled", frozenProps.containsKey(MULTI_PROP));
+        assertNull("MULTI_PROP value should be null in the version node", frozenProps.get(MULTI_PROP));
+    }
+
+    /**
+     * With preserveUnsetProperties enabled, a type property that was never set on the source node (and has no model default) is omitted from the version node entirely.
+     */
+    @Test
+    public void testPreserveUnsetPropertiesEnabled()
+    {
+        VersionServiceImpl versionServiceImpl = (VersionServiceImpl) versionService;
+        versionServiceImpl.setPreserveUnsetProperties(true);
+        try
+        {
+            NodeRef node = createNodeWithoutMultiProp();
+
+            Version version = this.versionService.createVersion(node, this.versionProperties);
+
+            Map<QName, Serializable> frozenProps = dbNodeService.getProperties(VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()));
+            assertTrue("PROP_1 should be in the version node", frozenProps.containsKey(PROP_1));
+            assertEquals("PROP_1 value should match source", VALUE_1, frozenProps.get(PROP_1));
+            assertFalse("Unset MULTI_PROP should be absent from the version node when preserveUnsetProperties is enabled", frozenProps.containsKey(MULTI_PROP));
+        }
+        finally
+        {
+            versionServiceImpl.setPreserveUnsetProperties(false);
+        }
+    }
+
+    /**
+     * With preserveUnsetProperties enabled, a property that IS explicitly set on the source node is still copied to the version node.
+     */
+    @Test
+    public void testPreserveUnsetPropertiesEnabledCopiesSetProperties()
+    {
+        VersionServiceImpl versionServiceImpl = (VersionServiceImpl) versionService;
+        versionServiceImpl.setPreserveUnsetProperties(true);
+        try
+        {
+            NodeRef node = createNodeWithoutMultiProp();
+            dbNodeService.setProperty(node, MULTI_PROP, (Serializable) multiValue);
+
+            Version version = this.versionService.createVersion(node, this.versionProperties);
+
+            Map<QName, Serializable> frozenProps = dbNodeService.getProperties(VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()));
+            assertTrue("MULTI_PROP should be in the version node when explicitly set on source", frozenProps.containsKey(MULTI_PROP));
+            assertEquals("MULTI_PROP value should match source", multiValue, frozenProps.get(MULTI_PROP));
+        }
+        finally
+        {
+            versionServiceImpl.setPreserveUnsetProperties(false);
+        }
+    }
+
+    /**
+     * Creates a versionable node with PROP_1 set but MULTI_PROP never set. MULTI_PROP has no model default so it will not be present when doing getProperties().
+     */
+    private NodeRef createNodeWithoutMultiProp()
+    {
+        HashMap<QName, Serializable> props = new HashMap<>();
+        props.put(PROP_1, VALUE_1);
+        props.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8"));
+        NodeRef node = dbNodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}preserveUnsetPropsNode"),
+                TEST_TYPE_QNAME,
+                props).getChildRef();
+        dbNodeService.addAspect(node, ContentModel.ASPECT_VERSIONABLE, new HashMap<>());
+        return node;
+    }
 }

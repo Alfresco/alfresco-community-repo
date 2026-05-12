@@ -31,11 +31,11 @@ import static org.alfresco.module.org_alfresco_module_rm.action.RMDispositionAct
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -108,7 +108,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** freeze service */
     private FreezeService freezeService;
 
-    private QueryMode queryMode;
+    private QueryMode queryMode = QueryMode.FTS_DEFAULT;
 
     /**
      *
@@ -193,11 +193,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
      *
      * @return CMIS SQL string
      */
-    protected String getCmisQuery()
+    public String getCmisQuery()
     {
         // Use end-of-current-day in UTC so that records due today are always included
         // regardless of what time within the day the job fires.
-        String cutoff = LocalDate.now() + "T23:59:59.999Z";
+        String cutoff = LocalDate.now(ZoneOffset.UTC) + "T23:59:59.999Z";
 
         StringBuilder sb = new StringBuilder("SELECT * FROM rma:dispositionAction WHERE ");
         sb.append("rma:dispositionAction IN (");
@@ -214,7 +214,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         sb.append("AND (rma:dispositionEventsEligible = true ");
         sb.append("OR rma:dispositionAsOf <= TIMESTAMP '").append(cutoff).append("')");
 
-        log.debug("Constructed CMIS query: " + sb.toString());
+        log.debug("Constructed CMIS query: {}", sb);
         return sb.toString();
     }
 
@@ -224,7 +224,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     @Override
     public void executeImpl()
     {
-        if (Objects.requireNonNull(queryMode) == QueryMode.CMIS)
+        if (queryMode == QueryMode.CMIS)
         {
             executeImplCmis();
         }
@@ -254,11 +254,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             if (batchSize < 1)
             {
-                log.debug("Invalid value for batch size: " + batchSize + " default value used instead.");
+                log.debug("Invalid value for batch size: {} default value used instead.", batchSize);
                 batchSize = DEFAULT_BATCH_SIZE;
             }
 
-            log.trace("Using batch size of " + batchSize);
+            log.trace("Using batch size of {}", batchSize);
 
             int batchNumber = 0;
             int totalReturned = 0;
@@ -279,7 +279,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 params.setQuery("TYPE:\"rma:dispositionAction\"");
                 params.addFilterQuery(getActionFilterQuery());
                 params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
-                // Negated future range — semantically equivalent to [MIN TO NOW] but may
                 params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR -@rma\\:dispositionAsOf:["
                         + LocalDate.now().plusDays(1) + " TO MAX])");
                 params.setTrackScore(false);
@@ -348,17 +347,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * CMIS/DB-based execution path (enabled by {@code useDbQuery=true}).
-     *
-     * <p>
-     * Key differences from the FTS path:
-     * </p>
-     * <ul>
-     * <li><b>Transactional consistency</b>: {@link QueryConsistency#TRANSACTIONAL} is forced so the query always hits the DB. Processed nodes (with {@code dispositionActionCompletedAt} set) are immediately invisible to the next query — no risk of re-processing.</li>
-     * <li><b>Skip reset on progress</b>: When at least one node is actioned, skip resets to 0 because those nodes have vanished from the result set. The next query naturally returns the next page of eligible nodes from the beginning.</li>
-     * <li><b>Skip advance on no progress</b>: When a non-empty batch yields zero actioned nodes (all frozen, deleted, or malformed) the skip advances by the raw page size. This prevents an infinite loop over unprocessable records.</li>
-     * <li><b>No index cap</b>: The 10 000-record Elasticsearch limit does not apply; the batch size is the only cap and is fully configurable.</li>
-     * </ul>
+     * CMIS/DB-based execution path (enabled by {@code queryMode=CMIS}).
      */
     private void executeImplCmis()
     {
@@ -374,11 +363,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             if (batchSize < 1)
             {
-                log.debug("Invalid value for batch size: " + batchSize + " default value used instead.");
+                log.debug("Invalid value for batch size: {} default value used instead.", batchSize);
                 batchSize = DEFAULT_BATCH_SIZE;
             }
 
-            log.trace("Using batch size of " + batchSize);
+            log.trace("Using batch size of {}", batchSize);
 
             int skipCount = 0;
             int batchNumber = 0;

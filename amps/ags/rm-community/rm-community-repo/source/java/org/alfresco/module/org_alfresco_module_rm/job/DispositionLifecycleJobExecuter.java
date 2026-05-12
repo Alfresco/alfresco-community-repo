@@ -173,17 +173,23 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
     private String getActionFilterQuery()
     {
-        String actionFilterQuery = null;
+        String actionFilterQuery=null;
         StringBuilder sb = new StringBuilder("@rma\\:dispositionAction:(");
         boolean first = true;
         for (String dispositionAction : dispositionActions)
         {
             if (!first)
+            {
                 sb.append(" OR ");
+            }
             sb.append("\"").append(dispositionAction).append("\"");
             first = false;
         }
-        actionFilterQuery = sb.append(")").toString();
+        if(dispositionActions.size() > 1)
+        {
+            actionFilterQuery = sb.append(")").toString();
+        }
+
 
         return actionFilterQuery;
     }
@@ -205,7 +211,9 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         for (String action : dispositionActions)
         {
             if (!first)
+            {
                 sb.append(",");
+            }
             sb.append("'").append(action).append("'");
             first = false;
         }

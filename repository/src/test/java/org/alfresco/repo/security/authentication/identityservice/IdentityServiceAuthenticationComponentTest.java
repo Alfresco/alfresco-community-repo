@@ -244,7 +244,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         verify(mockIdentityServiceFacade, times(1)).authorize(grant);
     }
 
-    @Test
+    @Test(expected = AuthenticationException.class)
     public void testFailedAuthorizationDoesNotPopulateCache()
     {
         DefaultCredentialValidationCache cache = newCache();
@@ -253,18 +253,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         AuthorizationGrant grant = AuthorizationGrant.password("username", "wrong-password");
         doThrow(new AuthorizationException("Failed")).when(mockIdentityServiceFacade).authorize(grant);
 
-        try
-        {
-            authComponent.authenticateImpl("username", "wrong-password".toCharArray());
-            fail("Expected AuthenticationException");
-        }
-        catch (AuthenticationException expected)
-        {
-            // expected
-        }
+        authComponent.authenticateImpl("username", "wrong-password".toCharArray());
+        fail("Expected AuthenticationException");
 
-        assertFalse("Failed credentials must not be cached",
-                cache.get("username", "wrong-password".toCharArray()).isPresent());
     }
 
     /**

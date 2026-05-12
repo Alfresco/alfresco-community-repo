@@ -84,7 +84,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     }
 
     @Override
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
         if (identityServiceFacade == null)

@@ -2142,6 +2142,7 @@ public class NodesImpl implements Nodes
     public void deleteNode(String nodeId, Parameters parameters)
     {
         NodeRef nodeRef = validateOrLookupNode(nodeId);
+        checkNotSystemPath(nodeRef);
 
         if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
         {
@@ -2186,6 +2187,7 @@ public class NodesImpl implements Nodes
 
         // check that requested parent node exists and it's type is a (sub-)type of folder
         NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId);
+        checkNotSystemPath(parentNodeRef);
 
         // node name - mandatory
         String nodeName = nodeInfo.getName();
@@ -2923,6 +2925,9 @@ public class NodesImpl implements Nodes
         final NodeRef parentNodeRef = validateOrLookupNode(targetParentId);
         final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId);
 
+        checkNotSystemPath(sourceNodeRef);
+        checkNotSystemPath(parentNodeRef);
+
         FileInfo fi = moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
         return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
     }
@@ -3136,7 +3141,7 @@ public class NodesImpl implements Nodes
         }
 
         final NodeRef nodeRef = validateNode(fileNodeId);
-
+        checkNotSystemPath(nodeRef);
         if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
             throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
@@ -3997,6 +4002,43 @@ public class NodesImpl implements Nodes
                     throw new IllegalArgumentException("Cannot be used by API: " + property.toPrefixString());
                 }
             });
+        }
+    }
+
+    /**
+     * Blocks any REST API modification on system-managed repository paths.
+     * Walks up the parent chain and throws PermissionDeniedException
+     * if any ancestor is a system/special node (Data Dictionary, Sites, etc.)
+     */
+    private void checkNotSystemPath(NodeRef nodeRef)
+    {
+        NodeRef current = nodeRef;
+
+        while (current != null)
+        {
+            if (current.equals(repositoryHelper.getCompanyHome()))
+            {
+                break;
+            }
+
+            QName type = nodeService.getType(current);
+            if (isSpecialNode(current, type))
+            {
+                throw new PermissionDeniedException(
+                        "Cannot perform operation on a system path node"
+                );
+            }
+
+            ChildAssociationRef parentAssoc =
+                    nodeService.getPrimaryParent(current);
+
+            if (parentAssoc == null ||
+                    parentAssoc.getParentRef() == null)
+            {
+                break;
+            }
+
+            current = parentAssoc.getParentRef();
         }
     }
 

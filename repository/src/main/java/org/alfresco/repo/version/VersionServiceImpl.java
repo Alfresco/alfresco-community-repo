@@ -176,7 +176,7 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
         this.preserveUnsetProperties = preserveUnsetProperties;
     }
 
-    public boolean shouldPreserveUnsetProperties()
+    public boolean isPreserveUnsetProperties()
     {
         return preserveUnsetProperties;
     }
@@ -1414,7 +1414,7 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
                 for (QName propertyName : propertyDefinitions.keySet())
                 {
                     Serializable propValue = sourceProperties.get(propertyName);
-                    if (sourceProperties.containsKey(propertyName) || !shouldPreserveUnsetProperties())
+                    if (sourceProperties.containsKey(propertyName) || !isPreserveUnsetProperties())
                     {
                         nodeDetails.addProperty(classRef, propertyName, propValue);
                     }

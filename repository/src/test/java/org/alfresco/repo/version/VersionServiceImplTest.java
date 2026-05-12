@@ -3373,11 +3373,45 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     }
 
     /**
+     * Reverting a version must not set null for properties that were never set on the source node when preserveUnsetProperties is enabled.
+     */
+    @Test
+    public void testPreserveUnsetPropertiesEnabledRevertDoesNotWriteNullForUnsetProperties()
+    {
+        VersionServiceImpl versionServiceImpl = (VersionServiceImpl) versionService;
+        versionServiceImpl.setPreserveUnsetProperties(true);
+        try
+        {
+            // Create a node where MULTI_PROP was never set (no model default either)
+            NodeRef node = createNodeWithoutMultiProp();
+
+            // Version 1: MULTI_PROP is absent
+            Version version1 = this.versionService.createVersion(node, this.versionProperties);
+
+            // Modify the source node so it differs from version 1
+            this.dbNodeService.setProperty(node, PROP_1, UPDATED_VALUE_1);
+
+            // Revert back to version 1
+            this.versionService.revert(node, version1);
+
+            // MULTI_PROP must remain truly absent — not present with a null value — after the revert
+            Map<QName, Serializable> propsAfterRevert = dbNodeService.getProperties(node);
+            assertFalse(
+                    "MULTI_PROP must not be written back as null when reverting to a version where it was never set and preserveUnsetProperties is enabled",
+                    propsAfterRevert.containsKey(MULTI_PROP));
+        }
+        finally
+        {
+            versionServiceImpl.setPreserveUnsetProperties(false);
+        }
+    }
+
+    /**
      * Creates a versionable node with PROP_1 set but MULTI_PROP never set. MULTI_PROP has no model default so it will not be present when doing getProperties().
      */
     private NodeRef createNodeWithoutMultiProp()
     {
-        HashMap<QName, Serializable> props = new HashMap<>();
+        Map<QName, Serializable> props = new HashMap<>();
         props.put(PROP_1, VALUE_1);
         props.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8"));
         NodeRef node = dbNodeService.createNode(

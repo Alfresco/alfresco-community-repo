@@ -3967,9 +3967,7 @@ public class NodesImpl implements Nodes
     }
 
     /**
-     * Blocks any REST API modification on system-managed repository paths.
-     * Walks up the parent chain and throws PermissionDeniedException
-     * if any ancestor is a system/special node (Data Dictionary, Sites, etc.)
+     * Blocks any REST API modification on system-managed repository paths. Walks up the parent chain and throws PermissionDeniedException if any ancestor is a system/special node (Data Dictionary, Sites, etc.)
      */
     private void checkNotSystemPath(NodeRef nodeRef)
     {
@@ -3986,12 +3984,10 @@ public class NodesImpl implements Nodes
             if (isSpecialNode(current, type))
             {
                 throw new PermissionDeniedException(
-                        "Cannot perform operation on a system path node"
-                );
+                        "Cannot perform operation on a system path node");
             }
 
-            ChildAssociationRef parentAssoc =
-                    nodeService.getPrimaryParent(current);
+            ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(current);
 
             if (parentAssoc == null ||
                     parentAssoc.getParentRef() == null)

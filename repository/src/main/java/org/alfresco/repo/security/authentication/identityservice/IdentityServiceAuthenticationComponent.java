@@ -48,7 +48,7 @@ import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserIn
  */
 public class IdentityServiceAuthenticationComponent extends AbstractAuthenticationComponent implements ActivateableBean
 {
-    private final Log LOGGER = LogFactory.getLog(IdentityServiceAuthenticationComponent.class);
+    private static final Log LOG = LogFactory.getLog(IdentityServiceAuthenticationComponent.class);
     /** client used to authenticate user credentials against Authorization Server **/
     private IdentityServiceFacade identityServiceFacade;
     /** enabled flag for the identity service subsystem **/
@@ -84,13 +84,14 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     }
 
     @Override
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
         if (identityServiceFacade == null)
         {
-            if (LOGGER.isDebugEnabled())
+            if (LOG.isDebugEnabled())
             {
-                LOGGER.debug("IdentityServiceFacade was not set, possibly due to the 'identity-service.authentication.enable-username-password-authentication=false' property.");
+                LOG.debug("IdentityServiceFacade was not set, possibly due to the 'identity-service.authentication.enable-username-password-authentication=false' property.");
             }
 
             throw new AuthenticationException("User not authenticated because IdentityServiceFacade was not set.");
@@ -108,9 +109,9 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
                 final String cachedNormalizedUsername = cached.get().getNormalizedUsername();
                 if (cachedPrincipalIsStillProvisioned(cachedNormalizedUsername))
                 {
-                    if (LOGGER.isDebugEnabled())
+                    if (LOG.isDebugEnabled())
                     {
-                        LOGGER.debug("Credential validation cache HIT for user '" + userName + "'. Skipping authorization request.");
+                        LOG.debug("Credential validation cache HIT for user '" + userName + "'. Skipping authorization request.");
                     }
                     setCurrentUser(cachedNormalizedUsername);
                     return;
@@ -119,9 +120,9 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
                 // is enabled and could (re-)create it. Invalidate the entry and fall through to
                 // the regular authorize / JIT-provisioning path below so the local user state is
                 // restored.
-                if (LOGGER.isDebugEnabled())
+                if (LOG.isDebugEnabled())
                 {
-                    LOGGER.debug("Credential validation cache HIT for user '" + userName
+                    LOG.debug("Credential validation cache HIT for user '" + userName
                             + "' but local Person '" + cachedNormalizedUsername
                             + "' no longer exists. Invalidating entry and re-authorizing.");
                 }
@@ -215,7 +216,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
             // If the Person check itself fails (e.g. transient DB issue) honour the cache HIT
             // rather than penalising the authentication path. This is the same posture the rest
             // of the cache uses: degrade gracefully toward existing behaviour.
-            LOGGER.warn("Failed to verify Person existence for cached credential validation; honouring cache HIT defensively. "
+            LOG.warn("Failed to verify Person existence for cached credential validation; honouring cache HIT defensively. "
                     + ex.getMessage());
             return true;
         }

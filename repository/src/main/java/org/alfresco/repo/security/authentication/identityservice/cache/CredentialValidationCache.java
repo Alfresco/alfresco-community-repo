@@ -38,6 +38,7 @@ import java.util.Optional;
  * The cache is fail-closed: when disabled or misconfigured, lookups behave as misses and writes are silently ignored, so the calling component falls back to the regular authorize-on-every-request behaviour.
  * </p>
  */
+@SuppressWarnings("PMD.UseVarargs")
 public interface CredentialValidationCache
 {
     /**

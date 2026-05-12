@@ -26,9 +26,11 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -63,7 +65,8 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     /**
      * Test-controllable stub for {@link IdentityServiceAuthenticationComponent#cachedPrincipalIsStillProvisioned(String)} so cache-hit/fall-through scenarios can be exercised without substituting the real Spring {@link PersonService} (which {@link IdentityServiceAuthenticationComponent#setCurrentUser(String)} also depends on for {@link org.alfresco.service.cmr.repository.NodeRef} resolution and auto-import via {@code UserRegistrySynchronizer}).
      */
-    private Boolean cachedPrincipalProvisionedOverride = null;
+    @SuppressWarnings("PMD.LongVariable")
+    private Boolean cachedPrincipalProvisionedOverride;
 
     private final IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent() {
         @Override
@@ -265,12 +268,12 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     }
 
     /**
-     * If the cached principal's Person node has been deleted (or was never created because the originating transaction was read-only) the cache HIT must be discarded and the regular authorize/JIT path must run so the local user state can be re-established.
+     * If the cached principal's Person node has been deleted (or was never created because the originating transaction was read-only) the cache HIT must be discarded and the regular authorize/JIT path must run so the local user state can be re-established. Note that the successful re-authorization then repopulates the cache with a fresh entry, so post-call cache emptiness cannot be used to verify invalidation; we spy on the cache to assert {@code invalidate(...)} was called explicitly.
      */
     @Test
     public void testCacheHitFallsThroughWhenLocalPersonIsMissing()
     {
-        DefaultCredentialValidationCache cache = newCache();
+        DefaultCredentialValidationCache cache = spy(newCache());
         authComponent.setCredentialValidationCache(cache);
         // Simulate "Person no longer exists" - this is what happens after admin deletes a JIT user
         cachedPrincipalProvisionedOverride = Boolean.FALSE;
@@ -294,8 +297,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         assertEquals("username", authenticationContext.getCurrentUserName());
         verify(mockIdentityServiceFacade, times(1)).authorize(grant);
         verify(jitProvisioning, times(1)).extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN");
-        assertFalse("Stale cache entry must have been invalidated",
-                cache.get("username", "password".toCharArray()).isPresent());
+        verify(cache, times(1)).invalidate(eq("username"), any(char[].class));
     }
 
     /**

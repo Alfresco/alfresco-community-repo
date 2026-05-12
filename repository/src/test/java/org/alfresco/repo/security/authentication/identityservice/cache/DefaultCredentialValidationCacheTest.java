@@ -214,7 +214,7 @@ public class DefaultCredentialValidationCacheTest
         DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
                 backing, true, SHARED_CREDSEC, CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
 
-        long shortTtl = System.currentTimeMillis() + (CLOCK_SKEW_MS + (MIN_TTL_MS / 2));
+        long shortTtl = System.currentTimeMillis() + (CLOCK_SKEW_MS + MIN_TTL_MS / 2);
         cache.put("alice", "secret".toCharArray(), new CredentialValidationCacheEntry("alice", shortTtl));
 
         assertFalse(

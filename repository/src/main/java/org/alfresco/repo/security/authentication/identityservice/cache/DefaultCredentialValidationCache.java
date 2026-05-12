@@ -55,6 +55,7 @@ import org.alfresco.repo.cache.SimpleCache;
  * Per-entry validity is taken from the access-token expiration returned by the Identity Provider, optionally clamped by configured min/max bounds and reduced by a small clock-skew margin so the local view never trusts a credential past the IdP-issued lifetime.
  * </p>
  */
+@SuppressWarnings("PMD.UseVarargs")
 public class DefaultCredentialValidationCache implements CredentialValidationCache
 {
     private static final Log LOGGER = LogFactory.getLog(DefaultCredentialValidationCache.class);

@@ -33,6 +33,13 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.Collections;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
@@ -42,16 +49,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * Unit tests for the checkNotSystemPath method in {@link NodesImpl}.
- * Validates that REST API operations are blocked on nodes under system paths (e.g., Data Dictionary).
+ * Unit tests for the checkNotSystemPath method in {@link NodesImpl}. Validates that REST API operations are blocked on nodes under system paths (e.g., Data Dictionary).
  */
 @RunWith(MockitoJUnitRunner.class)
 public class NodesImplSystemPathTest
@@ -85,7 +85,7 @@ public class NodesImplSystemPathTest
                 dataDictionaryRef);
         when(nodeService.getChildAssocs(companyHomeRef, ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "dictionary")))
-                .thenReturn(Collections.singletonList(ddToCompanyHome));
+                        .thenReturn(Collections.singletonList(ddToCompanyHome));
 
         checkNotSystemPathMethod = NodesImpl.class.getDeclaredMethod("checkNotSystemPath", NodeRef.class);
         checkNotSystemPathMethod.setAccessible(true);
@@ -180,4 +180,3 @@ public class NodesImplSystemPathTest
         assertThrows(PermissionDeniedException.class, () -> invokeCheckNotSystemPath(childRef));
     }
 }
-

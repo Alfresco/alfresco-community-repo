@@ -28,7 +28,7 @@ package org.alfresco.repo.node.propertyextender;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 
 import org.alfresco.service.namespace.QName;
 
@@ -44,8 +44,6 @@ public record CalculationResult(Map<QName, Serializable> additionalProperties)
 
     public CalculationResult
     {
-        additionalProperties = Optional.ofNullable(additionalProperties)
-                .map(Collections::unmodifiableMap)
-                .orElse(Collections.emptyMap());
+        Objects.requireNonNull(additionalProperties);
     }
 }

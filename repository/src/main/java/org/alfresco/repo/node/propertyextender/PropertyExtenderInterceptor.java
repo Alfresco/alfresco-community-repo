@@ -25,18 +25,16 @@
  */
 package org.alfresco.repo.node.propertyextender;
 
+import static org.alfresco.repo.node.propertyextender.PropertyCalculator.calculateProperties;
+
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -48,8 +46,6 @@ import org.alfresco.service.namespace.QName;
  */
 public class PropertyExtenderInterceptor implements MethodInterceptor
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PropertyExtenderInterceptor.class);
-
     private final NodeService nodeService;
     private final PropertyExtendersHolder extendersHolder;
 
@@ -72,14 +68,14 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
                 args[0] instanceof NodeRef nodeRef &&
                 args[1] instanceof Map propertyChanges)
         {
-            var extendedProps = calculateProperties((Map<QName, Serializable>) propertyChanges);
+            var extendedProps = calculateProperties(extendersHolder.getExtenders(), propertyChanges);
             nodeService.addProperties(nodeRef, extendedProps.mergeProperties());
         }
         else if (methodName.equals("setProperties") && args.length == 2 &&
                 args[0] instanceof NodeRef nodeRef &&
                 args[1] instanceof Map propertyChanges)
         {
-            var extendedProps = calculateProperties((Map<QName, Serializable>) propertyChanges);
+            var extendedProps = calculateProperties(extendersHolder.getExtenders(), propertyChanges);
             nodeService.setProperties(nodeRef, extendedProps.mergeProperties());
         }
         else if (methodName.equals("createNode") && args.length == 5 &&
@@ -89,7 +85,7 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
                 args[3] instanceof QName nodeTypeQName &&
                 args[4] instanceof Map propertyChanges)
         {
-            var extendedProps = calculateProperties((Map<QName, Serializable>) propertyChanges);
+            var extendedProps = calculateProperties(extendersHolder.getExtenders(), propertyChanges);
             ret = nodeService.createNode(parentNodeRef, assocTypeQName, assocQName, nodeTypeQName, extendedProps.mergeProperties());
         }
         else if (methodName.equals("setProperty") && args.length == 3 &&
@@ -97,7 +93,7 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
                 args[1] instanceof QName propertyQName &&
                 args[2] instanceof Serializable propertyValue)
         {
-            var extendedProps = calculateProperties(Collections.singletonMap(propertyQName, propertyValue));
+            var extendedProps = calculateProperties(extendersHolder.getExtenders(), Collections.singletonMap(propertyQName, propertyValue));
             if (extendedProps.isExtended())
             {
                 nodeService.addProperties(nodeRef, extendedProps.additionalProperties());
@@ -108,7 +104,7 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
                 args[0] instanceof NodeRef nodeRef &&
                 args[1] instanceof QName propertyQName)
         {
-            var extendedProps = calculateProperties(Collections.singletonMap(propertyQName, null));
+            var extendedProps = calculateProperties(extendersHolder.getExtenders(), Collections.singletonMap(propertyQName, null));
             if (extendedProps.isExtended())
             {
                 nodeService.addProperties(nodeRef, extendedProps.additionalProperties());
@@ -120,75 +116,5 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
             ret = invocation.proceed();
         }
         return ret;
-    }
-
-    private ExtendedProperties calculateProperties(Map<QName, Serializable> propertyChanges)
-    {
-        var extenders = extendersHolder.getExtenders();
-        if (propertyChanges.isEmpty() || extenders.isEmpty())
-        {
-            return new ExtendedProperties(propertyChanges, Collections.emptyMap());
-        }
-
-        if (LOGGER.isTraceEnabled())
-        {
-            LOGGER.trace("Calculating additional properties for: {}", propertyChanges.keySet().stream()
-                    .map(QName::toPrefixString)
-                    .toList());
-        }
-        Map<QName, Serializable> calculated = extenders.stream()
-                .map(ext -> runCalculation(ext, propertyChanges))
-                .flatMap(result -> result.additionalProperties().entrySet().stream())
-                .collect(HashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), HashMap::putAll);
-        if (calculated.isEmpty())
-        {
-            LOGGER.trace("No additional properties calculated");
-            return new ExtendedProperties(propertyChanges, Collections.emptyMap());
-        }
-
-        if (LOGGER.isTraceEnabled())
-        {
-            LOGGER.trace("Additional properties were calculated: {}", calculated.keySet().stream()
-                    .map(QName::toPrefixString)
-                    .toList());
-        }
-        return new ExtendedProperties(propertyChanges, calculated);
-    }
-
-    private CalculationResult runCalculation(PropertyExtender extender, Map<QName, Serializable> newProperties)
-    {
-        try
-        {
-            return extender.calculate(new CalculationContext(newProperties));
-        }
-        catch (AlfrescoRuntimeException e)
-        {
-            throw e;
-        }
-        catch (RuntimeException e)
-        {
-            throw new AlfrescoRuntimeException("Unexpected failure during properties calculation process", e);
-        }
-    }
-
-    private record ExtendedProperties(
-            Map<QName, Serializable> originalProperties,
-            Map<QName, Serializable> additionalProperties)
-    {
-        boolean isExtended()
-        {
-            return !additionalProperties.isEmpty();
-        }
-
-        Map<QName, Serializable> mergeProperties()
-        {
-            if (isExtended())
-            {
-                var merged = new HashMap<>(originalProperties);
-                merged.putAll(additionalProperties);
-                return merged;
-            }
-            return originalProperties;
-        }
     }
 }

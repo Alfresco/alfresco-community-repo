@@ -30,28 +30,24 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 import static org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
-import org.alfresco.service.cmr.search.QueryConsistency;
 import org.apache.commons.lang3.StringUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
-
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.QueryConsistency;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -113,7 +109,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     private FreezeService freezeService;
 
     private QueryMode queryMode = QueryMode.FTS_DEFAULT;
-
 
     /**
      *

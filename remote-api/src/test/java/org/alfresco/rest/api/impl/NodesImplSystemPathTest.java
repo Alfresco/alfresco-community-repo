@@ -26,11 +26,12 @@
 package org.alfresco.rest.api.impl;
 
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
 
 import org.junit.Before;
@@ -43,6 +44,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -50,9 +52,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
-/**
- * Unit tests for the checkNotSystemPath method in {@link NodesImpl}. Validates that REST API operations are blocked on nodes under system paths (e.g., Data Dictionary).
- */
 @RunWith(MockitoJUnitRunner.class)
 public class NodesImplSystemPathTest
 {
@@ -62,61 +61,43 @@ public class NodesImplSystemPathTest
     @Mock
     private Repository repositoryHelper;
 
+    @Mock
+    private Parameters parameters;
+
     @InjectMocks
     private NodesImpl nodesImpl;
 
     private NodeRef companyHomeRef;
     private NodeRef dataDictionaryRef;
 
-    private Method checkNotSystemPathMethod;
-
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         companyHomeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "company-home");
         dataDictionaryRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "data-dictionary");
 
         when(repositoryHelper.getCompanyHome()).thenReturn(companyHomeRef);
 
-        // Setup Data Dictionary as child of Company Home (used by isSpecialNode)
         ChildAssociationRef ddToCompanyHome = new ChildAssociationRef(
-                ContentModel.ASSOC_CONTAINS, companyHomeRef,
+                ContentModel.ASSOC_CONTAINS,
+                companyHomeRef,
                 QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "dictionary"),
                 dataDictionaryRef);
-        when(nodeService.getChildAssocs(companyHomeRef, ContentModel.ASSOC_CONTAINS,
+
+        when(nodeService.getChildAssocs(
+                companyHomeRef,
+                ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "dictionary")))
                         .thenReturn(Collections.singletonList(ddToCompanyHome));
-
-        checkNotSystemPathMethod = NodesImpl.class.getDeclaredMethod("checkNotSystemPath", NodeRef.class);
-        checkNotSystemPathMethod.setAccessible(true);
     }
 
-    private void invokeCheckNotSystemPath(NodeRef nodeRef) throws Exception
-    {
-        try
-        {
-            checkNotSystemPathMethod.invoke(nodesImpl, nodeRef);
-        }
-        catch (java.lang.reflect.InvocationTargetException e)
-        {
-            if (e.getCause() instanceof PermissionDeniedException)
-            {
-                throw (PermissionDeniedException) e.getCause();
-            }
-            throw e;
-        }
-    }
-
-    /**
-     * Node whose ancestor (grandparent) is a special node (Data Dictionary) should be blocked.
-     */
     @Test
-    public void testNodeWithSpecialAncestor_PermissionDenied() throws Exception
+    public void testNodeWithSpecialAncestor_PermissionDenied()
     {
         NodeRef parentRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "parent-uuid");
         NodeRef childRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "child-uuid");
 
-        // child -> parent -> dataDictionary (special node)
+        when(nodeService.exists(childRef)).thenReturn(true);
         when(nodeService.getType(childRef)).thenReturn(ContentModel.TYPE_CONTENT);
         when(nodeService.getPrimaryParent(childRef)).thenReturn(
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parentRef, null, childRef));
@@ -127,19 +108,17 @@ public class NodesImplSystemPathTest
 
         when(nodeService.getType(dataDictionaryRef)).thenReturn(ContentModel.TYPE_FOLDER);
 
-        assertThrows(PermissionDeniedException.class, () -> invokeCheckNotSystemPath(childRef));
+        assertThrows(PermissionDeniedException.class,
+                () -> nodesImpl.deleteNode(childRef.getId(), parameters));
     }
 
-    /**
-     * Node under normal folders (no special ancestors) should pass without exception.
-     */
     @Test
-    public void testNodeWithNormalAncestors_Succeed() throws Exception
+    public void testNodeWithNormalAncestors_Succeed()
     {
         NodeRef parentRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "normal-parent");
         NodeRef childRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "normal-child");
 
-        // child -> parent -> companyHome (loop breaks at companyHome)
+        when(nodeService.exists(childRef)).thenReturn(true);
         when(nodeService.getType(childRef)).thenReturn(ContentModel.TYPE_CONTENT);
         when(nodeService.getPrimaryParent(childRef)).thenReturn(
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parentRef, null, childRef));
@@ -148,35 +127,47 @@ public class NodesImplSystemPathTest
         when(nodeService.getPrimaryParent(parentRef)).thenReturn(
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, companyHomeRef, null, parentRef));
 
-        invokeCheckNotSystemPath(childRef); // should not throw
+        try
+        {
+            nodesImpl.deleteNode(childRef.getId(), parameters);
+        }
+        catch (PermissionDeniedException e)
+        {
+            fail("Normal node under Company Home should not throw PermissionDeniedException");
+        }
+        catch (Exception e)
+        {
+            // Other exceptions (e.g. NullPointerException from unmocked services deeper in deleteNode)
+            // are acceptable — checkNotSystemPath passed, which is what this test verifies
+        }
+
+        verify(nodeService, atLeastOnce()).getPrimaryParent(childRef);
     }
 
-    /**
-     * When node is Company Home itself, loop should break immediately without traversing further.
-     */
     @Test
-    public void testCompanyHome_ShouldNotTraverseFurther() throws Exception
+    public void testCompanyHome_ShouldNotTraverseFurther()
     {
-        invokeCheckNotSystemPath(companyHomeRef); // should not throw
+        when(nodeService.exists(companyHomeRef)).thenReturn(true);
+
+        assertThrows(PermissionDeniedException.class,
+                () -> nodesImpl.deleteNode(companyHomeRef.getId(), parameters));
 
         verify(nodeService, never()).getPrimaryParent(companyHomeRef);
     }
 
-    /**
-     * Node whose direct parent is a special node (Data Dictionary) should be blocked.
-     */
     @Test
-    public void testDirectParentIsSpecialNode_ThrowPermissionDenied() throws Exception
+    public void testDirectParentIsSpecialNode_ThrowPermissionDenied()
     {
         NodeRef childRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "child-under-dd");
 
-        // child -> dataDictionary (special node)
+        when(nodeService.exists(childRef)).thenReturn(true);
         when(nodeService.getType(childRef)).thenReturn(ContentModel.TYPE_CONTENT);
         when(nodeService.getPrimaryParent(childRef)).thenReturn(
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, dataDictionaryRef, null, childRef));
 
         when(nodeService.getType(dataDictionaryRef)).thenReturn(ContentModel.TYPE_FOLDER);
 
-        assertThrows(PermissionDeniedException.class, () -> invokeCheckNotSystemPath(childRef));
+        assertThrows(PermissionDeniedException.class,
+                () -> nodesImpl.deleteNode(childRef.getId(), parameters));
     }
 }

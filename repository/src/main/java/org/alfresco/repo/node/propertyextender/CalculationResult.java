@@ -45,5 +45,6 @@ public record CalculationResult(Map<QName, Serializable> additionalProperties)
     public CalculationResult
     {
         Objects.requireNonNull(additionalProperties);
+        additionalProperties = Collections.unmodifiableMap(additionalProperties);
     }
 }

@@ -56,7 +56,7 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "PMD.CyclomaticComplexity"})
     public @Nullable Object invoke(MethodInvocation invocation) throws Throwable
     {
         var methodName = invocation.getMethod().getName();
@@ -90,9 +90,9 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
         }
         else if (methodName.equals("setProperty") && args.length == 3 &&
                 args[0] instanceof NodeRef nodeRef &&
-                args[1] instanceof QName propertyQName &&
-                args[2] instanceof Serializable propertyValue)
+                args[1] instanceof QName propertyQName)
         {
+            var propertyValue = (Serializable) args[2];
             var extendedProps = calculateProperties(extendersHolder.getExtenders(), Collections.singletonMap(propertyQName, propertyValue));
             if (extendedProps.isExtended())
             {

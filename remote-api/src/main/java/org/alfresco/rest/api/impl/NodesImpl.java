@@ -3969,7 +3969,7 @@ public class NodesImpl implements Nodes
     /**
      * Blocks any REST API modification on system-managed repository paths. Walks up the parent chain and throws PermissionDeniedException if any ancestor is a system/special node (Data Dictionary, Sites, etc.)
      */
-    private void checkNotSystemPath(NodeRef nodeRef)
+    protected void checkNotSystemPath(NodeRef nodeRef)
     {
         NodeRef current = nodeRef;
 

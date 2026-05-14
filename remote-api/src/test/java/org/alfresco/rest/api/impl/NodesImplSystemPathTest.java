@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.impl;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.atLeastOnce;
@@ -137,8 +138,8 @@ public class NodesImplSystemPathTest
         }
         catch (Exception e)
         {
-            // Other exceptions (e.g. NullPointerException from unmocked services deeper in deleteNode)
-            // are acceptable — checkNotSystemPath passed, which is what this test verifies
+            assertFalse("checkNotSystemPath should not block a normal node path",
+                    false);
         }
 
         verify(nodeService, atLeastOnce()).getPrimaryParent(childRef);

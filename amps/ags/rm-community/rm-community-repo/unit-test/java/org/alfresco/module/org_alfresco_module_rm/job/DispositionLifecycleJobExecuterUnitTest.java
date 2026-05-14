@@ -75,8 +75,8 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     private static final int BATCH_SIZE = 1;
 
     /** test query snippet */
-    private static final String QUERY= "TYPE:\"rma:dispositionAction\"";
-    private static final String FILTER_QUERY = "@rma\\:dispositionAction:(\"cutoff\" OR \"retain\")";
+    private static final String QUERY = "\"" + CUTOFF + "\" OR \"" + RETAIN + "\"";
+
     /** mocked result set */
     @Mock ResultSet mockedResultSet;
 
@@ -118,7 +118,6 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         ArgumentCaptor<SearchParameters> paramsCaptor = ArgumentCaptor.forClass(SearchParameters.class);
         verify(mockedSearchService, times(numberOfInvocation)).query(paramsCaptor.capture());
         assertTrue(paramsCaptor.getValue().getQuery().contains(QUERY));
-        assertTrue(paramsCaptor.getValue().getFilterQueries().toString().contains(FILTER_QUERY));
         verify(mockedResultSet, times(numberOfInvocation)).getNodeRefs();
         verify(mockedResultSet, times(numberOfInvocation)).close();
     }
@@ -147,6 +146,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     /**
      * When the disposition actions do not match those that can be processed automatically.
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void dispositionActionDoesNotMatch()
     {
@@ -174,10 +174,12 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // ensure the query is executed and closed
         verifyQueryTimes(2);
 
-        // ensure node existence is checked for each result
+        // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
+        verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class),
+            anyBoolean(), anyBoolean());
 
-        // ensure each node is processed correctly
+        // ensure each node is process correctly
         verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         verify(mockedNodeService, times(1)).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
 
@@ -219,6 +221,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     /**
      * When there are disposition actions eligible for processing
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void dispositionActionProcessed()
     {
@@ -251,17 +254,19 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // ensure the query is executed and closed
         verifyQueryTimes(2);
 
-        // ensure work is executed for each node
+        // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
+        verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class),
+            anyBoolean(), anyBoolean());
 
-        // ensure each node is processed correctly
+        // ensure each node is process correctly
         // node1
         verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        verify(mockedNodeService, times(1)).getPrimaryParent(node1);
+        verify(mockedNodeService, times(3)).getPrimaryParent(node1);
         verify(mockedRecordsManagementActionService, times(1)).executeRecordsManagementAction(eq(parent), eq(CUTOFF), anyMap());
         // node2
         verify(mockedNodeService, times(1)).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        verify(mockedNodeService, times(1)).getPrimaryParent(node2);
+        verify(mockedNodeService, times(3)).getPrimaryParent(node2);
         verify(mockedRecordsManagementActionService, times(1)).executeRecordsManagementAction(eq(parent), eq(RETAIN), anyMap());
 
         // ensure no more interactions
@@ -269,138 +274,20 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
-     * Verify that getCmisQuery() generates a valid CMIS query containing the required action filters and conditions.
-     * The query includes a dynamic UTC timestamp cutoff, so we verify key components rather than exact string match.
+     * Brittle unit test that simply checks the generated query is an exact string when the supplied disposition actions
+     * are "CUTOFF" and "RETAIN" (see {@link #before}).
      */
     @Test
-    public void testGetCmisQuery()
+    public void testGetQuery()
     {
-        String actual = executer.getCmisQuery();
+        String actual = executer.getQuery();
 
-        // Verify the CMIS query contains all required components
-        assertTrue("CMIS query should start with SELECT statement", actual.contains("SELECT * FROM rma:dispositionAction"));
-        assertTrue("CMIS query should filter by disposition actions", actual.contains("rma:dispositionAction IN ('cutoff','retain')"));
-        assertTrue("CMIS query should exclude completed actions", actual.contains("rma:dispositionActionCompletedAt IS NULL"));
-        assertTrue("CMIS query should check for eligible events", actual.contains("rma:dispositionEventsEligible = true"));
-        assertTrue("CMIS query should check asOf date with UTC timestamp", actual.contains("rma:dispositionAsOf <= TIMESTAMP"));
-        assertTrue("CMIS query should use UTC timezone (Z suffix)", actual.contains("T23:59:59.999Z"));
-    }
+        String expected = "TYPE:\"rma:dispositionAction\" AND " +
+                "(@rma\\:dispositionAction:(\"cutoff\" OR \"retain\")) " +
+                "AND ISUNSET:\"rma:dispositionActionCompletedAt\"  " +
+                "AND ( @rma\\:dispositionEventsEligible:true OR @rma\\:dispositionAsOf:[MIN TO NOW] ) ";
 
-    /**
-     * CMIS mode: when there are no results the job finishes after a single query.
-     */
-    @Test
-    public void cmisNoResultsInQuery()
-    {
-        executer.setQueryMode("CMIS");
-        doReturn(Collections.EMPTY_LIST).when(mockedResultSet).getNodeRefs();
-
-        executer.executeImpl();
-
-        verify(mockedSearchService, times(1)).query(any(SearchParameters.class));
-        verify(mockedResultSet, times(1)).getNodeRefs();
-        verify(mockedResultSet, times(1)).close();
-        verifyNoMoreInteractions(mockedNodeService, mockedRecordsManagementActionService);
-    }
-
-    /**
-     * CMIS mode: when a node no longer exists it is skipped, no action is executed,
-     * and the skip offset advances so the job does not loop on the same batch forever.
-     */
-    @Test
-    public void cmisNodeDoesNotExist()
-    {
-        executer.setQueryMode("CMIS");
-        NodeRef node1 = generateNodeRef(null, false); // exists = false
-        ChildAssociationRef parentAssoc = new ChildAssociationRef(
-                ASSOC_NEXT_DISPOSITION_ACTION, generateNodeRef(), generateQName(), generateNodeRef());
-        doReturn(parentAssoc).when(mockedNodeService).getPrimaryParent(node1);
-        doReturn(false).when(mockedFreezeService).isFrozenOrHasFrozenChildren(any(NodeRef.class));
-
-        // first batch returns the non-existent node; second batch (after skip advance) is empty
-        when(mockedResultSet.getNodeRefs())
-                .thenReturn(Collections.singletonList(node1))
-                .thenReturn(Collections.emptyList());
-
-        executer.executeImpl();
-
-        // two queries: one for the real batch, one after skip advance that finds nothing
-        verify(mockedSearchService, times(2)).query(any(SearchParameters.class));
-        verify(mockedNodeService, times(1)).getPrimaryParent(node1);
-        verify(mockedNodeService, times(1)).exists(node1);
-        verifyNoMoreInteractions(mockedRecordsManagementActionService);
-    }
-
-    /**
-     * CMIS mode: when the disposition action on the node does not match any configured
-     * action the node is skipped and the skip offset advances.
-     */
-    @Test
-    public void cmisDispositionActionDoesNotMatch()
-    {
-        executer.setQueryMode("CMIS");
-        NodeRef node1 = generateNodeRef();
-        ChildAssociationRef parentAssoc = new ChildAssociationRef(
-                ASSOC_NEXT_DISPOSITION_ACTION, generateNodeRef(), generateQName(), generateNodeRef());
-        doReturn(DESTROY).when(mockedNodeService).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        doReturn(parentAssoc).when(mockedNodeService).getPrimaryParent(node1);
-        doReturn(false).when(mockedFreezeService).isFrozenOrHasFrozenChildren(any(NodeRef.class));
-
-        when(mockedResultSet.getNodeRefs())
-                .thenReturn(Collections.singletonList(node1))
-                .thenReturn(Collections.emptyList());
-
-        executer.executeImpl();
-
-        verify(mockedSearchService, times(2)).query(any(SearchParameters.class));
-        verify(mockedNodeService, times(1)).getPrimaryParent(node1);
-        verify(mockedNodeService, times(1)).exists(node1);
-        verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        verifyNoMoreInteractions(mockedRecordsManagementActionService);
-    }
-
-    /**
-     * CMIS mode: when disposition actions are eligible they are processed, the skip offset
-     * is reset to zero after a successful batch, and the job continues until no more results.
-     */
-    @Test
-    public void cmisDispositionActionProcessed()
-    {
-        executer.setQueryMode("CMIS");
-        NodeRef node1 = generateNodeRef();
-        NodeRef node2 = generateNodeRef();
-        NodeRef parent = generateNodeRef();
-        ChildAssociationRef parentAssoc = new ChildAssociationRef(
-                ASSOC_NEXT_DISPOSITION_ACTION, parent, generateQName(), generateNodeRef());
-
-        doReturn(CUTOFF).when(mockedNodeService).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        doReturn(RETAIN).when(mockedNodeService).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        doReturn(parentAssoc).when(mockedNodeService).getPrimaryParent(any(NodeRef.class));
-        doReturn(false).when(mockedFreezeService).isFrozenOrHasFrozenChildren(any(NodeRef.class));
-
-        // batch 1 → node1 processed → skip resets to 0
-        // batch 2 → node2 processed → skip resets to 0
-        // batch 3 → empty → loop stops
-        when(mockedResultSet.getNodeRefs())
-                .thenReturn(Collections.singletonList(node1))
-                .thenReturn(Collections.singletonList(node2))
-                .thenReturn(Collections.emptyList());
-
-        executer.executeImpl();
-
-        verify(mockedSearchService, times(3)).query(any(SearchParameters.class));
-
-        verify(mockedNodeService, times(1)).exists(node1);
-        verify(mockedNodeService, times(1)).getPrimaryParent(node1);
-        verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        verify(mockedRecordsManagementActionService, times(1))
-                .executeRecordsManagementAction(eq(parent), eq(CUTOFF), anyMap());
-
-        verify(mockedNodeService, times(1)).exists(node2);
-        verify(mockedNodeService, times(1)).getPrimaryParent(node2);
-        verify(mockedNodeService, times(1)).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        verify(mockedRecordsManagementActionService, times(1))
-                .executeRecordsManagementAction(eq(parent), eq(RETAIN), anyMap());
+        assertEquals(expected, actual);
     }
 
     /**
@@ -461,8 +348,8 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         executer.executeImpl();
 
         ArgumentCaptor<SearchParameters> paramsCaptor = ArgumentCaptor.forClass(SearchParameters.class);
-        verify(mockedSearchService, times(1)).query(paramsCaptor.capture());
-        assertEquals(DispositionLifecycleJobExecuter.DEFAULT_BATCH_SIZE, paramsCaptor.getValue().getMaxItems());
+        verify(mockedSearchService, times(1)).query(paramsCaptor.capture());;
+        assertEquals(executer.DEFAULT_BATCH_SIZE, paramsCaptor.getValue().getMaxItems());
         verify(mockedResultSet, times(1)).close();
 
         executer.setBatchSize(BATCH_SIZE);

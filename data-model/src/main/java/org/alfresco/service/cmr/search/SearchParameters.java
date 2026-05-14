@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -206,8 +206,6 @@ public class SearchParameters implements BasicSearchParameters
      */
     private int trackTotalHits;
 
-    private boolean trackScore = true;
-
     /**
      * Default constructor
      */
@@ -259,7 +257,6 @@ public class SearchParameters implements BasicSearchParameters
         sp.ranges = this.ranges;
         sp.timezone = this.timezone;
         sp.trackTotalHits = this.trackTotalHits;
-        sp.trackScore = this.trackScore;
         return sp;
     }
     
@@ -1074,22 +1071,6 @@ public class SearchParameters implements BasicSearchParameters
         {
             return this.searchTerm;
         }
-    }
-
-    public boolean isTrackScore()
-    {
-        return trackScore;
-    }
-
-    /**
-     * Controls whether relevance scores are computed for search hits. This hint is only acted upon by the Elasticsearch search subsystem; Solr and DB query paths ignore it.
-     *
-     * @param trackScore
-     *            true to compute scores (default), false to skip scoring for better performance
-     */
-    public void setTrackScore(boolean trackScore)
-    {
-        this.trackScore = trackScore;
     }
 
     /**

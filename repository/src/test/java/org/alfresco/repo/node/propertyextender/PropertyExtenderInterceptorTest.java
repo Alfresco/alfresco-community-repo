@@ -56,6 +56,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class PropertyExtenderInterceptorTest
 {
     private static final NodeRef NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "test-node-id");

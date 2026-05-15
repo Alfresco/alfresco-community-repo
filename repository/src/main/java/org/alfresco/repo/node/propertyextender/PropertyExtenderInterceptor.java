@@ -25,24 +25,24 @@
  */
 package org.alfresco.repo.node.propertyextender;
 
+import static org.alfresco.repo.node.propertyextender.PropertyCalculator.calculateProperties;
+
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.jspecify.annotations.Nullable;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.node.propertyextender.PropertyExtender.CalculationContext;
-import org.alfresco.repo.node.propertyextender.PropertyExtender.CalculationResult;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * This interceptor is used to extend the properties that are being added on a node. It invokes the registered property extenders to calculate the additional properties and add them together to the node.
+ * This interceptor is used to extend the properties that are being changed on a node.
+ * <p>
+ * It invokes the registered property extenders to calculate the additional properties and handle them accordingly.
  */
 public class PropertyExtenderInterceptor implements MethodInterceptor
 {
@@ -56,7 +56,7 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "PMD.CyclomaticComplexity"})
     public @Nullable Object invoke(MethodInvocation invocation) throws Throwable
     {
         var methodName = invocation.getMethod().getName();
@@ -66,60 +66,55 @@ public class PropertyExtenderInterceptor implements MethodInterceptor
 
         if (methodName.equals("addProperties") && args.length == 2 &&
                 args[0] instanceof NodeRef nodeRef &&
-                args[1] instanceof Map newProperties)
+                args[1] instanceof Map propertyChanges)
         {
-            var extendedProps = calculateProperties((Map<QName, Serializable>) newProperties);
-            nodeService.addProperties(nodeRef, extendedProps);
+            var extendedProps = calculateProperties(extendersHolder.getExtenders(), propertyChanges);
+            nodeService.addProperties(nodeRef, extendedProps.mergeProperties());
+        }
+        else if (methodName.equals("setProperties") && args.length == 2 &&
+                args[0] instanceof NodeRef nodeRef &&
+                args[1] instanceof Map propertyChanges)
+        {
+            var extendedProps = calculateProperties(extendersHolder.getExtenders(), propertyChanges);
+            nodeService.setProperties(nodeRef, extendedProps.mergeProperties());
         }
         else if (methodName.equals("createNode") && args.length == 5 &&
                 args[0] instanceof NodeRef parentNodeRef &&
                 args[1] instanceof QName assocTypeQName &&
                 args[2] instanceof QName assocQName &&
                 args[3] instanceof QName nodeTypeQName &&
-                args[4] instanceof Map newProperties)
+                args[4] instanceof Map propertyChanges)
         {
-            var extendedProps = calculateProperties((Map<QName, Serializable>) newProperties);
-            ret = nodeService.createNode(parentNodeRef, assocTypeQName, assocQName, nodeTypeQName, extendedProps);
+            var extendedProps = calculateProperties(extendersHolder.getExtenders(), propertyChanges);
+            ret = nodeService.createNode(parentNodeRef, assocTypeQName, assocQName, nodeTypeQName, extendedProps.mergeProperties());
+        }
+        else if (methodName.equals("setProperty") && args.length == 3 &&
+                args[0] instanceof NodeRef nodeRef &&
+                args[1] instanceof QName propertyQName)
+        {
+            var propertyValue = (Serializable) args[2];
+            var extendedProps = calculateProperties(extendersHolder.getExtenders(), Collections.singletonMap(propertyQName, propertyValue));
+            if (extendedProps.isExtended())
+            {
+                nodeService.addProperties(nodeRef, extendedProps.additionalProperties());
+            }
+            nodeService.setProperty(nodeRef, propertyQName, propertyValue);
+        }
+        else if (methodName.equals("removeProperty") && args.length == 2 &&
+                args[0] instanceof NodeRef nodeRef &&
+                args[1] instanceof QName propertyQName)
+        {
+            var extendedProps = calculateProperties(extendersHolder.getExtenders(), Collections.singletonMap(propertyQName, null));
+            if (extendedProps.isExtended())
+            {
+                nodeService.addProperties(nodeRef, extendedProps.additionalProperties());
+            }
+            nodeService.removeProperty(nodeRef, propertyQName);
         }
         else
         {
             ret = invocation.proceed();
         }
         return ret;
-    }
-
-    private Map<QName, Serializable> calculateProperties(Map<QName, Serializable> newProperties)
-    {
-        var extenders = extendersHolder.getExtenders();
-        var calculatedProps = extenders.stream()
-                .map(ext -> this.runCalculation(ext, newProperties))
-                .map(CalculationResult::calculatedProperties)
-                .filter(Predicate.not(Map::isEmpty))
-                .toList();
-
-        if (calculatedProps.isEmpty())
-        {
-            return newProperties;
-        }
-
-        var extendedProps = new HashMap<>(newProperties);
-        calculatedProps.forEach(extendedProps::putAll);
-        return extendedProps;
-    }
-
-    private CalculationResult runCalculation(PropertyExtender extender, Map<QName, Serializable> newProperties)
-    {
-        try
-        {
-            return extender.calculate(new CalculationContext(newProperties));
-        }
-        catch (AlfrescoRuntimeException e)
-        {
-            throw e;
-        }
-        catch (RuntimeException e)
-        {
-            throw new AlfrescoRuntimeException("Unexpected failure during properties calculation process", e);
-        }
     }
 }

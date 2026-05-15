@@ -140,6 +140,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     /**
      * Look up a previously validated user token in the local cache, or obtain a fresh one from the Identity Service. A cache HIT is honoured only when (a) the cached access token still validates locally (signature + {@code exp} + {@code iss} via {@link IdentityServiceFacade#decodeToken(String)}) and (b) the cached principal is still backed by a local Person node. Otherwise the stale entry is invalidated and the regular authorize/JIT-provisioning path is used.
      */
+    @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
     private CredentialValidationCacheEntry getOrFetchUserToken(String userName, char[] password)
     {
         final boolean cacheActive = credentialValidationCache != null && credentialValidationCache.isEnabled();
@@ -177,6 +178,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     /**
      * Authorize the supplied credentials against the Identity Service and run JIT provisioning so a local Person record exists. Returns a cache entry containing the normalized principal name and the access-token string returned by the Authorization Server.
      */
+    @SuppressWarnings("PMD.UseVarargs")
     private CredentialValidationCacheEntry fetchUserTokenFromIdentityService(String userName, char[] password)
     {
         final AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade
@@ -222,6 +224,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         }
     }
 
+    @SuppressWarnings("PMD.UseVarargs")
     private void invalidateCachedEntry(String userName, char[] password)
     {
         if (credentialValidationCache != null && credentialValidationCache.isEnabled())

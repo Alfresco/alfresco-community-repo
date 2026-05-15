@@ -83,7 +83,7 @@
         <dependency.log4j.version>2.25.4</dependency.log4j.version>
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
         <dependency.tika.version>3.2.3</dependency.tika.version>
-        <dependency.junrar.version>7.5.8</dependency.junrar.version>
+        <dependency.junrar.version>7.5.10</dependency.junrar.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.4.0</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
@@ -281,6 +281,14 @@
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-utils</artifactId>
                 <version>3.6.1</version>
+            </dependency>
+
+            <!-- This dependency was added because latest (v4.2.0) 'cxf-rt-ws-policy' uses vulnerable version of neethi (v3.2.1). (PRODSEC-12231) -->
+            <!-- This should be removed once the clean 'cxf-rt-ws-policy' will be released. -->
+            <dependency>
+                <groupId>org.apache.neethi</groupId>
+                <artifactId>neethi</artifactId>
+                <version>3.2.2</version>
             </dependency>
 
             <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->

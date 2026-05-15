@@ -26,7 +26,6 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,11 +62,6 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
      * Optional local-JVM cache that records the outcome of a successful credential validation against the Identity Service so that subsequent identical credential presentations can skip the round-trip to the Authorization Server until the previously issued access token can no longer be locally validated. May be {@code null} when the cache is not wired or disabled.
      */
     private CredentialValidationCache credentialValidationCache;
-
-    /**
-     * Latches the first decode-failure WARN so production triage is possible without DEBUG, while subsequent failures stay at DEBUG to avoid log flooding.
-     */
-    private final AtomicBoolean firstDecodeFailureLogged = new AtomicBoolean(false);
 
     public void setIdentityServiceFacade(IdentityServiceFacade identityServiceFacade)
     {
@@ -211,12 +205,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         }
         catch (IdentityServiceFacadeException e)
         {
-            if (firstDecodeFailureLogged.compareAndSet(false, true))
-            {
-                LOG.warn("Identity Service credential validation cache: cached access token failed local re-validation. "
-                        + "Subsequent identical failures will be logged at DEBUG. Cause: " + e.getMessage());
-            }
-            else if (LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled())
             {
                 LOG.debug("Cached access token failed local re-validation: " + e.getMessage());
             }

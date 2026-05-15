@@ -405,7 +405,7 @@ public class PropertyExtenderInterceptorTest
     // --- error handling ---
 
     @Test
-    public void testAddProperties_extenderThrowsAlfrescoRuntimeException_shouldRethrow() throws Throwable
+    public void testAddProperties_extenderThrowsAlfrescoRuntimeException_shouldRethrow() throws NoSuchMethodException
     {
         // given
         var extender = mock(PropertyExtender.class);
@@ -420,7 +420,7 @@ public class PropertyExtenderInterceptorTest
     }
 
     @Test
-    public void testAddProperties_extenderThrowsRuntimeException_shouldWrapInAlfrescoRuntimeException() throws Throwable
+    public void testAddProperties_extenderThrowsRuntimeException_shouldWrapInAlfrescoRuntimeException() throws NoSuchMethodException
     {
         // given
         var extender = mock(PropertyExtender.class);

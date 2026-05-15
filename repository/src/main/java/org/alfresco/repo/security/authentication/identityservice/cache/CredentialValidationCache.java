@@ -28,14 +28,14 @@ package org.alfresco.repo.security.authentication.identityservice.cache;
 import java.util.Optional;
 
 /**
- * Caches the outcome of a successful credential validation against the Identity Service so that subsequent identical credential presentations within the token-lifetime window can skip the round-trip to the Authorization Server.
+ * Caches the outcome of a successful credential validation against the Identity Service so that subsequent identical credential presentations can skip the round-trip to the Authorization Server until the previously issued access token is no longer valid.
  *
  * <p>
- * Implementations MUST be thread-safe and MUST NOT cache passwords nor any access/refresh token issued by the Authorization Server. The cache is intended only to record the assertion <i>"these credentials were observed to be valid until time T"</i>, with T aligned to the token expiration time returned by the Identity Provider.
+ * Implementations MUST be thread-safe and MUST NOT cache the user's password. The cached value (see {@link CredentialValidationCacheEntry}) holds the normalized principal name and the access-token string that proved the validation; the calling component re-validates the token locally on every HIT via the Identity Service facade's token decoder so cache entries automatically become unusable when the underlying token expires, is revoked, or its signature can no longer be verified.
  * </p>
  *
  * <p>
- * The cache is fail-closed: when disabled or misconfigured, lookups behave as misses and writes are silently ignored, so the calling component falls back to the regular authorize-on-every-request behaviour.
+ * <b>Storage scope:</b> the cache is local to a single JVM. The access token MUST NOT leave the host that obtained it; the backing cache region is therefore configured as {@code cluster.type=local}. The cache is fail-closed: when disabled, lookups behave as misses and writes are silently ignored, so the calling component falls back to the regular authorize-on-every-request behaviour.
  * </p>
  */
 @SuppressWarnings("PMD.UseVarargs")
@@ -47,13 +47,13 @@ public interface CredentialValidationCache
     boolean isEnabled();
 
     /**
-     * Look up a previously recorded validation outcome for the supplied credentials.
+     * Look up a previously recorded validation outcome for the supplied credentials. The returned entry's token is NOT validated by this method; the caller is expected to validate it via the Identity Service facade's token decoder before honouring the HIT.
      *
      * @param userName
      *            the user name presented by the caller
      * @param password
      *            the password presented by the caller (never stored as-is)
-     * @return non-empty if a non-expired entry was found; empty otherwise
+     * @return non-empty if an entry was found; empty otherwise
      */
     Optional<CredentialValidationCacheEntry> get(String userName, char[] password);
 
@@ -65,7 +65,7 @@ public interface CredentialValidationCache
      * @param password
      *            the password that was validated (never stored as-is)
      * @param entry
-     *            non-secret outcome metadata (normalized username + validity window)
+     *            outcome metadata (normalized username + access-token string)
      */
     void put(String userName, char[] password, CredentialValidationCacheEntry entry);
 

@@ -33,25 +33,29 @@ import java.util.Objects;
  * Cache value for the {@link CredentialValidationCache}.
  *
  * <p>
- * Records the fact that a given credential was successfully validated by the Identity Service, the normalized principal name to use as the current user, and the moment in time after which this assertion must no longer be trusted.
+ * Records the outcome of a successful credential validation against the Identity Service: the normalized principal name to use as the current user, and the access-token string that proved the validation. The token is retained so that the cache HIT path can re-validate it locally via {@link org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade#decodeToken(String)} (signature, {@code exp}, {@code iss}, etc.) without contacting the Authorization Server.
  * </p>
  *
  * <p>
- * This entry MUST NOT contain any password, access token or refresh token. The {@link #validUntilEpochMillis} is intended to be derived from the access-token expiration time returned by the Identity Provider so that the cache view stays bounded by the IdP's own session lifetime.
+ * <b>Storage scope:</b> entries of this type are intended to live exclusively in a local, single-JVM cache. They MUST NOT be replicated across the cluster nor persisted: the access-token string is a bearer credential and must not leave the JVM that obtained it. The associated cache region (see {@code cache.identityServiceCredentialValidationCache} in {@code caches.properties}) is configured as {@code cluster.type=local} for this reason.
+ * </p>
+ *
+ * <p>
+ * The entry never holds the user's password and {@link #toString()} never echoes the token value.
  * </p>
  */
 public final class CredentialValidationCacheEntry implements Serializable
 {
     @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private final String normalizedUsername;
-    private final long validUntilEpochMillis;
+    private final String tokenString;
 
-    public CredentialValidationCacheEntry(String normalizedUsername, long validUntilEpochMillis)
+    public CredentialValidationCacheEntry(String normalizedUsername, String tokenString)
     {
         this.normalizedUsername = Objects.requireNonNull(normalizedUsername, "normalizedUsername");
-        this.validUntilEpochMillis = validUntilEpochMillis;
+        this.tokenString = Objects.requireNonNull(tokenString, "tokenString");
     }
 
     public String getNormalizedUsername()
@@ -59,14 +63,12 @@ public final class CredentialValidationCacheEntry implements Serializable
         return normalizedUsername;
     }
 
-    public long getValidUntilEpochMillis()
+    /**
+     * @return the access-token string captured at validation time. Callers MUST treat this as a bearer credential and MUST NOT log it.
+     */
+    public String getTokenString()
     {
-        return validUntilEpochMillis;
-    }
-
-    public boolean isExpired(long nowEpochMillis)
-    {
-        return nowEpochMillis >= validUntilEpochMillis;
+        return tokenString;
     }
 
     @Override
@@ -80,20 +82,22 @@ public final class CredentialValidationCacheEntry implements Serializable
         {
             return false;
         }
-        return validUntilEpochMillis == that.validUntilEpochMillis
-                && Objects.equals(normalizedUsername, that.normalizedUsername);
+        return Objects.equals(normalizedUsername, that.normalizedUsername)
+                && Objects.equals(tokenString, that.tokenString);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(normalizedUsername, validUntilEpochMillis);
+        return Objects.hash(normalizedUsername, tokenString);
     }
 
+    /**
+     * Deliberately omits the token value: only the principal name is exposed so accidental {@code toString()} logging cannot leak the bearer credential.
+     */
     @Override
     public String toString()
     {
-        return "CredentialValidationCacheEntry{normalizedUsername='" + normalizedUsername
-                + "', validUntilEpochMillis=" + validUntilEpochMillis + "}";
+        return "CredentialValidationCacheEntry{normalizedUsername='" + normalizedUsername + "'}";
     }
 }

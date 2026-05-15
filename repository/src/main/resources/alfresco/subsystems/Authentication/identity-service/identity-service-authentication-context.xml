@@ -33,14 +33,15 @@
    </bean>
 
    <!--
-      Optional cache that records the outcome of a successful credential validation against the
-      Identity Service so that subsequent identical credential presentations within the
-      access-token-lifetime window can skip the round-trip to the Authorization Server.
+      Optional local-JVM cache that records the outcome of a successful credential validation
+      against the Identity Service so that subsequent identical credential presentations can skip
+      the round-trip to the Authorization Server until the previously issued access token can no
+      longer be locally validated.
 
-      The cache stores only an HMAC-SHA256-derived key and a small non-secret entry recording the
-      normalized principal name and the validity-until timestamp. It MUST NOT contain passwords
-      or access/refresh tokens. The cache is disabled by default and fails closed when the shared
-      secret is not configured.
+      The cached value is the access-token string captured at validation time; on every HIT the
+      authentication component re-validates it via IdentityServiceFacade.decodeToken (signature,
+      exp, iss, etc.). The backing cache region is configured cluster.type=local so the token
+      never leaves the JVM that obtained it.
 
       Backing cache region: cache.identityServiceCredentialValidationCache (cache-context.xml,
       caches.properties).
@@ -49,10 +50,6 @@
          class="org.alfresco.repo.security.authentication.identityservice.cache.DefaultCredentialValidationCache">
       <constructor-arg ref="identityServiceCredentialValidationBackingCache" />
       <constructor-arg value="${identity-service.authentication.credentialValidationCache.enabled:false}" />
-      <constructor-arg value="${identity-service.authentication.credentialValidationCache.sharedSecret:}" />
-      <constructor-arg value="${identity-service.authentication.credentialValidationCache.clockSkewMs:5000}" />
-      <constructor-arg value="${identity-service.authentication.credentialValidationCache.minTtlMs:10000}" />
-      <constructor-arg value="${identity-service.authentication.credentialValidationCache.maxTtlMs:900000}" />
    </bean>
 
    <bean name="identityServiceFacade" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean">

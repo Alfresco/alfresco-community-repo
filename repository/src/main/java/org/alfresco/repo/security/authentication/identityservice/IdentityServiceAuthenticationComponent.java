@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
 import org.alfresco.repo.security.authentication.identityservice.cache.CredentialValidationCache;
@@ -59,9 +60,14 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     private boolean allowGuestLogin;
 
     /**
-     * Optional cache that records the outcome of a successful credential validation against the Identity Service so that subsequent identical credential presentations within the token-lifetime window can skip the round-trip to the Authorization Server. May be {@code null} when the cache is not wired or disabled.
+     * Optional local-JVM cache that records the outcome of a successful credential validation against the Identity Service so that subsequent identical credential presentations can skip the round-trip to the Authorization Server until the previously issued access token can no longer be locally validated. May be {@code null} when the cache is not wired or disabled.
      */
     private CredentialValidationCache credentialValidationCache;
+
+    /**
+     * Latches the first decode-failure WARN so production triage is possible without DEBUG, while subsequent failures stay at DEBUG to avoid log flooding.
+     */
+    private final AtomicBoolean firstDecodeFailureLogged = new AtomicBoolean(false);
 
     public void setIdentityServiceFacade(IdentityServiceFacade identityServiceFacade)
     {
@@ -84,7 +90,6 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
         if (identityServiceFacade == null)
@@ -97,77 +102,20 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
             throw new AuthenticationException("User not authenticated because IdentityServiceFacade was not set.");
         }
 
-        // Cache lookup: skip the round-trip to the Identity Provider when this exact credential
-        // pair has been validated recently and the recorded validity window has not yet elapsed.
-        // The cache stores neither the password nor any access/refresh token.
-        final boolean cacheActive = credentialValidationCache != null && credentialValidationCache.isEnabled();
-        if (cacheActive)
-        {
-            final Optional<CredentialValidationCacheEntry> cached = credentialValidationCache.get(userName, password);
-            if (cached.isPresent())
-            {
-                final String cachedNormalizedUsername = cached.get().getNormalizedUsername();
-                if (cachedPrincipalIsStillProvisioned(cachedNormalizedUsername))
-                {
-                    if (LOG.isDebugEnabled())
-                    {
-                        LOG.debug("Credential validation cache HIT for user '" + userName + "'. Skipping authorization request.");
-                    }
-                    setCurrentUser(cachedNormalizedUsername);
-                    return;
-                }
-                // The cached principal no longer has a backing Person node, but JIT provisioning
-                // is enabled and could (re-)create it. Invalidate the entry and fall through to
-                // the regular authorize / JIT-provisioning path below so the local user state is
-                // restored.
-                if (LOG.isDebugEnabled())
-                {
-                    LOG.debug("Credential validation cache HIT for user '" + userName
-                            + "' but local Person '" + cachedNormalizedUsername
-                            + "' no longer exists. Invalidating entry and re-authorizing.");
-                }
-                credentialValidationCache.invalidate(userName, password);
-            }
-        }
-
         try
         {
-            // Attempt to verify user credentials
-            IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(AuthorizationGrant.password(userName, String.valueOf(password)));
-
-            String normalizedUsername = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue())
-                    .map(OIDCUserInfo::username)
-                    .orElseThrow(() -> new AuthenticationException("Failed to extract username from token and user info endpoint."));
-
-            // Record the successful validation. Validity is bounded by the access-token expiration
-            // returned by the Identity Provider so the cache view stays aligned with IdP configuration.
-            if (cacheActive)
-            {
-                final Instant expiresAt = accessTokenAuthorization.getAccessToken().getExpiresAt();
-                if (expiresAt != null)
-                {
-                    credentialValidationCache.put(userName, password,
-                            new CredentialValidationCacheEntry(normalizedUsername, expiresAt.toEpochMilli()));
-                }
-            }
-
+            final CredentialValidationCacheEntry entry = getOrFetchUserToken(userName, password);
             // Verification was successful so treat as authenticated user
-            setCurrentUser(normalizedUsername);
+            setCurrentUser(entry.getNormalizedUsername());
         }
         catch (IdentityServiceFacadeException e)
         {
-            if (cacheActive)
-            {
-                credentialValidationCache.invalidate(userName, password);
-            }
+            invalidateCachedEntry(userName, password);
             throw new AuthenticationException("Failed to verify user credentials against the OAuth2 Authorization Server.", e);
         }
         catch (RuntimeException e)
         {
-            if (cacheActive)
-            {
-                credentialValidationCache.invalidate(userName, password);
-            }
+            invalidateCachedEntry(userName, password);
             throw new AuthenticationException("Failed to verify user credentials.", e);
         }
     }
@@ -190,35 +138,96 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     }
 
     /**
-     * Defensive check used on credential validation cache HITs so the shortcut never authenticates a principal whose backing Person node has been deleted (or was never created because the originating transaction was read-only). When JIT provisioning is enabled but the Person is missing, the cache HIT must be discarded so the regular authorize/JIT path can re-establish local user state.
+     * Look up a previously validated user token in the local cache, or obtain a fresh one from the Identity Service. A cache HIT is honoured only when (a) the cached access token still validates locally (signature + {@code exp} + {@code iss} via {@link IdentityServiceFacade#decodeToken(String)}) and (b) the cached principal is still backed by a local Person node. Otherwise the stale entry is invalidated and the regular authorize/JIT-provisioning path is used.
+     */
+    private CredentialValidationCacheEntry getOrFetchUserToken(String userName, char[] password)
+    {
+        final boolean cacheActive = credentialValidationCache != null && credentialValidationCache.isEnabled();
+        if (!cacheActive)
+        {
+            return fetchUserTokenFromIdentityService(userName, password);
+        }
+
+        final Optional<CredentialValidationCacheEntry> cached = credentialValidationCache.get(userName, password);
+        if (cached.isPresent())
+        {
+            final CredentialValidationCacheEntry entry = cached.get();
+            if (isCachedTokenStillValid(entry))
+            {
+                if (LOG.isDebugEnabled())
+                {
+                    LOG.debug("Credential validation cache HIT for user '" + userName
+                            + "'. Skipping authorization request.");
+                }
+                return entry;
+            }
+            if (LOG.isDebugEnabled())
+            {
+                LOG.debug("Credential validation cache HIT for user '" + userName
+                        + "' but the cached entry is no longer usable. Invalidating and re-authorizing.");
+            }
+            credentialValidationCache.invalidate(userName, password);
+        }
+
+        final CredentialValidationCacheEntry fresh = fetchUserTokenFromIdentityService(userName, password);
+        credentialValidationCache.put(userName, password, fresh);
+        return fresh;
+    }
+
+    /**
+     * Authorize the supplied credentials against the Identity Service and run JIT provisioning so a local Person record exists. Returns a cache entry containing the normalized principal name and the access-token string returned by the Authorization Server.
+     */
+    private CredentialValidationCacheEntry fetchUserTokenFromIdentityService(String userName, char[] password)
+    {
+        final AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade
+                .authorize(AuthorizationGrant.password(userName, String.valueOf(password)));
+
+        final String tokenValue = accessTokenAuthorization.getAccessToken().getTokenValue();
+
+        final String normalizedUsername = jitProvisioningHandler
+                .extractUserInfoAndCreateUserIfNeeded(tokenValue)
+                .map(OIDCUserInfo::username)
+                .orElseThrow(() -> new AuthenticationException(
+                        "Failed to extract username from token and user info endpoint."));
+
+        return new CredentialValidationCacheEntry(normalizedUsername, tokenValue);
+    }
+
+    /**
+     * Re-validate a cached access token locally via {@link IdentityServiceFacade#decodeToken(String)}: signature, expiration ({@code exp}), {@code nbf}, issuer, and any configured {@code azp}/{@code aud} checks. No Identity Provider round-trip is incurred (the JWK set is cached). Returns {@code false} on any decoding/validation failure so the caller can fall through to a fresh authorize.
      *
      * <p>
-     * When JIT provisioning is disabled ({@code createMissingPeople == false}), or when no {@link org.alfresco.service.cmr.security.PersonService} is wired, behaviour is unchanged from the pre-cache flow: the existence check is skipped because a fresh authorize() would not create the Person either.
-     * </p>
-     *
-     * <p>
-     * Visibility is {@code protected} so tests can override the decision in isolation without having to substitute the {@link org.alfresco.service.cmr.security.PersonService} bean (which is also consumed by {@link #setCurrentUser(String)}).
+     * The first failure reason for a given (component, JVM) is surfaced at WARN to make production triage possible without enabling DEBUG; expected later failures (e.g., natural {@code exp}) are kept at DEBUG so they don't flood the log. If decoding fails on every cached entry the operator sees a single INFO-style WARN that names the validator (issuer, audience, etc.) that rejects the token.
      * </p>
      */
-    protected boolean cachedPrincipalIsStillProvisioned(String normalizedUsername)
+    private boolean isCachedTokenStillValid(CredentialValidationCacheEntry entry)
     {
         try
         {
-            final org.alfresco.service.cmr.security.PersonService personService = getPersonService();
-            if (personService == null || !personService.createMissingPeople())
-            {
-                return true;
-            }
-            return personService.personExists(normalizedUsername);
-        }
-        catch (RuntimeException ex)
-        {
-            // If the Person check itself fails (e.g. transient DB issue) honour the cache HIT
-            // rather than penalising the authentication path. This is the same posture the rest
-            // of the cache uses: degrade gracefully toward existing behaviour.
-            LOG.warn("Failed to verify Person existence for cached credential validation; honouring cache HIT defensively. "
-                    + ex.getMessage());
+            identityServiceFacade.decodeToken(entry.getTokenString());
             return true;
         }
+        catch (IdentityServiceFacadeException e)
+        {
+            if (firstDecodeFailureLogged.compareAndSet(false, true))
+            {
+                LOG.warn("Identity Service credential validation cache: cached access token failed local re-validation. "
+                        + "Subsequent identical failures will be logged at DEBUG. Cause: " + e.getMessage());
+            }
+            else if (LOG.isDebugEnabled())
+            {
+                LOG.debug("Cached access token failed local re-validation: " + e.getMessage());
+            }
+            return false;
+        }
     }
+
+    private void invalidateCachedEntry(String userName, char[] password)
+    {
+        if (credentialValidationCache != null && credentialValidationCache.isEnabled())
+        {
+            credentialValidationCache.invalidate(userName, password);
+        }
+    }
+
 }

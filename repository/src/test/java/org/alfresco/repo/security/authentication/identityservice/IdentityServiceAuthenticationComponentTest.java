@@ -36,7 +36,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.net.ConnectException;
-import java.time.Instant;
 import java.util.Optional;
 
 import org.junit.After;
@@ -51,6 +50,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
 import org.alfresco.repo.security.authentication.identityservice.cache.CredentialValidationCacheEntry;
 import org.alfresco.repo.security.authentication.identityservice.cache.DefaultCredentialValidationCache;
 import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
@@ -62,21 +62,10 @@ import org.alfresco.util.BaseSpringTest;
 
 public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
 {
-    /**
-     * Test-controllable stub for {@link IdentityServiceAuthenticationComponent#cachedPrincipalIsStillProvisioned(String)} so cache-hit/fall-through scenarios can be exercised without substituting the real Spring {@link PersonService} (which {@link IdentityServiceAuthenticationComponent#setCurrentUser(String)} also depends on for {@link org.alfresco.service.cmr.repository.NodeRef} resolution and auto-import via {@code UserRegistrySynchronizer}).
-     */
-    @SuppressWarnings("PMD.LongVariable")
-    private Boolean cachedPrincipalProvisionedOverride;
+    private static final String CACHED_TOKEN = "cached.jwt.value";
+    private static final String FRESH_TOKEN = "fresh.jwt.value";
 
-    private final IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent() {
-        @Override
-        protected boolean cachedPrincipalIsStillProvisioned(String normalizedUsername)
-        {
-            return cachedPrincipalProvisionedOverride != null
-                    ? cachedPrincipalProvisionedOverride.booleanValue()
-                    : super.cachedPrincipalIsStillProvisioned(normalizedUsername);
-        }
-    };
+    private final IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent();
 
     @Autowired
     private AuthenticationContext authenticationContext;
@@ -109,8 +98,6 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         mockIdentityServiceFacade = mock(IdentityServiceFacade.class);
         authComponent.setJitProvisioningHandler(jitProvisioning);
         authComponent.setIdentityServiceFacade(mockIdentityServiceFacade);
-
-        cachedPrincipalProvisionedOverride = null;
     }
 
     @After
@@ -169,9 +156,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
 
         when(authorization.getAccessToken()).thenReturn(accessToken);
-        when(accessToken.getTokenValue()).thenReturn("JWT_TOKEN");
+        when(accessToken.getTokenValue()).thenReturn(FRESH_TOKEN);
         when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
-        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN"))
+        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded(FRESH_TOKEN))
                 .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
 
         authComponent.authenticateImpl("username", "password".toCharArray());
@@ -197,51 +184,92 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         assertFalse(authComponent.guestUserAuthenticationAllowed());
     }
 
+    /**
+     * On a cache HIT the cached token is re-validated locally via {@code decodeToken}; if validation succeeds, the Authorization Server must NOT be contacted.
+     */
     @Test
-    public void testCacheHitSkipsFacadeAuthorization()
+    public void testCacheHitSkipsFacadeAuthorizationWhenTokenIsStillValid()
     {
         DefaultCredentialValidationCache cache = newCache();
         authComponent.setCredentialValidationCache(cache);
-        cachedPrincipalProvisionedOverride = Boolean.TRUE;
 
-        long validUntil = System.currentTimeMillis() + 30_000L;
         cache.put("username", "password".toCharArray(),
-                new CredentialValidationCacheEntry("username", validUntil));
+                new CredentialValidationCacheEntry("username", CACHED_TOKEN));
+
+        // decodeToken succeeds; only the absence of an exception matters
+        when(mockIdentityServiceFacade.decodeToken(CACHED_TOKEN)).thenReturn(null);
 
         authComponent.authenticateImpl("username", "password".toCharArray());
 
         assertEquals("Cached principal must be set as current user",
                 "username", authenticationContext.getCurrentUserName());
+        verify(mockIdentityServiceFacade, times(1)).decodeToken(CACHED_TOKEN);
         verify(mockIdentityServiceFacade, never()).authorize(any());
     }
 
+    /**
+     * After a cache MISS triggers a successful authorize(), the resulting access token must be cached so a subsequent identical request can be served from the cache (verified by re-validating the cached token instead of calling authorize() again).
+     */
     @Test
     public void testCacheMissPopulatesCacheAfterSuccessfulAuthorization()
     {
         DefaultCredentialValidationCache cache = newCache();
         authComponent.setCredentialValidationCache(cache);
-        cachedPrincipalProvisionedOverride = Boolean.TRUE;
 
         AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
         AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
         IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
         when(authorization.getAccessToken()).thenReturn(accessToken);
-        when(accessToken.getTokenValue()).thenReturn("JWT_TOKEN");
-        when(accessToken.getExpiresAt()).thenReturn(Instant.now().plusSeconds(30));
+        when(accessToken.getTokenValue()).thenReturn(FRESH_TOKEN);
         when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
-        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN"))
+        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded(FRESH_TOKEN))
                 .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
+        when(mockIdentityServiceFacade.decodeToken(FRESH_TOKEN)).thenReturn(null);
 
         authComponent.authenticateImpl("username", "password".toCharArray());
         assertEquals("username", authenticationContext.getCurrentUserName());
 
         authenticationContext.clearCurrentSecurityContext();
 
-        // Second call with the same credentials must be served by the cache
+        // Second call with the same credentials must be served from the cache
         authComponent.authenticateImpl("username", "password".toCharArray());
         assertEquals("username", authenticationContext.getCurrentUserName());
 
         verify(mockIdentityServiceFacade, times(1)).authorize(grant);
+        verify(mockIdentityServiceFacade, times(1)).decodeToken(FRESH_TOKEN);
+    }
+
+    /**
+     * If the cached access token can no longer be locally validated (e.g. expired or signing key rotated) the cache HIT must be discarded and the regular authorize/JIT path must run. Note that the successful re-authorization then repopulates the cache with a fresh entry, so post-call cache emptiness cannot be used to verify invalidation; we spy on the cache to assert {@code invalidate(...)} was called explicitly.
+     */
+    @Test
+    public void testCacheHitFallsThroughWhenCachedTokenIsInvalid()
+    {
+        DefaultCredentialValidationCache cache = spy(newCache());
+        authComponent.setCredentialValidationCache(cache);
+
+        cache.put("username", "password".toCharArray(),
+                new CredentialValidationCacheEntry("username", CACHED_TOKEN));
+
+        // Simulate "token expired" or any other local validation failure
+        doThrow(new TokenDecodingException("Token expired"))
+                .when(mockIdentityServiceFacade).decodeToken(CACHED_TOKEN);
+
+        AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
+        AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
+        IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
+        when(authorization.getAccessToken()).thenReturn(accessToken);
+        when(accessToken.getTokenValue()).thenReturn(FRESH_TOKEN);
+        when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
+        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded(FRESH_TOKEN))
+                .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
+
+        authComponent.authenticateImpl("username", "password".toCharArray());
+
+        assertEquals("username", authenticationContext.getCurrentUserName());
+        verify(mockIdentityServiceFacade, times(1)).authorize(grant);
+        verify(jitProvisioning, times(1)).extractUserInfoAndCreateUserIfNeeded(FRESH_TOKEN);
+        verify(cache, times(1)).invalidate(eq("username"), any(char[].class));
     }
 
     @Test(expected = AuthenticationException.class)
@@ -253,79 +281,19 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         AuthorizationGrant grant = AuthorizationGrant.password("username", "wrong-password");
         doThrow(new AuthorizationException("Failed")).when(mockIdentityServiceFacade).authorize(grant);
 
-        authComponent.authenticateImpl("username", "wrong-password".toCharArray());
-        fail("Expected AuthenticationException");
-
-    }
-
-    /**
-     * If the cached principal's Person node has been deleted (or was never created because the originating transaction was read-only) the cache HIT must be discarded and the regular authorize/JIT path must run so the local user state can be re-established. Note that the successful re-authorization then repopulates the cache with a fresh entry, so post-call cache emptiness cannot be used to verify invalidation; we spy on the cache to assert {@code invalidate(...)} was called explicitly.
-     */
-    @Test
-    public void testCacheHitFallsThroughWhenLocalPersonIsMissing()
-    {
-        DefaultCredentialValidationCache cache = spy(newCache());
-        authComponent.setCredentialValidationCache(cache);
-        // Simulate "Person no longer exists" - this is what happens after admin deletes a JIT user
-        cachedPrincipalProvisionedOverride = Boolean.FALSE;
-
-        long validUntil = System.currentTimeMillis() + 30_000L;
-        cache.put("username", "password".toCharArray(),
-                new CredentialValidationCacheEntry("username", validUntil));
-
-        AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
-        AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
-        IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
-        when(authorization.getAccessToken()).thenReturn(accessToken);
-        when(accessToken.getTokenValue()).thenReturn("JWT_TOKEN");
-        when(accessToken.getExpiresAt()).thenReturn(Instant.now().plusSeconds(30));
-        when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
-        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN"))
-                .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
-
-        authComponent.authenticateImpl("username", "password".toCharArray());
-
-        assertEquals("username", authenticationContext.getCurrentUserName());
-        verify(mockIdentityServiceFacade, times(1)).authorize(grant);
-        verify(jitProvisioning, times(1)).extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN");
-        verify(cache, times(1)).invalidate(eq("username"), any(char[].class));
-    }
-
-    /**
-     * Pure unit verification of the helper itself: when JIT provisioning is disabled ({@code createMissingPeople == false}), {@link IdentityServiceAuthenticationComponent#cachedPrincipalIsStillProvisioned(String)} must short-circuit to {@code true} without consulting {@link PersonService#personExists(String)}, because a fresh authorize() would not create the Person either.
-     */
-    @Test
-    public void testCachedPrincipalCheckSkippedWhenCreateMissingPeopleIsDisabled()
-    {
-        IdentityServiceAuthenticationComponent component = new IdentityServiceAuthenticationComponent();
-        PersonService spied = mock(PersonService.class);
-        when(spied.createMissingPeople()).thenReturn(false);
-        component.setPersonService(spied);
-
-        assertTrue("Helper must honour cache when JIT is disabled",
-                component.cachedPrincipalIsStillProvisioned("username"));
-        verify(spied, never()).personExists(any());
-    }
-
-    /**
-     * Pure unit verification of the helper itself: when JIT provisioning is enabled and the Person is missing, the helper must report {@code false} so the cache entry is discarded.
-     */
-    @Test
-    public void testCachedPrincipalCheckReportsMissingPerson()
-    {
-        IdentityServiceAuthenticationComponent component = new IdentityServiceAuthenticationComponent();
-        PersonService spied = mock(PersonService.class);
-        when(spied.createMissingPeople()).thenReturn(true);
-        when(spied.personExists("username")).thenReturn(false);
-        component.setPersonService(spied);
-
-        assertFalse("Helper must report missing Person",
-                component.cachedPrincipalIsStillProvisioned("username"));
+        try
+        {
+            authComponent.authenticateImpl("username", "wrong-password".toCharArray());
+        }
+        finally
+        {
+            assertFalse("A failed authorization must not populate the cache",
+                    cache.get("username", "wrong-password".toCharArray()).isPresent());
+        }
     }
 
     private static DefaultCredentialValidationCache newCache()
     {
-        return new DefaultCredentialValidationCache(
-                new MemoryCache<>(), true, "shared-secret", 1_000L, 1_000L, 60_000L);
+        return new DefaultCredentialValidationCache(new MemoryCache<>(), true);
     }
 }

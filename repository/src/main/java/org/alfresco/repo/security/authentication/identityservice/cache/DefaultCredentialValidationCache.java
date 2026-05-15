@@ -28,13 +28,12 @@ package org.alfresco.repo.security.authentication.identityservice.cache;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,57 +43,35 @@ import org.alfresco.repo.cache.SimpleCache;
  * Default {@link CredentialValidationCache} backed by an Alfresco {@link SimpleCache}.
  *
  * <p>
- * The cache key is an HMAC-SHA256 of {@code userName + 0x00 + password} computed with a configured cluster-shared secret. As a result, neither the password nor any access/refresh token is ever stored in the cache; only an opaque, salted hash of the credentials is used as the lookup key. A different password for the same user produces a different key and therefore a natural cache miss, forcing re-validation against the Identity Service.
+ * The cache key is a SHA-256 digest of {@code userName + 0x00 + password} encoded as base64url. As a result, neither the password nor the user name appear in the cache key in clear form, and a different password for the same user produces a different key, forcing re-validation against the Identity Service. Because the backing cache is required to be local to a single JVM, no cluster-shared salt or HMAC secret is necessary; SHA-256 is used to avoid review concerns associated with weaker digests while remaining inexpensive on the per-request hot path.
  * </p>
  *
  * <p>
- * The cache fails closed: if it is disabled, or if the shared secret is missing, lookups return {@link Optional#empty()} and writes are silently ignored. The component using this cache will then fall back to the regular authorize-on-every-request behaviour.
+ * Validity of cached entries is delegated to the caller: this class never inspects the token beyond storing it. Callers are expected to revalidate the token (signature, {@code exp}, etc.) on every HIT through the Identity Service facade. The cache region's {@code timeToLiveSeconds} acts only as a bound on heap usage.
  * </p>
  *
  * <p>
- * Per-entry validity is taken from the access-token expiration returned by the Identity Provider, optionally clamped by configured min/max bounds and reduced by a small clock-skew margin so the local view never trusts a credential past the IdP-issued lifetime.
+ * The cache fails closed: if it is disabled, or if the backing region is missing, lookups return {@link Optional#empty()} and writes are silently ignored. The component using this cache then falls back to the regular authorize-on-every-request behaviour.
  * </p>
  */
 @SuppressWarnings("PMD.UseVarargs")
 public class DefaultCredentialValidationCache implements CredentialValidationCache
 {
     private static final Log LOGGER = LogFactory.getLog(DefaultCredentialValidationCache.class);
-    private static final String HMAC_ALGORITHM = "HmacSHA256";
+    private static final String DIGEST_ALGORITHM = "SHA-256";
 
     private final SimpleCache<String, CredentialValidationCacheEntry> backingCache;
     private final boolean enabled;
-    private final byte[] sharedSecret;
-    private final long clockSkewMillis;
-    private final long minTtlMillis;
-    private final long maxTtlMillis;
 
     public DefaultCredentialValidationCache(
             SimpleCache<String, CredentialValidationCacheEntry> backingCache,
-            boolean enabled,
-            String sharedSecret,
-            long clockSkewMillis,
-            long minTtlMillis,
-            long maxTtlMillis)
+            boolean enabled)
     {
         this.backingCache = backingCache;
-        this.clockSkewMillis = Math.max(0L, clockSkewMillis);
-        this.minTtlMillis = Math.max(0L, minTtlMillis);
-        this.maxTtlMillis = Math.max(this.minTtlMillis, maxTtlMillis);
 
         if (!enabled)
         {
             this.enabled = false;
-            this.sharedSecret = null;
-            return;
-        }
-
-        if (StringUtils.isBlank(sharedSecret))
-        {
-            LOGGER.warn("Identity Service credential validation cache is enabled but no shared secret is configured "
-                    + "(identity-service.authentication.credentialValidationCache.sharedSecret). "
-                    + "The cache will be disabled until a cluster-shared secret is configured.");
-            this.enabled = false;
-            this.sharedSecret = null;
             return;
         }
 
@@ -103,19 +80,14 @@ public class DefaultCredentialValidationCache implements CredentialValidationCac
             LOGGER.warn("Identity Service credential validation cache is enabled but no backing cache is wired. "
                     + "The cache will be disabled.");
             this.enabled = false;
-            this.sharedSecret = null;
             return;
         }
 
         this.enabled = true;
-        this.sharedSecret = sharedSecret.getBytes(StandardCharsets.UTF_8);
 
         if (LOGGER.isInfoEnabled())
         {
-            LOGGER.info("Identity Service credential validation cache enabled "
-                    + "(clockSkewMs=" + this.clockSkewMillis
-                    + ", minTtlMs=" + this.minTtlMillis
-                    + ", maxTtlMs=" + this.maxTtlMillis + ").");
+            LOGGER.info("Identity Service credential validation cache enabled (local-JVM, " + DIGEST_ALGORITHM + " keys).");
         }
     }
 
@@ -145,18 +117,7 @@ public class DefaultCredentialValidationCache implements CredentialValidationCac
 
         try
         {
-            final CredentialValidationCacheEntry entry = backingCache.get(key);
-            if (entry == null)
-            {
-                return Optional.empty();
-            }
-            if (entry.isExpired(System.currentTimeMillis()))
-            {
-                // Defensive eviction so the local view stays aligned with token lifetime
-                backingCache.remove(key);
-                return Optional.empty();
-            }
-            return Optional.of(entry);
+            return Optional.ofNullable(backingCache.get(key));
         }
         catch (RuntimeException ex)
         {
@@ -172,20 +133,9 @@ public class DefaultCredentialValidationCache implements CredentialValidationCac
         {
             return;
         }
-        final long now = System.currentTimeMillis();
-        final long bounded = boundValidUntil(now, entry.getValidUntilEpochMillis());
-        if (bounded <= now)
-        {
-            // Token TTL is below the configured minimum, do not cache
-            return;
-        }
-        final CredentialValidationCacheEntry stored = (bounded == entry.getValidUntilEpochMillis())
-                ? entry
-                : new CredentialValidationCacheEntry(entry.getNormalizedUsername(), bounded);
-
         try
         {
-            backingCache.put(deriveKey(userName, password), stored);
+            backingCache.put(deriveKey(userName, password), entry);
         }
         catch (RuntimeException ex)
         {
@@ -211,43 +161,24 @@ public class DefaultCredentialValidationCache implements CredentialValidationCac
     }
 
     /**
-     * Constrain the IdP-issued validity to a safe local window.
+     * Derive the cache key as base64url(SHA-256(userName || 0x00 || password)). The single-byte separator prevents accidental collisions between e.g. ("ab", "cd") and ("a", "bcd"). The intermediate password byte buffer is wiped after use.
      */
-    private long boundValidUntil(long now, long validUntil)
-    {
-        long ttl = validUntil - now - clockSkewMillis;
-        if (ttl <= 0L)
-        {
-            return now;
-        }
-        if (ttl < minTtlMillis)
-        {
-            return now;
-        }
-        if (ttl > maxTtlMillis)
-        {
-            ttl = maxTtlMillis;
-        }
-        return now + ttl;
-    }
-
-    private String deriveKey(String userName, char[] password)
+    private static String deriveKey(String userName, char[] password)
     {
         byte[] passwordBytes = null;
         try
         {
-            final Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-            mac.init(new SecretKeySpec(sharedSecret, HMAC_ALGORITHM));
-            mac.update(safe(userName).getBytes(StandardCharsets.UTF_8));
-            mac.update((byte) 0);
+            final MessageDigest digest = MessageDigest.getInstance(DIGEST_ALGORITHM);
+            digest.update(safe(userName).getBytes(StandardCharsets.UTF_8));
+            digest.update((byte) 0);
             passwordBytes = charsToBytes(password);
-            mac.update(passwordBytes);
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(mac.doFinal());
+            digest.update(passwordBytes);
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest.digest());
         }
-        catch (Exception e)
+        catch (NoSuchAlgorithmException e)
         {
-            // Refuse to fall back to a weaker keying scheme; surface as a runtime error
-            // so the caller treats the lookup as a miss and bypasses the cache for this request.
+            // SHA-256 is mandated by every JRE; surface as a runtime error so the caller treats
+            // the lookup as a miss and bypasses the cache for this request.
             throw new IllegalStateException("Failed to derive credential validation cache key.", e);
         }
         finally

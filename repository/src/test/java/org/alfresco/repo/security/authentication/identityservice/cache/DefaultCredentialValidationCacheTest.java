@@ -40,10 +40,7 @@ import org.alfresco.repo.cache.SimpleCache;
 
 public class DefaultCredentialValidationCacheTest
 {
-    private static final String SHARED_CREDSEC = "test-shared-secret-not-real";
-    private static final long CLOCK_SKEW_MS = 1_000L;
-    private static final long MIN_TTL_MS = 1_000L;
-    private static final long MAX_TTL_MS = 60_000L;
+    private static final String SAMPLE_TOKEN = "header.payload.signature";
 
     private SimpleCache<String, CredentialValidationCacheEntry> backing;
 
@@ -56,93 +53,74 @@ public class DefaultCredentialValidationCacheTest
     @Test
     public void disabledCacheIsInert()
     {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                backing, false, SHARED_CREDSEC, CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(backing, false);
 
         assertFalse(cache.isEnabled());
 
         cache.put("alice", "secret".toCharArray(),
-                new CredentialValidationCacheEntry("alice", System.currentTimeMillis() + 30_000L));
+                new CredentialValidationCacheEntry("alice", SAMPLE_TOKEN));
         assertEquals(Optional.empty(), cache.get("alice", "secret".toCharArray()));
-        assertTrue(backing.getKeys().isEmpty());
+        assertTrue("Disabled cache must not write to the backing store", backing.getKeys().isEmpty());
     }
 
     @Test
-    public void blankSharedSecretFailsClosed()
+    public void nullBackingCacheFailsClosed()
     {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                backing, true, "   ", CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(null, true);
 
         assertFalse(cache.isEnabled());
 
         cache.put("alice", "secret".toCharArray(),
-                new CredentialValidationCacheEntry("alice", System.currentTimeMillis() + 30_000L));
+                new CredentialValidationCacheEntry("alice", SAMPLE_TOKEN));
         assertEquals(Optional.empty(), cache.get("alice", "secret".toCharArray()));
     }
 
     @Test
-    public void hitWhenSameCredentialsBelowTtl()
+    public void hitWhenSameCredentials()
     {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                backing, true, SHARED_CREDSEC, CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(backing, true);
 
-        long validUntil = System.currentTimeMillis() + 30_000L;
-        cache.put("alice", "secret".toCharArray(), new CredentialValidationCacheEntry("alice", validUntil));
+        cache.put("alice", "secret".toCharArray(),
+                new CredentialValidationCacheEntry("alice", SAMPLE_TOKEN));
 
         Optional<CredentialValidationCacheEntry> hit = cache.get("alice", "secret".toCharArray());
         assertTrue("Expected cache HIT", hit.isPresent());
         assertEquals("alice", hit.get().getNormalizedUsername());
+        assertEquals(SAMPLE_TOKEN, hit.get().getTokenString());
     }
 
     @Test
     public void missWhenPasswordChanges()
     {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                backing, true, SHARED_CREDSEC, CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(backing, true);
 
-        long validUntil = System.currentTimeMillis() + 30_000L;
-        cache.put("alice", "secret-A".toCharArray(), new CredentialValidationCacheEntry("alice", validUntil));
+        cache.put("alice", "secret-A".toCharArray(),
+                new CredentialValidationCacheEntry("alice", SAMPLE_TOKEN));
 
         assertTrue(cache.get("alice", "secret-A".toCharArray()).isPresent());
         assertFalse(
-                "Different password must miss because the HMAC-derived key is different",
+                "Different password must miss because the digest-derived key is different",
                 cache.get("alice", "secret-B".toCharArray()).isPresent());
     }
 
     @Test
     public void missWhenUserChanges()
     {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                backing, true, SHARED_CREDSEC, CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(backing, true);
 
-        long validUntil = System.currentTimeMillis() + 30_000L;
-        cache.put("alice", "secret".toCharArray(), new CredentialValidationCacheEntry("alice", validUntil));
+        cache.put("alice", "secret".toCharArray(),
+                new CredentialValidationCacheEntry("alice", SAMPLE_TOKEN));
 
         assertFalse(cache.get("bob", "secret".toCharArray()).isPresent());
     }
 
     @Test
-    public void expiredEntryIsEvictedOnRead()
-    {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                backing, true, SHARED_CREDSEC, CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
-
-        long alreadyExpired = System.currentTimeMillis() - 1_000L;
-        // Insert directly through the cache API; bound logic should reject it as too short
-        cache.put("alice", "secret".toCharArray(), new CredentialValidationCacheEntry("alice", alreadyExpired));
-
-        assertFalse(cache.get("alice", "secret".toCharArray()).isPresent());
-        assertTrue("Expired entry must not remain in the backing cache", backing.getKeys().isEmpty());
-    }
-
-    @Test
     public void invalidateRemovesEntry()
     {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                backing, true, SHARED_CREDSEC, CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(backing, true);
 
-        long validUntil = System.currentTimeMillis() + 30_000L;
-        cache.put("alice", "secret".toCharArray(), new CredentialValidationCacheEntry("alice", validUntil));
+        cache.put("alice", "secret".toCharArray(),
+                new CredentialValidationCacheEntry("alice", SAMPLE_TOKEN));
         assertTrue(cache.get("alice", "secret".toCharArray()).isPresent());
 
         cache.invalidate("alice", "secret".toCharArray());
@@ -150,75 +128,42 @@ public class DefaultCredentialValidationCacheTest
     }
 
     @Test
-    public void backingCacheNeverContainsRawSecrets()
+    public void putOverwritesPreviousEntryForSameCredentials()
     {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                backing, true, SHARED_CREDSEC, CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(backing, true);
 
-        long validUntil = System.currentTimeMillis() + 30_000L;
+        cache.put("alice", "secret".toCharArray(),
+                new CredentialValidationCacheEntry("alice", "first.token.value"));
+        cache.put("alice", "secret".toCharArray(),
+                new CredentialValidationCacheEntry("alice", "second.token.value"));
+
+        Optional<CredentialValidationCacheEntry> hit = cache.get("alice", "secret".toCharArray());
+        assertTrue(hit.isPresent());
+        assertEquals("Latest put must replace the previous entry", "second.token.value", hit.get().getTokenString());
+    }
+
+    @Test
+    public void backingCacheNeverContainsRawSecretsInKeys()
+    {
+        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(backing, true);
+
         cache.put("alice", "very-secret-pwd".toCharArray(),
-                new CredentialValidationCacheEntry("alice", validUntil));
+                new CredentialValidationCacheEntry("alice", SAMPLE_TOKEN));
 
         for (String key : backing.getKeys())
         {
             assertNotEquals("Cache key must not be the raw user name", "alice", key);
             assertFalse("Cache key must not contain the raw password", key.contains("very-secret-pwd"));
         }
-        for (String key : backing.getKeys())
-        {
-            CredentialValidationCacheEntry entry = backing.get(key);
-            assertFalse("Cache value must not echo the password",
-                    entry.toString().contains("very-secret-pwd"));
-        }
     }
 
     @Test
-    public void differentSharedSecretProducesDifferentKey()
+    public void entryToStringDoesNotEchoToken()
     {
-        DefaultCredentialValidationCache cacheA = new DefaultCredentialValidationCache(
-                backing, true, "secret-A", CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
-
-        SimpleCache<String, CredentialValidationCacheEntry> backingB = new MemoryCache<>();
-        DefaultCredentialValidationCache cacheB = new DefaultCredentialValidationCache(
-                backingB, true, "secret-B", CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
-
-        long validUntil = System.currentTimeMillis() + 30_000L;
-        cacheA.put("alice", "pwd".toCharArray(), new CredentialValidationCacheEntry("alice", validUntil));
-        cacheB.put("alice", "pwd".toCharArray(), new CredentialValidationCacheEntry("alice", validUntil));
-
-        String keyA = backing.getKeys().iterator().next();
-        String keyB = backingB.getKeys().iterator().next();
-        assertNotEquals("Different shared secrets must produce different keys", keyA, keyB);
-    }
-
-    @Test
-    public void maxTtlClampsAggressiveExpiry()
-    {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                backing, true, SHARED_CREDSEC, CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
-
-        long farFuture = System.currentTimeMillis() + (10L * MAX_TTL_MS);
-        cache.put("alice", "secret".toCharArray(), new CredentialValidationCacheEntry("alice", farFuture));
-
-        Optional<CredentialValidationCacheEntry> hit = cache.get("alice", "secret".toCharArray());
-        assertTrue(hit.isPresent());
-        long upperBound = System.currentTimeMillis() + MAX_TTL_MS + 1_000L;
-        assertTrue(
-                "Stored validUntil must be clamped by maxTtlMs",
-                hit.get().getValidUntilEpochMillis() <= upperBound);
-    }
-
-    @Test
-    public void ttlBelowMinIsRejected()
-    {
-        DefaultCredentialValidationCache cache = new DefaultCredentialValidationCache(
-                backing, true, SHARED_CREDSEC, CLOCK_SKEW_MS, MIN_TTL_MS, MAX_TTL_MS);
-
-        long shortTtl = System.currentTimeMillis() + (CLOCK_SKEW_MS + MIN_TTL_MS / 2);
-        cache.put("alice", "secret".toCharArray(), new CredentialValidationCacheEntry("alice", shortTtl));
+        CredentialValidationCacheEntry entry = new CredentialValidationCacheEntry("alice", "supersecret.jwt.payload");
 
         assertFalse(
-                "TTL below configured minimum should not be cached",
-                cache.get("alice", "secret".toCharArray()).isPresent());
+                "Entry toString() must not echo the token value to keep accidental logging safe",
+                entry.toString().contains("supersecret.jwt.payload"));
     }
 }

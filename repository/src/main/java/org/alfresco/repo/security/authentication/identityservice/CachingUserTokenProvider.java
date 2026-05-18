@@ -34,7 +34,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,7 +68,6 @@ public class CachingUserTokenProvider implements UserTokenProvider
     /**
      * Latches the first decode-failure WARN so production triage is possible without DEBUG, while subsequent failures stay at DEBUG to avoid log flooding.
      */
-    private final AtomicBoolean firstDecodeFailureLogged = new AtomicBoolean(false);
 
     public CachingUserTokenProvider(
             UserTokenProvider delegate,
@@ -87,6 +85,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
     }
 
     @Override
+    @SuppressWarnings({"PMD.AvoidDeeplyNestedIfStmts", "PMD.UseVarargs"})
     public UserToken getUserToken(String userName, char[] password)
     {
         final String cacheKey = deriveCacheKey(userName, password);
@@ -169,12 +168,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
         }
         catch (IdentityServiceFacadeException e)
         {
-            if (firstDecodeFailureLogged.compareAndSet(false, true))
-            {
-                LOGGER.warn("Identity Service user-token cache: cached access token failed local re-validation. "
-                        + "Subsequent identical failures will be logged at DEBUG. Cause: " + e.getMessage());
-            }
-            else if (LOGGER.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
                 LOGGER.debug("Cached access token failed local re-validation: " + e.getMessage());
             }
@@ -185,6 +179,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
     /**
      * Derive the cache key as base64url(SHA-256(userName || 0x00 || password)). The single-byte separator prevents accidental collisions between e.g. ("ab", "cd") and ("a", "bcd"). The intermediate password byte buffer is wiped after use.
      */
+    @SuppressWarnings("PMD.UseVarargs")
     private static String deriveCacheKey(String userName, char[] password)
     {
         byte[] passwordBytes = null;
@@ -215,6 +210,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
         return s == null ? "" : s;
     }
 
+    @SuppressWarnings("PMD.UseVarargs")
     private static byte[] charsToBytes(char[] chars)
     {
         if (chars == null)

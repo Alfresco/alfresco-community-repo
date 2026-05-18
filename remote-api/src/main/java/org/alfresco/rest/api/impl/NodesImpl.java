@@ -2480,15 +2480,17 @@ public class NodesImpl implements Nodes
      * @param activityInfo
      * @param aSync
      */
-    protected void postActivity(Activity_Type activity_type, ActivityInfo activityInfo, boolean aSync)
+    protected void postActivity(Activity_Type activityTypeEnum, ActivityInfo activityInfo, boolean async)
     {
         if (activityInfo == null)
+        {
             return; // Nothing to do.
+        }
 
-        String activityType = determineActivityType(activity_type, activityInfo.getFileInfo().isFolder());
+        String activityType = determineActivityType(activityTypeEnum, activityInfo.getFileInfo().isFolder());
         if (activityType != null)
         {
-            if (aSync)
+            if (async)
             {
                 ActivitiesTransactionListener txListener = new ActivitiesTransactionListener(activityType, activityInfo,
                         TenantUtil.getCurrentDomain(), Activities.APP_TOOL, Activities.RESTAPI_CLIENT,
@@ -3772,14 +3774,14 @@ public class NodesImpl implements Nodes
      */
     protected List<QName> createQNames(List<String> qnameStrList, List<QName> excludedProps)
     {
-        String PREFIX = PARAM_INCLUDE_PROPERTIES + "/";
+        String prefix = PARAM_INCLUDE_PROPERTIES + "/";
 
         List<QName> result = new ArrayList<>(qnameStrList.size());
         for (String str : qnameStrList)
         {
-            if (str.startsWith(PREFIX))
+            if (str.startsWith(prefix))
             {
-                str = str.substring(PREFIX.length());
+                str = str.substring(prefix.length());
             }
 
             QName name = createQName(str);

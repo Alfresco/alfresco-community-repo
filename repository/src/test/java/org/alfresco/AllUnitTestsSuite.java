@@ -29,7 +29,9 @@ import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import org.alfresco.repo.security.authentication.identityservice.CachingUserTokenProviderTest;
 import org.alfresco.repo.security.authentication.identityservice.ClientRegistrationProviderUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.DirectUserTokenProviderTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBeanTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.LazyInstantiatingIdentityServiceFacadeUnitTest;
@@ -37,7 +39,6 @@ import org.alfresco.repo.security.authentication.identityservice.SpringBasedIden
 import org.alfresco.repo.security.authentication.identityservice.authentication.AdditionalHeadersHttpServletRequestWrapperUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.authentication.AdminAuthenticationCookiesServiceUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.authentication.admin.IdentityServiceAdminConsoleAuthenticatorUnitTest;
-import org.alfresco.repo.security.authentication.identityservice.cache.DefaultCredentialValidationCacheTest;
 import org.alfresco.repo.security.authentication.identityservice.user.AccessTokenToDecodedTokenUserMapperUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.user.TokenUserToOIDCUserMapperUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.webscript.IdentityServiceWebScriptsHomeAuthenticatorUnitTest;
@@ -162,7 +163,8 @@ import org.alfresco.util.testing.category.NonBuildTests;
         IdentityServiceAdminConsoleAuthenticatorUnitTest.class,
         IdentityServiceWebScriptsHomeAuthenticatorUnitTest.class,
         ClientRegistrationProviderUnitTest.class,
-        DefaultCredentialValidationCacheTest.class,
+        CachingUserTokenProviderTest.class,
+        DirectUserTokenProviderTest.class,
         org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
         org.alfresco.repo.security.authentication.PasswordHashingTest.class,
         org.alfresco.repo.security.authority.script.ScriptAuthorityService_RegExTest.class,

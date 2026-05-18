@@ -23,36 +23,32 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.cache;
+package org.alfresco.repo.security.authentication.identityservice;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Cache value for the {@link CredentialValidationCache}.
+ * Result of a successful user authentication against the Identity Service.
  *
  * <p>
- * Records the outcome of a successful credential validation against the Identity Service: the normalized principal name to use as the current user, and the access-token string that proved the validation. The token is retained so that the cache HIT path can re-validate it locally via {@link org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade#decodeToken(String)} (signature, {@code exp}, {@code iss}, etc.) without contacting the Authorization Server.
+ * Carries the normalized principal name (the canonical user identifier resolved by the IdP, which may differ from the credentials supplied by the caller) and the access-token string returned by the IdP. The token is exposed so that components (e.g., a caching {@link UserTokenProvider}) can re-validate it locally without contacting the IdP again.
  * </p>
  *
  * <p>
- * <b>Storage scope:</b> entries of this type are intended to live exclusively in a local, single-JVM cache. They MUST NOT be replicated across the cluster nor persisted: the access-token string is a bearer credential and must not leave the JVM that obtained it. The associated cache region (see {@code cache.identityServiceCredentialValidationCache} in {@code caches.properties}) is configured as {@code cluster.type=local} for this reason.
- * </p>
- *
- * <p>
- * The entry never holds the user's password and {@link #toString()} never echoes the token value.
+ * <b>Bearer-credential handling:</b> {@link #getTokenString()} returns a bearer credential. Callers MUST NOT log, persist, or replicate it across processes. {@link #toString()} deliberately omits the token to reduce the chance of accidental leakage.
  * </p>
  */
-public final class CredentialValidationCacheEntry implements Serializable
+public final class UserToken implements Serializable
 {
     @Serial
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 1L;
 
     private final String normalizedUsername;
     private final String tokenString;
 
-    public CredentialValidationCacheEntry(String normalizedUsername, String tokenString)
+    public UserToken(String normalizedUsername, String tokenString)
     {
         this.normalizedUsername = Objects.requireNonNull(normalizedUsername, "normalizedUsername");
         this.tokenString = Objects.requireNonNull(tokenString, "tokenString");
@@ -64,7 +60,7 @@ public final class CredentialValidationCacheEntry implements Serializable
     }
 
     /**
-     * @return the access-token string captured at validation time. Callers MUST treat this as a bearer credential and MUST NOT log it.
+     * @return the access-token string captured at validation time. Treat as a bearer credential.
      */
     public String getTokenString()
     {
@@ -78,7 +74,7 @@ public final class CredentialValidationCacheEntry implements Serializable
         {
             return true;
         }
-        if (!(o instanceof CredentialValidationCacheEntry that))
+        if (!(o instanceof UserToken that))
         {
             return false;
         }
@@ -98,6 +94,6 @@ public final class CredentialValidationCacheEntry implements Serializable
     @Override
     public String toString()
     {
-        return "CredentialValidationCacheEntry{normalizedUsername='" + normalizedUsername + "'}";
+        return "UserToken{normalizedUsername='" + normalizedUsername + "'}";
     }
 }

@@ -26,17 +26,11 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.net.ConnectException;
-import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,46 +38,38 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.alfresco.error.ExceptionStackUtil;
-import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
-import org.alfresco.repo.security.authentication.identityservice.cache.CredentialValidationCacheEntry;
-import org.alfresco.repo.security.authentication.identityservice.cache.DefaultCredentialValidationCache;
-import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 
+/**
+ * Verifies the slim {@link IdentityServiceAuthenticationComponent} contract: it delegates credential validation to its injected {@link UserTokenProvider} and translates failures into {@link AuthenticationException}. The decorator/caching behaviour is covered by dedicated unit tests on {@link CachingUserTokenProvider} and {@link DirectUserTokenProvider}; this test deliberately knows nothing about caching.
+ */
 public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
 {
-    private static final String CACHED_TOKEN = "cached.jwt.value";
+    private static final String TEST_USER = "username";
+    private static final String TEST_PASS = "password";
     private static final String FRESH_TOKEN = "fresh.jwt.value";
 
     private final IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent();
 
     @Autowired
     private AuthenticationContext authenticationContext;
-
     @Autowired
     private TransactionService transactionService;
-
     @Autowired
     private UserRegistrySynchronizer userRegistrySynchronizer;
-
     @Autowired
     private NodeService nodeService;
-
     @Autowired
     private PersonService personService;
 
-    private IdentityServiceJITProvisioningHandler jitProvisioning;
-    private IdentityServiceFacade mockIdentityServiceFacade;
+    private UserTokenProvider userTokenProvider;
 
     @Before
     public void setUp()
@@ -94,10 +80,8 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         authComponent.setNodeService(nodeService);
         authComponent.setPersonService(personService);
 
-        jitProvisioning = mock(IdentityServiceJITProvisioningHandler.class);
-        mockIdentityServiceFacade = mock(IdentityServiceFacade.class);
-        authComponent.setJitProvisioningHandler(jitProvisioning);
-        authComponent.setIdentityServiceFacade(mockIdentityServiceFacade);
+        userTokenProvider = mock(UserTokenProvider.class);
+        authComponent.setUserTokenProvider(userTokenProvider);
     }
 
     @After
@@ -109,24 +93,22 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail()
     {
-        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
+        doThrow(new AuthorizationException("Failed"))
+                .when(userTokenProvider).getUserToken(any(), any());
 
-        doThrow(new AuthorizationException("Failed")).when(mockIdentityServiceFacade).authorize(grant);
-
-        authComponent.authenticateImpl("username", "password".toCharArray());
+        authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
     }
 
     @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail_connectionException()
     {
-        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
-
-        doThrow(new AuthorizationException("Couldn't connect to server", new ConnectException("ConnectionRefused")))
-                .when(mockIdentityServiceFacade).authorize(grant);
+        doThrow(new AuthorizationException("Couldn't connect to server",
+                new ConnectException("ConnectionRefused")))
+                        .when(userTokenProvider).getUserToken(any(), any());
 
         try
         {
-            authComponent.authenticateImpl("username", "password".toCharArray());
+            authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
         }
         catch (RuntimeException ex)
         {
@@ -139,39 +121,28 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail_otherException()
     {
-        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
-
         doThrow(new RuntimeException("Some other errors!"))
-                .when(mockIdentityServiceFacade)
-                .authorize(grant);
+                .when(userTokenProvider).getUserToken(any(), any());
 
-        authComponent.authenticateImpl("username", "password".toCharArray());
+        authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
     }
 
     @Test
     public void testAuthenticationPass()
     {
-        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
-        AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
-        IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
+        when(userTokenProvider.getUserToken(any(), any()))
+                .thenReturn(new UserToken(TEST_USER, FRESH_TOKEN));
 
-        when(authorization.getAccessToken()).thenReturn(accessToken);
-        when(accessToken.getTokenValue()).thenReturn(FRESH_TOKEN);
-        when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
-        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded(FRESH_TOKEN))
-                .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
+        authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
 
-        authComponent.authenticateImpl("username", "password".toCharArray());
-
-        // Check that the authenticated user has been set
-        assertEquals("User has not been set as expected.", "username", authenticationContext.getCurrentUserName());
+        assertEquals("User has not been set as expected.", TEST_USER, authenticationContext.getCurrentUserName());
     }
 
     @Test(expected = AuthenticationException.class)
-    public void testFallthroughWhenIdentityServiceFacadeIsNull()
+    public void testFallthroughWhenUserTokenProviderIsNull()
     {
-        authComponent.setIdentityServiceFacade(null);
-        authComponent.authenticateImpl("username", "password".toCharArray());
+        authComponent.setUserTokenProvider(null);
+        authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
     }
 
     @Test
@@ -182,118 +153,5 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
 
         authComponent.setAllowGuestLogin(false);
         assertFalse(authComponent.guestUserAuthenticationAllowed());
-    }
-
-    /**
-     * On a cache HIT the cached token is re-validated locally via {@code decodeToken}; if validation succeeds, the Authorization Server must NOT be contacted.
-     */
-    @Test
-    public void testCacheHitSkipsFacadeAuthorizationWhenTokenIsStillValid()
-    {
-        DefaultCredentialValidationCache cache = newCache();
-        authComponent.setCredentialValidationCache(cache);
-
-        cache.put("username", "password".toCharArray(),
-                new CredentialValidationCacheEntry("username", CACHED_TOKEN));
-
-        // decodeToken succeeds; only the absence of an exception matters
-        when(mockIdentityServiceFacade.decodeToken(CACHED_TOKEN)).thenReturn(null);
-
-        authComponent.authenticateImpl("username", "password".toCharArray());
-
-        assertEquals("Cached principal must be set as current user",
-                "username", authenticationContext.getCurrentUserName());
-        verify(mockIdentityServiceFacade, times(1)).decodeToken(CACHED_TOKEN);
-        verify(mockIdentityServiceFacade, never()).authorize(any());
-    }
-
-    /**
-     * After a cache MISS triggers a successful authorize(), the resulting access token must be cached so a subsequent identical request can be served from the cache (verified by re-validating the cached token instead of calling authorize() again).
-     */
-    @Test
-    public void testCacheMissPopulatesCacheAfterSuccessfulAuthorization()
-    {
-        DefaultCredentialValidationCache cache = newCache();
-        authComponent.setCredentialValidationCache(cache);
-
-        AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
-        AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
-        IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
-        when(authorization.getAccessToken()).thenReturn(accessToken);
-        when(accessToken.getTokenValue()).thenReturn(FRESH_TOKEN);
-        when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
-        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded(FRESH_TOKEN))
-                .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
-        when(mockIdentityServiceFacade.decodeToken(FRESH_TOKEN)).thenReturn(null);
-
-        authComponent.authenticateImpl("username", "password".toCharArray());
-        assertEquals("username", authenticationContext.getCurrentUserName());
-
-        authenticationContext.clearCurrentSecurityContext();
-
-        // Second call with the same credentials must be served from the cache
-        authComponent.authenticateImpl("username", "password".toCharArray());
-        assertEquals("username", authenticationContext.getCurrentUserName());
-
-        verify(mockIdentityServiceFacade, times(1)).authorize(grant);
-        verify(mockIdentityServiceFacade, times(1)).decodeToken(FRESH_TOKEN);
-    }
-
-    /**
-     * If the cached access token can no longer be locally validated (e.g. expired or signing key rotated) the cache HIT must be discarded and the regular authorize/JIT path must run. Note that the successful re-authorization then repopulates the cache with a fresh entry, so post-call cache emptiness cannot be used to verify invalidation; we spy on the cache to assert {@code invalidate(...)} was called explicitly.
-     */
-    @Test
-    public void testCacheHitFallsThroughWhenCachedTokenIsInvalid()
-    {
-        DefaultCredentialValidationCache cache = spy(newCache());
-        authComponent.setCredentialValidationCache(cache);
-
-        cache.put("username", "password".toCharArray(),
-                new CredentialValidationCacheEntry("username", CACHED_TOKEN));
-
-        // Simulate "token expired" or any other local validation failure
-        doThrow(new TokenDecodingException("Token expired"))
-                .when(mockIdentityServiceFacade).decodeToken(CACHED_TOKEN);
-
-        AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
-        AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
-        IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
-        when(authorization.getAccessToken()).thenReturn(accessToken);
-        when(accessToken.getTokenValue()).thenReturn(FRESH_TOKEN);
-        when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
-        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded(FRESH_TOKEN))
-                .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
-
-        authComponent.authenticateImpl("username", "password".toCharArray());
-
-        assertEquals("username", authenticationContext.getCurrentUserName());
-        verify(mockIdentityServiceFacade, times(1)).authorize(grant);
-        verify(jitProvisioning, times(1)).extractUserInfoAndCreateUserIfNeeded(FRESH_TOKEN);
-        verify(cache, times(1)).invalidate(eq("username"), any(char[].class));
-    }
-
-    @Test(expected = AuthenticationException.class)
-    public void testFailedAuthorizationDoesNotPopulateCache()
-    {
-        DefaultCredentialValidationCache cache = newCache();
-        authComponent.setCredentialValidationCache(cache);
-
-        AuthorizationGrant grant = AuthorizationGrant.password("username", "wrong-password");
-        doThrow(new AuthorizationException("Failed")).when(mockIdentityServiceFacade).authorize(grant);
-
-        try
-        {
-            authComponent.authenticateImpl("username", "wrong-password".toCharArray());
-        }
-        finally
-        {
-            assertFalse("A failed authorization must not populate the cache",
-                    cache.get("username", "wrong-password".toCharArray()).isPresent());
-        }
-    }
-
-    private static DefaultCredentialValidationCache newCache()
-    {
-        return new DefaultCredentialValidationCache(new MemoryCache<>(), true);
     }
 }

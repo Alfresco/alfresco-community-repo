@@ -21,35 +21,46 @@
       <property name="allowGuestLogin">
          <value>${identity-service.authentication.allowGuestLogin}</value>
       </property>
-      <property name="identityServiceFacade">
-         <ref bean="identityServiceFacade"/>
-      </property>
-      <property name="jitProvisioningHandler">
-         <ref bean="jitProvisioningHandler" />
-      </property>
-      <property name="credentialValidationCache">
-         <ref bean="identityServiceCredentialValidationCache" />
+      <property name="userTokenProvider">
+         <ref bean="userTokenProvider" />
       </property>
    </bean>
 
    <!--
-      Optional local-JVM cache that records the outcome of a successful credential validation
-      against the Identity Service so that subsequent identical credential presentations can skip
-      the round-trip to the Authorization Server until the previously issued access token can no
-      longer be locally validated.
+      ===== User-token provider wiring =====
 
-      The cached value is the access-token string captured at validation time; on every HIT the
-      authentication component re-validates it via IdentityServiceFacade.decodeToken (signature,
-      exp, iss, etc.). The backing cache region is configured cluster.type=local so the token
-      never leaves the JVM that obtained it.
+      The IdentityServiceAuthenticationComponent depends only on the UserTokenProvider interface;
+      it remains agnostic of how a token is obtained. Two implementations are constructed at
+      startup; UserTokenProviders.chooseProvider returns one of them based on the
+      'identity-service.authentication.userTokenCache.enabled' flag.
 
-      Backing cache region: cache.identityServiceCredentialValidationCache (cache-context.xml,
-      caches.properties).
+         directUserTokenProvider  : authorize() against Keycloak on every call (no caching).
+         cachingUserTokenProvider : decorator that caches validated tokens in a local SimpleCache
+                                    and re-validates them via decodeToken on every HIT, so a HIT
+                                    never contacts the IdP. The cached access token is a bearer
+                                    credential and never leaves the JVM that obtained it.
+
+      Backing cache region: cache.identityServiceUserTokenCache (cache-context.xml, caches.properties).
    -->
-   <bean id="identityServiceCredentialValidationCache"
-         class="org.alfresco.repo.security.authentication.identityservice.cache.DefaultCredentialValidationCache">
-      <constructor-arg ref="identityServiceCredentialValidationBackingCache" />
-      <constructor-arg value="${identity-service.authentication.credentialValidationCache.enabled:false}" />
+   <bean id="directUserTokenProvider"
+         class="org.alfresco.repo.security.authentication.identityservice.DirectUserTokenProvider">
+      <constructor-arg ref="identityServiceFacade" />
+      <constructor-arg ref="jitProvisioningHandler" />
+   </bean>
+
+   <bean id="cachingUserTokenProvider"
+         class="org.alfresco.repo.security.authentication.identityservice.CachingUserTokenProvider">
+      <constructor-arg ref="directUserTokenProvider" />
+      <constructor-arg ref="identityServiceUserTokenBackingCache" />
+      <constructor-arg ref="identityServiceFacade" />
+   </bean>
+
+   <bean id="userTokenProvider"
+         class="org.alfresco.repo.security.authentication.identityservice.UserTokenProviders"
+         factory-method="chooseProvider">
+      <constructor-arg value="${identity-service.authentication.userTokenCache.enabled:false}" />
+      <constructor-arg ref="directUserTokenProvider" />
+      <constructor-arg ref="cachingUserTokenProvider" />
    </bean>
 
    <bean name="identityServiceFacade" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean">

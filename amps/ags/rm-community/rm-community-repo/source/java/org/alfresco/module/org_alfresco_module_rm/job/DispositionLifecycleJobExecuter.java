@@ -65,27 +65,28 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
     public enum QueryMode
     {
-        FTS_DEFAULT, CMIS;
+        FTS, CMIS;
 
         public static QueryMode getQueryMode(String queryMode)
         {
             if (StringUtils.isBlank(queryMode))
             {
-                return FTS_DEFAULT;
+                return FTS;
             }
 
             String normalizedQueryMode = queryMode.trim();
             return EnumSet.allOf(QueryMode.class).stream()
                     .filter(mode -> mode.name().equalsIgnoreCase(normalizedQueryMode))
                     .findFirst()
-                    .orElse(FTS_DEFAULT);
+                    .orElse(FTS);
         }
     }
 
     /** batching properties */
     private int batchSize;
     public static final int DEFAULT_BATCH_SIZE = 500;
-    private static final int CMIS_QUERY_LIMIT = 100000;
+    public static final int DEFAULT_CMIS_QUERY_LIMIT = 100000;
+    private int cmisQueryLimit = DEFAULT_CMIS_QUERY_LIMIT;
 
     /** list of disposition actions to automatically execute */
     private List<String> dispositionActions;
@@ -108,7 +109,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** freeze service */
     private FreezeService freezeService;
 
-    private QueryMode queryMode = QueryMode.FTS_DEFAULT;
+    private QueryMode queryMode = QueryMode.FTS;
 
     /**
      *
@@ -142,6 +143,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     public void setBatchSize(int batchSize)
     {
         this.batchSize = batchSize;
+    }
+
+    public void setCmisQueryLimit(int cmisQueryLimit)
+    {
+        this.cmisQueryLimit = cmisQueryLimit;
     }
 
     /**
@@ -349,7 +355,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         }
         catch (AlfrescoRuntimeException exception)
         {
-            log.debug(exception.getMessage());
+            log.error("Disposition lifecycle job failed in FTS mode.", exception);
         }
     }
 
@@ -374,7 +380,14 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 batchSize = DEFAULT_BATCH_SIZE;
             }
 
+            if (cmisQueryLimit < 1)
+            {
+                log.debug("Invalid value for CMIS query limit: {} default value used instead.", cmisQueryLimit);
+                cmisQueryLimit = DEFAULT_CMIS_QUERY_LIMIT;
+            }
+
             log.trace("Using batch size of {}", batchSize);
+            log.trace("Using CMIS query limit of {}", cmisQueryLimit);
 
             int skipCount = 0;
             int batchNumber = 0;
@@ -382,7 +395,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             int totalEligible = 0;
             int totalProcessed = 0;
 
-            while (totalReturned < CMIS_QUERY_LIMIT)
+            while (totalReturned < cmisQueryLimit)
             {
                 batchNumber++;
 
@@ -420,7 +433,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         }
         catch (AlfrescoRuntimeException exception)
         {
-            log.debug(exception.getMessage());
+            log.error("Disposition lifecycle job failed in CMIS mode.", exception);
         }
     }
 
@@ -548,7 +561,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             }
             catch (AlfrescoRuntimeException exception)
             {
-                log.debug(exception.getMessage());
+                log.error("Failed to process disposition action '{}' for node {}.", dispAction, actionNode, exception);
             }
         }
         return processedCount;

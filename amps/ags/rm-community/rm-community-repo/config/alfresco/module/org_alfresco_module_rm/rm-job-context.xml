@@ -82,6 +82,7 @@
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
       <property name="freezeService" ref="freezeService"/>
       <property name="batchSize" value="${rm.dispositionlifecycletrigger.batchsize}"/>
+      <property name="cmisQueryLimit" value="${rm.dispositionlifecycletrigger.cmisquerylimit}"/>
       <property name="queryMode" value="${rm.dispositionlifecycletrigger.queryMode}"/>
    </bean>
 

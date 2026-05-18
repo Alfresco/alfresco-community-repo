@@ -404,6 +404,32 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
+     * CMIS mode: the configured query limit caps how many rows are read in one run.
+     */
+    @Test
+    public void cmisQueryLimitStopsLoop()
+    {
+        executer.setQueryMode("CMIS");
+        executer.setCmisQueryLimit(2);
+
+        NodeRef node1 = generateNodeRef();
+        ChildAssociationRef parentAssoc = new ChildAssociationRef(
+                ASSOC_NEXT_DISPOSITION_ACTION, generateNodeRef(), generateQName(), generateNodeRef());
+        doReturn(parentAssoc).when(mockedNodeService).getPrimaryParent(node1);
+        doReturn(false).when(mockedFreezeService).isFrozenOrHasFrozenChildren(any(NodeRef.class));
+        doReturn(false).when(mockedNodeService).exists(node1);
+
+        when(mockedResultSet.getNodeRefs())
+                .thenReturn(Collections.singletonList(node1));
+
+        executer.executeImpl();
+
+        verify(mockedSearchService, times(2)).query(any(SearchParameters.class));
+        verify(mockedResultSet, times(2)).getNodeRefs();
+        verify(mockedResultSet, times(2)).close();
+    }
+
+    /**
      * Given the maximum page of elements for search service is 2
      *       and search service finds more than one page of elements
      * When the job executer runs

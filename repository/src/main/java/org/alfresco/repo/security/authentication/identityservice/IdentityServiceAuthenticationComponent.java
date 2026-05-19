@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
@@ -42,7 +42,7 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
  */
 public class IdentityServiceAuthenticationComponent extends AbstractAuthenticationComponent implements ActivateableBean
 {
-    private static final Log LOG = LogFactory.getLog(IdentityServiceAuthenticationComponent.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IdentityServiceAuthenticationComponent.class);
 
     /** Provider of validated user tokens (direct-to-IdP or caching, opaque to this component). */
     private UserTokenProvider userTokenProvider;
@@ -65,10 +65,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     {
         if (userTokenProvider == null)
         {
-            if (LOG.isDebugEnabled())
-            {
-                LOG.debug("UserTokenProvider was not set, possibly due to the 'identity-service.authentication.enable-username-password-authentication=false' property.");
-            }
+            LOG.debug("UserTokenProvider was not set, possibly due to the 'identity-service.authentication.enable-username-password-authentication=false' property.");
 
             throw new AuthenticationException("User not authenticated because UserTokenProvider was not set.");
         }

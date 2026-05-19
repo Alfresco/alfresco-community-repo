@@ -35,8 +35,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
@@ -58,7 +58,7 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
  */
 public class CachingUserTokenProvider implements UserTokenProvider
 {
-    private static final Log LOGGER = LogFactory.getLog(CachingUserTokenProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CachingUserTokenProvider.class);
     private static final String DIGEST_ALGORITHM = "SHA-256";
 
     private final UserTokenProvider delegate;
@@ -78,10 +78,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
         this.backingCache = requireNonNull(backingCache, "backingCache");
         this.identityServiceFacade = requireNonNull(identityServiceFacade, "identityServiceFacade");
 
-        if (LOGGER.isInfoEnabled())
-        {
-            LOGGER.info("Identity Service user-token cache enabled (local-JVM, " + DIGEST_ALGORITHM + " keys).");
-        }
+        LOGGER.info("Identity Service user-token cache enabled (local-JVM, {} keys).", DIGEST_ALGORITHM);
     }
 
     @Override
@@ -95,18 +92,10 @@ public class CachingUserTokenProvider implements UserTokenProvider
         {
             if (isCachedTokenStillValid(cached))
             {
-                if (LOGGER.isDebugEnabled())
-                {
-                    LOGGER.debug("User-token cache HIT for user '" + userName
-                            + "'. Skipping authorization request.");
-                }
+                LOGGER.debug("User-token cache HIT for user '{}'. Skipping authorization request.", userName);
                 return cached;
             }
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("User-token cache HIT for user '" + userName
-                        + "' but the cached token is no longer valid. Invalidating and re-authorizing.");
-            }
+            LOGGER.debug("User-token cache HIT for user '{}' but the cached token is no longer valid. Invalidating and re-authorizing.", userName);
             evict(cacheKey);
         }
 
@@ -117,15 +106,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
 
     private UserToken readCache(String cacheKey)
     {
-        try
-        {
-            return backingCache.get(cacheKey);
-        }
-        catch (RuntimeException ex)
-        {
-            LOGGER.warn("Failed to read user-token cache entry: " + ex.getMessage());
-            return null;
-        }
+        return backingCache.get(cacheKey);
     }
 
     private void writeCache(String cacheKey, UserToken token)
@@ -136,7 +117,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
         }
         catch (RuntimeException ex)
         {
-            LOGGER.warn("Failed to store user-token cache entry: " + ex.getMessage());
+            LOGGER.warn("Failed to store user-token cache entry", ex);
         }
     }
 
@@ -148,7 +129,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
         }
         catch (RuntimeException ex)
         {
-            LOGGER.warn("Failed to invalidate user-token cache entry: " + ex.getMessage());
+            LOGGER.warn("Failed to invalidate user-token cache entry", ex);
         }
     }
 
@@ -168,10 +149,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
         }
         catch (IdentityServiceFacadeException e)
         {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Cached access token failed local re-validation: " + e.getMessage());
-            }
+            LOGGER.debug("Cached access token failed local re-validation: {}", e.getMessage());
             return false;
         }
     }

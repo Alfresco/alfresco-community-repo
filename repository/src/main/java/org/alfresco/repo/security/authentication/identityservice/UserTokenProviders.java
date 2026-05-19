@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Spring helper that selects the {@link UserTokenProvider} implementation to expose to consumers based on the {@code identity-service.authentication.userTokenCache.enabled} flag.
@@ -37,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class UserTokenProviders
 {
-    private static final Log LOGGER = LogFactory.getLog(UserTokenProviders.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserTokenProviders.class);
 
     private UserTokenProviders()
     {

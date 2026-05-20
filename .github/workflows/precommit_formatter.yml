@@ -22,6 +22,15 @@ jobs:
           extra_args: --all-files
       - name: Update secrets baseline
         run: pip install detect-secrets && detect-secrets scan --baseline .secrets.baseline
+
+      # Commit/push the updated baseline if it changed.
+      - uses: Alfresco/alfresco-build-tools/.github/actions/git-commit-changes@v17.2.0
+        with:
+          username: ${{ secrets.BOT_GITHUB_USERNAME }}
+          add-options: .secrets.baseline
+          commit-message: "Update secrets baseline"
+          skip-if-no-changes: true
+
       - uses: Alfresco/alfresco-build-tools/.github/actions/git-commit-changes@v17.2.0
         with:
           username: ${{ secrets.BOT_GITHUB_USERNAME }}

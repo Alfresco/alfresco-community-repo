@@ -6,6 +6,9 @@ on:
       - master
       - release/**
 
+permissions:
+  contents: read
+
 env:
   JAVA_VERSION: '21'
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60

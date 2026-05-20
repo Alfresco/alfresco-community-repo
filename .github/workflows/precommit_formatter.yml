@@ -1,4 +1,6 @@
 name: Pre-Commit formatter
+permissions:
+  contents: read
 
 on:
   push:

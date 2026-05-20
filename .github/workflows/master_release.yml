@@ -13,7 +13,7 @@ env:
 jobs:
   run_ci:
     uses: ./.github/workflows/ci.yml
-    secrets: inherit
+    secrets: inherit # pragma: allowlist secret
   push_to_nexus:
     name: "Push to Nexus"
     runs-on: ubuntu-latest

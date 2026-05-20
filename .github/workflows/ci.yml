@@ -40,7 +40,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
@@ -70,7 +70,7 @@ jobs:
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -102,7 +102,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -124,7 +124,7 @@ jobs:
           mkdir temp-dir-for-sast
           bash ./scripts/ci/remove-sast-exclusions.sh ./packaging/war/target/alfresco.war temp-dir-for-sast/reduced.war
       - name: "Run SAST Scan"
-        uses: veracode/Veracode-pipeline-scan-action@v1.0.21
+        uses: veracode/Veracode-pipeline-scan-action@e7b4fe35b0cc32c530ca6d9c6737f0f7ea0ba4f7 # v1.0.21
         with:
           vid: ${{ secrets.VERACODE_API_ID }}
           vkey: ${{ secrets.VERACODE_API_KEY }}
@@ -143,7 +143,7 @@ jobs:
         run: zip readable_output.zip results.json
       - name: Upload Artifact
         if: success() || failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: Veracode Pipeline-Scan Results (Human Readable)
           path: readable_output.zip
@@ -206,7 +206,7 @@ jobs:
             testModule: mmt
             testAttributes: "-Dtest=AllMmtUnitTestSuite"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -258,7 +258,7 @@ jobs:
             compose-profile: with-transform-core-aio
             transformers-tag: 5.2.0
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -307,7 +307,7 @@ jobs:
       matrix:
         version: ['10.11']
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -343,7 +343,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -379,7 +379,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -414,7 +414,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -449,7 +449,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -484,7 +484,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -521,7 +521,7 @@ jobs:
       matrix:
         activemq: [ 'activemq6', 'activemq5' ]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -589,7 +589,7 @@ jobs:
             disabledHostnameVerification: false
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -667,7 +667,7 @@ jobs:
           - test-name: "Integration TAS tests"
             pom-dir: tas-integration
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -715,7 +715,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -753,7 +753,7 @@ jobs:
       matrix:
         part: [1, 2, 3, 4]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -793,7 +793,7 @@ jobs:
       matrix:
         part: [1, 2, 3, 4]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -829,7 +829,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -851,7 +851,7 @@ jobs:
         run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
       - name: "Configure AWS credentials"
         if: ${{ always() }}
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
         with:
           aws-access-key-id: ${{ secrets.AGS_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AGS_AWS_SECRET_ACCESS_KEY }}
@@ -884,7 +884,7 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0

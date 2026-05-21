@@ -21,12 +21,46 @@
       <property name="allowGuestLogin">
          <value>${identity-service.authentication.allowGuestLogin}</value>
       </property>
-      <property name="identityServiceFacade">
-         <ref bean="identityServiceFacade"/>
+      <property name="userTokenProvider">
+         <ref bean="userTokenProvider" />
       </property>
-      <property name="jitProvisioningHandler">
-         <ref bean="jitProvisioningHandler" />
-      </property>
+   </bean>
+
+   <!--
+      ===== User-token provider wiring =====
+
+      The IdentityServiceAuthenticationComponent depends only on the UserTokenProvider interface;
+      it remains agnostic of how a token is obtained. Two implementations are constructed at
+      startup; UserTokenProviders.chooseProvider returns one of them based on the
+      'identity-service.authentication.userTokenCache.enabled' flag.
+
+         directUserTokenProvider  : authorize() against Keycloak on every call (no caching).
+         cachingUserTokenProvider : decorator that caches validated tokens in a local SimpleCache
+                                    and re-validates them via decodeToken on every HIT, so a HIT
+                                    never contacts the IdP. The cached access token is a bearer
+                                    credential and never leaves the JVM that obtained it.
+
+      Backing cache region: cache.identityServiceUserTokenCache (cache-context.xml, caches.properties).
+   -->
+   <bean id="directUserTokenProvider"
+         class="org.alfresco.repo.security.authentication.identityservice.DirectUserTokenProvider">
+      <constructor-arg ref="identityServiceFacade" />
+      <constructor-arg ref="jitProvisioningHandler" />
+   </bean>
+
+   <bean id="cachingUserTokenProvider"
+         class="org.alfresco.repo.security.authentication.identityservice.CachingUserTokenProvider">
+      <constructor-arg ref="directUserTokenProvider" />
+      <constructor-arg ref="identityServiceUserTokenBackingCache" />
+      <constructor-arg ref="identityServiceFacade" />
+   </bean>
+
+   <bean id="userTokenProvider"
+         class="org.alfresco.repo.security.authentication.identityservice.UserTokenProviders"
+         factory-method="chooseProvider">
+      <constructor-arg value="${identity-service.authentication.userTokenCache.enabled:false}" />
+      <constructor-arg ref="directUserTokenProvider" />
+      <constructor-arg ref="cachingUserTokenProvider" />
    </bean>
 
    <bean name="identityServiceFacade" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean">

@@ -496,6 +496,15 @@
       <constructor-arg value="cache.protectedUsersCache"/>
    </bean>
 
+   <!-- Backing cache region for the Identity Service user-token cache (CachingUserTokenProvider).
+        Keys are opaque SHA-256 digests of (userName, password); values are UserToken instances
+        carrying the normalized principal name and the access-token string. The region is
+        configured cluster.type=local so the token never leaves the JVM that obtained it. See
+        cache.identityServiceUserTokenCache in caches.properties for sizing and eviction. -->
+   <bean name="identityServiceUserTokenBackingCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.identityServiceUserTokenCache"/>
+   </bean>
+
     <!-- The cross-transaction shared cache for heartbeat data on cluster usage -->
 
    <bean name="hbClusterUsageCache" factory-bean="cacheFactory" factory-method="createCache">

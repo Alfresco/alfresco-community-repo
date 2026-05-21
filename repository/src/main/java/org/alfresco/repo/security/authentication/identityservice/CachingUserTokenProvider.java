@@ -73,7 +73,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
     {
         this.delegate = requireNonNull(delegate, "delegate");
         this.backingCache = requireNonNull(backingCache, "backingCache");
-        this.identityServiceFacade = requireNonNull(identityServiceFacade, "identityServiceFacade");
+        this.identityServiceFacade = identityServiceFacade;
 
         LOGGER.info("Identity Service user-token cache enabled (local-JVM, {} keys).", DIGEST_ALGORITHM);
     }

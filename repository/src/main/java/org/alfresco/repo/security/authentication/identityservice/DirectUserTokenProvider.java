@@ -48,13 +48,20 @@ public class DirectUserTokenProvider implements UserTokenProvider
             IdentityServiceFacade identityServiceFacade,
             IdentityServiceJITProvisioningHandler jitProvisioningHandler)
     {
-        this.identityServiceFacade = requireNonNull(identityServiceFacade, "identityServiceFacade");
+        this.identityServiceFacade = identityServiceFacade;
         this.jitProvisioningHandler = requireNonNull(jitProvisioningHandler, "jitProvisioningHandler");
     }
 
     @Override
     public UserToken getUserToken(UserTokenRequest request)
     {
+        if (identityServiceFacade == null)
+        {
+            throw new AuthenticationException(
+                    "Username/password authentication is not available. "
+                            + "Check identity-service.authentication.enable-username-password-authentication.");
+        }
+
         final AccessTokenAuthorization authorization = identityServiceFacade
                 .authorize(AuthorizationGrant.password(request.username(), String.valueOf(request.password())));
 

@@ -88,7 +88,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
         {
             if (isCachedTokenStillValid(cached))
             {
-                LOGGER.debug("User-token cache HIT for user '{}'. Skipping --------------------- authorization request.", request.username());
+                LOGGER.debug("User-token cache HIT for user '{}'. Skipping authorization request.", request.username());
                 return cached;
             }
             LOGGER.debug("User-token cache HIT for user '{}' but the cached token is no longer valid. Invalidating and re-authorizing.", request.username());

@@ -2187,7 +2187,6 @@ public class NodesImpl implements Nodes
 
         // check that requested parent node exists and it's type is a (sub-)type of folder
         NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId);
-        checkNotSystemPath(parentNodeRef);
 
         // node name - mandatory
         String nodeName = nodeInfo.getName();
@@ -2226,6 +2225,7 @@ public class NodesImpl implements Nodes
         // Optionally, lookup by relative path
         String relativePath = nodeInfo.getRelativePath();
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
+        checkNotSystemPath(parentNodeRef);
 
         // Existing file/folder name handling
         boolean autoRename = Boolean.valueOf(parameters.getParameter(PARAM_AUTO_RENAME));
@@ -3779,12 +3779,12 @@ public class NodesImpl implements Nodes
         List<QName> result = new ArrayList<>(qnameStrList.size());
         for (String str : qnameStrList)
         {
-            if (str.startsWith(prefix))
+            String qnameStr = str;
+            if (qnameStr.startsWith(prefix))
             {
-                str = str.substring(prefix.length());
+                qnameStr = qnameStr.substring(prefix.length());
             }
-
-            QName name = createQName(str);
+            QName name = createQName(qnameStr);
             if (!excludedProps.contains(name))
             {
                 result.add(name);
@@ -3983,6 +3983,10 @@ public class NodesImpl implements Nodes
             }
 
             QName type = nodeService.getType(current);
+            if (SiteModel.TYPE_SITE.equals(type))
+            {
+                break;
+            }
             if (isSpecialNode(current, type))
             {
                 throw new PermissionDeniedException(

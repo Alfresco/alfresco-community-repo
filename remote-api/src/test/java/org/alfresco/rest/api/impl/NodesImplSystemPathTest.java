@@ -25,10 +25,7 @@
  */
 package org.alfresco.rest.api.impl;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,13 +42,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.repo.site.SiteModel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NodesImplSystemPathTest
@@ -61,9 +58,6 @@ public class NodesImplSystemPathTest
 
     @Mock
     private Repository repositoryHelper;
-
-    @Mock
-    private Parameters parameters;
 
     @InjectMocks
     private NodesImpl nodesImpl;
@@ -98,7 +92,6 @@ public class NodesImplSystemPathTest
         NodeRef parentRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "parent-uuid");
         NodeRef childRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "child-uuid");
 
-        when(nodeService.exists(childRef)).thenReturn(true);
         when(nodeService.getType(childRef)).thenReturn(ContentModel.TYPE_CONTENT);
         when(nodeService.getPrimaryParent(childRef)).thenReturn(
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parentRef, null, childRef));
@@ -110,7 +103,7 @@ public class NodesImplSystemPathTest
         when(nodeService.getType(dataDictionaryRef)).thenReturn(ContentModel.TYPE_FOLDER);
 
         assertThrows(PermissionDeniedException.class,
-                () -> nodesImpl.deleteNode(childRef.getId(), parameters));
+                () -> nodesImpl.checkNotSystemPath(childRef));
     }
 
     @Test
@@ -119,7 +112,6 @@ public class NodesImplSystemPathTest
         NodeRef parentRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "normal-parent");
         NodeRef childRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "normal-child");
 
-        when(nodeService.exists(childRef)).thenReturn(true);
         when(nodeService.getType(childRef)).thenReturn(ContentModel.TYPE_CONTENT);
         when(nodeService.getPrimaryParent(childRef)).thenReturn(
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parentRef, null, childRef));
@@ -128,30 +120,17 @@ public class NodesImplSystemPathTest
         when(nodeService.getPrimaryParent(parentRef)).thenReturn(
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, companyHomeRef, null, parentRef));
 
-        try
-        {
-            nodesImpl.deleteNode(childRef.getId(), parameters);
-        }
-        catch (PermissionDeniedException e)
-        {
-            fail("Normal node under Company Home should not throw PermissionDeniedException");
-        }
-        catch (Exception e)
-        {
-            assertFalse("checkNotSystemPath should not block a normal node path",
-                    false);
-        }
+        // Should not throw PermissionDeniedException for a normal node path
+        nodesImpl.checkNotSystemPath(childRef);
 
-        verify(nodeService, atLeastOnce()).getPrimaryParent(childRef);
+        verify(nodeService).getPrimaryParent(childRef);
     }
 
     @Test
     public void testCompanyHome_ShouldNotTraverseFurther()
     {
-        when(nodeService.exists(companyHomeRef)).thenReturn(true);
-
-        assertThrows(PermissionDeniedException.class,
-                () -> nodesImpl.deleteNode(companyHomeRef.getId(), parameters));
+        // checkNotSystemPath should break at Company Home without traversing above it
+        nodesImpl.checkNotSystemPath(companyHomeRef);
 
         verify(nodeService, never()).getPrimaryParent(companyHomeRef);
     }
@@ -161,7 +140,6 @@ public class NodesImplSystemPathTest
     {
         NodeRef childRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "child-under-dd");
 
-        when(nodeService.exists(childRef)).thenReturn(true);
         when(nodeService.getType(childRef)).thenReturn(ContentModel.TYPE_CONTENT);
         when(nodeService.getPrimaryParent(childRef)).thenReturn(
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, dataDictionaryRef, null, childRef));
@@ -169,6 +147,33 @@ public class NodesImplSystemPathTest
         when(nodeService.getType(dataDictionaryRef)).thenReturn(ContentModel.TYPE_FOLDER);
 
         assertThrows(PermissionDeniedException.class,
-                () -> nodesImpl.deleteNode(childRef.getId(), parameters));
+                () -> nodesImpl.checkNotSystemPath(childRef));
+    }
+
+    @Test
+    public void testNodeInsideSite_ShouldNotBeBlocked()
+    {
+        // Simulate: documentLibrary/myFile.txt under a site (st:site ancestor)
+        // Path: myFile -> documentLibrary -> siteNode (st:site) -> companyHome
+        NodeRef siteNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "site-node");
+        NodeRef docLibRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "doc-lib");
+        NodeRef fileRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "file-in-site");
+
+        when(nodeService.getType(fileRef)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(nodeService.getPrimaryParent(fileRef)).thenReturn(
+                new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, docLibRef, null, fileRef));
+
+        when(nodeService.getType(docLibRef)).thenReturn(ContentModel.TYPE_FOLDER);
+        when(nodeService.getPrimaryParent(docLibRef)).thenReturn(
+                new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, siteNodeRef, null, docLibRef));
+
+        // st:site ancestor - traversal should stop here (break)
+        when(nodeService.getType(siteNodeRef)).thenReturn(SiteModel.TYPE_SITE);
+
+        // Should not throw - normal site content must be allowed
+        nodesImpl.checkNotSystemPath(fileRef);
+
+        // Verify traversal stopped at st:site - did not go above it
+        verify(nodeService, never()).getPrimaryParent(siteNodeRef);
     }
 }

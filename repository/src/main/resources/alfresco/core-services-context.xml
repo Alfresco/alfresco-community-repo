@@ -506,6 +506,9 @@
         <property name="useVersionAssocIndex">
             <value>${version.store.useVersionAssocIndex}</value>
         </property>
+        <property name="preserveUnsetProperties">
+            <value>${version.store.preserveUnsetProperties}</value>
+        </property>
     </bean>
 
     <bean id="versionNodeService" class="org.alfresco.repo.version.Node2ServiceImpl">

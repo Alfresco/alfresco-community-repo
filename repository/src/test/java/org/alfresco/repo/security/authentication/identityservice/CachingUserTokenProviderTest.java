@@ -72,11 +72,13 @@ public class CachingUserTokenProviderTest
         caching = new CachingUserTokenProvider(delegate, backingCache, facade);
     }
 
+    @SuppressWarnings("PMD.UseVarargs")
     private static UserTokenRequest req(String user, char[] password)
     {
         return new UserTokenRequest(user, password);
     }
 
+    @SuppressWarnings("PMD.UseVarargs")
     private static UserTokenRequest req(String user, String password)
     {
         return new UserTokenRequest(user, password.toCharArray());

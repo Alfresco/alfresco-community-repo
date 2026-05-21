@@ -56,6 +56,7 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
  * <b>Storage scope:</b> the cached access token is a bearer credential and MUST NOT leave the JVM that obtained it. The backing {@link SimpleCache} is therefore expected to be configured as {@code cluster.type=local}. Cache keys are SHA-256 digests of {@code username + 0x00 + password} encoded as base64url, so the password and user name never appear in cleartext in the cache.
  * </p>
  */
+@SuppressWarnings("PMD.GuardLogStatement")
 public class CachingUserTokenProvider implements UserTokenProvider
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(CachingUserTokenProvider.class);

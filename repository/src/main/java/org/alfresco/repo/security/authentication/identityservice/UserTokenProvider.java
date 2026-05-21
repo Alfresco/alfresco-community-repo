@@ -36,6 +36,7 @@ package org.alfresco.repo.security.authentication.identityservice;
  * Implementations are expected to be thread-safe.
  * </p>
  */
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface UserTokenProvider
 {
     /**

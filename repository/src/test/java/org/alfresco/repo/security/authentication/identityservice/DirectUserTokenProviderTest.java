@@ -78,10 +78,10 @@ public class DirectUserTokenProviderTest
         when(jit.extractUserInfoAndCreateUserIfNeeded(TOKEN_VALUE))
                 .thenReturn(Optional.of(new OIDCUserInfo(TEST_USER, "", "", "")));
 
-        UserToken result = direct.getUserToken(TEST_USER, TEST_PASS.clone());
+        UserToken result = direct.getUserToken(new UserTokenRequest(TEST_USER, TEST_PASS.clone()));
 
-        assertEquals(TEST_USER, result.getNormalizedUsername());
-        assertEquals(TOKEN_VALUE, result.getTokenString());
+        assertEquals(TEST_USER, result.normalizedUsername());
+        assertEquals(TOKEN_VALUE, result.tokenString());
         verify(facade, times(1)).authorize(any(AuthorizationGrant.class));
         verify(jit, times(1)).extractUserInfoAndCreateUserIfNeeded(TOKEN_VALUE);
     }
@@ -93,7 +93,7 @@ public class DirectUserTokenProviderTest
                 .when(facade).authorize(any(AuthorizationGrant.class));
 
         assertThrows(AuthorizationException.class,
-                () -> direct.getUserToken(TEST_USER, TEST_PASS.clone()));
+                () -> direct.getUserToken(new UserTokenRequest(TEST_USER, TEST_PASS.clone())));
     }
 
     @Test
@@ -108,7 +108,7 @@ public class DirectUserTokenProviderTest
                 .thenReturn(Optional.empty());
 
         assertThrows(AuthenticationException.class,
-                () -> direct.getUserToken(TEST_USER, TEST_PASS.clone()));
+                () -> direct.getUserToken(new UserTokenRequest(TEST_USER, TEST_PASS.clone())));
     }
 
     @Test

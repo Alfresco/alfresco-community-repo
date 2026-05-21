@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -37,63 +36,23 @@ import java.util.Objects;
  * </p>
  *
  * <p>
- * <b>Bearer-credential handling:</b> {@link #getTokenString()} returns a bearer credential. Callers MUST NOT log, persist, or replicate it across processes. {@link #toString()} deliberately omits the token to reduce the chance of accidental leakage.
+ * <b>Bearer-credential handling:</b> {@link #tokenString()} returns a bearer credential. Callers MUST NOT log, persist, or replicate it across processes. {@link #toString()} is deliberately overridden to omit the token (the record-default would echo every component) so that accidental {@code logger.debug(token)} calls cannot leak the credential.
  * </p>
  */
-public final class UserToken implements Serializable
+public record UserToken(String normalizedUsername, String tokenString) implements Serializable
 {
-    @Serial
-    private static final long serialVersionUID = 1L;
-
-    private final String normalizedUsername;
-    private final String tokenString;
-
-    public UserToken(String normalizedUsername, String tokenString)
+    public UserToken
     {
-        this.normalizedUsername = Objects.requireNonNull(normalizedUsername, "normalizedUsername");
-        this.tokenString = Objects.requireNonNull(tokenString, "tokenString");
-    }
-
-    public String getNormalizedUsername()
-    {
-        return normalizedUsername;
+        Objects.requireNonNull(normalizedUsername, "normalizedUsername");
+        Objects.requireNonNull(tokenString, "tokenString");
     }
 
     /**
-     * @return the access-token string captured at validation time. Treat as a bearer credential.
-     */
-    public String getTokenString()
-    {
-        return tokenString;
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
-            return true;
-        }
-        if (!(o instanceof UserToken that))
-        {
-            return false;
-        }
-        return Objects.equals(normalizedUsername, that.normalizedUsername)
-                && Objects.equals(tokenString, that.tokenString);
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(normalizedUsername, tokenString);
-    }
-
-    /**
-     * Deliberately omits the token value: only the principal name is exposed so accidental {@code toString()} logging cannot leak the bearer credential.
+     * Overrides the record-generated {@code toString()} to suppress the bearer token. Only the principal name is exposed so accidental log/print statements cannot leak the credential.
      */
     @Override
     public String toString()
     {
-        return "UserToken{normalizedUsername='" + normalizedUsername + "'}";
+        return "UserToken[normalizedUsername=" + normalizedUsername + "]";
     }
 }

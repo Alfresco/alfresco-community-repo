@@ -32,7 +32,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -72,16 +72,26 @@ public class CachingUserTokenProviderTest
         caching = new CachingUserTokenProvider(delegate, backingCache, facade);
     }
 
+    private static UserTokenRequest req(String user, char[] password)
+    {
+        return new UserTokenRequest(user, password);
+    }
+
+    private static UserTokenRequest req(String user, String password)
+    {
+        return new UserTokenRequest(user, password.toCharArray());
+    }
+
     @Test
     public void firstCallDelegatesAndPopulatesCache()
     {
-        when(delegate.getUserToken(eq(TEST_USER), any())).thenReturn(new UserToken(TEST_USER, TOKEN_A));
+        when(delegate.getUserToken(forUser(TEST_USER))).thenReturn(new UserToken(TEST_USER, TOKEN_A));
 
-        UserToken result = caching.getUserToken(TEST_USER, TEST_PASS.clone());
+        UserToken result = caching.getUserToken(req(TEST_USER, TEST_PASS.clone()));
 
-        assertEquals(TEST_USER, result.getNormalizedUsername());
-        assertEquals(TOKEN_A, result.getTokenString());
-        verify(delegate, times(1)).getUserToken(eq(TEST_USER), any());
+        assertEquals(TEST_USER, result.normalizedUsername());
+        assertEquals(TOKEN_A, result.tokenString());
+        verify(delegate, times(1)).getUserToken(forUser(TEST_USER));
         verify(facade, never()).decodeToken(any());
         assertEquals("First call must populate exactly one cache entry", 1, backingCache.getKeys().size());
     }
@@ -89,43 +99,43 @@ public class CachingUserTokenProviderTest
     @Test
     public void secondCallServedFromCacheWhenLocalValidationSucceeds()
     {
-        when(delegate.getUserToken(eq(TEST_USER), any())).thenReturn(new UserToken(TEST_USER, TOKEN_A));
+        when(delegate.getUserToken(forUser(TEST_USER))).thenReturn(new UserToken(TEST_USER, TOKEN_A));
 
-        UserToken first = caching.getUserToken(TEST_USER, TEST_PASS.clone());
-        UserToken second = caching.getUserToken(TEST_USER, TEST_PASS.clone());
+        UserToken first = caching.getUserToken(req(TEST_USER, TEST_PASS.clone()));
+        UserToken second = caching.getUserToken(req(TEST_USER, TEST_PASS.clone()));
 
         assertSame("HIT must return the same cached UserToken instance", first, second);
-        verify(delegate, times(1)).getUserToken(eq(TEST_USER), any());
+        verify(delegate, times(1)).getUserToken(forUser(TEST_USER));
         verify(facade, times(1)).decodeToken(TOKEN_A);
     }
 
     @Test
     public void cachedTokenInvalidatedWhenLocalValidationFails()
     {
-        when(delegate.getUserToken(eq(TEST_USER), any()))
+        when(delegate.getUserToken(forUser(TEST_USER)))
                 .thenReturn(new UserToken(TEST_USER, TOKEN_A))
                 .thenReturn(new UserToken(TEST_USER, TOKEN_B));
 
-        caching.getUserToken(TEST_USER, TEST_PASS.clone());
+        caching.getUserToken(req(TEST_USER, TEST_PASS.clone()));
         // Stale -> the next decodeToken call rejects the cached token
         doThrow(new TokenDecodingException("expired"))
                 .when(facade).decodeToken(TOKEN_A);
 
-        UserToken refreshed = caching.getUserToken(TEST_USER, TEST_PASS.clone());
+        UserToken refreshed = caching.getUserToken(req(TEST_USER, TEST_PASS.clone()));
 
         assertEquals("Stale entry must be replaced with a freshly issued token",
-                TOKEN_B, refreshed.getTokenString());
-        verify(delegate, times(2)).getUserToken(eq(TEST_USER), any());
+                TOKEN_B, refreshed.tokenString());
+        verify(delegate, times(2)).getUserToken(forUser(TEST_USER));
         verify(facade, times(1)).decodeToken(TOKEN_A);
     }
 
     @Test
     public void differentPasswordsProduceDifferentCacheKeys()
     {
-        when(delegate.getUserToken(eq(TEST_USER), any())).thenReturn(new UserToken(TEST_USER, TOKEN_A));
+        when(delegate.getUserToken(forUser(TEST_USER))).thenReturn(new UserToken(TEST_USER, TOKEN_A));
 
-        caching.getUserToken(TEST_USER, "one".toCharArray());
-        caching.getUserToken(TEST_USER, "two".toCharArray());
+        caching.getUserToken(req(TEST_USER, "one"));
+        caching.getUserToken(req(TEST_USER, "two"));
 
         Collection<String> keys = backingCache.getKeys();
         assertEquals("Different passwords for the same user must derive different cache keys",
@@ -141,10 +151,10 @@ public class CachingUserTokenProviderTest
     @Test
     public void differentUsersProduceDifferentCacheKeys()
     {
-        when(delegate.getUserToken(any(), any())).thenReturn(new UserToken("u", TOKEN_A));
+        when(delegate.getUserToken(any(UserTokenRequest.class))).thenReturn(new UserToken("u", TOKEN_A));
 
-        caching.getUserToken("alice", TEST_PASS.clone());
-        caching.getUserToken("bob", TEST_PASS.clone());
+        caching.getUserToken(req("alice", TEST_PASS.clone()));
+        caching.getUserToken(req("bob", TEST_PASS.clone()));
 
         assertEquals("Different users with the same password must derive different cache keys",
                 2, backingCache.getKeys().size());
@@ -154,9 +164,9 @@ public class CachingUserTokenProviderTest
     public void delegateFailureDoesNotPopulateCache()
     {
         doThrow(new RuntimeException("IdP unavailable"))
-                .when(delegate).getUserToken(eq(TEST_USER), any());
+                .when(delegate).getUserToken(forUser(TEST_USER));
 
-        assertThrows(RuntimeException.class, () -> caching.getUserToken(TEST_USER, TEST_PASS.clone()));
+        assertThrows(RuntimeException.class, () -> caching.getUserToken(req(TEST_USER, TEST_PASS.clone())));
         assertTrue("Failed authorize must not populate the cache",
                 backingCache.getKeys().isEmpty());
     }
@@ -185,10 +195,10 @@ public class CachingUserTokenProviderTest
     @Test
     public void cacheKeyIsStableAcrossCallsForSameCredentials()
     {
-        when(delegate.getUserToken(eq(TEST_USER), any())).thenReturn(new UserToken(TEST_USER, TOKEN_A));
+        when(delegate.getUserToken(forUser(TEST_USER))).thenReturn(new UserToken(TEST_USER, TOKEN_A));
 
-        caching.getUserToken(TEST_USER, TEST_PASS.clone());
-        caching.getUserToken(TEST_USER, TEST_PASS.clone());
+        caching.getUserToken(req(TEST_USER, TEST_PASS.clone()));
+        caching.getUserToken(req(TEST_USER, TEST_PASS.clone()));
 
         assertEquals("Identical (user, password) pairs must collapse to a single cache key",
                 1, backingCache.getKeys().size());
@@ -207,5 +217,34 @@ public class CachingUserTokenProviderTest
         UserToken a = new UserToken(TEST_USER, TOKEN_A);
         UserToken b = new UserToken(TEST_USER, TOKEN_B);
         assertNotEquals("Different tokens must not be equal", a, b);
+    }
+
+    @Test
+    public void userTokenRequestRejectsNullUsername()
+    {
+        assertThrows(NullPointerException.class,
+                () -> new UserTokenRequest(null, TEST_PASS.clone()));
+    }
+
+    @Test
+    public void userTokenRequestRejectsNullPassword()
+    {
+        assertThrows(NullPointerException.class,
+                () -> new UserTokenRequest(TEST_USER, null));
+    }
+
+    @Test
+    public void userTokenRequestToStringDoesNotEchoPassword()
+    {
+        UserTokenRequest request = new UserTokenRequest(TEST_USER, "secret".toCharArray());
+        assertFalse("toString() must not leak the password", request.toString().contains("secret"));
+    }
+
+    /**
+     * Mockito argument matcher for delegate stubs/verifications: matches a {@link UserTokenRequest} by user name only, since the password is wrapped in a fresh array on every call.
+     */
+    private static UserTokenRequest forUser(String username)
+    {
+        return argThat(req -> req != null && username.equals(req.username()));
     }
 }

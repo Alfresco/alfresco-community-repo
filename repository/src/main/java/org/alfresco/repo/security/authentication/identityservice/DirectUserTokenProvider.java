@@ -53,10 +53,10 @@ public class DirectUserTokenProvider implements UserTokenProvider
     }
 
     @Override
-    public UserToken getUserToken(String userName, char[] password)
+    public UserToken getUserToken(UserTokenRequest request)
     {
         final AccessTokenAuthorization authorization = identityServiceFacade
-                .authorize(AuthorizationGrant.password(userName, String.valueOf(password)));
+                .authorize(AuthorizationGrant.password(request.username(), String.valueOf(request.password())));
 
         final String tokenValue = authorization.getAccessToken().getTokenValue();
 

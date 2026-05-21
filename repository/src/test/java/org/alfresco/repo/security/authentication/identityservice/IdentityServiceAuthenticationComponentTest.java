@@ -94,7 +94,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     public void testAuthenticationFail()
     {
         doThrow(new AuthorizationException("Failed"))
-                .when(userTokenProvider).getUserToken(any(), any());
+                .when(userTokenProvider).getUserToken(any(UserTokenRequest.class));
 
         authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
     }
@@ -104,7 +104,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     {
         doThrow(new AuthorizationException("Couldn't connect to server",
                 new ConnectException("ConnectionRefused")))
-                        .when(userTokenProvider).getUserToken(any(), any());
+                        .when(userTokenProvider).getUserToken(any(UserTokenRequest.class));
 
         try
         {
@@ -122,7 +122,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     public void testAuthenticationFail_otherException()
     {
         doThrow(new RuntimeException("Some other errors!"))
-                .when(userTokenProvider).getUserToken(any(), any());
+                .when(userTokenProvider).getUserToken(any(UserTokenRequest.class));
 
         authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
     }
@@ -130,7 +130,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test
     public void testAuthenticationPass()
     {
-        when(userTokenProvider.getUserToken(any(), any()))
+        when(userTokenProvider.getUserToken(any(UserTokenRequest.class)))
                 .thenReturn(new UserToken(TEST_USER, FRESH_TOKEN));
 
         authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());

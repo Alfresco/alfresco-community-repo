@@ -34,6 +34,7 @@ import org.alfresco.repo.security.authentication.identityservice.ClientRegistrat
 import org.alfresco.repo.security.authentication.identityservice.DirectUserTokenProviderTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBeanTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceUserTokenWiringTest;
 import org.alfresco.repo.security.authentication.identityservice.LazyInstantiatingIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.SpringBasedIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.authentication.AdditionalHeadersHttpServletRequestWrapperUnitTest;
@@ -165,6 +166,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         ClientRegistrationProviderUnitTest.class,
         CachingUserTokenProviderTest.class,
         DirectUserTokenProviderTest.class,
+        IdentityServiceUserTokenWiringTest.class,
         org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
         org.alfresco.repo.security.authentication.PasswordHashingTest.class,
         org.alfresco.repo.security.authority.script.ScriptAuthorityService_RegExTest.class,

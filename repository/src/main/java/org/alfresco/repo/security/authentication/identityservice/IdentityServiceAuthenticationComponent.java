@@ -72,9 +72,9 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
 
         try
         {
-            final UserToken token = userTokenProvider.getUserToken(userName, password);
+            final UserToken token = userTokenProvider.getUserToken(new UserTokenRequest(userName, password));
             // Verification was successful so treat as authenticated user
-            setCurrentUser(token.getNormalizedUsername());
+            setCurrentUser(token.normalizedUsername());
         }
         catch (IdentityServiceFacadeException e)
         {

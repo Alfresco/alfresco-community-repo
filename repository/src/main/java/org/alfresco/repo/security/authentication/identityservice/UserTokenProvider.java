@@ -26,29 +26,26 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 /**
- * Provides a validated {@link UserToken} for a given user-name / password pair.
+ * Provides a validated {@link UserToken} for a given {@link UserTokenRequest}.
  *
  * <p>
- * Implementations may obtain the token directly from the Identity Service ({@link DirectUserTokenProvider}) or transparently cache previously obtained tokens ({@link CachingUserTokenProvider}). The contract from the consumer's point of view is the same: supply credentials, receive a validated token, or have an exception thrown if the credentials are not valid (or the IdP is unreachable). Consumers MUST NOT need to know which implementation is wired.
+ * Implementations may obtain the token directly from the Identity Service ({@link DirectUserTokenProvider}) or transparently cache previously obtained tokens ({@link CachingUserTokenProvider}). The contract from the consumer's point of view is the same: supply a request, receive a validated token, or have an exception thrown if the credentials are not valid (or the IdP is unreachable). Consumers MUST NOT need to know which implementation is wired.
  * </p>
  *
  * <p>
  * Implementations are expected to be thread-safe.
  * </p>
  */
-@SuppressWarnings({"PMD.UseVarargs", "PMD.ImplicitFunctionalInterface"})
 public interface UserTokenProvider
 {
     /**
-     * Authenticate the supplied credentials against the Identity Service (or a local cache thereof) and return the resulting validated user token.
+     * Authenticate the supplied request against the Identity Service (or a local cache thereof) and return the resulting validated user token.
      *
-     * @param userName
-     *            the user name presented by the caller
-     * @param password
-     *            the password presented by the caller; never stored as-is by any implementation
+     * @param request
+     *            credential pair; never {@code null}. Field-level null-validation is enforced by {@link UserTokenRequest} so implementations may rely on both components being non-null.
      * @return a validated {@link UserToken}
      * @throws org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException
      *             if the Identity Service rejects the credentials or cannot be reached
      */
-    UserToken getUserToken(String userName, char[] password);
+    UserToken getUserToken(UserTokenRequest request);
 }

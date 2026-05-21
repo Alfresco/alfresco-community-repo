@@ -53,7 +53,7 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
  * </p>
  *
  * <p>
- * <b>Storage scope:</b> the cached access token is a bearer credential and MUST NOT leave the JVM that obtained it. The backing {@link SimpleCache} is therefore expected to be configured as {@code cluster.type=local}. Cache keys are SHA-256 digests of {@code userName + 0x00 + password} encoded as base64url, so the password and user name never appear in cleartext in the cache.
+ * <b>Storage scope:</b> the cached access token is a bearer credential and MUST NOT leave the JVM that obtained it. The backing {@link SimpleCache} is therefore expected to be configured as {@code cluster.type=local}. Cache keys are SHA-256 digests of {@code username + 0x00 + password} encoded as base64url, so the password and user name never appear in cleartext in the cache.
  * </p>
  */
 public class CachingUserTokenProvider implements UserTokenProvider
@@ -64,10 +64,6 @@ public class CachingUserTokenProvider implements UserTokenProvider
     private final UserTokenProvider delegate;
     private final SimpleCache<String, UserToken> backingCache;
     private final IdentityServiceFacade identityServiceFacade;
-
-    /**
-     * Latches the first decode-failure WARN so production triage is possible without DEBUG, while subsequent failures stay at DEBUG to avoid log flooding.
-     */
 
     public CachingUserTokenProvider(
             UserTokenProvider delegate,
@@ -82,24 +78,24 @@ public class CachingUserTokenProvider implements UserTokenProvider
     }
 
     @Override
-    @SuppressWarnings({"PMD.AvoidDeeplyNestedIfStmts", "PMD.UseVarargs"})
-    public UserToken getUserToken(String userName, char[] password)
+    @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
+    public UserToken getUserToken(UserTokenRequest request)
     {
-        final String cacheKey = deriveCacheKey(userName, password);
+        final String cacheKey = deriveCacheKey(request);
 
         final UserToken cached = readCache(cacheKey);
         if (cached != null)
         {
             if (isCachedTokenStillValid(cached))
             {
-                LOGGER.debug("User-token cache HIT for user '{}'. Skipping authorization request.", userName);
+                LOGGER.debug("User-token cache HIT for user '{}'. Skipping --------------------- authorization request.", request.username());
                 return cached;
             }
-            LOGGER.debug("User-token cache HIT for user '{}' but the cached token is no longer valid. Invalidating and re-authorizing.", userName);
+            LOGGER.debug("User-token cache HIT for user '{}' but the cached token is no longer valid. Invalidating and re-authorizing.", request.username());
             evict(cacheKey);
         }
 
-        final UserToken fresh = delegate.getUserToken(userName, password);
+        final UserToken fresh = delegate.getUserToken(request);
         writeCache(cacheKey, fresh);
         return fresh;
     }
@@ -144,7 +140,7 @@ public class CachingUserTokenProvider implements UserTokenProvider
     {
         try
         {
-            identityServiceFacade.decodeToken(token.getTokenString());
+            identityServiceFacade.decodeToken(token.tokenString());
             return true;
         }
         catch (IdentityServiceFacadeException e)
@@ -155,18 +151,17 @@ public class CachingUserTokenProvider implements UserTokenProvider
     }
 
     /**
-     * Derive the cache key as base64url(SHA-256(userName || 0x00 || password)). The single-byte separator prevents accidental collisions between e.g. ("ab", "cd") and ("a", "bcd"). The intermediate password byte buffer is wiped after use.
+     * Derive the cache key as base64url(SHA-256(username || 0x00 || password)). The single-byte separator prevents accidental collisions between e.g. ("ab", "cd") and ("a", "bcd"). The intermediate password byte buffer is wiped after use. {@link UserTokenRequest} guarantees both components are non-null.
      */
-    @SuppressWarnings("PMD.UseVarargs")
-    private static String deriveCacheKey(String userName, char[] password)
+    private static String deriveCacheKey(UserTokenRequest request)
     {
         byte[] passwordBytes = null;
         try
         {
             final MessageDigest digest = MessageDigest.getInstance(DIGEST_ALGORITHM);
-            digest.update(safe(userName).getBytes(StandardCharsets.UTF_8));
+            digest.update(request.username().getBytes(StandardCharsets.UTF_8));
             digest.update((byte) 0);
-            passwordBytes = charsToBytes(password);
+            passwordBytes = charsToBytes(request.password());
             digest.update(passwordBytes);
             return Base64.getUrlEncoder().withoutPadding().encodeToString(digest.digest());
         }
@@ -183,18 +178,9 @@ public class CachingUserTokenProvider implements UserTokenProvider
         }
     }
 
-    private static String safe(String s)
-    {
-        return s == null ? "" : s;
-    }
-
     @SuppressWarnings("PMD.UseVarargs")
     private static byte[] charsToBytes(char[] chars)
     {
-        if (chars == null)
-        {
-            return new byte[0];
-        }
         final ByteBuffer buffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(chars));
         final byte[] bytes = new byte[buffer.remaining()];
         buffer.get(bytes);

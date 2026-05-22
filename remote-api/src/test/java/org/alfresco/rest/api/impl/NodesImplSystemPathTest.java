@@ -40,6 +40,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
@@ -47,6 +48,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -58,6 +60,9 @@ public class NodesImplSystemPathTest
 
     @Mock
     private Repository repositoryHelper;
+
+    @Mock
+    private DictionaryService dictionaryService;
 
     @InjectMocks
     private NodesImpl nodesImpl;
@@ -175,5 +180,35 @@ public class NodesImplSystemPathTest
 
         // Verify traversal stopped at st:site - did not go above it
         verify(nodeService, never()).getPrimaryParent(siteNodeRef);
+    }
+
+    @Test
+    public void testNodeInsideSiteSubtype_ShouldNotBeBlocked()
+    {
+        NodeRef siteSubtypeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "custom-site-node");
+        NodeRef fileRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "file-in-custom-site");
+
+        QName siteSubtype = QName.createQName("http://www.alfresco.org/model/site/1.0", "customSite");
+        when(nodeService.getType(fileRef)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(nodeService.getPrimaryParent(fileRef)).thenReturn(
+                new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, siteSubtypeRef, null, fileRef));
+        when(nodeService.getType(siteSubtypeRef)).thenReturn(siteSubtype);
+        when(dictionaryService.isSubClass(siteSubtype, SiteModel.TYPE_SITE)).thenReturn(true);
+
+        nodesImpl.checkNotSystemPath(fileRef);
+
+        verify(nodeService, never()).getPrimaryParent(siteSubtypeRef);
+    }
+
+    @Test
+    public void testDownloadNode_ShouldNotBeBlockedByDataDictionaryAncestor()
+    {
+        NodeRef downloadNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "download-node");
+
+        when(nodeService.getType(downloadNodeRef)).thenReturn(DownloadModel.TYPE_DOWNLOAD);
+
+        nodesImpl.checkNotSystemPath(downloadNodeRef);
+
+        verify(nodeService, never()).getPrimaryParent(downloadNodeRef);
     }
 }

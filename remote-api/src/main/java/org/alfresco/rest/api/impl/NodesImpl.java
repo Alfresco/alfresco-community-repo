@@ -63,6 +63,7 @@ import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.model.Repository;
@@ -4012,6 +4013,12 @@ public class NodesImpl implements Nodes
      */
     protected void checkNotSystemPath(NodeRef nodeRef)
     {
+        QName requestedNodeType = nodeService.getType(nodeRef);
+        if (DownloadModel.TYPE_DOWNLOAD.equals(requestedNodeType))
+        {
+            return;
+        }
+
         NodeRef current = nodeRef;
 
         while (current != null)
@@ -4022,7 +4029,7 @@ public class NodesImpl implements Nodes
             }
 
             QName type = nodeService.getType(current);
-            if (SiteModel.TYPE_SITE.equals(type))
+            if (SiteModel.TYPE_SITE.equals(type) || isSubClass(type, SiteModel.TYPE_SITE))
             {
                 break;
             }

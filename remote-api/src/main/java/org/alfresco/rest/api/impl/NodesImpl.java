@@ -4009,7 +4009,22 @@ public class NodesImpl implements Nodes
     }
 
     /**
-     * Throws {@link PermissionDeniedException} if any ancestor node is a system-protected path.
+     * Names of folders directly under Data Dictionary that contain executable artifacts
+     * (FreeMarker templates, JavaScript controllers, models, messages). Modifications to
+     * content under these folders via the REST API are blocked to prevent SSTI/RCE via
+     * sandbox escape (e.g. overwriting web script templates).
+     */
+    private static final Set<String> PROTECTED_DD_EXECUTABLE_FOLDERS = new HashSet<>(Arrays.asList(
+            "Web Scripts",
+            "Web Scripts Extensions",
+            "Messages",
+            "Scripts"));
+
+    /**
+     * Throws {@link PermissionDeniedException} if any ancestor node is an executable
+     * system-managed path (e.g. Data Dictionary/Web Scripts). Modifications under
+     * Data Dictionary itself (folder templates, node templates, etc.) remain allowed
+     * for admins so existing UI / regression flows are not impacted.
      */
     protected void checkNotSystemPath(NodeRef nodeRef)
     {
@@ -4024,6 +4039,7 @@ public class NodesImpl implements Nodes
                 return null;
             }
 
+            NodeRef dataDictionary = getDataDictionaryNodeRef();
             NodeRef current = nodeRef;
 
             while (current != null)
@@ -4038,12 +4054,24 @@ public class NodesImpl implements Nodes
                 {
                     break;
                 }
-                if (isSpecialNode(current, type))
+
+                // Block only executable system paths under Data Dictionary
+                // (Web Scripts, Models, Messages, Scripts). This is the SSTI/RCE
+                // injection surface. Other Data Dictionary children remain editable
+                // by admins (e.g. Node Templates, Space Templates, Email Templates).
+                if (isProtectedExecutableSystemFolder(current, dataDictionary))
                 {
                     throw new PermissionDeniedException(
                             "Cannot perform operation on system path for requested node id '" + nodeRef.getId()
                                     + "' due to protected ancestor id '" + current.getId()
                                     + "' of type '" + type + "'");
+                }
+
+                // Stop traversal at Data Dictionary itself: legitimate admin operations
+                // (creating folder templates, etc.) directly under DD must continue to work.
+                if (current.equals(dataDictionary))
+                {
+                    break;
                 }
 
                 ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(current);
@@ -4058,6 +4086,48 @@ public class NodesImpl implements Nodes
             }
             return null;
         });
+    }
+
+    /**
+     * @return the Data Dictionary {@link NodeRef} for the current tenant, or {@code null}
+     *         if it cannot be resolved.
+     */
+    private NodeRef getDataDictionaryNodeRef()
+    {
+        String tenantDomain = TenantUtil.getCurrentDomain();
+        NodeRef ddNodeRef = ddCache.get(tenantDomain);
+        if (ddNodeRef == null)
+        {
+            List<ChildAssociationRef> ddAssocs = nodeService.getChildAssocs(
+                    repositoryHelper.getCompanyHome(),
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "dictionary"));
+            if (ddAssocs.size() == 1)
+            {
+                ddNodeRef = ddAssocs.get(0).getChildRef();
+                ddCache.put(tenantDomain, ddNodeRef);
+            }
+        }
+        return ddNodeRef;
+    }
+
+    /**
+     * @return {@code true} if {@code nodeRef} is a direct child of Data Dictionary whose
+     *         name matches a protected executable folder (Web Scripts, Models, etc.).
+     */
+    private boolean isProtectedExecutableSystemFolder(NodeRef nodeRef, NodeRef dataDictionary)
+    {
+        if (dataDictionary == null || nodeRef == null)
+        {
+            return false;
+        }
+        ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
+        if (parentAssoc == null || !dataDictionary.equals(parentAssoc.getParentRef()))
+        {
+            return false;
+        }
+        String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        return name != null && PROTECTED_DD_EXECUTABLE_FOLDERS.contains(name);
     }
 
     /**

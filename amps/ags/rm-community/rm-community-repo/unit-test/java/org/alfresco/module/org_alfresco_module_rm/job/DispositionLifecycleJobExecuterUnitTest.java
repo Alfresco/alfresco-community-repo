@@ -27,7 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.job;
 
-import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,9 +41,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.stubbing.Answer;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -53,12 +61,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.stubbing.Answer;
 
 /**
  * Disposition lifecycle job execution unit test.
@@ -75,13 +77,15 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     private static final int BATCH_SIZE = 1;
 
     /** test query snippet */
-    private static final String QUERY= "TYPE:\"rma:dispositionAction\"";
+    private static final String QUERY = "TYPE:\"rma:dispositionAction\"";
     private static final String FILTER_QUERY = "@rma\\:dispositionAction:(\"cutoff\" OR \"retain\")";
     /** mocked result set */
-    @Mock ResultSet mockedResultSet;
+    @Mock
+    ResultSet mockedResultSet;
 
     /** disposition lifecycle job executer */
-    @InjectMocks DispositionLifecycleJobExecuter executer;
+    @InjectMocks
+    DispositionLifecycleJobExecuter executer;
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
@@ -93,11 +97,11 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         super.before();
 
         Answer<Object> doInTransactionAnswer = invocation -> {
-            RetryingTransactionCallback callback = (RetryingTransactionCallback)invocation.getArguments()[0];
+            RetryingTransactionCallback callback = (RetryingTransactionCallback) invocation.getArguments()[0];
             return callback.execute();
         };
         doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).doInTransaction(any(RetryingTransactionCallback.class),
-            anyBoolean(), anyBoolean());
+                anyBoolean(), anyBoolean());
 
         // setup data
         List<String> dispositionActions = buildList(CUTOFF, RETAIN);
@@ -111,7 +115,9 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
     /**
      * Helper method to verify that the query has been executed and closed
-     * @param numberOfInvocation number of times the query has been executed and closed
+     * 
+     * @param numberOfInvocation
+     *            number of times the query has been executed and closed
      */
     private void verifyQueryTimes(int numberOfInvocation)
     {
@@ -159,12 +165,12 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         doReturn(DESTROY).when(mockedNodeService).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
 
         when(mockedResultSet.getNodeRefs())
-            .thenReturn(buildList(node1))
-            .thenReturn(buildList(node2));
+                .thenReturn(buildList(node1))
+                .thenReturn(buildList(node2));
 
         when(mockedResultSet.hasMore())
-            .thenReturn(true)
-            .thenReturn(false);
+                .thenReturn(true)
+                .thenReturn(false);
 
         // when
         executer.executeImpl();
@@ -236,12 +242,12 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         doReturn(false).when(mockedFreezeService).isFrozen(parentAssoc.getParentRef());
 
         when(mockedResultSet.getNodeRefs())
-            .thenReturn(buildList(node1))
-            .thenReturn(buildList(node2));
+                .thenReturn(buildList(node1))
+                .thenReturn(buildList(node2));
 
         when(mockedResultSet.hasMore())
-            .thenReturn(true)
-            .thenReturn(false);
+                .thenReturn(true)
+                .thenReturn(false);
 
         // when
         executer.executeImpl();
@@ -269,8 +275,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
-     * Verify that getCmisQuery() generates a valid CMIS query containing the required action filters and conditions.
-     * The query includes a dynamic UTC timestamp cutoff, so we verify key components rather than exact string match.
+     * Verify that getCmisQuery() generates a valid CMIS query containing the required action filters and conditions. The query includes a dynamic UTC timestamp cutoff, so we verify key components rather than exact string match.
      */
     @Test
     public void testGetCmisQuery()
@@ -304,8 +309,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
-     * CMIS mode: when a node no longer exists it is skipped, no action is executed,
-     * and the skip offset advances so the job does not loop on the same batch forever.
+     * CMIS mode: when a node no longer exists it is skipped, no action is executed, and the skip offset advances so the job does not loop on the same batch forever.
      */
     @Test
     public void cmisNodeDoesNotExist()
@@ -332,8 +336,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
-     * CMIS mode: when the disposition action on the node does not match any configured
-     * action the node is skipped and the skip offset advances.
+     * CMIS mode: when the disposition action on the node does not match any configured action the node is skipped and the skip offset advances.
      */
     @Test
     public void cmisDispositionActionDoesNotMatch()
@@ -360,8 +363,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
-     * CMIS mode: when disposition actions are eligible they are processed, the skip offset
-     * is reset to zero after a successful batch, and the job continues until no more results.
+     * CMIS mode: when disposition actions are eligible they are processed, the skip offset is reset to zero after a successful batch, and the job continues until no more results.
      */
     @Test
     public void cmisDispositionActionProcessed()
@@ -430,10 +432,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given the maximum page of elements for search service is 2
-     *       and search service finds more than one page of elements
-     * When the job executer runs
-     * Then the executer retrieves both pages and iterates all elements
+     * Given the maximum page of elements for search service is 2 and search service finds more than one page of elements When the job executer runs Then the executer retrieves both pages and iterates all elements
      */
     @Test
     public void testPagination()
@@ -477,8 +476,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a batch size < 1
-     * Then the executer use default value instead
+     * Given a batch size < 1 Then the executer use default value instead
      */
     @Test
     public void testInvalidBatchSize()

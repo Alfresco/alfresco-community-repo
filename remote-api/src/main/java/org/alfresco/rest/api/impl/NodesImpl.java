@@ -3974,44 +3974,51 @@ public class NodesImpl implements Nodes
      */
     protected void checkNotSystemPath(NodeRef nodeRef)
     {
-        QName requestedNodeType = nodeService.getType(nodeRef);
-        if (DownloadModel.TYPE_DOWNLOAD.equals(requestedNodeType))
-        {
-            return;
-        }
-
-        NodeRef current = nodeRef;
-
-        while (current != null)
-        {
-            if (current.equals(repositoryHelper.getCompanyHome()))
+        // Run traversal as system to avoid AccessDeniedException on intermediate nodes
+        // where the current user may not have READ access (e.g. when inheritance is disabled
+        // on a parent folder). This is a structural check only - normal permission enforcement
+        // for the requested operation is handled separately.
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            QName requestedNodeType = nodeService.getType(nodeRef);
+            if (DownloadModel.TYPE_DOWNLOAD.equals(requestedNodeType))
             {
-                break;
+                return null;
             }
 
-            QName type = nodeService.getType(current);
-            if (SiteModel.TYPE_SITE.equals(type) || isSubClass(type, SiteModel.TYPE_SITE))
-            {
-                break;
-            }
-            if (isSpecialNode(current, type))
-            {
-                throw new PermissionDeniedException(
-                        "Cannot perform operation on system path for requested node id '" + nodeRef.getId()
-                                + "' due to protected ancestor id '" + current.getId()
-                                + "' of type '" + type + "'");
-            }
+            NodeRef current = nodeRef;
 
-            ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(current);
-
-            if (parentAssoc == null ||
-                    parentAssoc.getParentRef() == null)
+            while (current != null)
             {
-                break;
-            }
+                if (current.equals(repositoryHelper.getCompanyHome()))
+                {
+                    break;
+                }
 
-            current = parentAssoc.getParentRef();
-        }
+                QName type = nodeService.getType(current);
+                if (SiteModel.TYPE_SITE.equals(type) || isSubClass(type, SiteModel.TYPE_SITE))
+                {
+                    break;
+                }
+                if (isSpecialNode(current, type))
+                {
+                    throw new PermissionDeniedException(
+                            "Cannot perform operation on system path for requested node id '" + nodeRef.getId()
+                                    + "' due to protected ancestor id '" + current.getId()
+                                    + "' of type '" + type + "'");
+                }
+
+                ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(current);
+
+                if (parentAssoc == null ||
+                        parentAssoc.getParentRef() == null)
+                {
+                    break;
+                }
+
+                current = parentAssoc.getParentRef();
+            }
+            return null;
+        });
     }
 
     /**

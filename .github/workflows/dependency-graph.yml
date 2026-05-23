@@ -1,4 +1,6 @@
 name: "Load Dependency Graph"
+permissions:
+  contents: read
 
 on:
   push:

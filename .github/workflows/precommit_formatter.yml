@@ -1,4 +1,6 @@
 name: Pre-Commit formatter
+permissions:
+  contents: read
 
 on:
   push:
@@ -11,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.event.head_commit.message, '[reformat code]')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Set up Python ${{ inputs.python-version }}
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
@@ -22,6 +24,15 @@ jobs:
           extra_args: --all-files
       - name: Update secrets baseline
         run: pip install detect-secrets && detect-secrets scan --baseline .secrets.baseline
+
+      # Commit/push the updated baseline if it changed.
+      - uses: Alfresco/alfresco-build-tools/.github/actions/git-commit-changes@v17.2.0
+        with:
+          username: ${{ secrets.BOT_GITHUB_USERNAME }}
+          add-options: .secrets.baseline
+          commit-message: "Update secrets baseline"
+          skip-if-no-changes: true
+
       - uses: Alfresco/alfresco-build-tools/.github/actions/git-commit-changes@v17.2.0
         with:
           username: ${{ secrets.BOT_GITHUB_USERNAME }}

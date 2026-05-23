@@ -1,5 +1,8 @@
 name: Alfresco Community Repo CI
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches:
@@ -16,20 +19,11 @@ on:
 
 env:
   JAVA_VERSION: '21'
-  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
   LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   CI_WORKSPACE: ${{ github.workspace }}
   TAS_ENVIRONMENT: ./packaging/tests/environment
   TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
-  AUTH0_CLIENT_ID: ${{ secrets.AUTH0_OIDC_ADMIN_CLIENT_ID }}
-  AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_OIDC_CLIENT_SECRET }}
-  AUTH0_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
 
 jobs:
   prepare:
@@ -38,8 +32,15 @@ jobs:
     if: >
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
@@ -63,8 +64,13 @@ jobs:
       (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -88,8 +94,15 @@ jobs:
       github.actor != 'dependabot[bot]' &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -111,7 +124,7 @@ jobs:
           mkdir temp-dir-for-sast
           bash ./scripts/ci/remove-sast-exclusions.sh ./packaging/war/target/alfresco.war temp-dir-for-sast/reduced.war
       - name: "Run SAST Scan"
-        uses: veracode/Veracode-pipeline-scan-action@v1.0.21
+        uses: veracode/Veracode-pipeline-scan-action@e7b4fe35b0cc32c530ca6d9c6737f0f7ea0ba4f7 # v1.0.21
         with:
           vid: ${{ secrets.VERACODE_API_ID }}
           vkey: ${{ secrets.VERACODE_API_KEY }}
@@ -130,7 +143,7 @@ jobs:
         run: zip readable_output.zip results.json
       - name: Upload Artifact
         if: success() || failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: Veracode Pipeline-Scan Results (Human Readable)
           path: readable_output.zip
@@ -148,6 +161,9 @@ jobs:
       !contains(github.event.head_commit.message, '[skip pmd]') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
@@ -166,6 +182,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip repo]') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -183,7 +206,7 @@ jobs:
             testModule: mmt
             testAttributes: "-Dtest=AllMmtUnitTestSuite"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -208,6 +231,14 @@ jobs:
       !contains(github.event.head_commit.message, '[skip repo]') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -226,10 +257,8 @@ jobs:
           - testSuite: org.alfresco.rest.api.tests.RenditionsTest
             compose-profile: with-transform-core-aio
             transformers-tag: 5.2.0
-    env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -266,12 +295,19 @@ jobs:
       contains(github.event.head_commit.message, '[db]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
         version: ['10.11']
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -299,8 +335,15 @@ jobs:
       contains(github.event.head_commit.message, '[db]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -328,8 +371,15 @@ jobs:
       contains(github.event.head_commit.message, '[db]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -356,8 +406,15 @@ jobs:
       contains(github.event.head_commit.message, '[db]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -384,8 +441,15 @@ jobs:
             contains(github.event.head_commit.message, '[db]')) &&
             !contains(github.event.head_commit.message, '[skip tests]') &&
             !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -412,8 +476,15 @@ jobs:
       contains(github.event.head_commit.message, '[db]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -438,12 +509,19 @@ jobs:
       !contains(github.event.head_commit.message, '[skip repo]') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
         activemq: [ 'activemq6', 'activemq5' ]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -466,6 +544,16 @@ jobs:
       !contains(github.event.head_commit.message, '[skip repo]') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      AUTH0_CLIENT_ID: ${{ secrets.AUTH0_OIDC_ADMIN_CLIENT_ID }}
+      AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_OIDC_CLIENT_SECRET }}
+      AUTH0_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
     strategy:
       fail-fast: false
       matrix:
@@ -501,7 +589,7 @@ jobs:
             disabledHostnameVerification: false
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -517,7 +605,7 @@ jobs:
         if: ${{ matrix.mtls }}
         run: |
           git clone -b "master" --depth=1 "https://${{ secrets.BOT_GITHUB_USERNAME }}:${{ secrets.BOT_GITHUB_TOKEN }}@github.com/Alfresco/alfresco-ssl-generator.git"
-          if ${{ matrix.disabledHostnameVerification }} ; then
+          if [[ "${{ matrix.disabledHostnameVerification }}" == "true" ]]; then
             bash ${{ env.CI_WORKSPACE }}/alfresco-ssl-generator/scripts/ci/generate_keystores_wrong_hostnames.sh
             echo "HOSTNAME_VERIFICATION_DISABLED=true" >> "$GITHUB_ENV"
           else
@@ -542,6 +630,14 @@ jobs:
       contains(github.event.head_commit.message, '[tas]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      REQUIRES_LOCAL_IMAGES: true
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -570,10 +666,8 @@ jobs:
             pom-dir: tas-webdav
           - test-name: "Integration TAS tests"
             pom-dir: tas-integration
-    env:
-      REQUIRES_LOCAL_IMAGES: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -590,7 +684,7 @@ jobs:
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       - name: "Build TAS integration tests"
-        if: ${{ matrix.test-name }} == 'Integration TAS tests'
+        if: ${{ matrix.test-name == 'Integration TAS tests' }}
         run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       - name: "Run tests"
         id: tests
@@ -613,8 +707,15 @@ jobs:
       !contains(github.event.head_commit.message, '[skip repo]') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -639,14 +740,20 @@ jobs:
       contains(github.event.head_commit.message, '[ags]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
         part: [1, 2, 3, 4]
-    env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -673,14 +780,20 @@ jobs:
       contains(github.event.head_commit.message, '[ags on MySQL]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
         part: [1, 2, 3, 4]
-    env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -709,8 +822,14 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     env:
       REQUIRES_LOCAL_IMAGES: true
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
@@ -732,7 +851,7 @@ jobs:
         run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
       - name: "Configure AWS credentials"
         if: ${{ always() }}
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
         with:
           aws-access-key-id: ${{ secrets.AGS_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AGS_AWS_SECRET_ACCESS_KEY }}
@@ -757,8 +876,15 @@ jobs:
       contains(github.event.head_commit.message, '[ags]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0

@@ -64,6 +64,7 @@ import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
+import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
@@ -1024,7 +1025,9 @@ public class NodesImpl implements Nodes
             {
                 for (AccessPermission accessPerm : permissionService.getAllSetPermissions(nodeRef))
                 {
-                    NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(accessPerm.getAuthority(), accessPerm.getPermission(), accessPerm.getAccessStatus().toString());
+                    String authority = accessPerm.getAuthority();
+                    String displayName = resolveAuthorityDisplayName(authority);
+                    NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(authority, accessPerm.getPermission(), accessPerm.getAccessStatus().toString(), displayName);
                     if (accessPerm.isSetDirectly())
                     {
                         setDirectlyPerms.add(nodePerm);
@@ -1337,7 +1340,9 @@ public class NodesImpl implements Nodes
                 {
                     for (AccessPermission accessPerm : permissionService.getAllSetPermissions(nodeRef))
                     {
-                        NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(accessPerm.getAuthority(), accessPerm.getPermission(), accessPerm.getAccessStatus().toString());
+                        String authority = accessPerm.getAuthority();
+                        String displayName = resolveAuthorityDisplayName(authority);
+                        NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(authority, accessPerm.getPermission(), accessPerm.getAccessStatus().toString(), displayName);
                         if (accessPerm.isSetDirectly())
                         {
                             setDirectlyPerms.add(nodePerm);
@@ -2138,6 +2143,7 @@ public class NodesImpl implements Nodes
     public void deleteNode(String nodeId, Parameters parameters)
     {
         NodeRef nodeRef = validateOrLookupNode(nodeId);
+        checkNotSystemPath(nodeRef);
 
         if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
         {
@@ -2220,6 +2226,7 @@ public class NodesImpl implements Nodes
         // Optionally, lookup by relative path
         String relativePath = nodeInfo.getRelativePath();
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
+        checkNotSystemPath(parentNodeRef);
 
         // Existing file/folder name handling
         boolean autoRename = Boolean.valueOf(parameters.getParameter(PARAM_AUTO_RENAME));
@@ -2474,15 +2481,17 @@ public class NodesImpl implements Nodes
      * @param activityInfo
      * @param aSync
      */
-    protected void postActivity(Activity_Type activity_type, ActivityInfo activityInfo, boolean aSync)
+    protected void postActivity(Activity_Type activityTypeEnum, ActivityInfo activityInfo, boolean async)
     {
         if (activityInfo == null)
+        {
             return; // Nothing to do.
+        }
 
-        String activityType = determineActivityType(activity_type, activityInfo.getFileInfo().isFolder());
+        String activityType = determineActivityType(activityTypeEnum, activityInfo.getFileInfo().isFolder());
         if (activityType != null)
         {
-            if (aSync)
+            if (async)
             {
                 ActivitiesTransactionListener txListener = new ActivitiesTransactionListener(activityType, activityInfo,
                         TenantUtil.getCurrentDomain(), Activities.APP_TOOL, Activities.RESTAPI_CLIENT,
@@ -2919,6 +2928,9 @@ public class NodesImpl implements Nodes
         final NodeRef parentNodeRef = validateOrLookupNode(targetParentId);
         final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId);
 
+        checkNotSystemPath(sourceNodeRef);
+        checkNotSystemPath(parentNodeRef);
+
         FileInfo fi = moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
         return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
     }
@@ -3132,7 +3144,7 @@ public class NodesImpl implements Nodes
         }
 
         final NodeRef nodeRef = validateNode(fileNodeId);
-
+        checkNotSystemPath(nodeRef);
         if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
             throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
@@ -3372,6 +3384,7 @@ public class NodesImpl implements Nodes
         String versionComment = null;
         String relativePath = null;
         String renditionNames = null;
+        String aspectNames = null;
         boolean versioningEnabled = true;
 
         Map<String, Object> qnameStrProps = new HashMap<>();
@@ -3429,6 +3442,11 @@ public class NodesImpl implements Nodes
             case "renditions":
                 renditionNames = getStringOrNull(field.getValue());
                 break;
+
+            case "aspectnames":
+                aspectNames = getStringOrNull(field.getValue());
+                break;
+
             case "versioningenabled":
                 String versioningEnabledStringValue = getStringOrNull(field.getValue());
                 if (null != versioningEnabledStringValue)
@@ -3479,6 +3497,8 @@ public class NodesImpl implements Nodes
         final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
         final Set<String> renditions = getRequestedRenditions(renditionNames);
 
+        final List<String> aspects = parseCommaSeparatedList(aspectNames);
+        validateAspects(aspects, EXCLUDED_NS, EXCLUDED_ASPECTS);
         validateProperties(qnameStrProps, EXCLUDED_NS, Arrays.asList());
         try
         {
@@ -3523,6 +3543,8 @@ public class NodesImpl implements Nodes
 
             // Create a new file.
             NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, versionMajor, versionComment);
+
+            addCustomAspects(nodeRef, aspects, EXCLUDED_ASPECTS);
 
             // Create the response
             final Node fileNode = getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters);
@@ -3624,6 +3646,35 @@ public class NodesImpl implements Nodes
             }
         }
         return renditions;
+    }
+
+    /**
+     * Parse a comma-separated list of names into a List. This is used for parsing aspectNames and similar parameters.
+     *
+     * @param namesParam
+     *            comma-separated string (e.g., "cm:titled,cm:author")
+     * @return List of trimmed, non-empty names, or an empty list if input is null
+     */
+    static List<String> parseCommaSeparatedList(String namesParam)
+    {
+        if (namesParam == null)
+        {
+            return Collections.emptyList();
+        }
+
+        String[] nameArray = namesParam.split(",");
+        List<String> names = new ArrayList<>(nameArray.length);
+
+        for (String name : nameArray)
+        {
+            String trimmedName = name.trim();
+            if (!trimmedName.isEmpty())
+            {
+                names.add(trimmedName);
+            }
+        }
+
+        return names.isEmpty() ? Collections.emptyList() : names;
     }
 
     private void requestRenditions(Set<String> renditionNames, Node fileNode)
@@ -3763,17 +3814,17 @@ public class NodesImpl implements Nodes
      */
     protected List<QName> createQNames(List<String> qnameStrList, List<QName> excludedProps)
     {
-        String PREFIX = PARAM_INCLUDE_PROPERTIES + "/";
+        String prefix = PARAM_INCLUDE_PROPERTIES + "/";
 
         List<QName> result = new ArrayList<>(qnameStrList.size());
         for (String str : qnameStrList)
         {
-            if (str.startsWith(PREFIX))
+            String qnameStr = str;
+            if (qnameStr.startsWith(prefix))
             {
-                str = str.substring(PREFIX.length());
+                qnameStr = qnameStr.substring(prefix.length());
             }
-
-            QName name = createQName(str);
+            QName name = createQName(qnameStr);
             if (!excludedProps.contains(name))
             {
                 result.add(name);
@@ -3851,6 +3902,16 @@ public class NodesImpl implements Nodes
             throw new DisabledServiceException("Direct access url isn't available.");
         }
         return directAccessUrl;
+    }
+
+    private String resolveAuthorityDisplayName(String authority)
+    {
+        String displayName = authorityService.getAuthorityDisplayName(authority);
+        if (displayName == null || displayName.isEmpty())
+        {
+            displayName = authority;
+        }
+        return displayName;
     }
 
     /**
@@ -3945,6 +4006,58 @@ public class NodesImpl implements Nodes
                 }
             });
         }
+    }
+
+    /**
+     * Throws {@link PermissionDeniedException} if any ancestor node is a system-protected path.
+     */
+    protected void checkNotSystemPath(NodeRef nodeRef)
+    {
+        // Run traversal as system to avoid AccessDeniedException on intermediate nodes
+        // where the current user may not have READ access (e.g. when inheritance is disabled
+        // on a parent folder). This is a structural check only - normal permission enforcement
+        // for the requested operation is handled separately.
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            QName requestedNodeType = nodeService.getType(nodeRef);
+            if (DownloadModel.TYPE_DOWNLOAD.equals(requestedNodeType))
+            {
+                return null;
+            }
+
+            NodeRef current = nodeRef;
+
+            while (current != null)
+            {
+                if (current.equals(repositoryHelper.getCompanyHome()))
+                {
+                    break;
+                }
+
+                QName type = nodeService.getType(current);
+                if (SiteModel.TYPE_SITE.equals(type) || isSubClass(type, SiteModel.TYPE_SITE))
+                {
+                    break;
+                }
+                if (isSpecialNode(current, type))
+                {
+                    throw new PermissionDeniedException(
+                            "Cannot perform operation on system path for requested node id '" + nodeRef.getId()
+                                    + "' due to protected ancestor id '" + current.getId()
+                                    + "' of type '" + type + "'");
+                }
+
+                ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(current);
+
+                if (parentAssoc == null ||
+                        parentAssoc.getParentRef() == null)
+                {
+                    break;
+                }
+
+                current = parentAssoc.getParentRef();
+            }
+            return null;
+        });
     }
 
     /**

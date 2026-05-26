@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -45,6 +45,7 @@ import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditApplication.DataExtractorDefinition;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -82,6 +83,8 @@ public class AuditComponentImpl implements AuditComponent
     private AuditFilter auditFilter;
     private UserAuditFilter userAuditFilter;
     private AuditRecordReporter auditRecordReporter;
+    private SimpleCache<Long, Set<String>> disabledPathsCache;
+    private boolean disabledPathsCacheEnabled;
 
     /**
      * Default constructor
@@ -143,6 +146,16 @@ public class AuditComponentImpl implements AuditComponent
     public void setAuditRecordReporter(AuditRecordReporter auditRecordReporter)
     {
         this.auditRecordReporter = auditRecordReporter;
+    }
+
+    public void setDisabledPathsCache(SimpleCache<Long, Set<String>> disabledPathsCache)
+    {
+        this.disabledPathsCache = disabledPathsCache;
+    }
+
+    public void setDisabledPathsCacheEnabled(boolean disabledPathsCacheEnabled)
+    {
+        this.disabledPathsCacheEnabled = disabledPathsCacheEnabled;
     }
 
     /**
@@ -232,13 +245,12 @@ public class AuditComponentImpl implements AuditComponent
      *            the audit application object
      * @return Returns a copy of the set of disabled paths associated with the application
      */
-    @SuppressWarnings("unchecked")
     private Set<String> getDisabledPaths(AuditApplication application)
     {
         try
         {
             Long disabledPathsId = application.getDisabledPathsId();
-            Set<String> disabledPaths = (Set<String>) propertyValueDAO.getPropertyById(disabledPathsId);
+            Set<String> disabledPaths = getDisabledPaths(disabledPathsId);
             return new HashSet<>(disabledPaths);
         }
         catch (Throwable e)
@@ -431,6 +443,9 @@ public class AuditComponentImpl implements AuditComponent
         if (changed)
         {
             propertyValueDAO.updateProperty(disabledPathsId, (Serializable) disabledPaths);
+
+            removeCachedDisabledPaths(disabledPathsId);
+
             if (logger.isDebugEnabled())
             {
                 logger.debug(
@@ -514,6 +529,9 @@ public class AuditComponentImpl implements AuditComponent
         disabledPaths.add(path);
         // Upload the new set
         propertyValueDAO.updateProperty(disabledPathsId, (Serializable) disabledPaths);
+
+        removeCachedDisabledPaths(disabledPathsId);
+
         // Done
         if (logger.isDebugEnabled())
         {
@@ -545,6 +563,9 @@ public class AuditComponentImpl implements AuditComponent
         }
         Long disabledPathsId = application.getDisabledPathsId();
         propertyValueDAO.updateProperty(disabledPathsId, (Serializable) Collections.emptySet());
+
+        removeCachedDisabledPaths(disabledPathsId);
+
         // Done
         if (logger.isDebugEnabled())
         {
@@ -998,5 +1019,36 @@ public class AuditComponentImpl implements AuditComponent
     public int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
     {
         return auditDAO.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<String> getDisabledPaths(Long disabledPathsId)
+    {
+        Set<String> disabledPaths = null;
+
+        if (disabledPathsCacheEnabled)
+        {
+            disabledPaths = disabledPathsCache.get(disabledPathsId);
+        }
+
+        if (disabledPaths == null)
+        {
+            disabledPaths = (Set<String>) propertyValueDAO.getPropertyById(disabledPathsId);
+
+            if (disabledPathsCacheEnabled)
+            {
+                disabledPathsCache.put(disabledPathsId, disabledPaths);
+            }
+        }
+
+        return disabledPaths;
+    }
+
+    private void removeCachedDisabledPaths(Long disabledPathsId)
+    {
+        if (disabledPathsCacheEnabled)
+        {
+            disabledPathsCache.remove(disabledPathsId);
+        }
     }
 }

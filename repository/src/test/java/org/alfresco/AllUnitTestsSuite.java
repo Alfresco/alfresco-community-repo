@@ -29,9 +29,12 @@ import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import org.alfresco.repo.security.authentication.identityservice.CachingUserTokenProviderTest;
 import org.alfresco.repo.security.authentication.identityservice.ClientRegistrationProviderUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.DirectUserTokenProviderTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBeanTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceUserTokenWiringTest;
 import org.alfresco.repo.security.authentication.identityservice.LazyInstantiatingIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.SpringBasedIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.authentication.AdditionalHeadersHttpServletRequestWrapperUnitTest;
@@ -48,7 +51,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
  */
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
-@Suite.SuiteClasses(value = {
+@Suite.SuiteClasses({
         org.alfresco.repo.site.SiteMembershipTest.class,
         org.alfresco.encryption.EncryptorTest.class,
         org.alfresco.encryption.KeyStoreKeyProviderTest.class,
@@ -81,6 +84,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.module.ModuleVersionNumberTest.class,
         org.alfresco.repo.module.DeprecatedModulesValidatorTest.class,
         org.alfresco.repo.node.integrity.IntegrityEventTest.class,
+        org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImplTest.class,
         org.alfresco.repo.policy.MTPolicyComponentTest.class,
         org.alfresco.repo.policy.PolicyComponentTest.class,
         org.alfresco.repo.rendition.RenditionNodeManagerTest.class,
@@ -160,6 +164,9 @@ import org.alfresco.util.testing.category.NonBuildTests;
         IdentityServiceAdminConsoleAuthenticatorUnitTest.class,
         IdentityServiceWebScriptsHomeAuthenticatorUnitTest.class,
         ClientRegistrationProviderUnitTest.class,
+        CachingUserTokenProviderTest.class,
+        DirectUserTokenProviderTest.class,
+        IdentityServiceUserTokenWiringTest.class,
         org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
         org.alfresco.repo.security.authentication.PasswordHashingTest.class,
         org.alfresco.repo.security.authority.script.ScriptAuthorityService_RegExTest.class,
@@ -207,6 +214,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.action.executer.TransformActionExecuterTest.class,
         org.alfresco.repo.action.executer.ImporterActionExecutorUnitTest.class,
         org.alfresco.repo.audit.AuditableAnnotationTest.class,
+        org.alfresco.repo.audit.AuditComponentImplUnitTest.class,
         org.alfresco.repo.audit.PropertyAuditFilterTest.class,
         org.alfresco.repo.audit.access.NodeChangeTest.class,
         org.alfresco.repo.content.ContentServiceImplUnitTest.class,

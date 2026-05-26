@@ -104,15 +104,22 @@ public class NodePermissions
         private String authorityId;
         private String name;
         private String accessStatus;
+        private String authorityDisplayName;
 
         public NodePermission()
         {}
 
         public NodePermission(String authorityId, String name, String accessStatus)
         {
+            this(authorityId, name, accessStatus, null);
+        }
+
+        public NodePermission(String authorityId, String name, String accessStatus, String authorityDisplayName)
+        {
             this.authorityId = authorityId;
             this.name = name;
             this.accessStatus = accessStatus != null ? accessStatus : AccessStatus.ALLOWED.toString();
+            this.authorityDisplayName = authorityDisplayName;
         }
 
         public String getName()
@@ -130,6 +137,11 @@ public class NodePermissions
             return accessStatus;
         }
 
+        public String getAuthorityDisplayName()
+        {
+            return authorityDisplayName;
+        }
+
         @Override
         public String toString()
         {
@@ -137,6 +149,7 @@ public class NodePermissions
             sb.append("NodePermission [authorityId=").append(authorityId)
                     .append(", name=").append(name)
                     .append(", accessStatus=").append(accessStatus)
+                    .append(", authorityDisplayName=").append(authorityDisplayName)
                     .append(']');
             return sb.toString();
         }

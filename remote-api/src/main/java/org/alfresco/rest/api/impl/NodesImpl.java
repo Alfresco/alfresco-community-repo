@@ -64,6 +64,7 @@ import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
+import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
@@ -2142,6 +2143,7 @@ public class NodesImpl implements Nodes
     public void deleteNode(String nodeId, Parameters parameters)
     {
         NodeRef nodeRef = validateOrLookupNode(nodeId);
+        checkNotSystemPath(nodeRef);
 
         if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
         {
@@ -2224,6 +2226,7 @@ public class NodesImpl implements Nodes
         // Optionally, lookup by relative path
         String relativePath = nodeInfo.getRelativePath();
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
+        checkNotSystemPath(parentNodeRef);
 
         // Existing file/folder name handling
         boolean autoRename = Boolean.valueOf(parameters.getParameter(PARAM_AUTO_RENAME));
@@ -2478,15 +2481,17 @@ public class NodesImpl implements Nodes
      * @param activityInfo
      * @param aSync
      */
-    protected void postActivity(Activity_Type activity_type, ActivityInfo activityInfo, boolean aSync)
+    protected void postActivity(Activity_Type activityTypeEnum, ActivityInfo activityInfo, boolean async)
     {
         if (activityInfo == null)
+        {
             return; // Nothing to do.
+        }
 
-        String activityType = determineActivityType(activity_type, activityInfo.getFileInfo().isFolder());
+        String activityType = determineActivityType(activityTypeEnum, activityInfo.getFileInfo().isFolder());
         if (activityType != null)
         {
-            if (aSync)
+            if (async)
             {
                 ActivitiesTransactionListener txListener = new ActivitiesTransactionListener(activityType, activityInfo,
                         TenantUtil.getCurrentDomain(), Activities.APP_TOOL, Activities.RESTAPI_CLIENT,
@@ -2923,6 +2928,9 @@ public class NodesImpl implements Nodes
         final NodeRef parentNodeRef = validateOrLookupNode(targetParentId);
         final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId);
 
+        checkNotSystemPath(sourceNodeRef);
+        checkNotSystemPath(parentNodeRef);
+
         FileInfo fi = moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
         return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
     }
@@ -3136,7 +3144,7 @@ public class NodesImpl implements Nodes
         }
 
         final NodeRef nodeRef = validateNode(fileNodeId);
-
+        checkNotSystemPath(nodeRef);
         if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
             throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
@@ -3806,17 +3814,17 @@ public class NodesImpl implements Nodes
      */
     protected List<QName> createQNames(List<String> qnameStrList, List<QName> excludedProps)
     {
-        String PREFIX = PARAM_INCLUDE_PROPERTIES + "/";
+        String prefix = PARAM_INCLUDE_PROPERTIES + "/";
 
         List<QName> result = new ArrayList<>(qnameStrList.size());
         for (String str : qnameStrList)
         {
-            if (str.startsWith(PREFIX))
+            String qnameStr = str;
+            if (qnameStr.startsWith(prefix))
             {
-                str = str.substring(PREFIX.length());
+                qnameStr = qnameStr.substring(prefix.length());
             }
-
-            QName name = createQName(str);
+            QName name = createQName(qnameStr);
             if (!excludedProps.contains(name))
             {
                 result.add(name);
@@ -3998,6 +4006,58 @@ public class NodesImpl implements Nodes
                 }
             });
         }
+    }
+
+    /**
+     * Throws {@link PermissionDeniedException} if any ancestor node is a system-protected path.
+     */
+    protected void checkNotSystemPath(NodeRef nodeRef)
+    {
+        // Run traversal as system to avoid AccessDeniedException on intermediate nodes
+        // where the current user may not have READ access (e.g. when inheritance is disabled
+        // on a parent folder). This is a structural check only - normal permission enforcement
+        // for the requested operation is handled separately.
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            QName requestedNodeType = nodeService.getType(nodeRef);
+            if (DownloadModel.TYPE_DOWNLOAD.equals(requestedNodeType))
+            {
+                return null;
+            }
+
+            NodeRef current = nodeRef;
+
+            while (current != null)
+            {
+                if (current.equals(repositoryHelper.getCompanyHome()))
+                {
+                    break;
+                }
+
+                QName type = nodeService.getType(current);
+                if (SiteModel.TYPE_SITE.equals(type) || isSubClass(type, SiteModel.TYPE_SITE))
+                {
+                    break;
+                }
+                if (isSpecialNode(current, type))
+                {
+                    throw new PermissionDeniedException(
+                            "Cannot perform operation on system path for requested node id '" + nodeRef.getId()
+                                    + "' due to protected ancestor id '" + current.getId()
+                                    + "' of type '" + type + "'");
+                }
+
+                ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(current);
+
+                if (parentAssoc == null ||
+                        parentAssoc.getParentRef() == null)
+                {
+                    break;
+                }
+
+                current = parentAssoc.getParentRef();
+            }
+            return null;
+        });
     }
 
     /**

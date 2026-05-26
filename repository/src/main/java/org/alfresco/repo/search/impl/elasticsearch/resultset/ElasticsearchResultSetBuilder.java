@@ -123,7 +123,7 @@ public class ElasticsearchResultSetBuilder
             NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, hit.id());
             if (nodeService.exists(nodeRef))
             {
-                results.add(new NodeRefAndScore(nodeRef, hit.score().floatValue()));
+                results.add(new NodeRefAndScore(nodeRef, hit.score() != null ? hit.score().floatValue() : 0.0f));
             }
         }
         return results;

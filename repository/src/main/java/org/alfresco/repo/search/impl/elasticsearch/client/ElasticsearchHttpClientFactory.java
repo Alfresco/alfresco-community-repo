@@ -106,6 +106,86 @@ public class ElasticsearchHttpClientFactory
         this.sslTrustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
     }
 
+    protected String getSecureComms()
+    {
+        return secureComms;
+    }
+
+    protected String getHost()
+    {
+        return host;
+    }
+
+    protected String getBaseUrl()
+    {
+        return baseUrl;
+    }
+
+    protected int getPort()
+    {
+        return port;
+    }
+
+    protected SSLEncryptionParameters getSslEncryptionParameters()
+    {
+        return sslEncryptionParameters;
+    }
+
+    protected KeyResourceLoader getKeyResourceLoader()
+    {
+        return keyResourceLoader;
+    }
+
+    protected AlfrescoKeyStore getSslTrustStore()
+    {
+        return sslTrustStore;
+    }
+
+    protected boolean isHostNameVerification()
+    {
+        return hostNameVerification;
+    }
+
+    protected void setClient(OpenSearchClient client)
+    {
+        this.client = client;
+    }
+
+    protected String getUser()
+    {
+        return user;
+    }
+
+    protected int getMaxTotalConnections()
+    {
+        return maxTotalConnections;
+    }
+
+    protected int getMaxHostConnections()
+    {
+        return maxHostConnections;
+    }
+
+    protected int getThreadCount()
+    {
+        return threadCount;
+    }
+
+    protected int getConnectionTimeout()
+    {
+        return connectionTimeout;
+    }
+
+    protected int getSocketTimeout()
+    {
+        return socketTimeout;
+    }
+
+    protected int getResponseTimeout()
+    {
+        return responseTimeout;
+    }
+
     /**
      * Singleton method returning the Elasticsearch client. The client is only built if it's not already created.
      *
@@ -140,7 +220,7 @@ public class ElasticsearchHttpClientFactory
      *            Port number
      * @return Elasticsearch client ready to be used
      */
-    private OpenSearchClient getElasticsearchClient(String protocol, int port)
+    protected OpenSearchClient getElasticsearchClient(String protocol, int port)
     {
         OpenSearchTransport transport = ApacheHttpClient5TransportBuilder.builder(new HttpHost(protocol, host, port))
                 .setHttpClientConfigCallback(this::getHttpAsyncClientBuilder)
@@ -177,7 +257,7 @@ public class ElasticsearchHttpClientFactory
      *            Existing HttpClientBuilder instance
      * @return httpClientBuilder including required settings
      */
-    private HttpAsyncClientBuilder getHttpAsyncClientBuilder(HttpAsyncClientBuilder httpClientBuilder)
+    protected HttpAsyncClientBuilder getHttpAsyncClientBuilder(HttpAsyncClientBuilder httpClientBuilder)
     {
         final var connectionBuilder = PoolingAsyncClientConnectionManagerBuilder.create()
                 .setMaxConnTotal(maxTotalConnections)
@@ -226,7 +306,7 @@ public class ElasticsearchHttpClientFactory
      *
      * @return CredentialsProvider instance
      */
-    private CredentialsProvider getCredentialsProvider()
+    protected CredentialsProvider getCredentialsProvider()
     {
         final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         AuthScope anyHostPortScope = new AuthScope(null, -1);
@@ -237,9 +317,9 @@ public class ElasticsearchHttpClientFactory
     /**
      * Build SSLContext instance with truststore that must include Elasticsearch server public certificate in order to be trusted for this https connection.
      *
-     * @return SSLContext instnce
+     * @return SSLContext instance
      */
-    private SSLContext getSSLContext()
+    protected SSLContext getSSLContext()
     {
         TrustManager[] trustmanagers = sslTrustStore.createTrustManagers();
 

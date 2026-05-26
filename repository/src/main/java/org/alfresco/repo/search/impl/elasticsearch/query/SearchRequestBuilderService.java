@@ -145,12 +145,12 @@ public class SearchRequestBuilderService
     {
         return new SearchRequest.Builder()
                 .query(queryWithPermissions)
-                .source(new SourceConfig.Builder().fetch(false).build())
-                .trackScores(true);
+                .source(new SourceConfig.Builder().fetch(false).build());
     }
 
     private void applyCommon(SearchParameters searchParameters, String indexName, SearchRequest.Builder builder)
     {
+        builder.trackScores(searchParameters.isTrackScore());
         elasticsearchSortBuilder.getSortBuilders(searchParameters)
                 .forEach(builder::sort);
 

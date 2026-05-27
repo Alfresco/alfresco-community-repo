@@ -62,6 +62,11 @@ public class ElasticsearchHttpClientFactory
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchHttpClientFactory.class);
 
+    protected static final String TLS = "TLS";
+    protected static final String TLS_V_1_2 = "TLSv1.2";
+    protected static final String TLS_V_1_3 = "TLSv1.3";
+    protected static final String SECURE_COMMS_HTTPS = "https";
+
     // Elasticsearch Http Client connection pool
     private OpenSearchClient client;
 
@@ -275,14 +280,15 @@ public class ElasticsearchHttpClientFactory
         }
 
         // Secure http mode has been selected, so build the SSLContext with the right truststore
-        if (secureComms.equals("https"))
+        if (secureComms.equals(SECURE_COMMS_HTTPS))
         {
-            var tlsStrategyBuilder = ClientTlsStrategyBuilder.create().setSslContext(getSSLContext());
+            LOGGER.debug("Configuring TLS strategy for Elasticsearch client (secureComms={}, hostNameVerification={})", secureComms, hostNameVerification);
+            var tlsStrategyBuilder = ClientTlsStrategyBuilder.create().setSslContext(getSSLContext()).setTlsVersions(TLS_V_1_2, TLS_V_1_3);
             if (!hostNameVerification)
             {
                 tlsStrategyBuilder.setHostnameVerifier(NoopHostnameVerifier.INSTANCE);
             }
-            connectionBuilder.setTlsStrategy(tlsStrategyBuilder.build());
+            connectionBuilder.setTlsStrategy(tlsStrategyBuilder.buildAsync());
         }
         // Override the default thread count unless it's either undefined or invalid
         if (threadCount > 0)
@@ -325,7 +331,7 @@ public class ElasticsearchHttpClientFactory
 
         try
         {
-            SSLContext sslcontext = SSLContext.getInstance("TLSv1.2");
+            SSLContext sslcontext = SSLContext.getInstance(TLS);
             sslcontext.init(null, trustmanagers, null);
             return sslcontext;
         }

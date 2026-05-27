@@ -4010,7 +4010,7 @@ public class NodesImpl implements Nodes
 
     /**
      * Names of folders directly under Data Dictionary that contain executable artifacts
-     * (FreeMarker templates, JavaScript controllers, models, messages). Modifications to
+     * (FreeMarker templates, JavaScript controllers, messages). Modifications to
      * content under these folders via the REST API are blocked to prevent SSTI/RCE via
      * sandbox escape (e.g. overwriting web script templates).
      */
@@ -4056,7 +4056,7 @@ public class NodesImpl implements Nodes
                 }
 
                 // Block only executable system paths under Data Dictionary
-                // (Web Scripts, Models, Messages, Scripts). This is the SSTI/RCE
+                // (Web Scripts, Messages, Scripts). This is the SSTI/RCE
                 // injection surface. Other Data Dictionary children remain editable
                 // by admins (e.g. Node Templates, Space Templates, Email Templates).
                 if (isProtectedExecutableSystemFolder(current, dataDictionary))
@@ -4113,7 +4113,7 @@ public class NodesImpl implements Nodes
 
     /**
      * @return {@code true} if {@code nodeRef} is a direct child of Data Dictionary whose
-     *         name matches a protected executable folder (Web Scripts, Models, etc.).
+     *         name matches a protected executable folder (Web Scripts).
      */
     private boolean isProtectedExecutableSystemFolder(NodeRef nodeRef, NodeRef dataDictionary)
     {
@@ -4123,6 +4123,11 @@ public class NodesImpl implements Nodes
         }
         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
         if (parentAssoc == null || !dataDictionary.equals(parentAssoc.getParentRef()))
+        {
+            return false;
+        }
+        QName nodeType = nodeService.getType(nodeRef);
+        if (nodeType == null || !dictionaryService.isSubClass(nodeType, ContentModel.TYPE_FOLDER))
         {
             return false;
         }

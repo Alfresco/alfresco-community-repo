@@ -106,7 +106,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.alfresco.model.ContentModel;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.index.Term;
@@ -126,6 +125,7 @@ import org.jaxen.saxpath.base.XPathReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfig;
@@ -250,89 +250,89 @@ public class LuceneQueryParser extends QueryParser
 
         switch (fieldName)
         {
-            case FIELD_PATH:
-                try
-                {
-                    validatePathQuery(queryText, FIELD_PATH);
-                    return PathQueryConverter.toLucenePathQuery(queryText);
-                }
-                catch (SAXPathException e)
-                {
-                    logIgnoringField("XPath syntax not supported:" + queryText);
-                    return null;
-                }
-            case FIELD_ANCESTOR:
-                // Note this does not yet support querying ancestors in category paths (ACS-3831).
-                return nodeRefTermQuery(queryText, ANCESTOR_FIELD);
-            case FIELD_PARENT:
-                // Note this does not yet support querying parents in category paths (ACS-3832).
-                return nodeRefTermQuery(queryText, PARENT_FIELD);
-            case FIELD_PRIMARYPARENT:
-                return nodeRefTermQuery(queryText, PRIMARY_PARENT_FIELD);
-            case FIELD_TEXT:
-                return textFieldQuery(textFieldName -> getFieldQuery(textFieldName, queryText, quoted), exactTermSearch);
-            case FIELD_ALL:
-                return allFieldQuery(allFieldName -> getFieldQuery(allFieldName, queryText, quoted), exactTermSearch);
-            case FIELD_ID:
-                return nodeRefTermQuery(queryText, ID_FIELD);
-            case FIELD_ISNODE:
-                return isNodeFieldQuery(queryText);
-            case FIELD_CLASS:
-                return classDefinitionQuery(queryText, quoted);
-            case FIELD_TYPE:
-                return typeQuery(queryText, false);
-            case FIELD_EXACTTYPE:
-                return typeQuery(queryText, true);
-            case FIELD_ASPECT:
-                return aspectQuery(queryText, false);
-            case FIELD_EXACTASPECT:
-                return aspectQuery(queryText, true);
-            case FIELD_ISNOTNULL:
-            case FIELD_EXISTS:
-                return existsQuery(queryText);
-            case FIELD_ISNULL:
-                return isNullQuery(queryText);
-            case FIELD_OWNER:
-            case FIELD_READER:
-            case FIELD_DENIED:
-            case FIELD_AUTHORITY:
-            case FIELD_TAG:
-                return luceneTermQuery(fieldName, escape(queryText, true));
-            case FIELD_SITE:
-                return siteQuery(queryText);
-            case FIELD_ISUNSET:
-                return isUnsetQuery(queryText);
-            case FIELD_PATHWITHREPEATS:
-            case FIELD_PNAME:
-            case FIELD_NPATH:
-            case FIELD_QNAME:
-            case FIELD_PRIMARYASSOCQNAME:
-            case FIELD_PRIMARYASSOCTYPEQNAME:
-            case FIELD_OWNERSET:
-            case FIELD_READERSET:
-            case FIELD_DENYSET:
-            case FIELD_AUTHORITYSET:
-            case FIELD_SOLR4_ID:
-            case FIELD_CASCADETX:
-            case FIELD_DBID:
-            case FIELD_TX:
-            case FIELD_TXID:
-            case FIELD_INTXID:
-            case FIELD_TXCOMMITTIME:
-            case FIELD_ACLID:
-            case FIELD_INACLTXID:
-            case FIELD_ACLTXID:
-            case FIELD_ACLTXCOMMITTIME:
-            case FIELD_FTSSTATUS:
-            case FIELD_ISROOT:
-            case FIELD_ISCONTAINER:
-            case FIELD_TENANT:
-            case FIELD_FINGERPRINT:
-                return unsupportedField(fieldName);
-            default:
-                return getPropertyQuery(fieldName, escape(queryText, true), quoted, exactTermSearch, untokenisedSearch)
-                        .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getFieldQuery(propertyName, queryText, quoted))))
-                        .orElseGet(() -> luceneFieldQuery(fieldName, queryText, quoted));
+        case FIELD_PATH:
+            try
+            {
+                validatePathQuery(queryText, FIELD_PATH);
+                return PathQueryConverter.toLucenePathQuery(queryText);
+            }
+            catch (SAXPathException e)
+            {
+                logIgnoringField("XPath syntax not supported:" + queryText);
+                return null;
+            }
+        case FIELD_ANCESTOR:
+            // Note this does not yet support querying ancestors in category paths (ACS-3831).
+            return nodeRefTermQuery(queryText, ANCESTOR_FIELD);
+        case FIELD_PARENT:
+            // Note this does not yet support querying parents in category paths (ACS-3832).
+            return nodeRefTermQuery(queryText, PARENT_FIELD);
+        case FIELD_PRIMARYPARENT:
+            return nodeRefTermQuery(queryText, PRIMARY_PARENT_FIELD);
+        case FIELD_TEXT:
+            return textFieldQuery(textFieldName -> getFieldQuery(textFieldName, queryText, quoted), exactTermSearch);
+        case FIELD_ALL:
+            return allFieldQuery(allFieldName -> getFieldQuery(allFieldName, queryText, quoted), exactTermSearch);
+        case FIELD_ID:
+            return nodeRefTermQuery(queryText, ID_FIELD);
+        case FIELD_ISNODE:
+            return isNodeFieldQuery(queryText);
+        case FIELD_CLASS:
+            return classDefinitionQuery(queryText, quoted);
+        case FIELD_TYPE:
+            return typeQuery(queryText, false);
+        case FIELD_EXACTTYPE:
+            return typeQuery(queryText, true);
+        case FIELD_ASPECT:
+            return aspectQuery(queryText, false);
+        case FIELD_EXACTASPECT:
+            return aspectQuery(queryText, true);
+        case FIELD_ISNOTNULL:
+        case FIELD_EXISTS:
+            return existsQuery(queryText);
+        case FIELD_ISNULL:
+            return isNullQuery(queryText);
+        case FIELD_OWNER:
+        case FIELD_READER:
+        case FIELD_DENIED:
+        case FIELD_AUTHORITY:
+        case FIELD_TAG:
+            return luceneTermQuery(fieldName, escape(queryText, true));
+        case FIELD_SITE:
+            return siteQuery(queryText);
+        case FIELD_ISUNSET:
+            return isUnsetQuery(queryText);
+        case FIELD_PATHWITHREPEATS:
+        case FIELD_PNAME:
+        case FIELD_NPATH:
+        case FIELD_QNAME:
+        case FIELD_PRIMARYASSOCQNAME:
+        case FIELD_PRIMARYASSOCTYPEQNAME:
+        case FIELD_OWNERSET:
+        case FIELD_READERSET:
+        case FIELD_DENYSET:
+        case FIELD_AUTHORITYSET:
+        case FIELD_SOLR4_ID:
+        case FIELD_CASCADETX:
+        case FIELD_DBID:
+        case FIELD_TX:
+        case FIELD_TXID:
+        case FIELD_INTXID:
+        case FIELD_TXCOMMITTIME:
+        case FIELD_ACLID:
+        case FIELD_INACLTXID:
+        case FIELD_ACLTXID:
+        case FIELD_ACLTXCOMMITTIME:
+        case FIELD_FTSSTATUS:
+        case FIELD_ISROOT:
+        case FIELD_ISCONTAINER:
+        case FIELD_TENANT:
+        case FIELD_FINGERPRINT:
+            return unsupportedField(fieldName);
+        default:
+            return getPropertyQuery(fieldName, escape(queryText, true), quoted, exactTermSearch, untokenisedSearch)
+                    .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getFieldQuery(propertyName, queryText, quoted))))
+                    .orElseGet(() -> luceneFieldQuery(fieldName, queryText, quoted));
         }
     }
 
@@ -435,58 +435,58 @@ public class LuceneQueryParser extends QueryParser
 
         switch (fieldName)
         {
-            case FIELD_SOLR4_ID:
-            case FIELD_PATH:
-            case FIELD_PATHWITHREPEATS:
-            case FIELD_ANCESTOR:
-            case FIELD_PARENT:
-            case FIELD_PRIMARYPARENT:
-            case FIELD_QNAME:
-            case FIELD_PRIMARYASSOCQNAME:
-            case FIELD_PRIMARYASSOCTYPEQNAME:
-            case FIELD_ISROOT:
-            case FIELD_ISUNSET:
-            case FIELD_ISNULL:
-            case FIELD_ISCONTAINER:
-            case FIELD_ISNOTNULL:
-            case FIELD_EXISTS:
-            case FIELD_FTSSTATUS:
-            case FIELD_CASCADETX:
-            case FIELD_DBID:
-            case FIELD_TX:
-            case FIELD_TXID:
-            case FIELD_INTXID:
-            case FIELD_ACLID:
-            case FIELD_ACLTXID:
-            case FIELD_INACLTXID:
-            case FIELD_TXCOMMITTIME:
-            case FIELD_ACLTXCOMMITTIME:
-            case FIELD_TENANT:
-            case FIELD_FINGERPRINT:
-            case FIELD_OWNERSET:
-            case FIELD_READERSET:
-            case FIELD_DENYSET:
-            case FIELD_AUTHORITYSET:
-            case FIELD_CLASS:
-                return unsupportedWithMessage("Prefix Queries are not supported for " + fieldName);
-            case FIELD_SITE:
-                return siteQuery(queryText);
-            case FIELD_TYPE:
-            case FIELD_EXACTTYPE:
-                return qnamePrefixQuery(FIELD_TYPE, queryText);
-            case FIELD_ASPECT:
-            case FIELD_EXACTASPECT:
-                return qnamePrefixQuery(FIELD_ASPECT, queryText);
-            case FIELD_TEXT:
-                return textFieldQuery(textFieldName -> getPrefixQuery(textFieldName, queryText), exactTermSearch);
-            case FIELD_ID:
-                return uuidPrefixQuery(queryText);
-            case FIELD_ALL:
-                return allFieldQuery(propertyName -> getPrefixQuery(propertyName, queryText), exactTermSearch);
-            default:
-                return propertyPrefixQuery(fieldName, escape(queryText, true), exactTermSearch)
-                        .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getPrefixQuery(propertyName, queryText))))
-                        .orElseGet(() -> lucenePrefixQuery(fieldName, queryText));
+        case FIELD_SOLR4_ID:
+        case FIELD_PATH:
+        case FIELD_PATHWITHREPEATS:
+        case FIELD_ANCESTOR:
+        case FIELD_PARENT:
+        case FIELD_PRIMARYPARENT:
+        case FIELD_QNAME:
+        case FIELD_PRIMARYASSOCQNAME:
+        case FIELD_PRIMARYASSOCTYPEQNAME:
+        case FIELD_ISROOT:
+        case FIELD_ISUNSET:
+        case FIELD_ISNULL:
+        case FIELD_ISCONTAINER:
+        case FIELD_ISNOTNULL:
+        case FIELD_EXISTS:
+        case FIELD_FTSSTATUS:
+        case FIELD_CASCADETX:
+        case FIELD_DBID:
+        case FIELD_TX:
+        case FIELD_TXID:
+        case FIELD_INTXID:
+        case FIELD_ACLID:
+        case FIELD_ACLTXID:
+        case FIELD_INACLTXID:
+        case FIELD_TXCOMMITTIME:
+        case FIELD_ACLTXCOMMITTIME:
+        case FIELD_TENANT:
+        case FIELD_FINGERPRINT:
+        case FIELD_OWNERSET:
+        case FIELD_READERSET:
+        case FIELD_DENYSET:
+        case FIELD_AUTHORITYSET:
+        case FIELD_CLASS:
+            return unsupportedWithMessage("Prefix Queries are not supported for " + fieldName);
+        case FIELD_SITE:
+            return siteQuery(queryText);
+        case FIELD_TYPE:
+        case FIELD_EXACTTYPE:
+            return qnamePrefixQuery(FIELD_TYPE, queryText);
+        case FIELD_ASPECT:
+        case FIELD_EXACTASPECT:
+            return qnamePrefixQuery(FIELD_ASPECT, queryText);
+        case FIELD_TEXT:
+            return textFieldQuery(textFieldName -> getPrefixQuery(textFieldName, queryText), exactTermSearch);
+        case FIELD_ID:
+            return uuidPrefixQuery(queryText);
+        case FIELD_ALL:
+            return allFieldQuery(propertyName -> getPrefixQuery(propertyName, queryText), exactTermSearch);
+        default:
+            return propertyPrefixQuery(fieldName, escape(queryText, true), exactTermSearch)
+                    .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getPrefixQuery(propertyName, queryText))))
+                    .orElseGet(() -> lucenePrefixQuery(fieldName, queryText));
         }
     }
 
@@ -507,14 +507,14 @@ public class LuceneQueryParser extends QueryParser
 
         switch (fieldName)
         {
-            case FIELD_TEXT:
-                return textFieldQuery(textPropertyName -> getRangeQuery(textPropertyName, part1, part2, startInclusive, endInclusive), exactTermSearch);
-            case FIELD_ALL:
-                return allFieldQuery(propertyName -> getRangeQuery(propertyName, part1, part2, startInclusive, endInclusive), exactTermSearch);
-            default:
-                return propertyRangeQuery(fieldName, part1, part2, startInclusive, endInclusive, exactTermSearch)
-                        .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getRangeQuery(propertyName, part1, part2, startInclusive, endInclusive))))
-                        .orElseGet(() -> unsupportedWithMessage("Range Queries are not support for " + fieldName));
+        case FIELD_TEXT:
+            return textFieldQuery(textPropertyName -> getRangeQuery(textPropertyName, part1, part2, startInclusive, endInclusive), exactTermSearch);
+        case FIELD_ALL:
+            return allFieldQuery(propertyName -> getRangeQuery(propertyName, part1, part2, startInclusive, endInclusive), exactTermSearch);
+        default:
+            return propertyRangeQuery(fieldName, part1, part2, startInclusive, endInclusive, exactTermSearch)
+                    .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getRangeQuery(propertyName, part1, part2, startInclusive, endInclusive))))
+                    .orElseGet(() -> unsupportedWithMessage("Range Queries are not support for " + fieldName));
         }
     }
 
@@ -534,56 +534,56 @@ public class LuceneQueryParser extends QueryParser
         }
         switch (fieldName)
         {
-            case FIELD_SOLR4_ID:
-            case FIELD_PATH:
-            case FIELD_PATHWITHREPEATS:
-            case FIELD_ANCESTOR:
-            case FIELD_PARENT:
-            case FIELD_PRIMARYPARENT:
-            case FIELD_QNAME:
-            case FIELD_PRIMARYASSOCQNAME:
-            case FIELD_PRIMARYASSOCTYPEQNAME:
-            case FIELD_ISROOT:
-            case FIELD_ISUNSET:
-            case FIELD_ISNULL:
-            case FIELD_ISCONTAINER:
-            case FIELD_ISNOTNULL:
-            case FIELD_EXISTS:
-            case FIELD_FTSSTATUS:
-            case FIELD_CASCADETX:
-            case FIELD_DBID:
-            case FIELD_TX:
-            case FIELD_TXID:
-            case FIELD_INTXID:
-            case FIELD_ACLID:
-            case FIELD_ACLTXID:
-            case FIELD_INACLTXID:
-            case FIELD_TXCOMMITTIME:
-            case FIELD_ACLTXCOMMITTIME:
-            case FIELD_TENANT:
-            case FIELD_FINGERPRINT:
-            case FIELD_OWNERSET:
-            case FIELD_READERSET:
-            case FIELD_DENYSET:
-            case FIELD_AUTHORITYSET:
-            case FIELD_CLASS:
-                return unsupportedWithMessage("Wildcard Queries are not supported for " + field);
-            case FIELD_SITE:
-                return siteQuery(queryText);
-            case FIELD_TYPE:
-            case FIELD_EXACTTYPE:
-                return qnameWildcardQuery(FIELD_TYPE, queryText);
-            case FIELD_ASPECT:
-            case FIELD_EXACTASPECT:
-                return qnameWildcardQuery(FIELD_ASPECT, queryText);
-            case FIELD_ALL:
-                return allFieldQuery(propertyName -> getWildcardQuery(propertyName, queryText), exactTermSearch);
-            case FIELD_TEXT:
-                return textFieldQuery(textFieldName -> getWildcardQuery(textFieldName, queryText), exactTermSearch);
-            default:
-                return propertyWildcardQuery(fieldName, queryText, exactTermSearch)
-                        .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getWildcardQuery(propertyName, queryText))))
-                        .orElseGet(() -> luceneWildcardQuery(fieldName, queryText));
+        case FIELD_SOLR4_ID:
+        case FIELD_PATH:
+        case FIELD_PATHWITHREPEATS:
+        case FIELD_ANCESTOR:
+        case FIELD_PARENT:
+        case FIELD_PRIMARYPARENT:
+        case FIELD_QNAME:
+        case FIELD_PRIMARYASSOCQNAME:
+        case FIELD_PRIMARYASSOCTYPEQNAME:
+        case FIELD_ISROOT:
+        case FIELD_ISUNSET:
+        case FIELD_ISNULL:
+        case FIELD_ISCONTAINER:
+        case FIELD_ISNOTNULL:
+        case FIELD_EXISTS:
+        case FIELD_FTSSTATUS:
+        case FIELD_CASCADETX:
+        case FIELD_DBID:
+        case FIELD_TX:
+        case FIELD_TXID:
+        case FIELD_INTXID:
+        case FIELD_ACLID:
+        case FIELD_ACLTXID:
+        case FIELD_INACLTXID:
+        case FIELD_TXCOMMITTIME:
+        case FIELD_ACLTXCOMMITTIME:
+        case FIELD_TENANT:
+        case FIELD_FINGERPRINT:
+        case FIELD_OWNERSET:
+        case FIELD_READERSET:
+        case FIELD_DENYSET:
+        case FIELD_AUTHORITYSET:
+        case FIELD_CLASS:
+            return unsupportedWithMessage("Wildcard Queries are not supported for " + field);
+        case FIELD_SITE:
+            return siteQuery(queryText);
+        case FIELD_TYPE:
+        case FIELD_EXACTTYPE:
+            return qnameWildcardQuery(FIELD_TYPE, queryText);
+        case FIELD_ASPECT:
+        case FIELD_EXACTASPECT:
+            return qnameWildcardQuery(FIELD_ASPECT, queryText);
+        case FIELD_ALL:
+            return allFieldQuery(propertyName -> getWildcardQuery(propertyName, queryText), exactTermSearch);
+        case FIELD_TEXT:
+            return textFieldQuery(textFieldName -> getWildcardQuery(textFieldName, queryText), exactTermSearch);
+        default:
+            return propertyWildcardQuery(fieldName, queryText, exactTermSearch)
+                    .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getWildcardQuery(propertyName, queryText))))
+                    .orElseGet(() -> luceneWildcardQuery(fieldName, queryText));
         }
     }
 
@@ -604,55 +604,55 @@ public class LuceneQueryParser extends QueryParser
 
         switch (fieldName)
         {
-            case FIELD_SOLR4_ID:
-            case FIELD_PATH:
-            case FIELD_PATHWITHREPEATS:
-            case FIELD_ANCESTOR:
-            case FIELD_PARENT:
-            case FIELD_PRIMARYPARENT:
-            case FIELD_QNAME:
-            case FIELD_PRIMARYASSOCQNAME:
-            case FIELD_PRIMARYASSOCTYPEQNAME:
-            case FIELD_SITE:
-            case FIELD_TYPE:
-            case FIELD_EXACTTYPE:
-            case FIELD_ASPECT:
-            case FIELD_EXACTASPECT:
-            case FIELD_ISNODE:
-            case FIELD_ISROOT:
-            case FIELD_ISUNSET:
-            case FIELD_ISNULL:
-            case FIELD_ISCONTAINER:
-            case FIELD_ISNOTNULL:
-            case FIELD_EXISTS:
-            case FIELD_FTSSTATUS:
-            case FIELD_CASCADETX:
-            case FIELD_DBID:
-            case FIELD_TX:
-            case FIELD_TXID:
-            case FIELD_INTXID:
-            case FIELD_ACLID:
-            case FIELD_ACLTXID:
-            case FIELD_INACLTXID:
-            case FIELD_TXCOMMITTIME:
-            case FIELD_ACLTXCOMMITTIME:
-            case FIELD_TENANT:
-            case FIELD_FINGERPRINT:
-            case FIELD_OWNERSET:
-            case FIELD_READERSET:
-            case FIELD_DENYSET:
-            case FIELD_AUTHORITYSET:
-                return unsupportedField("Fuzzy queries are not supported for " + field);
-            case FIELD_CLASS:
-                throw new UnsupportedOperationException("Fuzzy queries are not supported for " + field);
-            case FIELD_ALL:
-                return allFieldQuery(textFieldName -> getFuzzyQuery(textFieldName, termStr, minSimilarity), exactTermSearch);
-            case FIELD_TEXT:
-                return textFieldQuery(textFieldName -> getFuzzyQuery(textFieldName, termStr, minSimilarity), exactTermSearch);
-            default:
-                return propertyFuzzyQuery(fieldName, termStr, minSimilarity, exactTermSearch)
-                        .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getFuzzyQuery(propertyName, termStr, minSimilarity))))
-                        .orElseGet(() -> luceneFuzzyQuery(fieldName, termStr, minSimilarity));
+        case FIELD_SOLR4_ID:
+        case FIELD_PATH:
+        case FIELD_PATHWITHREPEATS:
+        case FIELD_ANCESTOR:
+        case FIELD_PARENT:
+        case FIELD_PRIMARYPARENT:
+        case FIELD_QNAME:
+        case FIELD_PRIMARYASSOCQNAME:
+        case FIELD_PRIMARYASSOCTYPEQNAME:
+        case FIELD_SITE:
+        case FIELD_TYPE:
+        case FIELD_EXACTTYPE:
+        case FIELD_ASPECT:
+        case FIELD_EXACTASPECT:
+        case FIELD_ISNODE:
+        case FIELD_ISROOT:
+        case FIELD_ISUNSET:
+        case FIELD_ISNULL:
+        case FIELD_ISCONTAINER:
+        case FIELD_ISNOTNULL:
+        case FIELD_EXISTS:
+        case FIELD_FTSSTATUS:
+        case FIELD_CASCADETX:
+        case FIELD_DBID:
+        case FIELD_TX:
+        case FIELD_TXID:
+        case FIELD_INTXID:
+        case FIELD_ACLID:
+        case FIELD_ACLTXID:
+        case FIELD_INACLTXID:
+        case FIELD_TXCOMMITTIME:
+        case FIELD_ACLTXCOMMITTIME:
+        case FIELD_TENANT:
+        case FIELD_FINGERPRINT:
+        case FIELD_OWNERSET:
+        case FIELD_READERSET:
+        case FIELD_DENYSET:
+        case FIELD_AUTHORITYSET:
+            return unsupportedField("Fuzzy queries are not supported for " + field);
+        case FIELD_CLASS:
+            throw new UnsupportedOperationException("Fuzzy queries are not supported for " + field);
+        case FIELD_ALL:
+            return allFieldQuery(textFieldName -> getFuzzyQuery(textFieldName, termStr, minSimilarity), exactTermSearch);
+        case FIELD_TEXT:
+            return textFieldQuery(textFieldName -> getFuzzyQuery(textFieldName, termStr, minSimilarity), exactTermSearch);
+        default:
+            return propertyFuzzyQuery(fieldName, termStr, minSimilarity, exactTermSearch)
+                    .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getFuzzyQuery(propertyName, termStr, minSimilarity))))
+                    .orElseGet(() -> luceneFuzzyQuery(fieldName, termStr, minSimilarity));
         }
     }
 
@@ -827,17 +827,17 @@ public class LuceneQueryParser extends QueryParser
         return excludeSubclasses
                 ? luceneTermQuery(fieldName, escape(classDefinition.getName().toPrefixString(namespaceResolver), false))
                 : subclasses(classDefinition, fieldName)
-                .filter(qname -> {
-                    var subclassDefinition = FIELD_ASPECT.equals(fieldName)
-                            ? dictionaryService.getAspect(qname)
-                            : dictionaryService.getType(qname);
-                    return subclassDefinition.getName().equals(subclassDefinition.getName())
-                            || subclassDefinition.getIncludedInSuperTypeQuery();
-                })
-                .map(qname -> qname.toPrefixString(namespaceResolver))
-                .map(qname -> luceneTermQuery(fieldName, escape(qname, false)))
-                .reduce(booleanQuerySupplier.get(), accumulateDisjunctionClauses, combineBooleanQueries)
-                .build();
+                        .filter(qname -> {
+                            var subclassDefinition = FIELD_ASPECT.equals(fieldName)
+                                    ? dictionaryService.getAspect(qname)
+                                    : dictionaryService.getType(qname);
+                            return subclassDefinition.getName().equals(subclassDefinition.getName())
+                                    || subclassDefinition.getIncludedInSuperTypeQuery();
+                        })
+                        .map(qname -> qname.toPrefixString(namespaceResolver))
+                        .map(qname -> luceneTermQuery(fieldName, escape(qname, false)))
+                        .reduce(booleanQuerySupplier.get(), accumulateDisjunctionClauses, combineBooleanQueries)
+                        .build();
     }
 
     Stream<QName> subclasses(ClassDefinition classDefinition, String fieldName)
@@ -912,9 +912,9 @@ public class LuceneQueryParser extends QueryParser
     {
         var allAttributes = safe(parameters.getAllAttributes()).isEmpty()
                 ? safe(dictionaryService.getAllProperties(null)
-                .stream()
-                .map(qname -> qname.toPrefixString(namespaceResolver))
-                .collect(toList()))
+                        .stream()
+                        .map(qname -> qname.toPrefixString(namespaceResolver))
+                        .collect(toList()))
                 : parameters.getAllAttributes();
 
         return booleanQuerySupplier.get()

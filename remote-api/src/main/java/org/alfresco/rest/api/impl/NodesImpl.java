@@ -242,6 +242,12 @@ public class NodesImpl implements Nodes
 
     private ConcurrentHashMap<String, NodeRef> ddCache = new ConcurrentHashMap<>();
 
+    private static final Set<String> PROTECTED_DD_EXECUTABLE_FOLDERS = new HashSet<>(Arrays.asList(
+            "Web Scripts",
+            "Web Scripts Extensions",
+            "Messages",
+            "Scripts"));
+
     // pre-configured allow list of media/mime types, eg. specific types of images & also pdf
     private Set<String> nonAttachContentTypes = Collections.emptySet();
 
@@ -4008,14 +4014,6 @@ public class NodesImpl implements Nodes
         }
     }
 
-    /**
-     * Names of folders directly under Data Dictionary that contain executable artifacts (FreeMarker templates, JavaScript controllers, messages). Modifications to content under these folders via the REST API are blocked to prevent SSTI/RCE via sandbox escape (e.g. overwriting web script templates).
-     */
-    private static final Set<String> PROTECTED_DD_EXECUTABLE_FOLDERS = new HashSet<>(Arrays.asList(
-            "Web Scripts",
-            "Web Scripts Extensions",
-            "Messages",
-            "Scripts"));
 
     /**
      * Throws {@link PermissionDeniedException} if any ancestor node is an executable system-managed path (e.g. Data Dictionary/Web Scripts). Modifications under Data Dictionary itself (folder templates, node templates, etc.) remain allowed for admins so existing UI / regression flows are not impacted.

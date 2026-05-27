@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 
@@ -57,6 +58,9 @@ public class NodeTypeFilter extends AbstractNodeEventFilter
         // include all system folder types to be filtered out
         Set<QName> result = new HashSet<>(getSystemFolderTypes());
 
+        // remove types from exclusion filter
+        removeTypesFromExclusion(result);
+
         // add node types defined in repository.properties/alfresco-global.properties
         nodeTypesBlackList.forEach(nodeType -> result.addAll(expandTypeDef(nodeType)));
 
@@ -66,5 +70,11 @@ public class NodeTypeFilter extends AbstractNodeEventFilter
     private Collection<QName> getSystemFolderTypes()
     {
         return dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+    }
+
+    private void removeTypesFromExclusion(Set<QName> result)
+    {
+        result.remove(WorkflowModel.TYPE_PACKAGE);
+        result.removeAll(dictionaryService.getSubTypes(WorkflowModel.TYPE_PACKAGE, true));
     }
 }

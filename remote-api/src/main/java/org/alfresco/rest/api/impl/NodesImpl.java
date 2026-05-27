@@ -4014,7 +4014,6 @@ public class NodesImpl implements Nodes
         }
     }
 
-
     /**
      * Throws {@link PermissionDeniedException} if any ancestor node is an executable system-managed path (e.g. Data Dictionary/Web Scripts). Modifications under Data Dictionary itself (folder templates, node templates, etc.) remain allowed for admins so existing UI / regression flows are not impacted.
      */

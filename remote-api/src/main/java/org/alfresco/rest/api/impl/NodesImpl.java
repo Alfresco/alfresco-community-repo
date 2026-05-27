@@ -4009,10 +4009,7 @@ public class NodesImpl implements Nodes
     }
 
     /**
-     * Names of folders directly under Data Dictionary that contain executable artifacts
-     * (FreeMarker templates, JavaScript controllers, messages). Modifications to
-     * content under these folders via the REST API are blocked to prevent SSTI/RCE via
-     * sandbox escape (e.g. overwriting web script templates).
+     * Names of folders directly under Data Dictionary that contain executable artifacts (FreeMarker templates, JavaScript controllers, messages). Modifications to content under these folders via the REST API are blocked to prevent SSTI/RCE via sandbox escape (e.g. overwriting web script templates).
      */
     private static final Set<String> PROTECTED_DD_EXECUTABLE_FOLDERS = new HashSet<>(Arrays.asList(
             "Web Scripts",
@@ -4021,10 +4018,7 @@ public class NodesImpl implements Nodes
             "Scripts"));
 
     /**
-     * Throws {@link PermissionDeniedException} if any ancestor node is an executable
-     * system-managed path (e.g. Data Dictionary/Web Scripts). Modifications under
-     * Data Dictionary itself (folder templates, node templates, etc.) remain allowed
-     * for admins so existing UI / regression flows are not impacted.
+     * Throws {@link PermissionDeniedException} if any ancestor node is an executable system-managed path (e.g. Data Dictionary/Web Scripts). Modifications under Data Dictionary itself (folder templates, node templates, etc.) remain allowed for admins so existing UI / regression flows are not impacted.
      */
     protected void checkNotSystemPath(NodeRef nodeRef)
     {
@@ -4089,8 +4083,7 @@ public class NodesImpl implements Nodes
     }
 
     /**
-     * @return the Data Dictionary {@link NodeRef} for the current tenant, or {@code null}
-     *         if it cannot be resolved.
+     * @return the Data Dictionary {@link NodeRef} for the current tenant, or {@code null} if it cannot be resolved.
      */
     private NodeRef getDataDictionaryNodeRef()
     {
@@ -4112,8 +4105,7 @@ public class NodesImpl implements Nodes
     }
 
     /**
-     * @return {@code true} if {@code nodeRef} is a direct child of Data Dictionary whose
-     *         name matches a protected executable folder (Web Scripts).
+     * @return {@code true} if {@code nodeRef} is a direct child of Data Dictionary whose name matches a protected executable folder (Web Scripts).
      */
     private boolean isProtectedExecutableSystemFolder(NodeRef nodeRef, NodeRef dataDictionary)
     {

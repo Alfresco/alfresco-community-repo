@@ -4046,11 +4046,15 @@ public class NodesImpl implements Nodes
                     break;
                 }
 
+                // Fetch parentAssoc once per iteration — reused for both the
+                // protected-folder check and upward traversal to avoid double repository calls.
+                ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(current);
+
                 // Block only executable system paths under Data Dictionary
                 // (Web Scripts, Messages, Scripts). This is the SSTI/RCE
                 // injection surface. Other Data Dictionary children remain editable
                 // by admins (e.g. Node Templates, Space Templates, Email Templates).
-                if (isProtectedExecutableSystemFolder(current, dataDictionary))
+                if (isProtectedExecutableSystemFolder(current, parentAssoc, dataDictionary, type))
                 {
                     throw new PermissionDeniedException(
                             "Cannot perform operation on system path for requested node id '" + nodeRef.getId()
@@ -4065,10 +4069,7 @@ public class NodesImpl implements Nodes
                     break;
                 }
 
-                ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(current);
-
-                if (parentAssoc == null ||
-                        parentAssoc.getParentRef() == null)
+                if (parentAssoc == null || parentAssoc.getParentRef() == null)
                 {
                     break;
                 }
@@ -4104,18 +4105,16 @@ public class NodesImpl implements Nodes
     /**
      * @return {@code true} if {@code nodeRef} is a direct child of Data Dictionary whose name matches a protected executable folder (Web Scripts).
      */
-    private boolean isProtectedExecutableSystemFolder(NodeRef nodeRef, NodeRef dataDictionary)
+    private boolean isProtectedExecutableSystemFolder(NodeRef nodeRef, ChildAssociationRef parentAssoc, NodeRef dataDictionary, QName nodeType)
     {
-        if (dataDictionary == null || nodeRef == null)
+        if (dataDictionary == null || nodeRef == null || parentAssoc == null)
         {
             return false;
         }
-        ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
-        if (parentAssoc == null || !dataDictionary.equals(parentAssoc.getParentRef()))
+        if (!dataDictionary.equals(parentAssoc.getParentRef()))
         {
             return false;
         }
-        QName nodeType = nodeService.getType(nodeRef);
         if (nodeType == null || !dictionaryService.isSubClass(nodeType, ContentModel.TYPE_FOLDER))
         {
             return false;

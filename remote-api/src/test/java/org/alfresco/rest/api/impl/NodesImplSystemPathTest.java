@@ -58,7 +58,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
+@RunWith(MockitoJUnitRunner.class)
 public class NodesImplSystemPathTest
 {
     @Mock
@@ -128,9 +128,8 @@ public class NodesImplSystemPathTest
         when(nodeService.getType(parentRef)).thenReturn(ContentModel.TYPE_FOLDER);
         when(nodeService.getPrimaryParent(parentRef)).thenReturn(
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, dataDictionaryRef, null, parentRef));
+        when(dictionaryService.isSubClass(ContentModel.TYPE_FOLDER, ContentModel.TYPE_FOLDER)).thenReturn(true);
         when(nodeService.getProperty(parentRef, ContentModel.PROP_NAME)).thenReturn("Web Scripts");
-
-        when(nodeService.getType(dataDictionaryRef)).thenReturn(ContentModel.TYPE_FOLDER);
 
         assertThrows(PermissionDeniedException.class,
                 () -> nodesImpl.checkNotSystemPath(childRef));
@@ -149,17 +148,46 @@ public class NodesImplSystemPathTest
     @Test
     public void testDirectParentIsSpecialNode_ThrowPermissionDenied()
     {
+        // Simulate the actual "Scripts" folder (cm:folder) directly under Data Dictionary
         NodeRef childRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "child-under-dd");
 
-        when(nodeService.getType(childRef)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(nodeService.getType(childRef)).thenReturn(ContentModel.TYPE_FOLDER);
         when(nodeService.getPrimaryParent(childRef)).thenReturn(
                 new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, dataDictionaryRef, null, childRef));
+        when(dictionaryService.isSubClass(ContentModel.TYPE_FOLDER, ContentModel.TYPE_FOLDER)).thenReturn(true);
         when(nodeService.getProperty(childRef, ContentModel.PROP_NAME)).thenReturn("Scripts");
-
-        when(nodeService.getType(dataDictionaryRef)).thenReturn(ContentModel.TYPE_FOLDER);
 
         assertThrows(PermissionDeniedException.class,
                 () -> nodesImpl.checkNotSystemPath(childRef));
+    }
+
+    @Test
+    public void testNodeUnderNonProtectedDDChild_ShouldNotBeBlocked()
+    {
+        // Simulate: file inside "Node Templates" (a DD child that is NOT in the protected list)
+        // Path: fileRef -> nodeTemplatesFolder -> dataDictionary -> companyHome
+        NodeRef nodeTemplatesRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "node-templates");
+        NodeRef fileRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "file-in-node-templates");
+
+        when(nodeService.getType(fileRef)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(nodeService.getPrimaryParent(fileRef)).thenReturn(
+                new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, nodeTemplatesRef, null, fileRef));
+
+        when(nodeService.getType(nodeTemplatesRef)).thenReturn(ContentModel.TYPE_FOLDER);
+        when(nodeService.getPrimaryParent(nodeTemplatesRef)).thenReturn(
+                new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, dataDictionaryRef, null, nodeTemplatesRef));
+        when(dictionaryService.isSubClass(ContentModel.TYPE_FOLDER, ContentModel.TYPE_FOLDER)).thenReturn(true);
+        when(nodeService.getProperty(nodeTemplatesRef, ContentModel.PROP_NAME)).thenReturn("Node Templates");
+
+        when(nodeService.getType(dataDictionaryRef)).thenReturn(ContentModel.TYPE_FOLDER);
+        when(nodeService.getPrimaryParent(dataDictionaryRef)).thenReturn(
+                new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, companyHomeRef, null, dataDictionaryRef));
+
+        // Should NOT throw — "Node Templates" is not a protected executable folder
+        nodesImpl.checkNotSystemPath(fileRef);
+
+        // Traversal stops at Data Dictionary — should never go above it
+        verify(nodeService, never()).getPrimaryParent(companyHomeRef);
     }
 
     @Test

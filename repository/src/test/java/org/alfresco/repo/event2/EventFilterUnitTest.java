@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -48,6 +48,7 @@ import org.alfresco.repo.event2.filter.NodeAspectFilter;
 import org.alfresco.repo.event2.filter.NodePropertyFilter;
 import org.alfresco.repo.event2.filter.NodeTypeFilter;
 import org.alfresco.repo.event2.shared.TypeDefExpander;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -145,6 +146,9 @@ public class EventFilterUnitTest
                 typeFilter.isExcluded(ForumModel.TYPE_POST));
 
         assertFalse(typeFilter.isExcluded(ContentModel.TYPE_FOLDER));
+
+        assertFalse("bpm:package should not be excluded by default.",
+                typeFilter.isExcluded(WorkflowModel.TYPE_PACKAGE));
     }
 
     @Test

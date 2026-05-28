@@ -74,7 +74,6 @@ public class NodeTypeFilter extends AbstractNodeEventFilter
 
     private void removeTypesFromExclusion(Set<QName> result)
     {
-        result.remove(WorkflowModel.TYPE_PACKAGE);
         result.removeAll(dictionaryService.getSubTypes(WorkflowModel.TYPE_PACKAGE, true));
     }
 }

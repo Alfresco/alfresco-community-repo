@@ -145,7 +145,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -3866,7 +3865,7 @@ public class NodesImpl implements Nodes
             nodeService.setProperty(workingCopyNodeRef, ContentModel.PROP_WORKING_COPY_MODE, "offlineEditing");
             return getFolderOrDocument(workingCopyNodeRef.getId(), parameters);
         }
-        catch(CheckOutCheckInServiceException ex)
+        catch (CheckOutCheckInServiceException ex)
         {
             throw new ConstraintViolatedException(ex.getMessage());
         }

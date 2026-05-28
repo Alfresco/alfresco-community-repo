@@ -33,7 +33,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import static org.alfresco.repo.search.impl.elasticsearch.util.CollectionUtils.safe;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLTXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLTXID;
@@ -75,6 +74,7 @@ import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TX;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TXID;
 import static org.alfresco.repo.search.adaptor.QueryConstants.PROPERTY_FIELD_PREFIX;
+import static org.alfresco.repo.search.impl.elasticsearch.util.CollectionUtils.safe;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -83,8 +83,8 @@ import java.util.stream.Stream;
 import org.apache.lucene.search.Query;
 import org.junit.Test;
 
-import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.repo.search.impl.elasticsearch.query.AlfrescoDefaultTextFields;
+import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 

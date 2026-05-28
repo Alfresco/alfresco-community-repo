@@ -62,11 +62,11 @@ import org.opensearch.client.opensearch.indices.GetFieldMappingResponse;
 import org.opensearch.client.opensearch.indices.OpenSearchIndicesClient;
 import org.opensearch.client.opensearch.indices.PutMappingRequest;
 
-import org.alfresco.repo.search.impl.elasticsearch.util.LogListAppender;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSpringTest;
 import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
+import org.alfresco.repo.search.impl.elasticsearch.util.LogListAppender;
 
 /**
  * Integration tests for {@link ElasticsearchInitialiser}.

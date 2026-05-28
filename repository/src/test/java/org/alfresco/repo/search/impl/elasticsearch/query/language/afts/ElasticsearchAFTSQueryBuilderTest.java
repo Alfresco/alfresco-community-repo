@@ -44,8 +44,8 @@ import org.mockito.stubbing.Answer;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 
-import org.alfresco.repo.search.impl.elasticsearch.util.MockNamespaceService;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.EsTypeResolver;
+import org.alfresco.repo.search.impl.elasticsearch.util.MockNamespaceService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.search.SearchParameters;

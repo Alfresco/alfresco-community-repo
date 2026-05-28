@@ -38,8 +38,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configurator;
 
-import org.alfresco.repo.search.impl.elasticsearch.util.LogListAppender;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.elasticsearch.util.LogListAppender;
 
 public class AssertionUtils
 {

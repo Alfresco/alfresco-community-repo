@@ -86,8 +86,8 @@ import java.util.stream.Stream;
 import org.apache.lucene.search.Query;
 import org.junit.Test;
 
-import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.repo.search.adaptor.QueryConstants;
+import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 

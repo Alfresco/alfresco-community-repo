@@ -94,6 +94,10 @@ public class ResourceUtils
             String jsonString = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             return new JSONObject(jsonString);
         }
+        catch (IOException e)
+        {
+            throw new IOException("Failed to load a JSON from the resource file: " + resource.getFilename(), e);
+        }
         catch (JSONException e)
         {
             throw new JSONException("Failed to parse a JSON from the resource file: " + resource.getFilename(), e);

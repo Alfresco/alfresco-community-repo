@@ -3860,10 +3860,16 @@ public class NodesImpl implements Nodes
             versionProps.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
             this.getVersionService().ensureVersioningEnabled(nodeRef, versionProps);
         }
-        NodeRef workingCopyNodeRef = this.checkOutCheckInService.checkout(nodeRef);
-        nodeService.setProperty(workingCopyNodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "workingCopyMode"), "offlineEditing");
-
-        return getFolderOrDocument(workingCopyNodeRef.getId(), parameters);
+        try
+        {
+            NodeRef workingCopyNodeRef = this.checkOutCheckInService.checkout(nodeRef);
+            nodeService.setProperty(workingCopyNodeRef, ContentModel.PROP_WORKING_COPY_MODE, "offlineEditing");
+            return getFolderOrDocument(workingCopyNodeRef.getId(), parameters);
+        }
+        catch(CheckOutCheckInServiceException ex)
+        {
+            throw new ConstraintViolatedException(ex.getMessage());
+        }
     }
 
     @Override
@@ -3900,13 +3906,7 @@ public class NodesImpl implements Nodes
         {
             // Case 2: The passed node is the ORIGINAL checked-out node
             // Find the working copy via the workingcopylink association
-            List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_WORKING_COPY_LINK);
-            if (assocs.isEmpty())
-            {
-                throw new ConstraintViolatedException("Node is checked out but no working copy found: " + nodeId);
-            }
-
-            NodeRef workingCopyRef = assocs.get(0).getTargetRef();
+            NodeRef workingCopyRef = checkOutCheckInService.getWorkingCopy(nodeRef);
             try
             {
                 originalNodeRef = checkOutCheckInService.cancelCheckout(workingCopyRef);

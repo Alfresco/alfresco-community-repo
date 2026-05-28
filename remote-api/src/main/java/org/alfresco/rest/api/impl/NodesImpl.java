@@ -130,6 +130,8 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.activities.ActivitiesTransactionListener;
 import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.activities.ActivityPoster;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -143,6 +145,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -219,6 +222,7 @@ public class NodesImpl implements Nodes
     private VirtualStore smartStore; // note: remove as part of REPO-1173
     private ClassDefinitionMapper classDefinitionMapper;
     private RuleService ruleService;
+    private CheckOutCheckInService checkOutCheckInService;
 
     private enum Activity_Type
     {
@@ -278,6 +282,7 @@ public class NodesImpl implements Nodes
         this.siteService = sr.getSiteService();
         this.retryingTransactionHelper = sr.getRetryingTransactionHelper();
         this.lockService = sr.getLockService();
+        this.checkOutCheckInService = sr.getCheckOutCheckInService();
 
         if (defaultIgnoreTypesAndAspects != null)
         {
@@ -3831,6 +3836,99 @@ public class NodesImpl implements Nodes
             }
         }
         return result;
+    }
+
+    @Override
+    public Node checkout(String nodeId, Parameters parameters)
+    {
+        NodeRef nodeRef = validateOrLookupNode(nodeId);
+
+        if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
+        {
+            throw new PermissionDeniedException("Current user doesn't have permission to checkout node " + nodeId);
+        }
+
+        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
+        {
+            throw new InvalidArgumentException("Node of type cm:content or a subtype is expected: " + nodeId);
+        }
+
+        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            Map<QName, Serializable> versionProps = new HashMap<>(2);
+            versionProps.put(ContentModel.PROP_AUTO_VERSION, true);
+            versionProps.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
+            this.getVersionService().ensureVersioningEnabled(nodeRef, versionProps);
+        }
+        NodeRef workingCopyNodeRef = this.checkOutCheckInService.checkout(nodeRef);
+        nodeService.setProperty(workingCopyNodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "workingCopyMode"), "offlineEditing");
+
+        return getFolderOrDocument(workingCopyNodeRef.getId(), parameters);
+    }
+
+    @Override
+    public Node cancelCheckout(String nodeId, Parameters parameters)
+    {
+        NodeRef nodeRef = validateOrLookupNode(nodeId);
+
+        if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
+        {
+            throw new PermissionDeniedException("Current user doesn't have permission to cancel checkout for node " + nodeId);
+        }
+
+        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
+        {
+            throw new InvalidArgumentException("Node of type cm:content or a subtype is expected: " + nodeId);
+        }
+
+        NodeRef originalNodeRef;
+
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            // Case 1: The passed node IS the working copy
+            // cancelCheckout deletes the working copy and returns the original
+            try
+            {
+                originalNodeRef = checkOutCheckInService.cancelCheckout(nodeRef);
+            }
+            catch (CheckOutCheckInServiceException e)
+            {
+                throw new ConstraintViolatedException(e.getMessage());
+            }
+        }
+        else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
+        {
+            // Case 2: The passed node is the ORIGINAL checked-out node
+            // Find the working copy via the workingcopylink association
+            List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_WORKING_COPY_LINK);
+            if (assocs.isEmpty())
+            {
+                throw new ConstraintViolatedException("Node is checked out but no working copy found: " + nodeId);
+            }
+
+            NodeRef workingCopyRef = assocs.get(0).getTargetRef();
+            try
+            {
+                originalNodeRef = checkOutCheckInService.cancelCheckout(workingCopyRef);
+            }
+            catch (CheckOutCheckInServiceException e)
+            {
+                throw new ConstraintViolatedException(e.getMessage());
+            }
+        }
+        else if (lockService.isLocked(nodeRef))
+        {
+            // Case 3: Node is locked but not checked out (online edit case)
+            // Just unlock it
+            lockService.unlock(nodeRef);
+            originalNodeRef = nodeRef;
+        }
+        else
+        {
+            throw new InvalidArgumentException("Node is not checked out or locked: " + nodeId);
+        }
+
+        return getFolderOrDocument(originalNodeRef.getId(), parameters);
     }
 
     @Override

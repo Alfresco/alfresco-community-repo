@@ -207,6 +207,24 @@ public class NodesEntityResource implements
         return nodes.unlock(nodeId, parameters);
     }
 
+    @Operation("checkout")
+    @WebApiDescription(title = "Checkout Node for Offline Editing",
+            description = "Checks out a node for offline editing. A private working copy is created and returned. The original node is locked to prevent changes while checked out.",
+            successStatus = HttpServletResponse.SC_OK)
+    public Node checkout(String nodeRef, Void ignore, Parameters parameters, WithResponse withResponse)
+    {
+        return nodes.checkout(nodeRef, parameters);
+    }
+
+    @Operation("cancel-checkout")
+    @WebApiDescription(title = "Cancel-Checkout for a already checked out Node",
+            description = "Cancel the Checkout workflow for a node which was checkedout for offline editing. The private working copy is deleted and the original node is unlocked.",
+            successStatus = HttpServletResponse.SC_OK)
+    public Node cancelCheckout(String nodeRef, Void ignore, Parameters parameters, WithResponse withResponse)
+    {
+        return nodes.cancelCheckout(nodeRef, parameters);
+    }
+
     @Operation("request-direct-access-url")
     @WebApiParam(name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",

@@ -28,6 +28,7 @@ package org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,7 +67,7 @@ public class ResourceUtilsTest
         Assert.assertTrue(SettingsJsonUtils.keyExists(jsonObject, "locale_content"));
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected = JSONException.class)
     public void readJSONFromResourceMalformedJSON() throws IOException
     {
         Resource resource = new ClassPathResource(MALFROMED_JSON_PATH);

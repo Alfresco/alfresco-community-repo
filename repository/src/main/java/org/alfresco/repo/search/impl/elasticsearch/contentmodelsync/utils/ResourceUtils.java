@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.core.io.Resource;
 
@@ -93,9 +94,9 @@ public class ResourceUtils
             String jsonString = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             return new JSONObject(jsonString);
         }
-        catch (IOException e)
+        catch (JSONException e)
         {
-            throw new IOException("Failed to load a JSON from the resource file: " + resource.getFilename(), e);
+            throw new JSONException("Failed to parse a JSON from the resource file: " + resource.getFilename(), e);
         }
     }
 }

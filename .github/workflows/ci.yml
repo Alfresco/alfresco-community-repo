@@ -480,7 +480,7 @@ jobs:
           - testSuite: AppContext04TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: ElasticsearchCommunityTestsTestSuite
-            compose-profile: postgres,activemq,elasticsearch
+            compose-profile: with-elasticsearch
           - testSuite: AppContext05TestSuite
             compose-profile: with-sso
             mvn-options: '-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm'

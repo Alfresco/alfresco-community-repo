@@ -106,6 +106,9 @@ public class RhinoScriptTest extends TestCase
 
     private static final String ARRAY_REFLECTION_GET_CLASS = "arrayProvider.getItems().getClass().forName('java.lang.ProcessBuilder')";
 
+    private static final String REFLECTION_CLASS_PROPERTY = "root.nodeRef[\"class\"].forName(\"java.lang.ProcessBuilder\")";
+    private static final String ARRAY_REFLECTION_CLASS_PROPERTY = "arrayProvider.getItems()[\"class\"].forName('java.lang.ProcessBuilder')";
+
     /* @see junit.framework.TestCase#setUp() */
     protected void setUp() throws Exception
     {
@@ -446,6 +449,25 @@ public class RhinoScriptTest extends TestCase
             }
         });
 
+    }
+
+    // ACS-11595
+    public void testClassBeanPropertyBlockedInSandbox()
+    {
+        // ["class"] on a plain Java object — SandboxNativeJavaObject must return NOT_FOUND
+        boolean executed = executeSecureScriptString(REFLECTION_CLASS_PROPERTY, false);
+        assertFalse("Script shouldn't have been executed (secure = false, [\"class\"] on object)", executed);
+
+        // ["class"] on a Java array — SandboxNativeJavaArray must return NOT_FOUND
+        executed = executeSecureScriptString(ARRAY_REFLECTION_CLASS_PROPERTY, false);
+        assertFalse("Script shouldn't have been executed (secure = false, [\"class\"] on array)", executed);
+
+        // Secure mode: same scripts must succeed — sandbox restrictions do not apply
+        executed = executeSecureScriptString(REFLECTION_CLASS_PROPERTY, true);
+        assertTrue("Script should have been executed (secure = true, [\"class\"] on object)", executed);
+
+        executed = executeSecureScriptString(ARRAY_REFLECTION_CLASS_PROPERTY, true);
+        assertTrue("Script should have been executed (secure = true, [\"class\"] on array)", executed);
     }
 
     // MNT-21638

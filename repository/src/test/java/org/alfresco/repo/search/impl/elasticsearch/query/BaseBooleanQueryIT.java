@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+@SuppressWarnings("PMD")
 public abstract class BaseBooleanQueryIT extends ElasticsearchBaseQueryIT
 {
 

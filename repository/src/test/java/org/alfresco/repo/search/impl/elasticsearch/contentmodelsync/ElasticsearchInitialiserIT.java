@@ -71,6 +71,7 @@ import org.alfresco.repo.search.impl.elasticsearch.util.LogListAppender;
 /**
  * Integration tests for {@link ElasticsearchInitialiser}.
  */
+@SuppressWarnings("PMD")
 public class ElasticsearchInitialiserIT extends ElasticsearchSpringTest
 {
     public static final int CONCURRENT_INIT_REPEAT_COUNT = 2;

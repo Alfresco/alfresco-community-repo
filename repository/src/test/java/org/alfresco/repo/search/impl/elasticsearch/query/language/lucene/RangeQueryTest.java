@@ -92,6 +92,7 @@ import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQua
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 
+@SuppressWarnings("PMD")
 public class RangeQueryTest extends BaseQueryTest
 {
     private final static String SAMPLE_LOWER_BOUND = "LB";

@@ -46,6 +46,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.NeverRunsTests;
 
 @Category(NeverRunsTests.class)
+@SuppressWarnings("PMD.UnnecessaryFullyQualifiedName")
 public class FieldFacetIT extends LuceneOrAFTSQueryIT
 {
     public FieldFacetIT(String language)

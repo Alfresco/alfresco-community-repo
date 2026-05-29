@@ -68,7 +68,7 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 
 // ResultSet is closed automatically at the end of the transaction - see org.alfresco.service.cmr.search.ResultSetSPI.close
-@SuppressWarnings("PMD.CloseResource")
+@SuppressWarnings("PMD")
 public class SortIT extends ElasticsearchBaseQueryIT
 {
     private NodeRef doc100jpgByTom;

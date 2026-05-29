@@ -89,6 +89,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
+@SuppressWarnings("PMD")
 public class PrefixQueryTest extends BaseQueryTest
 {
     @Test

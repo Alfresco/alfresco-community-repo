@@ -92,6 +92,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 
+@SuppressWarnings("PMD")
 public abstract class ElasticsearchBaseQueryIT extends ElasticsearchSpringTest
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchBaseQueryIT.class);

@@ -31,7 +31,7 @@ import org.junit.Test;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
-@SuppressWarnings({"PMD.DetachedTestCase", "PMD.TooManyMethods"})
+@SuppressWarnings("PMD")
 public class PathQueryIT extends LuceneOrAFTSQueryIT
 {
     private NodeRef a;

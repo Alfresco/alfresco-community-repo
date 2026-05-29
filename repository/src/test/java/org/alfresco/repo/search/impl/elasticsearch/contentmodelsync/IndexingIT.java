@@ -43,6 +43,7 @@ public class IndexingIT extends ElasticsearchBaseQueryIT
      * @see <a href="https://alfresco.atlassian.net/browse/SEARCH-2860">SEARCH-2860</a>
      */
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     public void shouldIndexLongTextAsTokenized() throws IOException
     {
         File file = ResourceUtils.getFile("classpath:search/longtext.txt");

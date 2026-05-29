@@ -95,7 +95,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-@SuppressWarnings("deprecated")
+@SuppressWarnings({"deprecation", "PMD"})
 public class TermOrPhraseQueryTest extends BaseQueryTest
 {
     @Test

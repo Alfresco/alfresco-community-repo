@@ -108,101 +108,105 @@ public class ContentModelSynchronizerTest extends ElasticsearchSpringTest
     @Test
     public void initializeElasticsearchIndexMappings_sampleContentModelFromXml_shouldPushTextMappingsToElasticsearch() throws IOException
     {
-        InputStream modelStream = getClass().getResourceAsStream("/alfresco/search/contentModels/content-model.xml");
-        M2Model model = M2Model.createModel(modelStream);
-        CompiledModel sampleModel = model.compile(dictionaryDAOImpl, namespaceDAOImpl, false);
-        Set<String> contentModelFields = sampleModel.getProperties().stream()
-                .filter(definition -> isTextual(definition.getDataType()) && definition.isIndexed())
-                .map(PropertyDefinition::getName)
-                .map(QName::getPrefixString)
-                .map(AlfrescoQualifiedNameTranslator::encode)
-                .collect(Collectors.toSet());
+        try (InputStream modelStream = getClass().getResourceAsStream("/alfresco/search/contentModels/content-model.xml"))
+        {
+            M2Model model = M2Model.createModel(modelStream);
+            CompiledModel sampleModel = model.compile(dictionaryDAOImpl, namespaceDAOImpl, false);
+            Set<String> contentModelFields = sampleModel.getProperties().stream()
+                    .filter(definition -> isTextual(definition.getDataType()) && definition.isIndexed())
+                    .map(PropertyDefinition::getName)
+                    .map(QName::getPrefixString)
+                    .map(AlfrescoQualifiedNameTranslator::encode)
+                    .collect(Collectors.toSet());
 
-        toTest.loadSupportedAnalyzersOnStartup();
-        boolean request1Ok = toTest.initializeElasticsearchIndexMappings(sampleModel.getProperties()).isAcknowledged();
-        assertTrue(request1Ok);
+            toTest.loadSupportedAnalyzersOnStartup();
+            boolean request1Ok = toTest.initializeElasticsearchIndexMappings(sampleModel.getProperties()).isAcknowledged();
+            assertTrue(request1Ok);
 
-        GetMappingRequest getMapping = new GetMappingRequest.Builder().index(getIndex()).build();
-        GetMappingResponse mappingResponse = client.indices().getMapping(getMapping);
+            GetMappingRequest getMapping = new GetMappingRequest.Builder().index(getIndex()).build();
+            GetMappingResponse mappingResponse = client.indices().getMapping(getMapping);
 
-        Map<String, IndexMappingRecord> indexToMapping = mappingResponse.result();
-        IndexMappingRecord mappingMetadata = indexToMapping.get(getIndex());
-        Set<String> actualElasticsearchFields = mappingMetadata.mappings().properties().keySet();
+            Map<String, IndexMappingRecord> indexToMapping = mappingResponse.result();
+            IndexMappingRecord mappingMetadata = indexToMapping.get(getIndex());
+            Set<String> actualElasticsearchFields = mappingMetadata.mappings().properties().keySet();
 
-        contentModelFields.forEach(
-                field -> {
-                    if (field.equals("acme%3AcontractNotIndexedProperty"))
-                    {
-                        assertFalse("Property that shouldn't be mapped is being mapped: " + field
-                                + "\n Content model properties: " + contentModelFields
-                                + "\n Elasticsearch properties: " + actualElasticsearchFields,
-                                actualElasticsearchFields.contains(field));
-                    }
-                    else
-                    {
-                        assertTrue("Missing field mapping in Elasticsearch: " + field
-                                + "\n Content model properties: " + contentModelFields
-                                + "\n Elasticsearch properties: " + actualElasticsearchFields,
-                                actualElasticsearchFields.contains(field));
+            contentModelFields.forEach(
+                    field -> {
+                        if (field.equals("acme%3AcontractNotIndexedProperty"))
+                        {
+                            assertFalse("Property that shouldn't be mapped is being mapped: " + field
+                                    + "\n Content model properties: " + contentModelFields
+                                    + "\n Elasticsearch properties: " + actualElasticsearchFields,
+                                    actualElasticsearchFields.contains(field));
+                        }
+                        else
+                        {
+                            assertTrue("Missing field mapping in Elasticsearch: " + field
+                                    + "\n Content model properties: " + contentModelFields
+                                    + "\n Elasticsearch properties: " + actualElasticsearchFields,
+                                    actualElasticsearchFields.contains(field));
 
-                    }
-                });
-
+                        }
+                    });
+        }
     }
 
     @Test
     public void propertyWithIndexDisabled_shouldNotExistInElasticsearchMapping() throws IOException
     {
-        InputStream modelStream = getClass().getResourceAsStream("/alfresco/search/contentModels/content-model.xml");
-        M2Model model = M2Model.createModel(modelStream);
-        CompiledModel sampleModel = model.compile(dictionaryDAOImpl, namespaceDAOImpl, false);
+        try (InputStream modelStream = getClass().getResourceAsStream("/alfresco/search/contentModels/content-model.xml"))
+        {
+            M2Model model = M2Model.createModel(modelStream);
+            CompiledModel sampleModel = model.compile(dictionaryDAOImpl, namespaceDAOImpl, false);
 
-        // Updating Elasticsearch mappings with the custom model's properties.
-        // "acknowledged" returns -1 if the update fails
-        toTest.loadSupportedAnalyzersOnStartup();
-        boolean acknowledged = toTest.initializeElasticsearchIndexMappings(sampleModel.getProperties()).isAcknowledged();
-        assertTrue("Elasticsearch mappings weren't initialized", acknowledged);
+            // Updating Elasticsearch mappings with the custom model's properties.
+            // "acknowledged" returns -1 if the update fails
+            toTest.loadSupportedAnalyzersOnStartup();
+            boolean acknowledged = toTest.initializeElasticsearchIndexMappings(sampleModel.getProperties()).isAcknowledged();
+            assertTrue("Elasticsearch mappings weren't initialized", acknowledged);
 
-        GetMappingRequest getMapping = new GetMappingRequest.Builder().index(getIndex()).build();
-        GetMappingResponse mappingResponse = client.indices().getMapping(getMapping);
-        Map<String, IndexMappingRecord> indexToMapping = mappingResponse.result();
-        IndexMappingRecord mappingMetadata = indexToMapping.get(getIndex());
-        Set<String> actualElasticsearchFields = mappingMetadata.mappings().properties().keySet();
+            GetMappingRequest getMapping = new GetMappingRequest.Builder().index(getIndex()).build();
+            GetMappingResponse mappingResponse = client.indices().getMapping(getMapping);
+            Map<String, IndexMappingRecord> indexToMapping = mappingResponse.result();
+            IndexMappingRecord mappingMetadata = indexToMapping.get(getIndex());
+            Set<String> actualElasticsearchFields = mappingMetadata.mappings().properties().keySet();
 
-        boolean containsNonIndexedProperty = actualElasticsearchFields.contains("acme%3AcontractNotIndexedProperty");
-        assertFalse("Elasticsearch mapping contains property not to be mapped", containsNonIndexedProperty);
+            boolean containsNonIndexedProperty = actualElasticsearchFields.contains("acme%3AcontractNotIndexedProperty");
+            assertFalse("Elasticsearch mapping contains property not to be mapped", containsNonIndexedProperty);
+        }
     }
 
     @Test
     public void initializeElasticsearchIndexMappings_sampleContentModelFromXml_shouldPushPrimitivetMappingsToElasticsearch() throws IOException
     {
-        InputStream modelStream = getClass().getResourceAsStream("/alfresco/search/contentModels/content-model.xml");
-        M2Model model = M2Model.createModel(modelStream);
-        CompiledModel sampleModel = model.compile(dictionaryDAOImpl, namespaceDAOImpl, false);
+        try (InputStream modelStream = getClass().getResourceAsStream("/alfresco/search/contentModels/content-model.xml"))
+        {
+            M2Model model = M2Model.createModel(modelStream);
+            CompiledModel sampleModel = model.compile(dictionaryDAOImpl, namespaceDAOImpl, false);
 
-        Set<String> contentModelFields = sampleModel.getProperties().stream()
-                .filter(definition -> isPrimitive(definition.getDataType()))
-                .map(PropertyDefinition::getName)
-                .map(QName::getPrefixString)
-                .map(AlfrescoQualifiedNameTranslator::encode)
-                .collect(Collectors.toSet());
+            Set<String> contentModelFields = sampleModel.getProperties().stream()
+                    .filter(definition -> isPrimitive(definition.getDataType()))
+                    .map(PropertyDefinition::getName)
+                    .map(QName::getPrefixString)
+                    .map(AlfrescoQualifiedNameTranslator::encode)
+                    .collect(Collectors.toSet());
 
-        toTest.loadSupportedAnalyzersOnStartup();
-        boolean request1Ok = toTest.initializeElasticsearchIndexMappings(sampleModel.getProperties()).isAcknowledged();
-        assertTrue(request1Ok);
+            toTest.loadSupportedAnalyzersOnStartup();
+            boolean request1Ok = toTest.initializeElasticsearchIndexMappings(sampleModel.getProperties()).isAcknowledged();
+            assertTrue(request1Ok);
 
-        GetMappingRequest getMapping = new GetMappingRequest.Builder().index(getIndex()).build();
-        GetMappingResponse mappingResponse = client.indices().getMapping(getMapping);
-        Map<String, IndexMappingRecord> indexToMapping = mappingResponse.result();
-        IndexMappingRecord mappingMetadata = indexToMapping.get(getIndex());
-        Set<String> actualElasticsearchFields = mappingMetadata.mappings().properties().keySet();
+            GetMappingRequest getMapping = new GetMappingRequest.Builder().index(getIndex()).build();
+            GetMappingResponse mappingResponse = client.indices().getMapping(getMapping);
+            Map<String, IndexMappingRecord> indexToMapping = mappingResponse.result();
+            IndexMappingRecord mappingMetadata = indexToMapping.get(getIndex());
+            Set<String> actualElasticsearchFields = mappingMetadata.mappings().properties().keySet();
 
-        contentModelFields.forEach(
-                field -> assertTrue("Missing field mapping in Elasticsearch: " + field
-                        + "\n Content model properties: " + contentModelFields
-                        + "\n Elasticsearch properties: " + actualElasticsearchFields,
-                        actualElasticsearchFields.contains(field)));
-
+            contentModelFields.forEach(
+                    field -> assertTrue("Missing field mapping in Elasticsearch: " + field
+                            + "\n Content model properties: " + contentModelFields
+                            + "\n Elasticsearch properties: " + actualElasticsearchFields,
+                            actualElasticsearchFields.contains(field)));
+        }
     }
 
     @Test

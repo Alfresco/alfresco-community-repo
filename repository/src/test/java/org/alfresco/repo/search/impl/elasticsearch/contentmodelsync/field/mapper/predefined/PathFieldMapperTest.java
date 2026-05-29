@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2023 Alfresco Software Limited
+ * Copyright (C) 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 
 @RunWith(TestParameterInjector.class)
+@SuppressWarnings("PMD")
 public class PathFieldMapperTest
 {
     private final PathFieldMapper mapper = new PathFieldMapper();

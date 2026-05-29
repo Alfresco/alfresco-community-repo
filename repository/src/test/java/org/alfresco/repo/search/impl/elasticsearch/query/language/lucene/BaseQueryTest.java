@@ -66,6 +66,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
+@SuppressWarnings("PMD")
 public abstract class BaseQueryTest
 {
     protected final static String A_TERM = "thisIsJustOneTerm";

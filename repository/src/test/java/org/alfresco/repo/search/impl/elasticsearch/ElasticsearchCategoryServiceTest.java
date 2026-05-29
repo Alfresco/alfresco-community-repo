@@ -89,6 +89,7 @@ import org.alfresco.util.Pair;
 
 /** Unit tests for {@link ElasticsearchCategoryService}. */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD")
 public class ElasticsearchCategoryServiceTest
 {
     /** The root node of the spaces store. */

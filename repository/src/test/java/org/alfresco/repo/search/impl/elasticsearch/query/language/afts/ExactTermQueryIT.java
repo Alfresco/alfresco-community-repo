@@ -46,6 +46,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.IndexDocumentSourceBuil
 import org.alfresco.service.cmr.repository.NodeRef;
 
 @TestPropertySource(value = "classpath:/alfresco/search/elasticsearch/config/exactTermSearch.properties")
+@SuppressWarnings("PMD")
 public class ExactTermQueryIT extends ElasticsearchBaseQueryIT
 {
     protected NodeRef originalTerms;

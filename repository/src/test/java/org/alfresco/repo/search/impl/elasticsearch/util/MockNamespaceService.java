@@ -34,6 +34,7 @@ import org.alfresco.util.OneToManyHashBiMap;
 /**
  * @author Jamal Kaabi-Mofrad
  */
+@SuppressWarnings("PMD")
 public class MockNamespaceService implements NamespaceService
 {
     private final OneToManyHashBiMap<String, String> map = new OneToManyHashBiMap<>();

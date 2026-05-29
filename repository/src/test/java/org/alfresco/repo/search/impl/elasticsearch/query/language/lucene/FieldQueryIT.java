@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchBaseQueryIT;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+@SuppressWarnings("PMD")
 public class FieldQueryIT extends ElasticsearchBaseQueryIT
 {
     protected NodeRef big_yellow_banana;

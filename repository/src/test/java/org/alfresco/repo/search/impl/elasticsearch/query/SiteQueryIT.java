@@ -67,6 +67,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PathUtil;
 
+@SuppressWarnings("PMD")
 public class SiteQueryIT extends LuceneOrAFTSQueryIT
 {
     private NodeService nodeService;

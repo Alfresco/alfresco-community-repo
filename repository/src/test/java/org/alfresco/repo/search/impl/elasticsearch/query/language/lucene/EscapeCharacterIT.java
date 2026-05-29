@@ -46,6 +46,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchBaseQueryI
 import org.alfresco.service.cmr.repository.NodeRef;
 
 @RunWith(Parameterized.class)
+@SuppressWarnings("PMD")
 public class EscapeCharacterIT extends ElasticsearchBaseQueryIT
 {
     private final static String[] CHARACTERS_THAT_MUST_BE_ESCAPED_ONLY_WHEN_AT_THE_BEGINNING = {"+", "-"};

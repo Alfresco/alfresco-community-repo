@@ -29,7 +29,7 @@ services:
       - "61616:61616" # OpenWire
   elasticsearch:
     profiles: [ "with-elasticsearch" ]
-    image: docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.3
     environment:
       - "discovery.type=single-node"
       # In contrary to ES7, the ES8 has security enabled by default, those can be removed when testing environment

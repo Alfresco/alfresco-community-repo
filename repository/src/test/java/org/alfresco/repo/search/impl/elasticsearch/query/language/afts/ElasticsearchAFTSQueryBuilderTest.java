@@ -54,6 +54,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD")
 public class ElasticsearchAFTSQueryBuilderTest extends TestCase
 {
     private DictionaryService dictionaryService;

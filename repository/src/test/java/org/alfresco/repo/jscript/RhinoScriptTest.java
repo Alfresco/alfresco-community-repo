@@ -454,11 +454,11 @@ public class RhinoScriptTest extends TestCase
     // ACS-11595
     public void testClassBeanPropertyBlockedInSandbox()
     {
-        // ["class"] on a plain Java object — SandboxNativeJavaObject must return NOT_FOUND
+        // ["class"] on a plain Java object — SandboxNativeJavaObject must not allow execution
         boolean executed = executeSecureScriptString(REFLECTION_CLASS_PROPERTY, false);
         assertFalse("Script shouldn't have been executed (secure = false, [\"class\"] on object)", executed);
 
-        // ["class"] on a Java array — SandboxNativeJavaArray must return NOT_FOUND
+        // ["class"] on a Java array — SandboxNativeJavaArray must not allow execution
         executed = executeSecureScriptString(ARRAY_REFLECTION_CLASS_PROPERTY, false);
         assertFalse("Script shouldn't have been executed (secure = false, [\"class\"] on array)", executed);
 
@@ -466,8 +466,9 @@ public class RhinoScriptTest extends TestCase
         executed = executeSecureScriptString(REFLECTION_CLASS_PROPERTY, true);
         assertTrue("Script should have been executed (secure = true, [\"class\"] on object)", executed);
 
+        // Secure mode: Rhino's NativeJavaArray does not allow ["class"] access, so this should fail even in secure mode
         executed = executeSecureScriptString(ARRAY_REFLECTION_CLASS_PROPERTY, true);
-        assertTrue("Script should have been executed (secure = true, [\"class\"] on array)", executed);
+        assertFalse("Script shouldn't have been executed (secure = true, [\"class\"] on array)", executed);
     }
 
     // MNT-21638

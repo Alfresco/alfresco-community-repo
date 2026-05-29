@@ -25,15 +25,16 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.admin;
 
-import org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchBaseQueryIT;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchBaseQueryIT;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 public class ElasticsearchDocumentsServiceIT extends ElasticsearchBaseQueryIT
 {

@@ -25,7 +25,16 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.admin;
 
-import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,15 +49,7 @@ import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.HitsMetadata;
 
-import java.io.IOException;
-import java.util.*;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
 
 /**
  * Unit tests for the {@link ElasticsearchDocumentsService}.

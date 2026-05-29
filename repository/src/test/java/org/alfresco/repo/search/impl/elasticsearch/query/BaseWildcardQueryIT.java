@@ -39,6 +39,7 @@ import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ContentModel
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.FieldMappingBuilder;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.LongVariable"})
 public abstract class BaseWildcardQueryIT extends ElasticsearchBaseQueryIT
 {
     protected NodeRef bigYellowBanana;

@@ -88,6 +88,7 @@ public abstract class BasePhraseQueryIT extends ElasticsearchBaseQueryIT
     @Test
     public abstract void whenSearchUsingPhraseQueryOnASpecificFieldUsingBooleanOperators();
 
+    @SuppressWarnings("PMD.UselessParentheses")
     private static String uniqueString()
     {
         final UUID unique = UUID.randomUUID();

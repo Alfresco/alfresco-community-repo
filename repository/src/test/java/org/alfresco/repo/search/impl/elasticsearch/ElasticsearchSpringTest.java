@@ -87,6 +87,7 @@ public abstract class ElasticsearchSpringTest extends BaseSpringTest
         return elasticsearchHttpClientFactory.getIndexName();
     }
 
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     public void deleteIndex(String indexName)
     {
         try

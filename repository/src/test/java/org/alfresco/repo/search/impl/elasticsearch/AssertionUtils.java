@@ -41,6 +41,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.elasticsearch.util.LogListAppender;
 
+@SuppressWarnings("PMD.UseUtilityClass")
 public class AssertionUtils
 {
     public static void assertHasIgnoredFields(Runnable func)

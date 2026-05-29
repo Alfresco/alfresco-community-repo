@@ -116,6 +116,9 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTe
         // Model
         FieldNameTest.class,
 
+        // Document Service
+        org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsServiceIT.class,
+
         // Permissions
         FlatElasticsearchPermissionQueryFactoryTest.class,
 

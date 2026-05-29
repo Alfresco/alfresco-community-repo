@@ -68,6 +68,7 @@ public abstract class BaseRangeQueryIT extends ElasticsearchBaseQueryIT
                 indexDefaultDocumentWithModifiedDate("2020-05-12T23:59:59+00:00")};
     }
 
+    @SuppressWarnings("PMD.UselessParentheses")
     private NodeRef indexDefaultDocumentWithModifiedDate(String modifiedDate)
     {
         return this.indexDocument(new IndexDocumentSourceBuilder()

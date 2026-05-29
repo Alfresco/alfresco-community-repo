@@ -72,6 +72,7 @@ public final class MapperTestUtils
         return propertyDefinition;
     }
 
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     public static Map<?, ?> readMappingFromFile(String fileName)
     {
         ObjectMapper objectMapper = new ObjectMapper();

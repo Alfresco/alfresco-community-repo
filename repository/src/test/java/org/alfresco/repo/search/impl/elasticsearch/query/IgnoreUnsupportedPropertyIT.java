@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+@SuppressWarnings("PMD.FieldNamingConventions")
 public class IgnoreUnsupportedPropertyIT extends LuceneOrAFTSQueryIT
 {
 

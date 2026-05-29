@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.LongVariable"})
 public class SettingsJsonUtilsTest
 {
 

@@ -75,6 +75,7 @@ public class TextFieldMapperTest
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     public void shouldNotBeAbleToMapOtherDatatypes()
     {
         List<QName> unsupportedDatatypes = List.of(DataTypeDefinition.INT, DataTypeDefinition.LONG, DataTypeDefinition.BOOLEAN, DataTypeDefinition.DATETIME);
@@ -152,6 +153,7 @@ public class TextFieldMapperTest
         assertMapsEquals(expectedMapping, actualMapping);
     }
 
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     private Map<?, ?> getExpectedMappingWhenExactTermSearchEnabled(TextType textType, IndexTokenisationMode indexTokenisationMode, Facetable facetable, AnalyzersType analyzersType,
             String expectedMappingsDirectory)
     {

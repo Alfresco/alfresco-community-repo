@@ -48,6 +48,7 @@ import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.Elasticsearc
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.FieldMappingBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.property.ElasticsearchAnalyzer;
 
+@SuppressWarnings("PMD.SingularField")
 public class IndexLocaleAnalyzerIT extends ElasticsearchSpringTest
 {
 

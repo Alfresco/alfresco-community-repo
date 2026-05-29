@@ -71,6 +71,7 @@ public class PermissionQueryIT extends BasePermissionQueryIT
     }
 
     @Override
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     public void whenSearchAsOwnerWithRoleOwner()
     {
         GlobalReaders.getReaders().remove(PermissionService.OWNER_AUTHORITY);

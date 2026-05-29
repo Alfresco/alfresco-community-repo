@@ -44,6 +44,7 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
  *
  */
 @Plugin(name = "LogListAppender", category = "Core")
+@SuppressWarnings({"PMD.NonThreadSafeSingleton", "PMD.UseDiamondOperator"})
 public class LogListAppender extends AbstractAppender
 {
 

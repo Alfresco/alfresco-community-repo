@@ -67,6 +67,7 @@ import org.alfresco.util.GUID;
 /**
  * Unit tests for {@link ElasticsearchInitialiser}.
  */
+@SuppressWarnings("PMD.LambdaCanBeMethodReference")
 public class ElasticsearchInitialiserTest
 {
 

@@ -38,6 +38,7 @@ import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 @RunWith(Parameterized.class)
+@SuppressWarnings({"PMD.FieldNamingConventions", "PMD.CallSuperInConstructor"})
 public abstract class LuceneOrAFTSQueryIT extends ElasticsearchBaseQueryIT
 {
     @ClassRule

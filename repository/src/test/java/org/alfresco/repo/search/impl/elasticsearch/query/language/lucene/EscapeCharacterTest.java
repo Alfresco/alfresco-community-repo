@@ -53,6 +53,7 @@ public class EscapeCharacterTest
         assertEquals("\\\\(", parser.escapeSpecialCharacters("\\("));
     }
 
+    @SuppressWarnings("PMD.TestClassWithoutTestCases")
     protected class LuceneQueryParserUnderTest extends LuceneQueryParser
     {
         public LuceneQueryParserUnderTest()

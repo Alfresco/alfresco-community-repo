@@ -34,6 +34,7 @@ import static org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field
 import static org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.utils.MapperTestUtils.readMappingFromFile;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.google.testing.junit.testparameterinjector.TestParameter;
@@ -60,6 +61,7 @@ public class SimpleFieldMapperTest
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     public void shouldNotBeAbleToMapOtherDatatypes()
     {
         List<QName> unsupportedDatatypes = List.of(DataTypeDefinition.DATE, DataTypeDefinition.DATETIME, DataTypeDefinition.ENCRYPTED, DataTypeDefinition.TEXT, DataTypeDefinition.MLTEXT, DataTypeDefinition.CONTENT);
@@ -94,7 +96,7 @@ public class SimpleFieldMapperTest
         {
             this.propertyDefinition = mockPropertyDefinition(datatypeName, TEST_PROPERTY_NAME);
             this.expectedMappingFilepath = "simple/" + this.name()
-                    .toLowerCase();
+                    .toLowerCase(Locale.ENGLISH);
         }
     }
 }

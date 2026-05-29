@@ -63,6 +63,7 @@ public class PhraseQueryIT extends BasePhraseQueryIT
     }
 
     @Override
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     public void whenSearchPhraseUsingBooleanOperators()
     {
         /* d:content uses default Elasticsearch english text analysis with stopwords, 'a' is a stopword so it disappears from the query after text analysis: "just a test" -> "just ? test" */

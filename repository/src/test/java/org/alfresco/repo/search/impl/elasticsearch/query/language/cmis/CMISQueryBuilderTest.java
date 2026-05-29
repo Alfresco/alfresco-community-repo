@@ -78,6 +78,7 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 
 /** Unit tests for {@link CMISQueryBuilder}. */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.JUnitUseExpected")
 public class CMISQueryBuilderTest
 {
     /** A store to use for the tests. */

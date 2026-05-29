@@ -74,7 +74,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.LinguisticNaming"})
 @RunWith(MockitoJUnitRunner.class)
 public class ElasticsearchQueryParserAdaptorTest
 {

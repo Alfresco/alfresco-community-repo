@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+@SuppressWarnings({"PMD.FieldNamingConventions", "PMD.FinalFieldCouldBeStatic"})
 public class ResourceUtilsTest
 {
     private final String CUSTOM_GERMAN_ANALYZER_PATH = "/org/alfresco/repo/search/impl/elasticsearch/contentmodelsync/testCustomGermanAnalyzerSettings.json";

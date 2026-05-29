@@ -54,15 +54,17 @@ public class MultiValueFieldQueryIT extends LuceneOrAFTSQueryIT
 
         ContentModelSynchronizer modelSynchronizer = new ContentModelSynchronizer(mappingBuilder, elasticsearchHttpClientFactory, Locale.ENGLISH.getLanguage(), indexConfigurationInitializer);
 
-        InputStream modelStream = getClass().getResourceAsStream("/alfresco/search/contentModels/content-model.xml");
-        M2Model model = M2Model.createModel(modelStream);
-        dictionaryDAOImpl.putModel(model);
-        CompiledModel sampleModel = model.compile(dictionaryDAOImpl, namespaceDAOImpl, false);
+        try (InputStream modelStream = getClass().getResourceAsStream("/alfresco/search/contentModels/content-model.xml"))
+        {
+            M2Model model = M2Model.createModel(modelStream);
+            dictionaryDAOImpl.putModel(model);
+            CompiledModel sampleModel = model.compile(dictionaryDAOImpl, namespaceDAOImpl, false);
 
-        // Updating Elasticsearch mappings with the custom model's properties.
-        // "acknowledged" returns -1 if the update fails
-        boolean acknowledged = modelSynchronizer.initializeElasticsearchIndexMappings(sampleModel.getProperties()).isAcknowledged();
-        assertTrue("Elasticsearch mappings weren't initialized", acknowledged);
+            // Updating Elasticsearch mappings with the custom model's properties.
+            // "acknowledged" returns -1 if the update fails
+            boolean acknowledged = modelSynchronizer.initializeElasticsearchIndexMappings(sampleModel.getProperties()).isAcknowledged();
+            assertTrue("Elasticsearch mappings weren't initialized", acknowledged);
+        }
     }
 
     public MultiValueFieldQueryIT(String language)

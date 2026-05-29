@@ -285,6 +285,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.domain.dialect.DBConnectionPropertiesFactoryBeanTest.class,
 
         // Elasticsearch unit tests
+        org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsServiceTest.class,
         org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSearchServiceTest.class,
         org.alfresco.repo.search.impl.elasticsearch.ElasticsearchCategoryServiceTest.class,
         org.alfresco.repo.search.impl.elasticsearch.permission.FlatElasticsearchPermissionQueryFactoryTest.class,

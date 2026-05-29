@@ -28,6 +28,7 @@ package org.alfresco.repo.search.impl.elasticsearch.query.language.afts;
 
 import org.alfresco.repo.search.impl.elasticsearch.query.BaseWildcardQueryIT;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class WildcardQueryIT extends BaseWildcardQueryIT
 {
     /* See https://alfresco.atlassian.net/browse/SEARCH-2862 for wildcards in phrase queries */

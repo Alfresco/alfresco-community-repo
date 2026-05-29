@@ -74,7 +74,9 @@ public class ResourceUtils
         List<JSONObject> mergedJSONs = new ArrayList<>();
 
         if (resources == null)
+        {
             return mergedJSONs.toArray(JSONObject[]::new);
+        }
 
         for (Resource resource : resources)
         {

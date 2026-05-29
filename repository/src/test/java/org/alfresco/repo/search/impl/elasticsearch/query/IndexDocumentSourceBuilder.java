@@ -209,6 +209,7 @@ public class IndexDocumentSourceBuilder
         return source;
     }
 
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     private void safeAddFieldToSource(Map<String, Object> source, String key, Object value)
     {
         try

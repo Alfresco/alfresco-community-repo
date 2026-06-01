@@ -3865,9 +3865,9 @@ public class NodesImpl implements Nodes
             nodeService.setProperty(workingCopyNodeRef, ContentModel.PROP_WORKING_COPY_MODE, "offlineEditing");
             return getFolderOrDocument(workingCopyNodeRef.getId(), parameters);
         }
-        catch (CheckOutCheckInServiceException ex)
+        catch (CheckOutCheckInServiceException e)
         {
-            throw new ConstraintViolatedException(ex.getMessage());
+            throw new ConstraintViolatedException(e.getMessage(), e);
         }
     }
 
@@ -3898,7 +3898,7 @@ public class NodesImpl implements Nodes
             }
             catch (CheckOutCheckInServiceException e)
             {
-                throw new ConstraintViolatedException(e.getMessage());
+                throw new ConstraintViolatedException(e.getMessage(), e);
             }
         }
         else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
@@ -3912,7 +3912,7 @@ public class NodesImpl implements Nodes
             }
             catch (CheckOutCheckInServiceException e)
             {
-                throw new ConstraintViolatedException(e.getMessage());
+                throw new ConstraintViolatedException(e.getMessage(), e);
             }
         }
         else if (lockService.isLocked(nodeRef))

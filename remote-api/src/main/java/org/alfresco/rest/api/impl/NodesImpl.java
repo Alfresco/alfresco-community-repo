@@ -3906,7 +3906,7 @@ public class NodesImpl implements Nodes
             // Case 2: The passed node is the ORIGINAL checked-out node
             // Find the working copy via the workingcopylink association
             NodeRef workingCopyRef = checkOutCheckInService.getWorkingCopy(nodeRef);
-            if(workingCopyRef == null)
+            if (workingCopyRef == null)
             {
                 throw new IntegrityException("Can't cancel checkout for node " + nodeId + " because it has no working copy", null);
             }

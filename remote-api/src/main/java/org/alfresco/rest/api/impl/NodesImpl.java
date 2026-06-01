@@ -3906,6 +3906,10 @@ public class NodesImpl implements Nodes
             // Case 2: The passed node is the ORIGINAL checked-out node
             // Find the working copy via the workingcopylink association
             NodeRef workingCopyRef = checkOutCheckInService.getWorkingCopy(nodeRef);
+            if(workingCopyRef == null)
+            {
+                throw new IntegrityException("Can't cancel checkout for node " + nodeId + " because it has no working copy", null);
+            }
             try
             {
                 originalNodeRef = checkOutCheckInService.cancelCheckout(workingCopyRef);
@@ -3924,7 +3928,7 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            throw new InvalidArgumentException("Node is not checked out or locked: " + nodeId);
+            throw new InvalidArgumentException("Can't cancel checkout for node " + nodeId + " because it isn't checked out or locked", null);
         }
 
         return getFolderOrDocument(originalNodeRef.getId(), parameters);

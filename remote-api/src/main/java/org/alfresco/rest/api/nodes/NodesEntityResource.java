@@ -217,8 +217,8 @@ public class NodesEntityResource implements
     }
 
     @Operation("cancel-checkout")
-    @WebApiDescription(title = "Cancel-Checkout for a already checked out Node",
-            description = "Cancel the Checkout workflow for a node which was checkedout for offline editing. The private working copy is deleted and the original node is unlocked.",
+    @WebApiDescription(title = "Cancel checkout for an already checked out node",
+            description = "Cancels the checkout workflow for a node that was checked out for offline editing. The private working copy is deleted and the original node is unlocked.",
             successStatus = HttpServletResponse.SC_OK)
     public Node cancelCheckout(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {

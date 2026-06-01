@@ -3886,20 +3886,17 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("Node of type cm:content or a subtype is expected: " + nodeId);
         }
 
-        NodeRef originalNodeRef;
+        NodeRef originalNodeRef = resolveCancelCheckout(nodeRef, nodeId);
+        return getFolderOrDocument(originalNodeRef.getId(), parameters);
+    }
 
+    private NodeRef resolveCancelCheckout(NodeRef nodeRef, String nodeId)
+    {
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
             // Case 1: The passed node IS the working copy
             // cancelCheckout deletes the working copy and returns the original
-            try
-            {
-                originalNodeRef = checkOutCheckInService.cancelCheckout(nodeRef);
-            }
-            catch (CheckOutCheckInServiceException e)
-            {
-                throw new ConstraintViolatedException(e.getMessage(), e);
-            }
+            return cancelCheckoutSafe(nodeRef);
         }
         else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
         {
@@ -3910,28 +3907,31 @@ public class NodesImpl implements Nodes
             {
                 throw new IntegrityException("Can't cancel checkout for node " + nodeId + " because it has no working copy", null);
             }
-            try
-            {
-                originalNodeRef = checkOutCheckInService.cancelCheckout(workingCopyRef);
-            }
-            catch (CheckOutCheckInServiceException e)
-            {
-                throw new ConstraintViolatedException(e.getMessage(), e);
-            }
+            return cancelCheckoutSafe(workingCopyRef);
         }
         else if (lockService.isLocked(nodeRef))
         {
             // Case 3: Node is locked but not checked out (online edit case)
             // Just unlock it
             lockService.unlock(nodeRef);
-            originalNodeRef = nodeRef;
+            return nodeRef;
         }
         else
         {
             throw new IntegrityException("Can't cancel checkout for node " + nodeId + " because it isn't checked out or locked", null);
         }
+    }
 
-        return getFolderOrDocument(originalNodeRef.getId(), parameters);
+    private NodeRef cancelCheckoutSafe(NodeRef nodeRef)
+    {
+        try
+        {
+            return checkOutCheckInService.cancelCheckout(nodeRef);
+        }
+        catch (CheckOutCheckInServiceException e)
+        {
+            throw new ConstraintViolatedException(e.getMessage(), e);
+        }
     }
 
     @Override

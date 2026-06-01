@@ -3928,7 +3928,7 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            throw new InvalidArgumentException("Can't cancel checkout for node " + nodeId + " because it isn't checked out or locked", null);
+            throw new IntegrityException("Can't cancel checkout for node " + nodeId + " because it isn't checked out or locked", null);
         }
 
         return getFolderOrDocument(originalNodeRef.getId(), parameters);

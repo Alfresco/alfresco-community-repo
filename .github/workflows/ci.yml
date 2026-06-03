@@ -52,37 +52,30 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  veracode_sca:
-    name: "Source Clear Scan (SCA)"
+  test_run_check:
+    name: "Test run check"
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    outputs:
+      tests: ${{ steps.check.outputs.tests }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.24.1
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v8.24.1
-        continue-on-error: true
-        with:
-          srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
+      - id: check
+        run: |
+          echo "tests=true" >> "$GITHUB_OUTPUT"
+        if: >
+          (
+            (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+            !contains(github.event.head_commit.message, '[skip tests]') &&
+            !contains(github.event.head_commit.message, '[force]')
+          ) ||
+          contains(github.event.head_commit.message, '[run tests]')
 
   veracode_sast:
     name: "Pipeline SAST Scan"
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
-      github.actor != 'dependabot[bot]' &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true' && github.actor != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -135,12 +128,10 @@ jobs:
   pmd_scan:
     name: "PMD Scan"
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      github.event_name == 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip pmd]') &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true' && github.event_name == 'pull_request'
     steps:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.24.1
@@ -152,11 +143,10 @@ jobs:
   all_unit_tests_suite:
     name: ${{ matrix.testName }} - AllUnitTestsSuite - Build and test
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      !contains(github.event.head_commit.message, '[skip repo]') &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -189,11 +179,10 @@ jobs:
   remote_api_app_context_test_suites:
     name: Remote-api - ${{ matrix.testSuite }}
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      !contains(github.event.head_commit.message, '[skip repo]') &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -233,14 +222,10 @@ jobs:
   repository_mariadb_tests:
     name: Repository - MariaDB ${{ matrix.version }} tests
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) &&
-      github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+        - prepare
+        - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(github.event.head_commit.message, '[db]'))
     strategy:
       fail-fast: false
       matrix:
@@ -264,14 +249,10 @@ jobs:
   repository_mariadb_10_11_tests:
     name: "Repository - MariaDB 10.11 tests"
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[latest db]') ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -291,14 +272,10 @@ jobs:
   repository_mysql_tests:
     name: Repository - MySQL 8 tests
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[latest db]') ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -318,13 +295,10 @@ jobs:
   repository_postgresql_14_15_tests:
     name: "Repository - PostgreSQL 14.15 tests"
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(github.event.head_commit.message, '[db]'))
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -344,13 +318,10 @@ jobs:
   repository_postgresql_15_10_tests:
     name: "Repository - PostgreSQL 15.10 tests"
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-            !contains(github.event.head_commit.message, '[skip db]')) ||
-            contains(github.event.head_commit.message, '[db]')) &&
-            !contains(github.event.head_commit.message, '[skip tests]') &&
-            !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(github.event.head_commit.message, '[db]'))
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -370,13 +341,10 @@ jobs:
   repository_postgresql_16_6_tests:
     name: "Repository - PostgreSQL 16.6 tests"
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (!contains(github.event.head_commit.message, '[skip db]') ||
-      contains(github.event.head_commit.message, '[latest db]') ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -396,11 +364,14 @@ jobs:
   repository_messaging_tests:
     name: Repository - Messaging tests
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      !contains(github.event.head_commit.message, '[skip repo]') &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        activemq: [ 'activemq6', 'activemq5' ]
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -418,11 +389,10 @@ jobs:
   repository_app_context_test_suites:
     name: Repository - ${{ matrix.testSuite }} ${{ matrix.idp }}
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      !contains(github.event.head_commit.message, '[skip repo]') &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -490,13 +460,10 @@ jobs:
   tas_tests:
     name: ${{ matrix.test-name }}
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-      !contains(github.event.head_commit.message, '[skip tas]')) ||
-      contains(github.event.head_commit.message, '[tas]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -561,11 +528,10 @@ jobs:
   share_services_test_suite:
     name: Share Services - ShareServicesTestSuite
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      !contains(github.event.head_commit.message, '[skip repo]') &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1
@@ -583,13 +549,10 @@ jobs:
   ags_postgresql_tests:
     name: AGS Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-      !contains(github.event.head_commit.message, '[skip ags]')) ||
-      contains(github.event.head_commit.message, '[ags]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -615,13 +578,10 @@ jobs:
   ags_mysql_tests:
     name: AGS Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-      !contains(github.event.head_commit.message, '[skip ags]')) ||
-      contains(github.event.head_commit.message, '[ags on MySQL]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -647,13 +607,10 @@ jobs:
   ags_community_rest_api_tests:
     name: "AGS Community Rest API Tests"
     runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-      !contains(github.event.head_commit.message, '[skip ags]') && !contains(github.event.head_commit.message, '[skip tas]')) ||
-      (contains(github.event.head_commit.message, '[ags]') && contains(github.event.head_commit.message, '[tas]'))) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
@@ -695,13 +652,10 @@ jobs:
   ags_start_api_explorer:
     name: "Test Tomcat deployment of api explorer"
     runs-on: ubuntu-latest
-    needs: [ prepare ]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-      !contains(github.event.head_commit.message, '[skip ags]')) ||
-      contains(github.event.head_commit.message, '[ags]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v5
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.24.1

@@ -39,6 +39,8 @@ jobs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v17.2.0
         id: get-commit
         with:

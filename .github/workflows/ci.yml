@@ -39,6 +39,8 @@ jobs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v17.2.0
         id: get-commit
         with:
@@ -283,9 +285,9 @@ jobs:
     name: Repository - MariaDB ${{ matrix.version }} tests
     runs-on: ubuntu-latest
     needs:
-        - prepare
-        - test_run_check
-        - commit_parser
+      - prepare
+      - test_run_check
+      - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
     strategy:
       fail-fast: false

@@ -95,6 +95,6 @@ jobs:
       - name: "Update downstream"
         run: bash ./scripts/ci/update_downstream.sh
         env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_MESSAGE: ${{ needs.commit_parser.outputs.title }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

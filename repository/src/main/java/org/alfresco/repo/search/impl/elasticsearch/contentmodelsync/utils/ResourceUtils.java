@@ -32,9 +32,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.core.io.Resource;
 
+@SuppressWarnings("PMD")
 public class ResourceUtils
 {
     /**
@@ -72,7 +74,9 @@ public class ResourceUtils
         List<JSONObject> mergedJSONs = new ArrayList<>();
 
         if (resources == null)
+        {
             return mergedJSONs.toArray(JSONObject[]::new);
+        }
 
         for (Resource resource : resources)
         {
@@ -96,6 +100,10 @@ public class ResourceUtils
         catch (IOException e)
         {
             throw new IOException("Failed to load a JSON from the resource file: " + resource.getFilename(), e);
+        }
+        catch (JSONException e)
+        {
+            throw new JSONException("Failed to parse a JSON from the resource file: " + resource.getFilename(), e);
         }
     }
 }

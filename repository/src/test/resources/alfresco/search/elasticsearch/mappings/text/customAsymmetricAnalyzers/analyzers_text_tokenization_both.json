@@ -1,0 +1,16 @@
+{
+  "test%3Aproperty": {
+    "meta": {
+      "DecodedQualifiedName": "test:property"
+    },
+    "type": "text",
+    "analyzer": "locale_text_index",
+    "search_analyzer": "locale_text_query",
+    "copy_to": [
+      "test%3Aproperty_untokenized"
+    ]
+  },
+  "test%3Aproperty_untokenized": {
+    "type": "keyword"
+  }
+}

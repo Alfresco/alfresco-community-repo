@@ -3227,6 +3227,10 @@ public class NodesImpl implements Nodes
         {
             // Align with updateExistingFile: if no version label exists yet, default to MAJOR
             NodeRef originalRef = checkOutCheckInService.getCheckedOut(workingCopyRef);
+            if (originalRef == null)
+            {
+                throw new IntegrityException("Working copy " + workingCopyRef.getId() + " has no checked-out original node", null);
+            }
             String versionLabel = (String) nodeService.getProperty(originalRef, ContentModel.PROP_VERSION_LABEL);
             versionType = (versionLabel == null) ? VersionType.MAJOR : VersionType.MINOR;
         }

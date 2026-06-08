@@ -46,7 +46,7 @@ public class ElasticsearchSearchServiceFactory extends AbstractIndexerAndSearche
     private DictionaryService dictionaryService;
 
     /**
-     * Elasticsearch is indexing the repository listening queue messages from an external service, so no Indexer is available for the Repository.
+     * Elasticsearch is indexing the repository by polling database or listening queue messages from an external service, so no Indexer is available for the Repository.
      */
     @Override
     public Indexer getIndexer(StoreRef storeRef) throws IndexerException

@@ -32,12 +32,27 @@ env:
   AUTH0_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
 
 jobs:
+  commit_parser:
+    name: "Parse commit metadata"
+    runs-on: ubuntu-latest
+    outputs:
+      title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v17.2.0
+        id: get-commit
+        with:
+          header-only: "true"
+
   prepare:
     name: "Prepare"
     runs-on: ubuntu-latest
+    needs: [commit_parser]
     if: >
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
+      !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
+      !contains(needs.commit_parser.outputs.title, '[force]')
     steps:
       - uses: actions/checkout@v6
         with:
@@ -58,6 +73,7 @@ jobs:
   test_run_check:
     name: "Test run check"
     runs-on: ubuntu-latest
+    needs: [commit_parser]
     outputs:
       tests: ${{ steps.check.outputs.tests }}
     steps:
@@ -67,10 +83,10 @@ jobs:
         if: >
           (
             (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
-            !contains(github.event.head_commit.message, '[skip tests]') &&
-            !contains(github.event.head_commit.message, '[force]')
+            !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
+            !contains(needs.commit_parser.outputs.title, '[force]')
           ) ||
-          contains(github.event.head_commit.message, '[run tests]')
+          contains(needs.commit_parser.outputs.title, '[run tests]')
 
   veracode_sca:
     name: "Source Clear Scan (SCA)"
@@ -269,9 +285,10 @@ jobs:
     name: Repository - MariaDB ${{ matrix.version }} tests
     runs-on: ubuntu-latest
     needs:
-        - prepare
-        - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(github.event.head_commit.message, '[db]'))
+      - prepare
+      - test_run_check
+      - commit_parser
+    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
     strategy:
       fail-fast: false
       matrix:
@@ -350,7 +367,8 @@ jobs:
     needs:
       - prepare
       - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(github.event.head_commit.message, '[db]'))
+      - commit_parser
+    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
     steps:
       - uses: actions/checkout@v6
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
@@ -375,7 +393,8 @@ jobs:
     needs:
       - prepare
       - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(github.event.head_commit.message, '[db]'))
+      - commit_parser
+    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
     steps:
       - uses: actions/checkout@v6
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0

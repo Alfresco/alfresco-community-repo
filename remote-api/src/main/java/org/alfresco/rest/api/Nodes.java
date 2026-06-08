@@ -330,7 +330,7 @@ public interface Nodes
     Node checkout(String nodeId, Parameters parameters);
 
     /**
-     * Cancels the checkout of a node, removing the working copy and any changes made to it. The original node will be unchanged and available for editing again.
+     * Cancels the checkout of a node, removing the working copy and any changes made to it. The original node will be unchanged and available for editing again. If the node is locked but not checked out, it will be unlocked
      *
      * @param nodeId
      * @param parameters

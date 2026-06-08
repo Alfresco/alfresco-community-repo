@@ -56,7 +56,6 @@ import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.Elasti
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.property.ElasticsearchAnalyzer;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.property.ElasticsearchAnalyzer.AnalyzerType;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.property.ElasticsearchAnalyzer.TextType;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.property.ElasticsearchType;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.util.Property;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.util.TextArray;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;

@@ -36,6 +36,7 @@ import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.AFTSBooleanOperatorsAdaptor;
 import org.alfresco.util.Pair;
 
+@SuppressWarnings("PMD.UseUtilityClass")
 public class ElasticsearchQueryHelper
 {
     private static final Pattern FILTER_QUERY_CLEANUP_PATTERN = Pattern.compile("(\\{.*})(.*)");

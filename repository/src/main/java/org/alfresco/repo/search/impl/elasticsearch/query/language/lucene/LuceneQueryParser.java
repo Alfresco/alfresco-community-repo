@@ -145,6 +145,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
+@SuppressWarnings({"PMD.CloseResource", "PMD.CouplingBetweenObjects", "PMD.GodClass", "PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.AvoidThrowingRawExceptionTypes", "PMD.LinguisticNaming"})
 public class LuceneQueryParser extends QueryParser
 {
 
@@ -171,7 +172,7 @@ public class LuceneQueryParser extends QueryParser
     private final SiteService siteService;
     private final ElasticsearchExactTermSearchConfig exactTermSearchConfig;
     private final SearchParameters parameters;
-    private final FieldQueryTransformer fieldQueryTransformer = FieldQueryTransformer.DEFAULT;
+    private static final FieldQueryTransformer fieldQueryTransformer = FieldQueryTransformer.DEFAULT;
 
     private final BiFunction<BooleanQuery.Builder, Query, BooleanQuery.Builder> accumulateDisjunctionClauses = (accumulator, nthQuery) -> accumulator.add(nthQuery, SHOULD);
 
@@ -209,6 +210,7 @@ public class LuceneQueryParser extends QueryParser
     }
 
     @Override
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     public Query getFieldQuery(String field, String queryText, int slop)
     {
         try (PhraseSlopData data = PhraseSlopData.set(queryText, slop))
@@ -743,15 +745,15 @@ public class LuceneQueryParser extends QueryParser
     {
         String field = ID_FIELD;
         return booleanQuerySupplier.get().add(luceneTermQuery(ALIVE, "true"), BooleanClause.Occur.MUST)
-                .add((NodeRef.isNodeRef(id)
-                        ? lucenePrefixQuery(field, id.substring(id.lastIndexOf("/") + 1))
-                        : lucenePrefixQuery(field, id)), BooleanClause.Occur.MUST)
+                .add(NodeRef.isNodeRef(id)
+                        ? lucenePrefixQuery(field, id.substring(id.lastIndexOf('/') + 1))
+                        : lucenePrefixQuery(field, id), BooleanClause.Occur.MUST)
                 .build();
     }
 
     private Query nodeRefTermQuery(String id, String field)
     {
-        String nodeId = NodeRef.isNodeRef(id) ? id.substring(id.lastIndexOf("/") + 1) : id;
+        String nodeId = NodeRef.isNodeRef(id) ? id.substring(id.lastIndexOf('/') + 1) : id;
         return booleanQuerySupplier.get()
                 .add(luceneTermQuery(ALIVE, "true"), MUST)
                 .add(luceneTermQuery(field, escape(nodeId, true)), MUST)
@@ -895,7 +897,7 @@ public class LuceneQueryParser extends QueryParser
      */
     boolean isPropertyField(String fieldName)
     {
-        return (fieldName.startsWith(PROPERTY_FIELD_PREFIX));
+        return fieldName.startsWith(PROPERTY_FIELD_PREFIX);
     }
 
     /**
@@ -1087,7 +1089,7 @@ public class LuceneQueryParser extends QueryParser
                 .add(luceneTermQuery(PRIMARY_HIERARCHY_FIELD, siteRoot.getId()), MUST)
                 .add(typeQuery(TYPE_SITE.toString(), true), Occur.MUST_NOT);
 
-        Optional.ofNullable(siteService.getSite("surf-config"))
+        ofNullable(siteService.getSite("surf-config"))
                 .map(SiteInfo::getNodeRef)
                 .map(NodeRef::getId)
                 .ifPresent(id -> builder.add(luceneTermQuery(PRIMARY_HIERARCHY_FIELD, id), MUST_NOT));
@@ -1161,7 +1163,7 @@ public class LuceneQueryParser extends QueryParser
 
     private static class PhraseSlopData implements Closeable
     {
-        private static final ThreadLocal<PhraseSlopData> DATA_TL = new ThreadLocal();
+        private static final ThreadLocal<PhraseSlopData> DATA_TL = new ThreadLocal<>();
         private static final PhraseSlopData EMPTY = new PhraseSlopData();
 
         private final String phrase;
@@ -1206,10 +1208,11 @@ public class LuceneQueryParser extends QueryParser
 
         public static PhraseSlopData current()
         {
-            return Optional.ofNullable(DATA_TL.get()).orElse(EMPTY);
+            return ofNullable(DATA_TL.get()).orElse(EMPTY);
         }
 
         @Override
+        @SuppressWarnings("PMD.CompareObjectsWithEquals")
         public void close()
         {
             final PhraseSlopData toRemove = DATA_TL.get();

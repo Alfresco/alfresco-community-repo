@@ -80,7 +80,9 @@ public class ElasticsearchSortBuilder
 
         List<SearchParameters.SortDefinition> sortDefinitions = searchParameters.getSortDefinitions();
         if (sortDefinitions == null)
+        {
             return Collections.emptyList();
+        }
 
         AlfrescoFunctionEvaluationContext functionContext = new AlfrescoFunctionEvaluationContext(
                 namespaceDAO, dictionaryService, searchParameters.getNamespace());

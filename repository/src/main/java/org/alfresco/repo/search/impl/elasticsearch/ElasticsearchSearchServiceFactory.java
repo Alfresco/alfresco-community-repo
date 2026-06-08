@@ -62,7 +62,9 @@ public class ElasticsearchSearchServiceFactory extends AbstractIndexerAndSearche
 
     @Override
     public void flush()
-    {}
+    {
+        // No action required - Elasticsearch indexing is handled externally
+    }
 
     public void setQueryRegister(QueryRegisterComponent queryRegister)
     {

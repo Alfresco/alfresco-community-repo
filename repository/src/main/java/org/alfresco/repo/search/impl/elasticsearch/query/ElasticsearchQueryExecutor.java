@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 /**
  * This class aims to search a query to elasticsearch adding additional parameters based on the execution context like permission filtering and pagination. Supports plain http and secured https connections.
  */
+@SuppressWarnings({"PMD.LongVariable", "PMD.CallSuperInConstructor", "PMD.AvoidThrowingRawExceptionTypes"})
 public class ElasticsearchQueryExecutor extends AbstractLuceneQueryLanguage
 {
     private final static Logger LOGGER = LoggerFactory.getLogger(ElasticsearchQueryExecutor.class);
@@ -53,9 +54,6 @@ public class ElasticsearchQueryExecutor extends AbstractLuceneQueryLanguage
     private final ElasticsearchFilterBuilder elasticsearchFilterBuilder;
     private final boolean includeGroupsForRoleAdmin;
 
-    public static final int TRACK_TOTAL_HITS_ACCURATE = 2147483647;
-    public static final int TRACK_TOTAL_HITS_DISABLED = -1;
-    public static final int DEFAULT_TRACK_TOTAL_HITS_UP_TO = 10000;
     private static final String HIGHLIGHT_ERROR_KEYWORD = "index.highlight.max_analyzed_offset";
     private final SearchStrategy strategySelector;
 

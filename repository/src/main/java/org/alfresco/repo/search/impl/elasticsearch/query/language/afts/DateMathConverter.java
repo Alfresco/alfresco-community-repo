@@ -64,7 +64,7 @@ public class DateMathConverter
             return dateMathExpression;
         }
         String mathPart = matcher.group(0);
-        String separator = (dateMathExpression.startsWith(ES_NOW) ? "" : ES_DATE_MATH_SEPARATOR);
+        String separator = dateMathExpression.startsWith(ES_NOW) ? "" : ES_DATE_MATH_SEPARATOR;
         String datePart = dateMathExpression.substring(0, dateMathExpression.length() - mathPart.length());
         return datePart + separator + toESDateFormat(mathPart);
     }

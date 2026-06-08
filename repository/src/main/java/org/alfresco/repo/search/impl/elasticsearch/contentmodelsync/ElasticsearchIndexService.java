@@ -47,6 +47,7 @@ import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClien
 /**
  * This class aims to interact with Elasticsearch for any operation strict related to index management.
  */
+@SuppressWarnings("PMD.InvalidLogMessageFormat")
 public class ElasticsearchIndexService
 {
 

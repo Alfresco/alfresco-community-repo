@@ -32,6 +32,7 @@ import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+@FunctionalInterface
 public interface SearchStrategy
 {
     ResultSet executeSearch(SearchParameters searchParameters, Query queryWithPermissions) throws IOException;

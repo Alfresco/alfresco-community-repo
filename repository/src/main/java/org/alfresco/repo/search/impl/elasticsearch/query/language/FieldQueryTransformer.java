@@ -31,6 +31,7 @@ import java.util.Locale;
 
 import org.alfresco.repo.search.adaptor.QueryConstants;
 
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface FieldQueryTransformer
 {
     FieldQueryTransformer DEFAULT = new DefaultFieldQueryTransformer();

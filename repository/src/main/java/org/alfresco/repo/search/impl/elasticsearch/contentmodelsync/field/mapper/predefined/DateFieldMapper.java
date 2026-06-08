@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 @Component
+@SuppressWarnings("PMD.FieldNamingConventions")
 public class DateFieldMapper implements PredefinedFieldMapper
 {
     private static final Property DEFAULT_DATE_FORMAT = text("format", "date_optional_time");

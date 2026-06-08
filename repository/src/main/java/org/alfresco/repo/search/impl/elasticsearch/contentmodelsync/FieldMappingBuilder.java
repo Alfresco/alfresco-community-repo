@@ -49,6 +49,7 @@ import org.alfresco.util.Pair;
 /**
  * A component which accepts the set of attributes that compose an Alfresco property definition and outputs the corresponding Elasticsearch field mapping. It is possible to provide a custom mappers by implementing {@link CustomFieldMapper} and declaring them in the Spring Context. All mapper beans will be injected at startup time - no additional configuration is needed.
  */
+@SuppressWarnings("PMD.GuardLogStatement")
 public class FieldMappingBuilder
 {
     private final Logger logger = LoggerFactory.getLogger(FieldMappingBuilder.class);

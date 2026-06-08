@@ -33,6 +33,7 @@ import java.util.Map.Entry;
 
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.util.Property;
 
+@SuppressWarnings("PMD.LongVariable")
 public class ElasticsearchAnalyzer implements Property
 {
     public static final ElasticsearchAnalyzer DEFAULT_ANALYZER = new ElasticsearchAnalyzer("locale_content", SYMMETRIC_INDEX_ANALYZER);

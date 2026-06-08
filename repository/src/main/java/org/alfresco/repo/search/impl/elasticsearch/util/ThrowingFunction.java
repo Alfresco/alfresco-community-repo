@@ -36,6 +36,7 @@ package org.alfresco.repo.search.impl.elasticsearch.util;
  *            the type of the checked exception that may be thrown
  */
 @FunctionalInterface
+@SuppressWarnings("PMD.ThrowingFunction")
 public interface ThrowingFunction<T, R, E extends Exception>
 {
     default R apply(T t)

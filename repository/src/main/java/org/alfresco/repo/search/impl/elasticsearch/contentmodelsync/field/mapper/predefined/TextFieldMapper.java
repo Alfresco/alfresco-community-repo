@@ -63,6 +63,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 @Component
+@SuppressWarnings("PMD.FieldNamingConventions")
 public class TextFieldMapper implements PredefinedFieldMapper
 {
 
@@ -121,7 +122,7 @@ public class TextFieldMapper implements PredefinedFieldMapper
         if (shouldCreateNotTokenizedIndex(context))
         {
             mapping.notTokenizedMapping()
-                    .addChild(ElasticsearchType.KEYWORD);
+                    .addChild(KEYWORD);
 
             copyToDestinations.add(context.name()
                     .untokenized());

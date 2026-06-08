@@ -54,6 +54,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Class responsible for initialising Elasticsearch when the subsystem is started.
  */
+@SuppressWarnings({"PMD.GodClass", "PMD.SingularField", "PMD.LongVariable", "PMD.GuardLogStatement"})
 public class ElasticsearchInitialiser implements DictionaryListener
 {
 

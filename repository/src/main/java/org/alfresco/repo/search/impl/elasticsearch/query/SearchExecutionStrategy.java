@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+@SuppressWarnings("PMD.MissingOverride")
 public abstract class SearchExecutionStrategy implements SearchStrategy
 {
 

@@ -81,6 +81,7 @@ public class ElasticsearchResultSetRow extends AbstractResultSetRow
         throw new UnsupportedOperationException();
     }
 
+    @Override
     protected Map<QName, Serializable> getDirectProperties()
     {
         ElasticsearchResultSet rs = (ElasticsearchResultSet) getResultSet();

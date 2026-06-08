@@ -88,6 +88,7 @@ public class AFTSQueryBuilder implements LanguageQueryBuilder
      * @throws ParseException
      *             If there is a problem interpreting the AFTS query.
      */
+    @Override
     public org.opensearch.client.opensearch._types.query_dsl.Query getQuery(SearchParameters searchParameters) throws ParseException
     {
         // Read the AFTS query.

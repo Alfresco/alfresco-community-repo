@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.json.JSONObject;
 
+@SuppressWarnings("PMD.UseUtilityClass")
 public class SettingsJsonUtils
 {
 
@@ -60,7 +61,9 @@ public class SettingsJsonUtils
     public static boolean keyExists(JSONObject jsonToSearch, String searchedKey)
     {
         if (jsonToSearch == null)
+        {
             return false;
+        }
 
         Queue<JSONObject> jsonObjectsToTraverse = new LinkedList<>();
         jsonObjectsToTraverse.add(jsonToSearch);

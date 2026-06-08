@@ -57,8 +57,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Query executor for Elasticsearch servers.
  */
-// adding regex classes increases coupling to 21, just over the threshold of 20
-@SuppressWarnings({"PMD.CouplingBetweenObjects"})
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.CallSuperInConstructor", "PMD.UseLocaleWithCaseConversions"})
 public class ElasticsearchSearchService extends AbstractSearcherComponent
 {
 
@@ -133,7 +132,7 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
             NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
             throws InvalidNodeRefException, XPathException
     {
-        return selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, SearchService.LANGUAGE_XPATH);
+        return selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, LANGUAGE_XPATH);
     }
 
     @Override

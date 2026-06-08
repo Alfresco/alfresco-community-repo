@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 /**
  * Interface used to define a language implementation in order to translate a query from that language to an Elasticsearch query.
  */
+@FunctionalInterface
 public interface LanguageQueryBuilder
 {
     Query getQuery(SearchParameters searchParameters) throws ParseException;

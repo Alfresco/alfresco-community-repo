@@ -74,6 +74,7 @@ import org.alfresco.util.Pair;
 /**
  * Tag and category support using Elasticsearch.
  */
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.CallSuperInConstructor", "PMD.MissingOverride", "PMD.UnusedPrivateMethod"})
 public class ElasticsearchCategoryService extends AbstractCategoryServiceImpl
 {
     /** The root node for all tags and categories. */
@@ -157,8 +158,8 @@ public class ElasticsearchCategoryService extends AbstractCategoryServiceImpl
         }
         else if (aspectName.equals(ASPECT_GEN_CLASSIFIABLE))
         {
-            Predicate<String> nameFilter = (filter == null ? null : ((name) -> name.contains(filter)));
-            return collectRootCategories(storeRef, aspectName, nameFilter, null, Collectors.toSet());
+            Predicate<String> nameFilter = filter == null ? null : name -> name.contains(filter);
+            return collectRootCategories(storeRef, aspectName, nameFilter, null, toSet());
         }
         throw new UnsupportedOperationException("Finding the category root for " + aspectName + " is currently not supported.");
     }
@@ -367,7 +368,7 @@ public class ElasticsearchCategoryService extends AbstractCategoryServiceImpl
 
             final ChildAssociationRef newTagAssociation = publicNodeService
                     .createNode(taggableNode, ContentModel.ASSOC_SUBCATEGORIES, tagQName, ContentModel.TYPE_CATEGORY);
-            publicNodeService.setProperty(newTagAssociation.getChildRef(), ContentModel.PROP_NAME, tagName);
+            publicNodeService.setProperty(newTagAssociation.getChildRef(), PROP_NAME, tagName);
 
             return newTagAssociation;
         }
@@ -403,7 +404,7 @@ public class ElasticsearchCategoryService extends AbstractCategoryServiceImpl
             searchParameters.addStore(taggableNode.getStoreRef());
             if (sortByName)
             {
-                searchParameters.addSort("@" + ContentModel.PROP_NAME, true);
+                searchParameters.addSort("@" + PROP_NAME, true);
             }
 
             final ResultSet queryResult = getSearcher(taggableNode).query(searchParameters);

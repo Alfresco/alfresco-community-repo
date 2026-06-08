@@ -29,6 +29,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+@SuppressWarnings("PMD.UseUtilityClass")
 public class AlfrescoQualifiedNameTranslator
 {
 

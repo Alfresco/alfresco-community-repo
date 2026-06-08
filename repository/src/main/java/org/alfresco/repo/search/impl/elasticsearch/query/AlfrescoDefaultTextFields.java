@@ -40,7 +40,7 @@ public enum AlfrescoDefaultTextFields
 {
     NAME(ContentModel.PROP_NAME), TITLE(ContentModel.PROP_TITLE), DESCRIPTION(ContentModel.PROP_DESCRIPTION), CONTENT(ContentModel.PROP_CONTENT);
 
-    public static final Set<String> FULLY_QUALIFIED_NAME_SET = stream(AlfrescoDefaultTextFields.values())
+    public static final Set<String> FULLY_QUALIFIED_NAME_SET = stream(values())
             .map(AlfrescoDefaultTextFields::getFieldName)
             .collect(Collectors.toSet());
 

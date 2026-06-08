@@ -36,6 +36,7 @@ import java.util.Set;
 /**
  * Null-safe collection utilities for Elasticsearch search implementations.
  */
+@SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
 public abstract class CollectionUtils
 {
     public static <T> Collection<T> safe(Collection<T> values)

@@ -30,6 +30,7 @@ import org.opensearch.client.opensearch._types.query_dsl.Query;
 /**
  * This interface will create a QueryBuilder object including permissions for the current user.
  */
+@FunctionalInterface
 public interface ElasticsearchPermissionQueryFactory
 {
     /**

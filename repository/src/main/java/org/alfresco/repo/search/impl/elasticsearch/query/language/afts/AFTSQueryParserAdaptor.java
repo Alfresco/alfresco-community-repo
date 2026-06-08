@@ -85,7 +85,7 @@ public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch
     protected final DictionaryService dictionaryService;
     protected final EsTypeResolver esTypeResolver;
 
-    protected final FieldQueryTransformer fieldQueryTransformer = FieldQueryTransformer.DEFAULT;
+    protected static final FieldQueryTransformer fieldQueryTransformer = FieldQueryTransformer.DEFAULT;
 
     protected final StoreRefStripper storeRefStripper;
 

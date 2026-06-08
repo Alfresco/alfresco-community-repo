@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 @Component
+@SuppressWarnings("PMD.SimpleFieldMapper")
 public class SimpleFieldMapper implements PredefinedFieldMapper
 {
     private static final Map<QName, ElasticsearchType> supportedTypes = Map.of(

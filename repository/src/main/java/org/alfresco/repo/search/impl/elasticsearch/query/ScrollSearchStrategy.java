@@ -48,6 +48,7 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResult
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+@SuppressWarnings("PMD.GuardLogStatement")
 public class ScrollSearchStrategy extends SearchExecutionStrategy
 {
 

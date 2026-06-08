@@ -58,6 +58,7 @@ import org.alfresco.util.Pair;
 /**
  * The entry point for the Content Model synchronization
  */
+@SuppressWarnings({"PMD.LongVariable", "PMD.InvalidLogMessageFormat", "PMD.UseVarargs", "PMD.ArrayIsStoredDirectly"})
 public class ContentModelSynchronizer
 {
 

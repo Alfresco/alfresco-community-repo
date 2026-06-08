@@ -38,6 +38,7 @@ import org.jaxen.saxpath.XPathHandler;
 
 import org.alfresco.util.ISO9075;
 
+@SuppressWarnings({"PMD.GodClass", "PMD.CyclomaticComplexity", "PMD.ExcessivePublicCount", "PMD.TooManyMethods", "PMD.LooseCoupling"})
 public class LuceneXPathHandler implements XPathHandler
 {
     /**

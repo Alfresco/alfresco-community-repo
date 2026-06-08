@@ -36,6 +36,7 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResult
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+@SuppressWarnings("PMD.GuardLogStatement")
 public class StandardSearchStrategy extends SearchExecutionStrategy
 {
 
@@ -68,6 +69,7 @@ public class StandardSearchStrategy extends SearchExecutionStrategy
      * @throws IOException
      *             If search fails.
      */
+    @Override
     public ResultSet executeSearch(SearchParameters searchParameters, Query queryWithPermissions) throws IOException
     {
         int skipCount = searchParameters.getSkipCount();

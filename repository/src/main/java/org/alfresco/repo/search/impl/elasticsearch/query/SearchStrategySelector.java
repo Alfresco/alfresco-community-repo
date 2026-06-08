@@ -46,6 +46,7 @@ public class SearchStrategySelector implements SearchStrategy
         this.maxResultWindow = maxResultWindow;
     }
 
+    @Override
     public ResultSet executeSearch(SearchParameters searchParameters, Query queryWithPermissions) throws IOException
     {
         if (scrollNeeded(searchParameters))

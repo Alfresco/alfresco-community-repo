@@ -149,7 +149,7 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
     private void addOwnerQuery(Set<String> authorities, BoolQuery.Builder aclQueryBuilder)
     {
         getUser(authorities)
-                .map(user -> getOwnerQuery(user))
+                .map(this::getOwnerQuery)
                 .ifPresent(aclQueryBuilder::should);
     }
 

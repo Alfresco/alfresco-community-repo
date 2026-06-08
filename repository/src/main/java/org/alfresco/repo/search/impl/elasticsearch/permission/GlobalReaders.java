@@ -34,9 +34,10 @@ import org.alfresco.service.cmr.security.PermissionService;
 /**
  * Statically configured set of authorities that always have read access.
  */
+@SuppressWarnings({"PMD.UseUtilityClass", "PMD.LooseCoupling"})
 public class GlobalReaders
 {
-    private static HashSet<String> readers = new HashSet<String>();
+    private static HashSet<String> readers = new HashSet<>();
 
     static
     {

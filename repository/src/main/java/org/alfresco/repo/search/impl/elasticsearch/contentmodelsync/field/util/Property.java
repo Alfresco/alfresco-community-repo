@@ -28,6 +28,7 @@ package org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.util;
 
 import java.util.Map.Entry;
 
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface Property
 {
     Entry<String, ?> toEntry();

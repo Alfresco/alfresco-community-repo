@@ -45,6 +45,7 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtil
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class SearchRequestBuilderService
 {
 

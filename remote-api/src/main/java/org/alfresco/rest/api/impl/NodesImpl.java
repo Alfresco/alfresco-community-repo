@@ -3165,7 +3165,7 @@ public class NodesImpl implements Nodes
         NodeRef workingCopyNodeRef = resolveWorkingCopy(nodeRef);
         if (workingCopyNodeRef != null)
         {
-            return updateCheckedOutContent(workingCopyNodeRef, contentInfo, stream, parameters, versionMajor, versionComment);
+            return updateCheckedOutContent(workingCopyNodeRef, stream, parameters, versionMajor, versionComment);
         }
 
         String fileName = parameters.getParameter(PARAM_NAME);
@@ -3201,7 +3201,7 @@ public class NodesImpl implements Nodes
         return null;
     }
 
-    private Node updateCheckedOutContent(NodeRef workingCopyRef, BasicContentInfo contentInfo, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
+    private Node updateCheckedOutContent(NodeRef workingCopyRef, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
     {
         // Optionally rename the working copy before checkin
         String fileName = parameters.getParameter(PARAM_NAME);

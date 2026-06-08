@@ -66,6 +66,7 @@
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.81</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.18.0</dependency.mockito-core.version>
+        <dependency.test-parameter-injector.version>1.18</dependency.test-parameter-injector.version>
         <dependency.assertj.version>3.27.3</dependency.assertj.version>
         <dependency.org-json.version>20250517</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.12.0</dependency.commons-dbcp.version>
@@ -849,6 +850,12 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${dependency.mockito-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.testparameterinjector</groupId>
+                <artifactId>test-parameter-injector</artifactId>
+                <version>${dependency.test-parameter-injector.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>

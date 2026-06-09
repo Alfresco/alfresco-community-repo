@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
@@ -362,6 +363,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private Map<String, PermissionMapping> permissionMappings;
 
     private ObjectFilter objectFilter;
+    private CMISVirtualRepository virtualRepository = CMISVirtualRepository.noVirtualRepository();
 
     // Bulk update properties
     private int bulkMaxItems = 1000;
@@ -375,6 +377,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public void setObjectFilter(ObjectFilter objectFilter)
     {
         this.objectFilter = objectFilter;
+    }
+
+    public void setVirtualRepository(CMISVirtualRepository virtualRepository)
+    {
+        this.virtualRepository = Objects.requireNonNull(virtualRepository);
+    }
+
+    public CMISVirtualRepository getVirtualRepository()
+    {
+        return virtualRepository;
     }
 
     /**
@@ -1152,7 +1164,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 }
             }, AuthenticationUtil.getSystemUserName());
 
-            if (rootNodeRef == null)
+            if (rootNodeRef == null || !virtualRepository.contains(rootNodeRef))
             {
                 throw new CmisObjectNotFoundException("Root folder path '" + rootPath + "' not found!");
             }
@@ -2955,6 +2967,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         // prepare query
         CMISQueryOptions options = new CMISQueryOptions(statement, getRootStoreRef());
+        getVirtualRepository().applyQueryFiltering(options);
         CmisVersion cmisVersion = getRequestCmisVersion();
         options.setCmisVersion(cmisVersion);
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);

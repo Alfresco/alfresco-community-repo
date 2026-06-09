@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -505,11 +505,14 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             typeqnames.add(type.getAlfrescoClass());
         }
+
         PagingResults<FileInfo> pageOfNodeInfos = connector.getFileFolderService().list(
                 folderNodeRef,
+                null,
                 typeqnames,
                 null, // ignoreAspectQNames,
                 sortProps,
+                connector.getVirtualRepository().getChildrenFilteringProperties(),
                 pageRequest);
 
         if (max > 0)

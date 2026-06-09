@@ -75,6 +75,7 @@ public class ElasticsearchSortBuilder
      *            Containing sort definition
      * @return List of SortBuilders
      */
+    @SuppressWarnings("PMD.ExhaustiveSwitchHasDefault")
     public List<SortOptions> getSortBuilders(SearchParameters searchParameters)
     {
 

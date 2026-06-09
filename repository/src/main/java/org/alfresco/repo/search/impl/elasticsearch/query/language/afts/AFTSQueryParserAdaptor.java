@@ -67,8 +67,9 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 
 /**
- * Query Parser Adaptor for Elasticsearch Elasticsearch QueryBuilder object is updated by this class in order to include the search conditions expressed in the SearchParameters object.
+ * Query Parser Adaptor for Elasticsearch QueryBuilder object is updated by this class in order to include the search conditions expressed in the SearchParameters object.
  */
+@SuppressWarnings("PMD.FieldNamingConventions")
 public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch.client.opensearch._types.query_dsl.Query, Sort, ParseException>
 {
     public static final String RANGE_MIN = "MIN";

@@ -145,7 +145,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
-@SuppressWarnings({"PMD.CloseResource", "PMD.CouplingBetweenObjects", "PMD.GodClass", "PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.AvoidThrowingRawExceptionTypes", "PMD.LinguisticNaming"})
+@SuppressWarnings({"PMD.CloseResource", "PMD.CouplingBetweenObjects", "PMD.GodClass", "PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.AvoidThrowingRawExceptionTypes", "PMD.LinguisticNaming", "PMD.FieldNamingConventions"})
 public class LuceneQueryParser extends QueryParser
 {
 
@@ -378,7 +378,7 @@ public class LuceneQueryParser extends QueryParser
 
     public boolean isUntokenizedField(String fieldName)
     {
-        return Optional.ofNullable(fieldName)
+        return ofNullable(fieldName)
                 .map(name -> name.startsWith(PROPERTY_FIELD_PREFIX) ? name.substring(1) : name)
                 .map(name -> QName.resolveToQName(namespaceResolver, name))
                 .map(qname -> matchPropertyDefinition(qname.getNamespaceURI(), namespaceResolver, dictionaryService, qname.getLocalName()))
@@ -1100,7 +1100,7 @@ public class LuceneQueryParser extends QueryParser
 
     private Optional<String> getSiteHierarchyNode(String queryText)
     {
-        return Optional.of(queryText).map(siteService::getSite).map(SiteInfo::getNodeRef).map(NodeRef::getId);
+        return of(queryText).map(siteService::getSite).map(SiteInfo::getNodeRef).map(NodeRef::getId);
     }
 
     /**

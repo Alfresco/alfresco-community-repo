@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 /**
  * This class aims to apply a permission filter to a query using the Flat approach. This means that permission each Elasticsearch document includes two additional list fields: READER and DENIED.
  */
+@SuppressWarnings("PMD.LooseCoupling")
 public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPermissionQueryFactory
 {
 

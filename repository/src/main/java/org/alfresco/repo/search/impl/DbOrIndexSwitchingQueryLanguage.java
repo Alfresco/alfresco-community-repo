@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -185,7 +185,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 }
                 StopWatch stopWatch = new StopWatch("database only");
                 stopWatch.start();
-                ResultSet results = dbQueryLanguage.executeQuery(flattenDBQuery(searchParameters));
+                ResultSet results = dbQueryLanguage.executeQuery(flattenIfSupported(dbQueryLanguage, searchParameters));
                 stopWatch.stop();
                 if (logger.isDebugEnabled())
                 {
@@ -218,7 +218,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                         logger.debug("Trying db query for " + dbQueryLanguage.getName() + " for " + searchParameters);
                     }
                     stopWatch.start();
-                    ResultSet results = dbQueryLanguage.executeQuery(flattenDBQuery(searchParameters));
+                    ResultSet results = dbQueryLanguage.executeQuery(flattenIfSupported(dbQueryLanguage, searchParameters));
                     stopWatch.stop();
                     if (logger.isDebugEnabled())
                     {
@@ -280,6 +280,11 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
             }
             throw new QueryModelException("No query language available");
         }
+    }
+
+    private SearchParameters flattenIfSupported(LuceneQueryLanguageSPI dbQueryLanguage, SearchParameters searchParameters)
+    {
+        return dbQueryLanguage.supportsFilterFlattening() ? flattenDBQuery(searchParameters) : searchParameters;
     }
 
     private SearchParameters flattenDBQuery(SearchParameters sp)

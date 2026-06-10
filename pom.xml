@@ -273,6 +273,36 @@
                 <version>${dependency.jakarta-ee-json-impl.version}</version>
             </dependency>
 
+            <!-- Excluded yasson because it transitively pulls in org.glassfish:jakarta.json which is banned by the enforcer.
+                 The project uses org.eclipse.parsson as the Jakarta JSON-P implementation instead. -->
+            <dependency>
+                <groupId>org.opensearch.client</groupId>
+                <artifactId>opensearch-java</artifactId>
+                <version>${dependency.opensearch.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse</groupId>
+                        <artifactId>yasson</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queryparser</artifactId>
+                <version>${dependency.lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${dependency.lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analysis-common</artifactId>
+                <version>${dependency.lucene.version}</version>
+            </dependency>
+
             <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->
             <dependency>
                 <groupId>com.jayway.jsonpath</groupId>

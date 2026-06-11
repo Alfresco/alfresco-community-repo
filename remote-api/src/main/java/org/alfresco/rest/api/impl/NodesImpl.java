@@ -3942,7 +3942,7 @@ public class NodesImpl implements Nodes
         }
         catch (CheckOutCheckInServiceException e)
         {
-            throw new IntegrityException(e.getMessage(), null);
+            throw new ConstraintViolatedException(e.getMessage(), e);
         }
     }
 
@@ -4005,7 +4005,7 @@ public class NodesImpl implements Nodes
         }
         catch (CheckOutCheckInServiceException e)
         {
-            throw new IntegrityException(e.getMessage(), null);
+            throw new ConstraintViolatedException(e.getMessage(), e);
         }
     }
 

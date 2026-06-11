@@ -26,7 +26,6 @@
 package org.alfresco.repo.search.impl.elasticsearch.client;
 
 import java.io.IOException;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
@@ -216,7 +215,10 @@ public class ElasticsearchHttpClientFactory
         return responseTimeout;
     }
 
-    protected OpenSearchClient getClient() { return client; }
+    protected OpenSearchClient getClient()
+    {
+        return client;
+    }
 
     /**
      * Singleton method returning the Elasticsearch client. The client is only built if it's not already created.

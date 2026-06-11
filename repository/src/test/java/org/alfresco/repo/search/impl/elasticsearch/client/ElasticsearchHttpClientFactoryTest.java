@@ -232,33 +232,29 @@ public class ElasticsearchHttpClientFactoryTest
     public void testGetElasticsearchClientIsThreadSafe() throws Exception
     {
         int threadCount = 10;
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch startLatch = new CountDownLatch(1);
-
-        // Submit concurrent calls that all wait for the latch before calling getElasticsearchClient
-        List<Future<OpenSearchClient>> futures = IntStream.range(0, threadCount)
-                .mapToObj(i -> executor.submit(() -> {
-                    startLatch.await();
-                    return elasticsearchHttpClientFactory.getElasticsearchClient();
-                }))
-                .toList();
-
-        // Release all threads simultaneously
-        startLatch.countDown();
-
-        // Collect all returned client instances
-        Set<OpenSearchClient> clients = ConcurrentHashMap.newKeySet();
-        for (Future<OpenSearchClient> future : futures)
+        try (ExecutorService executor = Executors.newFixedThreadPool(threadCount))
         {
-            clients.add(future.get());
+            CountDownLatch startLatch = new CountDownLatch(1);
+
+            List<Future<OpenSearchClient>> futures = IntStream.range(0, threadCount)
+                    .mapToObj(i -> executor.submit(() -> {
+                        startLatch.await();
+                        return elasticsearchHttpClientFactory.getElasticsearchClient();
+                    }))
+                    .toList();
+
+            startLatch.countDown();
+
+            Set<OpenSearchClient> clients = ConcurrentHashMap.newKeySet();
+            for (Future<OpenSearchClient> future : futures)
+            {
+                clients.add(future.get());
+            }
+
+            assertThat(clients).hasSize(1);
+            assertSame("All threads should get the same client instance",
+                    clients.iterator().next(), elasticsearchHttpClientFactory.getClient());
         }
-
-        executor.shutdown();
-
-        // All threads should have received the exact same client instance
-        assertThat(clients).hasSize(1);
-        assertSame("All threads should get the same client instance",
-                clients.iterator().next(), elasticsearchHttpClientFactory.getClient());
     }
 
 }

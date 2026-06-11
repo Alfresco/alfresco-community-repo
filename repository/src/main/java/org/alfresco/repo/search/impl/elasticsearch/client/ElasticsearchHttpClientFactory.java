@@ -59,7 +59,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 /**
  * Singleton factory for Elasticsearch Http Client. This class is providing an Elastic RestHighLevelClient instance, that maintains a pool of RestLowLevelClient instances.
  */
-@SuppressWarnings({"PMD.GodClass"})
+@SuppressWarnings("PMD.GodClass")
 public class ElasticsearchHttpClientFactory
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchHttpClientFactory.class);
@@ -225,6 +225,7 @@ public class ElasticsearchHttpClientFactory
      *
      * @return Elasticsearch client
      */
+    @SuppressWarnings({"PMD.AvoidSynchronizedStatement", "PMD.AvoidDeeplyNestedIfStmts"})
     public OpenSearchClient getElasticsearchClient()
     {
         if (client == null)

@@ -7129,7 +7129,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         getSingle(URL_NODES, wcId, null, null, 404);
 
         // -ve: Update content by another user on a checked-out node should fail (403 - no permission)
-        response = post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
 
         setRequestContext(user2);
         updateTextFile(d1Id, "Unauthorized update attempt.", null, 403);

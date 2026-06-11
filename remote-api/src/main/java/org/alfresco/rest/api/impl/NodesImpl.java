@@ -3205,9 +3205,16 @@ public class NodesImpl implements Nodes
         {
             fileName = (String) nodeService.getProperty(workingCopyRef, ContentModel.PROP_NAME);
         }
-
-        // Write content to the working copy
-        writeContent(workingCopyRef, fileName, stream, true);
+        behaviourFilter.disableBehaviour(workingCopyRef, ContentModel.ASPECT_VERSIONABLE);
+        try
+        {
+            // Write content to the working copy
+            writeContent(workingCopyRef, fileName, stream, true);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(workingCopyRef, ContentModel.ASPECT_VERSIONABLE);
+        }
 
         // Build version properties for checkin
         VersionType versionType;

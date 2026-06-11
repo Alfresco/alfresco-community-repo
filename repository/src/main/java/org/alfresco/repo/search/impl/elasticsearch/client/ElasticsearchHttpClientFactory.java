@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.client;
 
+import java.io.IOException;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
@@ -69,7 +71,7 @@ public class ElasticsearchHttpClientFactory
     protected static final String SECURE_COMMS_HTTPS = "https";
 
     // Elasticsearch Http Client connection pool
-    private OpenSearchClient client;
+    private volatile OpenSearchClient client;
 
     // Basic parameters for Elasticsearch server endpoint
     private String host;
@@ -112,6 +114,33 @@ public class ElasticsearchHttpClientFactory
         this.sslTrustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
     }
 
+    /**
+     * Releases resources held by the Elasticsearch client transport, including the HTTP connection pool and IO reactor threads.
+     */
+    public void destroy()
+    {
+        if (client != null)
+        {
+            try
+            {
+                OpenSearchTransport transport = client._transport();
+                if (transport != null)
+                {
+                    transport.close();
+                }
+                LOGGER.debug("Elasticsearch client transport closed successfully.");
+            }
+            catch (IOException e)
+            {
+                LOGGER.warn("Error closing Elasticsearch client transport", e);
+            }
+            finally
+            {
+                client = null;
+            }
+        }
+    }
+
     protected String getSecureComms()
     {
         return secureComms;
@@ -152,11 +181,6 @@ public class ElasticsearchHttpClientFactory
         return hostNameVerification;
     }
 
-    protected void setClient(OpenSearchClient client)
-    {
-        this.client = client;
-    }
-
     protected String getUser()
     {
         return user;
@@ -192,6 +216,8 @@ public class ElasticsearchHttpClientFactory
         return responseTimeout;
     }
 
+    protected OpenSearchClient getClient() { return client; }
+
     /**
      * Singleton method returning the Elasticsearch client. The client is only built if it's not already created.
      *
@@ -201,11 +227,17 @@ public class ElasticsearchHttpClientFactory
     {
         if (client == null)
         {
-            if (LOGGER.isDebugEnabled())
+            synchronized (this)
             {
-                LOGGER.debug("Creating Elasticsearch client for {}", (secureComms.equals("https") ? "https" : "http") + "://" + host + ":" + port + baseUrl);
+                if (client == null)
+                {
+                    if (LOGGER.isDebugEnabled())
+                    {
+                        LOGGER.debug("Creating Elasticsearch client for {}", (secureComms.equals("https") ? "https" : "http") + "://" + host + ":" + port + baseUrl);
+                    }
+                    client = getElasticsearchClient(secureComms.equals("https") ? "https" : "http", port);
+                }
             }
-            client = getElasticsearchClient(secureComms.equals("https") ? "https" : "http", port);
         }
         return client;
     }
@@ -243,7 +275,7 @@ public class ElasticsearchHttpClientFactory
     /**
      * Builds and caches the RequestConfig with the configured response timeout.
      */
-    private RequestConfig buildRequestConfig()
+    protected RequestConfig buildRequestConfig()
     {
         this.builtRequestConfig = RequestConfig.custom()
                 .setResponseTimeout(Timeout.ofMilliseconds(responseTimeout))
@@ -398,6 +430,11 @@ public class ElasticsearchHttpClientFactory
     public void setResponseTimeout(int responseTimeout)
     {
         this.responseTimeout = responseTimeout;
+    }
+
+    protected void setClient(OpenSearchClient client)
+    {
+        this.client = client;
     }
 
     public void setSslEncryptionParameters(SSLEncryptionParameters sslEncryptionParameters)

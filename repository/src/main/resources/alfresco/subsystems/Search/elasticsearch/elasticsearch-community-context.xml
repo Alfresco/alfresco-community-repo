@@ -56,7 +56,7 @@
 
     <bean id="indexConfigurationInitializer" class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.IndexConfigurationInitializer"/>
 
-    <bean id="elasticsearchHttpClientFactory" class="org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory" init-method="init">
+    <bean id="elasticsearchHttpClientFactory" class="org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory" init-method="init" destroy-method="destroy">
         <property name="host" value="${elasticsearch.host}" />
         <property name="port" value="${elasticsearch.port}" />
         <property name="baseUrl" value="${elasticsearch.baseUrl}" />

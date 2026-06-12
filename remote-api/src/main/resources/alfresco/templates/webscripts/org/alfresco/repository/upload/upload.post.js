@@ -232,6 +232,8 @@ function main()
          exitUpload(400, "Required parameters are missing");
          return;
       }
+      
+      filename = filename.trim();
 
       /**
        * Site or Non-site?

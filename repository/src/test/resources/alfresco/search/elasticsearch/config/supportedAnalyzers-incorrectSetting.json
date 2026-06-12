@@ -1,0 +1,17 @@
+{
+    "settings": {
+        "analysis": {
+            "analyzer": {
+                "alfresco_custom_incorrect_analyzer": {
+                    "not_exist": [
+                        "html_strip"
+                    ],
+                    "filter": [
+                        "lowercase",
+                        "asciifolding"
+                    ]
+                }
+            }
+        }
+    }
+}

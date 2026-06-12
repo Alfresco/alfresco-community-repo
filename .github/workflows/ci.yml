@@ -30,6 +30,7 @@ env:
   AUTH0_CLIENT_ID: ${{ secrets.AUTH0_OIDC_ADMIN_CLIENT_ID }}
   AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_OIDC_CLIENT_SECRET }}
   AUTH0_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
+  ES_VERSION: 8.17.0
 
 jobs:
   commit_parser:
@@ -484,6 +485,9 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: AppContext04TestSuite
             compose-profile: with-transform-core-aio
+          - testSuite: ElasticsearchCommunityTestsTestSuite
+            compose-profile: with-elasticsearch
+            mvn-options: '-Dindex.subsystem.name=elasticsearch'
           - testSuite: AppContext05TestSuite
             compose-profile: with-sso
             mvn-options: '-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm'

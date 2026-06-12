@@ -43,7 +43,12 @@
  */
 package org.alfresco.repo.jscript;
 
-import org.apache.commons.lang3.Strings;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -131,26 +136,24 @@ public final class MetaDataExtractAction extends BaseScopableProcessorExtension
      */
     public boolean isContentChanged(String itemId, FormData formData)
     {
+        // Skip reading the existing content when the form has no content field (metadata-only save);
+        // the existing content can be arbitrarily large and cause an OOM in the JVM.
+        FormData.FieldData fieldData = formData.getFieldData("prop_cm_content");
+        if (fieldData == null || fieldData.getValue() == null)
+        {
+            return false;
+        }
+
+        NodeRef nodeRef = NodeRef.isNodeRef(itemId) ? new NodeRef(itemId) : parseNodeRef(itemId);
+        if (nodeRef == null)
+        {
+            return false;
+        }
 
         try
         {
-            NodeRef nodeRef = NodeRef.isNodeRef(itemId) ? new NodeRef(itemId) : parseNodeRef(itemId);
-            if (nodeRef == null)
-            {
-                return false;
-            }
-
             ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-            String contentString = reader.getContentString();
-            FormData.FieldData fieldData = formData.getFieldData("prop_cm_content");
-
-            if (fieldData == null || fieldData.getValue() == null)
-            {
-                return false;
-            }
-
-            String propCmContent = String.valueOf(fieldData.getValue());
-            return !Strings.CS.equals(contentString, propCmContent);
+            return !contentEquals(reader, String.valueOf(fieldData.getValue()));
         }
         catch (Exception e)
         {
@@ -159,6 +162,22 @@ public final class MetaDataExtractAction extends BaseScopableProcessorExtension
                 LOG.debug("Unable to determine if content has changed for node: " + itemId, e);
             }
             return false;
+        }
+    }
+
+    private boolean contentEquals(ContentReader reader, String expected) throws IOException
+    {
+        Charset charset = reader.getEncoding() != null ? Charset.forName(reader.getEncoding()) : Charset.defaultCharset();
+        try (Reader content = new BufferedReader(new InputStreamReader(reader.getContentInputStream(), charset)))
+        {
+            for (int i = 0; i < expected.length(); i++)
+            {
+                if (content.read() != expected.charAt(i))
+                {
+                    return false;
+                }
+            }
+            return content.read() == -1;
         }
     }
 

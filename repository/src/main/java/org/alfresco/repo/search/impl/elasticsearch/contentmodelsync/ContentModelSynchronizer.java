@@ -105,7 +105,7 @@ public class ContentModelSynchronizer
             }
             else
             {
-                LOGGER.error("Attempt to load analysers failed.");
+                LOGGER.error("Attempt to load analysers failed for index {}.", httpClientFactory.getIndexName());
             }
             return success;
         }
@@ -195,14 +195,21 @@ public class ContentModelSynchronizer
                 .indices();
         indices.close(new CloseIndexRequest.Builder().index(indexName)
                 .build());
-        Response response = httpClientFactory.getElasticsearchClient()
-                .generic()
-                .execute(requests);
+        try (Response response = httpClientFactory.getElasticsearchClient().generic().execute(requests))
+        {
+            OpenResponse openResponse = indices.open(new OpenRequest.Builder().index(indexName)
+                    .build());
 
-        OpenResponse openResponse = indices.open(new OpenRequest.Builder().index(indexName)
-                .build());
-
-        return response.getStatus() == 200 && openResponse.acknowledged();
+            boolean success = response.getStatus() == 200 && openResponse.acknowledged();
+            if (!success)
+            {
+                String rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
+                LOGGER.error("Failed to update analyser settings on index {}: status={} acknowledged={} reason={}", indexName,
+                        response.getStatus(), openResponse.acknowledged(), extractErrorReason(rawBody));
+                LOGGER.debug("Full update settings response body: {}", rawBody);
+            }
+            return success;
+        }
     }
 
     private String determineLocaleAnalyzerFile()
@@ -234,7 +241,10 @@ public class ContentModelSynchronizer
                 }
                 else
                 {
-                    LOGGER.error("Attempt to load basic mappings failed.");
+                    String rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
+                    String reason = extractErrorReason(rawBody);
+                    LOGGER.error("Failed to load basic index mappings: status={} reason={}", response.getStatus(), reason);
+                    LOGGER.debug("Full error response body: {}", rawBody);
                 }
                 return success;
             }
@@ -243,6 +253,20 @@ public class ContentModelSynchronizer
         {
             LOGGER.error("Failed to load basic mappings.", e);
             return false;
+        }
+    }
+
+    private String extractErrorReason(String jsonBody)
+    {
+        try
+        {
+            JSONObject json = new JSONObject(jsonBody);
+            JSONObject error = json.optJSONObject("error");
+            return error != null ? error.optString("reason", jsonBody) : jsonBody;
+        }
+        catch (Exception e)
+        {
+            return jsonBody;
         }
     }
 
@@ -262,8 +286,12 @@ public class ContentModelSynchronizer
             boolean success = response.getStatus() == 200;
             if (!success)
             {
-                LOGGER.warn("Elasticsearch mappings could not be updated, check Elasticsearch log for more details, {} model, {} request", properties,
-                        request.getBody().get().bodyAsString());
+                String rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
+                String requestBody = request.getBody().map(Body::bodyAsString).orElse("{}");
+                LOGGER.warn("Elasticsearch mappings update failed: server={} index={} status={} reason={} propertiesCount={} request={}",
+                        httpClientFactory.getElasticsearchServerUrl(), httpClientFactory.getIndexName(), response.getStatus(),
+                        extractErrorReason(rawBody), properties.size(), requestBody);
+                LOGGER.debug("Full mappings update response body: {}", rawBody);
             }
             Integer successfullyMappedPropertiesCount = mappingRequestBuilder.getSecond();
             return new IndexMappingResult(success, successfullyMappedPropertiesCount);

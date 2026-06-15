@@ -31,8 +31,10 @@ import java.io.IOException;
 import jakarta.json.Json;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.json.JSONObject;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.OpenSearchException;
+import org.opensearch.client.opensearch.generic.Body;
 import org.opensearch.client.opensearch.generic.Request;
 import org.opensearch.client.opensearch.generic.Requests;
 import org.opensearch.client.opensearch.generic.Response;
@@ -101,21 +103,39 @@ public class ElasticsearchIndexService
                         .add("index.max_result_window", maxResultWindow)))
                 .build();
 
-        try
+        try (Response response = client.generic().execute(requests))
         {
-            Response response = client.generic().execute(requests);
             int statusCode = response.getStatus();
             if (statusCode != HttpStatus.SC_OK && statusCode != HttpStatus.SC_CREATED)
             {
-                LOGGER.error("Timed out waiting for index with name {} to be created", index);
+                String rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
+                LOGGER.error("Failed to create index {}: status={} reason={}", index, statusCode, extractErrorReason(rawBody));
+                LOGGER.debug("Full create index response body: {}", rawBody);
             }
-            LOGGER.info("Index created with name {}", index);
+            else
+            {
+                LOGGER.info("Index created with name {}", index);
+            }
         }
         catch (OpenSearchException | IOException e)
         {
             LOGGER.error("Failed to create index with name {}", index, e);
         }
         return indexExists();
+    }
+
+    private String extractErrorReason(String jsonBody)
+    {
+        try
+        {
+            JSONObject json = new JSONObject(jsonBody);
+            JSONObject error = json.optJSONObject("error");
+            return error != null ? error.optString("reason", jsonBody) : jsonBody;
+        }
+        catch (Exception e)
+        {
+            return jsonBody;
+        }
     }
 
     /**

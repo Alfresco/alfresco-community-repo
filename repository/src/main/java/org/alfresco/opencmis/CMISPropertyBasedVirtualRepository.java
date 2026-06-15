@@ -34,6 +34,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A CMIS Virtual repository which limits the access to the nodes based on a single property value. Only nodes
@@ -42,18 +43,21 @@ import java.util.List;
  */
 public class CMISPropertyBasedVirtualRepository implements CMISVirtualRepository {
     private final NodeService nodeService;
+    private final NamespacePrefixResolver namespacePrefixResolver;
     private final QName propertyName;
     private final String propertyValue;
 
     public CMISPropertyBasedVirtualRepository(NodeService nodeService, NamespacePrefixResolver namespacePrefixResolver, String propertyName, String propertyValue)
     {
-        this(nodeService, getPropertyQName(namespacePrefixResolver, propertyName), propertyValue);
+        this(nodeService, namespacePrefixResolver, getPropertyQName(namespacePrefixResolver, propertyName), propertyValue);
     }
 
-    public CMISPropertyBasedVirtualRepository(NodeService nodeService, QName propertyName, String propertyValue) {
-        this.nodeService = nodeService;
-        this.propertyName = propertyName;
-        this.propertyValue = propertyValue;
+    public CMISPropertyBasedVirtualRepository(NodeService nodeService, NamespacePrefixResolver namespacePrefixResolver, QName propertyName, String propertyValue)
+    {
+        this.nodeService = Objects.requireNonNull(nodeService);
+        this.namespacePrefixResolver = Objects.requireNonNull(namespacePrefixResolver);
+        this.propertyName = Objects.requireNonNull(propertyName);
+        this.propertyValue = Objects.requireNonNull(propertyValue);
     }
 
     @Override
@@ -68,7 +72,7 @@ public class CMISPropertyBasedVirtualRepository implements CMISVirtualRepository
 
     @Override
     public void applyQueryFiltering(CMISQueryOptions options) {
-        options.setQueryFilter(CMISQueryOptions.CMISQueryFilter.propertyEquality(propertyName, propertyValue));
+        options.setQueryFilter(CMISQueryOptions.CMISQueryFilter.propertyEquality(propertyName.toPrefixString(namespacePrefixResolver), propertyValue));
     }
 
     private static QName getPropertyQName(NamespacePrefixResolver namespacePrefixResolver, String propertyName) {

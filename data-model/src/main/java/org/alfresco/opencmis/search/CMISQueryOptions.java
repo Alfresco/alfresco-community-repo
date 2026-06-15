@@ -177,6 +177,11 @@ public class CMISQueryOptions extends QueryOptions
         this.queryFilter = Objects.requireNonNull(queryFilter);
     }
 
+    public void clearQueryFilter()
+    {
+        this.queryFilter = NoFilter.INSTANCE;
+    }
+
     public CMISQueryFilter getQueryFilter()
     {
         return queryFilter;
@@ -257,7 +262,7 @@ public class CMISQueryOptions extends QueryOptions
      * Allows to filter CMIS query results. Implementations are responsible for adjusting the DB and Index queries.
      */
     public interface CMISQueryFilter {
-        static CMISQueryFilter propertyEquality(QName propertyName, String propertyValue) {
+        static CMISQueryFilter propertyEquality(String propertyName, String propertyValue) {
             return new CMISPropertyEqualityFilter(propertyName, propertyValue);
         }
 
@@ -300,10 +305,10 @@ public class CMISQueryOptions extends QueryOptions
      * (both DB & Index).
      */
     private static final class CMISPropertyEqualityFilter implements CMISQueryFilter {
-        private final QName propertyName;
+        private final String propertyName;
         private final String propertyValue;
 
-        public CMISPropertyEqualityFilter(QName propertyName, String propertyValue) {
+        public CMISPropertyEqualityFilter(String propertyName, String propertyValue) {
             this.propertyName = Objects.requireNonNull(propertyName);
             this.propertyValue = Objects.requireNonNull(propertyValue);
         }
@@ -318,7 +323,7 @@ public class CMISQueryOptions extends QueryOptions
 
         @Override
         public void applyAFTSFilter(Consumer<String> aftsConsumer) {
-            String aftsFilter = "{!afts}" + propertyName.getPrefixString() + ":\"" + propertyValue + "\"";
+            String aftsFilter = "{!afts}=" + propertyName + ":\"" + propertyValue + "\"";
             aftsConsumer.accept(aftsFilter);
         }
 
@@ -329,7 +334,7 @@ public class CMISQueryOptions extends QueryOptions
             final LiteralArgument modeArg = queryModelFactory.createLiteralArgument(modeArgDef.getName(), DataTypeDefinition.TEXT, "SINGLE_VALUED_PROPERTY");
 
             final ArgumentDefinition lhsArgDef = function.getArgumentDefinition(BaseComparison.ARG_LHS);
-            final PropertyArgument lhsArg = queryModelFactory.createPropertyArgument(lhsArgDef.getName(), true, false, "", propertyName.getPrefixString());
+            final PropertyArgument lhsArg = queryModelFactory.createPropertyArgument(lhsArgDef.getName(), true, false, "", propertyName);
 
             final ArgumentDefinition rhsArgDef = function.getArgumentDefinition(BaseComparison.ARG_RHS);
             final LiteralArgument rhsArg = queryModelFactory.createLiteralArgument(rhsArgDef.getName(), DataTypeDefinition.TEXT, propertyValue);

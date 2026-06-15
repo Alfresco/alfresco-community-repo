@@ -1147,32 +1147,38 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             rootNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
                 public NodeRef doWork() throws Exception
                 {
-                    return transactionService.getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<NodeRef>() {
-                                public NodeRef execute() throws Exception
-                                {
-                                    NodeRef root = nodeService.getRootNode(storeRef);
-                                    List<NodeRef> rootNodes = searchService.selectNodes(root, rootPath, null,
-                                            namespaceService, false);
-                                    if (rootNodes.size() != 1)
-                                    {
-                                        throw new CmisRuntimeException("Unable to locate CMIS root path " + rootPath);
-                                    }
-                                    return rootNodes.get(0);
-                                };
-                            }, true);
+                    final NodeRef root = findRootNode();
+
+                    if (root == null || !virtualRepository.contains(root))
+                    {
+                        throw new CmisObjectNotFoundException("Root folder path '" + rootPath + "' not found!");
+                    }
+
+                    return root;
                 }
             }, AuthenticationUtil.getSystemUserName());
-
-            if (rootNodeRef == null || !virtualRepository.contains(rootNodeRef))
-            {
-                throw new CmisObjectNotFoundException("Root folder path '" + rootPath + "' not found!");
-            }
 
             singletonCache.put(KEY_CMIS_ROOT_NODEREF, rootNodeRef);
         }
 
         return rootNodeRef;
+    }
+
+    protected NodeRef findRootNode() {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<NodeRef>() {
+                    public NodeRef execute() throws Exception
+                    {
+                        NodeRef root = nodeService.getRootNode(storeRef);
+                        List<NodeRef> rootNodes = searchService.selectNodes(root, rootPath, null,
+                                namespaceService, false);
+                        if (rootNodes.size() != 1)
+                        {
+                            throw new CmisRuntimeException("Unable to locate CMIS root path " + rootPath);
+                        }
+                        return rootNodes.get(0);
+                    };
+                }, true);
     }
 
     public String getName(NodeRef nodeRef)

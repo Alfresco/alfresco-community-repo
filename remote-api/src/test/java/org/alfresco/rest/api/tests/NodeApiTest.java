@@ -6883,4 +6883,305 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertTrue("NodeService should confirm cm:titled aspect", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED));
         assertTrue("NodeService should confirm cm:versionable aspect", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE));
     }
+
+    /**
+     * Tests checkout operation on a node.
+     * <p>
+     * POST:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/checkout}
+     */
+    @Test
+    public void testCheckout() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create folder and document
+        Folder folderResp = createFolder(Nodes.PATH_MY, "folderCheckout" + RUNID);
+        String folderId = folderResp.getId();
+
+        String d1Name = "contentCheckout" + RUNID + "_1";
+        Document d1 = createTextFile(folderId, d1Name, "Original content for checkout test.");
+        String d1Id = d1.getId();
+
+        // Checkout the document
+        HttpResponse response = post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        Document workingCopy = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertNotNull(workingCopy);
+        assertNotNull(workingCopy.getId());
+        // Working copy should have a different id than the original
+        assertFalse("Working copy should have a different id", d1Id.equals(workingCopy.getId()));
+        // Working copy name should contain "Working Copy"
+        assertTrue("Working copy name should contain 'Working Copy'", workingCopy.getName().contains("Working Copy"));
+
+        // Verify working copy aspects via GET with include
+        Map<String, String> params = Collections.singletonMap("include", "aspectNames,isLocked");
+        response = getSingle(URL_NODES, workingCopy.getId(), params, null, 200);
+        Node wcNode = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertTrue("Working copy should have cm:workingcopy aspect",
+                wcNode.getAspectNames().contains("cm:workingcopy"));
+
+        // Verify the original node is now locked (checked out)
+        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        Node originalNode = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertTrue("Original node should be locked after checkout", originalNode.getIsLocked());
+        assertTrue("Original node should have cm:checkedOut aspect",
+                originalNode.getAspectNames().contains("cm:checkedOut"));
+
+        // Cancel checkout to clean up for next tests
+        post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 200);
+
+        // -ve: Checkout on a folder should fail (400)
+        post(getNodeOperationUrl(folderId, "checkout"), null, null, 400);
+
+        // -ve: Checkout on a non-existent node (404)
+        post(getNodeOperationUrl("fakeNodeId", "checkout"), null, null, 404);
+
+        // -ve: Checkout a node that is already checked out (422)
+        post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        // Trying to checkout again should fail
+        post(getNodeOperationUrl(d1Id, "checkout"), null, null, 409);
+        // Cancel checkout
+        post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 200);
+
+        // -ve: Checkout by a user without permission (403)
+        Document d2 = createTextFile(folderId, "contentCheckout" + RUNID + "_2", "Content for permission test.");
+        String d2Id = d2.getId();
+        setRequestContext(user2);
+        post(getNodeOperationUrl(d2Id, "checkout"), null, null, 403);
+
+        // Clean up
+        setRequestContext(user1);
+        deleteNode(folderId);
+    }
+
+    /**
+     * Tests cancel-checkout operation on a node.
+     * <p>
+     * POST:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/cancel-checkout}
+     */
+    @Test
+    public void testCancelCheckout() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create folder and document
+        Folder folderResp = createFolder(Nodes.PATH_MY, "folderCancelCheckout" + RUNID);
+        String folderId = folderResp.getId();
+
+        String d1Name = "contentCancelCheckout" + RUNID + "_1";
+        Document d1 = createTextFile(folderId, d1Name, "Original content for cancel-checkout test.");
+        String d1Id = d1.getId();
+
+        // Checkout and then cancel using the original node id
+        HttpResponse response = post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        Document workingCopy = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String wcId = workingCopy.getId();
+
+        // Cancel checkout via the original node id
+        response = post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 200);
+        Document cancelledDoc = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals("Cancelled checkout should return original node", d1Id, cancelledDoc.getId());
+        assertEquals(d1Name, cancelledDoc.getName());
+
+        // Verify original is no longer locked
+        Map<String, String> params = Collections.singletonMap("include", "isLocked,aspectNames");
+        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        Node originalNode = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertFalse("Node should not be locked after cancel checkout", originalNode.getIsLocked());
+        assertFalse("Node should not have cm:checkedOut aspect after cancel",
+                originalNode.getAspectNames().contains("cm:checkedOut"));
+
+        // Verify working copy no longer exists
+        getSingle(URL_NODES, wcId, null, null, 404);
+
+        // Test cancel checkout via the working copy id
+        response = post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        workingCopy = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        wcId = workingCopy.getId();
+
+        response = post(getNodeOperationUrl(wcId, "cancel-checkout"), null, null, 200);
+        cancelledDoc = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals("Cancel checkout via WC should return original node", d1Id, cancelledDoc.getId());
+
+        // Verify working copy deleted
+        getSingle(URL_NODES, wcId, null, null, 404);
+
+        // Test cancel-checkout on a locked (but not checked out) node - should just unlock
+        lock(d1Id, EMPTY_BODY);
+        params = Collections.singletonMap("include", "isLocked");
+        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        originalNode = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertTrue("Node should be locked", originalNode.getIsLocked());
+
+        response = post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 200);
+        cancelledDoc = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(d1Id, cancelledDoc.getId());
+
+        params = Collections.singletonMap("include", "isLocked");
+        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        originalNode = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertFalse("Node should be unlocked after cancel-checkout on locked node", originalNode.getIsLocked());
+
+        // -ve: cancel-checkout on folder should fail (400)
+        post(getNodeOperationUrl(folderId, "cancel-checkout"), null, null, 400);
+
+        // -ve: cancel-checkout on non-existent node (404)
+        post(getNodeOperationUrl("fakeNodeId", "cancel-checkout"), null, null, 404);
+
+        // -ve: cancel-checkout on a node that is not checked out or locked (422)
+        post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 422);
+
+        // -ve: cancel-checkout by a user without permission (403)
+        post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        setRequestContext(user2);
+        post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 403);
+
+        // Clean up
+        setRequestContext(user1);
+        post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 200);
+        deleteNode(folderId);
+    }
+
+    /**
+     * Tests auto check-in behavior when updating content on a checked-out node. When updating content (PUT /nodes/{nodeId}/content) on a checked-out node, the system should automatically check in the working copy and return the original node with updated content and a new version.
+     * <p>
+     * PUT:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
+     */
+    @Test
+    public void testUpdateContentAutoCheckin() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create folder and document
+        Folder folderResp = createFolder(Nodes.PATH_MY, "folderAutoCheckin" + RUNID);
+        String folderId = folderResp.getId();
+
+        String d1Name = "contentAutoCheckin" + RUNID + "_1.txt";
+        Document d1 = createTextFile(folderId, d1Name, "Original content v1.");
+        String d1Id = d1.getId();
+
+        // Checkout the document
+        HttpResponse response = post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        Document workingCopy = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String wcId = workingCopy.getId();
+
+        // Verify original is locked
+        Map<String, String> params = Collections.singletonMap("include", "isLocked");
+        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertTrue("Original should be locked after checkout", node.getIsLocked());
+
+        // Update content on the original node - should trigger auto check-in
+        Document updatedDoc = updateTextFile(d1Id, "Updated content after checkout v2.", null);
+        assertNotNull(updatedDoc);
+        assertEquals(d1Id, updatedDoc.getId());
+
+        // Verify the node is no longer locked after auto check-in
+        params = Collections.singletonMap("include", "isLocked,aspectNames");
+        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertFalse("Node should not be locked after auto check-in", node.getIsLocked());
+        assertFalse("Node should not have cm:checkedOut aspect after auto check-in",
+                node.getAspectNames().contains("cm:checkedOut"));
+
+        // Verify working copy is deleted after auto check-in
+        getSingle(URL_NODES, wcId, null, null, 404);
+
+        // Test auto check-in with version parameters
+        response = post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        workingCopy = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        wcId = workingCopy.getId();
+
+        // Update content with majorVersion=true and comment
+        Map<String, String> updateParams = new HashMap<>();
+        updateParams.put("majorVersion", "true");
+        updateParams.put("comment", "Major version update via auto check-in");
+        updatedDoc = updateTextFile(d1Id, "Major update content v3.", updateParams);
+        assertNotNull(updatedDoc);
+        assertEquals(d1Id, updatedDoc.getId());
+
+        // Verify node is unlocked
+        params = Collections.singletonMap("include", "isLocked");
+        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertFalse("Node should not be locked after major version auto check-in", node.getIsLocked());
+
+        // Verify working copy is deleted
+        getSingle(URL_NODES, wcId, null, null, 404);
+
+        // Test updating content directly on the working copy node id should also auto check-in
+        response = post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        workingCopy = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        wcId = workingCopy.getId();
+
+        updatedDoc = updateTextFile(wcId, "Updated via working copy id v4.", null);
+        assertNotNull(updatedDoc);
+        // The returned node should be the original (checked-in) node
+        assertEquals("Auto check-in via WC should return original node id", d1Id, updatedDoc.getId());
+
+        // Verify working copy is deleted
+        getSingle(URL_NODES, wcId, null, null, 404);
+
+        // -ve: Update content by another user on a checked-out node should fail (403 - no permission)
+        post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+
+        setRequestContext(user2);
+        updateTextFile(d1Id, "Unauthorized update attempt.", null, 403);
+
+        // Clean up
+        setRequestContext(user1);
+        post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 200);
+        deleteNode(folderId);
+    }
+
+    /**
+     * Tests the full checkout -> update content -> auto check-in workflow verifying version history is preserved across multiple cycles.
+     */
+    @Test
+    public void testCheckoutUpdateCheckinVersionHistory() throws Exception
+    {
+        setRequestContext(user1);
+
+        Folder folderResp = createFolder(Nodes.PATH_MY, "folderVersionHistory" + RUNID);
+        String folderId = folderResp.getId();
+
+        String d1Name = "contentVersionHistory" + RUNID + ".txt";
+        Document d1 = createTextFile(folderId, d1Name, "Initial content.");
+        String d1Id = d1.getId();
+
+        // Checkout, update, auto check-in (creates a new version)
+        post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+
+        Map<String, String> updateParams = new HashMap<>();
+        updateParams.put("majorVersion", "false");
+        updateParams.put("comment", "Minor edit via checkout");
+        updateTextFile(d1Id, "Updated content via checkout workflow.", updateParams);
+
+        // Verify version history exists
+        HttpResponse response = getAll(getNodeVersionsUrl(d1Id), null, 200);
+        assertNotNull(response);
+
+        // Verify that we can do multiple checkout/checkin cycles
+        post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+
+        updateParams = new HashMap<>();
+        updateParams.put("majorVersion", "true");
+        updateParams.put("comment", "Major edit via second checkout");
+        updateTextFile(d1Id, "Second update via checkout workflow.", updateParams);
+
+        // Verify the node is available and not locked
+        Map<String, String> params = Collections.singletonMap("include", "isLocked");
+        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertFalse("Node should not be locked after second auto check-in", node.getIsLocked());
+
+        // Clean up
+        deleteNode(folderId);
+    }
 }

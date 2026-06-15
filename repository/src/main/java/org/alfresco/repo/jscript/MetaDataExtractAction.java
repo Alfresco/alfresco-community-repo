@@ -136,8 +136,7 @@ public final class MetaDataExtractAction extends BaseScopableProcessorExtension
      */
     public boolean isContentChanged(String itemId, FormData formData)
     {
-        // Skip reading the existing content when the form has no content field (metadata-only save);
-        // the existing content can be arbitrarily large and cause an OOM in the JVM.
+        // Skip reading the existing content when the form has no content field (metadata-only save)
         FormData.FieldData fieldData = formData.getFieldData("prop_cm_content");
         if (fieldData == null || fieldData.getValue() == null)
         {

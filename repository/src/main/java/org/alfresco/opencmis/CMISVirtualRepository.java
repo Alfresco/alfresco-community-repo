@@ -28,8 +28,10 @@ package org.alfresco.opencmis;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Responsible for limiting the CMIS access to a subset of the repository. By applying such limitations it allows to
@@ -62,6 +64,13 @@ public interface CMISVirtualRepository {
      * @see org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryFilter
      */
     void applyQueryFiltering(CMISQueryOptions options);
+
+    /**
+     * Allows to indicate that some aspects are required by the implementation of the virtual repository.
+     * These aspects might be applied outside the CMIS flow and will be retained.
+     * @return Set of required aspects
+     */
+    Set<QName> getRequiredAspects();
 }
 
 /**
@@ -82,5 +91,10 @@ class NoVirtualRepository implements CMISVirtualRepository
     @Override
     public void applyQueryFiltering(CMISQueryOptions options) {
         //do nothing
+    }
+
+    @Override
+    public Set<QName> getRequiredAspects() {
+        return Set.of();
     }
 }

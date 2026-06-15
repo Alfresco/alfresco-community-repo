@@ -35,6 +35,7 @@ import org.alfresco.service.namespace.QName;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A CMIS Virtual repository which limits the access to the nodes based on a single property value. Only nodes
@@ -44,18 +45,20 @@ import java.util.Objects;
 public class CMISPropertyBasedVirtualRepository implements CMISVirtualRepository {
     private final NodeService nodeService;
     private final NamespacePrefixResolver namespacePrefixResolver;
+    private final QName propertyAspect;
     private final QName propertyName;
     private final String propertyValue;
 
-    public CMISPropertyBasedVirtualRepository(NodeService nodeService, NamespacePrefixResolver namespacePrefixResolver, String propertyName, String propertyValue)
+    public CMISPropertyBasedVirtualRepository(NodeService nodeService, NamespacePrefixResolver namespacePrefixResolver, String propertyAspect, String propertyName, String propertyValue)
     {
-        this(nodeService, namespacePrefixResolver, getPropertyQName(namespacePrefixResolver, propertyName), propertyValue);
+        this(nodeService, namespacePrefixResolver, getQName(namespacePrefixResolver, propertyAspect), getQName(namespacePrefixResolver, propertyName), propertyValue);
     }
 
-    public CMISPropertyBasedVirtualRepository(NodeService nodeService, NamespacePrefixResolver namespacePrefixResolver, QName propertyName, String propertyValue)
+    public CMISPropertyBasedVirtualRepository(NodeService nodeService, NamespacePrefixResolver namespacePrefixResolver, QName propertyAspect, QName propertyName, String propertyValue)
     {
         this.nodeService = Objects.requireNonNull(nodeService);
         this.namespacePrefixResolver = Objects.requireNonNull(namespacePrefixResolver);
+        this.propertyAspect = Objects.requireNonNull(propertyAspect);
         this.propertyName = Objects.requireNonNull(propertyName);
         this.propertyValue = Objects.requireNonNull(propertyValue);
     }
@@ -75,7 +78,12 @@ public class CMISPropertyBasedVirtualRepository implements CMISVirtualRepository
         options.setQueryFilter(CMISQueryOptions.CMISQueryFilter.propertyEquality(propertyName.toPrefixString(namespacePrefixResolver), propertyValue));
     }
 
-    private static QName getPropertyQName(NamespacePrefixResolver namespacePrefixResolver, String propertyName) {
+    @Override
+    public Set<QName> getRequiredAspects() {
+        return Set.of(propertyAspect);
+    }
+
+    private static QName getQName(NamespacePrefixResolver namespacePrefixResolver, String propertyName) {
         return QName.createQName(propertyName, namespacePrefixResolver);
     }
 }

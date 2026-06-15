@@ -3215,6 +3215,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         Set<QName> aspectsToRemove = new HashSet<QName>();
         aspectsToRemove.addAll(existingAspects);
         aspectsToRemove.removeAll(aspectsToIgnore);
+        aspectsToRemove.removeAll(virtualRepository.getRequiredAspects());
         Iterator<QName> it = aspectsToRemove.iterator();
         while (it.hasNext())
         {

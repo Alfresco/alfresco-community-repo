@@ -28,13 +28,15 @@ package org.alfresco.rest.search;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
+
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.*;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Search end point Public API test with Permission checks
@@ -43,20 +45,12 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
 {
     private FileModel file1, file2;
     private FolderModel parentFolder, folder1, folder2;
-    private UserModel testUser1, testUser2, testUser3; 
+    private UserModel testUser1, testUser2, testUser3;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        /*
-         * Create the following file structure in the same Site  : In addition to the preconditions created in dataPreparation
-         * |- permGrandParent
-         *    |-- permChild1
-         *    |------ permFile1 
-         *    |-- permChild2
-         *    |------ permFile2 
-         *    |-- permChild3 (Later: In test 2)
-         */
+        /* Create the following file structure in the same Site : In addition to the preconditions created in dataPreparation |- permGrandParent |-- permChild1 |------ permFile1 |-- permChild2 |------ permFile2 |-- permChild3 (Later: In test 2) */
 
         parentFolder = new FolderModel("permGrandParent");
         dataContent.usingUser(testUser).usingSite(testSite).createFolder(parentFolder);
@@ -65,7 +59,7 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
 
         file1 = new FileModel("permFile1", FileType.TEXT_PLAIN, "File1 with inherited permissions");
         file2 = new FileModel("permFile2", FileType.TEXT_PLAIN, "File2 with inherited permissions");
-        
+
         // Create test users
         testUser1 = dataUser.createRandomTestUser("UserSiteMember");
         testUser2 = dataUser.createRandomTestUser("UserNotASiteMemeber");
@@ -75,7 +69,7 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
 
         dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder1).createContent(file1);
         dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder2).createContent(file2);
-        
+
         // Deny testUser1 - access to file1
         JsonObject userPermission = Json
                 .createObjectBuilder()
@@ -84,10 +78,10 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
                                 .add("isInheritanceEnabled", false)
                                 .add("locallySet",
                                         Json.createObjectBuilder()
-                                            .add("authorityId", testUser1.getUsername())
-                                            .add("name", "SiteCollaborator")
-                                            .add("accessStatus", "DENIED")
-                                        )).build();
+                                                .add("authorityId", testUser1.getUsername())
+                                                .add("name", "SiteCollaborator")
+                                                .add("accessStatus", "DENIED")))
+                .build();
         String putBody = userPermission.toString();
         restClient.authenticateUser(testUser).withCoreAPI().usingNode(file1).updateNode(putBody);
 
@@ -99,10 +93,10 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
                                 .add("isInheritanceEnabled", false)
                                 .add("locallySet",
                                         Json.createObjectBuilder()
-                                            .add("authorityId", testUser2.getUsername())
-                                            .add("name", "SiteContributor")
-                                            .add("accessStatus", "ALLOWED")
-                                        )).build();
+                                                .add("authorityId", testUser2.getUsername())
+                                                .add("name", "SiteContributor")
+                                                .add("accessStatus", "ALLOWED")))
+                .build();
         putBody = userPermission.toString();
         restClient.authenticateUser(testUser).withCoreAPI().usingNode(file2).updateNode(putBody);
 
@@ -113,12 +107,7 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
     public void searchResultsRespectInheritedPermissions()
     {
         /**
-         * Private Site Folder Structure available for this test
-         * |- permGrandParent
-         *    |-- permChild1
-         *    |------ permFile1 (inheritance disabled, deny permission to testUser1)
-         *    |-- permChild2
-         *    |------ permFile2 (inheritance disabled, allow permission to testUser2)
+         * Private Site Folder Structure available for this test |- permGrandParent |-- permChild1 |------ permFile1 (inheritance disabled, deny permission to testUser1) |-- permChild2 |------ permFile2 (inheritance disabled, allow permission to testUser2)
          */
         // Search as testUser: expect all: 5 results: When user is a Site Manager
         SearchResponse response = queryAsUser(testUser, "cm:name:perm*");
@@ -156,13 +145,7 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
         waitForIndexing(folder3.getName(), true);
 
         /**
-         * Private Site Folder Structure available now for this test
-         * |- permGrandParent
-         *    |-- permChild1
-         *    |------ permFile1 (inheritance disabled, deny permission to testUser1)
-         *    |-- permChild2
-         *    |------ permFile2 (inheritance disabled, allow permission to testUser2)
-         *    |-- permChild3 (inheritance disabled)
+         * Private Site Folder Structure available now for this test |- permGrandParent |-- permChild1 |------ permFile1 (inheritance disabled, deny permission to testUser1) |-- permChild2 |------ permFile2 (inheritance disabled, allow permission to testUser2) |-- permChild3 (inheritance disabled)
          */
 
         // Search as testUser: expect all: 6 results: When user is a Site Manager
@@ -192,12 +175,12 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
         // Create Site
         SiteModel testPermissionsSite = new SiteModel(RandomData.getRandomName("SiteSearchPermissions"));
         testPermissionsSite.setVisibility(Visibility.PUBLIC);
-        
+
         dataSite.usingUser(adminUserModel).createSite(testPermissionsSite);
-        
+
         // Add Users to the site
         dataUser.addUserToSite(testUser, testPermissionsSite, UserRole.SiteCollaborator);
-        
+
         // Create a folder
         String folderName = "Folder" + unique_searchString;
         FolderModel folder = dataContent.usingUser(testUser).usingSite(testPermissionsSite).createFolderCmisApi(folderName);
@@ -209,7 +192,7 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
         testPermissionsSite.setDescription("PrivateSite".concat(testPermissionsSite.getDescription()));
         testPermissionsSite.setVisibility(Visibility.PRIVATE);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(testPermissionsSite).updateSite(testPermissionsSite);
-        
+
         // Wait for indexing
         Assert.assertTrue(waitForIndexing("description:" + testPermissionsSite.getDescription(), true), "New Site Description isn't yet been indexed");
 

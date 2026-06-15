@@ -1,24 +1,24 @@
 package org.alfresco.rest.search;
 
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.model.FolderModel;
-import org.springframework.http.HttpStatus;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
+import static java.util.Arrays.asList;
+import static java.util.stream.IntStream.range;
+
+import static com.google.common.collect.ImmutableMap.of;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.collect.ImmutableMap.of;
-import static java.util.Arrays.asList;
-import static java.util.stream.IntStream.range;
+import org.springframework.http.HttpStatus;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
 
 /**
- * Base corpus for Exact Term tests.
- * Creates 5 documents with known name/title/description/content values
- * used to verify exact term search behaviour against standard cm:* properties.
+ * Base corpus for Exact Term tests. Creates 5 documents with known name/title/description/content values used to verify exact term search behaviour against standard cm:* properties.
  */
 public abstract class AbstractSearchExactTermTest extends AbstractSearchServicesE2ETest
 {

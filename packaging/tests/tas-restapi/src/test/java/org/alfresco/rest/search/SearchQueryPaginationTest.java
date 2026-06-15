@@ -26,13 +26,14 @@
 
 package org.alfresco.rest.search;
 
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * The purpose of this test is to test search query pagination using cmis and afts query
@@ -40,7 +41,7 @@ import org.testng.annotations.Test;
 public class SearchQueryPaginationTest extends AbstractSearchServicesE2ETest
 {
     private UserModel testUser2;
-    private FolderModel testFolder ;
+    private FolderModel testFolder;
     private FileModel testFile;
 
     @BeforeClass(alwaysRun = true)
@@ -51,7 +52,7 @@ public class SearchQueryPaginationTest extends AbstractSearchServicesE2ETest
 
         // Create a new folder and 10 files inside the folder
         testFolder = dataContent.usingUser(testUser).usingSite(testSite).createFolder();
-        
+
         for (int i = 0; i < 10; i++)
         {
             testFile = new FileModel(i + "-File.txt", unique_searchString, "", FileType.TEXT_PLAIN);
@@ -61,7 +62,7 @@ public class SearchQueryPaginationTest extends AbstractSearchServicesE2ETest
         waitForMetadataIndexing(testFile.getName(), true);
     }
 
-    @Test(priority = 1, groups = { TestGroup.ACS_62n})
+    @Test(priority = 1, groups = {TestGroup.ACS_62n})
     public void testCmisSearchWithPagination()
     {
         // Scope to testFolder only to get a stable, predictable count
@@ -123,45 +124,45 @@ public class SearchQueryPaginationTest extends AbstractSearchServicesE2ETest
         Assert.assertTrue(response.isEmpty(), "Empty Response, Error is expected when skipCount < 0");
     }
 
-    @Test(priority = 2, groups = { TestGroup.ACS_62n})
+    @Test(priority = 2, groups = {TestGroup.ACS_62n})
     public void testPagination()
     {
-       // Search for the files under the testFolder using cmis query
+        // Search for the files under the testFolder using cmis query
         String parentId = testFolder.getNodeRefWithoutVersion();
         String query = "select * from cmis:document where IN_FOLDER('" + parentId + "')";
 
-        //  Set skipCount = 0, maxItems = 100
+        // Set skipCount = 0, maxItems = 100
         SearchResponse response = performSearch(testUser, query, SearchLanguage.CMIS, setPaging(0, 100));
 
         // Check getTotalItems = 10, Expect hasModeItems = false
         testPaginationDetails(response, 10, 0, 100);
         Assert.assertFalse(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        //  Set skipCount = 0, maxItems = 10: Expect hasModeItems = false
+        // Set skipCount = 0, maxItems = 10: Expect hasModeItems = false
         response = performSearch(testUser, query, SearchLanguage.CMIS, setPaging(0, 10));
 
         testPaginationDetails(response, 10, 0, 10);
         Assert.assertFalse(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
- 
-        //  Set skipCount = 0, maxItems = 5: Expect hasModeItems = true
+
+        // Set skipCount = 0, maxItems = 5: Expect hasModeItems = true
         response = performSearch(testUser, query, SearchLanguage.CMIS, setPaging(0, 5));
 
         testPaginationDetails(response, 10, 0, 5);
         Assert.assertTrue(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        //  Set skipCount = 2, maxItems = 10: Expect hasModeItems = false
+        // Set skipCount = 2, maxItems = 10: Expect hasModeItems = false
         response = performSearch(testUser, query, SearchLanguage.CMIS, setPaging(2, 10));
 
         testPaginationDetails(response, 10, 2, 10);
         Assert.assertFalse(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        //  Set skipCount = 2, maxItems = 7: Expect hasModeItems = true
+        // Set skipCount = 2, maxItems = 7: Expect hasModeItems = true
         response = performSearch(testUser, query, SearchLanguage.CMIS, setPaging(2, 7));
 
         testPaginationDetails(response, 10, 2, 7);
         Assert.assertTrue(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        //  Set skipCount = 2, maxItems = 8: Expect hasModeItems = false
+        // Set skipCount = 2, maxItems = 8: Expect hasModeItems = false
         response = performSearch(testUser, query, SearchLanguage.CMIS, setPaging(2, 8));
 
         testPaginationDetails(response, 10, 2, 8);
@@ -171,18 +172,18 @@ public class SearchQueryPaginationTest extends AbstractSearchServicesE2ETest
     @Test(priority = 3)
     public void testPaginationRespectsACLs()
     {
-       // Search for the files under the testFolder using cmis query
+        // Search for the files under the testFolder using cmis query
         String parentId = testFolder.getNodeRefWithoutVersion();
         String query = "select * from cmis:document where IN_FOLDER('" + parentId + "')";
 
-        //  Set skipCount = 0, maxItems = 100
+        // Set skipCount = 0, maxItems = 100
         SearchResponse response = performSearch(testUser2, query, SearchLanguage.CMIS, setPaging(0, 100));
 
         // Get getTotalItems, Expect hasModeItems = false
         testPaginationDetails(response, 0, 0, 100);
         Assert.assertFalse(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        //  Set skipCount = 1, maxItems = 1
+        // Set skipCount = 1, maxItems = 1
         response = performSearch(testUser2, query, SearchLanguage.CMIS, setPaging(1, 1));
 
         // Get getTotalItems, Expect hasModeItems = false
@@ -197,28 +198,28 @@ public class SearchQueryPaginationTest extends AbstractSearchServicesE2ETest
         // Search for the files with specific title
         String query = "cm:title:'" + unique_searchString + "'";
 
-        //  Set skipCount = 0, maxItems = 100
+        // Set skipCount = 0, maxItems = 100
         SearchResponse response = performSearch(testUser, query, SearchLanguage.AFTS, setPaging(0, 100));
 
         // Get getTotalItems, Expect hasModeItems = false
         testPaginationDetails(response, 10, 0, 100);
         Assert.assertFalse(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        //  Set skipCount = 1, maxItems = 1
+        // Set skipCount = 1, maxItems = 1
         response = performSearch(testUser, query, SearchLanguage.AFTS, setPaging(1, 1));
 
         // Get getTotalItems, Expect hasModeItems = true
         testPaginationDetails(response, 10, 1, 1);
         Assert.assertTrue(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        //  Set skipCount = 9, maxItems = 10
+        // Set skipCount = 9, maxItems = 10
         response = performSearch(testUser, query, SearchLanguage.AFTS, setPaging(9, 10));
 
         // Get getTotalItems, Expect hasModeItems = false
         testPaginationDetails(response, 10, 9, 10);
         Assert.assertFalse(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        //  Set skipCount = 10, maxItems = 10
+        // Set skipCount = 10, maxItems = 10
         response = performSearch(testUser, query, SearchLanguage.AFTS, setPaging(10, 10));
 
         // Get getTotalItems, Expect hasModeItems = false
@@ -229,17 +230,17 @@ public class SearchQueryPaginationTest extends AbstractSearchServicesE2ETest
     @Test(priority = 5)
     public void testSearchApiPaginationRespectsACLs()
     {
-       // Search for the files with specific title
+        // Search for the files with specific title
         String query = "cm:title:'" + unique_searchString + "'";
 
-        //  Set skipCount = 0, maxItems = 100
+        // Set skipCount = 0, maxItems = 100
         SearchResponse response = performSearch(testUser2, query, SearchLanguage.AFTS, setPaging(0, 100));
 
         // Get getTotalItems, Expect hasModeItems = false
         testPaginationDetails(response, 0, 0, 100);
         Assert.assertFalse(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        //  Set skipCount = 1, maxItems = 1
+        // Set skipCount = 1, maxItems = 1
         response = performSearch(testUser2, query, SearchLanguage.AFTS, setPaging(1, 1));
 
         // Get getTotalItems, Expect hasModeItems = false

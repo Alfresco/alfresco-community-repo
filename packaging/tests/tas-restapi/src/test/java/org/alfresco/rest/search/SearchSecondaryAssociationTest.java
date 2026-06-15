@@ -26,34 +26,34 @@
 
 package org.alfresco.rest.search;
 
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeChildAssociationModel;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
- * Test class tests content in the secondary parent is found too
- * Created for Search-1313
+ * Test class tests content in the secondary parent is found too Created for Search-1313
  */
 public class SearchSecondaryAssociationTest extends AbstractSearchServicesE2ETest
 {
     private FolderModel testFolder1, testFolder2;
     private FileModel file1;
-    
+
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
-    {        
+    {
         // Folders
-        testFolder1 = new FolderModel("folder1");        
+        testFolder1 = new FolderModel("folder1");
         testFolder2 = new FolderModel("folder2");
 
         // File(s)
         file1 = new FileModel("file1.txt");
-        file1.setContent("content file 1");      
+        file1.setContent("content file 1");
 
         // Create folder1
         dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(testFolder1, "cmis:folder", new CustomObjectTypeProperties());
@@ -67,8 +67,8 @@ public class SearchSecondaryAssociationTest extends AbstractSearchServicesE2ETes
         // wait for solr index
         waitForMetadataIndexing(file1.getName(), true);
     }
-    
-    @Test(priority = 1, groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+
+    @Test(priority = 1, groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     public void testSearchPathForSecondaryAssociation() throws Exception
     {
         String queryPathFolder1 = "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +
@@ -84,14 +84,14 @@ public class SearchSecondaryAssociationTest extends AbstractSearchServicesE2ETes
         // Test if file can not be found in folder2
         found = isContentInSearchResults(queryPathFolder2, file1.getName(), false);
         Assert.assertTrue(found, "File found using Secondary Parent Path");
- 
+
         // Create Secondary association in folder2
         RestNodeChildAssociationModel childAssoc1 = new RestNodeChildAssociationModel(file1.getNodeRefWithoutVersion(), "cm:contains");
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(testFolder2).addSecondaryChildren(childAssoc1);
 
         RestNodeAssociationModelCollection secondaryChildren = restClient.authenticateUser(testUser).withCoreAPI().usingResource(testFolder2).getSecondaryChildren();
         secondaryChildren.getEntryByIndex(0).assertThat().field("id").is(file1.getNodeRefWithoutVersion());
-        
+
         // Test if file can be found in folder2: Secondary Parent
         found = isContentInSearchResults(queryPathFolder2, file1.getName(), true);
         Assert.assertTrue(found, "File Not found using Secondary Parent Path");
@@ -101,6 +101,6 @@ public class SearchSecondaryAssociationTest extends AbstractSearchServicesE2ETes
 
         // Test if file can not be found in folder2
         found = isContentInSearchResults(queryPathFolder2, file1.getName(), false);
-        Assert.assertTrue(found, "File found using Secondary Parent Path");        
+        Assert.assertTrue(found, "File found using Secondary Parent Path");
     }
 }

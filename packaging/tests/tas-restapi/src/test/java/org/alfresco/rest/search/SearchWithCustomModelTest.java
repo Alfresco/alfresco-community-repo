@@ -26,11 +26,9 @@
 
 package org.alfresco.rest.search;
 
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataContent;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.model.FolderModel;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +37,14 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.DataContent;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
 
 /**
- * Purpose of this TestClass is to test that the search range query tests work as expected with CustomModels
- * Tests added for Search-1359
+ * Purpose of this TestClass is to test that the search range query tests work as expected with CustomModels Tests added for Search-1359
  */
 
 public class SearchWithCustomModelTest extends AbstractSearchServicesE2ETest
@@ -189,7 +189,7 @@ public class SearchWithCustomModelTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         // Tockenised field, so Includes: (Airport) Taxi Outgoing
         Assert.assertEquals(response.getPagination().getCount(), 1);
-        
+
         response = queryAsUser(testUser, "finance:Title:[B To I]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1);

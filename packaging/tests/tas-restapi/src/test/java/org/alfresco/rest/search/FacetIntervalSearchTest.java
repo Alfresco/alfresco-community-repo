@@ -26,16 +26,17 @@
 
 package org.alfresco.rest.search;
 
-import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
 
 /**
  * Faceted Intervals Search Test
@@ -52,7 +53,7 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
     @Test
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check facet intervals mandatory fields")
-    public void checkingFacetsMandatoryErrorMessages()throws Exception
+    public void checkingFacetsMandatoryErrorMessages() throws Exception
     {
         SearchRequest query = createQuery("cars");
 
@@ -83,7 +84,7 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
 
         restFacetSetModel.setEnd("B");
         RestRequestFacetSetModel duplicate = new RestRequestFacetSetModel();
-        facetInterval.setSets(Arrays.asList(restFacetSetModel,duplicate));
+        facetInterval.setSets(Arrays.asList(restFacetSetModel, duplicate));
         duplicate.setLabel("theRest");
         duplicate.setStart("A");
         duplicate.setEnd("C");
@@ -104,9 +105,9 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet intervals search api")
-    public void searchWithBasicInterval()throws Exception
+    public void searchWithBasicInterval() throws Exception
     {
         SearchRequest query = createQuery("cars");
 
@@ -182,7 +183,6 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
         bucket.assertThat().field("filterQuery").is("cm:modified:[\"2016\" TO \"now\"]");
         bucket.getMetrics().getFirst().assertThat().field("type").is("count");
         bucket.getMetrics().getFirst().assertThat().field("value").contains("{count=");
-
 
         bucket = facetResponseModel.getBuckets().get(1);
 

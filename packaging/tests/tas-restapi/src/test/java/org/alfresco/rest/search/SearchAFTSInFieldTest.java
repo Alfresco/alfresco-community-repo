@@ -26,25 +26,25 @@
 
 package org.alfresco.rest.search;
 
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.model.FolderModel;
+import static java.util.List.of;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.stream.Stream;
-
-import static java.util.List.of;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
 
 /**
- * Test class tests AFTS Search In Field works
- * Created for Search-840
+ * Test class tests AFTS Search In Field works Created for Search-840
  */
 public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
 {
@@ -54,7 +54,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
-        // Create Folders: 
+        // Create Folders:
         // Folder1: Expected to be found with file.txt
         folder1 = new FolderModel("file txt folder");
         dataContent.usingUser(testUser).usingSite(testSite).createFolder(folder1);
@@ -81,7 +81,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         waitForContentIndexing(file5.getContent(), true);
     }
 
-    @Test(priority = 1, groups = { TestGroup.ACS_63n })
+    @Test(priority = 1, groups = {TestGroup.ACS_63n})
     public void testSearchInFieldName()
     {
         // Field names in various formats
@@ -93,11 +93,10 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
                 "name");
 
         // For each field name, check that queries return consistent results with / out ''
-        fieldNames.forEach(fieldName ->
-        {
+        fieldNames.forEach(fieldName -> {
             // Query string without quotes
             String query = fieldName + ":file.txt";
- 
+
             Set<String> expectedNames = new HashSet<>();
             expectedNames.add("file.txt"); // file1
             expectedNames.add("1-file.txt"); // file2
@@ -113,19 +112,18 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         });
     }
 
-    @Test(priority = 2, groups = { TestGroup.ACS_63n })
+    @Test(priority = 2, groups = {TestGroup.ACS_63n})
     public void testSearchInFieldTitle()
     {
         // Field names in various formats
         Stream<String> fieldNames = Stream.of("{http://www.alfresco.org/model/content/1.0}title",
-        "@{http://www.alfresco.org/model/content/1.0}title",
-        "cm_title",
-        "cm:title",
-        "@cm:title");
+                "@{http://www.alfresco.org/model/content/1.0}title",
+                "cm_title",
+                "cm:title",
+                "@cm:title");
 
         // For each field name, check that queries return consistent results with / out ''
-        fieldNames.forEach(fieldName ->
-        {
+        fieldNames.forEach(fieldName -> {
             String query = fieldName + ":" + file2.getName();
             boolean fileFound = isContentInSearchResults(query, file2.getName(), true);
             Assert.assertTrue(fileFound, "File Not found for query: " + query);
@@ -140,7 +138,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         });
     }
 
-    @Test(priority = 3, groups = { TestGroup.ACS_63n })
+    @Test(priority = 3, groups = {TestGroup.ACS_63n})
     public void testSearchInFieldContent()
     {
         // Field names in various formats
@@ -151,8 +149,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         fieldNames.add("d:content");
 
         // For each field name, check that queries return consistent results with / out ''
-        fieldNames.forEach(fieldName ->
-        {
+        fieldNames.forEach(fieldName -> {
             String query = fieldName + ":" + file3.getContent();
             boolean fileFound = isContentInSearchResults(query, file3.getName(), true);
             Assert.assertTrue(fileFound, "File Not found for query: " + query);
@@ -213,7 +210,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         expectedNames.add(file3.getName());
         expectedNames.add(file4.getName());
         expectedNames.add(file5.getName());
-        
+
         testSearchQueryUnordered(query, expectedNames);
 
         query = "PARENT:'" + folder1.getNodeRefWithoutVersion() + "\'";
@@ -221,7 +218,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         testSearchQueryUnordered(query, expectedNames);
     }
 
-    @Test(priority = 9, groups = { TestGroup.ACS_63n })
+    @Test(priority = 9, groups = {TestGroup.ACS_63n})
     public void testSearchInFieldNameExactMatch()
     {
         // Check that queries return consistent results with / out ''
@@ -239,7 +236,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         testSearchQuery(query, resultCount1).getPagination().getTotalItems();
     }
 
-    @Test(priority = 10, groups = { TestGroup.ACS_63n })
+    @Test(priority = 10, groups = {TestGroup.ACS_63n})
     public void testSearchInFieldNameQueryExpansion()
     {
         // Check that queries return consistent results with / out ''
@@ -251,17 +248,17 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         expectedNames.add(file3.getName());
         expectedNames.add(file4.getName());
         expectedNames.add(folder1.getName());
-        
+
         testSearchQueryUnordered(query, expectedNames);
 
         query = "~name:'" + file1.getName() + "\'";
         testSearchQueryUnordered(query, expectedNames);
     }
 
-    @Test(priority = 11, groups = { TestGroup.ACS_63n })
+    @Test(priority = 11, groups = {TestGroup.ACS_63n})
     public void testWithConjunctionDisjunctionAndNegation()
     {
-        // Query string to include Conjunction, Disjunction and Negation 
+        // Query string to include Conjunction, Disjunction and Negation
 
         String query1 = "~name:" + file1.getName(); // Query expected to return 5 results
         String query2 = "=name:" + file2.getName(); // Query expected to return 1 result
@@ -276,7 +273,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         expectedNames.add("file.txt"); // file1
         expectedNames.add("txt file"); // file4
         expectedNames.add("file txt folder"); // folder1
-        
+
         SearchResponse response = testSearchQueryUnordered(query, expectedNames);
 
         // Check result count is 5-(1+1)=3
@@ -292,7 +289,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
     }
 
     /** Check that a 200 success is returned when performing exact search against the DB (even on a tokenised field without cross-locale support). */
-    @Test (priority = 13)
+    @Test(priority = 13)
     public void testExactMatchAgainstDB()
     {
         // Using a simple query we will hit the DB.

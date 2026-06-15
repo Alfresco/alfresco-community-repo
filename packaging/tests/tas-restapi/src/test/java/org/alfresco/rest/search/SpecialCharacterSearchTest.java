@@ -26,31 +26,31 @@
 
 package org.alfresco.rest.search;
 
+import static org.testng.Assert.assertTrue;
+
+import org.testng.annotations.Test;
+
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.report.Bug;
-import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertTrue;
 
 public class SpecialCharacterSearchTest extends AbstractSearchServicesE2ETest
 {
 
     /**
      *
-     * Index a file with \u007F (delete char) in name.
-     * The goal is to check that the file is actually indexed in solr.
+     * Index a file with \u007F (delete char) in name. The goal is to check that the file is actually indexed in solr.
+     * 
      * @throws Exception
      */
-    @Test(groups = { TestGroup.ACS_52n, TestGroup.ACS_60n, TestGroup.ACS_61n })
+    @Test(groups = {TestGroup.ACS_52n, TestGroup.ACS_60n, TestGroup.ACS_61n})
     @Bug(id = "MNT-20507")
     public void testIndexDELChar() throws Exception
     {
         FileModel file = new FileModel("Delete char\u007Ffile", FileType.TEXT_PLAIN, "content of \u007F file");
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
-        assertTrue(waitForIndexing("name:'" + file.getName()+"'", true));
+        assertTrue(waitForIndexing("name:'" + file.getName() + "'", true));
     }
 
 }
-

@@ -26,26 +26,28 @@
 
 package org.alfresco.rest.search;
 
-import org.alfresco.rest.model.body.RestNodeLockBodyModel;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
+import static java.util.Arrays.asList;
+import static java.util.Collections.reverse;
+import static java.util.Collections.singletonList;
+
+import static org.hamcrest.Matchers.*;
+import static org.testng.AssertJUnit.assertEquals;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.reverse;
-import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.*;
-import static org.testng.AssertJUnit.assertEquals;
+import org.alfresco.rest.model.body.RestNodeLockBodyModel;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
 
 /**
  * Search end point Public API test.
@@ -62,10 +64,10 @@ public class SearchTest extends AbstractSearchServicesE2ETest
     @Test
     public void searchOnIndexedData() throws Exception
     {
-        SearchResponse nodes =  query("cm:content:" + unique_searchString);
+        SearchResponse nodes = query("cm:content:" + unique_searchString);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsNotEmpty();
-        
+
         SearchNodeModel entity = nodes.getEntryByIndex(0);
         // MNT-25404: search/score is only populated when highlighting is requested
         if (entity.getSearch() != null)
@@ -73,20 +75,20 @@ public class SearchTest extends AbstractSearchServicesE2ETest
             entity.assertThat().field("search").contains("score");
             entity.getSearch().assertThat().field("score").isNotNull();
         }
-        Assert.assertEquals(entity.getName(),"pangram.txt");
+        Assert.assertEquals(entity.getName(), "pangram.txt");
     }
-    
+
     @Test
     public void searchNonIndexedData()
-    {        
-        SearchResponse nodes =  query("yeti");
+    {
+        SearchResponse nodes = query("yeti");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodes.assertThat().entriesListIsEmpty();
     }
 
     @Test
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-              description = "Checks its possible to include the original request in the response")
+            description = "Checks its possible to include the original request in the response")
     public void searchWithRequest()
     {
         SearchRequest query = new SearchRequest();
@@ -101,7 +103,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         response.getContext().assertThat().field("request").isNotEmpty();
     }
 
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Tests a search request containing a sort clause.")
     public void searchWithOneSortClause()
@@ -123,9 +125,9 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         assertEquals(
                 expectedOrder,
                 responseWithAscendingOrder.getEntries().stream()
-                    .map(SearchNodeModel::getModel)
-                    .map(SearchNodeModel::getName)
-                    .collect(Collectors.toList()));
+                        .map(SearchNodeModel::getModel)
+                        .map(SearchNodeModel::getName)
+                        .collect(Collectors.toList()));
 
         // Reverts the expected order...
         reverse(expectedOrder);
@@ -144,11 +146,9 @@ public class SearchTest extends AbstractSearchServicesE2ETest
     }
 
     /**
-     * Tests the query execution with two sort clauses.
-     * The first clause has always the same value for all matches so the test makes sure the request is correctly
-     * processed and the returned order is determined by the second clause.
+     * Tests the query execution with two sort clauses. The first clause has always the same value for all matches so the test makes sure the request is correctly processed and the returned order is determined by the second clause.
      */
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Tests a search request containing a sort clause.")
     public void searchWithTwoSortClauses()
@@ -192,10 +192,10 @@ public class SearchTest extends AbstractSearchServicesE2ETest
                         .collect(Collectors.toList()));
     }
 
-    @Test(groups = { TestGroup.ACS_61n })
+    @Test(groups = {TestGroup.ACS_61n})
     @TestRail(section = {
-        TestGroup.REST_API, TestGroup.SEARCH,
-        TestGroup.ACS_61n }, executionType = ExecutionType.REGRESSION, description = "Checks the \"include\" request parameter support the 'permissions' option")
+            TestGroup.REST_API, TestGroup.SEARCH,
+            TestGroup.ACS_61n}, executionType = ExecutionType.REGRESSION, description = "Checks the \"include\" request parameter support the 'permissions' option")
     public void searchQuery_includePermissions_shouldReturnNodeWithPermissionsInformation()
     {
         String query = "fox";
@@ -217,10 +217,11 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         restClient.onResponse().assertThat().body("list.entries[0].entry.permissions", nullValue());
     }
 
-    @Test(groups = { TestGroup.ACS_61n }, enabled = false)
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n  }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.ACS_61n}, enabled = false)
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n}, executionType = ExecutionType.REGRESSION,
             description = "Checks the \"include\" request parameter support the 'isLocked' option")
-    public void searchQuery_includeIsLocked_shouldReturnNodeWithLockInformation() throws Exception {
+    public void searchQuery_includeIsLocked_shouldReturnNodeWithLockInformation() throws Exception
+    {
         String query = "fox";
         String include = "isLocked";
 
@@ -228,7 +229,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         retrievalQueryIncludingLockInformation.setInclude(singletonList(include));
 
         query(retrievalQueryIncludingLockInformation);
-        
+
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.onResponse().assertThat().body("list.entries[0].entry.isLocked", equalTo(false));
 
@@ -238,12 +239,12 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         lockBodyModel.setType("FULL");
         restClient.authenticateUser(testUser).withCoreAPI().usingNode(file).lockNode(lockBodyModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        
+
         query(retrievalQueryIncludingLockInformation);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.onResponse().assertThat().body("list.entries[0].entry.isLocked", equalTo(true));
-        
+
         SearchRequest retrievalQueryNotIncludingLockInformation = createQuery(query);
 
         query(retrievalQueryNotIncludingLockInformation);
@@ -252,8 +253,8 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         restClient.onResponse().assertThat().body("list.entries[0].entry.isLocked", nullValue());
     }
 
-    @Test(groups = { TestGroup.ACS_61n })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n  }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.ACS_61n})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n}, executionType = ExecutionType.REGRESSION,
             description = "Checks the \"include\" request parameter does not support the 'notValid' option")
     public void searchQuery_includeInvalid_shouldReturnBadResponse()
     {
@@ -261,13 +262,13 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         String notValidInclude = "notValid";
         SearchRequest permissionsRetrieval = createQuery(query);
         permissionsRetrieval.setInclude(singletonList(notValidInclude));
-        
+
         query(permissionsRetrieval);
-        
+
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
         restClient.onResponse()
                 .assertThat()
-                .body("error.briefSummary", containsString("An invalid argument was received "+notValidInclude));
+                .body("error.briefSummary", containsString("An invalid argument was received " + notValidInclude));
     }
 
     // Test that when fields parameter is set, only restricted fields appear in the response
@@ -293,7 +294,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         restClient.onResponse().assertThat().body("list.entries.entry[0].name", Matchers.nullValue());
         restClient.onResponse().assertThat().body("list.entries.entry[0].id", Matchers.nullValue());
     }
-    
+
     @Test
     public void searchSpecialCharacters() throws Exception
     {

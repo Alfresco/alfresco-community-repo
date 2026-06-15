@@ -26,47 +26,23 @@
 
 package org.alfresco.rest.search;
 
-import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.rest.model.RestRequestRangesModel;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.model.RestRequestRangesModel;
+import org.alfresco.utility.testrail.ExecutionType;
+import org.alfresco.utility.testrail.annotation.TestRail;
 
 /**
- * Faceted Range Search Query for numeric range
- * {
- *   "query": {
- *       "query": "name:A*"
- *   },
- *   "range": {
- *       "field": "content.size",
- *        "start": "0",
- *        "end": "400",
- *        "gap": "100"
- *   }
- * }
- * Date range query:
- * {
- *  "query": {
- *      "query": "name:A*"
- *  },
- *  "range": {
- *      "field": "created",
- *       "start": "2015-09-29T10:45:15.729Z",
- *       "end": "2016-09-29T10:45:15.729Z",
- *       "gap": "+100DAY"
- *  }
- * }
+ * Faceted Range Search Query for numeric range { "query": { "query": "name:A*" }, "range": { "field": "content.size", "start": "0", "end": "400", "gap": "100" } } Date range query: { "query": { "query": "name:A*" }, "range": { "field": "created", "start": "2015-09-29T10:45:15.729Z", "end": "2016-09-29T10:45:15.729Z", "gap": "+100DAY" } }
  */
 public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 {
@@ -79,7 +55,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 
     /** Check the error messages mention the mandatory fields when they are omitted. */
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check facet intervals mandatory fields")
     public void checkingFacetsMandatoryErrorMessages()
     {
@@ -110,7 +86,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
                 .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "gap"));
     }
 
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
     @SuppressWarnings("unchecked")
@@ -160,7 +136,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         assertEquals(info.get("endInclusive"), "true");
     }
 
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
     @SuppressWarnings("unchecked")
@@ -215,7 +191,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
     public void searchDateAndSizeRanges()
     {
@@ -226,7 +202,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         query.setRanges(ranges);
     }
 
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
     @SuppressWarnings("unchecked")
@@ -282,10 +258,14 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     /**
      * Create a ranges model with the values given.
      *
-     * @param field The field to facet on.
-     * @param start The lowest facet value.
-     * @param end The highest facet value.
-     * @param gap The size of the buckets.
+     * @param field
+     *            The field to facet on.
+     * @param start
+     *            The lowest facet value.
+     * @param end
+     *            The highest facet value.
+     * @param gap
+     *            The size of the buckets.
      * @return The facet ranges model.
      */
     private RestRequestRangesModel createRangesModel(String field, String start, String end, String gap)

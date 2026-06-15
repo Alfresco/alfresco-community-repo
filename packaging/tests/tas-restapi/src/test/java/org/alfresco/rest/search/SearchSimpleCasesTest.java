@@ -35,7 +35,7 @@ public class SearchSimpleCasesTest extends AbstractSearchServicesE2ETest
         waitForContentIndexing(file4.getContent(), true);
     }
 
-    @Test(priority=1)
+    @Test(priority = 1)
     public void testSearchContentField()
     {
         SearchResponse response4 = queryUntilResponseEntriesListNotEmpty(testUser, "cm:content:unique");
@@ -43,7 +43,7 @@ public class SearchSimpleCasesTest extends AbstractSearchServicesE2ETest
         response4.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=2)
+    @Test(priority = 2)
     public void testSearchDocxFile()
     {
         SearchResponse response6 = queryUntilResponseEntriesListNotEmpty(testUser, "cm:name:alfresco.docx");

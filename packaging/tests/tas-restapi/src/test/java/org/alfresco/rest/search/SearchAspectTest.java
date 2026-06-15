@@ -23,10 +23,12 @@
 
 package org.alfresco.rest.search;
 
-import org.alfresco.utility.data.CustomObjectTypeProperties;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.model.FolderModel;
+import static org.testng.Assert.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -34,15 +36,13 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.testng.Assert.*;
+import org.alfresco.utility.data.CustomObjectTypeProperties;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
 
 /**
- * Test class tests aspects are added and removed from Solr Documents
- * Created for Search-2379
+ * Test class tests aspects are added and removed from Solr Documents Created for Search-2379
  */
 
 public class SearchAspectTest extends AbstractSearchServicesE2ETest
@@ -106,8 +106,7 @@ public class SearchAspectTest extends AbstractSearchServicesE2ETest
     }
 
     /**
-     * Check that when an aspect is removed, all the properties defined in the aspect are removed as well.
-     * Created for Search-2538
+     * Check that when an aspect is removed, all the properties defined in the aspect are removed as well. Created for Search-2538
      */
     @SuppressWarnings("unchecked")
     @Test(priority = 2)
@@ -132,7 +131,7 @@ public class SearchAspectTest extends AbstractSearchServicesE2ETest
         queryModel.setLanguage(SearchLanguage.AFTS.toString());
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.setQuery(queryModel);
-        searchRequest.setInclude(List.of("aspectNames","properties"));
+        searchRequest.setInclude(List.of("aspectNames", "properties"));
 
         cmisApi.authenticateUser(testUser)
                 .usingSite(testSite)

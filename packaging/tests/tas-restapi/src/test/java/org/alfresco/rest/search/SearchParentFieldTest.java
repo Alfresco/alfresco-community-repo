@@ -23,20 +23,20 @@
 
 package org.alfresco.rest.search;
 
-import org.alfresco.utility.data.DataGroup;
-import org.alfresco.utility.model.GroupModel;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.alfresco.utility.data.DataGroup;
+import org.alfresco.utility.model.GroupModel;
 
 /**
- * Test class tests PARENT field is including all the PARENT Nodes
- * Created for SEARCH-2378
+ * Test class tests PARENT field is including all the PARENT Nodes Created for SEARCH-2378
  */
 public class SearchParentFieldTest extends AbstractSearchServicesE2ETest
 {
@@ -71,7 +71,7 @@ public class SearchParentFieldTest extends AbstractSearchServicesE2ETest
 
         for (GroupModel group : groups)
         {
-            
+
             // Find groupId to be used in the PARENT expression
             String queryGroup = "TYPE:'cm:authorityContainer' AND cm:authorityName:'GROUP_" + group.getGroupIdentifier()
                     + "'";

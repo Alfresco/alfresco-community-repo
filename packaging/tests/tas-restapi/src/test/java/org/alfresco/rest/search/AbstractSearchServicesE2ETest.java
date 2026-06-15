@@ -26,6 +26,19 @@
 
 package org.alfresco.rest.search;
 
+import static java.util.List.of;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.hamcrest.Matchers;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.BeforeClass;
+
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestWrapper;
@@ -39,27 +52,9 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.network.ServerHealth;
-import org.hamcrest.Matchers;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.BeforeClass;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static java.util.List.of;
 
 /**
- * Abstract base class for Search API E2E tests running against ElasticSearch.
- * Migrated from alfresco-search-services test infrastructure into community repo.
- * Combines AbstractE2EFunctionalTest + AbstractSearchServicesE2ETest from the original repo.
+ * Abstract base class for Search API E2E tests running against ElasticSearch. Migrated from alfresco-search-services test infrastructure into community repo. Combines AbstractE2EFunctionalTest + AbstractSearchServicesE2ETest from the original repo.
  */
 @ContextConfiguration("classpath:alfresco-restapi-context.xml")
 public abstract class AbstractSearchServicesE2ETest extends AbstractTestNGSpringContextTests
@@ -124,6 +119,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractTestNGSpring
 
     /**
      * Creates the standard test data structure used across search tests:
+     * 
      * <pre>
      * |- FolderSearch
      * |-- pangram.txt
@@ -281,8 +277,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractTestNGSpring
                         "Re-trying query for valid status code. Retry Attempt: " + (queryAttempts + 1));
             }
             catch (EmptyJsonResponseException ignore)
-            {
-            }
+            {}
         }
         return queryAsUser(user, queryString);
     }
@@ -348,8 +343,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractTestNGSpring
                 }
             }
             catch (EmptyJsonResponseException ignore)
-            {
-            }
+            {}
             catch (RuntimeException runtimeException)
             {
                 if (searchCount > ignoreRuntimeExceptionThreshold)
@@ -433,8 +427,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractTestNGSpring
      */
     protected enum SearchLanguage
     {
-        CMIS,
-        AFTS
+        CMIS, AFTS
     }
 
     /**

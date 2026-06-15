@@ -22,17 +22,18 @@
  */
 package org.alfresco.rest.search;
 
-import org.alfresco.utility.Utility;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.alfresco.utility.Utility;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 
 public class SearchCasesTest extends AbstractSearchServicesE2ETest
 {
@@ -43,7 +44,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         Assert.assertTrue(waitForContentIndexing(file4.getContent(), true));
     }
 
-    @Test(priority=1)
+    @Test(priority = 1)
     public void testSearchNameField()
     {
         SearchResponse response = queryAsUser(testUser, "cm:name:pangram");
@@ -51,7 +52,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=2)
+    @Test(priority = 2)
     public void testSearchTitleField()
     {
         SearchResponse response2 = queryAsUser(testUser, "cm:title:cars");
@@ -59,7 +60,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response2.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=3)
+    @Test(priority = 3)
     public void testSearchDescriptionField()
     {
         SearchResponse response3 = queryAsUser(testUser, "cm:description:alfresco");
@@ -67,7 +68,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response3.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=4)
+    @Test(priority = 4)
     public void testSearchTextFile()
     {
         SearchResponse response6 = queryAsUser(testUser, "cm:name:pangram.txt");
@@ -75,7 +76,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response6.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=5)
+    @Test(priority = 5)
     public void testSearchPDFFile()
     {
         SearchResponse response6 = queryAsUser(testUser, "cm:name:cars.PDF");
@@ -83,7 +84,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response6.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=6)
+    @Test(priority = 6)
     public void testSearchODTFile()
     {
         SearchResponse response6 = queryAsUser(testUser, "cm:name:unique.ODT");
@@ -91,7 +92,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response6.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=7)
+    @Test(priority = 7)
     public void testSearchPhraseQueries()
     {
         SearchResponse response6 = queryAsUser(testUser, "The quick brown fox jumps over the lazy dog");
@@ -99,7 +100,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response6.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=8)
+    @Test(priority = 8)
     public void testSearchExactTermQueries()
     {
         SearchResponse response6 = queryAsUser(testUser, "=alfresco");
@@ -107,7 +108,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response6.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=9)
+    @Test(priority = 9)
     public void testSearchConjunctionQueries()
     {
         SearchResponse response6 = queryAsUser(testUser, "unique AND search");
@@ -115,7 +116,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response6.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=10)
+    @Test(priority = 10)
     public void testSearchDisjunctionQueries()
     {
         SearchResponse response6 = queryAsUser(testUser, "file OR discovery");
@@ -123,7 +124,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response6.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=11)
+    @Test(priority = 11)
     public void testSearchNegationQueries()
     {
         SearchResponse response6 = queryAsUser(testUser, "pangram NOT pan");
@@ -131,7 +132,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response6.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=12)
+    @Test(priority = 12)
     public void testSearchWildcardQueries()
     {
         SearchResponse response6 = queryAsUser(testUser, "al?res*");
@@ -139,7 +140,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response6.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=13)
+    @Test(priority = 13)
     public void testSearchUpdateContent() throws InterruptedException
     {
         String originalText = String.valueOf(System.currentTimeMillis());
@@ -176,16 +177,9 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     /**
-     * {
-     *  "query": {
-     *              "query": "*"
-     *           },
-     *  "facetFields": {
-     *      "facets": [{"field": "cm:mimetype"},{"field": "modifier"}]
-     *  }
-     * }
+     * { "query": { "query": "*" }, "facetFields": { "facets": [{"field": "cm:mimetype"},{"field": "modifier"}] } }
      */
-    @Test(priority=14)
+    @Test(priority = 14)
     public void searchWithFacedFields() throws InterruptedException
     {
         String uniqueText = String.valueOf(System.currentTimeMillis());
@@ -223,7 +217,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("count").is(1);
     }
 
-    @Test(priority=15)
+    @Test(priority = 15)
     public void searchSpecialCharacters()
     {
         String specialCharfileName = "è¥äæ§ç§-åæ.pdf";

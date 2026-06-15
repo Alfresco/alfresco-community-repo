@@ -26,17 +26,18 @@
 
 package org.alfresco.rest.search;
 
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.report.Bug;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.report.Bug;
 
 /**
  * Search high lighting test.
@@ -118,11 +119,10 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
         nodes.getEntries().stream()
                 .map(SearchNodeModel::getModel)
                 .map(SearchNodeModel::getSearch)
-                .map(SearchScoreModel::getHighlight).forEach(( hl -> {
+                .map(SearchScoreModel::getHighlight).forEach((hl -> {
                     assertEquals(1, hl.size());
                     assertEquals(expectedHighlight, hl.getFirst().getSnippets().getFirst());
-                })
-        );
+                }));
 
     }
 }

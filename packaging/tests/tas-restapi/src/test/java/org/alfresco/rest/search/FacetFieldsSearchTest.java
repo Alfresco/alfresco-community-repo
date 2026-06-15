@@ -26,43 +26,44 @@
 
 package org.alfresco.rest.search;
 
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import org.alfresco.dataprep.SiteService.Visibility;
-import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.*;
+
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.alfresco.dataprep.SiteService.Visibility;
+import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.*;
 
 /**
  * Faceted search test with FacetFields
  */
 public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
-{   
+{
     private UserModel userWithNoAccess, userCanAccessTextFile;
     private SiteModel testSite;
     private String fname;
-    
+
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         serverHealth.assertServerIsOnline();
-        
+
         fname = unique_searchString + "facet";
 
         testSite = new SiteModel(RandomData.getRandomName("SiteSearch"));
         testSite.setVisibility(Visibility.PRIVATE);
-        
+
         testSite = dataSite.usingUser(testUser).createSite(testSite);
-        
+
         // Create another user who would not have access to the Private Site created by testUser
         userWithNoAccess = dataUser.createRandomTestUser("UserSearch2");
         userCanAccessTextFile = dataUser.createRandomTestUser("UserSearch3");
-        
+
         // Create a folder and a file as test User
         FolderModel testFolder = new FolderModel(fname);
         dataContent.usingUser(testUser).usingSite(testSite).createFolder(testFolder);
@@ -72,22 +73,22 @@ public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
 
         FileModel htmlFile = new FileModel(fname + "-2.html", FileType.HTML, fname + " file 2 for search ");
         dataContent.usingUser(testUser).usingSite(testSite).createContent(htmlFile);
-        
+
         // Set Node Permissions to allow access for user for text File
         JsonObject userPermission = Json.createObjectBuilder()
                 .add("permissions", Json.createObjectBuilder().add("isInheritanceEnabled", false)
-                        .add("locallySet",Json.createObjectBuilder().add("authorityId", userCanAccessTextFile.getUsername())
+                        .add("locallySet", Json.createObjectBuilder().add("authorityId", userCanAccessTextFile.getUsername())
                                 .add("name", "SiteConsumer").add("accessStatus", "ALLOWED")))
                 .build();
         String putBody = userPermission.toString();
 
         restClient.authenticateUser(testUser).withCoreAPI().usingNode(textFile).updateNode(putBody);
-        
+
         // Wait for the file to be indexed
         waitForContentIndexing(htmlFile.getContent(), true);
     }
-    
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+
+    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     public void testSearchFacetFieldsBucketExcludedWhenMinCount2() throws Exception
     {
         // Create Query with FacetFields: Site and Content MimeType
@@ -107,7 +108,7 @@ public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
 
         // Search query using user who created site
         SearchResponse response = query(query);
-        
+
         // Expect MimeType bucket with size 1 is excluded as minCount = 2 won't be reached
         Assert.assertEquals(response.getContext().getFacetsFields().size(), 1);
 
@@ -123,7 +124,7 @@ public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
 
     }
 
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     public void testSearchWithFacetFieldsMinCountChecks() throws Exception
     {
         SearchRequest query = new SearchRequest();
@@ -190,15 +191,15 @@ public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
 
         facetFields.setFacets(facets);
         query.setFacetFields(facetFields);
-        
+
         // Search query using other user
         SearchResponse response = restClient.authenticateUser(userWithNoAccess).withSearchAPI().search(query);
-        
+
         // User has No access to matching content hence no buckets expected
         Assert.assertNull(response.getContext().getFacetsFields());
     }
 
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     public void testSearchWithFacetFieldsOnlyFacetsWhereAccess() throws Exception
     {
         SearchRequest query = new SearchRequest();

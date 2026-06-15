@@ -41,6 +41,12 @@
                 <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/part3-suite.xml</suiteXmlFile>
             </properties>
         </profile>
+        <profile>
+            <id>solr-e2e-tests</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/solr-search-e2e-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
     </profiles>
 
     <dependencies>
@@ -178,6 +184,12 @@
         <dependency>
             <groupId>org.eclipse.parsson</groupId>
             <artifactId>parsson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>cmis</artifactId>
+            <version>26.2.0.63-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="ElasticSearchE2ETests" verbose="1" preserve-order="true">
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+    </listeners>
+    <test name="SearchTests">
+        <classes>
+            <class name="org.alfresco.rest.search.SearchTest"/>
+            <class name="org.alfresco.rest.search.FacetRangeSearchTest"/>
+            <class name="org.alfresco.rest.search.SearchHighLightTest"/>
+            <class name="org.alfresco.rest.search.SearchWithCustomModelTest"/>
+            <class name="org.alfresco.rest.search.SpecialCharacterSearchTest"/>
+            <class name="org.alfresco.rest.search.SearchExactTermTest"/>
+            <class name="org.alfresco.rest.search.SearchSecondaryAssociationTest"/>
+            <class name="org.alfresco.rest.search.SearchQueryPaginationTest"/>
+            <class name="org.alfresco.rest.search.StatsSearchTest"/>
+            <class name="org.alfresco.rest.search.SearchSimpleCasesTest"/>
+            <class name="org.alfresco.rest.search.SearchPermissionsTest"/>
+            <class name="org.alfresco.rest.search.FacetedSearchTest"/>
+            <class name="org.alfresco.rest.search.FacetFieldsSearchTest"/>
+            <class name="org.alfresco.rest.search.FacetIntervalSearchTest"/>
+            <class name="org.alfresco.rest.search.SearchAFTSInFieldTest"/>
+            <class name="org.alfresco.rest.search.SearchAspectTest"/>
+            <class name="org.alfresco.rest.search.SearchCasesTest"/>
+            <class name="org.alfresco.rest.search.SearchParentFieldTest"/>
+        </classes>
+    </test>
+</suite>

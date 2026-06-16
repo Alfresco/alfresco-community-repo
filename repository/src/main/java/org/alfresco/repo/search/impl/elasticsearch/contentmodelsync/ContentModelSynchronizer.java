@@ -198,17 +198,16 @@ public class ContentModelSynchronizer
         OpenResponse openResponse = null;
         int responseStatus = -1;
         String rawBody = "{}";
-        Exception requestFailure = null;
-        Exception openFailure = null;
+        IOException requestFailure = null;
+        IOException openFailure = null;
         try (Response response = httpClientFactory.getElasticsearchClient().generic().execute(requests))
         {
             responseStatus = response.getStatus();
             rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
         }
-        catch (IOException | RuntimeException e)
+        catch (IOException e)
         {
             requestFailure = e;
-            throw e;
         }
         finally
         {
@@ -217,7 +216,7 @@ public class ContentModelSynchronizer
                 openResponse = indices.open(new OpenRequest.Builder().index(indexName)
                         .build());
             }
-            catch (IOException | RuntimeException openException)
+            catch (IOException openException)
             {
                 openFailure = openException;
             }

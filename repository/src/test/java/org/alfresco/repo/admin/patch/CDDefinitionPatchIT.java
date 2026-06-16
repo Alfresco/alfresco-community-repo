@@ -52,6 +52,8 @@ public class CDDefinitionPatchIT extends BaseSpringTest
     private Repository repository;
     @Autowired
     private NamespaceService namespaceService;
+    @Autowired
+    private PatchExecuter patchExecuter;
 
     @Value("${spaces.company_home.childname}")
     private String companyHomeChildName;
@@ -66,7 +68,18 @@ public class CDDefinitionPatchIT extends BaseSpringTest
         // given
         var cdHomeXPath = "/" + companyHomeChildName + "/" + dictionaryChildName + "/" + cdDefinitionsChildName;
 
-        // when
+        // when application stated, then
+        assertCDHomeIsCorrect(cdHomeXPath);
+
+        // when patches are executed again (simulating system restart)
+        patchExecuter.applyOutstandingPatches();
+
+        // then
+        assertCDHomeIsCorrect(cdHomeXPath);
+    }
+
+    private void assertCDHomeIsCorrect(String cdHomeXPath)
+    {
         var refs = searchService.selectNodes(repository.getRootHome(), cdHomeXPath, null, namespaceService, false);
         assertThat(refs).hasSize(1);
         var cdHomeNodeRef = refs.getFirst();

@@ -115,6 +115,40 @@ public class ElasticsearchInitialiser implements DictionaryListener
     {
         LOGGER.debug("Elasticsearch index initialising stopped");
         isTerminated.set(true);
+
+        Thread initialiserThread = thread;
+        if (initialiserThread != null && initialiserThread != Thread.currentThread())
+        {
+            initialiserThread.interrupt();
+            waitForThreadToStop(initialiserThread);
+        }
+    }
+
+    private void waitForThreadToStop(Thread initialiserThread)
+    {
+        boolean interrupted = false;
+        try
+        {
+            while (initialiserThread.isAlive())
+            {
+                try
+                {
+                    initialiserThread.join(TimeUnit.SECONDS.toMillis(1));
+                }
+                catch (InterruptedException exception)
+                {
+                    interrupted = true;
+                    LOGGER.debug("Interrupted while waiting for Elasticsearch initialiser thread to stop", exception);
+                }
+            }
+        }
+        finally
+        {
+            if (interrupted)
+            {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     /**

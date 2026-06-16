@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.client;
 
-import java.io.IOException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
@@ -46,9 +45,14 @@ import org.apache.hc.core5.util.Timeout;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.transport.OpenSearchTransport;
+import org.opensearch.client.transport.aws.AwsSdk2Transport;
+import org.opensearch.client.transport.aws.AwsSdk2TransportOptions;
 import org.opensearch.client.transport.httpclient5.ApacheHttpClient5TransportBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.http.async.SdkAsyncHttpClient;
+import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
+import software.amazon.awssdk.regions.Region;
 
 import org.alfresco.encryption.AlfrescoKeyStore;
 import org.alfresco.encryption.AlfrescoKeyStoreImpl;
@@ -71,6 +75,8 @@ public class ElasticsearchHttpClientFactory
 
     // Elasticsearch Http Client connection pool
     private volatile OpenSearchClient client;
+    private volatile OpenSearchTransport transport;
+    private volatile AutoCloseable managedAwsHttpClient;
 
     // Basic parameters for Elasticsearch server endpoint
     private String host;
@@ -87,6 +93,11 @@ public class ElasticsearchHttpClientFactory
     // Http Basic Authentication credential parameters for Elasticsearch server endpoint
     private String user;
     private String password;
+
+    // Authentication mode parameters for Elasticsearch server endpoint
+    private String authMode = AuthMode.BASIC.value;
+    private String awsRegion;
+    private String awsService = "es";
 
     // Elasticsearch index details
     private String indexName;
@@ -111,33 +122,6 @@ public class ElasticsearchHttpClientFactory
     public void init()
     {
         this.sslTrustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
-    }
-
-    /**
-     * Releases resources held by the Elasticsearch client transport, including the HTTP connection pool and IO reactor threads.
-     */
-    public void destroy()
-    {
-        if (client != null)
-        {
-            try
-            {
-                OpenSearchTransport transport = client._transport();
-                if (transport != null)
-                {
-                    transport.close();
-                }
-                LOGGER.debug("Elasticsearch client transport closed successfully.");
-            }
-            catch (IOException e)
-            {
-                LOGGER.warn("Error closing Elasticsearch client transport", e);
-            }
-            finally
-            {
-                client = null;
-            }
-        }
     }
 
     protected String getSecureComms()
@@ -220,6 +204,11 @@ public class ElasticsearchHttpClientFactory
         return client;
     }
 
+    public synchronized void destroy()
+    {
+        closeManagedResources();
+    }
+
     /**
      * Singleton method returning the Elasticsearch client. The client is only built if it's not already created.
      *
@@ -234,11 +223,13 @@ public class ElasticsearchHttpClientFactory
             {
                 if (client == null)
                 {
+                    String protocol = getProtocol();
                     if (LOGGER.isDebugEnabled())
                     {
-                        LOGGER.debug("Creating Elasticsearch client for {}", (secureComms.equals("https") ? "https" : "http") + "://" + host + ":" + port + baseUrl);
+                        LOGGER.debug("Creating Elasticsearch client for {}://{}:{}{} (secureComms={}, isSecure={}, authMode={})",
+                                protocol, host, port, baseUrl, secureComms, isSecure(), getEffectiveAuthMode().value);
                     }
-                    client = getElasticsearchClient(secureComms.equals("https") ? "https" : "http", port);
+                    client = getElasticsearchClient(protocol, port);
                 }
             }
         }
@@ -266,13 +257,165 @@ public class ElasticsearchHttpClientFactory
      */
     protected OpenSearchClient getElasticsearchClient(String protocol, int port)
     {
+        // Keep the legacy basic-auth transport untouched and route IAM through the AWS signer transport.
+        return switch (getEffectiveAuthMode())
+        {
+        case BASIC -> createBasicAuthClient(protocol, port);
+        case AWS_IAM -> createAwsIamClient(protocol, port);
+        };
+    }
+
+    private OpenSearchClient createBasicAuthClient(String protocol, int port)
+    {
         OpenSearchTransport transport = ApacheHttpClient5TransportBuilder.builder(new HttpHost(protocol, host, port))
                 .setHttpClientConfigCallback(this::getHttpAsyncClientBuilder)
                 .setPathPrefix(baseUrl)
                 .setMapper(new JacksonJsonpMapper())
                 .build();
 
+        this.transport = transport;
+        this.managedAwsHttpClient = null;
+
         return new OpenSearchClient(transport);
+    }
+
+    private OpenSearchClient createAwsIamClient(String protocol, int port)
+    {
+        validateAwsIamConfiguration();
+
+        if (LOGGER.isDebugEnabled())
+        {
+            LOGGER.debug("Creating AWS IAM OpenSearch client for {} using signing service {} in region {}",
+                    protocol + "://" + host + ":" + port + baseUrl, awsService, awsRegion);
+        }
+
+        SdkAsyncHttpClient awsHttpClient = NettyNioAsyncHttpClient.create();
+
+        OpenSearchTransport transport = new AwsSdk2Transport(
+                awsHttpClient,
+                host,
+                awsService,
+                Region.of(awsRegion),
+                AwsSdk2TransportOptions.builder()
+                        .setMapper(new JacksonJsonpMapper())
+                        .build());
+
+        this.transport = transport;
+        this.managedAwsHttpClient = awsHttpClient;
+
+        return new OpenSearchClient(transport);
+    }
+
+    private AuthMode getEffectiveAuthMode()
+    {
+        return AuthMode.fromProperty(authMode);
+    }
+
+    /**
+     * @return {@code true} when the configured {@code secureComms} value indicates an HTTPS endpoint.
+     *         Subclasses may broaden this (for example, an mTLS-aware enterprise factory).
+     */
+    protected boolean isSecure()
+    {
+        return SECURE_COMMS_HTTPS.equals(secureComms);
+    }
+
+    /**
+     * @return the wire protocol ("https" or "http") derived from {@link #isSecure()}.
+     */
+    protected String getProtocol()
+    {
+        return isSecure() ? "https" : "http";
+    }
+
+    private void validateAwsIamConfiguration()
+    {
+        if (StringUtils.isBlank(awsRegion))
+        {
+            throw new IllegalStateException("Property elasticsearch.aws.region is required when elasticsearch.auth.mode=aws-iam");
+        }
+
+        if (StringUtils.isBlank(awsService))
+        {
+            throw new IllegalStateException("Property elasticsearch.aws.service must not be blank when elasticsearch.auth.mode=aws-iam");
+        }
+
+        // AwsSdk2Transport hardcodes the "https://" scheme, ignores the configured port, and has no path-prefix support; AWS-managed OpenSearch is the only supported IAM target.
+        if (!SECURE_COMMS_HTTPS.equals(secureComms))
+        {
+            throw new IllegalStateException(
+                    "elasticsearch.secureComms must be 'https' when elasticsearch.auth.mode=aws-iam");
+        }
+
+        if (port != 443)
+        {
+            throw new IllegalStateException(
+                    "elasticsearch.port must be 443 when elasticsearch.auth.mode=aws-iam");
+        }
+
+        if (StringUtils.isNotBlank(baseUrl) && !"/".equals(baseUrl))
+        {
+            throw new IllegalStateException(
+                    "elasticsearch.baseUrl must be '/' when elasticsearch.auth.mode=aws-iam");
+        }
+    }
+
+    private void closeManagedResources()
+    {
+        Exception primary = null;
+
+        OpenSearchTransport transportToClose = transport;
+        if (transportToClose == null && client != null)
+        {
+            try
+            {
+                transportToClose = client._transport();
+            }
+            catch (Exception exception)
+            {
+                LOGGER.warn("Unable to retrieve Elasticsearch transport for shutdown", exception);
+            }
+        }
+
+        if (transportToClose != null)
+        {
+            try
+            {
+                transportToClose.close();
+            }
+            catch (Exception exception)
+            {
+                primary = exception;
+            }
+        }
+
+        if (managedAwsHttpClient != null)
+        {
+            try
+            {
+                managedAwsHttpClient.close();
+            }
+            catch (Exception exception)
+            {
+                if (primary == null)
+                {
+                    primary = exception;
+                }
+                else
+                {
+                    primary.addSuppressed(exception);
+                }
+            }
+        }
+
+        transport = null;
+        managedAwsHttpClient = null;
+        client = null;
+
+        if (primary != null)
+        {
+            LOGGER.warn("Unable to close Elasticsearch HTTP client resources", primary);
+        }
     }
 
     /**
@@ -410,6 +553,21 @@ public class ElasticsearchHttpClientFactory
         this.password = password;
     }
 
+    public void setAuthMode(String authMode)
+    {
+        this.authMode = authMode;
+    }
+
+    public void setAwsRegion(String awsRegion)
+    {
+        this.awsRegion = awsRegion;
+    }
+
+    public void setAwsService(String awsService)
+    {
+        this.awsService = awsService;
+    }
+
     public void setMaxTotalConnections(int maxTotalConnections)
     {
         this.maxTotalConnections = maxTotalConnections;
@@ -478,6 +636,36 @@ public class ElasticsearchHttpClientFactory
     public void setThreadCount(int threadCount)
     {
         this.threadCount = threadCount;
+    }
+
+    private enum AuthMode
+    {
+        BASIC("basic"), AWS_IAM("aws-iam");
+
+        private final String value;
+
+        AuthMode(String value)
+        {
+            this.value = value;
+        }
+
+        private static AuthMode fromProperty(String value)
+        {
+            if (StringUtils.isBlank(value))
+            {
+                return BASIC;
+            }
+
+            for (AuthMode mode : values())
+            {
+                if (mode.value.equalsIgnoreCase(value.trim()))
+                {
+                    return mode;
+                }
+            }
+
+            throw new IllegalArgumentException("Unsupported elasticsearch.auth.mode: " + value);
+        }
     }
 
 }

@@ -49,6 +49,7 @@ import static org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.Elast
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -321,6 +322,42 @@ public class ElasticsearchInitialiserTest
         {
             thread.interrupt();
         }
+    }
+
+    @Test
+    public void shouldWaitForAsyncInitialisationThreadToStop() throws InterruptedException
+    {
+        CountDownLatch initStarted = new CountDownLatch(1);
+        CountDownLatch initFinished = new CountDownLatch(1);
+
+        ElasticsearchInitialiser elasticsearchInitialiser = new ElasticsearchInitialiser() {
+            @Override
+            public void initWithLock()
+            {
+                initStarted.countDown();
+                try
+                {
+                    Thread.sleep(MAX_TIMEOUT_MS * 10L);
+                }
+                catch (InterruptedException exception)
+                {
+                    Thread.currentThread().interrupt();
+                }
+                finally
+                {
+                    initFinished.countDown();
+                }
+            }
+        };
+
+        Thread thread = elasticsearchInitialiser.initAsync();
+
+        assertThat(initStarted.await(MAX_TIMEOUT_MS, MILLISECONDS)).isTrue();
+
+        elasticsearchInitialiser.stop();
+
+        assertThat(initFinished.await(MAX_TIMEOUT_MS, MILLISECONDS)).isTrue();
+        assertThat(thread.isAlive()).isFalse();
     }
 
     @Test

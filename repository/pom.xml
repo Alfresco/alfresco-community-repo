@@ -10,6 +10,10 @@
         <version>26.2.0.67-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <aws.sdk.version>2.42.38</aws.sdk.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -43,6 +47,37 @@
                     <artifactId>spring-surf-core-configservice</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- AWS SDK v2 modules used by ElasticsearchHttpClientFactory when elasticsearch.auth.mode=aws-iam -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sdk-core</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>auth</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>http-auth-aws</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>netty-nio-client</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>regions</artifactId>
+            <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>

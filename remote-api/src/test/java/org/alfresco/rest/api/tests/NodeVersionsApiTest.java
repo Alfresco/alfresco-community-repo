@@ -1309,12 +1309,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     * MNT-25259: Updating content via {@code PUT /nodes/{nodeId}/content} must respect the
-     * {@code cm:autoVersion} property on the node. When the property is explicitly set to
-     * {@code false} on a versioned node no automatic version should be created on content
-     * update - regardless of any request parameters such as {@code majorVersion} or
-     * {@code comment}. This matches the semantics of {@code VersionableAspect.onContentUpdate}
-     * which all other write paths (Share, CMIS, WebDAV) delegate to.
+     * MNT-25259: Updating content via {@code PUT /nodes/{nodeId}/content} must respect the {@code cm:autoVersion} property on the node. When the property is explicitly set to {@code false} on a versioned node no automatic version should be created on content update - regardless of any request parameters such as {@code majorVersion} or {@code comment}. This matches the semantics of {@code VersionableAspect.onContentUpdate} which all other write paths (Share, CMIS, WebDAV) delegate to.
      */
     @Test
     public void testUpdateContentRespectsAutoVersionFalse() throws Exception

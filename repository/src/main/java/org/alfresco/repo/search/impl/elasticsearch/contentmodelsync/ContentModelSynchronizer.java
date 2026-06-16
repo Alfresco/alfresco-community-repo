@@ -199,6 +199,7 @@ public class ContentModelSynchronizer
         int responseStatus = -1;
         String rawBody = "{}";
         Exception requestFailure = null;
+        Exception openFailure = null;
         try (Response response = httpClientFactory.getElasticsearchClient().generic().execute(requests))
         {
             responseStatus = response.getStatus();
@@ -218,15 +219,22 @@ public class ContentModelSynchronizer
             }
             catch (IOException | RuntimeException openException)
             {
-                if (requestFailure != null)
-                {
-                    requestFailure.addSuppressed(openException);
-                }
-                else
-                {
-                    throw openException;
-                }
+                openFailure = openException;
             }
+        }
+
+        if (requestFailure != null)
+        {
+            if (openFailure != null)
+            {
+                requestFailure.addSuppressed(openFailure);
+            }
+            throw requestFailure;
+        }
+
+        if (openFailure != null)
+        {
+            throw openFailure;
         }
 
         boolean success = responseStatus == 200 && openResponse.acknowledged();

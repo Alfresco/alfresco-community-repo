@@ -327,6 +327,10 @@
         <property name="policyComponent" ref="policyComponent"/>
     </bean>
     
+    <bean id="cdDefinitionProtection" class="org.alfresco.repo.node.CDDefinitionProtection" init-method="init">
+        <property name="policyComponent" ref="policyComponent"/>
+    </bean>
+    
     <!-- Encryptor for node properties -->
     <bean id="metadataEncryptor" class="org.alfresco.repo.node.encryption.MetadataEncryptor">
         <property name="dictionaryService" ref="dictionaryService" />

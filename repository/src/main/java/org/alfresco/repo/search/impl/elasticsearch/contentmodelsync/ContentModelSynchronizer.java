@@ -195,21 +195,48 @@ public class ContentModelSynchronizer
                 .indices();
         indices.close(new CloseIndexRequest.Builder().index(indexName)
                 .build());
+        OpenResponse openResponse = null;
+        int responseStatus = -1;
+        String rawBody = "{}";
+        Exception requestFailure = null;
         try (Response response = httpClientFactory.getElasticsearchClient().generic().execute(requests))
         {
-            OpenResponse openResponse = indices.open(new OpenRequest.Builder().index(indexName)
-                    .build());
-
-            boolean success = response.getStatus() == 200 && openResponse.acknowledged();
-            if (!success)
-            {
-                String rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
-                LOGGER.error("Failed to update analyser settings on index {}: status={} acknowledged={} reason={}", indexName,
-                        response.getStatus(), openResponse.acknowledged(), extractErrorReason(rawBody));
-                LOGGER.debug("Full update settings response body: {}", rawBody);
-            }
-            return success;
+            responseStatus = response.getStatus();
+            rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
         }
+        catch (IOException | RuntimeException e)
+        {
+            requestFailure = e;
+            throw e;
+        }
+        finally
+        {
+            try
+            {
+                openResponse = indices.open(new OpenRequest.Builder().index(indexName)
+                        .build());
+            }
+            catch (IOException | RuntimeException openException)
+            {
+                if (requestFailure != null)
+                {
+                    requestFailure.addSuppressed(openException);
+                }
+                else
+                {
+                    throw openException;
+                }
+            }
+        }
+
+        boolean success = responseStatus == 200 && openResponse.acknowledged();
+        if (!success)
+        {
+            LOGGER.error("Failed to update analyser settings on index {}: status={}, acknowledged={}, reason={}", indexName,
+                responseStatus, openResponse.acknowledged(), extractErrorReason(rawBody));
+            LOGGER.debug("Full update settings response body: {}", rawBody);
+        }
+        return success;
     }
 
     private String determineLocaleAnalyzerFile()

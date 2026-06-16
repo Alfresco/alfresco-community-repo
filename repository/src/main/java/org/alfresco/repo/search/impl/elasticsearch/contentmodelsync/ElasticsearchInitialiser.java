@@ -374,7 +374,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
         }
         else
         {
-            LOGGER.error("Elasticsearch mappings update failed after {} attempts. {} models were not mapped. reason='{}'. models={}",
+            LOGGER.error("Elasticsearch mappings update failed after {} attempts. {} models were not mapped. reason='{}', models={}",
                     retryAttempts, modelsToInit.size(), lastFailureReason, modelsToInit);
             return false;
         }

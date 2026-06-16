@@ -312,7 +312,7 @@ public class ElasticsearchHttpClientFactory
     }
 
     /**
-     * @return {@code true} when the configured {@code secureComms} value indicates an HTTPS endpoint.  Subclasses may broaden this (for example, an mTLS-aware enterprise factory).
+     * @return {@code true} when the configured {@code secureComms} value indicates an HTTPS endpoint. Subclasses may broaden this (for example, an mTLS-aware enterprise factory).
      */
     protected boolean isSecure()
     {

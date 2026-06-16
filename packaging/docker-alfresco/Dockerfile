@@ -31,7 +31,7 @@ RUN mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/mimetypes && \
 # Copy the alfresco-mmt.jar
 # Copy Licenses to the root of the Docker image
 # Copy default keystore
-COPY ${resource_path}/war ${TOMCAT_DIR}/webapps
+COPY ${resource_path}/war ${TOMCAT_DIR}/webapps/
 COPY ${resource_path}/connector/* ${TOMCAT_DIR}/lib/
 COPY ${resource_path}/alfresco-mmt/* ${TOMCAT_DIR}/alfresco-mmt/
 COPY ${resource_path}/dependency/licenses/ /licenses/
@@ -44,7 +44,7 @@ RUN sed -i "s/shared.loader=/shared.loader=\${catalina.base}\/shared\/classes/" 
 RUN mkdir -p ${TOMCAT_DIR}/amps
 
 # Copy the amps from build context to the appropriate location for your application server
-COPY ${resource_path}/amps ${TOMCAT_DIR}/amps
+COPY ${resource_path}/amps ${TOMCAT_DIR}/amps/
 
 # Install amps on alfresco.war
 RUN java -jar ${TOMCAT_DIR}/alfresco-mmt/alfresco-mmt*.jar install \

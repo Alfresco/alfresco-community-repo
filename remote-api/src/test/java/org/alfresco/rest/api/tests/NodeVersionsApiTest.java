@@ -1309,6 +1309,89 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
+     * MNT-25259: Updating content via {@code PUT /nodes/{nodeId}/content} must respect the
+     * {@code cm:autoVersion} property on the node. When the property is explicitly set to
+     * {@code false} on a versioned node no automatic version should be created on content
+     * update - regardless of any request parameters such as {@code majorVersion} or
+     * {@code comment}. This matches the semantics of {@code VersionableAspect.onContentUpdate}
+     * which all other write paths (Share, CMIS, WebDAV) delegate to.
+     */
+    @Test
+    public void testUpdateContentRespectsAutoVersionFalse() throws Exception
+    {
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        Document d1 = new Document();
+        d1.setName("d1-autoversion-" + System.currentTimeMillis() + ".txt");
+        d1.setNodeType(TYPE_CM_CONTENT);
+
+        // create an empty text file (versioning not yet enabled)
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String docId = documentResp.getId();
+
+        // enable versioning by performing a first update with a comment (now at 1.0)
+        Map<String, String> params = new HashMap<>();
+        params.put("comment", "initial version");
+        documentResp = updateTextFile(docId, "content 1", params);
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        assertEquals("1.0", documentResp.getProperties().get("cm:versionLabel"));
+
+        // disable cm:autoVersion (and cm:autoVersionOnUpdateProps) to reproduce MNT-25259.
+        Map<String, Object> props = new HashMap<>();
+        props.put("cm:autoVersion", false);
+        props.put("cm:autoVersionOnUpdateProps", false);
+        Document dUpdate = new Document();
+        dUpdate.setProperties(props);
+        response = put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals("1.0", documentResp.getProperties().get("cm:versionLabel"));
+
+        // MNT-25259: PUT .../content?majorVersion=false must NOT bump the version when cm:autoVersion=false
+        params = new HashMap<>();
+        params.put("majorVersion", "false");
+        documentResp = updateTextFile(docId, "content 2 - should not version", params);
+        assertEquals("1.0", documentResp.getProperties().get("cm:versionLabel"));
+
+        // PUT .../content with no params must NOT bump the version when cm:autoVersion=false
+        documentResp = updateTextFile(docId, "content 3 - should not version", null);
+        assertEquals("1.0", documentResp.getProperties().get("cm:versionLabel"));
+
+        // PUT .../content?majorVersion=true must NOT bump the version when cm:autoVersion=false
+        params = new HashMap<>();
+        params.put("majorVersion", "true");
+        documentResp = updateTextFile(docId, "content 4 - should not version", params);
+        assertEquals("1.0", documentResp.getProperties().get("cm:versionLabel"));
+
+        // PUT .../content with a comment must also NOT bump the version when cm:autoVersion=false.
+        params = new HashMap<>();
+        params.put("comment", "should still not version");
+        documentResp = updateTextFile(docId, "content 5 - should not version", params);
+        assertEquals("1.0", documentResp.getProperties().get("cm:versionLabel"));
+
+        // PUT .../content?majorVersion=true&comment="..." must NOT bump the version either
+        params = new HashMap<>();
+        params.put("majorVersion", "true");
+        params.put("comment", "should still not version");
+        documentResp = updateTextFile(docId, "content 6 - should not version", params);
+        assertEquals("1.0", documentResp.getProperties().get("cm:versionLabel"));
+
+        // re-enable cm:autoVersion: standard behaviour returns and content updates produce a new version
+        props = new HashMap<>();
+        props.put("cm:autoVersion", true);
+        dUpdate = new Document();
+        dUpdate.setProperties(props);
+        put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+
+        params = new HashMap<>();
+        params.put("majorVersion", "false");
+        documentResp = updateTextFile(docId, "content 7 - auto-version on", params);
+        assertEquals("1.1", documentResp.getProperties().get("cm:versionLabel"));
+    }
+
+    /**
      * Test version history paging.
      *
      * <p>

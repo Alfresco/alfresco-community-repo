@@ -174,7 +174,7 @@
         </property>
     </bean>
 
-    <bean id="patch.patch.cdDefinitionsSpace" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
+    <bean id="patch.cdDefinitionsSpace" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
         <property name="id"><value>patch.cdDefinitionsSpace</value></property>
         <property name="description"><value>patch.cdDefinitionsSpace.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>

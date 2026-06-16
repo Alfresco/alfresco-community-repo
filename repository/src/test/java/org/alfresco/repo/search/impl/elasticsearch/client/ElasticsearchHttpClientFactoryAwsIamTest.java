@@ -47,7 +47,7 @@ public class ElasticsearchHttpClientFactoryAwsIamTest
     {
         elasticsearchHttpClientFactory.setAuthMode("digest");
 
-        assertThatThrownBy(() -> elasticsearchHttpClientFactory.getElasticsearchClient())
+        assertThatThrownBy(elasticsearchHttpClientFactory::getElasticsearchClient)
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Unsupported elasticsearch.auth.mode");
     }
@@ -57,7 +57,7 @@ public class ElasticsearchHttpClientFactoryAwsIamTest
     {
         elasticsearchHttpClientFactory.setAuthMode("aws-iam");
 
-        assertThatThrownBy(() -> elasticsearchHttpClientFactory.getElasticsearchClient())
+        assertThatThrownBy(elasticsearchHttpClientFactory::getElasticsearchClient)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("elasticsearch.aws.region");
     }
@@ -86,7 +86,7 @@ public class ElasticsearchHttpClientFactoryAwsIamTest
         elasticsearchHttpClientFactory.setSecureComms("https");
         elasticsearchHttpClientFactory.setPort(443);
 
-        assertThatThrownBy(() -> elasticsearchHttpClientFactory.getElasticsearchClient())
+        assertThatThrownBy(elasticsearchHttpClientFactory::getElasticsearchClient)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("elasticsearch.aws.service");
     }
@@ -100,7 +100,7 @@ public class ElasticsearchHttpClientFactoryAwsIamTest
         elasticsearchHttpClientFactory.setSecureComms("none");
         elasticsearchHttpClientFactory.setPort(443);
 
-        assertThatThrownBy(() -> elasticsearchHttpClientFactory.getElasticsearchClient())
+        assertThatThrownBy(elasticsearchHttpClientFactory::getElasticsearchClient)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("elasticsearch.secureComms")
                 .hasMessageContaining("https");
@@ -115,7 +115,7 @@ public class ElasticsearchHttpClientFactoryAwsIamTest
         elasticsearchHttpClientFactory.setSecureComms("mtls");
         elasticsearchHttpClientFactory.setPort(443);
 
-        assertThatThrownBy(() -> elasticsearchHttpClientFactory.getElasticsearchClient())
+        assertThatThrownBy(elasticsearchHttpClientFactory::getElasticsearchClient)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("elasticsearch.secureComms")
                 .hasMessageContaining("https");
@@ -130,7 +130,7 @@ public class ElasticsearchHttpClientFactoryAwsIamTest
         elasticsearchHttpClientFactory.setSecureComms("https");
         elasticsearchHttpClientFactory.setPort(9200);
 
-        assertThatThrownBy(() -> elasticsearchHttpClientFactory.getElasticsearchClient())
+        assertThatThrownBy(elasticsearchHttpClientFactory::getElasticsearchClient)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("elasticsearch.port")
                 .hasMessageContaining("443");
@@ -146,7 +146,7 @@ public class ElasticsearchHttpClientFactoryAwsIamTest
         elasticsearchHttpClientFactory.setPort(443);
         elasticsearchHttpClientFactory.setBaseUrl("/alfresco");
 
-        assertThatThrownBy(() -> elasticsearchHttpClientFactory.getElasticsearchClient())
+        assertThatThrownBy(elasticsearchHttpClientFactory::getElasticsearchClient)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("elasticsearch.baseUrl");
     }

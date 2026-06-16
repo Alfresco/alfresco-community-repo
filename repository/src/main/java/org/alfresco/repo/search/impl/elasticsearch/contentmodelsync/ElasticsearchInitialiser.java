@@ -111,12 +111,14 @@ public class ElasticsearchInitialiser implements DictionaryListener
     /**
      * Stop the index initialization. This method is required when the Spring context is reloaded in order to stop the asynchronous initialization.
      */
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
     public void stop()
     {
         LOGGER.debug("Elasticsearch index initialising stopped");
         isTerminated.set(true);
 
         Thread initialiserThread = thread;
+        // Intentional reference comparison: we need to know whether the caller is the initialiser thread itself.
         if (initialiserThread != null && initialiserThread != Thread.currentThread())
         {
             initialiserThread.interrupt();

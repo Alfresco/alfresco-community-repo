@@ -233,7 +233,7 @@ public class ContentModelSynchronizer
         if (!success)
         {
             LOGGER.error("Failed to update analyser settings on index {}: status={}, acknowledged={}, reason={}", indexName,
-                responseStatus, openResponse.acknowledged(), extractErrorReason(rawBody));
+                    responseStatus, openResponse.acknowledged(), extractErrorReason(rawBody));
             LOGGER.debug("Full update settings response body: {}", rawBody);
         }
         return success;

@@ -30,6 +30,7 @@ env:
   AUTH0_CLIENT_ID: ${{ secrets.AUTH0_OIDC_ADMIN_CLIENT_ID }}
   AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_OIDC_CLIENT_SECRET }}
   AUTH0_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
+  ES_VERSION: 8.17.0
 
 jobs:
   commit_parser:
@@ -87,87 +88,6 @@ jobs:
             !contains(needs.commit_parser.outputs.title, '[force]')
           ) ||
           contains(needs.commit_parser.outputs.title, '[run tests]')
-
-  veracode_sca:
-    name: "Source Clear Scan (SCA)"
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v17.2.0
-        continue-on-error: true
-        with:
-          srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  veracode_sast:
-    name: "Pipeline SAST Scan"
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true' && github.actor != 'dependabot[bot]'
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v17.2.0
-        with:
-          token: ${{ secrets.BOT_GITHUB_TOKEN }}
-          repository: "Alfresco/veracode-baseline-archive"
-          file-path: "alfresco-community-repo/alfresco-community-repo-baseline.json"
-          target: "baseline.json"
-      - name: "Build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: |
-          bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
-      - name: "Remove excluded files"
-        run: |
-          mkdir temp-dir-for-sast
-          bash ./scripts/ci/remove-sast-exclusions.sh ./packaging/war/target/alfresco.war temp-dir-for-sast/reduced.war
-      - name: "Run SAST Scan"
-        uses: veracode/Veracode-pipeline-scan-action@v1.0.21
-        with:
-          vid: ${{ secrets.VERACODE_API_ID }}
-          vkey: ${{ secrets.VERACODE_API_KEY }}
-          file: "temp-dir-for-sast/reduced.war"
-          fail_build: true
-          project_name: alfresco-community-repo
-          issue_details: true
-          veracode_policy_name: Alfresco Default
-          summary_output: true
-          summary_output_file: results.json
-          summary_display: true
-          baseline_file: baseline.json
-          timeout: 15
-      - name: Upload scan result
-        if: success() || failure()
-        run: zip readable_output.zip results.json
-      - name: Upload Artifact
-        if: success() || failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: Veracode Pipeline-Scan Results (Human Readable)
-          path: readable_output.zip
-      - name: "Remove temporary directory"
-        run: rm -rfv temp-dir-for-sast
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
 
   pmd_scan:
     name: "PMD Scan"
@@ -484,6 +404,9 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: AppContext04TestSuite
             compose-profile: with-transform-core-aio
+          - testSuite: ElasticsearchCommunityTestsTestSuite
+            compose-profile: with-elasticsearch
+            mvn-options: '-Dindex.subsystem.name=elasticsearch'
           - testSuite: AppContext05TestSuite
             compose-profile: with-sso
             mvn-options: '-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm'

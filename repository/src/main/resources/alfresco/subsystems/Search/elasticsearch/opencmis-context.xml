@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <!-- common-opencmis-context.xml defines the base abstract switching beans and DB CMIS query language beans -->
+   <import resource="../common-opencmis-context.xml" />
+
+    <bean id="search.cmis.alfresco.switching" parent="base.search.cmis.alfresco.switching">
+        <property name="subsystemName" value="elasticsearch"/>
+    </bean>
+
+    <bean id="search.cmis.alfresco.switching1.1" parent="base.search.cmis.alfresco.switching1.1">
+        <property name="subsystemName" value="elasticsearch"/>
+    </bean>
+
+    <bean id="search.cmis.strict.switching" parent="base.search.cmis.strict.switching">
+        <property name="subsystemName" value="elasticsearch"/>
+    </bean>
+
+   <!--
+     search.OpenCMISQueryService and search.OpenCMISQueryService1.1 are exposed to the parent context via
+     SubsystemProxyFactory in alfresco/opencmis-context.xml (subOpenCMISQueryService / subOpenCMISQueryService1.1).
+     OpenCMISDictionaryService and OpenCMISDictionaryService1.1 are defined in the parent alfresco/opencmis-context.xml
+     and are accessible here because the subsystem application context can see parent beans.
+   -->
+   <bean id="search.OpenCMISQueryService" class="org.alfresco.repo.search.impl.OpenCMISQueryServiceImpl">
+       <property name="cmisDictionaryService">
+            <ref bean="OpenCMISDictionaryService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="alfrescoDictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="queryLanguage">
+            <ref bean="search.cmis.alfresco.switching" />
+        </property>
+   </bean>
+
+   <bean id="search.OpenCMISQueryService1.1" class="org.alfresco.repo.search.impl.OpenCMISQueryServiceImpl">
+       <property name="cmisDictionaryService">
+            <ref bean="OpenCMISDictionaryService1.1" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="alfrescoDictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="queryLanguage">
+            <ref bean="search.cmis.alfresco.switching1.1" />
+        </property>
+   </bean>
+
+</beans>
+

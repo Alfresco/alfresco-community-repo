@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model name="acme:contentModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <!-- Optional meta-data about the model -->
+    <description>Content model for the fictive company ACME</description>
+    <author>Martin Bergljung</author>
+    <version>1.0</version>
+
+    <imports>
+        <!-- Import Alfresco Dictionary Definitions -->
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <!-- Import Alfresco Content Domain Model Definitions -->
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <!-- Import Alfresco System Model Definitions -->
+        <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+    </imports>
+
+    <!-- Custom namespace for the ACME company -->
+    <namespaces>
+        <namespace uri="http://www.acme.org/model/content/1.0" prefix="acme"/>
+    </namespaces>
+
+    <constraints>
+        <!-- Contract identifier format in the form of a regular expression constraint.
+            A value in this format looks like "C001"
+         -->
+        <constraint name="acme:contractIdFormat" type="REGEX">
+            <parameter name="expression">
+                <value><![CDATA[^C\d{3}$]]></value>
+            </parameter>
+            <parameter name="requiresMatch">
+                <value>true</value>
+            </parameter>
+        </constraint>
+
+        <constraint name="acme:securityClassificationOptions" type="LIST">
+            <parameter name="allowedValues">
+                <list>
+                    <value></value> <!-- Empty for default search-->
+                    <value>Public</value>
+                    <value>Client Confidential</value>
+                    <value>Company Confidential</value>
+                    <value>Strictly Confidential</value>
+                </list>
+            </parameter>
+        </constraint>
+    </constraints>
+
+    <types>
+        <!--
+            ACME Enterprise-wide Document root type.
+            All other custom document types should extend this one.
+        -->
+        <type name="acme:document">
+            <title>ACME Base document type</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="acme:documentId">
+                    <title>Document Identification Number</title>
+                    <type>d:text</type>
+                </property>
+            </properties>
+            <mandatory-aspects>
+                <aspect>acme:securityClassified</aspect>
+            </mandatory-aspects>
+        </type>
+
+        <type name="acme:contract">
+            <title>ACME Contract document</title>
+            <parent>acme:document</parent>
+            <properties>
+                <property name="acme:contractName">
+                    <title>Contract Name</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="acme:contractId">
+                    <title>Contract Identification Number</title>
+                    <type>d:text</type>
+                    <constraints>
+                        <constraint ref="acme:contractIdFormat" />
+                    </constraints>
+                </property>
+                <property name="acme:contractMultipleText">
+                    <type>d:text</type>
+                    <multiple>true</multiple>
+                </property>
+                <property name="acme:contractMultipleInt">
+                    <type>d:int</type>
+                    <multiple>true</multiple>
+                </property>
+                <property name="acme:contractMultipleDateTime">
+                    <type>d:datetime</type>
+                    <multiple>true</multiple>
+                </property>
+                <property name="acme:contractNotIndexedProperty">
+                    <type>d:text</type>
+                    <index enabled="false">
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="acme:contractTokenisedField">
+                    <type>d:text</type>
+                    <index enabled="true">
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="acme:contractUntokenisedField">
+                    <type>d:text</type>
+                    <index enabled="true">
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="acme:contractTokenisedBothField">
+                    <type>d:text</type>
+                    <index enabled="true">
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </type>
+
+        <type name="acme:policy">
+            <title>ACME Policy document</title>
+            <parent>acme:document</parent>
+            <mandatory-aspects>
+                <aspect>cm:effectivity</aspect> <!-- example usage of out-of-the-box aspect -->
+            </mandatory-aspects>
+        </type>
+
+        <type name="acme:whitePaper">
+            <title>ACME White paper document</title>
+            <parent>acme:document</parent>
+        </type>
+
+        <!-- A folder can have this type applied to represent a project container. -->
+        <type name="acme:project">
+            <title>ACME Project folder</title>
+            <parent>cm:folder</parent>
+            <properties>
+                <property name="acme:projectName">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="acme:projectDescription">
+                    <type>d:text</type>
+                </property>
+                <property name="acme:projectStartDate">
+                    <type>d:date</type>
+                </property>
+            </properties>
+            <associations>
+                <!-- Setup a child-association from the type folder to zero or more members.
+                     Note. peer associations are not indexed and searchable, so using child-association instead.
+                 -->
+                <child-association name="acme:projectMember">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>cm:person</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                    <duplicate>false</duplicate>
+                    <propagateTimestamps>false</propagateTimestamps>
+                </child-association>
+            </associations>
+            <mandatory-aspects>
+                <aspect>acme:projectIdentifier</aspect>
+            </mandatory-aspects>
+        </type>
+    </types>
+
+    <aspects>
+        <!-- A content item would have this aspect applied to indicate that it has been published on a website. -->
+        <aspect name="acme:webPublished">
+            <title>ACME Web published</title>
+            <description>Content has been published to website</description>
+            <properties>
+                <property name="acme:publishedDate">
+                    <type>d:datetime</type>
+                    <mandatory>true</mandatory>
+                </property>
+            </properties>
+        </aspect>
+
+        <!-- The effective indexing defaults for all properties are as follows:
+
+        <index enabled="true">
+            <atomic>true</atomic>
+            <stored>false</stored>
+            <tokenised>true</tokenised>
+        </index>
+
+        facetable = true = DOCTYPE and really fast, setup up properly in solr for faceting, ordered/sorted
+        facetable = false = property is not facetable, i.e. you cannot create a facet from this property
+        facetable = UNSET = faceting works but not as fast and efficient such as when set to true
+        -->
+
+        <!-- A document can have security classification applied and
+             faceted search is specifically enabled for best performance and we change
+             default index config to not tokenize the value. -->
+        <aspect name="acme:securityClassified">
+            <title>ACME Security Classified</title>
+            <description>Content has been security classified</description>
+            <properties>
+                <property name="acme:securityClassification">
+                    <type>d:text</type>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <tokenised>false</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                    <constraints>
+                        <constraint ref="acme:securityClassificationOptions" />
+                    </constraints>
+                </property>
+            </properties>
+        </aspect>
+
+        <!-- A project identifier (i.e. Project Number) that can be applied to any content node that is associated
+            with a particular project.
+            Note. we do not include more project details as that would mean de-normalized model.
+            If you wanted to search on for example Project Name then it would be better to do a custom search
+            field that first looks up the Project details via project type for Project Name and then grabs the Project Number
+            for the searching. -->
+        <aspect name="acme:projectIdentifier">
+            <title>ACME Project Identification</title>
+            <description>Unique project identifier</description>
+            <properties>
+                <property name="acme:projectNumber">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="acme:projectInt">
+                    <type>d:int</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="acme:projectLong">
+                    <type>d:long</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="acme:projectDouble">
+                    <type>d:double</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="acme:projectFloat">
+                    <type>d:float</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="acme:projectBoolean">
+                    <type>d:boolean</type>
+                    <mandatory>true</mandatory>
+                </property>
+            </properties>
+        </aspect>
+
+        <aspect name="acme:projectInfo">
+            <title>ACME Project info unindexed</title>
+            <description>Project information that is not indexed</description>
+            <properties>
+                <property name="acme:projectDetail">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false" />
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+</model>

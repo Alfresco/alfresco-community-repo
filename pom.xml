@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>26.2.0.63-SNAPSHOT</version>
+    <version>26.2.0.67-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -66,6 +66,7 @@
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.81</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.18.0</dependency.mockito-core.version>
+        <dependency.test-parameter-injector.version>1.18</dependency.test-parameter-injector.version>
         <dependency.assertj.version>3.27.3</dependency.assertj.version>
         <dependency.org-json.version>20250517</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.12.0</dependency.commons-dbcp.version>
@@ -91,6 +92,10 @@
         <dependency.activemq.version>6.2.4</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>
+
+        <!-- Elasticsearch / OpenSearch search support -->
+        <dependency.opensearch.version>2.21.0</dependency.opensearch.version>
+        <dependency.lucene.version>9.7.0</dependency.lucene.version>
         <dependency.swagger-ui.version>4.1.3</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.73</dependency.swagger-parser.version>
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
@@ -266,6 +271,36 @@
                 <groupId>org.eclipse.parsson</groupId>
                 <artifactId>parsson</artifactId>
                 <version>${dependency.jakarta-ee-json-impl.version}</version>
+            </dependency>
+
+            <!-- Excluded yasson because it transitively pulls in org.glassfish:jakarta.json which is banned by the enforcer.
+                 The project uses org.eclipse.parsson as the Jakarta JSON-P implementation instead. -->
+            <dependency>
+                <groupId>org.opensearch.client</groupId>
+                <artifactId>opensearch-java</artifactId>
+                <version>${dependency.opensearch.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse</groupId>
+                        <artifactId>yasson</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queryparser</artifactId>
+                <version>${dependency.lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${dependency.lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analysis-common</artifactId>
+                <version>${dependency.lucene.version}</version>
             </dependency>
 
             <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->
@@ -845,6 +880,12 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${dependency.mockito-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.testparameterinjector</groupId>
+                <artifactId>test-parameter-injector</artifactId>
+                <version>${dependency.test-parameter-injector.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>

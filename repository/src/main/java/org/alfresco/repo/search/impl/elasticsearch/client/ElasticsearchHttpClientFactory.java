@@ -26,7 +26,6 @@
 package org.alfresco.repo.search.impl.elasticsearch.client;
 
 import java.time.Duration;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 

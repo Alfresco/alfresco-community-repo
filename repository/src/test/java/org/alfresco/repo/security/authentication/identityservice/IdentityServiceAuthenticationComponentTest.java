@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,12 +25,12 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.net.ConnectException;
-import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,37 +40,36 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
-import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 
+/**
+ * Verifies the slim {@link IdentityServiceAuthenticationComponent} contract: it delegates credential validation to its injected {@link UserTokenProvider} and translates failures into {@link AuthenticationException}. The decorator/caching behaviour is covered by dedicated unit tests on {@link CachingUserTokenProvider} and {@link DirectUserTokenProvider}; this test deliberately knows nothing about caching.
+ */
 public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
 {
+    private static final String TEST_USER = "username";
+    private static final String TEST_PASS = "password";
+    private static final String FRESH_TOKEN = "fresh.jwt.value";
+
     private final IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent();
 
     @Autowired
     private AuthenticationContext authenticationContext;
-
     @Autowired
     private TransactionService transactionService;
-
     @Autowired
     private UserRegistrySynchronizer userRegistrySynchronizer;
-
     @Autowired
     private NodeService nodeService;
-
     @Autowired
     private PersonService personService;
 
-    private IdentityServiceJITProvisioningHandler jitProvisioning;
-    private IdentityServiceFacade mockIdentityServiceFacade;
+    private UserTokenProvider userTokenProvider;
 
     @Before
     public void setUp()
@@ -81,10 +80,8 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         authComponent.setNodeService(nodeService);
         authComponent.setPersonService(personService);
 
-        jitProvisioning = mock(IdentityServiceJITProvisioningHandler.class);
-        mockIdentityServiceFacade = mock(IdentityServiceFacade.class);
-        authComponent.setJitProvisioningHandler(jitProvisioning);
-        authComponent.setIdentityServiceFacade(mockIdentityServiceFacade);
+        userTokenProvider = mock(UserTokenProvider.class);
+        authComponent.setUserTokenProvider(userTokenProvider);
     }
 
     @After
@@ -96,24 +93,22 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail()
     {
-        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
+        doThrow(new AuthorizationException("Failed"))
+                .when(userTokenProvider).getUserToken(any(UserTokenRequest.class));
 
-        doThrow(new AuthorizationException("Failed")).when(mockIdentityServiceFacade).authorize(grant);
-
-        authComponent.authenticateImpl("username", "password".toCharArray());
+        authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
     }
 
     @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail_connectionException()
     {
-        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
-
-        doThrow(new AuthorizationException("Couldn't connect to server", new ConnectException("ConnectionRefused")))
-                .when(mockIdentityServiceFacade).authorize(grant);
+        doThrow(new AuthorizationException("Couldn't connect to server",
+                new ConnectException("ConnectionRefused")))
+                        .when(userTokenProvider).getUserToken(any(UserTokenRequest.class));
 
         try
         {
-            authComponent.authenticateImpl("username", "password".toCharArray());
+            authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
         }
         catch (RuntimeException ex)
         {
@@ -126,39 +121,28 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail_otherException()
     {
-        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
-
         doThrow(new RuntimeException("Some other errors!"))
-                .when(mockIdentityServiceFacade)
-                .authorize(grant);
+                .when(userTokenProvider).getUserToken(any(UserTokenRequest.class));
 
-        authComponent.authenticateImpl("username", "password".toCharArray());
+        authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
     }
 
     @Test
     public void testAuthenticationPass()
     {
-        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
-        AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
-        IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
+        when(userTokenProvider.getUserToken(any(UserTokenRequest.class)))
+                .thenReturn(new UserToken(TEST_USER, FRESH_TOKEN));
 
-        when(authorization.getAccessToken()).thenReturn(accessToken);
-        when(accessToken.getTokenValue()).thenReturn("JWT_TOKEN");
-        when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
-        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN"))
-                .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
+        authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
 
-        authComponent.authenticateImpl("username", "password".toCharArray());
-
-        // Check that the authenticated user has been set
-        assertEquals("User has not been set as expected.", "username", authenticationContext.getCurrentUserName());
+        assertEquals("User has not been set as expected.", TEST_USER, authenticationContext.getCurrentUserName());
     }
 
     @Test(expected = AuthenticationException.class)
-    public void testFallthroughWhenIdentityServiceFacadeIsNull()
+    public void testFallthroughWhenUserTokenProviderIsNull()
     {
-        authComponent.setIdentityServiceFacade(null);
-        authComponent.authenticateImpl("username", "password".toCharArray());
+        authComponent.setUserTokenProvider(null);
+        authComponent.authenticateImpl(TEST_USER, TEST_PASS.toCharArray());
     }
 
     @Test

@@ -1,0 +1,18 @@
+{
+  "test%3Aproperty": {
+    "meta": {
+      "DecodedQualifiedName": "test:property"
+    },
+    "type": "text",
+    "analyzer": "locale_content_index",
+    "search_analyzer": "locale_content_query",
+    "copy_to": [
+      "test%3Aproperty_exact"
+    ]
+  },
+  "test%3Aproperty_exact": {
+    "type": "text",
+    "analyzer": "locale_cross_content_index",
+    "search_analyzer": "locale_cross_content_query"
+  }
+}

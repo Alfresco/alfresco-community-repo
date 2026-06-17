@@ -1,0 +1,19 @@
+{
+    "settings": {
+        "analysis": {
+            "analyzer": {
+                "alfresco_custom_analyzer": {
+                    "type": "custom",
+                    "tokenizer": "standard",
+                    "char_filter": [
+                        "html_strip"
+                    ],
+                    "filter": [
+                        "lowercase",
+                        "asciifolding"
+                    ]
+                }
+            }
+        }
+    }
+}

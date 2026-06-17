@@ -29,9 +29,12 @@ import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import org.alfresco.repo.security.authentication.identityservice.CachingUserTokenProviderTest;
 import org.alfresco.repo.security.authentication.identityservice.ClientRegistrationProviderUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.DirectUserTokenProviderTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBeanTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceUserTokenWiringTest;
 import org.alfresco.repo.security.authentication.identityservice.LazyInstantiatingIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.SpringBasedIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.authentication.AdditionalHeadersHttpServletRequestWrapperUnitTest;
@@ -48,7 +51,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
  */
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
-@Suite.SuiteClasses(value = {
+@Suite.SuiteClasses({
         org.alfresco.repo.site.SiteMembershipTest.class,
         org.alfresco.encryption.EncryptorTest.class,
         org.alfresco.encryption.KeyStoreKeyProviderTest.class,
@@ -161,6 +164,9 @@ import org.alfresco.util.testing.category.NonBuildTests;
         IdentityServiceAdminConsoleAuthenticatorUnitTest.class,
         IdentityServiceWebScriptsHomeAuthenticatorUnitTest.class,
         ClientRegistrationProviderUnitTest.class,
+        CachingUserTokenProviderTest.class,
+        DirectUserTokenProviderTest.class,
+        IdentityServiceUserTokenWiringTest.class,
         org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
         org.alfresco.repo.security.authentication.PasswordHashingTest.class,
         org.alfresco.repo.security.authority.script.ScriptAuthorityService_RegExTest.class,
@@ -208,6 +214,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.action.executer.TransformActionExecuterTest.class,
         org.alfresco.repo.action.executer.ImporterActionExecutorUnitTest.class,
         org.alfresco.repo.audit.AuditableAnnotationTest.class,
+        org.alfresco.repo.audit.AuditComponentImplUnitTest.class,
         org.alfresco.repo.audit.PropertyAuditFilterTest.class,
         org.alfresco.repo.audit.access.NodeChangeTest.class,
         org.alfresco.repo.content.ContentServiceImplUnitTest.class,
@@ -278,7 +285,48 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.domain.dialect.DBConnectionPropertiesFactoryBeanTest.class,
 
         org.alfresco.repo.node.propertyextender.PropertyExtenderInterceptorTest.class,
-        org.alfresco.repo.node.propertyextender.PropertyExtendersHolderTest.class
+        org.alfresco.repo.node.propertyextender.PropertyExtendersHolderTest.class,
+
+        // Elasticsearch unit tests
+        org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsServiceTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactoryTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSearchServiceTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.ElasticsearchCategoryServiceTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.permission.FlatElasticsearchPermissionQueryFactoryTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.model.FieldNameTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchQueryExecutorTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchQueryHelperTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.ScrollSearchStrategyTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.SearchExecutionStrategyTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.SearchRequestBuilderServiceTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.SearchStrategySelectorTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.StoreRefStripperTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilderTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.AFTSBooleanOperatorsAdaptorTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.DateMathConverterTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ElasticsearchAFTSQueryBuilderTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ElasticsearchQueryParserAdaptorTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.QueryBoosterTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.CMISQueryBuilderTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.EscapeCharacterTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.FuzzyQueryTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.LuceneXPathHandlerTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PathQueryConverterTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PrefixQueryTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.RangeQueryTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.TermOrPhraseQueryTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.WildcardQueryTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResultSetBuilderTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtilTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiserTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.FieldMappingBuilderTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.ResourceUtilsTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.SettingsJsonUtilsTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.DateFieldMapperTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.PathFieldMapperTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.SimpleFieldMapperTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.TextFieldMapperTest.class
 })
 public class AllUnitTestsSuite
 {}

@@ -1,0 +1,12 @@
+{
+  "test%3Aproperty":{
+    "meta": {
+      "DecodedQualifiedName": "test:property"
+    },
+    "type": "keyword"
+  },
+  "test%3Aproperty_untokenized": {
+    "type": "alias",
+    "path": "test%3Aproperty"
+  }
+}

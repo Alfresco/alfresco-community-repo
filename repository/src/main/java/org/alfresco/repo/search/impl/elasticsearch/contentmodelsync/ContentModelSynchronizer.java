@@ -205,9 +205,12 @@ public class ContentModelSynchronizer
             responseStatus = response.getStatus();
             rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            requestFailure = e;
+            requestFailure = (e instanceof IOException ioe)
+                    ? ioe
+                    : new IOException("Failed to update analyser settings on index " + indexName, e);
+            LOGGER.error("Failed to update analyser settings on index {}", indexName, e);
         }
         finally
         {
@@ -216,9 +219,12 @@ public class ContentModelSynchronizer
                 openResponse = indices.open(new OpenRequest.Builder().index(indexName)
                         .build());
             }
-            catch (IOException openException)
+            catch (Exception openException)
             {
-                openFailure = openException;
+                openFailure = (openException instanceof IOException ioe)
+                        ? ioe
+                        : new IOException("Failed to reopen index " + indexName + " after settings update", openException);
+                LOGGER.error("Failed to reopen index {} after settings update; index may be left closed", indexName, openException);
             }
         }
 

@@ -6938,7 +6938,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // -ve: Checkout on a non-existent node (404)
         post(getNodeOperationUrl("fakeNodeId", "checkout"), null, null, 404);
 
-        // -ve: Checkout a node that is already checked out (422)
+        // -ve: Checkout a node that is already checked out (409)
         post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
         // Trying to checkout again should fail
         post(getNodeOperationUrl(d1Id, "checkout"), null, null, 409);

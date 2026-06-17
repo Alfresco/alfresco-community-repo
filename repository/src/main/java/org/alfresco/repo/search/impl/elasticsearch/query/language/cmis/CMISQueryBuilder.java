@@ -90,6 +90,8 @@ public class CMISQueryBuilder implements LanguageQueryBuilder
     public org.opensearch.client.opensearch._types.query_dsl.Query getQuery(SearchParameters searchParameters) throws ParseException
     {
         CMISQueryOptions options = CMISQueryOptions.create(searchParameters);
+        //We are in the SearchParameters domain. Filter from the CMISQueryOptions has been already translated to SearchParameters filter query.
+        options.clearQueryFilter();
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
 
         QueryModelFactory factory = new LuceneQueryModelFactory<>();

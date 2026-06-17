@@ -7125,6 +7125,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // The returned node should be the original (checked-in) node
         assertEquals("Auto check-in via WC should return original node id", d1Id, updatedDoc.getId());
 
+        // Verify the content has been updated
+        HttpResponse contentResponse = getSingle(getNodeContentUrl(d1Id), user1, null, 200);
+        assertEquals("Updated via working copy id v4.", contentResponse.getResponse());
+
         // Verify working copy is deleted
         getSingle(URL_NODES, wcId, null, null, 404);
 

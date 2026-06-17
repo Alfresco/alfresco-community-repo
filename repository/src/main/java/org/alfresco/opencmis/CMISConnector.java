@@ -56,6 +56,7 @@ import java.util.TreeSet;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
+import org.alfresco.opencmis.mapping.CMISFacade;
 import org.apache.chemistry.opencmis.commons.BasicPermissions;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
@@ -250,7 +251,7 @@ import org.alfresco.util.TempFileProvider;
  * @author Derek Hulley
  * @author steveglover
  */
-public class CMISConnector implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer
+public class CMISConnector implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer, CMISFacade
 {
     private static Log logger = LogFactory.getLog(CMISConnector.class);
 
@@ -1243,6 +1244,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public CMISNodeInfoImpl createNodeInfo(AssociationRef assocRef)
     {
         return new CMISNodeInfoImpl(this, assocRef);
+    }
+
+    @Override
+    public boolean isWorkingCopy(NodeRef nodeRef)
+    {
+        return getCheckOutCheckInService().isWorkingCopy(nodeRef);
     }
 
     /* Strip store ref from the id, if there is one. */

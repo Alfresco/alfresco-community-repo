@@ -15,18 +15,20 @@
         </property>
     </bean>
 
+    <bean id="OpenCMISFacade" class="org.alfresco.opencmis.mapping.RuntimeSwitchingCMISFacade" autowire="constructor">
+        <property name="fallbackFacade" ref="CMISConnector" />
+    </bean>
+
     <bean id="OpenCMISPropertyAccessorMapping" class="org.alfresco.opencmis.mapping.RuntimePropertyAccessorMapping" init-method="init">
         <property name="serviceRegistry"           ref="ServiceRegistry" />
-        <property name="cmisConnector"             ref="CMISConnector" />
+        <property name="cmisConnector"             ref="OpenCMISFacade" />
         <property name="cmisMapping"               ref="OpenCMISMapping" />
-        <property name="cmisDictionaryService"     ref="OpenCMISDictionaryService" />
     </bean>
     
     <bean id="OpenCMISPropertyAccessorMapping1.1" class="org.alfresco.opencmis.mapping.RuntimePropertyAccessorMapping" init-method="init">
         <property name="serviceRegistry"           ref="ServiceRegistry" />
-        <property name="cmisConnector"             ref="CMISConnector" />
+        <property name="cmisConnector"             ref="OpenCMISFacade" />
         <property name="cmisMapping"               ref="OpenCMISMapping1.1" />
-        <property name="cmisDictionaryService"     ref="OpenCMISDictionaryService1.1" />
     </bean>
     
     <bean id="OpenCMISPropertyLuceneBuilderMapping" class="org.alfresco.opencmis.mapping.RuntimePropertyLuceneBuilderMapping" >

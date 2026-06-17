@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -32,7 +32,6 @@ import java.util.Set;
 
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
-import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -47,12 +46,9 @@ public class SecondaryTypesProperty extends AbstractProperty
 {
     private CMISMapping cmisMapping;
 
-    /**
-     * Construct
-     */
-    public SecondaryTypesProperty(ServiceRegistry serviceRegistry, CMISConnector connector, CMISMapping cmisMapping)
+    public SecondaryTypesProperty(ServiceRegistry serviceRegistry, CMISFacade cmisFacade, CMISMapping cmisMapping)
     {
-        super(serviceRegistry, connector, PropertyIds.SECONDARY_OBJECT_TYPE_IDS);
+        super(serviceRegistry, cmisFacade, PropertyIds.SECONDARY_OBJECT_TYPE_IDS);
         this.cmisMapping = cmisMapping;
     }
 

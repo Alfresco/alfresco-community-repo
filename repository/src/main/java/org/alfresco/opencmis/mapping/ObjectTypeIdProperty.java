@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,8 +30,6 @@ import java.util.Collections;
 
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
-import org.alfresco.opencmis.CMISConnector;
-import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 
@@ -42,20 +40,9 @@ import org.alfresco.service.ServiceRegistry;
  */
 public class ObjectTypeIdProperty extends AbstractProperty
 {
-    /**
-     * Construct
-     *
-     * @param serviceRegistry
-     *            ServiceRegistry
-     * @param connector
-     *            CMISConnector
-     * @param dictionaryService
-     *            CMISDictionaryService
-     */
-    public ObjectTypeIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector,
-            CMISDictionaryService dictionaryService)
+    public ObjectTypeIdProperty(ServiceRegistry serviceRegistry, CMISFacade cmisFacade)
     {
-        super(serviceRegistry, connector, PropertyIds.OBJECT_TYPE_ID);
+        super(serviceRegistry, cmisFacade, PropertyIds.OBJECT_TYPE_ID);
     }
 
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)

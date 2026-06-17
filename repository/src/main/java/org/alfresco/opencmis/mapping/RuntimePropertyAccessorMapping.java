@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -40,7 +40,6 @@ import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
@@ -61,9 +60,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
 
     // Service dependencies
     private ServiceRegistry serviceRegistry;
-    private CMISConnector cmisConnector;
+    private CMISFacade cmisFacade;
     private CMISMapping cmisMapping;
-    private CMISDictionaryService cmisDictionaryService;
 
     private Map<String, AbstractProperty> propertyAccessors = new HashMap<String, AbstractProperty>();
     private Map<BaseTypeId, Map<Action, CMISActionEvaluator>> actionEvaluators = new HashMap<BaseTypeId, Map<Action, CMISActionEvaluator>>();
@@ -77,13 +75,10 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         this.serviceRegistry = serviceRegistry;
     }
 
-    /**
-     * @param cmisConnector
-     *            CMISConnector
-     */
-    public void setCmisConnector(CMISConnector cmisConnector)
+    //The `setCmisConnector` name is keep for backward compatibility
+    public void setCmisConnector(CMISFacade cmisFacade)
     {
-        this.cmisConnector = cmisConnector;
+        this.cmisFacade = cmisFacade;
     }
 
     /**
@@ -101,7 +96,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
      */
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
-        this.cmisDictionaryService = cmisDictionaryService;
+        logger.warn("Setting cmisDictionaryService has no effect. Change your spring configuration.");
     }
 
     /* (non-Javadoc)
@@ -113,44 +108,44 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         // Property Mappings
         //
 
-        registerPropertyAccessor(new ObjectIdProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new NodeRefProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new ObjectTypeIdProperty(serviceRegistry, cmisConnector, cmisDictionaryService));
-        registerPropertyAccessor(new BaseTypeIdProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new DirectProperty(serviceRegistry, cmisConnector, PropertyIds.CREATED_BY,
+        registerPropertyAccessor(new ObjectIdProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new NodeRefProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new ObjectTypeIdProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new BaseTypeIdProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, cmisFacade, PropertyIds.CREATED_BY,
                 ContentModel.PROP_CREATOR));
-        registerPropertyAccessor(new CreationDateProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new DirectProperty(serviceRegistry, cmisConnector, PropertyIds.LAST_MODIFIED_BY,
+        registerPropertyAccessor(new CreationDateProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, cmisFacade, PropertyIds.LAST_MODIFIED_BY,
                 ContentModel.PROP_MODIFIER));
-        registerPropertyAccessor(new ModificationDateProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new FixedValueProperty(serviceRegistry, cmisConnector, PropertyIds.CHANGE_TOKEN, null));
-        registerPropertyAccessor(new NameProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new IsImmutableProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new IsLatestVersionProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new IsMajorVersionProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new IsLatestMajorVersionProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new VersionLabelProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new VersionSeriesIdProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new IsVersionSeriesCheckedOutProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new VersionSeriesCheckedOutByProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new VersionSeriesCheckedOutIdProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new CheckinCommentProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new ContentStreamLengthProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new ContentStreamMimetypeProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new ContentStreamIdProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new ContentStreamFileNameProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new ParentProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new PathProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new AllowedChildObjectTypeIdsProperty(serviceRegistry, cmisConnector, cmisMapping));
-        registerPropertyAccessor(new SourceIdProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new TargetIdProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new DescriptionProperty(serviceRegistry, cmisConnector));
+        registerPropertyAccessor(new ModificationDateProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new FixedValueProperty(serviceRegistry, cmisFacade, PropertyIds.CHANGE_TOKEN, null));
+        registerPropertyAccessor(new NameProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new IsImmutableProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new IsLatestVersionProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new IsMajorVersionProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new IsLatestMajorVersionProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new VersionLabelProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new VersionSeriesIdProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new IsVersionSeriesCheckedOutProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new VersionSeriesCheckedOutByProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new VersionSeriesCheckedOutIdProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new CheckinCommentProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new ContentStreamLengthProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new ContentStreamMimetypeProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new ContentStreamIdProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new ContentStreamFileNameProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new ParentProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new PathProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new AllowedChildObjectTypeIdsProperty(serviceRegistry, cmisFacade, cmisMapping));
+        registerPropertyAccessor(new SourceIdProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new TargetIdProperty(serviceRegistry, cmisFacade));
+        registerPropertyAccessor(new DescriptionProperty(serviceRegistry, cmisFacade));
         if (cmisMapping.getCmisVersion().equals(CmisVersion.CMIS_1_1))
         {
-            registerPropertyAccessor(new SecondaryTypesProperty(serviceRegistry, cmisConnector, cmisMapping));
+            registerPropertyAccessor(new SecondaryTypesProperty(serviceRegistry, cmisFacade, cmisMapping));
 
             // MNT-11631: 'cmis:isPrivateWorkingCopy' property accessor
-            registerPropertyAccessor(new IsPrivateWorkingCopy(serviceRegistry, cmisConnector));
+            registerPropertyAccessor(new IsPrivateWorkingCopy(serviceRegistry, cmisFacade));
         }
 
         //
@@ -337,7 +332,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
      */
     public CMISPropertyAccessor createDirectPropertyAccessor(String propertyId, QName propertyName)
     {
-        return new DirectProperty(serviceRegistry, cmisConnector, propertyId, propertyName);
+        return new DirectProperty(serviceRegistry, cmisFacade, propertyId, propertyName);
     }
 
     /**

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,7 +30,6 @@ import java.io.Serializable;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 
-import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 
@@ -41,17 +40,9 @@ import org.alfresco.service.ServiceRegistry;
  */
 public class BaseTypeIdProperty extends AbstractProperty
 {
-    /**
-     * Construct
-     * 
-     * @param serviceRegistry
-     *            ServiceRegistry
-     * @param connector
-     *            CMISConnector
-     */
-    public BaseTypeIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
+    public BaseTypeIdProperty(ServiceRegistry serviceRegistry, CMISFacade cmisFacade)
     {
-        super(serviceRegistry, connector, PropertyIds.BASE_TYPE_ID);
+        super(serviceRegistry, cmisFacade, PropertyIds.BASE_TYPE_ID);
     }
 
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)

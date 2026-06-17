@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,7 +30,6 @@ import java.io.Serializable;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.namespace.QName;
@@ -42,15 +41,9 @@ import org.alfresco.service.namespace.QName;
  */
 public class NameProperty extends AbstractProperty
 {
-    /**
-     * Construct
-     * 
-     * @param serviceRegistry
-     *            ServiceRegistry
-     */
-    public NameProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
+    public NameProperty(ServiceRegistry serviceRegistry, CMISFacade cmisFacade)
     {
-        super(serviceRegistry, connector, PropertyIds.NAME);
+        super(serviceRegistry, cmisFacade, PropertyIds.NAME);
     }
 
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)

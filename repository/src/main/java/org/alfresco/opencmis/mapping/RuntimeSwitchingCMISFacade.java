@@ -42,7 +42,7 @@ class RuntimeSwitchingCMISFacade implements CMISFacade
     private static final Logger LOGGER = LoggerFactory.getLogger(RuntimeSwitchingCMISFacade.class);
     private CMISFacade fallbackFacade;
     private final Map<String, CMISFacadeProvider> facadeProviders;
-    private boolean failOnManyFacades = false;
+    private boolean failOnManyFacades;
 
     RuntimeSwitchingCMISFacade(Map<String, CMISFacadeProvider> facadeProviders)
     {

@@ -1169,6 +1169,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         return transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionCallback<NodeRef>() {
+                    @Override
                     public NodeRef execute() throws Exception
                     {
                         NodeRef root = nodeService.getRootNode(storeRef);

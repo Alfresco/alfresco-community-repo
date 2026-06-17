@@ -329,7 +329,9 @@ public class CMISQueryOptions extends QueryOptions
         {
             final Constraint filterConstraint = getFilterConstraint(queryModelFactory);
             if (constraint == null)
+            {
                 return filterConstraint;
+            }
             return queryModelFactory.createConjunction(List.of(filterConstraint, constraint));
         }
 

@@ -25,6 +25,7 @@
  */
 package org.alfresco.opencmis.mapping;
 
+@FunctionalInterface
 public interface CMISFacadeProvider
 {
     CMISFacade getCMISFacade();

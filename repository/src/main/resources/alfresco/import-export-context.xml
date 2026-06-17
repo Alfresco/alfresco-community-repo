@@ -611,12 +611,6 @@
                     <prop key="location">alfresco/bootstrap/transferSpaces.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>       
                 </props>
-
-                <props>
-                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
-                    <prop key="location">alfresco/bootstrap/cdDefinitionsSpaces.xml</prop>
-                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-                </props>
                 
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>

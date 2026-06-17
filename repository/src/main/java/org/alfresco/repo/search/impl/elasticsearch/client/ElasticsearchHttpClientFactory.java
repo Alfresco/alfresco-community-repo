@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.client;
 
+import java.time.Duration;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
@@ -289,7 +291,10 @@ public class ElasticsearchHttpClientFactory
                     protocol + "://" + host + ":" + port + baseUrl, awsService, awsRegion);
         }
 
-        SdkAsyncHttpClient awsHttpClient = NettyNioAsyncHttpClient.create();
+        SdkAsyncHttpClient awsHttpClient = NettyNioAsyncHttpClient.builder()
+                .connectionTimeout(Duration.ofMillis(connectionTimeout))
+                .readTimeout(Duration.ofMillis(socketTimeout))
+                .build();
 
         OpenSearchTransport transport = new AwsSdk2Transport(
                 awsHttpClient,
@@ -352,7 +357,7 @@ public class ElasticsearchHttpClientFactory
                     "elasticsearch.port must be 443 when elasticsearch.auth.mode=aws-iam");
         }
 
-        if (StringUtils.isNotBlank(baseUrl) && !"/".equals(baseUrl))
+        if (!"/".equals(StringUtils.trimToNull(baseUrl)))
         {
             throw new IllegalStateException(
                     "elasticsearch.baseUrl must be '/' when elasticsearch.auth.mode=aws-iam");

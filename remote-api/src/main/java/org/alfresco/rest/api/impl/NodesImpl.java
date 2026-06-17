@@ -3193,6 +3193,19 @@ public class NodesImpl implements Nodes
         return null;
     }
 
+    private void writeContentWithoutVersioning(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding)
+    {
+        behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        try
+        {
+            writeContent(nodeRef, fileName, stream, guessEncoding);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        }
+    }
+
     private Node updateCheckedOutContent(NodeRef workingCopyRef, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
     {
         String fileName = parameters.getParameter(PARAM_NAME);
@@ -3205,16 +3218,7 @@ public class NodesImpl implements Nodes
         {
             fileName = (String) nodeService.getProperty(workingCopyRef, ContentModel.PROP_NAME);
         }
-        behaviourFilter.disableBehaviour(workingCopyRef, ContentModel.ASPECT_VERSIONABLE);
-        try
-        {
-            // Write content to the working copy
-            writeContent(workingCopyRef, fileName, stream, true);
-        }
-        finally
-        {
-            behaviourFilter.enableBehaviour(workingCopyRef, ContentModel.ASPECT_VERSIONABLE);
-        }
+        writeContentWithoutVersioning(workingCopyRef, fileName, stream, true);
 
         Map<String, Serializable> versionProperties = buildVersionProperties(workingCopyRef, versionMajor, versionComment);
         // Checkin: this copies working copy content to the original, removes the working copy,

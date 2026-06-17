@@ -195,52 +195,16 @@ public class ContentModelSynchronizer
                 .indices();
         indices.close(new CloseIndexRequest.Builder().index(indexName)
                 .build());
-        OpenResponse openResponse = null;
-        int responseStatus = -1;
-        String rawBody = "{}";
-        IOException requestFailure = null;
-        IOException openFailure = null;
+        OpenResponse openResponse;
+        int responseStatus;
+        String rawBody;
         try (Response response = httpClientFactory.getElasticsearchClient().generic().execute(requests))
         {
             responseStatus = response.getStatus();
             rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
         }
-        catch (Exception e)
-        {
-            requestFailure = (e instanceof IOException ioe)
-                    ? ioe
-                    : new IOException("Failed to update analyser settings on index " + indexName, e);
-            LOGGER.error("Failed to update analyser settings on index {}", indexName, e);
-        }
-        finally
-        {
-            try
-            {
-                openResponse = indices.open(new OpenRequest.Builder().index(indexName)
-                        .build());
-            }
-            catch (Exception openException)
-            {
-                openFailure = (openException instanceof IOException ioe)
-                        ? ioe
-                        : new IOException("Failed to reopen index " + indexName + " after settings update", openException);
-                LOGGER.error("Failed to reopen index {} after settings update; index may be left closed", indexName, openException);
-            }
-        }
-
-        if (requestFailure != null)
-        {
-            if (openFailure != null)
-            {
-                requestFailure.addSuppressed(openFailure);
-            }
-            throw requestFailure;
-        }
-
-        if (openFailure != null)
-        {
-            throw openFailure;
-        }
+        openResponse = indices.open(new OpenRequest.Builder().index(indexName)
+                .build());
 
         boolean success = responseStatus == 200 && openResponse.acknowledged();
         if (!success)

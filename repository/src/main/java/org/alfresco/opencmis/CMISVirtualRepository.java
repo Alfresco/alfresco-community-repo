@@ -25,35 +25,39 @@
  */
 package org.alfresco.opencmis;
 
+import java.util.List;
+import java.util.Set;
+
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-import java.util.List;
-import java.util.Set;
-
 /**
- * Responsible for limiting the CMIS access to a subset of the repository. By applying such limitations it allows to
- * create multiple CMIS repositories on a single Alfresco repository. It's just an extension point for the CMIS classes,
- * and it's up to the implementation to decide how to apply such limitations.
+ * Responsible for limiting the CMIS access to a subset of the repository. By applying such limitations it allows to create multiple CMIS repositories on a single Alfresco repository. It's just an extension point for the CMIS classes, and it's up to the implementation to decide how to apply such limitations.
+ * 
  * @see CMISConnector
  * @see AlfrescoCmisServiceImpl
  */
-public interface CMISVirtualRepository {
-    static CMISVirtualRepository noVirtualRepository() {
+public interface CMISVirtualRepository
+{
+    static CMISVirtualRepository noVirtualRepository()
+    {
         return new NoVirtualRepository();
     }
 
     /**
      * Checks if given node is part of the repository.
-     * @param nodeRef node's reference
+     * 
+     * @param nodeRef
+     *            node's reference
      * @return {@code true} if given node belongs to the repository, {@code false} otherwise.
      */
     boolean contains(NodeRef nodeRef);
 
     /**
      * Allows to apply children listing filter.
+     * 
      * @return {@link List} of {@link FilterProp}
      * @see org.alfresco.service.cmr.model.FileFolderService
      */
@@ -61,13 +65,14 @@ public interface CMISVirtualRepository {
 
     /**
      * Allows to apply CMIS query filter.
+     * 
      * @see org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryFilter
      */
     void applyQueryFiltering(CMISQueryOptions options);
 
     /**
-     * Allows to indicate that some aspects are required by the implementation of the virtual repository.
-     * These aspects might be applied outside the CMIS flow and will be retained.
+     * Allows to indicate that some aspects are required by the implementation of the virtual repository. These aspects might be applied outside the CMIS flow and will be retained.
+     * 
      * @return Set of required aspects
      */
     Set<QName> getRequiredAspects();
@@ -79,22 +84,26 @@ public interface CMISVirtualRepository {
 class NoVirtualRepository implements CMISVirtualRepository
 {
     @Override
-    public boolean contains(NodeRef nodeRef) {
+    public boolean contains(NodeRef nodeRef)
+    {
         return true;
     }
 
     @Override
-    public List<FilterProp> getChildrenFilteringProperties() {
+    public List<FilterProp> getChildrenFilteringProperties()
+    {
         return List.of();
     }
 
     @Override
-    public void applyQueryFiltering(CMISQueryOptions options) {
-        //do nothing
+    public void applyQueryFiltering(CMISQueryOptions options)
+    {
+        // do nothing
     }
 
     @Override
-    public Set<QName> getRequiredAspects() {
+    public Set<QName> getRequiredAspects()
+    {
         return Set.of();
     }
 }

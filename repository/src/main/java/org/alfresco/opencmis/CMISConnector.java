@@ -56,7 +56,6 @@ import java.util.TreeSet;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
-import org.alfresco.opencmis.mapping.CMISFacade;
 import org.apache.chemistry.opencmis.commons.BasicPermissions;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
@@ -155,6 +154,7 @@ import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.ItemTypeDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
+import org.alfresco.opencmis.mapping.CMISFacade;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.opencmis.search.CMISQueryService;
@@ -1165,7 +1165,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return rootNodeRef;
     }
 
-    protected NodeRef findRootNode() {
+    protected NodeRef findRootNode()
+    {
         return transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionCallback<NodeRef>() {
                     public NodeRef execute() throws Exception

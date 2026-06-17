@@ -29,7 +29,8 @@ import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-public interface CMISFacade {
+public interface CMISFacade
+{
     CMISNodeInfo createNodeInfo(NodeRef nodeRef);
 
     CMISNodeInfo createNodeInfo(AssociationRef assocRef);

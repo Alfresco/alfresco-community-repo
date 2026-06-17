@@ -32,6 +32,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.ArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
@@ -39,14 +42,10 @@ import org.alfresco.repo.search.impl.querymodel.Function;
 import org.alfresco.repo.search.impl.querymodel.LiteralArgument;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
+import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseComparison;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Equals;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
@@ -240,20 +239,23 @@ public class CMISQueryOptions extends QueryOptions
     }
 
     /**
-     * The purpose of this class is to preserve the {@link CMISQueryFilter} when the {@link CMISQueryOptions} are
-     * transformed to the {@link SearchParameters}. This might happen multiple times, back and forth.
+     * The purpose of this class is to preserve the {@link CMISQueryFilter} when the {@link CMISQueryOptions} are transformed to the {@link SearchParameters}. This might happen multiple times, back and forth.
+     * 
      * @see #create(SearchParameters)
      * @see #getAsSearchParmeters()
      */
-    private static class CMISSearchParameters extends SearchParameters {
+    private static class CMISSearchParameters extends SearchParameters
+    {
         private CMISQueryFilter queryFilter;
 
-        public void setCMISQueryFilter(CMISQueryFilter queryFilter) {
+        public void setCMISQueryFilter(CMISQueryFilter queryFilter)
+        {
             this.queryFilter = queryFilter;
             this.queryFilter.applyAFTSFilter(this::addFilterQuery);
         }
 
-        public CMISQueryFilter getQueryFilter() {
+        public CMISQueryFilter getQueryFilter()
+        {
             return queryFilter;
         }
     }
@@ -261,23 +263,29 @@ public class CMISQueryOptions extends QueryOptions
     /**
      * Allows to filter CMIS query results. Implementations are responsible for adjusting the DB and Index queries.
      */
-    public interface CMISQueryFilter {
-        static CMISQueryFilter propertyEquality(String propertyName, String propertyValue) {
+    public interface CMISQueryFilter
+    {
+        static CMISQueryFilter propertyEquality(String propertyName, String propertyValue)
+        {
             return new CMISPropertyEqualityFilter(propertyName, propertyValue);
         }
 
         /**
          * Responsible for adjusting already existing {@link Constraint}
-         * @param constraint already existing constraints. Can be {@code null} (no {@code WHERE} clause).
-         * @param queryModelFactory factory for creating {@link Constraint}s.
+         * 
+         * @param constraint
+         *            already existing constraints. Can be {@code null} (no {@code WHERE} clause).
+         * @param queryModelFactory
+         *            factory for creating {@link Constraint}s.
          * @return {@link Constraint} effective constraints.
          */
         Constraint applyTo(Constraint constraint, QueryModelFactory queryModelFactory);
 
         /**
-         * CMIS DB query can fall back to the Search Index. When it happens this method is responsible for generating
-         * the AFTS filter the index query.
-         * @param aftsConsumer {@link Consumer} for the AFTS filter.
+         * CMIS DB query can fall back to the Search Index. When it happens this method is responsible for generating the AFTS filter the index query.
+         * 
+         * @param aftsConsumer
+         *            {@link Consumer} for the AFTS filter.
          */
         void applyAFTSFilter(Consumer<String> aftsConsumer);
     }
@@ -290,31 +298,35 @@ public class CMISQueryOptions extends QueryOptions
         private static final NoFilter INSTANCE = new NoFilter();
 
         @Override
-        public Constraint applyTo(Constraint constraint, QueryModelFactory queryModelFactory) {
+        public Constraint applyTo(Constraint constraint, QueryModelFactory queryModelFactory)
+        {
             return constraint;
         }
 
         @Override
-        public void applyAFTSFilter(Consumer<String> aftsConsumer) {
-            //do nothing
+        public void applyAFTSFilter(Consumer<String> aftsConsumer)
+        {
+            // do nothing
         }
     }
 
     /**
-     * The only supported filer based on single property value equality. Allows to limit the query results
-     * (both DB & Index).
+     * The only supported filer based on single property value equality. Allows to limit the query results (both DB & Index).
      */
-    private static final class CMISPropertyEqualityFilter implements CMISQueryFilter {
+    private static final class CMISPropertyEqualityFilter implements CMISQueryFilter
+    {
         private final String propertyName;
         private final String propertyValue;
 
-        public CMISPropertyEqualityFilter(String propertyName, String propertyValue) {
+        public CMISPropertyEqualityFilter(String propertyName, String propertyValue)
+        {
             this.propertyName = Objects.requireNonNull(propertyName);
             this.propertyValue = Objects.requireNonNull(propertyValue);
         }
 
         @Override
-        public Constraint applyTo(Constraint constraint, QueryModelFactory queryModelFactory) {
+        public Constraint applyTo(Constraint constraint, QueryModelFactory queryModelFactory)
+        {
             final Constraint filterConstraint = getFilterConstraint(queryModelFactory);
             if (constraint == null)
                 return filterConstraint;
@@ -322,12 +334,14 @@ public class CMISQueryOptions extends QueryOptions
         }
 
         @Override
-        public void applyAFTSFilter(Consumer<String> aftsConsumer) {
+        public void applyAFTSFilter(Consumer<String> aftsConsumer)
+        {
             String aftsFilter = "{!afts}=" + propertyName + ":\"" + propertyValue + "\"";
             aftsConsumer.accept(aftsFilter);
         }
 
-        private Constraint getFilterConstraint(QueryModelFactory queryModelFactory) {
+        private Constraint getFilterConstraint(QueryModelFactory queryModelFactory)
+        {
             final Function function = queryModelFactory.getFunction(Equals.NAME);
 
             final ArgumentDefinition modeArgDef = function.getArgumentDefinition(BaseComparison.ARG_MODE);
@@ -342,8 +356,7 @@ public class CMISQueryOptions extends QueryOptions
             final Map<String, Argument> args = Map.of(
                     modeArg.getName(), modeArg,
                     lhsArg.getName(), lhsArg,
-                    rhsArg.getName(), rhsArg
-            );
+                    rhsArg.getName(), rhsArg);
 
             return queryModelFactory.createFunctionalConstraint(function, args);
         }

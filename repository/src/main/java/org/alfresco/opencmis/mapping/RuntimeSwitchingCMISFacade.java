@@ -25,66 +25,78 @@
  */
 package org.alfresco.opencmis.mapping;
 
-import org.alfresco.opencmis.CMISConnector;
-import org.alfresco.opencmis.dictionary.CMISNodeInfo;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-class RuntimeSwitchingCMISFacade implements CMISFacade {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+
+class RuntimeSwitchingCMISFacade implements CMISFacade
+{
     private static final Logger LOGGER = LoggerFactory.getLogger(RuntimeSwitchingCMISFacade.class);
     private CMISFacade fallbackFacade;
     private final Map<String, CMISFacadeProvider> facadeProviders;
     private boolean failOnManyFacades = false;
 
-    RuntimeSwitchingCMISFacade(Map<String, CMISFacadeProvider> facadeProviders) {
+    RuntimeSwitchingCMISFacade(Map<String, CMISFacadeProvider> facadeProviders)
+    {
         this.facadeProviders = Objects.requireNonNull(facadeProviders);
     }
 
-    public void setFallbackFacade(CMISFacade fallbackFacade) {
+    public void setFallbackFacade(CMISFacade fallbackFacade)
+    {
         this.fallbackFacade = Objects.requireNonNull(fallbackFacade);
     }
 
-    public void setFailOnManyFacades(boolean failOnManyFacades) {
+    public void setFailOnManyFacades(boolean failOnManyFacades)
+    {
         this.failOnManyFacades = failOnManyFacades;
     }
 
     @Override
-    public CMISNodeInfo createNodeInfo(NodeRef nodeRef) {
+    public CMISNodeInfo createNodeInfo(NodeRef nodeRef)
+    {
         return getTargetFacade().createNodeInfo(nodeRef);
     }
 
     @Override
-    public CMISNodeInfo createNodeInfo(AssociationRef assocRef) {
+    public CMISNodeInfo createNodeInfo(AssociationRef assocRef)
+    {
         return getTargetFacade().createNodeInfo(assocRef);
     }
 
     @Override
-    public boolean isWorkingCopy(NodeRef nodeRef) {
+    public boolean isWorkingCopy(NodeRef nodeRef)
+    {
         return getTargetFacade().isWorkingCopy(nodeRef);
     }
 
     @Override
-    public String constructObjectId(String currentNodeId, String pwcVersionLabel) {
+    public String constructObjectId(String currentNodeId, String pwcVersionLabel)
+    {
         return getTargetFacade().constructObjectId(currentNodeId, pwcVersionLabel);
     }
 
-    private CMISFacade getTargetFacade() {
+    private CMISFacade getTargetFacade()
+    {
         return getProvidedFacade().orElse(fallbackFacade);
     }
 
-    private Optional<CMISFacade> getProvidedFacade() {
-        if (facadeProviders.isEmpty()) {
+    private Optional<CMISFacade> getProvidedFacade()
+    {
+        if (facadeProviders.isEmpty())
+        {
             return Optional.empty();
         }
 
-        if (!failOnManyFacades) {
+        if (!failOnManyFacades)
+        {
             return facadeProviders.values().stream()
                     .map(CMISFacadeProvider::getCMISFacade)
                     .filter(Objects::nonNull)
@@ -94,7 +106,8 @@ class RuntimeSwitchingCMISFacade implements CMISFacade {
         final Map<String, CMISFacade> allFacades = facadeProviders.entrySet().stream()
                 .map(e -> {
                     final CMISFacade facade = e.getValue().getCMISFacade();
-                    if (facade == null) {
+                    if (facade == null)
+                    {
                         return null;
                     }
                     return Map.entry(e.getKey(), facade);
@@ -102,11 +115,13 @@ class RuntimeSwitchingCMISFacade implements CMISFacade {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        if (allFacades.isEmpty()) {
+        if (allFacades.isEmpty())
+        {
             return Optional.empty();
         }
 
-        if (allFacades.size() > 1) {
+        if (allFacades.size() > 1)
+        {
             LOGGER.error("Many runtime facades ({}) are not allowed.", allFacades.keySet());
             throw new IllegalStateException("Many runtime facades are not allowed.");
         }

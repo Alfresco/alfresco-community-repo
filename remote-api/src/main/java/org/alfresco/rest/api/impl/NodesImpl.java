@@ -3195,10 +3195,10 @@ public class NodesImpl implements Nodes
 
     private Node updateCheckedOutContent(NodeRef workingCopyRef, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
     {
-        // Optionally rename the working copy before checkin
         String fileName = parameters.getParameter(PARAM_NAME);
         if (fileName != null)
         {
+            handleNodeRename(fileName, workingCopyRef);
             nodeService.setProperty(workingCopyRef, ContentModel.PROP_NAME, fileName);
         }
         else
@@ -3216,7 +3216,27 @@ public class NodesImpl implements Nodes
             behaviourFilter.enableBehaviour(workingCopyRef, ContentModel.ASPECT_VERSIONABLE);
         }
 
-        // Build version properties for checkin
+        Map<String, Serializable> versionProperties = buildVersionProperties(workingCopyRef, versionMajor, versionComment);
+        // Checkin: this copies working copy content to the original, removes the working copy,
+        // and unlocks the original node
+        NodeRef checkedInRef;
+        try
+        {
+            checkedInRef = checkOutCheckInService.checkin(workingCopyRef, versionProperties);
+        }
+        catch (CheckOutCheckInServiceException e)
+        {
+            throw new ConstraintViolatedException(e.getMessage(), e);
+        }
+
+        // Extract metadata on the checked-in node
+        extractMetadata(checkedInRef);
+
+        return getFolderOrDocumentFullInfo(checkedInRef, null, null, parameters);
+    }
+
+    private Map<String, Serializable> buildVersionProperties(NodeRef workingCopyRef, Boolean versionMajor, String versionComment)
+    {
         VersionType versionType;
         if (versionMajor != null)
         {
@@ -3240,23 +3260,7 @@ public class NodesImpl implements Nodes
         {
             versionProperties.put(VersionModel.PROP_DESCRIPTION, versionComment);
         }
-
-        // Checkin: this copies working copy content to the original, removes the working copy,
-        // and unlocks the original node
-        NodeRef checkedInRef;
-        try
-        {
-            checkedInRef = checkOutCheckInService.checkin(workingCopyRef, versionProperties);
-        }
-        catch (CheckOutCheckInServiceException e)
-        {
-            throw new ConstraintViolatedException(e.getMessage(), e);
-        }
-
-        // Extract metadata on the checked-in node
-        extractMetadata(checkedInRef);
-
-        return getFolderOrDocumentFullInfo(checkedInRef, null, null, parameters);
+        return versionProperties;
     }
 
     private String getSiteManagerAuthority(NodeRef nodeRef)

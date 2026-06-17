@@ -508,7 +508,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         PagingResults<FileInfo> pageOfNodeInfos = connector.getFileFolderService().list(
                 folderNodeRef,
-                null,
+                Collections.singleton(ContentModel.ASSOC_CONTAINS),
                 typeqnames,
                 null, // ignoreAspectQNames,
                 sortProps,

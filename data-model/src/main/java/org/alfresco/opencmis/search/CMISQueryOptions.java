@@ -189,6 +189,7 @@ public class CMISQueryOptions extends QueryOptions
     /**
      * @return SearchParameters
      */
+    @Override
     public SearchParameters getAsSearchParmeters()
     {
         CMISSearchParameters searchParameters = new CMISSearchParameters();

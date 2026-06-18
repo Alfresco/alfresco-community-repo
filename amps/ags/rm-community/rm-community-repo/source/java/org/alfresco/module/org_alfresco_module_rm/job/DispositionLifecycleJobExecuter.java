@@ -91,9 +91,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** list of disposition actions to automatically execute */
     private List<String> dispositionActions;
 
-    /** query string */
-    private String query;
-
     /** records management action service */
     private RecordsManagementActionService recordsManagementActionService;
 
@@ -292,8 +289,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 params.setQuery("TYPE:\"rma:dispositionAction\"");
                 params.addFilterQuery(getActionFilterQuery());
                 params.addFilterQuery("ISUNSET:\"rma:dispositionActionCompletedAt\"");
-                params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR -@rma\\:dispositionAsOf:["
-                        + LocalDate.now().plusDays(1) + " TO MAX])");
+                params.addFilterQuery("(@rma\\:dispositionEventsEligible:true OR (ISNOTNULL:\"rma:dispositionAsOf\" AND -@rma\\:dispositionAsOf:["
+                        + LocalDate.now().plusDays(1) + " TO MAX]))");
                 params.setTrackScore(false);
 
                 // execute search

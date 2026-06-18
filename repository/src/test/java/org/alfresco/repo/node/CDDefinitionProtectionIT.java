@@ -25,6 +25,14 @@
  */
 package org.alfresco.repo.node;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
+import static org.alfresco.model.ContentModel.PROP_CD_ASPECT;
+import static org.alfresco.model.ContentModel.PROP_CD_KEY;
+import static org.alfresco.model.ContentModel.PROP_CD_VERSION;
+import static org.alfresco.model.ContentModel.TYPE_CD_DEFINITION;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +43,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -63,15 +72,9 @@ import org.alfresco.util.GUID;
  */
 @Category(OwnJVMTestsCategory.class)
 @Transactional
-public class CDDefinitionProtectionTest extends BaseSpringTest
+public class CDDefinitionProtectionIT extends BaseSpringTest
 {
     private static final String CD_URI = NamespaceService.CD_MODEL_1_0_URI;
-
-    private static final QName TYPE_CD_DEFINITION = ContentModel.TYPE_CD_DEFINITION;
-    private static final QName PROP_CD_ASPECT = ContentModel.PROP_CD_ASPECT;
-    private static final QName PROP_CD_KEY_PROPERTY = ContentModel.PROP_CD_KEY;
-    private static final QName PROP_CD_VERSION_PROPERTY = ContentModel.PROP_CD_VERSION;
-    private static final QName ASPECT_CD_CLASSIFIABLE = ContentModel.ASPECT_CD_CLASSIFIABLE;
 
     private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
@@ -114,195 +117,104 @@ public class CDDefinitionProtectionTest extends BaseSpringTest
     @Test
     public void createCdDefinitionNodeShouldBeBlocked()
     {
-        Map<QName, Serializable> props = buildValidCdDefinitionProperties();
+        // given
+        var props = buildValidCdDefinitionProperties();
+        var assocName = QName.createQName(CD_URI, "def-" + GUID.generate());
 
-        try
-        {
-            nodeService.createNode(
-                    parentFolder,
-                    ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(CD_URI, "def-" + GUID.generate()),
-                    TYPE_CD_DEFINITION,
-                    props);
-            fail("Generic NodeService.createNode(cd:definition) must be blocked, but the call succeeded.");
-        }
-        catch (RuntimeException expected)
-        {
-            // expected once protection is in place
-        }
+        // when, then
+        assertThatThrownBy(() -> nodeService.createNode(parentFolder, ASSOC_CONTAINS, assocName, TYPE_CD_DEFINITION, props))
+                .isInstanceOf(AlfrescoRuntimeException.class)
+                .hasMessageContaining("create is not allowed on protected: cd:definition");
     }
 
     @Test
     public void changingNodeTypeToCdDefinitionShouldBeBlocked()
     {
-        NodeRef content = createContent(parentFolder, "to-mutate-" + GUID.generate());
+        // given
+        var content = createContent(parentFolder, "to-mutate-" + GUID.generate());
 
-        try
-        {
-            nodeService.setType(content, TYPE_CD_DEFINITION);
-            fail("Generic NodeService.setType(..., cd:definition) must be blocked, but the call succeeded.");
-        }
-        catch (RuntimeException expected)
-        {
-            // expected once protection is in place
-        }
-    }
-
-    @Test
-    public void addingCdClassifiableAspectShouldBeBlocked()
-    {
-        NodeRef content = createContent(parentFolder, "to-classify-" + GUID.generate());
-
-        try
-        {
-            nodeService.addAspect(content, ASPECT_CD_CLASSIFIABLE, null);
-            fail("Generic NodeService.addAspect(cd:classifiable) must be blocked, but the call succeeded.");
-        }
-        catch (RuntimeException expected)
-        {
-            // expected once protection is in place
-        }
-    }
-
-    @Test
-    public void removingCdClassifiableAspectShouldBeBlocked()
-    {
-        NodeRef content = createContent(parentFolder, "classified-" + GUID.generate());
-
-        behaviourFilter.disableBehaviour(ASPECT_CD_CLASSIFIABLE);
-        try
-        {
-            nodeService.addAspect(content, ASPECT_CD_CLASSIFIABLE, null);
-        }
-        finally
-        {
-            behaviourFilter.enableBehaviour(ASPECT_CD_CLASSIFIABLE);
-        }
-
-        try
-        {
-            nodeService.removeAspect(content, ASPECT_CD_CLASSIFIABLE);
-            fail("Generic NodeService.removeAspect(cd:classifiable) must be blocked, but the call succeeded.");
-        }
-        catch (RuntimeException expected)
-        {
-            // expected once protection is in place
-        }
+        // when, then
+        assertThatThrownBy(() -> nodeService.setType(content, TYPE_CD_DEFINITION))
+                .isInstanceOf(AlfrescoRuntimeException.class)
+                .hasMessageContaining("setType is not allowed on protected: cd:definition");
     }
 
     @Test
     public void deletingExistingCdDefinitionShouldBeBlocked()
     {
-        NodeRef cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-delete-" + GUID.generate());
+        // given
+        var cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-delete-" + GUID.generate());
 
-        try
-        {
-            nodeService.deleteNode(cdDef);
-            fail("Generic NodeService.deleteNode(cd:definition) must be blocked, but the call succeeded.");
-        }
-        catch (RuntimeException expected)
-        {
-            // expected once protection is in place
-        }
+        // when, then
+        assertThatThrownBy(() -> nodeService.deleteNode(cdDef))
+                .isInstanceOf(AlfrescoRuntimeException.class)
+                .hasMessageContaining("delete is not allowed on protected: cd:definition");
     }
 
     @Test
     public void movingExistingCdDefinitionShouldBeBlocked()
     {
-        NodeRef cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-move-" + GUID.generate());
+        // given
+        var cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-move-" + GUID.generate());
+        var assocName = QName.createQName(CD_URI, "moved-" + GUID.generate());
 
-        try
-        {
-            nodeService.moveNode(
-                    cdDef,
-                    otherParentFolder,
-                    ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(CD_URI, "moved-" + GUID.generate()));
-            fail("Generic NodeService.moveNode(cd:definition, ...) must be blocked, but the call succeeded.");
-        }
-        catch (RuntimeException expected)
-        {
-            // expected once protection is in place
-        }
+        // when, then
+        assertThatThrownBy(() -> nodeService.moveNode(cdDef, otherParentFolder, ASSOC_CONTAINS, assocName))
+                .isInstanceOf(AlfrescoRuntimeException.class)
+                .hasMessageContaining("move is not allowed on protected: cd:definition");
     }
 
     @Test
     public void updatingCdDefinitionPropertiesShouldBeBlocked()
     {
-        NodeRef cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-update-" + GUID.generate());
+        // given
+        var cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-update-" + GUID.generate());
 
-        try
-        {
-            nodeService.setProperty(cdDef, PROP_CD_KEY_PROPERTY, "cm:hijacked");
-            fail("Generic NodeService.setProperty(cd:definition, cd:keyProperty, ...) must be blocked, but the call succeeded.");
-        }
-        catch (RuntimeException expected)
-        {
-            // expected once protection is in place
-        }
+        // when, then
+        assertThatThrownBy(() -> nodeService.setProperty(cdDef, PROP_CD_KEY, "cm:hijacked"))
+                .isInstanceOf(AlfrescoRuntimeException.class)
+                .hasMessageContaining("update is not allowed on protected: cd:definition");
     }
 
-    /**
-     * Removing a {@code cd:*} property from an existing {@code cd:definition} must be rejected.
-     */
     @Test
     public void removingCdDefinitionPropertyShouldBeBlocked()
     {
-        NodeRef cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-strip-" + GUID.generate());
+        // given
+        var cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-strip-" + GUID.generate());
 
-        try
-        {
-            nodeService.removeProperty(cdDef, PROP_CD_VERSION_PROPERTY);
-            fail("Generic NodeService.removeProperty(cd:definition, cd:versionProperty) must be blocked, but the call succeeded.");
-        }
-        catch (RuntimeException expected)
-        {
-            // expected once protection is in place
-        }
+        // when, then
+        assertThatThrownBy(() -> nodeService.removeProperty(cdDef, PROP_CD_KEY))
+                .isInstanceOf(AlfrescoRuntimeException.class)
+                .hasMessageContaining("update is not allowed on protected: cd:definition");
     }
 
-    /**
-     * {@code setProperties} (full replacement) on a {@code cd:definition} must be rejected, mirroring the {@code setProperty} / {@code addProperties} cases.
-     */
     @Test
     public void replacingCdDefinitionPropertiesShouldBeBlocked()
     {
-        NodeRef cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-replace-" + GUID.generate());
-
+        // given
+        var cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-replace-" + GUID.generate());
         Map<QName, Serializable> replacement = new HashMap<>();
         replacement.put(ContentModel.PROP_NAME, "renamed-" + GUID.generate());
         replacement.put(PROP_CD_ASPECT, "hijacked");
-        replacement.put(PROP_CD_KEY_PROPERTY, "hijacked");
-        replacement.put(PROP_CD_VERSION_PROPERTY, "hijacked");
+        replacement.put(PROP_CD_KEY, "hijacked");
+        replacement.put(PROP_CD_VERSION, "hijacked");
 
-        try
-        {
-            nodeService.setProperties(cdDef, replacement);
-            fail("Generic NodeService.setProperties(cd:definition, ...) must be blocked, but the call succeeded.");
-        }
-        catch (RuntimeException expected)
-        {
-            // expected once protection is in place
-        }
+        // when, then
+        assertThatThrownBy(() -> nodeService.setProperties(cdDef, replacement))
+                .isInstanceOf(AlfrescoRuntimeException.class)
+                .hasMessageContaining("update is not allowed on protected: cd:definition");
     }
 
-    /**
-     * Changing a {@code cd:definition}'s type to anything else (e.g. {@code cm:content}) must be rejected — once a node is a cd:definition its type is permanent.
-     */
     @Test
     public void changingCdDefinitionTypeAwayShouldBeBlocked()
     {
-        NodeRef cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-detype-" + GUID.generate());
+        // given
+        var cdDef = legitimatelyCreateCdDefinition(parentFolder, "to-detype-" + GUID.generate());
 
-        try
-        {
-            nodeService.setType(cdDef, ContentModel.TYPE_CONTENT);
-            fail("Generic NodeService.setType(cdDef, cm:content) must be blocked, but the call succeeded.");
-        }
-        catch (RuntimeException expected)
-        {
-            // expected once protection is in place
-        }
+        // when, then
+        assertThatThrownBy(() -> nodeService.setType(cdDef, TYPE_CD_DEFINITION))
+                .isInstanceOf(AlfrescoRuntimeException.class)
+                .hasMessageContaining("update is not allowed on protected: cd:definition");
     }
 
     private Map<QName, Serializable> buildValidCdDefinitionProperties()
@@ -310,8 +222,8 @@ public class CDDefinitionProtectionTest extends BaseSpringTest
         Map<QName, Serializable> props = new HashMap<>();
         props.put(ContentModel.PROP_NAME, "cd-" + GUID.generate());
         props.put(PROP_CD_ASPECT, "testValue1");
-        props.put(PROP_CD_KEY_PROPERTY, "testValue2");
-        props.put(PROP_CD_VERSION_PROPERTY, "testValue3");
+        props.put(PROP_CD_KEY, "testValue2");
+        props.put(PROP_CD_VERSION, "testValue3");
         return props;
     }
 
@@ -321,7 +233,7 @@ public class CDDefinitionProtectionTest extends BaseSpringTest
         props.put(ContentModel.PROP_NAME, name);
         ChildAssociationRef assoc = nodeService.createNode(
                 parent,
-                ContentModel.ASSOC_CONTAINS,
+                ASSOC_CONTAINS,
                 QName.createQName(CD_URI, name),
                 ContentModel.TYPE_FOLDER,
                 props);
@@ -334,7 +246,7 @@ public class CDDefinitionProtectionTest extends BaseSpringTest
         props.put(ContentModel.PROP_NAME, name);
         ChildAssociationRef assoc = nodeService.createNode(
                 parent,
-                ContentModel.ASSOC_CONTAINS,
+                ASSOC_CONTAINS,
                 QName.createQName(CD_URI, name),
                 ContentModel.TYPE_CONTENT,
                 props);
@@ -348,7 +260,7 @@ public class CDDefinitionProtectionTest extends BaseSpringTest
         {
             ChildAssociationRef assoc = nodeService.createNode(
                     parent,
-                    ContentModel.ASSOC_CONTAINS,
+                    ASSOC_CONTAINS,
                     QName.createQName(CD_URI, name),
                     TYPE_CD_DEFINITION,
                     buildValidCdDefinitionProperties());

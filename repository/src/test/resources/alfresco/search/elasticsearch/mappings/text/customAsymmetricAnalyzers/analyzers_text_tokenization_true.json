@@ -1,0 +1,10 @@
+{
+  "test%3Aproperty": {
+    "meta": {
+      "DecodedQualifiedName": "test:property"
+    },
+    "type": "text",
+    "analyzer": "locale_text_index",
+    "search_analyzer": "locale_text_query"
+  }
+}

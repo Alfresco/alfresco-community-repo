@@ -79,6 +79,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.bootstrap.DataDictionaryFolderTest.class,
 
         org.alfresco.repo.node.propertyextender.PropertyExtenderInterceptorIT.class,
+        org.alfresco.repo.admin.patch.CDDefinitionPatchIT.class,
         org.alfresco.repo.node.CDDefinitionProtectionTest.class
 })
 public class AppContext01TestSuite

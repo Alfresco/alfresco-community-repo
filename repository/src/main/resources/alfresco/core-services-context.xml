@@ -517,6 +517,9 @@
         <property name="useVersionAssocIndex">
             <value>${version.store.useVersionAssocIndex}</value>
         </property>
+        <property name="preserveUnsetProperties">
+            <value>${version.store.preserveUnsetProperties}</value>
+        </property>
     </bean>
 
     <bean id="versionNodeService" class="org.alfresco.repo.version.Node2ServiceImpl">
@@ -1161,6 +1164,18 @@
             <list>
                 <value>managed</value>
                 <value>noindex</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="elasticsearch" class="org.alfresco.repo.search.impl.elasticsearch.ElasticsearchChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart" value="false" />
+        <property name="category" value="Search" />
+        <property name="typeName" value="elasticsearch" />
+        <property name="instancePath">
+            <list>
+                <value>managed</value>
+                <value>elasticsearch</value>
             </list>
         </property>
     </bean>

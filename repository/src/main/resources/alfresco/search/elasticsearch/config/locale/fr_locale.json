@@ -1,0 +1,40 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "locale_content": {
+          "type": "french"
+        },
+        "locale_text_index": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "flatten_graph",
+            "french_stemmer_multiplexer"
+          ]
+        },
+        "locale_text_query": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "asciifolding",
+            "custom_word_delimiter_graph",
+            "lowercase",
+            "french_stemmer_multiplexer"
+          ]
+        }
+      },
+      "filter": {
+        "french_stemmer": {
+          "type": "stemmer",
+          "language": "light_french"
+        },
+        "french_stemmer_multiplexer": {
+          "type": "multiplexer",
+          "filters": [ "french_stemmer" ]
+        }
+      }
+    }
+  }
+}

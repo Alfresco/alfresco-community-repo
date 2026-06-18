@@ -51,6 +51,7 @@ import org.springframework.util.StreamUtils;
 
 import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.ResourceUtils;
+import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.ResponseJsonUtils;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.SettingsJsonUtils;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.util.Pair;
@@ -210,7 +211,7 @@ public class ContentModelSynchronizer
         if (!success)
         {
             LOGGER.error("Failed to update analyser settings on index {}: status={}, acknowledged={}, reason={}", indexName,
-                    responseStatus, openResponse.acknowledged(), extractErrorReason(rawBody));
+                    responseStatus, openResponse.acknowledged(), ResponseJsonUtils.extractErrorReason(rawBody));
             LOGGER.debug("Full update settings response body: {}", rawBody);
         }
         return success;
@@ -246,7 +247,7 @@ public class ContentModelSynchronizer
                 else
                 {
                     String rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
-                    String reason = extractErrorReason(rawBody);
+                    String reason = ResponseJsonUtils.extractErrorReason(rawBody);
                     LOGGER.error("Failed to load basic index mappings: status={} reason={}", response.getStatus(), reason);
                     LOGGER.debug("Full error response body: {}", rawBody);
                 }
@@ -257,20 +258,6 @@ public class ContentModelSynchronizer
         {
             LOGGER.error("Failed to load basic mappings.", e);
             return false;
-        }
-    }
-
-    private String extractErrorReason(String jsonBody)
-    {
-        try
-        {
-            JSONObject json = new JSONObject(jsonBody);
-            JSONObject error = json.optJSONObject("error");
-            return error != null ? error.optString("reason", jsonBody) : jsonBody;
-        }
-        catch (Exception e)
-        {
-            return jsonBody;
         }
     }
 
@@ -294,7 +281,7 @@ public class ContentModelSynchronizer
                 String requestBody = request.getBody().map(Body::bodyAsString).orElse("{}");
                 LOGGER.warn("Elasticsearch mappings update failed: server={} index={} status={} reason={} propertiesCount={} request={}",
                         httpClientFactory.getElasticsearchServerUrl(), httpClientFactory.getIndexName(), response.getStatus(),
-                        extractErrorReason(rawBody), properties.size(), requestBody);
+                        ResponseJsonUtils.extractErrorReason(rawBody), properties.size(), requestBody);
                 LOGGER.debug("Full mappings update response body: {}", rawBody);
             }
             Integer successfullyMappedPropertiesCount = mappingRequestBuilder.getSecond();

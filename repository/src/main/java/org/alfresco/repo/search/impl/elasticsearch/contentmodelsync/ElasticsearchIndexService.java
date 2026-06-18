@@ -31,7 +31,6 @@ import java.io.IOException;
 import jakarta.json.Json;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.json.JSONObject;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch.generic.Body;
@@ -45,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
+import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.ResponseJsonUtils;
 
 /**
  * This class aims to interact with Elasticsearch for any operation strict related to index management.
@@ -109,7 +109,7 @@ public class ElasticsearchIndexService
             if (statusCode != HttpStatus.SC_OK && statusCode != HttpStatus.SC_CREATED)
             {
                 String rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
-                LOGGER.error("Failed to create index {}: status={} reason={}", index, statusCode, extractErrorReason(rawBody));
+                LOGGER.error("Failed to create index {}: status={} reason={}", index, statusCode, ResponseJsonUtils.extractErrorReason(rawBody));
                 LOGGER.debug("Full create index response body: {}", rawBody);
             }
             else
@@ -122,20 +122,6 @@ public class ElasticsearchIndexService
             LOGGER.error("Failed to create index with name {}", index, e);
         }
         return indexExists();
-    }
-
-    private String extractErrorReason(String jsonBody)
-    {
-        try
-        {
-            JSONObject json = new JSONObject(jsonBody);
-            JSONObject error = json.optJSONObject("error");
-            return error != null ? error.optString("reason", jsonBody) : jsonBody;
-        }
-        catch (Exception e)
-        {
-            return jsonBody;
-        }
     }
 
     /**

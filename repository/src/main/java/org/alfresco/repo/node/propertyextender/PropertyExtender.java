@@ -36,6 +36,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * <p>
  * The {@link Object#toString()} method should be implemented for logging purposes.
  */
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface PropertyExtender
 {
     /**

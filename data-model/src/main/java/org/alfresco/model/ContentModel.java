@@ -33,6 +33,7 @@ import org.alfresco.service.namespace.QName;
  * Content Model Constants
  */
 @AlfrescoPublicApi
+@SuppressWarnings("PMD.ConstantsInInterface")
 public interface ContentModel
 {
     //

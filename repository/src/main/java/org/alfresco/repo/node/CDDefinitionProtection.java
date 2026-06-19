@@ -43,13 +43,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Behaviour bean that protects the Cascading Dictionary types ({@code cd:definition} from being created, updated, deleted, moved via the everyday Alfresco APIs (Node REST API, CMIS, WebDAV, scripts, …). Behaviour bean that protects the Cascading Dictionary type ({@code cd:definition}) from being created, updated, deleted, moved via the everyday Alfresco APIs (Node REST API, CMIS, WebDAV, scripts, …).
+ * Behaviour bean that protects the Cascading Dictionary type ({@code cd:definition}) from being created, updated, deleted, moved via the everyday Alfresco APIs (Node REST API, CMIS, WebDAV, scripts, …).
  * <p>
- * The goal is to catch <i>accidental</i> misuse, not to be a hardened sandbox. Power-user attacks via lower-level APIs are intentionally out of scope — they're not what a normal user does by mistake. We also deliberately do <b>not</b> bind anything on {@link ContentModel#TYPE_BASE} for property updates: that would fire on every property write in the entire repository, paying a tax on the hottest path in the product just to reject planting a meaningless {@code cd:*} residual property on a non-CD node — a non-issue because the CD subsystem never reads such residuals.
+ * The goal is to catch <i>accidental</i> misuse, not to be a hardened sandbox. Power-user attacks via lower-level APIs are intentionally out of scope — they're not what a normal user does by mistake.
  * <p>
  * The CD subsystem opts out of these checks by surrounding its legitimate writes with {@code behaviourFilter.disableBehaviour(ContentModel.TYPE_CD_DEFINITION)}, which silences the {@code cd:definition}-bound bindings.
- * <p>
- * <b>Design rule:</b> handlers must <b>not</b> call into {@code NodeService} or any other security-checked service. Some bootstrap paths (keystore creation, system-store writes, …) fire these policies before an authenticated context is established, and {@code NodeService} would crash with {@code AuthenticationCredentialsNotFoundException}. Every check here works only with the arguments the policy passes in.
  */
 public class CDDefinitionProtection implements BeforeCreateNodePolicy,
         BeforeUpdateNodePolicy,

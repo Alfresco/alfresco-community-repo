@@ -57,18 +57,6 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 
-/**
- * Tests that exercise the {@code cd:*} model (Cascading Dictionary) from generic public APIs (here: directly via {@link NodeService}, which sits behind the public Node REST API, CMIS, WebDAV, scripts, …).
- * <p>
- * The {@code cd:definition} type, its properties ({@code cd:aspect}, {@code cd:keyProperty}, {@code cd:versionProperty}) are intended to be modified <b>only</b> by the Cascading Dictionary subsystem in the enterprise repository. No client of a generic Alfresco API should be able to:
- * <ul>
- * <li>create a node of type {@code cd:definition},</li>
- * <li>change an existing node's type to {@code cd:definition},</li>
- * <li>add / update / remove {@code cd:aspect}, {@code cd:keyProperty} or {@code cd:versionProperty} on a node,</li>
- * <li>delete or move an existing {@code cd:definition} node.</li>
- * </ul>
- * <p>
- */
 @Category(OwnJVMTestsCategory.class)
 @Transactional
 public class CDDefinitionProtectionIT extends BaseSpringTest

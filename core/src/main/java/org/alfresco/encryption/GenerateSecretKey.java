@@ -18,8 +18,7 @@ public class GenerateSecretKey
     {
         try
         {
-            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-            random.setSeed(System.currentTimeMillis());
+            SecureRandom random = new SecureRandom();
             byte bytes[] = new byte[DESedeKeySpec.DES_EDE_KEY_LEN];
             random.nextBytes(bytes);
             return bytes;

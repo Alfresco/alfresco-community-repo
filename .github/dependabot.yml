@@ -16,16 +16,32 @@ updates:
   open-pull-requests-limit: 0
   allow:
     - dependency-type: "direct"
-  ignore:
-  - dependency-name: "org.alfresco:alfresco-audit-storage-*"
+  groups:
+    spring:
+      patterns:
+        - "org.springframework*"
+    opensearch:
+      patterns:
+        - "org.opensearch*"
+    camel:
+      patterns:
+        - "org.apache.camel*"
+    jackson-core:
+      patterns:
+        - "com.fasterxml.jackson.core*"
+    bouncycastle:
+      patterns:
+        - "org.bouncycastle*"
   registries:
     - maven-repository-artifacts-alfresco-com-nexus-content-groups-int
+
 - package-ecosystem: "docker"
   directory: "packaging/docker-alfresco/"
   schedule:
-    interval: "daily"
+    interval: "weekly"
     time: "22:00"
     timezone: "Europe/London"
+
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
@@ -34,23 +50,12 @@ updates:
     github-actions:
       patterns:
         - "*"
+  labels:
+    - "Master"
+  commit-message:
+    prefix: "[GHA - Master]"
 
 #For 25.N
-- package-ecosystem: maven
-  directory: "/"
-  target-branch: "release/25.N"
-  schedule:
-    interval: daily
-    time: "22:00"
-    timezone: "Europe/London"
-  # disabling versions updates, when set to 0 only security updates will open
-  open-pull-requests-limit: 0
-  allow:
-    - dependency-type: "direct"
-  ignore:
-    - dependency-name: "org.alfresco:alfresco-audit-storage-*"
-  registries:
-    - maven-repository-artifacts-alfresco-com-nexus-content-groups-int
 - package-ecosystem: "github-actions"
   directory: "/"
   target-branch: "release/25.N"
@@ -60,3 +65,22 @@ updates:
     github-actions:
       patterns:
         - "*"
+  labels:
+    - "25.N"
+  commit-message:
+    prefix: "[GHA - 25.N]"
+
+#For 23.N
+- package-ecosystem: "github-actions"
+  directory: "/"
+  target-branch: "release/23.N"
+  schedule:
+    interval: "weekly"
+  groups:
+    github-actions:
+      patterns:
+        - "*"
+  labels:
+    - "23.N"
+  commit-message:
+    prefix: "[GHA - 23.N]"

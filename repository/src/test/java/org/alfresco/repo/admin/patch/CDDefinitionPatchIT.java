@@ -68,7 +68,7 @@ public class CDDefinitionPatchIT extends BaseSpringTest
         // given
         var cdHomeXPath = "/" + companyHomeChildName + "/" + dictionaryChildName + "/" + cdDefinitionsChildName;
 
-        // when application stated, then
+        // when application started, then
         assertCDHomeIsCorrect(cdHomeXPath);
 
         // when patches are executed again (simulating system restart)

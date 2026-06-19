@@ -95,6 +95,10 @@ jobs:
   pmd_scan:
     name: "PMD Scan"
     runs-on: ubuntu-latest
+    # ya-pmd-scan uploads its findings as SARIF to GitHub code scanning, which needs security-events: write.
+    permissions:
+      contents: read
+      security-events: write
     needs:
       - prepare
       - test_run_check

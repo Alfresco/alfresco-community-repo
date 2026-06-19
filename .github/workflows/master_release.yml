@@ -1,5 +1,10 @@
 name: Master/Release branch workflow
 
+# Read-only is enough for the default GITHUB_TOKEN: the release/downstream jobs
+# push using the bot PAT (BOT_GITHUB_TOKEN), not the workflow token.
+permissions:
+  contents: read
+
 on:
   push:
     branches:

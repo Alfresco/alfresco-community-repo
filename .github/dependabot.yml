@@ -52,7 +52,6 @@ updates:
         - "*"
   labels:
     - "Master"
-    - "GHA"
   commit-message:
     prefix: "[GHA - Master]"
 
@@ -68,7 +67,6 @@ updates:
         - "*"
   labels:
     - "25.N"
-    - "GHA"
   commit-message:
     prefix: "[GHA - 25.N]"
 
@@ -84,6 +82,5 @@ updates:
         - "*"
   labels:
     - "23.N"
-    - "GHA"
   commit-message:
     prefix: "[GHA - 23.N]"

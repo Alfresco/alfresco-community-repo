@@ -1,5 +1,9 @@
 name: "Load Dependency Graph"
 
+# Default to least privilege for all jobs; individual jobs elevate as needed.
+permissions:
+  contents: read
+
 on:
   push:
     branches:
@@ -16,6 +20,9 @@ jobs:
   scan-dependencies:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Submitting the dependency snapshot via the Dependency Submission API requires write access.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/maven-dependency-scan@v18.10.0

@@ -3221,22 +3221,26 @@ public class NodesImpl implements Nodes
         writeContentWithoutVersioning(workingCopyRef, fileName, stream, true);
 
         Map<String, Serializable> versionProperties = buildVersionProperties(workingCopyRef, versionMajor, versionComment);
-        // Checkin: this copies working copy content to the original, removes the working copy,
-        // and unlocks the original node
+
+        NodeRef checkedInRef = safeCheckin(workingCopyRef, versionProperties);
+
+        extractMetadata(checkedInRef);
+
+        return getFolderOrDocumentFullInfo(checkedInRef, null, null, parameters);
+    }
+
+    private NodeRef safeCheckin(NodeRef nodeRef, Map<String, Serializable> versionProperties)
+    {
         NodeRef checkedInRef;
         try
         {
-            checkedInRef = checkOutCheckInService.checkin(workingCopyRef, versionProperties);
+            checkedInRef = checkOutCheckInService.checkin(nodeRef, versionProperties);
         }
         catch (CheckOutCheckInServiceException e)
         {
             throw new ConstraintViolatedException(e.getMessage(), e);
         }
-
-        // Extract metadata on the checked-in node
-        extractMetadata(checkedInRef);
-
-        return getFolderOrDocumentFullInfo(checkedInRef, null, null, parameters);
+        return checkedInRef;
     }
 
     private Map<String, Serializable> buildVersionProperties(NodeRef workingCopyRef, Boolean versionMajor, String versionComment)

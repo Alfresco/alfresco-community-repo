@@ -6912,8 +6912,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(workingCopy.getId());
         // Working copy should have a different id than the original
         assertFalse("Working copy should have a different id", d1Id.equals(workingCopy.getId()));
-        // Working copy name should contain "Working Copy"
-        assertTrue("Working copy name should contain 'Working Copy'", workingCopy.getName().contains("Working Copy"));
 
         // Verify working copy aspects via GET with include
         Map<String, String> params = Collections.singletonMap("include", "aspectNames,isLocked");

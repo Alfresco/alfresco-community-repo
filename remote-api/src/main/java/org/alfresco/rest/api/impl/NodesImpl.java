@@ -3238,7 +3238,7 @@ public class NodesImpl implements Nodes
         }
         catch (CheckOutCheckInServiceException e)
         {
-            throw new ConstraintViolatedException(e.getMessage(), e);
+            throw new ConstraintViolatedException("Could not checkin the nodeId " + nodeRef + " because " + e.getMessage(), e);
         }
         return checkedInRef;
     }
@@ -3961,7 +3961,7 @@ public class NodesImpl implements Nodes
         }
         catch (CheckOutCheckInServiceException e)
         {
-            throw new ConstraintViolatedException(e.getMessage(), e);
+            throw new ConstraintViolatedException("Checkout failed for nodeId " + nodeRef + " due to " + e.getMessage(), e);
         }
     }
 
@@ -4024,7 +4024,7 @@ public class NodesImpl implements Nodes
         }
         catch (CheckOutCheckInServiceException e)
         {
-            throw new ConstraintViolatedException(e.getMessage(), e);
+            throw new ConstraintViolatedException("Cancel Checkout operation failed for nodeId " + nodeRef + " due to " + e.getMessage(), e);
         }
     }
 

@@ -40,6 +40,11 @@ jobs:
           header-only: "true"
 
   run_ci:
+    # The reusable CI workflow contains the pmd_scan job which needs security-events: write
+    # to upload SARIF; the caller must grant it for the nested job to be allowed.
+    permissions:
+      contents: read
+      security-events: write
     uses: ./.github/workflows/ci.yml
     secrets: inherit
   push_to_nexus:

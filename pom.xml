@@ -806,6 +806,12 @@
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>utility</artifactId>
                 <version>${dependency.tas-utility.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.rest-assured</groupId>
@@ -831,11 +837,23 @@
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>email</artifactId>
                 <version>${dependency.tas-email.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>webdav</artifactId>
                 <version>${dependency.tas-webdav.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>

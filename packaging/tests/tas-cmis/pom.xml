@@ -61,7 +61,6 @@
         <dependency>
             <groupId>org.alfresco.tas</groupId>
             <artifactId>utility</artifactId>
-            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>mysql</groupId>

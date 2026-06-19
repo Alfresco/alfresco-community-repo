@@ -17,7 +17,11 @@
       ,"totalRows": "${resultSize?c}"
       <#if result.sum??>
          ,"sum": "${result.sum?c}"
+      </#if>
+      <#if result.max??>
          ,"max": "${result.max?c}"
+      </#if>
+      <#if result.mean??>
          ,"mean": "${result.mean?c}"
       </#if>    
     },

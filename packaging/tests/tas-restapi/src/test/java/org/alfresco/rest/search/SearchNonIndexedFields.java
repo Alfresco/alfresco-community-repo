@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.restassured.RestAssured;
+import org.alfresco.rest.model.RestTextResponse;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.springframework.http.HttpMethod;
@@ -119,29 +120,9 @@ public class SearchNonIndexedFields extends AbstractSearchServicesE2ETest
         restClient.configureRequestSpec().setBasePath(RestAssured.basePath);
 
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "admin/luke");
-        // Poll until the expected field shows up in the Luke response, with a soft 60 s cap.
-        // shows up in the Luke response, with a soft 60 s cap.
-        String bodyResponse = "";
-        for (int i = 0; i < 30; i++)
-        {
-            bodyResponse = restClient.processTextResponse(request).getResponse().getBody().print();
-            if (bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}indexed"))
-            {
-                break;
-            }
-            try
-            {
-                Thread.sleep(2000L);
-            }
-            catch (InterruptedException e)
-            {
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
+        RestTextResponse response = restClient.processTextResponse(request);
+        String bodyResponse = response.getResponse().getBody().print();
 
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        logger.info("Test failed: " + bodyResponse);
         Assert.assertTrue(bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}indexed"),
                 "Expecting index:indexed field to be present in SOLR Schema");
         Assert.assertFalse(bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}nonIndexed"),

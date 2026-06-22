@@ -465,9 +465,9 @@ jobs:
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-      AUTH0_CLIENT_ID: ${{ secrets.AUTH0_OIDC_ADMIN_CLIENT_ID }}
-      AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_OIDC_CLIENT_SECRET }}
-      AUTH0_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
+      AUTH0_CLIENT_ID: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_CLIENT_ID || '' }}
+      AUTH0_CLIENT_SECRET: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_CLIENT_SECRET || '' }}
+      AUTH0_ADMIN_PASSWORD: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_PASSWORD || '' }}
     strategy:
       fail-fast: false
       matrix:

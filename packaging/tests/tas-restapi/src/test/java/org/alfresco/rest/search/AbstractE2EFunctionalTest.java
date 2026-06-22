@@ -30,6 +30,8 @@ import static java.util.Optional.ofNullable;
 
 import static org.testng.Assert.assertEquals;
 
+import java.lang.reflect.Method;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,6 +43,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.SiteService.Visibility;
@@ -135,6 +139,18 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         testSite = dataSite.usingUser(testUser).createSite(testSite);
 
         unique_searchString = testSite.getTitle().replace("SiteSearch", "Unique");
+    }
+
+    @BeforeMethod(alwaysRun = true)
+    public void showStartTestInfo(Method method)
+    {
+        LOGGER.info(String.format("*** STARTING Test: [%s] ***", method.getName()));
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void showEndTestInfo(Method method)
+    {
+        LOGGER.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
     }
 
     // -------------------------------------------------------------------------

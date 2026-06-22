@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -28,94 +28,36 @@ package org.alfresco.rest.search;
 
 import static java.util.List.of;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.hamcrest.Matchers;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.BeforeClass;
+import org.testng.Assert;
 
-import org.alfresco.cmis.CmisWrapper;
-import org.alfresco.dataprep.SiteService.Visibility;
-import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.EmptyJsonResponseException;
-import org.alfresco.utility.LogFactory;
-import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.data.DataContent;
-import org.alfresco.utility.data.DataSite;
-import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.*;
-import org.alfresco.utility.network.ServerHealth;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.UserModel;
 
 /**
- * Abstract base class for Search API E2E tests running against ElasticSearch. Migrated from alfresco-search-services test infrastructure into community repo. Combines AbstractE2EFunctionalTest + AbstractSearchServicesE2ETest from the original repo.
+ * Abstract Search test class that contains useful methods such as:
+ * <ul>
+ * <li>Preparing the data to index.</li>
+ * <li>Polling the search API until results are present.</li>
+ * </ul>
+ * <p>
+ * Mirrors the InsightEngine {@code AbstractSearchServicesE2ETest}: a thin specialisation of {@link AbstractE2EFunctionalTest} that adds the standard "search services" sample data set. All Spring context, autowires, common test user/site setup and generic search/query/wait/ spellcheck helpers are inherited from {@link AbstractE2EFunctionalTest}.
  */
-@ContextConfiguration("classpath:alfresco-restapi-context.xml")
-public abstract class AbstractSearchServicesE2ETest extends AbstractTestNGSpringContextTests
+public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctionalTest
 {
-    private static final Logger LOGGER = LogFactory.getLogger();
-
     private static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
+
     private static final int MAX_ATTEMPTS_TO_RETRY_QUERY = 10;
     private static final int MAX_WAIT_IN_SECONDS_BEFORE_RETRY_QUERY = 5;
     private static final int MAX_ATTEMPTS_TO_READ_RESPONSE = 10;
     private static final int MAX_WAIT_IN_SECONDS_BEFORE_REREAD_RESPONSE = 2;
 
-    /** The number of retries that a query will be tried before giving up. */
-    protected static final int SEARCH_MAX_ATTEMPTS = 120;
-
-    @Autowired
-    protected RestWrapper restClient;
-
-    @Autowired
-    protected DataContent dataContent;
-
-    @Autowired
-    protected DataUser dataUser;
-
-    @Autowired
-    protected DataSite dataSite;
-
-    @Autowired
-    protected CmisWrapper cmisApi;
-
-    @Autowired
-    protected ServerHealth serverHealth;
-
-    @Autowired
-    protected TasProperties properties;
-
-    protected UserModel testUser;
-    protected UserModel adminUserModel;
-
-    protected SiteModel testSite;
-
-    protected static String unique_searchString;
-
     protected FileModel file, file2, file3, file4;
     protected FolderModel folder;
-
-    @BeforeClass(alwaysRun = true)
-    public void setup()
-    {
-        serverHealth.assertServerIsOnline();
-
-        adminUserModel = dataUser.getAdminUser();
-        testUser = dataUser.createRandomTestUser("UserSearch");
-
-        testSite = new SiteModel(RandomData.getRandomName("SiteSearch"));
-        testSite.setVisibility(Visibility.PRIVATE);
-
-        testSite = dataSite.usingUser(testUser).createSite(testSite);
-
-        unique_searchString = testSite.getTitle().replace("SiteSearch", "Unique");
-    }
 
     /**
      * Creates the standard test data structure used across search tests:
@@ -155,94 +97,21 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractTestNGSpring
     }
 
     /**
-     * Creates a file with provided text content and waits for it to be indexed.
+     * Creates a file with the provided text in cm:name, cm:title, cm:description and cm:content (under {@link #folder} of {@link #testSite}) and waits for the content to be indexed.
      */
-    protected FileModel createFileWithProvidedText(String filename, String providedText)
+    protected FileModel createFileWithProvidedText(String filename, String providedText) throws InterruptedException
     {
         String title = "Title: File containing " + providedText;
         String description = "Description: Contains provided string: " + providedText;
         FileModel uniqueFile = new FileModel(filename, title, description, FileType.TEXT_PLAIN,
                 "The content " + providedText + " is a provided string");
         dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(uniqueFile);
-        waitForContentIndexing(providedText, true);
+        Assert.assertTrue(waitForContentIndexing(providedText, true));
         return uniqueFile;
     }
 
     /**
-     * Deploys a custom content model from the given classpath path.
-     */
-    public boolean deployCustomModel(String path)
-    {
-        boolean modelDeployed = false;
-        if ((path != null) && (path.endsWith("-model.xml")))
-        {
-            try
-            {
-                dataContent.usingAdmin().deployContentModel(path);
-                modelDeployed = true;
-            }
-            catch (Exception e)
-            {
-                LOGGER.warn("Error Loading Custom Model", e);
-            }
-        }
-        return modelDeployed;
-    }
-
-    /**
-     * Executes a search request authenticated as testUser.
-     */
-    protected SearchResponse query(SearchRequest query)
-    {
-        return restClient.authenticateUser(testUser).withSearchAPI().search(query);
-    }
-
-    /**
-     * Executes a plain string search as admin user.
-     */
-    public SearchResponse query(String queryString)
-    {
-        return queryAsUser(dataUser.getAdminUser(), queryString);
-    }
-
-    /**
-     * Executes a search with highlight as testUser.
-     */
-    protected SearchResponse query(RestRequestQueryModel queryReq, RestRequestHighlightModel highlight)
-    {
-        SearchRequest query = new SearchRequest(queryReq);
-        query.setHighlight(highlight);
-        return restClient.authenticateUser(testUser).withSearchAPI().search(query);
-    }
-
-    /**
-     * Executes a search as the given user using a plain query string.
-     */
-    protected SearchResponse queryAsUser(UserModel user, String queryString)
-    {
-        SearchRequest searchRequest = new SearchRequest();
-        RestRequestQueryModel queryModel = new RestRequestQueryModel();
-        queryModel.setQuery(queryString);
-        searchRequest.setQuery(queryModel);
-        return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
-    }
-
-    /**
-     * Executes a search as the given user with pagination.
-     */
-    protected SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel, Pagination paging)
-    {
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.setQuery(queryModel);
-        if (paging != null)
-        {
-            searchRequest.setPaging(paging);
-        }
-        return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
-    }
-
-    /**
-     * Queries until the response entries list is not empty, retrying up to the configured limit.
+     * Repeats the query until the response status is OK and the entries list is non-empty, up to {@link #MAX_ATTEMPTS_TO_READ_RESPONSE} re-reads after a successful status.
      */
     protected SearchResponse queryUntilResponseEntriesListNotEmpty(UserModel user, String queryString)
     {
@@ -264,6 +133,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractTestNGSpring
 
     private SearchResponse queryUntilStatusIsOk(UserModel user, String queryString)
     {
+        // Repeat query until status is OK or query retry limit is hit
         for (int queryAttempts = 0; queryAttempts < MAX_ATTEMPTS_TO_RETRY_QUERY - 1; queryAttempts++)
         {
             try
@@ -277,197 +147,11 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractTestNGSpring
                         "Re-trying query for valid status code. Retry Attempt: " + (queryAttempts + 1));
             }
             catch (EmptyJsonResponseException ignore)
-            {}
+            {
+                // try again
+            }
         }
+        // Final attempt
         return queryAsUser(user, queryString);
-    }
-
-    /**
-     * Builds a SearchRequest from a plain query term.
-     */
-    protected SearchRequest createQuery(String term)
-    {
-        SearchRequest query = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery(term);
-        query.setQuery(queryReq);
-        return query;
-    }
-
-    /**
-     * Waits for content to be indexed using the cm:content field.
-     */
-    public boolean waitForContentIndexing(String userQuery, boolean expectedInResults)
-    {
-        return waitForIndexing("cm:content", userQuery, expectedInResults);
-    }
-
-    /**
-     * Waits for metadata (name field) to be indexed.
-     */
-    public boolean waitForMetadataIndexing(String userQuery, boolean expectedInResults)
-    {
-        return waitForIndexing("name", userQuery, expectedInResults);
-    }
-
-    /**
-     * Waits for a query to return expected results, using the query as-is.
-     */
-    public boolean waitForIndexing(String userQuery, boolean expectedInResults)
-    {
-        return waitForIndexing(null, userQuery, expectedInResults);
-    }
-
-    private boolean waitForIndexing(String fieldName, String userQuery, boolean expectedInResults)
-    {
-        String query = (fieldName == null) ? userQuery : String.format("%s:'%s'", fieldName, userQuery);
-        return isContentInSearchResults(query, null, expectedInResults);
-    }
-
-    /**
-     * Polls the search API until the expected content appears or is absent from results.
-     */
-    public boolean isContentInSearchResults(String userQuery, String contentToFind, boolean expectedInResults)
-    {
-        String contentName = (contentToFind == null) ? "" : contentToFind;
-        SearchRequest searchRequest = createQuery(userQuery);
-        final int ignoreRuntimeExceptionThreshold = SEARCH_MAX_ATTEMPTS / 10 + 1;
-
-        for (int searchCount = 0; searchCount < SEARCH_MAX_ATTEMPTS; searchCount++)
-        {
-            try
-            {
-                if (expectedInResults == isContentFoundWithRequest(searchRequest, contentName))
-                {
-                    return true;
-                }
-            }
-            catch (EmptyJsonResponseException ignore)
-            {}
-            catch (RuntimeException runtimeException)
-            {
-                if (searchCount > ignoreRuntimeExceptionThreshold)
-                {
-                    throw runtimeException;
-                }
-                else
-                {
-                    LOGGER.warn("Ignoring initial Search API failure.", runtimeException);
-                }
-            }
-            finally
-            {
-                Utility.waitToLoopTime(1, "Wait For Indexing. Retry Attempt: " + (searchCount + 1));
-            }
-        }
-        return false;
-    }
-
-    private boolean isContentFoundWithRequest(SearchRequest searchRequest, String contentName)
-    {
-        SearchResponse response = query(searchRequest);
-        if (restClient.getStatusCode().matches(String.valueOf(HttpStatus.OK.value())))
-        {
-            return isContentInSearchResponse(response, contentName);
-        }
-        else
-        {
-            throw new RuntimeException("API returned status code: " + restClient.getStatusCode()
-                    + " Expected: " + HttpStatus.OK.value());
-        }
-    }
-
-    public boolean isContentInSearchResponse(SearchResponse response, String contentName)
-    {
-        return response.getEntries().stream()
-                .map(entry -> entry.getModel().getName())
-                .anyMatch(name -> name.equalsIgnoreCase(contentName) || contentName.isBlank());
-    }
-
-    /**
-     * Performs a search as the given user with the specified language and paging.
-     */
-    protected SearchResponse performSearch(UserModel asUser, String query, SearchLanguage queryLanguage, Pagination paging)
-    {
-        RestRequestQueryModel queryModel = new RestRequestQueryModel();
-        queryModel.setQuery(query);
-
-        if (asUser == null)
-        {
-            asUser = testUser;
-        }
-
-        if (queryLanguage != null)
-        {
-            queryModel.setLanguage(queryLanguage.toString());
-        }
-
-        return queryAsUser(asUser, queryModel, paging);
-    }
-
-    /**
-     * Sets pagination options for the API query.
-     */
-    protected Pagination setPaging(Integer skipCount, Integer maxItems)
-    {
-        Pagination paging = new Pagination();
-        if (skipCount != null)
-        {
-            paging.setSkipCount(skipCount);
-        }
-        if (maxItems != null)
-        {
-            paging.setMaxItems(maxItems);
-        }
-        return paging;
-    }
-
-    /**
-     * Supported search languages.
-     */
-    protected enum SearchLanguage
-    {
-        CMIS, AFTS
-    }
-
-    /**
-     * Helper method to test if the search query works and count matches where provided.
-     */
-    protected SearchResponse testSearchQuery(String query, Integer expectedCount)
-    {
-        Pagination paging = new Pagination();
-        paging.setSkipCount(0);
-        paging.setMaxItems(100);
-
-        SearchResponse response = performSearch(testUser, query, SearchLanguage.AFTS, paging);
-
-        if (expectedCount != null)
-        {
-            restClient.onResponse().assertThat().body("list.pagination.count", Matchers.equalTo(expectedCount));
-        }
-
-        return response;
-    }
-
-    /**
-     * Helper method to test if the search query returns the expected unordered set of results.
-     */
-    protected SearchResponse testSearchQueryUnordered(String query, Set<String> expectedNames)
-    {
-        Pagination paging = new Pagination();
-        paging.setSkipCount(0);
-        paging.setMaxItems(100);
-
-        SearchResponse response = performSearch(testUser, query, SearchLanguage.AFTS, paging);
-
-        Set<String> names = response.getEntries().stream()
-                .map(s -> s.getModel().getName())
-                .collect(Collectors.toSet());
-
-        org.junit.Assert.assertEquals(
-                "Unexpected results for query: " + query,
-                expectedNames, names);
-
-        return response;
     }
 }

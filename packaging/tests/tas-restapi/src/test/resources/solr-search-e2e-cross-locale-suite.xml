@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="SolrSearchE2ECrossLocaleTests" verbose="1" preserve-order="true">
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+    </listeners>
+    <test name="SolrSearchE2ECrossLocaleTests">
+        <packages>
+            <package name="org.alfresco.rest.search.crosslocale"/>
+        </packages>
+    </test>
+</suite>

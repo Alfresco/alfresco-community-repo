@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="allfieldtypes:AllFieldTypesModel">
+    <description>All Field Types Model for Search Field Definition Tests (SEARCH-2139)</description>
+    <author>Alfresco</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/allfieldtypes/1.0" prefix="allfieldtypes"/>
+    </namespaces>
+    <aspects>
+        <aspect name="allfieldtypes:text">
+            <title>All Field Types Text Aspect</title>
+            <properties>
+                <property name="allfieldtypes:textLOVPartial">
+                    <title>Text LOV Partial</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true"><tokenised>true</tokenised></index>
+                </property>
+                <property name="allfieldtypes:textPatternUnique">
+                    <title>Text Pattern Unique</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true"><tokenised>true</tokenised></index>
+                </property>
+                <property name="allfieldtypes:textFree">
+                    <title>Text Free</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true"><tokenised>true</tokenised></index>
+                </property>
+                <property name="allfieldtypes:textPatternMany">
+                    <title>Text Pattern Many</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true"><tokenised>true</tokenised></index>
+                </property>
+                <property name="allfieldtypes:textLOVWhole">
+                    <title>Text LOV Whole (not tokenised)</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true"><tokenised>false</tokenised></index>
+                </property>
+                <property name="allfieldtypes:mltextLOVPartial">
+                    <title>MLText LOV Partial</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true"><tokenised>true</tokenised></index>
+                </property>
+                <property name="allfieldtypes:mltextFree">
+                    <title>MLText Free</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true"><tokenised>true</tokenised></index>
+                </property>
+                <property name="allfieldtypes:mltextLOVWhole">
+                    <title>MLText LOV Whole (not tokenised)</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true"><tokenised>false</tokenised></index>
+                </property>
+                <property name="allfieldtypes:multiplemltext">
+                    <title>Multiple MLText</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true"><tokenised>true</tokenised></index>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+</model>

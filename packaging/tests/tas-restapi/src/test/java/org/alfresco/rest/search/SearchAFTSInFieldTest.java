@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -39,6 +39,9 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.exception.EmptyRestModelCollectionException;
+import org.alfresco.rest.model.RestNodeAssociationModelCollection;
+import org.alfresco.rest.model.RestNodeChildAssociationModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
@@ -81,7 +84,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         waitForContentIndexing(file5.getContent(), true);
     }
 
-    @Test(priority = 1, groups = {TestGroup.ACS_63n})
+    @Test(priority = 1)
     public void testSearchInFieldName()
     {
         // Field names in various formats
@@ -112,7 +115,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         });
     }
 
-    @Test(priority = 2, groups = {TestGroup.ACS_63n})
+    @Test(priority = 2)
     public void testSearchInFieldTitle()
     {
         // Field names in various formats
@@ -138,7 +141,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         });
     }
 
-    @Test(priority = 3, groups = {TestGroup.ACS_63n})
+    @Test(priority = 3)
     public void testSearchInFieldContent()
     {
         // Field names in various formats
@@ -162,6 +165,22 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
 
             testSearchQuery(query, resultCount1).getPagination().getTotalItems();
         });
+    }
+
+    @Test
+    public void testSearchInFieldSITE()
+    {
+        String query = "SITE:" + testSite.getId();
+        boolean fileFound = isContentInSearchResults(query, folder1.getName(), true);
+        Assert.assertTrue(fileFound, "Site Not found for query: " + query);
+
+        Integer resultCount1 = testSearchQuery(query, 8, SearchLanguage.AFTS).getPagination().getTotalItems();
+
+        query = "SITE:'" + testSite.getId() + "\'";
+        fileFound = isContentInSearchResults(query, folder1.getName(), true);
+        Assert.assertTrue(fileFound, "Site Not found for query: " + query);
+
+        testSearchQuery(query, resultCount1, SearchLanguage.AFTS).getPagination().getTotalItems();
     }
 
     @Test(priority = 5)
@@ -190,7 +209,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority = 6)
-    public void testSearchInFieldID() throws Exception
+    public void testSearchInFieldID()
     {
         String query = "ID:'workspace://SpacesStore/" + file1.getNodeRefWithoutVersion() + "'";
         boolean fileFound = isContentInSearchResults(query, file1.getName(), true);
@@ -218,7 +237,35 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         testSearchQueryUnordered(query, expectedNames);
     }
 
-    @Test(priority = 9, groups = {TestGroup.ACS_63n})
+    @Test(priority = 8)
+    public void testSearchInFieldPRIMARYPARENT() throws EmptyRestModelCollectionException
+    {
+        // Create secondary association: file1 becomes a secondary child of folder2
+        RestNodeChildAssociationModel childAssoc1 = new RestNodeChildAssociationModel(file1.getNodeRefWithoutVersion(), "cm:contains");
+        restClient.authenticateUser(testUser).withCoreAPI().usingResource(folder2).addSecondaryChildren(childAssoc1);
+
+        RestNodeAssociationModelCollection secondaryChildren = restClient.authenticateUser(testUser).withCoreAPI().usingResource(folder2).getSecondaryChildren();
+        secondaryChildren.getEntryByIndex(0).assertThat().field("id").is(file1.getNodeRefWithoutVersion());
+
+        String query = "PRIMARYPARENT:'workspace://SpacesStore/" + folder1.getNodeRef() + "'";
+
+        Set<String> expectedNames = new HashSet<>();
+        expectedNames.add(file1.getName());
+        expectedNames.add(file2.getName());
+        expectedNames.add(file3.getName());
+        expectedNames.add(file4.getName());
+        expectedNames.add(file5.getName());
+
+        testSearchQueryUnordered(query, expectedNames, SearchLanguage.AFTS);
+
+        query = "PARENT:'workspace://SpacesStore/" + folder2.getNodeRef() + "'";
+        boolean fileFound = isContentInSearchResults(query, file1.getName(), true);
+        Assert.assertTrue(fileFound, "Expected Content Not found for query: " + query);
+
+        testSearchQuery(query, 1, SearchLanguage.AFTS);
+    }
+
+    @Test(priority = 9)
     public void testSearchInFieldNameExactMatch()
     {
         // Check that queries return consistent results with / out ''
@@ -236,7 +283,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         testSearchQuery(query, resultCount1).getPagination().getTotalItems();
     }
 
-    @Test(priority = 10, groups = {TestGroup.ACS_63n})
+    @Test(priority = 10)
     public void testSearchInFieldNameQueryExpansion()
     {
         // Check that queries return consistent results with / out ''
@@ -255,7 +302,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         testSearchQueryUnordered(query, expectedNames);
     }
 
-    @Test(priority = 11, groups = {TestGroup.ACS_63n})
+    @Test(priority = 11)
     public void testWithConjunctionDisjunctionAndNegation()
     {
         // Query string to include Conjunction, Disjunction and Negation
@@ -288,7 +335,20 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         Assert.assertFalse(fileFound, "File3 found for query: " + query);
     }
 
-    /** Check that a 200 success is returned when performing exact search against the DB (even on a tokenised field without cross-locale support). */
+    /** Check that a 501 error is returned when performing exact search on a tokenized field without cross-locale support. */
+    @Test(priority = 12)
+    public void testExactMatchWithoutCrossLocale()
+    {
+        // Force the query to hit Solr rather than the DB.
+        String query = "=cm:title:test and cm:name:*";
+        RestRequestQueryModel queryModel = new RestRequestQueryModel();
+        queryModel.setQuery(query);
+        SearchRequest searchRequest = new SearchRequest(queryModel);
+        restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(searchRequest);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    /** Check that a 200 success is returned when performing exact search against the DB (even on a tokenized field without cross-locale support). */
     @Test(priority = 13)
     public void testExactMatchAgainstDB()
     {

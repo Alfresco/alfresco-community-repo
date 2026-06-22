@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -36,8 +36,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
 
 /**
  * Stats search test.
@@ -52,9 +50,6 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH},
-            executionType = ExecutionType.REGRESSION,
-            description = "Checks errors with stats using Search api")
     public void searchWithBasicStats()
     {
         SearchRequest query = createQuery("cars");
@@ -136,9 +131,6 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH},
-            executionType = ExecutionType.REGRESSION,
-            description = "Checks errors with stats labels using Search api")
     public void searchWithStatsLabel()
     {
         SearchRequest query = createQuery("cars");
@@ -156,9 +148,6 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH},
-            executionType = ExecutionType.REGRESSION,
-            description = "Checks errors with stats fitlers using Search api")
     public void searchWithStatsFilters()
     {
         SearchRequest query = new SearchRequest();
@@ -190,10 +179,7 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
         assertTrue((Integer) metricCount.get("countValues") > count, "With the exclude filter there will be more documents than returned");
     }
 
-    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH},
-            executionType = ExecutionType.REGRESSION,
-            description = "Checks errors with stats with Pivot using Search api")
+    @Test
     public void searchWithStatsAndMutlilevelPivot()
     {
         SearchRequest query = createQuery("cars");
@@ -253,9 +239,6 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH},
-            executionType = ExecutionType.REGRESSION,
-            description = "Checks errors with stats with Pivot using Search api")
     public void searchWithStatsAndPivot()
     {
         SearchRequest query = createQuery("cars");

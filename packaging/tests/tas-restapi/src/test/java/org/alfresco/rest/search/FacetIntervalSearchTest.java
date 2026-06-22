@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -35,8 +35,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestErrorModel;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
 
 /**
  * Faceted Intervals Search Test
@@ -51,9 +49,7 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Check facet intervals mandatory fields")
-    public void checkingFacetsMandatoryErrorMessages() throws Exception
+    public void checkingFacetsMandatoryErrorMessages()
     {
         SearchRequest query = createQuery("cars");
 
@@ -105,9 +101,7 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Check basic facet intervals search api")
-    public void searchWithBasicInterval() throws Exception
+    public void searchWithBasicInterval()
     {
         SearchRequest query = createQuery("cars");
 
@@ -148,9 +142,7 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Check date facet intervals search api")
-    public void searchWithDates() throws Exception
+    public void searchWithDates()
     {
         SearchRequest query = createQuery("cars");
 

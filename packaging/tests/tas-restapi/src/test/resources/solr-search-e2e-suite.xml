@@ -6,26 +6,26 @@
         <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
         <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
     </listeners>
+
     <test name="SearchTests">
+        <packages>
+            <package name="org.alfresco.rest.search.*">
+                <exclude name="org.alfresco.rest.search.fingerPrint"/>
+                <exclude name="org.alfresco.rest.search.crosslocale"/>
+            </package>
+        </packages>
+
         <classes>
-            <class name="org.alfresco.rest.search.SearchTest"/>
-            <class name="org.alfresco.rest.search.FacetRangeSearchTest"/>
-            <class name="org.alfresco.rest.search.SearchHighLightTest"/>
-            <class name="org.alfresco.rest.search.SearchWithCustomModelTest"/>
-            <class name="org.alfresco.rest.search.SpecialCharacterSearchTest"/>
-            <class name="org.alfresco.rest.search.SearchExactTermTest"/>
-            <class name="org.alfresco.rest.search.SearchSecondaryAssociationTest"/>
-            <class name="org.alfresco.rest.search.SearchQueryPaginationTest"/>
-            <class name="org.alfresco.rest.search.StatsSearchTest"/>
-            <class name="org.alfresco.rest.search.SearchSimpleCasesTest"/>
-            <class name="org.alfresco.rest.search.SearchPermissionsTest"/>
-            <class name="org.alfresco.rest.search.FacetedSearchTest"/>
-            <class name="org.alfresco.rest.search.FacetFieldsSearchTest"/>
-            <class name="org.alfresco.rest.search.FacetIntervalSearchTest"/>
-            <class name="org.alfresco.rest.search.SearchAFTSInFieldTest"/>
-            <class name="org.alfresco.rest.search.SearchAspectTest"/>
-            <class name="org.alfresco.rest.search.SearchCasesTest"/>
-            <class name="org.alfresco.rest.search.SearchParentFieldTest"/>
+            <class name="org.alfresco.rest.search.SearchSpellCheckTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.rest.search.NodeContentTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
         </classes>
     </test>
 </suite>

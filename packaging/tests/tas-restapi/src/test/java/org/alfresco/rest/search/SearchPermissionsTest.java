@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -131,7 +131,7 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority = 2)
-    public void searchResultsRespectInheritedPermissionsDisabled() throws Exception
+    public void searchResultsRespectInheritedPermissionsDisabled()
     {
         // Create folder
         FolderModel folder3 = dataContent.usingUser(testUser).usingSite(testSite).usingResource(parentFolder).createFolderCmisApi("permChild3");
@@ -170,7 +170,7 @@ public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority = 3)
-    public void searchResultsOnChangingSiteVisibility() throws Exception
+    public void searchResultsOnChangingSiteVisibility()
     {
         // Create Site
         SiteModel testPermissionsSite = new SiteModel(RandomData.getRandomName("SiteSearchPermissions"));

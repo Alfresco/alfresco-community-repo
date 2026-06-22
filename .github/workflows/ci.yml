@@ -499,6 +499,15 @@ jobs:
           - test-name: "Solr Search E2E TAS tests"
             pom-dir: tas-restapi
             test-profile: solr-e2e-tests
+          - test-name: "Solr Search E2E TAS tests - Fingerprint"
+            pom-dir: tas-restapi
+            test-profile: solr-e2e-fingerprint
+          - test-name: "Solr Search E2E TAS tests - Spellcheck"
+            pom-dir: tas-restapi
+            test-profile: solr-e2e-spellcheck
+          - test-name: "Solr Search E2E TAS tests - CrossLocale"
+            pom-dir: tas-restapi
+            test-profile: solr-e2e-crosslocale
 
     env:
       REQUIRES_LOCAL_IMAGES: true
@@ -519,6 +528,18 @@ jobs:
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      - name: "Configure Solr for Fingerprint tests"
+        if: ${{ matrix.test-name == 'Solr Search E2E TAS tests - Fingerprint' }}
+        timeout-minutes: 5
+        run: bash ${{ env.TAS_SCRIPTS }}/configure-solr-fingerprint.sh
+      - name: "Configure Solr for Spellcheck tests"
+        if: ${{ matrix.test-name == 'Solr Search E2E TAS tests - Spellcheck' }}
+        timeout-minutes: 5
+        run: bash ${{ env.TAS_SCRIPTS }}/configure-solr-spellcheck.sh
+      - name: "Configure Solr for CrossLocale tests"
+        if: ${{ matrix.test-name == 'Solr Search E2E TAS tests - CrossLocale' }}
+        timeout-minutes: 5
+        run: bash ${{ env.TAS_SCRIPTS }}/configure-solr-crosslocale.sh
       - name: "Build TAS integration tests"
         if: ${{ matrix.test-name == 'Integration TAS tests' }}
         run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests

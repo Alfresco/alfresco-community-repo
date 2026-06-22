@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -78,7 +78,7 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    public void searchNonIndexedData() throws Exception
+    public void searchNonIndexedData()
     {
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:title");
@@ -96,7 +96,7 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    public void searchDataConjunctionGenericQuery() throws Exception
+    public void searchDataConjunctionGenericQuery()
     {
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
 

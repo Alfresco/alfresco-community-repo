@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,8 +38,6 @@ import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRequestRangesModel;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
 
 /**
  * Faceted Range Search Query for numeric range { "query": { "query": "name:A*" }, "range": { "field": "content.size", "start": "0", "end": "400", "gap": "100" } } Date range query: { "query": { "query": "name:A*" }, "range": { "field": "created", "start": "2015-09-29T10:45:15.729Z", "end": "2016-09-29T10:45:15.729Z", "gap": "+100DAY" } }
@@ -55,8 +53,6 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 
     /** Check the error messages mention the mandatory fields when they are omitted. */
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Check facet intervals mandatory fields")
     public void checkingFacetsMandatoryErrorMessages()
     {
         SearchRequest query = createQuery("cars");
@@ -86,9 +82,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
                 .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "gap"));
     }
 
-    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Check basic facet range search api")
+    @Test
     @SuppressWarnings("unchecked")
     public void searchWithRange()
     {
@@ -136,9 +130,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         assertEquals(info.get("endInclusive"), "true");
     }
 
-    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Check date facet intervals search api")
+    @Test
     @SuppressWarnings("unchecked")
     public void searchWithRangeHardend()
     {
@@ -191,8 +183,6 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Check date facet intervals search api")
     public void searchDateAndSizeRanges()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
@@ -202,9 +192,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         query.setRanges(ranges);
     }
 
-    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Check basic facet range search api")
+    @Test
     @SuppressWarnings("unchecked")
     public void searchWithRangeAndIncludeUpperBound()
     {

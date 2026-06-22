@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -88,8 +88,8 @@ public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
         waitForContentIndexing(htmlFile.getContent(), true);
     }
 
-    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
-    public void testSearchFacetFieldsBucketExcludedWhenMinCount2() throws Exception
+    @Test
+    public void testSearchFacetFieldsBucketExcludedWhenMinCount2()
     {
         // Create Query with FacetFields: Site and Content MimeType
         SearchRequest query = new SearchRequest();
@@ -124,8 +124,8 @@ public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
 
     }
 
-    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
-    public void testSearchWithFacetFieldsMinCountChecks() throws Exception
+    @Test
+    public void testSearchWithFacetFieldsMinCountChecks()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -176,7 +176,7 @@ public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    public void testSearchWithFacetFieldsNoFacetsWhenNoAccess() throws Exception
+    public void testSearchWithFacetFieldsNoFacetsWhenNoAccess()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -199,8 +199,8 @@ public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
         Assert.assertNull(response.getContext().getFacetsFields());
     }
 
-    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
-    public void testSearchWithFacetFieldsOnlyFacetsWhereAccess() throws Exception
+    @Test
+    public void testSearchWithFacetFieldsOnlyFacetsWhereAccess()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();

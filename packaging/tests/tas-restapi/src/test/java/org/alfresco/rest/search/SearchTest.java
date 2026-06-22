@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -46,8 +46,6 @@ import org.testng.annotations.Test;
 import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
 
 /**
  * Search end point Public API test.
@@ -87,8 +85,6 @@ public class SearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Checks its possible to include the original request in the response")
     public void searchWithRequest()
     {
         SearchRequest query = new SearchRequest();
@@ -103,9 +99,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         response.getContext().assertThat().field("request").isNotEmpty();
     }
 
-    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Tests a search request containing a sort clause.")
+    @Test
     public void searchWithOneSortClause()
     {
         // Tests the ascending order first
@@ -148,9 +142,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
     /**
      * Tests the query execution with two sort clauses. The first clause has always the same value for all matches so the test makes sure the request is correctly processed and the returned order is determined by the second clause.
      */
-    @Test(groups = {TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
-            description = "Tests a search request containing a sort clause.")
+    @Test
     public void searchWithTwoSortClauses()
     {
         // Tests the ascending order first
@@ -192,10 +184,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
                         .collect(Collectors.toList()));
     }
 
-    @Test(groups = {TestGroup.ACS_61n})
-    @TestRail(section = {
-            TestGroup.REST_API, TestGroup.SEARCH,
-            TestGroup.ACS_61n}, executionType = ExecutionType.REGRESSION, description = "Checks the \"include\" request parameter support the 'permissions' option")
+    @Test
     public void searchQuery_includePermissions_shouldReturnNodeWithPermissionsInformation()
     {
         String query = "fox";
@@ -217,10 +206,8 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         restClient.onResponse().assertThat().body("list.entries[0].entry.permissions", nullValue());
     }
 
-    @Test(groups = {TestGroup.ACS_61n}, enabled = false)
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n}, executionType = ExecutionType.REGRESSION,
-            description = "Checks the \"include\" request parameter support the 'isLocked' option")
-    public void searchQuery_includeIsLocked_shouldReturnNodeWithLockInformation() throws Exception
+    @Test(enabled = false)
+    public void searchQuery_includeIsLocked_shouldReturnNodeWithLockInformation()
     {
         String query = "fox";
         String include = "isLocked";
@@ -253,9 +240,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         restClient.onResponse().assertThat().body("list.entries[0].entry.isLocked", nullValue());
     }
 
-    @Test(groups = {TestGroup.ACS_61n})
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.ACS_61n}, executionType = ExecutionType.REGRESSION,
-            description = "Checks the \"include\" request parameter does not support the 'notValid' option")
+    @Test
     public void searchQuery_includeInvalid_shouldReturnBadResponse()
     {
         String query = "fox";
@@ -296,7 +281,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    public void searchSpecialCharacters() throws Exception
+    public void searchSpecialCharacters()
     {
         // Create a file with Special Characters
         String specialCharfileName = "è¥äæ§ç§-åæ.pdf";

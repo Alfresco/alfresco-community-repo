@@ -47,6 +47,30 @@
                 <suiteXmlFile>${project.basedir}/src/test/resources/solr-search-e2e-suite.xml</suiteXmlFile>
             </properties>
         </profile>
+        <!-- Fingerprint E2E tests require non-default Solr config (alfresco.fingerprint=true).
+     Configuration is applied by the corresponding CI step. -->
+        <profile>
+            <id>solr-e2e-fingerprint</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/solr-search-e2e-fingerprint-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <!-- Spellcheck E2E tests require non-default Solr config (suggestable properties
+     enabled in shared.properties). Configuration is applied by the corresponding CI step. -->
+        <profile>
+            <id>solr-e2e-spellcheck</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/solr-search-e2e-spellcheck-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <!-- Cross-locale E2E tests require non-default Solr config (suggestable properties
+     enabled in shared.properties). Configuration is applied by the corresponding CI step. -->
+        <profile>
+            <id>solr-e2e-crosslocale</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/solr-search-e2e-crosslocale-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
     </profiles>
 
     <dependencies>

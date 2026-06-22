@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,7 +38,7 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
      * Note these tests are searching in cm:name property only (default for exact term without cross locale). 1 result expected for =run >> Document #2 >> name: "Run" 1 result expected for =jump >> Document #4 >> name: "Jump"
      */
     @Test
-    public void exactSearch_singleTerm_shouldReturnResultsContainingExactTermInName() throws Exception
+    public void exactSearch_singleTerm_shouldReturnResultsContainingExactTermInName()
     {
         /* 1 result is expected: - Document #2 >> name: "Run" */
         assertResponseCardinality("=run", 1);
@@ -52,7 +52,7 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     }
 
     @Test
-    public void exactSearch_multiTerm_shouldReturnResultsContainingExactTerm() throws Exception
+    public void exactSearch_multiTerm_shouldReturnResultsContainingExactTerm()
     {
         /* 2 results are expected: - Document #2 >> name: "Run" - Document #4 >> name: "Jump" */
         assertResponseCardinality("=run =jump", 2);
@@ -66,7 +66,7 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     }
 
     @Test
-    public void exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase() throws Exception
+    public void exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase()
     {
         /* No result for "run jump" in cm:name property */
         assertResponseCardinality("=\"run jump\"", 0);

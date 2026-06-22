@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -32,21 +32,17 @@ import org.testng.annotations.Test;
 
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.report.Bug;
 
 public class SpecialCharacterSearchTest extends AbstractSearchServicesE2ETest
 {
 
     /**
-     *
      * Index a file with \u007F (delete char) in name. The goal is to check that the file is actually indexed in solr.
-     * 
-     * @throws Exception
      */
-    @Test(groups = {TestGroup.ACS_52n, TestGroup.ACS_60n, TestGroup.ACS_61n})
+    @Test
     @Bug(id = "MNT-20507")
-    public void testIndexDELChar() throws Exception
+    public void testIndexDELChar()
     {
         FileModel file = new FileModel("Delete char\u007Ffile", FileType.TEXT_PLAIN, "content of \u007F file");
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file);

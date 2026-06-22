@@ -41,7 +41,7 @@ public class SandboxNativeJavaArray extends NativeJavaArray
     @Override
     public Object get(String name, Scriptable start)
     {
-        if ("getClass".equals(name))
+        if ("getClass".equals(name) || "class".equals(name))
         {
             return NOT_FOUND;
         }

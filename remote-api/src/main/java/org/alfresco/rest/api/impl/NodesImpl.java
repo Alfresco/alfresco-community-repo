@@ -64,7 +64,6 @@ import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
-import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
@@ -130,6 +129,8 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.activities.ActivitiesTransactionListener;
 import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.activities.ActivityPoster;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -219,6 +220,7 @@ public class NodesImpl implements Nodes
     private VirtualStore smartStore; // note: remove as part of REPO-1173
     private ClassDefinitionMapper classDefinitionMapper;
     private RuleService ruleService;
+    private CheckOutCheckInService checkOutCheckInService;
 
     private enum Activity_Type
     {
@@ -278,6 +280,7 @@ public class NodesImpl implements Nodes
         this.siteService = sr.getSiteService();
         this.retryingTransactionHelper = sr.getRetryingTransactionHelper();
         this.lockService = sr.getLockService();
+        this.checkOutCheckInService = sr.getCheckOutCheckInService();
 
         if (defaultIgnoreTypesAndAspects != null)
         {
@@ -2143,7 +2146,6 @@ public class NodesImpl implements Nodes
     public void deleteNode(String nodeId, Parameters parameters)
     {
         NodeRef nodeRef = validateOrLookupNode(nodeId);
-        checkNotSystemPath(nodeRef);
 
         if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
         {
@@ -2226,7 +2228,6 @@ public class NodesImpl implements Nodes
         // Optionally, lookup by relative path
         String relativePath = nodeInfo.getRelativePath();
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
-        checkNotSystemPath(parentNodeRef);
 
         // Existing file/folder name handling
         boolean autoRename = Boolean.valueOf(parameters.getParameter(PARAM_AUTO_RENAME));
@@ -2481,17 +2482,15 @@ public class NodesImpl implements Nodes
      * @param activityInfo
      * @param aSync
      */
-    protected void postActivity(Activity_Type activityTypeEnum, ActivityInfo activityInfo, boolean async)
+    protected void postActivity(Activity_Type activity_type, ActivityInfo activityInfo, boolean aSync)
     {
         if (activityInfo == null)
-        {
             return; // Nothing to do.
-        }
 
-        String activityType = determineActivityType(activityTypeEnum, activityInfo.getFileInfo().isFolder());
+        String activityType = determineActivityType(activity_type, activityInfo.getFileInfo().isFolder());
         if (activityType != null)
         {
-            if (async)
+            if (aSync)
             {
                 ActivitiesTransactionListener txListener = new ActivitiesTransactionListener(activityType, activityInfo,
                         TenantUtil.getCurrentDomain(), Activities.APP_TOOL, Activities.RESTAPI_CLIENT,
@@ -2928,9 +2927,6 @@ public class NodesImpl implements Nodes
         final NodeRef parentNodeRef = validateOrLookupNode(targetParentId);
         final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId);
 
-        checkNotSystemPath(sourceNodeRef);
-        checkNotSystemPath(parentNodeRef);
-
         FileInfo fi = moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
         return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
     }
@@ -3144,7 +3140,7 @@ public class NodesImpl implements Nodes
         }
 
         final NodeRef nodeRef = validateNode(fileNodeId);
-        checkNotSystemPath(nodeRef);
+
         if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
             throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
@@ -3157,6 +3153,12 @@ public class NodesImpl implements Nodes
             versionMajor = Boolean.valueOf(str);
         }
         String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
+
+        NodeRef workingCopyNodeRef = resolveWorkingCopy(nodeRef);
+        if (workingCopyNodeRef != null)
+        {
+            return updateCheckedOutContent(workingCopyNodeRef, stream, parameters, versionMajor, versionComment);
+        }
 
         String fileName = parameters.getParameter(PARAM_NAME);
         if (fileName != null)
@@ -3171,6 +3173,102 @@ public class NodesImpl implements Nodes
         }
 
         return updateExistingFile(null, nodeRef, fileName, contentInfo, stream, parameters, versionMajor, versionComment);
+    }
+
+    private NodeRef resolveWorkingCopy(NodeRef nodeRef)
+    {
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            return nodeRef;
+        }
+        else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
+        {
+            NodeRef workingCopyNodeRef = checkOutCheckInService.getWorkingCopy(nodeRef);
+            if (workingCopyNodeRef == null)
+            {
+                throw new IntegrityException("Node " + nodeRef.getId() + " has cm:checkedOut aspect but no working copy was found", null);
+            }
+            return workingCopyNodeRef;
+        }
+        return null;
+    }
+
+    private void writeContentWithoutVersioning(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding)
+    {
+        behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        try
+        {
+            writeContent(nodeRef, fileName, stream, guessEncoding);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        }
+    }
+
+    private Node updateCheckedOutContent(NodeRef workingCopyRef, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
+    {
+        String fileName = parameters.getParameter(PARAM_NAME);
+        if (fileName != null)
+        {
+            handleNodeRename(fileName, workingCopyRef);
+            nodeService.setProperty(workingCopyRef, ContentModel.PROP_NAME, fileName);
+        }
+        else
+        {
+            fileName = (String) nodeService.getProperty(workingCopyRef, ContentModel.PROP_NAME);
+        }
+        writeContentWithoutVersioning(workingCopyRef, fileName, stream, true);
+
+        Map<String, Serializable> versionProperties = buildVersionProperties(workingCopyRef, versionMajor, versionComment);
+
+        NodeRef checkedInRef = safeCheckin(workingCopyRef, versionProperties);
+
+        extractMetadata(checkedInRef);
+
+        return getFolderOrDocumentFullInfo(checkedInRef, null, null, parameters);
+    }
+
+    private NodeRef safeCheckin(NodeRef nodeRef, Map<String, Serializable> versionProperties)
+    {
+        NodeRef checkedInRef;
+        try
+        {
+            checkedInRef = checkOutCheckInService.checkin(nodeRef, versionProperties);
+        }
+        catch (CheckOutCheckInServiceException e)
+        {
+            throw new ConstraintViolatedException("Could not checkin the nodeId " + nodeRef + " because " + e.getMessage(), e);
+        }
+        return checkedInRef;
+    }
+
+    private Map<String, Serializable> buildVersionProperties(NodeRef workingCopyRef, Boolean versionMajor, String versionComment)
+    {
+        VersionType versionType;
+        if (versionMajor != null)
+        {
+            versionType = versionMajor ? VersionType.MAJOR : VersionType.MINOR;
+        }
+        else
+        {
+            // Align with updateExistingFile: if no version label exists yet, default to MAJOR
+            NodeRef originalRef = checkOutCheckInService.getCheckedOut(workingCopyRef);
+            if (originalRef == null)
+            {
+                throw new IntegrityException("Working copy " + workingCopyRef.getId() + " has no checked-out original node", null);
+            }
+            String versionLabel = (String) nodeService.getProperty(originalRef, ContentModel.PROP_VERSION_LABEL);
+            versionType = (versionLabel == null) ? VersionType.MAJOR : VersionType.MINOR;
+        }
+
+        Map<String, Serializable> versionProperties = new HashMap<>(2);
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, versionType);
+        if (versionComment != null)
+        {
+            versionProperties.put(VersionModel.PROP_DESCRIPTION, versionComment);
+        }
+        return versionProperties;
     }
 
     private String getSiteManagerAuthority(NodeRef nodeRef)
@@ -3814,23 +3912,120 @@ public class NodesImpl implements Nodes
      */
     protected List<QName> createQNames(List<String> qnameStrList, List<QName> excludedProps)
     {
-        String prefix = PARAM_INCLUDE_PROPERTIES + "/";
+        String PREFIX = PARAM_INCLUDE_PROPERTIES + "/";
 
         List<QName> result = new ArrayList<>(qnameStrList.size());
         for (String str : qnameStrList)
         {
-            String qnameStr = str;
-            if (qnameStr.startsWith(prefix))
+            if (str.startsWith(PREFIX))
             {
-                qnameStr = qnameStr.substring(prefix.length());
+                str = str.substring(PREFIX.length());
             }
-            QName name = createQName(qnameStr);
+
+            QName name = createQName(str);
             if (!excludedProps.contains(name))
             {
                 result.add(name);
             }
         }
         return result;
+    }
+
+    @Override
+    public Node checkout(String nodeId, Parameters parameters)
+    {
+        NodeRef nodeRef = validateOrLookupNode(nodeId);
+
+        if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
+        {
+            throw new PermissionDeniedException("Current user doesn't have permission to checkout node " + nodeId);
+        }
+
+        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
+        {
+            throw new InvalidArgumentException("Node of type cm:content or a subtype is expected: " + nodeId);
+        }
+
+        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            Map<QName, Serializable> versionProps = new HashMap<>(2);
+            versionProps.put(ContentModel.PROP_AUTO_VERSION, true);
+            versionProps.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
+            this.getVersionService().ensureVersioningEnabled(nodeRef, versionProps);
+        }
+        try
+        {
+            NodeRef workingCopyNodeRef = this.checkOutCheckInService.checkout(nodeRef);
+            nodeService.setProperty(workingCopyNodeRef, ContentModel.PROP_WORKING_COPY_MODE, "offlineEditing");
+            return getFolderOrDocument(workingCopyNodeRef.getId(), parameters);
+        }
+        catch (CheckOutCheckInServiceException e)
+        {
+            throw new ConstraintViolatedException("Checkout failed for nodeId " + nodeRef + " due to " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Node cancelCheckout(String nodeId, Parameters parameters)
+    {
+        NodeRef nodeRef = validateOrLookupNode(nodeId);
+
+        if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
+        {
+            throw new PermissionDeniedException("Current user doesn't have permission to cancel checkout for node " + nodeId);
+        }
+
+        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
+        {
+            throw new InvalidArgumentException("Node of type cm:content or a subtype is expected: " + nodeId);
+        }
+
+        NodeRef originalNodeRef = resolveCancelCheckout(nodeRef, nodeId);
+        return getFolderOrDocument(originalNodeRef.getId(), parameters);
+    }
+
+    private NodeRef resolveCancelCheckout(NodeRef nodeRef, String nodeId)
+    {
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            // Case 1: The passed node IS the working copy
+            // cancelCheckout deletes the working copy and returns the original
+            return cancelCheckoutSafe(nodeRef);
+        }
+        else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
+        {
+            // Case 2: The passed node is the ORIGINAL checked-out node
+            // Find the working copy via the workingcopylink association
+            NodeRef workingCopyRef = checkOutCheckInService.getWorkingCopy(nodeRef);
+            if (workingCopyRef == null)
+            {
+                throw new IntegrityException("Can't cancel checkout for node " + nodeId + " because it has no working copy", null);
+            }
+            return cancelCheckoutSafe(workingCopyRef);
+        }
+        else if (lockService.isLocked(nodeRef))
+        {
+            // Case 3: Node is locked but not checked out (online edit case)
+            // Just unlock it
+            lockService.unlock(nodeRef);
+            return nodeRef;
+        }
+        else
+        {
+            throw new IntegrityException("Can't cancel checkout for node " + nodeId + " because it isn't checked out or locked", null);
+        }
+    }
+
+    private NodeRef cancelCheckoutSafe(NodeRef nodeRef)
+    {
+        try
+        {
+            return checkOutCheckInService.cancelCheckout(nodeRef);
+        }
+        catch (CheckOutCheckInServiceException e)
+        {
+            throw new ConstraintViolatedException("Cancel Checkout operation failed for nodeId " + nodeRef + " due to " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -4006,58 +4201,6 @@ public class NodesImpl implements Nodes
                 }
             });
         }
-    }
-
-    /**
-     * Throws {@link PermissionDeniedException} if any ancestor node is a system-protected path.
-     */
-    protected void checkNotSystemPath(NodeRef nodeRef)
-    {
-        // Run traversal as system to avoid AccessDeniedException on intermediate nodes
-        // where the current user may not have READ access (e.g. when inheritance is disabled
-        // on a parent folder). This is a structural check only - normal permission enforcement
-        // for the requested operation is handled separately.
-        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
-            QName requestedNodeType = nodeService.getType(nodeRef);
-            if (DownloadModel.TYPE_DOWNLOAD.equals(requestedNodeType))
-            {
-                return null;
-            }
-
-            NodeRef current = nodeRef;
-
-            while (current != null)
-            {
-                if (current.equals(repositoryHelper.getCompanyHome()))
-                {
-                    break;
-                }
-
-                QName type = nodeService.getType(current);
-                if (SiteModel.TYPE_SITE.equals(type) || isSubClass(type, SiteModel.TYPE_SITE))
-                {
-                    break;
-                }
-                if (isSpecialNode(current, type))
-                {
-                    throw new PermissionDeniedException(
-                            "Cannot perform operation on system path for requested node id '" + nodeRef.getId()
-                                    + "' due to protected ancestor id '" + current.getId()
-                                    + "' of type '" + type + "'");
-                }
-
-                ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(current);
-
-                if (parentAssoc == null ||
-                        parentAssoc.getParentRef() == null)
-                {
-                    break;
-                }
-
-                current = parentAssoc.getParentRef();
-            }
-            return null;
-        });
     }
 
     /**

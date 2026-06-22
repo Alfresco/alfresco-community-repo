@@ -1,0 +1,16 @@
+{
+  "test%3Aproperty": {
+    "meta": {
+      "DecodedQualifiedName": "test:property"
+    },
+    "type": "text",
+    "analyzer": "locale_content",
+    "copy_to": [
+      "test%3Aproperty_exact"
+    ]
+  },
+  "test%3Aproperty_exact": {
+    "type": "text",
+    "analyzer": "standard"
+  }
+}

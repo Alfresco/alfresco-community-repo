@@ -472,42 +472,42 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - test-name: "REST API TAS tests part1"
-#            pom-dir: tas-restapi
-#            test-profile: run-restapi-part1
-#          - test-name: "REST API TAS tests part2"
-#            pom-dir: tas-restapi
-#            test-profile: run-restapi-part2
-#          - test-name: "REST API TAS tests part3"
-#            pom-dir: tas-restapi
-#            test-profile: run-restapi-part3
-#          - test-name: "CMIS TAS tests - BROWSER binding"
-#            pom-dir: tas-cmis
-#            test-profile: run-cmis-browser
-#          - test-name: "CMIS TAS tests - ATOM binding"
-#            pom-dir: tas-cmis
-#            test-profile: run-cmis-atom
-#          - test-name: "CMIS TAS tests - WEBSERVICES binding"
-#            pom-dir: tas-cmis
-#            test-profile: run-cmis-webservices
-#          - test-name: "Email TAS tests"
-#            pom-dir: tas-email
-#          - test-name: "WebDAV TAS tests"
-#            pom-dir: tas-webdav
-#          - test-name: "Integration TAS tests"
-#            pom-dir: tas-integration
+          - test-name: "REST API TAS tests part1"
+            pom-dir: tas-restapi
+            test-profile: run-restapi-part1
+          - test-name: "REST API TAS tests part2"
+            pom-dir: tas-restapi
+            test-profile: run-restapi-part2
+          - test-name: "REST API TAS tests part3"
+            pom-dir: tas-restapi
+            test-profile: run-restapi-part3
+          - test-name: "CMIS TAS tests - BROWSER binding"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-browser
+          - test-name: "CMIS TAS tests - ATOM binding"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-atom
+          - test-name: "CMIS TAS tests - WEBSERVICES binding"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-webservices
+          - test-name: "Email TAS tests"
+            pom-dir: tas-email
+          - test-name: "WebDAV TAS tests"
+            pom-dir: tas-webdav
+          - test-name: "Integration TAS tests"
+            pom-dir: tas-integration
           - test-name: "Solr Search E2E TAS tests"
             pom-dir: tas-restapi
             test-profile: solr-e2e-tests
-#          - test-name: "Solr Search E2E TAS tests - Fingerprint"
-#            pom-dir: tas-restapi
-#            test-profile: solr-e2e-fingerprint
-#          - test-name: "Solr Search E2E TAS tests - Spellcheck"
-#            pom-dir: tas-restapi
-#            test-profile: solr-e2e-spellcheck
-#          - test-name: "Solr Search E2E TAS tests - CrossLocale"
-#            pom-dir: tas-restapi
-#            test-profile: solr-e2e-crosslocale
+          - test-name: "Solr Search E2E TAS tests - Fingerprint"
+            pom-dir: tas-restapi
+            test-profile: solr-e2e-fingerprint
+          - test-name: "Solr Search E2E TAS tests - Spellcheck"
+            pom-dir: tas-restapi
+            test-profile: solr-e2e-spellcheck
+          - test-name: "Solr Search E2E TAS tests - CrossLocale"
+            pom-dir: tas-restapi
+            test-profile: solr-e2e-crosslocale
 
     env:
       REQUIRES_LOCAL_IMAGES: true

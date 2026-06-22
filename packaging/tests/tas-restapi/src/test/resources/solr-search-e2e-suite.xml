@@ -1,33 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<!--
-    TEMPORARY: this suite has been reduced to run ONLY SearchNonIndexedFields
-    for local debugging. Restore the full suite before committing.
-
-    Full suite (kept for reference, commented out):
-
-        <test name="SearchTests">
-            <packages>
-                <package name="org.alfresco.rest.search.*">
-                    <exclude name="org.alfresco.rest.search.fingerPrint"/>
-                    <exclude name="org.alfresco.rest.search.crosslocale"/>
-                </package>
-            </packages>
-
-            <classes>
-                <class name="org.alfresco.rest.search.SearchSpellCheckTest">
-                    <methods>
-                        <exclude name=".*"/>
-                    </methods>
-                </class>
-                <class name="org.alfresco.rest.search.NodeContentTest">
-                    <methods>
-                        <exclude name=".*"/>
-                    </methods>
-                </class>
-            </classes>
-        </test>
--->
 <suite name="ElasticSearchE2ETests" verbose="1" preserve-order="true">
     <listeners>
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
@@ -35,9 +7,25 @@
         <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
     </listeners>
 
-    <test name="SearchNonIndexedFieldsOnly">
+    <test name="SearchTests">
+        <packages>
+            <package name="org.alfresco.rest.search.*">
+                <exclude name="org.alfresco.rest.search.fingerPrint"/>
+                <exclude name="org.alfresco.rest.search.crosslocale"/>
+            </package>
+        </packages>
+
         <classes>
-            <class name="org.alfresco.rest.search.SearchNonIndexedFields"/>
+            <class name="org.alfresco.rest.search.SearchSpellCheckTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.rest.search.NodeContentTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
         </classes>
     </test>
 </suite>

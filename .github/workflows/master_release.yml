@@ -30,7 +30,16 @@ jobs:
 
   run_ci:
     uses: ./.github/workflows/ci.yml
-    secrets: inherit # pragma: allowlist secret
+    secrets:
+      BOT_GITHUB_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
+      BOT_GITHUB_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
+      BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   push_to_nexus:
     name: "Push to Nexus"
     runs-on: ubuntu-latest

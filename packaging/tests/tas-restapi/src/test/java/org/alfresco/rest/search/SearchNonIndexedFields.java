@@ -120,8 +120,26 @@ public class SearchNonIndexedFields extends AbstractSearchServicesE2ETest
         restClient.configureRequestSpec().setBasePath(RestAssured.basePath);
 
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "admin/luke");
-        RestTextResponse response = restClient.processTextResponse(request);
-        String bodyResponse = response.getResponse().getBody().print();
+        // Poll until the expected field shows up in the Luke response, with a soft 60 s cap.
+        // shows up in the Luke response, with a soft 60 s cap.
+        String bodyResponse = "";
+        for (int i = 0; i < 30; i++)
+        {
+            bodyResponse = restClient.processTextResponse(request).getResponse().getBody().print();
+            if (bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}indexed"))
+            {
+                break;
+            }
+            try
+            {
+                Thread.sleep(2000L);
+            }
+            catch (InterruptedException e)
+            {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
 
         Assert.assertTrue(bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}indexed"),
                 "Expecting index:indexed field to be present in SOLR Schema");

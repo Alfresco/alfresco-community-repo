@@ -140,6 +140,8 @@ public class SearchNonIndexedFields extends AbstractSearchServicesE2ETest
             }
         }
 
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        logger.info("Test failed: " + bodyResponse);
         Assert.assertTrue(bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}indexed"),
                 "Expecting index:indexed field to be present in SOLR Schema");
         Assert.assertFalse(bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}nonIndexed"),

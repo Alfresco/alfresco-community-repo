@@ -787,6 +787,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     continue;
                 }
 
+                if (connector.isFilteredOutByVirtualRepository(child.getChildRef()))
+                {
+                    continue;
+                }
+
                 boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
 
                 // create a child CMIS object
@@ -1067,7 +1072,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             for (NodeRef nodeRef : nodeRefs)
             {
                 // TODO - perhaps filter by path in the query instead?
-                if (connector.filter(nodeRef))
+                if (connector.filter(nodeRef) || connector.isFilteredOutByVirtualRepository(nodeRef))
                 {
                     continue;
                 }
@@ -2170,7 +2175,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                         rootNodeRef,
                         Arrays.asList(path.substring(1).split("/")));
 
-                if (connector.filter(fileInfo.getNodeRef()))
+                if (connector.filter(fileInfo.getNodeRef()) || connector.isFilteredOutByVirtualRepository(fileInfo.getNodeRef()))
                 {
                     throw new CmisObjectNotFoundException("Object not found: " + path);
                 }

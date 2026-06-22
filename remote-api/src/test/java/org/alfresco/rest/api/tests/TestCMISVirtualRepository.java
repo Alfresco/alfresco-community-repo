@@ -25,10 +25,15 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Map;
 import java.util.Objects;
 
+import org.apache.chemistry.opencmis.client.api.Session;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -37,43 +42,46 @@ import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.CMISDispatcherRegistry;
 import org.alfresco.opencmis.CMISPropertyBasedVirtualRepository;
 import org.alfresco.opencmis.CMISVirtualRepository;
-import org.alfresco.rest.api.tests.client.PublicApiClient;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.rest.api.tests.client.PublicApiClient.CmisSession;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Person;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 
 public class TestCMISVirtualRepository extends EnterpriseTestApi
 {
     private NodeService nodeService;
+    private TransactionService transactionService;
     private RepoService.TestNetwork testNetwork;
-
-    public TestCMISVirtualRepository()
-    {
-        System.err.println("CTOR");
-    }
+    private CMISConnector cmisConnector;
+    private NamespaceService namespaceService;
+    private NodeRef rootNode;
+    private CMISVirtualRepository virtualRepositoryToRestore;
 
     @Override
     public void setup() throws Exception
     {
         final ApplicationContext ctx = getTestFixture().getApplicationContext();
-        final NamespaceService namespaceService = ctx.getBean("NamespaceService", NamespaceService.class);
-
-        this.nodeService = ctx.getBean("NodeService", NodeService.class);
-
-        final CMISVirtualRepository virtualRepository = new CMISPropertyBasedVirtualRepository(nodeService, namespaceService,
-                QName.createQName("http://www.alfresco.org/test/virtcmis/1.0", "VirtualRepository"),
-                QName.createQName("http://www.alfresco.org/test/virtcmis/1.0", "repositoryId"),
-                "exposed");
-
-        ctx.getBean("CMISConnector", CMISConnector.class).setVirtualRepository(virtualRepository);
-
         testNetwork = getTestFixture().getRandomNetwork();
+
+        namespaceService = ctx.getBean("NamespaceService", NamespaceService.class);
+        nodeService = ctx.getBean("NodeService", NodeService.class);
+        transactionService = ctx.getBean("transactionService", TransactionService.class);
+        cmisConnector = ctx.getBean("CMISConnector", CMISConnector.class);
+        rootNode = TenantUtil.runAsSystemTenant(() -> cmisConnector.getRootNodeRef(), testNetwork.getId());
+
+        virtualRepositoryToRestore = cmisConnector.getVirtualRepository();
     }
 
-    public void tearDown()
-    {}
+    @After
+    public void tearDown() throws Exception
+    {
+        cmisConnector.setVirtualRepository(virtualRepositoryToRestore);
+    }
 
     @Override
     protected String[] getCustomConfigLocations()
@@ -82,25 +90,27 @@ public class TestCMISVirtualRepository extends EnterpriseTestApi
     }
 
     @Test
-    public void testVirtualRepository()
+    public void shouldFailWhenRootNotExposed()
     {
-        givenCmisSession();
+        final CmisSession cmisSession = givenCmisSession();
+        final CmisVirtualRepositoryTestSupport testSupport = enableVirtualRepository("test" + System.currentTimeMillis());
+        testSupport.hide(rootNode);
 
+        assertThatExceptionOfType(CmisObjectNotFoundException.class)
+                .isThrownBy(() -> cmisSession.getObjectByPath("/"));
     }
 
     @Test
-    public void test2()
+    public void shouldNotFailWhenRootIsExposed()
     {
-        givenCmisSession();
+        final CmisSession cmisSession = givenCmisSession();
+        final CmisVirtualRepositoryTestSupport testSupport = enableVirtualRepository("test" + System.currentTimeMillis());
+        testSupport.expose(rootNode);
+
+        assertNotNull(cmisSession.getObjectByPath("/"));
     }
 
-    @Test
-    public void test3()
-    {
-        givenCmisSession();
-    }
-
-    private PublicApiClient.CmisSession givenCmisSession()
+    private CmisSession givenCmisSession()
     {
         final String personId = testNetwork.getPersonIds().stream().filter(Objects::nonNull).findFirst().orElse(null);
         assertNotNull(personId);
@@ -108,7 +118,58 @@ public class TestCMISVirtualRepository extends EnterpriseTestApi
         Person person = repoService.getPerson(personId);
         assertNotNull(person);
 
-        publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), personId));
+        publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), person.getUserName()));
+        publicApiClient.setCmisSessionAdjuster(this::disableCmisClientCache);
         return publicApiClient.createPublicApiCMISSession(CMISDispatcherRegistry.Binding.browser, "1.1", AlfrescoObjectFactoryImpl.class.getName());
+    }
+
+    private void disableCmisClientCache(Session session)
+    {
+        session.getDefaultContext().setCacheEnabled(false);
+    }
+
+    private CmisVirtualRepositoryTestSupport enableVirtualRepository(String id)
+    {
+        final CMISVirtualRepository virtualRepository = new CMISPropertyBasedVirtualRepository(nodeService, namespaceService,
+                CmisVirtualRepositoryTestSupport.ASPECT, CmisVirtualRepositoryTestSupport.PROPERTY, id);
+
+        cmisConnector.setVirtualRepository(virtualRepository);
+
+        return new CmisVirtualRepositoryTestSupport(nodeService, transactionService, testNetwork.getId(), id);
+    }
+
+    private static class CmisVirtualRepositoryTestSupport
+    {
+        private static final QName ASPECT = QName.createQName("http://www.alfresco.org/test/virtcmis/1.0", "VirtualRepository");
+        private static final QName PROPERTY = QName.createQName("http://www.alfresco.org/test/virtcmis/1.0", "repositoryId");
+        private final NodeService nodeService;
+        private final TransactionService transactionService;
+
+        private final String tenantId;
+        private final String repoId;
+
+        public CmisVirtualRepositoryTestSupport(NodeService nodeService, TransactionService transactionService, String tenantId, String repoId)
+        {
+            this.nodeService = Objects.requireNonNull(nodeService);
+            this.transactionService = Objects.requireNonNull(transactionService);
+            this.tenantId = Objects.requireNonNull(tenantId);
+            this.repoId = Objects.requireNonNull(repoId);
+        }
+
+        public void hide(NodeRef rootNode)
+        {
+            TenantUtil.runAsSystemTenant(() -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                nodeService.removeAspect(rootNode, ASPECT);
+                return null;
+            }, false, true), tenantId);
+        }
+
+        public void expose(NodeRef rootNode)
+        {
+            TenantUtil.runAsSystemTenant(() -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                nodeService.addAspect(rootNode, ASPECT, Map.of(PROPERTY, repoId));
+                return null;
+            }, false, true), tenantId);
+        }
     }
 }

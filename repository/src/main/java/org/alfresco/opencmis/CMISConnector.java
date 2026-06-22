@@ -390,6 +390,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return virtualRepository;
     }
 
+    public boolean isFilteredOutByVirtualRepository(NodeRef nodeRef)
+    {
+        return !virtualRepository.contains(nodeRef);
+    }
+
     /**
      * Sets the root store.
      *

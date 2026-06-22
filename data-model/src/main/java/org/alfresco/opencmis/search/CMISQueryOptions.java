@@ -312,7 +312,7 @@ public class CMISQueryOptions extends QueryOptions
     }
 
     /**
-     * The only supported filer based on single property value equality. Allows to limit the query results (both DB & Index).
+     * The only supported filter based on single property value equality. Allows to limit the query results (both DB & Index).
      */
     private static final class CMISPropertyEqualityFilter implements CMISQueryFilter
     {

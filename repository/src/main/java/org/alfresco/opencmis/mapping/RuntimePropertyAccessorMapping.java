@@ -75,8 +75,17 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         this.serviceRegistry = serviceRegistry;
     }
 
-    // The `setCmisConnector` name is keep for backward compatibility
+    /**
+     * The `setCmisConnector` name is kept for backward compatibility.
+     * Please use {@link RuntimePropertyAccessorMapping#setCmisFacade(CMISFacade)}.
+     */
+    @Deprecated
     public void setCmisConnector(CMISFacade cmisFacade)
+    {
+        setCmisFacade(cmisFacade);
+    }
+
+    public void setCmisFacade(CMISFacade cmisFacade)
     {
         this.cmisFacade = cmisFacade;
     }

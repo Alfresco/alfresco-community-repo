@@ -37,14 +37,14 @@ import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-class RuntimeSwitchingCMISFacade implements CMISFacade
+public class RuntimeSwitchingCMISFacade implements CMISFacade
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(RuntimeSwitchingCMISFacade.class);
     private CMISFacade fallbackFacade;
     private final Map<String, CMISFacadeProvider> facadeProviders;
     private boolean failOnManyFacades;
 
-    RuntimeSwitchingCMISFacade(Map<String, CMISFacadeProvider> facadeProviders)
+    public RuntimeSwitchingCMISFacade(Map<String, CMISFacadeProvider> facadeProviders)
     {
         this.facadeProviders = Objects.requireNonNull(facadeProviders);
     }

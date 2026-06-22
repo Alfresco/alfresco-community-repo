@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model name="virtcmis:TestModel" xmlns="http://www.alfresco.org/model/dictionary/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     
-    <description>Virtual CMIS Repository tes model</description>
+    <description>Virtual CMIS Repository test model</description>
     <author>Alfresco</author>
 
     <imports>

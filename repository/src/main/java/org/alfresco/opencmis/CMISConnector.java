@@ -180,7 +180,6 @@ import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
@@ -1173,19 +1172,14 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     protected NodeRef findRootNode()
     {
         return transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<NodeRef>() {
-                    @Override
-                    public NodeRef execute() throws Exception
-                    {
-                        NodeRef root = nodeService.getRootNode(storeRef);
-                        List<NodeRef> rootNodes = searchService.selectNodes(root, rootPath, null,
-                                namespaceService, false);
-                        if (rootNodes.size() != 1)
-                        {
-                            throw new CmisRuntimeException("Unable to locate CMIS root path " + rootPath);
-                        }
-                        return rootNodes.get(0);
-                    };
+                () -> {
+                    NodeRef root = nodeService.getRootNode(storeRef);
+                    List<NodeRef> rootNodes = searchService.selectNodes(root, rootPath, null,
+                            namespaceService, false);
+                    if (rootNodes.size() != 1) {
+                        throw new CmisRuntimeException("Unable to locate CMIS root path " + rootPath);
+                    }
+                    return rootNodes.getFirst();
                 }, true);
     }
 

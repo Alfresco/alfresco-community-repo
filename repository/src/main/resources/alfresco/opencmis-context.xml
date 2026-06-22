@@ -3,7 +3,7 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+        http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:annotation-config />
     <import resource="classpath:alfresco/opencmis-qnamefilter-context.xml" />
@@ -24,13 +24,13 @@
 
     <bean id="OpenCMISPropertyAccessorMapping" class="org.alfresco.opencmis.mapping.RuntimePropertyAccessorMapping" init-method="init">
         <property name="serviceRegistry"           ref="ServiceRegistry" />
-        <property name="cmisConnector"             ref="OpenCMISFacade" />
+        <property name="cmisFacade"             ref="OpenCMISFacade" />
         <property name="cmisMapping"               ref="OpenCMISMapping" />
     </bean>
     
     <bean id="OpenCMISPropertyAccessorMapping1.1" class="org.alfresco.opencmis.mapping.RuntimePropertyAccessorMapping" init-method="init">
         <property name="serviceRegistry"           ref="ServiceRegistry" />
-        <property name="cmisConnector"             ref="OpenCMISFacade" />
+        <property name="cmisFacade"             ref="OpenCMISFacade" />
         <property name="cmisMapping"               ref="OpenCMISMapping1.1" />
     </bean>
     

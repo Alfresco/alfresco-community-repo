@@ -72,7 +72,7 @@ public class TestCMISVirtualRepository extends EnterpriseTestApi
         nodeService = ctx.getBean("NodeService", NodeService.class);
         transactionService = ctx.getBean("transactionService", TransactionService.class);
         cmisConnector = ctx.getBean("CMISConnector", CMISConnector.class);
-        rootNode = TenantUtil.runAsSystemTenant(() -> cmisConnector.getRootNodeRef(), testNetwork.getId());
+        rootNode = TenantUtil.runAsSystemTenant(cmisConnector::getRootNodeRef, testNetwork.getId());
 
         virtualRepositoryToRestore = cmisConnector.getVirtualRepository();
     }

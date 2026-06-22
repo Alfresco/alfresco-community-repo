@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.restassured.RestAssured;
-import org.alfresco.rest.model.RestTextResponse;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.springframework.http.HttpMethod;
@@ -40,6 +39,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.rest.core.RestRequest;
+import org.alfresco.rest.model.RestTextResponse;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;

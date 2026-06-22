@@ -339,8 +339,13 @@ public class CMISQueryOptions extends QueryOptions
         @Override
         public void applyAFTSFilter(Consumer<String> aftsConsumer)
         {
-            String aftsFilter = "{!afts}=" + propertyName + ":\"" + propertyValue + "\"";
+            String aftsFilter = "{!afts}=" + propertyName + ":\"" + escapeAftsValue(propertyValue) + "\"";
             aftsConsumer.accept(aftsFilter);
+        }
+
+        private static String escapeAftsValue(String value)
+        {
+            return value.replace("\\", "\\\\").replace("\"", "\\\"");
         }
 
         private Constraint getFilterConstraint(QueryModelFactory queryModelFactory)

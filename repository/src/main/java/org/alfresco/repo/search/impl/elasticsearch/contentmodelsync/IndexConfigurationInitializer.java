@@ -63,7 +63,7 @@ public class IndexConfigurationInitializer
         }
         catch (IOException e)
         {
-            LOGGER.error("Error while trying to load the Elasticsearch configuration: {}", e.getMessage());
+            LOGGER.error("Error while trying to load Elasticsearch configuration from {}", BASIC_FIELDS_PATH, e);
         }
     }
 

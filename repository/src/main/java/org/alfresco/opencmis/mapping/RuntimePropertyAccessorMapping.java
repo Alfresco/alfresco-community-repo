@@ -76,8 +76,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * The `setCmisConnector` name is kept for backward compatibility.
-     * Please use {@link RuntimePropertyAccessorMapping#setCmisFacade(CMISFacade)}.
+     * The `setCmisConnector` name is kept for backward compatibility. Please use {@link RuntimePropertyAccessorMapping#setCmisFacade(CMISFacade)}.
      */
     @Deprecated
     public void setCmisConnector(CMISFacade cmisFacade)

@@ -1176,7 +1176,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     NodeRef root = nodeService.getRootNode(storeRef);
                     List<NodeRef> rootNodes = searchService.selectNodes(root, rootPath, null,
                             namespaceService, false);
-                    if (rootNodes.size() != 1) {
+                    if (rootNodes.size() != 1)
+                    {
                         throw new CmisRuntimeException("Unable to locate CMIS root path " + rootPath);
                     }
                     return rootNodes.getFirst();

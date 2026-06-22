@@ -60,7 +60,8 @@
         <dependency.spring.version>6.2.18</dependency.spring.version>
         <dependency.spring-security.version>6.5.10</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.17.2</dependency.jackson.version>
+        <dependency.jackson.version>2.22.0</dependency.jackson.version>
+        <dependency.jackson.annotations.version>2.22</dependency.jackson.annotations.version>
         <dependency.cxf.version>4.1.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
@@ -609,7 +610,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
-                <version>${dependency.jackson.version}</version>
+                <version>${dependency.jackson.annotations.version}</version>
             </dependency>
             <!-- newer dependency from camel-jackson -->
             <dependency>
@@ -777,6 +778,12 @@
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>utility</artifactId>
                 <version>${dependency.tas-utility.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.rest-assured</groupId>
@@ -802,11 +809,23 @@
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>email</artifactId>
                 <version>${dependency.tas-email.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>
                 <artifactId>webdav</artifactId>
                 <version>${dependency.tas-webdav.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.tas</groupId>

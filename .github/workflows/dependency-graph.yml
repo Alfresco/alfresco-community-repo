@@ -1,8 +1,5 @@
 name: "Load Dependency Graph"
-permissions:
-  contents: read
-
-# Default to least privilege for all jobs; individual jobs elevate as needed.
+# Default to the least privilege for all jobs; individual jobs elevate as needed.
 permissions:
   contents: read
 

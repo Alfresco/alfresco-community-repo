@@ -83,12 +83,6 @@ public class TestCMISVirtualRepository extends EnterpriseTestApi
         cmisConnector.setVirtualRepository(virtualRepositoryToRestore);
     }
 
-    @Override
-    protected String[] getCustomConfigLocations()
-    {
-        return new String[]{"classpath:org/alfresco/rest/api/tests/cmis-virtual-repository-test-context.xml"};
-    }
-
     @Test
     public void shouldFailWhenRootNotExposed()
     {

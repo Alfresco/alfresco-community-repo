@@ -26,7 +26,6 @@
 package org.alfresco.repo.search.impl.elasticsearch.contentmodelsync;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -364,6 +363,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
     private boolean mapModels()
     {
         int attemptsRemaining = retryAttempts;
+        String lastFailureReason = "No failure detected";
         Collection<QName> modelsToInit = dictionaryDAO.getModels(true);
         int currentPropertiesInitialisedCounter = 0;
         while (!modelsToInit.isEmpty() && attemptsRemaining > 0)
@@ -389,11 +389,13 @@ public class ElasticsearchInitialiser implements DictionaryListener
                         else
                         {
                             failedModels.add(model);
+                            lastFailureReason = "Mappings update was not acknowledged by Elasticsearch";
                         }
                     }
                     catch (IOException e)
                     {
                         failedModels.add(model);
+                        lastFailureReason = "Elasticsearch request failed: " + e.getMessage();
                         LOGGER.warn("Elasticsearch is not responding, {} model, {} attempts left", model.toString(),
                                 attemptsRemaining, e);
                     }
@@ -402,6 +404,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
             }
             else
             {
+                lastFailureReason = "Index does not exist";
                 LOGGER.warn("Elasticsearch mappings could not be updated as the Index does not exist, {} attempts left",
                         attemptsRemaining);
             }
@@ -420,7 +423,8 @@ public class ElasticsearchInitialiser implements DictionaryListener
         }
         else
         {
-            LOGGER.error("Elasticsearch mappings update failed for models: " + Arrays.toString(modelsToInit.toArray()));
+            LOGGER.error("Elasticsearch mappings update failed after {} attempts. {} models were not mapped. reason='{}', models={}",
+                    retryAttempts, modelsToInit.size(), lastFailureReason, modelsToInit);
             return false;
         }
     }

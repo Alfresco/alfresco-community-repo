@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -33,6 +33,7 @@ import org.alfresco.service.namespace.QName;
  * Content Model Constants
  */
 @AlfrescoPublicApi
+@SuppressWarnings("PMD.ConstantsInInterface")
 public interface ContentModel
 {
     //
@@ -457,4 +458,10 @@ public interface ContentModel
     static final QName PROP_CASCADE_CRC = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "cascadeCRC");
     static final QName PROP_CASCADE_TX = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "cascadeTx");
 
+    // Cascading dictionary
+    QName TYPE_CD_DEFINITION = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "definition");
+    QName ASPECT_CD_CLASSIFIABLE = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "classifiable");
+    QName PROP_CD_ASPECT = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "aspect");
+    QName PROP_CD_KEY = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "keyProperty");
+    QName PROP_CD_VERSION = QName.createQName(NamespaceService.CD_MODEL_1_0_URI, "versionProperty");
 }

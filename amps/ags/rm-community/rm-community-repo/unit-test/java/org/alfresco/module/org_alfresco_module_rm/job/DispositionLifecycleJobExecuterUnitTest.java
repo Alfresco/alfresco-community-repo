@@ -77,6 +77,8 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     /** test query snippet */
     private static final String QUERY= "TYPE:\"rma:dispositionAction\"";
     private static final String FILTER_QUERY = "@rma\\:dispositionAction:(\"cutoff\" OR \"retain\")";
+    /** the dispositionAsOf branch must be guarded by a not-null check so unset values are not matched */
+    private static final String AS_OF_NOT_NULL_GUARD = "ISNOTNULL:\"rma:dispositionAsOf\" AND -@rma\\:dispositionAsOf:[";
     /** mocked result set */
     @Mock ResultSet mockedResultSet;
 
@@ -119,6 +121,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         verify(mockedSearchService, times(numberOfInvocation)).query(paramsCaptor.capture());
         assertTrue(paramsCaptor.getValue().getQuery().contains(QUERY));
         assertTrue(paramsCaptor.getValue().getFilterQueries().toString().contains(FILTER_QUERY));
+        assertTrue(paramsCaptor.getValue().getFilterQueries().toString().contains(AS_OF_NOT_NULL_GUARD));
         verify(mockedResultSet, times(numberOfInvocation)).getNodeRefs();
         verify(mockedResultSet, times(numberOfInvocation)).close();
     }

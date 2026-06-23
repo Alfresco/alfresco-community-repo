@@ -19,7 +19,7 @@
 
     <bean id="OpenCMISFacade" class="org.alfresco.opencmis.mapping.RuntimeSwitchingCMISFacade" autowire="constructor">
         <property name="fallbackFacade" ref="CMISConnector" />
-        <!-- PZUTODO: Set fail on duplicate from properties-->
+        <property name="failOnManyFacades" value="${cmis.fail.on.many.facades}" />
     </bean>
 
     <bean id="OpenCMISPropertyAccessorMapping" class="org.alfresco.opencmis.mapping.RuntimePropertyAccessorMapping" init-method="init">

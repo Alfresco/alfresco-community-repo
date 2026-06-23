@@ -107,9 +107,9 @@ public class SolrStatsResult implements SearchEngineResultMetadata, StatsResultS
                 {
                     JSONObject contentsize = statsFields.getJSONObject(fieldNames.getString(0));
 
-                    sum = contentsize.getLong("sum");
-                    max = contentsize.getLong("max");
-                    mean = contentsize.getLong("mean");
+                    sum = contentsize.optLong("sum", 0);
+                    max = contentsize.optLong("max", 0);
+                    mean = contentsize.optLong("mean", 0);
 
                     if (contentsize.has("facets"))
                     {
@@ -125,6 +125,13 @@ public class SolrStatsResult implements SearchEngineResultMetadata, StatsResultS
                                 {
                                     String name = String.valueOf(facetValues.get(j));
                                     JSONObject facetVal = facetType.getJSONObject(name);
+                                    // Solr emits a bucket with count 0 and null min/max/mean (e.g. content with no
+                                    // mimetype). There are no meaningful stats to report, so skip it rather than
+                                    // failing to parse the whole result.
+                                    if (facetVal.optLong("count", 0) == 0)
+                                    {
+                                        continue;
+                                    }
                                     stats.add(processStat(name, facetVal));
                                 }
                             }
@@ -148,12 +155,14 @@ public class SolrStatsResult implements SearchEngineResultMetadata, StatsResultS
      */
     private StatsResultStat processStat(String name, JSONObject facetVal) throws JSONException
     {
+        // Used optLong so a null/non-numeric value (e.g. min/max/mean of "NaN") defaults to 0
+        // instead of throwing and aborting parsing of the entire stats result.
         return new StatsResultStat(nameIsADate ? formatAsDate(name) : name,
-                facetVal.getLong("sum"),
-                facetVal.getLong("count"),
-                facetVal.getLong("min"),
-                facetVal.getLong("max"),
-                facetVal.getLong("mean"));
+                facetVal.optLong("sum", 0),
+                facetVal.optLong("count", 0),
+                facetVal.optLong("min", 0),
+                facetVal.optLong("max", 0),
+                facetVal.optLong("mean", 0));
     }
 
     public static String formatAsDate(String name)

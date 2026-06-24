@@ -56,34 +56,21 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     {
 
         /**
-         * Since REST API is getting the results from DB or Search Services, using single term expressions is always
-         * retrieved from DB when using default configuration "solr.query.fts.queryConsistency=TRANSACTIONAL_IF_POSSIBLE".
-         * Combining this single term with range queries (like cm:created) will ensure the results
-         * are coming from SOLR in this mode.
+         * Since REST API is getting the results from DB or Search Services, using single term expressions is always retrieved from DB when using default configuration "solr.query.fts.queryConsistency=TRANSACTIONAL_IF_POSSIBLE". Combining this single term with range queries (like cm:created) will ensure the results are coming from SOLR in this mode.
          */
 
-        /*
-         * 1 result is expected for non-tokenised field (tok:false)
-         * - Document #4 >> title: "Running"
-         */
+        /* 1 result is expected for non-tokenised field (tok:false) - Document #4 >> title: "Running" */
         assertResponseCardinality("=tok:false:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
 
-        /*
-         * 0 results are expected: there is no result that have exactly cm:title:"Run"
-         * The closest we have is record Run (tok:false:"Run : a philosophy")
-         * As you can see we don't have a full match, so it's not in the results.
-         *
-         */
+        /* 0 results are expected: there is no result that have exactly cm:title:"Run" The closest we have is record Run (tok:false:"Run : a philosophy") As you can see we don't have a full match, so it's not in the results. */
         assertResponseCardinality("=tok:false:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
 
     }
 
     /**
-     * These tests should be re-enabled once the following tickets have been solved:
-     * - https://alfresco.atlassian.net/browse/SEARCH-2461
-     * - https://alfresco.atlassian.net/browse/SEARCH-2953
+     * These tests should be re-enabled once the following tickets have been solved: - https://alfresco.atlassian.net/browse/SEARCH-2461 - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
-    @Test(enabled=false)
+    @Test(enabled = false)
     public void failing_exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch() throws Exception
     {
 
@@ -101,16 +88,12 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
 
     }
 
-
     @Test
     public void exactSearch_singleTermConjunction_shouldReturnException() throws Exception
     {
 
         /**
-         * Since REST API is getting the results from DB or Search Services, using single term expressions is always
-         * retrieved from DB when using default configuration "solr.query.fts.queryConsistency=TRANSACTIONAL_IF_POSSIBLE".
-         * Combining this single term with range queries (like cm:created) will ensure the results
-         * are coming from SOLR in this mode.
+         * Since REST API is getting the results from DB or Search Services, using single term expressions is always retrieved from DB when using default configuration "solr.query.fts.queryConsistency=TRANSACTIONAL_IF_POSSIBLE". Combining this single term with range queries (like cm:created) will ensure the results are coming from SOLR in this mode.
          */
 
         /**
@@ -134,10 +117,9 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     }
 
     /**
-     * These tests should be re-enabled once the following tickets have been solved:
-     * - https://alfresco.atlassian.net/browse/SEARCH-2461
+     * These tests should be re-enabled once the following tickets have been solved: - https://alfresco.atlassian.net/browse/SEARCH-2461
      */
-    @Test(enabled=false)
+    @Test(enabled = false)
     public void failing_exactSearch_singleTermConjunction_shouldReturnException() throws Exception
     {
 
@@ -173,10 +155,7 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     public void exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception
     {
 
-        /*
-         * 1 result is expected
-         * - Document #4 >> title: "Running"
-         */
+        /* 1 result is expected - Document #4 >> title: "Running" */
         assertResponseCardinality("=tok:false:Running =tok:false:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
 
         /**
@@ -187,11 +166,9 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     }
 
     /**
-     * These tests should be re-enabled once the following tickets have been solved:
-     * - https://alfresco.atlassian.net/browse/SEARCH-2461
-     * - https://alfresco.atlassian.net/browse/SEARCH-2953
+     * These tests should be re-enabled once the following tickets have been solved: - https://alfresco.atlassian.net/browse/SEARCH-2461 - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
-    @Test(enabled=false)
+    @Test(enabled = false)
     public void failing_exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception
     {
         // SEARCH-2953
@@ -224,25 +201,18 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     @Test
     public void exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch() throws Exception
     {
-        /*
-         * 1 result is expected for exact term search
-         * - Document #5 >> name: "Running jumping"
-         */
+        /* 1 result is expected for exact term search - Document #5 >> name: "Running jumping" */
         assertResponseCardinality("=tok:false:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
 
-        /*
-         * No result for "Running jumping twice" in cm:name property is expected
-         */
+        /* No result for "Running jumping twice" in cm:name property is expected */
         assertResponseCardinality("=tok:false:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
 
     }
 
     /**
-     * These tests should be re-enabled once the following tickets have been solved:
-     * - https://alfresco.atlassian.net/browse/SEARCH-2461
-     * - https://alfresco.atlassian.net/browse/SEARCH-2953
+     * These tests should be re-enabled once the following tickets have been solved: - https://alfresco.atlassian.net/browse/SEARCH-2461 - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
-    @Test(enabled=false)
+    @Test(enabled = false)
     public void failing_exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch() throws Exception
     {
 
@@ -275,10 +245,9 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     }
 
     /**
-     * These tests should be re-enabled once the following tickets have been solved:
-     * - https://alfresco.atlassian.net/browse/SEARCH-2461
+     * These tests should be re-enabled once the following tickets have been solved: - https://alfresco.atlassian.net/browse/SEARCH-2461
      */
-    @Test(enabled=false)
+    @Test(enabled = false)
     public void failing_exactSearch_phraseInFieldConjunction_shouldReturnException() throws Exception
     {
         // SEARCH-2461

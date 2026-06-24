@@ -34,41 +34,18 @@ import static org.testng.Assert.assertNull;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
+import org.testng.SkipException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.testng.SkipException;
 
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRequestRangesModel;
 import org.alfresco.utility.LogFactory;
 
 /**
- * Faceted Range Search Query for numeric range
- * {
- *   "query": {
- *       "query": "name:A*"
- *   },
- *   "range": {
- *       "field": "content.size",
- *        "start": "0",
- *        "end": "400",
- *        "gap": "100"
- *   }
- * }
- * Date range query:
- * {
- *  "query": {
- *      "query": "name:A*"
- *  },
- *  "range": {
- *      "field": "created",
- *       "start": "2015-09-29T10:45:15.729Z",
- *       "end": "2016-09-29T10:45:15.729Z",
- *       "gap": "+100DAY"
- *  }
- * }
+ * Faceted Range Search Query for numeric range { "query": { "query": "name:A*" }, "range": { "field": "content.size", "start": "0", "end": "400", "gap": "100" } } Date range query: { "query": { "query": "name:A*" }, "range": { "field": "created", "start": "2015-09-29T10:45:15.729Z", "end": "2016-09-29T10:45:15.729Z", "gap": "+100DAY" } }
  *
  */
 public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
@@ -76,8 +53,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     private static final Logger LOGGER = LogFactory.getLogger();
 
     /** AFTS predicate that swsdp content satisfies (swsdp ships documents with cm:created in 2011–2015). */
-    private static final String SAMPLE_2015_DOC_QUERY =
-            "created:[\"2015-09-29T10:45:15.729Z\" TO \"2016-09-29T10:45:15.729Z\"]";
+    private static final String SAMPLE_2015_DOC_QUERY = "created:[\"2015-09-29T10:45:15.729Z\" TO \"2016-09-29T10:45:15.729Z\"]";
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -334,16 +310,10 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     /**
-     * Skips the calling test (via {@link SkipException}) when the repository under test has no document with
-     * {@code cm:created} in the 2015-09-29 → 2016-09-29 window. That document is only present when the
-     * {@code alfresco-share-services} AMP bootstrapped the SWSDP sample site (see
-     * {@code patch.siteLoadPatch.swsdp} in {@code share-services/module-context.xml}).
+     * Skips the calling test (via {@link SkipException}) when the repository under test has no document with {@code cm:created} in the 2015-09-29 → 2016-09-29 window. That document is only present when the {@code alfresco-share-services} AMP bootstrapped the SWSDP sample site (see {@code patch.siteLoadPatch.swsdp} in {@code share-services/module-context.xml}).
      *
-     * <p>The AMP is bundled by the {@code acs-packaging} Docker image
-     * ({@code alfresco/alfresco-content-repository}), but NOT by the base images used in the
-     * {@code alfresco-community-repo} and {@code alfresco-enterprise-repo} minimal test stacks. Therefore this
-     * date-range facet test is meant to run end-to-end only as part of an {@code acs-packaging} validation;
-     * when executed against community/enterprise alone it is skipped instead of failing with an NPE.
+     * <p>
+     * The AMP is bundled by the {@code acs-packaging} Docker image ({@code alfresco/alfresco-content-repository}), but NOT by the base images used in the {@code alfresco-community-repo} and {@code alfresco-enterprise-repo} minimal test stacks. Therefore this date-range facet test is meant to run end-to-end only as part of an {@code acs-packaging} validation; when executed against community/enterprise alone it is skipped instead of failing with an NPE.
      */
     private void skipIfSwsdp2015DocMissing()
     {

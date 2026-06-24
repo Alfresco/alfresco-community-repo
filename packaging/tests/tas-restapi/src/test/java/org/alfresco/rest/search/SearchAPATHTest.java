@@ -34,12 +34,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * Tests the search functionality using an ancestor path.
- * Using the category as an example, it is a node that is located
- * in root/rootCategory/classifiable. We now provide the ability to search by path
- * so that we can return all the child elements of our target path.
- * A search on root/rootCategory/classifiable should return Regions, Languages
- * as they are the child elements of the given path.
+ * Tests the search functionality using an ancestor path. Using the category as an example, it is a node that is located in root/rootCategory/classifiable. We now provide the ability to search by path so that we can return all the child elements of our target path. A search on root/rootCategory/classifiable should return Regions, Languages as they are the child elements of the given path.
  *
  */
 
@@ -53,42 +48,7 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
     }
 
     /**
-     * {
-     *   "query": {
-     *     "query": "name:*"
-     *   },
-     *   "facetFields": {
-     *     "facets": [
-     *       {"field": "APATH", "prefix": "0" }
-     *     ]
-     *   }
-     * }
-     * Expected result
-     * entries[],
-     *   "pagination": {
-     *      "maxItems": 100,
-     *      "hasMoreItems": true,
-     *      "totalItems": 914,
-     *      "count": 100,
-     *      "skipCount": 0
-     *   },
-     *   "context": {
-     *      "facetsFields": [{
-     *         "buckets": [
-     *            {
-     *               "count": 913,
-     *               "label": "0/5c09534f-3ca2-4272-bc25-064a7c1762b4"
-     *            },
-     *            {
-     *               "count": 2,
-     *               "label": "0/"
-     *            }
-     *         ],
-     *         "label": "APATH"
-     *      }],
-     *      "consistency": {"lastTxId": 89}
-     *   }
-     *}}
+     * { "query": { "query": "name:*" }, "facetFields": { "facets": [ {"field": "APATH", "prefix": "0" } ] } } Expected result entries[], "pagination": { "maxItems": 100, "hasMoreItems": true, "totalItems": 914, "count": 100, "skipCount": 0 }, "context": { "facetsFields": [{ "buckets": [ { "count": 913, "label": "0/5c09534f-3ca2-4272-bc25-064a7c1762b4" }, { "count": 2, "label": "0/" } ], "label": "APATH" }], "consistency": {"lastTxId": 89} } }}
      *
      */
     @Test
@@ -148,8 +108,10 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
     /**
      * Creates a new {@link SearchRequest} for this test case.
      *
-     * @param queryString the query string.
-     * @param facetPrefix the facet prefix.
+     * @param queryString
+     *            the query string.
+     * @param facetPrefix
+     *            the facet prefix.
      * @return a new {@link SearchRequest} for this test case.
      */
     private SearchRequest searchRequestWithAPATHFacet(String queryString, String facetPrefix)
@@ -170,7 +132,8 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
     /**
      * Extracts the first bucket from the given response.
      *
-     * @param response the results of a query execution.
+     * @param response
+     *            the results of a query execution.
      * @return the first bucket included in the search response.
      */
     private FacetFieldBucket getFirstBucket(SearchResponse response)
@@ -179,10 +142,10 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
     }
 
     /**
-     * Extracts the buckets from the given response.
-     * The method also makes sure the buckets list is not empty in the input response.
+     * Extracts the buckets from the given response. The method also makes sure the buckets list is not empty in the input response.
      *
-     * @param response the results of a query execution.
+     * @param response
+     *            the results of a query execution.
      * @return the getBuckets included in the search response.
      */
     private List<FacetFieldBucket> getBuckets(SearchResponse response)

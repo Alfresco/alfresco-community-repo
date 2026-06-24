@@ -46,4 +46,9 @@ public class ConstraintViolatedException extends ApiException
     {
         super(msgId);
     }
+
+    public ConstraintViolatedException(String msgId, Throwable cause)
+    {
+        super(msgId, cause);
+    }
 }

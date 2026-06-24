@@ -475,6 +475,32 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         return paging;
     }
 
+    /**
+     * Polls a CMIS query until {@code totalItems >= expectedCount} or {@link #SEARCH_MAX_ATTEMPTS}
+     * attempts have elapsed. Useful when a test needs to wait for the CMIS index to catch up
+     * to AFTS name-based indexing (the two can have different lag).
+     *
+     * @param asUser         user to run the query as
+     * @param cmisQuery      a CMIS query string (e.g. {@code "select * from cmis:document where IN_FOLDER('<uuid>')"})
+     * @param expectedCount  the minimum {@code totalItems} required before returning
+     * @return {@code true} if the expected count was reached, {@code false} if all attempts were exhausted
+     */
+    public boolean waitForCmisSearchCount(UserModel asUser, String cmisQuery, int expectedCount)
+    {
+        for (int attempt = 0; attempt < SEARCH_MAX_ATTEMPTS; attempt++)
+        {
+            SearchResponse response = performSearch(asUser, cmisQuery, SearchLanguage.CMIS, setPaging(0, 1000));
+            if (response != null && !response.isEmpty()
+                    && response.getPagination().getTotalItems() >= expectedCount)
+            {
+                return true;
+            }
+            Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(),
+                    "Waiting for CMIS folder index. Attempt: " + (attempt + 1));
+        }
+        return false;
+    }
+
     // -------------------------------------------------------------------------
     // Spellcheck helpers
     // -------------------------------------------------------------------------

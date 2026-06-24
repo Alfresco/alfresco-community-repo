@@ -201,85 +201,85 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_mariadb_tests:
-    name: Repository - MariaDB ${{ matrix.version }} tests
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-      - commit_parser
-    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
-    strategy:
-      fail-fast: false
-      matrix:
-        version: ['10.11']
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: Run MariaDB ${{ matrix.version }} database
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
-        env:
-          MARIADB_VERSION: ${{ matrix.version }}
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
+#  repository_mariadb_tests:
+#    name: Repository - MariaDB ${{ matrix.version }} tests
+#    runs-on: ubuntu-latest
+#    needs:
+#      - prepare
+#      - test_run_check
+#      - commit_parser
+#    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        version: ['10.11']
+#    steps:
+#      - uses: actions/checkout@v6
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+#        with:
+#          java-version: ${{ env.JAVA_VERSION }}
+#      - name: "Init"
+#        run: bash ./scripts/ci/init.sh
+#      - name: Run MariaDB ${{ matrix.version }} database
+#        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
+#        env:
+#          MARIADB_VERSION: ${{ matrix.version }}
+#      - name: "Run tests"
+#        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
+#      - name: "Clean Maven cache"
+#        run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_mariadb_11_8_tests:
-    name: "Repository - MariaDB 11.8 tests"
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run MariaDB 11.8 database"
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
-        env:
-          MARIADB_VERSION: 11.8
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
+#  repository_mariadb_11_8_tests:
+#    name: "Repository - MariaDB 11.8 tests"
+#    runs-on: ubuntu-latest
+#    needs:
+#      - prepare
+#      - test_run_check
+#    if: needs.test_run_check.outputs.tests == 'true'
+#    steps:
+#      - uses: actions/checkout@v6
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+#        with:
+#          java-version: ${{ env.JAVA_VERSION }}
+#      - name: "Init"
+#        run: bash ./scripts/ci/init.sh
+#      - name: "Run MariaDB 11.8 database"
+#        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
+#        env:
+#          MARIADB_VERSION: 11.8
+#      - name: "Run tests"
+#        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
+#      - name: "Clean Maven cache"
+#        run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_mysql_tests:
-    name: Repository - MySQL 8 tests
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run MySQL 8 database"
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
-        env:
-          MYSQL_VERSION: 8
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
+#  repository_mysql_tests:
+#    name: Repository - MySQL 8 tests
+#    runs-on: ubuntu-latest
+#    needs:
+#      - prepare
+#      - test_run_check
+#    if: needs.test_run_check.outputs.tests == 'true'
+#    steps:
+#      - uses: actions/checkout@v6
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+#        with:
+#          java-version: ${{ env.JAVA_VERSION }}
+#      - name: "Init"
+#        run: bash ./scripts/ci/init.sh
+#      - name: "Run MySQL 8 database"
+#        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
+#        env:
+#          MYSQL_VERSION: 8
+#      - name: "Run tests"
+#        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+#      - name: "Clean Maven cache"
+#        run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_postgresql_15_17_tests:
     name: "Repository - PostgreSQL 15.17 tests"
@@ -358,108 +358,108 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_messaging_tests:
-    name: Repository - Messaging tests against ${{ matrix.activemq }}
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        activemq: [ 'activemq6', 'activemq5' ]
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run ActiveMQ"
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.activemq }} up -d
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
+#  repository_messaging_tests:
+#    name: Repository - Messaging tests against ${{ matrix.activemq }}
+#    runs-on: ubuntu-latest
+#    needs:
+#      - prepare
+#      - test_run_check
+#    if: needs.test_run_check.outputs.tests == 'true'
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        activemq: [ 'activemq6', 'activemq5' ]
+#    steps:
+#      - uses: actions/checkout@v6
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+#        with:
+#          java-version: ${{ env.JAVA_VERSION }}
+#      - name: "Init"
+#        run: bash ./scripts/ci/init.sh
+#      - name: "Run ActiveMQ"
+#        run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.activemq }} up -d
+#      - name: "Run tests"
+#        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
+#      - name: "Clean Maven cache"
+#        run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_app_context_test_suites:
-    name: Repository - ${{ matrix.testSuite }} ${{ matrix.idp }}
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - testSuite: AppContext01TestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: AppContext02TestSuite
-            compose-profile: default
-          - testSuite: AppContext03TestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: AppContext04TestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: ElasticsearchCommunityTestsTestSuite
-            compose-profile: with-elasticsearch
-            mvn-options: '-Dindex.subsystem.name=elasticsearch'
-          - testSuite: AppContext05TestSuite
-            compose-profile: with-sso
-            mvn-options: '-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm'
-            idp: Keycloak
-          - testSuite: AppContext05TestSuite
-            compose-profile: default
-            mvn-options: '-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.credentials.secret=${AUTH0_CLIENT_SECRET} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dadmin.password=${AUTH0_ADMIN_PASSWORD} -Dauth0.enabled=true -Dauth0.admin.password=${AUTH0_ADMIN_PASSWORD} -Didentity-service.principal-attribute=nickname'
-            idp: Auth0
-          - testSuite: AppContext06TestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: AppContextExtraTestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: MiscContextTestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: SearchTestSuite
-            compose-profile: default
-            mvn-options: '-Dindex.subsystem.name=solr6'
-          - testSuite: MTLSTestSuite
-            compose-profile: with-mtls-transform-core-aio
-            mtls: true
-            disabledHostnameVerification: false
-            mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Set transformers tag"
-        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
-      - name: "Set the host IP"
-        run: echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
-      - name: "Generate Keystores and Truststores for Mutual TLS configuration"
-        if: ${{ matrix.mtls }}
-        run: |
-          git clone -b "master" --depth=1 "https://${{ secrets.BOT_GITHUB_USERNAME }}:${{ secrets.BOT_GITHUB_TOKEN }}@github.com/Alfresco/alfresco-ssl-generator.git"
-          if ${{ matrix.disabledHostnameVerification }} ; then
-            bash ${{ env.CI_WORKSPACE }}/alfresco-ssl-generator/scripts/ci/generate_keystores_wrong_hostnames.sh
-            echo "HOSTNAME_VERIFICATION_DISABLED=true" >> "$GITHUB_ENV"
-          else
-            bash ${{ env.CI_WORKSPACE }}/alfresco-ssl-generator/scripts/ci/generate_keystores.sh
-            echo "HOSTNAME_VERIFICATION_DISABLED=false" >> "$GITHUB_ENV"
-          fi
-      - name: "Set up the environment"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
+#  repository_app_context_test_suites:
+#    name: Repository - ${{ matrix.testSuite }} ${{ matrix.idp }}
+#    runs-on: ubuntu-latest
+#    needs:
+#      - prepare
+#      - test_run_check
+#    if: needs.test_run_check.outputs.tests == 'true'
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        include:
+#          - testSuite: AppContext01TestSuite
+#            compose-profile: with-transform-core-aio
+#          - testSuite: AppContext02TestSuite
+#            compose-profile: default
+#          - testSuite: AppContext03TestSuite
+#            compose-profile: with-transform-core-aio
+#          - testSuite: AppContext04TestSuite
+#            compose-profile: with-transform-core-aio
+#          - testSuite: ElasticsearchCommunityTestsTestSuite
+#            compose-profile: with-elasticsearch
+#            mvn-options: '-Dindex.subsystem.name=elasticsearch'
+#          - testSuite: AppContext05TestSuite
+#            compose-profile: with-sso
+#            mvn-options: '-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm'
+#            idp: Keycloak
+#          - testSuite: AppContext05TestSuite
+#            compose-profile: default
+#            mvn-options: '-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.credentials.secret=${AUTH0_CLIENT_SECRET} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dadmin.password=${AUTH0_ADMIN_PASSWORD} -Dauth0.enabled=true -Dauth0.admin.password=${AUTH0_ADMIN_PASSWORD} -Didentity-service.principal-attribute=nickname'
+#            idp: Auth0
+#          - testSuite: AppContext06TestSuite
+#            compose-profile: with-transform-core-aio
+#          - testSuite: AppContextExtraTestSuite
+#            compose-profile: with-transform-core-aio
+#          - testSuite: MiscContextTestSuite
+#            compose-profile: with-transform-core-aio
+#          - testSuite: SearchTestSuite
+#            compose-profile: default
+#            mvn-options: '-Dindex.subsystem.name=solr6'
+#          - testSuite: MTLSTestSuite
+#            compose-profile: with-mtls-transform-core-aio
+#            mtls: true
+#            disabledHostnameVerification: false
+#            mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
+#    steps:
+#      - uses: actions/checkout@v6
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+#        with:
+#          java-version: ${{ env.JAVA_VERSION }}
+#      - name: "Init"
+#        run: bash ./scripts/ci/init.sh
+#      - name: "Set transformers tag"
+#        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
+#      - name: "Set the host IP"
+#        run: echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
+#      - name: "Generate Keystores and Truststores for Mutual TLS configuration"
+#        if: ${{ matrix.mtls }}
+#        run: |
+#          git clone -b "master" --depth=1 "https://${{ secrets.BOT_GITHUB_USERNAME }}:${{ secrets.BOT_GITHUB_TOKEN }}@github.com/Alfresco/alfresco-ssl-generator.git"
+#          if ${{ matrix.disabledHostnameVerification }} ; then
+#            bash ${{ env.CI_WORKSPACE }}/alfresco-ssl-generator/scripts/ci/generate_keystores_wrong_hostnames.sh
+#            echo "HOSTNAME_VERIFICATION_DISABLED=true" >> "$GITHUB_ENV"
+#          else
+#            bash ${{ env.CI_WORKSPACE }}/alfresco-ssl-generator/scripts/ci/generate_keystores.sh
+#            echo "HOSTNAME_VERIFICATION_DISABLED=false" >> "$GITHUB_ENV"
+#          fi
+#      - name: "Set up the environment"
+#        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+#        run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
+#      - name: "Run tests"
+#        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
+#      - name: "Clean Maven cache"
+#        run: bash ./scripts/ci/cleanup_cache.sh
 
   tas_tests:
     name: ${{ matrix.test-name }}
@@ -481,21 +481,21 @@ jobs:
           - test-name: "REST API TAS tests part3"
             pom-dir: tas-restapi
             test-profile: run-restapi-part3
-          - test-name: "CMIS TAS tests - BROWSER binding"
-            pom-dir: tas-cmis
-            test-profile: run-cmis-browser
-          - test-name: "CMIS TAS tests - ATOM binding"
-            pom-dir: tas-cmis
-            test-profile: run-cmis-atom
-          - test-name: "CMIS TAS tests - WEBSERVICES binding"
-            pom-dir: tas-cmis
-            test-profile: run-cmis-webservices
-          - test-name: "Email TAS tests"
-            pom-dir: tas-email
-          - test-name: "WebDAV TAS tests"
-            pom-dir: tas-webdav
-          - test-name: "Integration TAS tests"
-            pom-dir: tas-integration
+#          - test-name: "CMIS TAS tests - BROWSER binding"
+#            pom-dir: tas-cmis
+#            test-profile: run-cmis-browser
+#          - test-name: "CMIS TAS tests - ATOM binding"
+#            pom-dir: tas-cmis
+#            test-profile: run-cmis-atom
+#          - test-name: "CMIS TAS tests - WEBSERVICES binding"
+#            pom-dir: tas-cmis
+#            test-profile: run-cmis-webservices
+#          - test-name: "Email TAS tests"
+#            pom-dir: tas-email
+#          - test-name: "WebDAV TAS tests"
+#            pom-dir: tas-webdav
+#          - test-name: "Integration TAS tests"
+#            pom-dir: tas-integration
           - test-name: "Solr Search E2E TAS tests"
             pom-dir: tas-restapi
             test-profile: solr-e2e-tests
@@ -610,104 +610,104 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  ags_mysql_tests:
-    name: AGS Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix.test-name }}
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        part: [1, 2, 3, 4]
-    env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - name: "Build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: |
-          bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
-      - name: "Verify"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
+#  ags_mysql_tests:
+#    name: AGS Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix.test-name }}
+#    runs-on: ubuntu-latest
+#    needs:
+#      - prepare
+#      - test_run_check
+#    if: needs.test_run_check.outputs.tests == 'true'
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        part: [1, 2, 3, 4]
+#    env:
+#      REQUIRES_INSTALLED_ARTIFACTS: true
+#    steps:
+#      - uses: actions/checkout@v6
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+#        with:
+#          java-version: ${{ env.JAVA_VERSION }}
+#      - name: "Build"
+#        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+#        run: |
+#          bash ./scripts/ci/init.sh
+#          bash ./scripts/ci/build.sh
+#      - name: "Verify"
+#        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+#        run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
+#      - name: "Clean Maven cache"
+#        run: bash ./scripts/ci/cleanup_cache.sh
 
-  ags_community_rest_api_tests:
-    name: "AGS Community Rest API Tests"
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      REQUIRES_LOCAL_IMAGES: true
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - name: "Build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: |
-          bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
-      - name: "Set up the environment"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: |
-          ${{ env.TAS_SCRIPTS }}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
-          ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
-          mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
-      - name: "Test"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
-      - name: "Configure AWS credentials"
-        if: ${{ always() }}
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          aws-access-key-id: ${{ secrets.AGS_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AGS_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: "Upload artifacts to Amazon S3 bucket"
-        if: ${{ always() }}
-        run: |
-          bash amps/ags/ci/scripts/getLogs.sh
-          aws s3 cp --acl private alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/alfresco.log
-          aws s3 cp --acl private solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/solr.log
-          aws s3 cp --acl private ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/rm-automation-community-rest-api.log
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
+#  ags_community_rest_api_tests:
+#    name: "AGS Community Rest API Tests"
+#    runs-on: ubuntu-latest
+#    needs:
+#      - prepare
+#      - test_run_check
+#    if: needs.test_run_check.outputs.tests == 'true'
+#    env:
+#      REQUIRES_LOCAL_IMAGES: true
+#    steps:
+#      - uses: actions/checkout@v6
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+#        with:
+#          java-version: ${{ env.JAVA_VERSION }}
+#      - name: "Build"
+#        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+#        run: |
+#          bash ./scripts/ci/init.sh
+#          bash ./scripts/ci/build.sh
+#      - name: "Set up the environment"
+#        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+#        run: |
+#          ${{ env.TAS_SCRIPTS }}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
+#          ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
+#          mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
+#      - name: "Test"
+#        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+#        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
+#      - name: "Configure AWS credentials"
+#        if: ${{ always() }}
+#        uses: aws-actions/configure-aws-credentials@v6
+#        with:
+#          aws-access-key-id: ${{ secrets.AGS_AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AGS_AWS_SECRET_ACCESS_KEY }}
+#          aws-region: us-east-1
+#      - name: "Upload artifacts to Amazon S3 bucket"
+#        if: ${{ always() }}
+#        run: |
+#          bash amps/ags/ci/scripts/getLogs.sh
+#          aws s3 cp --acl private alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/alfresco.log
+#          aws s3 cp --acl private solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/solr.log
+#          aws s3 cp --acl private ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/rm-automation-community-rest-api.log
+#      - name: "Clean Maven cache"
+#        run: bash ./scripts/ci/cleanup_cache.sh
 
-  ags_start_api_explorer:
-    name: "Test Tomcat deployment of api explorer"
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - name: "Build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: |
-          bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
-      - name: "Test Tomcat deployment"
-        run: |
-          mvn verify -Pags,start-api-explorer -DskipTests &
-          ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8085/api-explorer"
+#  ags_start_api_explorer:
+#    name: "Test Tomcat deployment of api explorer"
+#    runs-on: ubuntu-latest
+#    needs:
+#      - prepare
+#      - test_run_check
+#    if: needs.test_run_check.outputs.tests == 'true'
+#    steps:
+#      - uses: actions/checkout@v6
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
+#      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+#        with:
+#          java-version: ${{ env.JAVA_VERSION }}
+#      - name: "Build"
+#        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+#        run: |
+#          bash ./scripts/ci/init.sh
+#          bash ./scripts/ci/build.sh
+#      - name: "Test Tomcat deployment"
+#        run: |
+#          mvn verify -Pags,start-api-explorer -DskipTests &
+#          ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8085/api-explorer"

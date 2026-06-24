@@ -206,7 +206,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         restClient.onResponse().assertThat().body("list.entries[0].entry.permissions", nullValue());
     }
 
-    @Test(enabled = false)
+    @Test
     public void searchQuery_includeIsLocked_shouldReturnNodeWithLockInformation()
     {
         String query = "fox";

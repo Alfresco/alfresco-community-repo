@@ -138,7 +138,7 @@ public class CascadingIntegrationTest extends AbstractE2EFunctionalTest
     @Test(priority = 2)
     public void testGrandChildPathWhenGrandParentRenamed()
     {
-        // Create grand parent folder
+        // Create grandparent folder
         FolderModel grandParentFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
 
         // Create child folder
@@ -198,7 +198,9 @@ public class CascadingIntegrationTest extends AbstractE2EFunctionalTest
     }
 
     /**
-     * Index three nodes (parent folder and two files) in two different shards. Check that, after parent renaming, both the children are searchable in the new path (computed accordingly with the new parent folder name)
+     * Index three nodes (parent folder and two files) in two different shards.
+     * Check that, after parent renaming, both the children are searchable in the new path
+     * (computed accordingly with the new parent folder name)
      */
     @Test(priority = 3)
     public void testChildrenPathOnParentRenamedWithChildrenInDifferentShards()

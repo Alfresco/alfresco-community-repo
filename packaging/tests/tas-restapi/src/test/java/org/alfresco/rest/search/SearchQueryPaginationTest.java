@@ -30,7 +30,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
@@ -69,7 +68,7 @@ public class SearchQueryPaginationTest extends AbstractSearchServicesE2ETest
         // wait until the CMIS IN_FOLDER query itself returns all files as AFTS name-based indexing and CMIS indexing can have different lag.
         String parentId = testFolder.getNodeRefWithoutVersion();
         String cmisQuery = "select * from cmis:document where IN_FOLDER('" + parentId + "')";
-        waitForCmisSearchCount(cmisQuery, 10);
+        waitForCmisSearchCount(testUser, cmisQuery, 10);
     }
 
     @Test(priority = 1)
@@ -272,19 +271,5 @@ public class SearchQueryPaginationTest extends AbstractSearchServicesE2ETest
         // count = (total-skipCount) < maxItems ? total-skipCount: maxItems
         int expectedCount = (expectedTotalCount < skipCount) ? 0 : Math.min((expectedTotalCount - skipCount), maxItems);
         Assert.assertEquals(response.getPagination().getCount(), expectedCount, "Unexpected document count");
-    }
-
-    private void waitForCmisSearchCount(String cmisQuery, int expectedCount)
-    {
-        for (int attempt = 0; attempt < SEARCH_MAX_ATTEMPTS; attempt++)
-        {
-            SearchResponse response = performSearch(testUser, cmisQuery, SearchLanguage.CMIS, setPaging(0, 1000));
-            if (response != null && !response.isEmpty()
-                    && response.getPagination().getTotalItems() >= expectedCount)
-            {
-                return;
-            }
-            Utility.waitToLoopTime(1, "Waiting for CMIS folder index. Attempt: " + (attempt + 1));
-        }
     }
 }

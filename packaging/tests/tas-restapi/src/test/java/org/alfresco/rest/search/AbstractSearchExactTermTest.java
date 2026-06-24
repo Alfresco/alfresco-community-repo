@@ -143,4 +143,13 @@ public abstract class AbstractSearchExactTermTest extends AbstractSearchServices
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), num, query);
     }
+
+    protected void assertException(String query)
+    {
+        queryAsUser(testUser, query);
+        Assert.assertTrue(
+                restClient.getStatusCode().equals(String.valueOf(HttpStatus.NOT_IMPLEMENTED.value())) ||
+                        restClient.getStatusCode().equals(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value())),
+                "Status code is not as expected.");
+    }
 }

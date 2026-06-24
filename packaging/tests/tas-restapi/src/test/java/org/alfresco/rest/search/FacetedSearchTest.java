@@ -46,6 +46,55 @@ import org.alfresco.utility.model.FileType;
  */
 public class FacetedSearchTest extends AbstractSearchServicesE2ETest
 {
+    /**
+     * Perform the below facet query.
+     * {
+     *    "query": {
+     *      "query": "cars",
+     *      "language": "afts"
+     *    },
+     *      "facetQueries": [
+     *          {"query": "content.size:[o TO 102400]", "label": "small"},
+     *          {"query": "content.size:[102400 TO 1048576]", "label": "medium"},
+     *          {"query": "content.size:[1048576 TO 16777216]", "label": "large"}
+     *    ],
+     *      "facetFields": {"facets": [{"field": "'content.size'"}]}
+     * }
+     *
+     * Expected response
+     * {"list": {
+     *     "entries": [... All the results],
+     *     "pagination": {
+     *        "maxItems": 100,
+     *        "hasMoreItems": false,
+     *        "totalItems": 61,
+     *        "count": 61,
+     *        "skipCount": 0
+     *     },
+     *     "facetsFields": [
+     *       {
+     *         "type": "query",
+     *         "label": "foo",
+     *         "buckets": [
+     *           {
+     *             "label": "small",
+     *             "filterQuery": "content.size:[0 TO 102400]",
+     *             "display": 1
+     *           },
+     *           {
+     *             "label": "large",
+     *             "filterQuery": "content.size:[1048576 TO 16777216]",
+     *             "metrics": [
+     *               {
+     *                 "type": "count",
+     *                 "value": {
+     *                   "count": 0
+     *                 }
+     *               }
+     *             ]
+     *           },
+     * }}
+     */
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
@@ -97,6 +146,45 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         searchWithQueryFaceting();
     }
 
+    /**
+     * * Perform a group by faceting, below test groups the facet by group name foo.
+     * {
+     *    "query": {
+     *      "query": "cars",
+     *      "language": "afts"
+     *    },
+     *      "facetQueries": [
+     *          {"query": "content.size:[o TO 102400]", "label": "small","group":"foo"},
+     *          {"query": "content.size:[102400 TO 1048576]", "label": "medium","group":"foo"},
+     *          {"query": "content.size:[1048576 TO 16777216]", "label": "large","group":"foo"}
+     *    ],
+     *      "facetFields": {"facets": [{"field": "'content.size'"}]}
+     * }
+     *
+     * Expected response
+     * {"list": {
+     *     "entries": [... All the results],
+     *     "pagination": {
+     *        "maxItems": 100,
+     *        "hasMoreItems": false,
+     *        "totalItems": 61,
+     *        "count": 61,
+     *        "skipCount": 0
+     *     },
+     *     "context": {
+     *        "consistency": {"lastTxId": 512},
+     *        //Added below as part of SEARCH-374
+     *        "facets": [
+     *          {  "label": "foo",
+     *             "buckets": [
+     *               { "label": "small", "count": 61, "filterQuery": "content.size:[o TO 102400]"},
+     *               { "label": "large", "count": 0, "filterQuery": "content.size:[1048576 TO 16777216]"},
+     *               { "label": "medium", "count": 61, "filterQuery": "content.size:[102400 TO 1048576]"}
+     *             ]
+     *          }
+     *     }
+     * }}
+     */
     @Test
     public void searchQueryFacetingWithGroup()
     {
@@ -151,7 +239,14 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
     }
 
     /**
-     * { "query": { "query": "*" }, "facetFields": { "facets": [{"field": "cm:mimetype"},{"field": "modifier"}] } }
+     * {
+     *  "query": {
+     *              "query": "*"
+     *           },
+     *  "facetFields": {
+     *      "facets": [{"field": "cm:mimetype"},{"field": "modifier"}]
+     *  }
+     * }
      */
     @Test
     public void searchWithFactedFields()
@@ -185,6 +280,18 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("count").is(1);
     }
 
+    /**
+     * Test that items returned are in the format of generic facets.
+     * {
+     *  "query": {
+     *              "query": "*"
+     *           },
+     *  "facetFields": {
+     *      "facets": [{"field": "cm:mimetype"},{"field": "modifier"}]
+     *  },
+     *  "facetFormat":"V2"
+     * }
+     */
     @Test
     public void searchWithFactedFieldsFacetFormatV2()
     {
@@ -219,7 +326,16 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
     }
 
     /**
-     * Test that facet fields return results for single and multivalued fields. { "query": { "query": "cm:addressee:'first'" }, "facetFields": { "facets": [{"field": "cm:addressee"}, {"field": "cm:addressees"}] }, "facetFormat":"V2" }
+     * Test that facet fields return results for single and multivalued fields.
+     * {
+     *  "query": {
+     *              "query": "cm:addressee:'first'"
+     *           },
+     *  "facetFields": {
+     *      "facets": [{"field": "cm:addressee"}, {"field": "cm:addressees"}]
+     *  },
+     *  "facetFormat":"V2"
+     * }
      */
     @Test
     public void searchWithMultiValuedFieldsFacet()
@@ -281,7 +397,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
                 .and().field("metrics.type").is("[count]")
                 .and().field("metrics.value").is("[{count=1}]");
 
-        // Facets for cm:addressee (singel valued)
+        // Facets for cm:addressee (single valued)
         model = response.getContext().getFacets().get(1);
         Assert.assertEquals(model.getLabel(), "cm:addressee");
         model.assertThat().field("label").is("cm:addressee");

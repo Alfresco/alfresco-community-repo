@@ -49,12 +49,26 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
 {
     private FolderModel folder;
     private FileModel fileBanana, fileTaco, fileCat, fileDog, fileOriginal;
+    /**
+     * File to be created in dataprep with same content as fileOriginal
+     * File to be updated in test searchAfterVersionUpdate
+     * File to be reverted in test searchAfterVersionRevert
+     */
     private FileModel fileToBeUpdated;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        /* Create the following file structure in the same Site : In addition to the preconditions created in dataPreparation |- folder |-- pangram-banana.txt |-- pangram-taco.txt |-- pangram-cat.txt |-- pangram-dog.txt |-- original.txt |-- toBeUpdated.txt */
+        /*
+         * Create the following file structure in the same Site : In addition to the preconditions created in dataPreparation
+         * |- folder
+         *    |-- pangram-banana.txt
+         *    |-- pangram-taco.txt
+         *    |-- pangram-cat.txt
+         *    |-- pangram-dog.txt
+         *    |-- original.txt
+         *    |-- toBeUpdated.txt
+         */
         folder = new FolderModel("The quick brown fox jumps over");
         dataContent.usingUser(testUser).usingSite(testSite).createFolder(folder);
 

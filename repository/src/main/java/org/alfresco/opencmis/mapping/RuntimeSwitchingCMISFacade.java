@@ -83,9 +83,9 @@ public class RuntimeSwitchingCMISFacade implements CMISFacade
         return getTargetFacade().constructObjectId(currentNodeId, pwcVersionLabel);
     }
 
-    private CMISFacade getTargetFacade()
+    CMISFacade getTargetFacade()
     {
-        return getProvidedFacade().orElse(fallbackFacade);
+        return getProvidedFacade().orElseGet(this::getRequiredFallbackFacade);
     }
 
     private Optional<CMISFacade> getProvidedFacade()
@@ -127,5 +127,14 @@ public class RuntimeSwitchingCMISFacade implements CMISFacade
         }
 
         return Optional.of(allFacades.values().iterator().next());
+    }
+
+    private CMISFacade getRequiredFallbackFacade()
+    {
+        if (fallbackFacade == null)
+        {
+            throw new IllegalStateException("Fallback Facade is not set.");
+        }
+        return fallbackFacade;
     }
 }

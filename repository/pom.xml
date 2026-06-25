@@ -11,7 +11,7 @@
     </parent>
 
     <properties>
-        <aws.sdk.version>2.42.38</aws.sdk.version>
+        <aws.sdk.version>2.46.17</aws.sdk.version>
     </properties>
 
     <dependencies>
@@ -77,6 +77,13 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        <!-- Required for IRSA / web identity (WebIdentityTokenFileCredentialsProvider) which calls STS AssumeRoleWithWebIdentity.
+             Without it the default credential chain silently skips web identity and falls back to the node instance role. -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sts</artifactId>
             <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>

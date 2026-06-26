@@ -57,8 +57,8 @@
         <dependency.acs-event-model.version>0.0.33</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
-        <dependency.spring.version>6.2.17</dependency.spring.version>
-        <dependency.spring-security.version>6.5.9</dependency.spring-security.version>
+        <dependency.spring.version>6.2.19</dependency.spring.version>
+        <dependency.spring-security.version>6.5.11</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.22.0</dependency.jackson.version>
         <dependency.jackson.annotations.version>2.22</dependency.jackson.annotations.version>
@@ -83,7 +83,7 @@
         <dependency.log4j.version>2.25.4</dependency.log4j.version>
         <dependency.groovy.version>3.0.22</dependency.groovy.version>
         <dependency.tika.version>3.2.3</dependency.tika.version>
-        <dependency.junrar.version>7.5.8</dependency.junrar.version>
+        <dependency.junrar.version>7.5.10</dependency.junrar.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.4.1</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
@@ -134,6 +134,7 @@
         <dependency.tas-webdav.version>1.21</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.19</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
+        <dependency.neethi.version>3.2.2</dependency.neethi.version>
 
         <!-- AGS properties shared between community and enterprise -->
         <activemq.port1>61616</activemq.port1>
@@ -713,6 +714,11 @@
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
                 <version>${dependency.junrar.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.neethi</groupId>
+                <artifactId>neethi</artifactId>
+                <version>${dependency.neethi.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.networknt</groupId>

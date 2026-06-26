@@ -87,14 +87,14 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
 
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug("Full list of authorities: " + authorities);
+            LOGGER.debug("Authorities count before stripping : " + authorities.size());
         }
 
         authorities = stripNestedGroups(authorities);
 
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug("Stripped list of authorities: " + authorities);
+            LOGGER.debug("Authorities count after stripping : " + authorities.size());
         }
 
         if (hasGlobalReader(authorities))

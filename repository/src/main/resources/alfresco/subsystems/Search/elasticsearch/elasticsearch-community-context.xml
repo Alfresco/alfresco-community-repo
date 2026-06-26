@@ -268,6 +268,7 @@
 
     <bean id="elasticsearchFlatPermissionFactory" class="org.alfresco.repo.search.impl.elasticsearch.permission.FlatElasticsearchPermissionQueryFactory">
         <constructor-arg name="permissionService" ref="permissionService"/>
+        <constructor-arg name="stripFromQueryPrefixes" value="${search.enterprise.authority.expansion.prefixes}"/>
     </bean>
 
     <bean id="elasticsearchResultSetBuilder" class="org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResultSetBuilder">

@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.elasticsearch.permission;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.atMostOnce;
@@ -35,7 +36,10 @@ import static org.mockito.internal.util.collections.Sets.newSet;
 import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.OWNER;
 import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.READER;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -63,7 +67,7 @@ public class FlatElasticsearchPermissionQueryFactoryTest
     @Before
     public void setUp()
     {
-        this.flatPermissionService = new FlatElasticsearchPermissionQueryFactory(permissionService);
+        this.flatPermissionService = new FlatElasticsearchPermissionQueryFactory(permissionService, "");
         given(permissionService.getOwnerAuthority()).willReturn(PermissionService.OWNER_AUTHORITY);
     }
 
@@ -187,6 +191,190 @@ public class FlatElasticsearchPermissionQueryFactoryTest
 
         verify(permissionService, atMostOnce()).getAllAuthorities();
         assertAuthoritiesInFilterQuery(filteredQuery, "admin", PermissionService.ADMINISTRATOR_AUTHORITY);
+    }
+
+    // ---------------------------------------------------------------------
+    // Authority stripping tests (stripFromQueryPrefixes / stripNestedGroups)
+    // ---------------------------------------------------------------------
+
+    @Test
+    public void shouldNotStripAnyAuthorityWhenPrefixesConfigIsNotProvided()
+    {
+        // null, empty and blank CSVs must all disable stripping.
+        Set<String> authorities = newSet("username", "GROUP_site_alpha", "GROUP_ExtendedReaders123");
+
+        for (String noopConfig : new String[]{null, "", "   "})
+        {
+            assertEquals("Authorities must be unchanged for config: '" + noopConfig + "'",
+                    authorities, stripWithConfig(noopConfig, authorities));
+        }
+    }
+
+    @Test
+    public void shouldTrimWhitespaceAndIgnoreEmptyEntriesInCsvConfig()
+    {
+        // " site_ , , ExtendedReaders " must be parsed as { "site_", "ExtendedReaders" }
+        Set<String> authorities = newSet(
+                "username",
+                "GROUP_site_alpha",
+                "GROUP_ExtendedReaders123",
+                "GROUP_EVERYONE");
+
+        assertEquals(
+                newSet("username", "GROUP_EVERYONE"),
+                stripWithConfig(" site_ , , ExtendedReaders ", authorities));
+    }
+
+    @Test
+    public void shouldStripGroupsMatchingASingleConfiguredPrefix()
+    {
+        // Partial strip: only the GROUP_site_* entries go, the rest stay.
+        Set<String> mixed = newSet(
+                "username",
+                "GROUP_EVERYONE",
+                "GROUP_site_alpha",
+                "GROUP_site_alpha_SiteCollaborator",
+                "GROUP_site_beta");
+        assertEquals(
+                newSet("username", "GROUP_EVERYONE"),
+                stripWithConfig("site_", mixed));
+
+        // Full strip of every group, only the user survives.
+        Set<String> allMatching = newSet("username", "GROUP_site_a", "GROUP_site_b");
+        assertEquals(newSet("username"), stripWithConfig("site_", allMatching));
+    }
+
+    @Test
+    public void shouldStripGroupsMatchingAnyOfMultipleConfiguredPrefixes()
+    {
+        // Mirrors the production log line from the bug report.
+        String tenantId = "edc25e53-a350-4467-825e-53a350c4676d";
+        Set<String> authorities = newSet(
+                "ipr_user_1",
+                "GROUP_EVERYONE",
+                "ROLE_AUTHENTICATED",
+                "GROUP_site_rm",
+                "GROUP_site_site-alpha",
+                "GROUP_site_site-alpha_SiteCollaborator",
+                "GROUP_INPLACE_RECORD_MANAGEMENT",
+                "GROUP_ExtendedReaders" + tenantId,
+                "GROUP_ExtendedWriters" + tenantId,
+                "GROUP_AllRoles" + tenantId,
+                "GROUP_PowerUser" + tenantId);
+
+        assertEquals(
+                newSet("ipr_user_1", "GROUP_EVERYONE", "ROLE_AUTHENTICATED",
+                        "GROUP_INPLACE_RECORD_MANAGEMENT"),
+                stripWithConfig("site_,ExtendedReaders,ExtendedWriters,AllRoles,PowerUser", authorities));
+    }
+
+    @Test
+    public void shouldOnlyStripAuthoritiesStartingWithGroupPrefixPlusConfiguredPrefix()
+    {
+        // matchesAnyStripPrefix uses startsWith("GROUP_" + prefix) so:
+        // - a user literally called "site_user" must survive,
+        // - a "ROLE_site_admin" must survive,
+        // - "GROUP_X_site_alpha" (prefix in the middle) must survive,
+        // - only the genuine "GROUP_site_*" entries get stripped.
+        Set<String> authorities = newSet(
+                "site_user",
+                "ROLE_site_admin",
+                "GROUP_X_site_alpha",
+                "GROUP_OTHER",
+                "GROUP_site_alpha");
+
+        assertEquals(
+                newSet("site_user", "ROLE_site_admin", "GROUP_X_site_alpha", "GROUP_OTHER"),
+                stripWithConfig("site_", authorities));
+    }
+
+    @Test
+    public void strippedAuthoritiesMustNotAppearInTheGeneratedPermissionFilter()
+    {
+        // End-to-end check: the stripped authorities are absent from BOTH the
+        // reader (should) clauses and the denied (mustNot) clauses.
+        Set<String> globalReaders = GlobalReaders.getReaders();
+        HashSet<String> backup = new HashSet<>(globalReaders);
+        globalReaders.clear();
+        try
+        {
+            FlatElasticsearchPermissionQueryFactory factory = new FlatElasticsearchPermissionQueryFactory(permissionService, "site_,ExtendedReaders");
+
+            given(permissionService.getAuthorisations()).willReturn(newSet(
+                    "username",
+                    "GROUP_EVERYONE",
+                    "GROUP_site_alpha",
+                    "GROUP_site_alpha_SiteCollaborator",
+                    "GROUP_ExtendedReadersTENANT"));
+
+            Query result = factory.getQueryWithPermissionFilter(
+                    QueryBuilders.matchAll().build().toQuery(), true);
+
+            BoolQuery permissionFilter = result.bool().filter().get(0).bool();
+
+            Set<String> readers = matchValues(permissionFilter.should(), QueryConstants.FIELD_READER);
+            Set<String> denied = matchValues(permissionFilter.mustNot(), QueryConstants.FIELD_DENIED);
+
+            assertTrue("Reader filter must keep the user", readers.contains("username"));
+            assertTrue("Reader filter must keep GROUP_EVERYONE", readers.contains("GROUP_EVERYONE"));
+
+            for (String stripped : new String[]{
+                    "GROUP_site_alpha",
+                    "GROUP_site_alpha_SiteCollaborator",
+                    "GROUP_ExtendedReadersTENANT"})
+            {
+                assertFalse("Stripped authority '" + stripped + "' must not appear as a reader",
+                        readers.contains(stripped));
+                assertFalse("Stripped authority '" + stripped + "' must not appear as denied",
+                        denied.contains(stripped));
+            }
+        }
+        finally
+        {
+            globalReaders.clear();
+            globalReaders.addAll(backup);
+        }
+    }
+
+    /**
+     * Builds a factory with the given CSV prefix config, runs it against {@code authorities} and returns the set of authorities used to build the reader (should) clauses of the resulting permission filter -- i.e. the effective post-stripping set as observed by the rest of the system.
+     */
+    private Set<String> stripWithConfig(String prefixesCsv, Set<String> authorities)
+    {
+        // Drop global readers so the filter is actually built (otherwise the
+        // factory short-circuits and returns the unfiltered query).
+        Set<String> globalReaders = GlobalReaders.getReaders();
+        HashSet<String> backup = new HashSet<>(globalReaders);
+        globalReaders.clear();
+        try
+        {
+            FlatElasticsearchPermissionQueryFactory factory = new FlatElasticsearchPermissionQueryFactory(permissionService, prefixesCsv);
+
+            given(permissionService.getAuthorisations()).willReturn(authorities);
+
+            Query result = factory.getQueryWithPermissionFilter(
+                    QueryBuilders.matchAll().build().toQuery(), true);
+
+            BoolQuery permissionFilter = result.bool().filter().get(0).bool();
+            return matchValues(permissionFilter.should(), QueryConstants.FIELD_READER);
+        }
+        finally
+        {
+            globalReaders.clear();
+            globalReaders.addAll(backup);
+        }
+    }
+
+    /**
+     * Extracts the {@code query} values of every {@code match} clause that targets the given field. Non-match clauses (e.g. the owner term/bool clause) are ignored.
+     */
+    private static Set<String> matchValues(List<Query> clauses, String field)
+    {
+        return clauses.stream()
+                .filter(q -> "match".equals(q._kind().jsonValue()))
+                .filter(q -> field.equals(q.match().field()))
+                .map(q -> q.match().query()._get().toString())
+                .collect(Collectors.toSet());
     }
 
     private void assertAuthoritiesInFilterQuery(BoolQuery filteredQuery, String... expectedAuths)

@@ -30,11 +30,14 @@ import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_READER;
 import static org.alfresco.service.cmr.security.AuthorityType.getAuthorityType;
 import static org.alfresco.service.cmr.security.PermissionService.ADMINISTRATOR_AUTHORITY;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
@@ -52,13 +55,21 @@ import org.alfresco.service.cmr.security.PermissionService;
 @SuppressWarnings("PMD.LooseCoupling")
 public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPermissionQueryFactory
 {
+    private static final Log LOGGER = LogFactory.getLog(FlatElasticsearchPermissionQueryFactory.class);
 
     private final PermissionService permissionService;
     private final HashSet<String> globalReaders;
+    private final Set<String> stripFromQueryPrefixes;
 
-    public FlatElasticsearchPermissionQueryFactory(PermissionService permissionService)
+    public FlatElasticsearchPermissionQueryFactory(PermissionService permissionService, String stripFromQueryPrefixes)
     {
         this.permissionService = permissionService;
+        this.stripFromQueryPrefixes = (stripFromQueryPrefixes == null || stripFromQueryPrefixes.isBlank())
+                ? Set.of()
+                : Arrays.stream(stripFromQueryPrefixes.split(","))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toSet());
         this.globalReaders = GlobalReaders.getReaders();
     }
 
@@ -74,6 +85,18 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
     {
         Set<String> authorities = getAuthorisations(includeGroupsForRoleAdmin);
 
+        if (LOGGER.isDebugEnabled())
+        {
+            LOGGER.debug("Full list of authorities: " + authorities);
+        }
+
+        authorities = stripNestedGroups(authorities);
+
+        if (LOGGER.isDebugEnabled())
+        {
+            LOGGER.debug("Stripped list of authorities: " + authorities);
+        }
+
         if (hasGlobalReader(authorities))
         {
             // No filter will be applied, so a unfiltered query will be returned
@@ -84,6 +107,24 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
             BoolQuery permissionQueryBuilder = buildFilter(authorities);
             return applyFilter(queryBuilder, permissionQueryBuilder).toQuery();
         }
+    }
+
+    private Set<String> stripNestedGroups(Set<String> authorities)
+    {
+        if (stripFromQueryPrefixes.isEmpty())
+        {
+            return authorities;
+        }
+        Set<String> strippedAuthorities = authorities.stream()
+                .filter(authority -> !matchesAnyStripPrefix(authority))
+                .collect(Collectors.toSet());
+
+        return strippedAuthorities;
+    }
+
+    private boolean matchesAnyStripPrefix(String authority)
+    {
+        return stripFromQueryPrefixes.stream().anyMatch(prefix -> authority.startsWith("GROUP_" + prefix));
     }
 
     /**

@@ -39,6 +39,7 @@ import org.junit.runners.Suite;
         org.alfresco.repo.dictionary.DictionaryDAOTest.class,
         org.alfresco.repo.dictionary.DiffModelTest.class,
         org.alfresco.repo.dictionary.constraint.ConstraintsTest.class,
+        org.alfresco.opencmis.search.CMISQueryOptionsTest.class,
         org.alfresco.repo.index.ShardMethodEnumTest.class,
         org.alfresco.repo.search.impl.parsers.CMISTest.class,
         org.alfresco.repo.search.impl.parsers.CMIS_FTSTest.class,

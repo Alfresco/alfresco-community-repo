@@ -339,11 +339,11 @@ public class CMISQueryOptions extends QueryOptions
         @Override
         public void applyAFTSFilter(Consumer<String> aftsConsumer)
         {
-            String aftsFilter = "{!afts}=" + propertyName + ":\"" + escapeAftsValue(propertyValue) + "\"";
+            String aftsFilter = "{!afts}=" + propertyName + ":\"" + escapeAFTSValue(propertyValue) + "\"";
             aftsConsumer.accept(aftsFilter);
         }
 
-        private static String escapeAftsValue(String value)
+        private static String escapeAFTSValue(String value)
         {
             return value.replace("\\", "\\\\").replace("\"", "\\\"");
         }

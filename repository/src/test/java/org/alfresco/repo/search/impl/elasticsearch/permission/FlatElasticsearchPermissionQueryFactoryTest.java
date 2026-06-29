@@ -294,7 +294,7 @@ public class FlatElasticsearchPermissionQueryFactoryTest
         // End-to-end check: the stripped authorities are absent from BOTH the
         // reader (should) clauses and the denied (mustNot) clauses.
         Set<String> globalReaders = GlobalReaders.getReaders();
-        HashSet<String> backup = new HashSet<>(globalReaders);
+        Set<String> backup = new HashSet<>(globalReaders);
         globalReaders.clear();
         try
         {
@@ -344,7 +344,7 @@ public class FlatElasticsearchPermissionQueryFactoryTest
         // Drop global readers so the filter is actually built (otherwise the
         // factory short-circuits and returns the unfiltered query).
         Set<String> globalReaders = GlobalReaders.getReaders();
-        HashSet<String> backup = new HashSet<>(globalReaders);
+        Set<String> backup = new HashSet<>(globalReaders);
         globalReaders.clear();
         try
         {

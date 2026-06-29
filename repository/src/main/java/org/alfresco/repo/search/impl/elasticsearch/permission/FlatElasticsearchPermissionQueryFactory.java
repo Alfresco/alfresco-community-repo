@@ -55,7 +55,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 @SuppressWarnings("PMD.LooseCoupling")
 public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPermissionQueryFactory
 {
-    private static final Log LOGGER = LogFactory.getLog(FlatElasticsearchPermissionQueryFactory.class);
 
     private final PermissionService permissionService;
     private final HashSet<String> globalReaders;
@@ -85,17 +84,7 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
     {
         Set<String> authorities = getAuthorisations(includeGroupsForRoleAdmin);
 
-        if (LOGGER.isDebugEnabled())
-        {
-            LOGGER.debug("Authorities count before stripping : " + authorities.size());
-        }
-
         authorities = stripNestedGroups(authorities);
-
-        if (LOGGER.isDebugEnabled())
-        {
-            LOGGER.debug("Authorities count after stripping : " + authorities.size());
-        }
 
         if (hasGlobalReader(authorities))
         {

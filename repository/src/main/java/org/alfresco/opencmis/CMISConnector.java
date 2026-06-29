@@ -882,6 +882,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
     }
 
+    @Override
     public void init()
     {
         // register as tenant deployer
@@ -898,27 +899,32 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         permissionMappings = getPermissionMappings();
     }
 
+    @Override
     public void destroy()
     {
         singletonCache.remove(KEY_CMIS_ROOT_NODEREF);
         singletonCache.remove(KEY_CMIS_RENDITION_MAPPING_NODEREF);
     }
 
+    @Override
     public void onEnableTenant()
     {
         init();
     }
 
+    @Override
     public void onDisableTenant()
     {
         destroy();
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         lifecycle.setApplicationContext(applicationContext);
     }
 
+    @Override
     public void onApplicationEvent(ApplicationContextEvent event)
     {
         lifecycle.onApplicationEvent(event);
@@ -1149,18 +1155,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         NodeRef rootNodeRef = (NodeRef) singletonCache.get(KEY_CMIS_ROOT_NODEREF);
         if (rootNodeRef == null)
         {
-            rootNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
-                public NodeRef doWork() throws Exception
+            rootNodeRef = AuthenticationUtil.runAs(() -> {
+                final NodeRef root = findRootNode();
+
+                if (root == null || !virtualRepository.contains(root))
                 {
-                    final NodeRef root = findRootNode();
-
-                    if (root == null || !virtualRepository.contains(root))
-                    {
-                        throw new CmisObjectNotFoundException("Root folder path '" + rootPath + "' not found!");
-                    }
-
-                    return root;
+                    throw new CmisObjectNotFoundException("Root folder path '" + rootPath + "' not found!");
                 }
+
+                return root;
             }, AuthenticationUtil.getSystemUserName());
 
             singletonCache.put(KEY_CMIS_ROOT_NODEREF, rootNodeRef);
@@ -1227,6 +1230,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Creates an object info object.
      */
+    @Override
     public CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef)
     {
         return createNodeInfo(nodeRef, null, null, null, true);
@@ -1243,6 +1247,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Creates an object info object.
      */
+    @Override
     public CMISNodeInfoImpl createNodeInfo(AssociationRef assocRef)
     {
         return new CMISNodeInfoImpl(this, assocRef);
@@ -1302,6 +1307,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     }
 
     /* Construct an object id based on the incoming incomingNodeId and versionLabel. The object id will always be the node guid. */
+    @Override
     public String constructObjectId(String incomingNodeId, String versionLabel)
     {
         return constructObjectId(incomingNodeId, versionLabel, isPublicApi());
@@ -2685,6 +2691,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     public static class AccessPermissionComparator implements Comparator<AccessPermission>
     {
+        @Override
         public int compare(AccessPermission left, AccessPermission right)
         {
             if (left.getPosition() != right.getPosition())
@@ -3830,13 +3837,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             return entryId == null ? null : entryId.toString();
         }
 
+        @Override
         public boolean valuesRequired()
         {
             return this.valuesRequired;
         }
 
+        @Override
         public final boolean handleAuditEntry(Long entryId, String applicationName, String user, long time,
-                Map<String, Serializable> values)
+                                              Map<String, Serializable> values)
         {
             if (applicationName.equals(CMIS_CHANGELOG_AUDIT_APPLICATION))
             {
@@ -3851,6 +3860,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             return true;
         }
 
+        @Override
         public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
         {
             throw new CmisRuntimeException("Audit entry " + entryId + ": " + errorMsg, error);

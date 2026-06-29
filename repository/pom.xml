@@ -10,10 +10,6 @@
         <version>26.2.0.78-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <aws.sdk.version>2.46.17</aws.sdk.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -47,47 +43,6 @@
                     <artifactId>spring-surf-core-configservice</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!-- AWS SDK v2 modules. The aws-iam OpenSearch signing logic lives in the enterprise repo
-             (EnterpriseElasticsearchHttpClientFactory) and consumes these transitively. They are kept
-             declared here because the alfresco-s3-connector provided-scope packaging contract (ACS-12064)
-             relies on the community ACS distribution bundling these modules. -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>sdk-core</artifactId>
-            <version>${aws.sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>auth</artifactId>
-            <version>${aws.sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>http-auth-aws</artifactId>
-            <version>${aws.sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>url-connection-client</artifactId>
-            <version>${aws.sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>netty-nio-client</artifactId>
-            <version>${aws.sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>regions</artifactId>
-            <version>${aws.sdk.version}</version>
-        </dependency>
-        <!-- Required for IRSA / web identity (WebIdentityTokenFileCredentialsProvider) which calls STS AssumeRoleWithWebIdentity.
-             Without it the default credential chain silently skips web identity and falls back to the node instance role. -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>sts</artifactId>
-            <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>

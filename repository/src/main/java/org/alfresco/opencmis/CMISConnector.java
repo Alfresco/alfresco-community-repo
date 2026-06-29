@@ -3845,7 +3845,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         @Override
         public final boolean handleAuditEntry(Long entryId, String applicationName, String user, long time,
-                                              Map<String, Serializable> values)
+                Map<String, Serializable> values)
         {
             if (applicationName.equals(CMIS_CHANGELOG_AUDIT_APPLICATION))
             {

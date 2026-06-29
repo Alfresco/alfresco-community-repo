@@ -159,7 +159,7 @@ public class TestCMISVirtualRepository extends EnterpriseTestApi
         final Set<NodeRef> toExpose = new HashSet<>();
         toExpose.add(rootNode);
         toExpose.addAll(unrestrictedResult.subList(0, 10));
-        testSupport.expose(toExpose.toArray(new NodeRef[10]));
+        testSupport.expose(toExpose.toArray(NodeRef[]::new));
 
         final List<NodeRef> restrictedResult = getNodeRefs(cmisSession.query("SELECT * FROM cmis:folder", false, 0, 10_000));
         assertThat(restrictedResult)

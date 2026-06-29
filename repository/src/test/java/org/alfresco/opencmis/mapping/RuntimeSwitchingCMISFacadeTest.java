@@ -133,23 +133,23 @@ public class RuntimeSwitchingCMISFacadeTest
         return facade;
     }
 
-    private LinkedHashMap<String, CMISFacadeProvider> providers(String name1, CMISFacadeProvider provider1, String name2, CMISFacadeProvider provider2, String name3, CMISFacadeProvider provider3)
+    private Map<String, CMISFacadeProvider> providers(String name1, CMISFacadeProvider provider1, String name2, CMISFacadeProvider provider2, String name3, CMISFacadeProvider provider3)
     {
-        LinkedHashMap<String, CMISFacadeProvider> result = providers(name1, provider1, name2, provider2);
+        Map<String, CMISFacadeProvider> result = providers(name1, provider1, name2, provider2);
         result.put(name3, provider3);
         return result;
     }
 
-    private LinkedHashMap<String, CMISFacadeProvider> providers(String name1, CMISFacadeProvider provider1, String name2, CMISFacadeProvider provider2)
+    private Map<String, CMISFacadeProvider> providers(String name1, CMISFacadeProvider provider1, String name2, CMISFacadeProvider provider2)
     {
-        LinkedHashMap<String, CMISFacadeProvider> result = providers(name1, provider1);
+        Map<String, CMISFacadeProvider> result = providers(name1, provider1);
         result.put(name2, provider2);
         return result;
     }
 
-    private LinkedHashMap<String, CMISFacadeProvider> providers(String name, CMISFacadeProvider provider)
+    private Map<String, CMISFacadeProvider> providers(String name, CMISFacadeProvider provider)
     {
-        LinkedHashMap<String, CMISFacadeProvider> result = new LinkedHashMap<>();
+        Map<String, CMISFacadeProvider> result = new LinkedHashMap<>();
         result.put(name, provider);
         return result;
     }

@@ -42,9 +42,9 @@ import org.alfresco.service.cmr.repository.ContentData;
  */
 public class ContentStreamFileNameProperty extends DirectProperty
 {
-    public ContentStreamFileNameProperty(ServiceRegistry serviceRegistry, CMISFacade connector)
+    public ContentStreamFileNameProperty(ServiceRegistry serviceRegistry, CMISFacade facade)
     {
-        super(serviceRegistry, connector, PropertyIds.CONTENT_STREAM_FILE_NAME, ContentModel.PROP_NAME);
+        super(serviceRegistry, facade, PropertyIds.CONTENT_STREAM_FILE_NAME, ContentModel.PROP_NAME);
     }
 
     @Override

@@ -61,9 +61,6 @@
         <property name="port" value="${elasticsearch.port}" />
         <property name="baseUrl" value="${elasticsearch.baseUrl}" />
         <property name="secureComms" value="${elasticsearch.secureComms}" />
-        <property name="authMode" value="${elasticsearch.auth.mode:basic}" />
-        <property name="awsRegion" value="${elasticsearch.aws.region:}" />
-        <property name="awsService" value="${elasticsearch.aws.service:es}" />
         <property name="user" value="${elasticsearch.user}" />
         <property name="password" value="${elasticsearch.password}" />
         <property name="indexName" value="${elasticsearch.indexName}" />

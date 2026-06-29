@@ -48,7 +48,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- AWS SDK v2 modules used by ElasticsearchHttpClientFactory when elasticsearch.auth.mode=aws-iam -->
+        <!-- AWS SDK v2 modules. The aws-iam OpenSearch signing logic lives in the enterprise repo
+             (EnterpriseElasticsearchHttpClientFactory) and consumes these transitively. They are kept
+             declared here because the alfresco-s3-connector provided-scope packaging contract (ACS-12064)
+             relies on the community ACS distribution bundling these modules. -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sdk-core</artifactId>

@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.client;
 
-import java.io.IOException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
@@ -59,7 +58,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 /**
  * Singleton factory for Elasticsearch Http Client. This class is providing an Elastic RestHighLevelClient instance, that maintains a pool of RestLowLevelClient instances.
  */
-@SuppressWarnings("PMD.GodClass")
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields"})
 public class ElasticsearchHttpClientFactory
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchHttpClientFactory.class);
@@ -71,6 +70,7 @@ public class ElasticsearchHttpClientFactory
 
     // Elasticsearch Http Client connection pool
     private volatile OpenSearchClient client;
+    private volatile OpenSearchTransport transport;
 
     // Basic parameters for Elasticsearch server endpoint
     private String host;
@@ -111,33 +111,6 @@ public class ElasticsearchHttpClientFactory
     public void init()
     {
         this.sslTrustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
-    }
-
-    /**
-     * Releases resources held by the Elasticsearch client transport, including the HTTP connection pool and IO reactor threads.
-     */
-    public void destroy()
-    {
-        if (client != null)
-        {
-            try
-            {
-                OpenSearchTransport transport = client._transport();
-                if (transport != null)
-                {
-                    transport.close();
-                }
-                LOGGER.debug("Elasticsearch client transport closed successfully.");
-            }
-            catch (IOException e)
-            {
-                LOGGER.warn("Error closing Elasticsearch client transport", e);
-            }
-            finally
-            {
-                client = null;
-            }
-        }
     }
 
     protected String getSecureComms()
@@ -220,6 +193,11 @@ public class ElasticsearchHttpClientFactory
         return client;
     }
 
+    public synchronized void destroy()
+    {
+        closeManagedResources();
+    }
+
     /**
      * Singleton method returning the Elasticsearch client. The client is only built if it's not already created.
      *
@@ -234,11 +212,13 @@ public class ElasticsearchHttpClientFactory
             {
                 if (client == null)
                 {
+                    String protocol = getProtocol();
                     if (LOGGER.isDebugEnabled())
                     {
-                        LOGGER.debug("Creating Elasticsearch client for {}", (secureComms.equals("https") ? "https" : "http") + "://" + host + ":" + port + baseUrl);
+                        LOGGER.debug("Creating Elasticsearch client for {}://{}:{}{} (secureComms={}, isSecure={})",
+                                protocol, host, port, baseUrl, secureComms, isSecure());
                     }
-                    client = getElasticsearchClient(secureComms.equals("https") ? "https" : "http", port);
+                    client = getElasticsearchClient(protocol, port);
                 }
             }
         }
@@ -266,13 +246,108 @@ public class ElasticsearchHttpClientFactory
      */
     protected OpenSearchClient getElasticsearchClient(String protocol, int port)
     {
+        return createBasicAuthClient(protocol, port);
+    }
+
+    private OpenSearchClient createBasicAuthClient(String protocol, int port)
+    {
         OpenSearchTransport transport = ApacheHttpClient5TransportBuilder.builder(new HttpHost(protocol, host, port))
                 .setHttpClientConfigCallback(this::getHttpAsyncClientBuilder)
                 .setPathPrefix(baseUrl)
                 .setMapper(new JacksonJsonpMapper())
                 .build();
 
+        this.transport = transport;
+
         return new OpenSearchClient(transport);
+    }
+
+    /**
+     * @return {@code true} when the configured {@code secureComms} value indicates an HTTPS endpoint. Subclasses may broaden this (for example, an mTLS-aware enterprise factory).
+     */
+    protected boolean isSecure()
+    {
+        return SECURE_COMMS_HTTPS.equals(secureComms);
+    }
+
+    /**
+     * @return the wire protocol ("https" or "http") derived from {@link #isSecure()}.
+     */
+    protected String getProtocol()
+    {
+        return isSecure() ? "https" : "http";
+    }
+
+    private void closeManagedResources()
+    {
+        Exception primary = null;
+
+        OpenSearchTransport transportToClose = transport;
+        if (transportToClose == null && client != null)
+        {
+            try
+            {
+                transportToClose = client._transport();
+            }
+            catch (Exception exception)
+            {
+                LOGGER.warn("Unable to retrieve Elasticsearch transport for shutdown", exception);
+            }
+        }
+
+        if (transportToClose != null)
+        {
+            try
+            {
+                transportToClose.close();
+            }
+            catch (Exception exception)
+            {
+                primary = exception;
+            }
+        }
+
+        Exception additional = closeAdditionalResources();
+        if (additional != null)
+        {
+            if (primary == null)
+            {
+                primary = additional;
+            }
+            else
+            {
+                primary.addSuppressed(additional);
+            }
+        }
+
+        transport = null;
+        client = null;
+
+        if (primary != null)
+        {
+            LOGGER.warn("Unable to close Elasticsearch HTTP client resources", primary);
+        }
+    }
+
+    /**
+     * Hook for subclasses to release any additional client resources (for example an AWS HTTP client) during shutdown.
+     *
+     * @return an exception thrown while closing, or {@code null} if nothing failed.
+     */
+    protected Exception closeAdditionalResources()
+    {
+        return null;
+    }
+
+    /**
+     * Allows subclasses that build their own transport (for example an AWS-signed transport) to register it so that it is closed during shutdown.
+     *
+     * @param transport
+     *            the transport to be managed by this factory
+     */
+    protected void setTransport(OpenSearchTransport transport)
+    {
+        this.transport = transport;
     }
 
     /**

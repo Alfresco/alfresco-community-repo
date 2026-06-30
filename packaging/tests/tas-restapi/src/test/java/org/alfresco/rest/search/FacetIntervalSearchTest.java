@@ -124,9 +124,9 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
         SearchResponse response = query(query);
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facets").isNotEmpty();
-        RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
+        RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().getFirst();
 
-        RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
+        RestGenericBucketModel bucket = facetResponseModel.getBuckets().getFirst();
         Assert.assertEquals(facetResponseModel.getBuckets().size(), 2);
         bucket.assertThat().field("label").is("aUser");
         bucket.assertThat().field("filterQuery").is("creator:[\"a\" TO \"user\"]");
@@ -183,5 +183,4 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
         bucket.getMetrics().getFirst().assertThat().field("type").is("count");
         bucket.getMetrics().getFirst().assertThat().field("value").is("{count=0}");
     }
-
 }

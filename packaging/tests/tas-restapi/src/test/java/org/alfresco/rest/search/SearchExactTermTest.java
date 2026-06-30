@@ -33,7 +33,6 @@ import org.testng.annotations.Test;
  */
 public class SearchExactTermTest extends AbstractSearchExactTermTest
 {
-
     /**
      * Note these tests are searching in cm:name property only (default for exact term without cross locale). 1 result expected for =run >> Document #2 >> name: "Run" 1 result expected for =jump >> Document #4 >> name: "Jump"
      */
@@ -54,7 +53,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     @Test
     public void exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch() throws Exception
     {
-
         /**
          * Since REST API is getting the results from DB or Search Services, using single term expressions is always retrieved from DB when using default configuration "solr.query.fts.queryConsistency=TRANSACTIONAL_IF_POSSIBLE". Combining this single term with range queries (like cm:created) will ensure the results are coming from SOLR in this mode.
          */
@@ -64,7 +62,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
 
         /* 0 results are expected: there is no result that have exactly cm:title:"Run" The closest we have is record Run (tok:false:"Run : a philosophy") As you can see we don't have a full match, so it's not in the results. */
         assertResponseCardinality("=tok:false:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
-
     }
 
     /**
@@ -73,7 +70,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     @Test(enabled = false)
     public void failing_exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch() throws Exception
     {
-
         // SEARCH-2953
         assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
 
@@ -85,13 +81,11 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
 
         // SEARCH-2461
         assertResponseCardinality("=tok:false:Run", 0);
-
     }
 
     @Test
     public void exactSearch_singleTermConjunction_shouldReturnException() throws Exception
     {
-
         /**
          * Since REST API is getting the results from DB or Search Services, using single term expressions is always retrieved from DB when using default configuration "solr.query.fts.queryConsistency=TRANSACTIONAL_IF_POSSIBLE". Combining this single term with range queries (like cm:created) will ensure the results are coming from SOLR in this mode.
          */
@@ -113,7 +107,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
          */
         assertException("=tok:true:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
-
     }
 
     /**
@@ -122,7 +115,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     @Test(enabled = false)
     public void failing_exactSearch_singleTermConjunction_shouldReturnException() throws Exception
     {
-
         // SEARCH-2461
         assertException("=tok:true:running");
         assertException("=tok:both:running");
@@ -134,7 +126,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
         // SEARCH-2461
         assertException("=tok:true:Run");
         assertException("=tok:both:Run");
-
     }
 
     @Test
@@ -154,7 +145,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     @Test
     public void exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception
     {
-
         /* 1 result is expected - Document #4 >> title: "Running" */
         assertResponseCardinality("=tok:false:Running =tok:false:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
 
@@ -178,7 +168,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
         assertResponseCardinality("=tok:false:running =tok:false:jumpers", 1);
         assertException("=tok:both:running =tok:both:jumpers");
         assertException("=tok:true:running =tok:true:jumpers");
-
     }
 
     @Test
@@ -206,7 +195,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
 
         /* No result for "Running jumping twice" in cm:name property is expected */
         assertResponseCardinality("=tok:false:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
-
     }
 
     /**
@@ -215,7 +203,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     @Test(enabled = false)
     public void failing_exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch() throws Exception
     {
-
         // SEARCH-2953
         assertResponseCardinality("=tok:false:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
 
@@ -225,7 +212,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
 
         // SEARCH-2461
         assertResponseCardinality("=tok:false:\"Running jumping twice\"", 0);
-
     }
 
     @Test

@@ -76,12 +76,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     /** Maximum number of times a wait-for-indexing query will be retried before giving up. */
     protected static final int SEARCH_MAX_ATTEMPTS = 120;
 
-    /** CMIS query language identifier, used by {@link SearchLanguage#toString()}. */
-    protected static final String SEARCH_LANGUAGE_CMIS = "cmis";
-
-    @Autowired
-    protected RestProperties restProperties;
-
     @Autowired
     protected TasProperties properties;
 

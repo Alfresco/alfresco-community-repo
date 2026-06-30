@@ -30,7 +30,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static java.util.Collections.singletonList;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.testng.AssertJUnit.assertEquals;
 
 import java.util.ArrayList;
@@ -150,7 +153,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
 
         SearchRequest searchRequest = createQuery("cm_name:alfresco\\.docx cm_name:cars\\.PDF cm_name:pangram\\.txt");
         searchRequest.addSortClause("FIELD", "name", true);
-        searchRequest.addSortClause("FIELD", "createdByUser.id", true);
+        searchRequest.addSortClause("FIELD", "creator", true);
 
         RestRequestFilterQueryModel filters = new RestRequestFilterQueryModel();
         filters.setQuery("SITE:'" + testSite.getId() + "'");
@@ -173,7 +176,7 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         // ...and test the descending order
         searchRequest.getSort().clear();
         searchRequest.addSortClause("FIELD", "name", false);
-        searchRequest.addSortClause("FIELD", "createdByUser.id", true);
+        searchRequest.addSortClause("FIELD", "creator", true);
 
         SearchResponse responseWithDescendingOrder = query(searchRequest);
         assertEquals(

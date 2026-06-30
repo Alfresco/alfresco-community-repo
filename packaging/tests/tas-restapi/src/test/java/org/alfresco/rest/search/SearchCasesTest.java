@@ -88,7 +88,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority = 6)
     public void testSearchODTFile()
     {
-        SearchResponse response6 = queryAsUser(testUser, "cm:name:unique.ODT");
+        SearchResponse response6 = queryAsUser(testUser, "cm:name:" + file4.getName() + "'");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response6.assertThat().entriesListIsNotEmpty();
     }
@@ -195,7 +195,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
         List<RestRequestFacetFieldModel> facets = new ArrayList<>();
-        facets.add(new RestRequestFacetFieldModel("cm:mimetype"));
+        facets.add(new RestRequestFacetFieldModel("cm:content.mimetype"));
         facets.add(new RestRequestFacetFieldModel("modifier"));
         facetFields.setFacets(facets);
         query.setFacetFields(facetFields);
@@ -207,11 +207,14 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         Assert.assertNull(response.getContext().getFacetQueries());
         Assert.assertNull(response.getContext().getFacets());
 
-        RestResultBucketsModel model = response.getContext().getFacetsFields().getFirst();
-        Assert.assertEquals(model.getLabel(), "modifier");
+        // Look up the "modifier" facet by label instead of relying on response ordering
+        RestResultBucketsModel modifierFacet = response.getContext().getFacetsFields().stream()
+                .filter(f -> "modifier".equals(f.getLabel()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("'modifier' facet not found in response"));
 
-        model.assertThat().field("label").is("modifier");
-        FacetFieldBucket bucket1 = model.getBuckets().getFirst();
+        modifierFacet.assertThat().field("label").is("modifier");
+        FacetFieldBucket bucket1 = modifierFacet.getBuckets().getFirst();
         bucket1.assertThat().field("label").is(testUser.getUsername());
         bucket1.assertThat().field("display").is("FN-" + testUser.getUsername() + " LN-" + testUser.getUsername());
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + testUser.getUsername() + "\"");

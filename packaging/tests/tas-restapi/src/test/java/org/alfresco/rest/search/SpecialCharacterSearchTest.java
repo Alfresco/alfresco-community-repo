@@ -36,7 +36,6 @@ import org.alfresco.utility.report.Bug;
 
 public class SpecialCharacterSearchTest extends AbstractSearchServicesE2ETest
 {
-
     /**
      * Index a file with \u007F (delete char) in name. The goal is to check that the file is actually indexed in solr.
      */
@@ -48,5 +47,4 @@ public class SpecialCharacterSearchTest extends AbstractSearchServicesE2ETest
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
         assertTrue(waitForIndexing("name:'" + file.getName() + "'", true));
     }
-
 }

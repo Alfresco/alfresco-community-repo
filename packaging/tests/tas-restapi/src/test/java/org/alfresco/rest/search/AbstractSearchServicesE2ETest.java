@@ -81,7 +81,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         file = new FileModel("pangram.txt", "pangram" + title, description, FileType.TEXT_PLAIN,
                 description + " The quick brown fox jumps over the lazy dog");
 
-        file2 = new FileModel("cars.PDF", "cars", description, FileType.TEXT_PLAIN,
+        file2 = new FileModel("cars.txt", "cars", description, FileType.TEXT_PLAIN,
                 "The landrover discovery is not a sports car");
 
         file3 = new FileModel("alfresco.docx", "alfresco", "alfresco", FileType.TEXT_PLAIN,
@@ -93,6 +93,9 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         of(file, file2, file3, file4).forEach(
                 f -> dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(f));
 
+        waitForMetadataIndexing(file.getName(), true);
+        waitForMetadataIndexing(file2.getName(), true);
+        waitForMetadataIndexing(file3.getName(), true);
         waitForMetadataIndexing(file4.getName(), true);
     }
 

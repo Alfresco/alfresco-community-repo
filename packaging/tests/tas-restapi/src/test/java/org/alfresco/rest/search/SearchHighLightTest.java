@@ -123,6 +123,5 @@ public class SearchHighLightTest extends AbstractSearchServicesE2ETest
                     assertEquals(1, hl.size());
                     assertEquals(expectedHighlight, hl.getFirst().getSnippets().getFirst());
                 }));
-
     }
 }

@@ -214,7 +214,6 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         String query = "ID:'workspace://SpacesStore/" + file1.getNodeRefWithoutVersion() + "'";
         boolean fileFound = isContentInSearchResults(query, file1.getName(), true);
         Assert.assertTrue(fileFound, "Content Not found for query: " + query);
-
         testSearchQuery(query, 1).getPagination().getTotalItems();
     }
 
@@ -231,9 +230,7 @@ public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
         expectedNames.add(file5.getName());
 
         testSearchQueryUnordered(query, expectedNames);
-
         query = "PARENT:'" + folder1.getNodeRefWithoutVersion() + "\'";
-
         testSearchQueryUnordered(query, expectedNames);
     }
 

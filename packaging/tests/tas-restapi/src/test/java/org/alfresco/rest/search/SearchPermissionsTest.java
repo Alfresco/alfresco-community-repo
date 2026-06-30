@@ -36,7 +36,11 @@ import org.testng.annotations.Test;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.*;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
 
 /**
  * Search end point Public API test with Permission checks

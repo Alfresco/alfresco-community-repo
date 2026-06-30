@@ -23,7 +23,10 @@
 
 package org.alfresco.rest.search;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -73,7 +76,6 @@ public class SearchAspectTest extends AbstractSearchServicesE2ETest
     @Test(priority = 1)
     public void testAspectIsRemoved()
     {
-
         // When checking out a file, cm:checkedOut aspect is added
         cmisApi.authenticateUser(testUser).usingResource(file).checkOut();
 
@@ -102,7 +104,6 @@ public class SearchAspectTest extends AbstractSearchServicesE2ETest
         response = restClient.authenticateUser(testUser).withSearchAPI().search(searchRequest);
 
         assertFalse(response.getEntries().getFirst().getModel().getAspectNames().contains("cm:checkedOut"), "checkedOut aspect was NOT expected");
-
     }
 
     /**
@@ -173,6 +174,5 @@ public class SearchAspectTest extends AbstractSearchServicesE2ETest
                 "finance:Location property is expected to be defined with 'LondonBridge' as value");
         assertNull(foundProperties.get(parkingLocationFieldName), "finance:ParkingLocation should not be included " +
                 "into the document anymore");
-
     }
 }

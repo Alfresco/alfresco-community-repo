@@ -157,7 +157,6 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
                 throw new TestException("Unexpected value returned");
             }
         });
-
     }
 
     /**
@@ -237,7 +236,6 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
     @Test
     public void searchWithMultiValuedFieldsFacet()
     {
-
         // Create properties with single (cm:addressee) and multivalued (cm:addressees) values
         FileModel emailFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Email");
 

@@ -48,7 +48,6 @@ public class SearchParentFieldTest extends AbstractSearchServicesE2ETest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
-
         groups = new ArrayList<>();
         groups.add(dataGroup.createRandomGroup());
         groups.add(dataGroup.createRandomGroup());
@@ -59,7 +58,6 @@ public class SearchParentFieldTest extends AbstractSearchServicesE2ETest
         waitForIndexing(
                 "TYPE:'cm:authorityContainer' AND cm:authorityName:'GROUP_" + groups.get(1).getGroupIdentifier() + "'",
                 true);
-
     }
 
     /**
@@ -68,10 +66,8 @@ public class SearchParentFieldTest extends AbstractSearchServicesE2ETest
     @Test(priority = 1)
     public void testSearchParentForPerson()
     {
-
         for (GroupModel group : groups)
         {
-
             // Find groupId to be used in the PARENT expression
             String queryGroup = "TYPE:'cm:authorityContainer' AND cm:authorityName:'GROUP_" + group.getGroupIdentifier()
                     + "'";
@@ -86,9 +82,6 @@ public class SearchParentFieldTest extends AbstractSearchServicesE2ETest
             restClient.assertStatusCodeIs(HttpStatus.OK);
             Assert.assertEquals(response.getPagination().getCount(), 1, "Expecting 1 user (" + testUser.getUsername()
                     + ") as member of this group (" + group.getGroupIdentifier() + ")");
-
         }
-
     }
-
 }

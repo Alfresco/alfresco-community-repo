@@ -51,7 +51,6 @@ import org.alfresco.utility.model.FolderModel;
  */
 public class SearchNonIndexedFields extends AbstractSearchServicesE2ETest
 {
-
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
@@ -89,7 +88,6 @@ public class SearchNonIndexedFields extends AbstractSearchServicesE2ETest
                 .assertThat().existsInRepo();
 
         waitForIndexing(sampleFile.getName(), true);
-
     }
 
     /**
@@ -105,7 +103,6 @@ public class SearchNonIndexedFields extends AbstractSearchServicesE2ETest
         response = queryAsUser(testUser, "index_nonIndexed:[* TO *]");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 0);
-
     }
 
     /**
@@ -127,7 +124,5 @@ public class SearchNonIndexedFields extends AbstractSearchServicesE2ETest
                 "Expecting index:indexed field to be present in SOLR Schema");
         Assert.assertFalse(bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}nonIndexed"),
                 "Expecting index:nonIndexed field NOT to be present in SOLR Schema");
-
     }
-
 }

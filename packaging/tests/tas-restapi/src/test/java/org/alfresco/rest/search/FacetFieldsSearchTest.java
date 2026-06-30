@@ -37,7 +37,11 @@ import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.*;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
 
 /**
  * Faceted search test with FacetFields
@@ -121,7 +125,6 @@ public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("label").is(testSite.getId());
         bucket1.assertThat().field("filterQuery").contains(testSite.getId());
         bucket1.assertThat().field("count").is(3); // One folder and 2 files created above
-
     }
 
     @Test

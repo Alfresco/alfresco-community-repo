@@ -47,7 +47,6 @@ import org.testng.annotations.BeforeMethod;
 
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.SiteService.Visibility;
-import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.model.RestRequestSpellcheckModel;

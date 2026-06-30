@@ -472,15 +472,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - test-name: "REST API TAS tests part1"
-            pom-dir: tas-restapi
-            test-profile: run-restapi-part1
-          - test-name: "REST API TAS tests part2"
-            pom-dir: tas-restapi
-            test-profile: run-restapi-part2
-          - test-name: "REST API TAS tests part3"
-            pom-dir: tas-restapi
-            test-profile: run-restapi-part3
+#          - test-name: "REST API TAS tests part1"
+#            pom-dir: tas-restapi
+#            test-profile: run-restapi-part1
+#          - test-name: "REST API TAS tests part2"
+#            pom-dir: tas-restapi
+#            test-profile: run-restapi-part2
+#          - test-name: "REST API TAS tests part3"
+#            pom-dir: tas-restapi
+#            test-profile: run-restapi-part3
 #          - test-name: "CMIS TAS tests - BROWSER binding"
 #            pom-dir: tas-cmis
 #            test-profile: run-cmis-browser

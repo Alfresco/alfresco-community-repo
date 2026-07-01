@@ -42,9 +42,9 @@
             </properties>
         </profile>
         <profile>
-            <id>solr-e2e-tests</id>
+            <id>elasticsearch-e2e-tests</id>
             <properties>
-                <suiteXmlFile>${project.basedir}/src/test/resources/solr-search-e2e-suite.xml</suiteXmlFile>
+                <suiteXmlFile>${project.basedir}/src/test/resources/elasticsearch-e2e-suite.xml</suiteXmlFile>
             </properties>
         </profile>
         <profile>
@@ -60,9 +60,9 @@
             </properties>
         </profile>
         <profile>
-            <id>solr-e2e-crosslocale</id>
+            <id>search-e2e-crosslocale</id>
             <properties>
-                <suiteXmlFile>${project.basedir}/src/test/resources/solr-search-e2e-crosslocale-suite.xml</suiteXmlFile>
+                <suiteXmlFile>${project.basedir}/src/test/resources/search-e2e-crosslocale-suite.xml</suiteXmlFile>
             </properties>
         </profile>
     </profiles>

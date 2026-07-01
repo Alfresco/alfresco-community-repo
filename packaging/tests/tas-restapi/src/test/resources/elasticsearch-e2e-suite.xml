@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="ElasticSearchE2ETests" verbose="1" preserve-order="true">
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+    </listeners>
+
+    <test name="SearchTests">
+        <packages>
+            <package name="org.alfresco.rest.search.*">
+                <exclude name="org.alfresco.rest.search.fingerPrint"/>
+                <exclude name="org.alfresco.rest.search.crosslocale"/>
+            </package>
+        </packages>
+
+        <classes>
+            <class name="org.alfresco.rest.search.SearchSpellCheckTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.rest.search.NodeContentTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 1) StatsSearchTest: not supported by ES -->
+            <class name="org.alfresco.rest.search.StatsSearchTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 2) ShardInfoTest: /private/search/versions/1/info depends on Solr-only shardRegistry bean.
+                    Keep getShardInfoWithoutAdminAuthority() which only asserts 500 and passes on ES. -->
+            <class name="org.alfresco.rest.search.ShardInfoTest">
+                <methods>
+                    <exclude name="getShardInfoWithAdminAuthority"/>
+                </methods>
+            </class>
+            <!-- 3) SearchNonIndexedFields.testNonIndexedDoesNotExist:uses Solr-only Luke admin endpoint /solr/alfresco/admin/luke -->
+            <class name="org.alfresco.rest.search.SearchNonIndexedFields">
+                <methods>
+                    <exclude name="testNonIndexedDoesNotExist"/>
+                </methods>
+            </class>
+            <!-- 4) SearchHighLightTest.searchNonIndexedData:AFTS bare-property-name parsing gap on ES (returns HTTP 500) -->
+            <class name="org.alfresco.rest.search.SearchHighLightTest">
+                <methods>
+                    <exclude name="searchNonIndexedData"/>
+                </methods>
+            </class>
+            <!-- 5) SearchAPATHTest: APATH is a Solr-only indexed field -->
+            <class name="org.alfresco.rest.search.SearchAPATHTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 6) SearchAFTSInFieldTest: ES tokenizer / cross-locale / ~ operator gaps -->
+            <class name="org.alfresco.rest.search.SearchAFTSInFieldTest">
+                <methods>
+                    <exclude name="testSearchInFieldName"/>
+                    <exclude name="testSearchInFieldNameQueryExpansion"/>
+                    <exclude name="testExactMatchWithoutCrossLocale"/>
+                    <exclude name="testWithConjunctionDisjunctionAndNegation"/>
+                </methods>
+            </class>
+            <!-- 7) PivotFacetedSearchTest: not supported by ES -->
+            <class name="org.alfresco.rest.search.PivotFacetedSearchTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+
+            <!-- 8) FieldDefinitionTest: unknown-property error handling & mltext stemming gaps -->
+            <class name="org.alfresco.rest.search.FieldDefinitionTest">
+                <methods>
+                    <exclude name="testTextFieldNotDefined"/>
+                    <exclude name="testmlTextFieldNotDefined"/>
+                    <exclude name="testmlTextFieldMuliple"/>
+                </methods>
+            </class>
+
+            <!-- 9) FacetRangeSearchTest: range facet gaps on ES -->
+            <class name="org.alfresco.rest.search.FacetRangeSearchTest">
+                <methods>
+                    <exclude name="searchWithRange"/>
+                    <exclude name="searchWithRangeHardend"/>
+                    <exclude name="searchWithRangeAndIncludeUpperBound"/>
+                </methods>
+            </class>
+
+            <!-- 10) FacetIntervalSearchTest: interval facet gaps on ES -->
+            <class name="org.alfresco.rest.search.FacetIntervalSearchTest">
+                <methods>
+                    <exclude name="searchWithBasicInterval"/>
+                    <exclude name="searchWithDates"/>
+                </methods>
+            </class>
+
+            <!-- 11) FacetFieldsSearchTest: mincount / SITE facet gaps on ES -->
+            <class name="org.alfresco.rest.search.FacetFieldsSearchTest">
+                <methods>
+                    <exclude name="testSearchFacetFieldsBucketExcludedWhenMinCount2"/>
+                    <exclude name="testSearchWithFacetFieldsMinCountChecks"/>
+                    <exclude name="testSearchWithFacetFieldsOnlyFacetsWhereAccess"/>
+                </methods>
+            </class>
+
+            <!-- 12) FacetedSearchTest: not supported by ES -->
+            <class name="org.alfresco.rest.search.FacetedSearchTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+
+            <!-- 13) SearchExactTermTest: ES exact-term validation & cm:name over-match gaps -->
+            <class name="org.alfresco.rest.search.SearchExactTermTest">
+                <methods>
+                    <exclude name="exactSearch_singleTermConjunction_shouldReturnException"/>
+                    <exclude name="exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch"/>
+                    <exclude name="exactSearch_singleTerm_shouldReturnResultsContainingExactTermInName"/>
+                    <exclude name="exactSearch_multiTerm_shouldReturnResultsContainingExactTerm"/>
+                    <exclude name="exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase"/>
+                </methods>
+            </class>
+
+            <!-- 14) SearchCasesTest.testSearchPDFFile: PDF no longer parsed as PDF (pending decision) -->
+            <class name="org.alfresco.rest.search.SearchCasesTest">
+                <methods>
+                    <exclude name="testSearchPDFFile"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

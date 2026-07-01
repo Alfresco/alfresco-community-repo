@@ -67,6 +67,7 @@ public class ShardInfoTest extends AbstractSearchServicesE2ETest
     }
 
     /* The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group. */
+    /* Solr-only API — shardRegistry bean is null on Elasticsearch, endpoint returns 500. */
     @Test
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException
     {

@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>26.2.0.82</version>
+        <version>26.2.0.83-SNAPSHOT</version>
     </parent>
 
     <developers>

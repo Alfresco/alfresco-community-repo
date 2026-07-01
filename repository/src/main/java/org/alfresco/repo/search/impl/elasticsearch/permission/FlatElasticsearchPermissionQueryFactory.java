@@ -30,6 +30,7 @@ import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_READER;
 import static org.alfresco.service.cmr.security.AuthorityType.getAuthorityType;
 import static org.alfresco.service.cmr.security.PermissionService.ADMINISTRATOR_AUTHORITY;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -55,10 +56,23 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
 
     private final PermissionService permissionService;
     private final HashSet<String> globalReaders;
+    private final Set<String> stripFromQueryPrefixes;
 
+    @Deprecated
     public FlatElasticsearchPermissionQueryFactory(PermissionService permissionService)
     {
+        this(permissionService, null);
+    }
+
+    public FlatElasticsearchPermissionQueryFactory(PermissionService permissionService, String stripFromQueryPrefixes)
+    {
         this.permissionService = permissionService;
+        this.stripFromQueryPrefixes = (stripFromQueryPrefixes == null || stripFromQueryPrefixes.isBlank())
+                ? Set.of()
+                : Arrays.stream(stripFromQueryPrefixes.split(","))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toSet());
         this.globalReaders = GlobalReaders.getReaders();
     }
 
@@ -74,6 +88,8 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
     {
         Set<String> authorities = getAuthorisations(includeGroupsForRoleAdmin);
 
+        authorities = stripNestedGroups(authorities);
+
         if (hasGlobalReader(authorities))
         {
             // No filter will be applied, so a unfiltered query will be returned
@@ -84,6 +100,23 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
             BoolQuery permissionQueryBuilder = buildFilter(authorities);
             return applyFilter(queryBuilder, permissionQueryBuilder).toQuery();
         }
+    }
+
+    private Set<String> stripNestedGroups(Set<String> authorities)
+    {
+        if (stripFromQueryPrefixes.isEmpty())
+        {
+            return authorities;
+        }
+        return authorities.stream()
+                .filter(authority -> !matchesAnyStripPrefix(authority))
+                .collect(Collectors.toSet());
+    }
+
+    private boolean matchesAnyStripPrefix(String authority)
+    {
+        final String groupPrefix = PermissionService.GROUP_PREFIX;
+        return stripFromQueryPrefixes.stream().anyMatch(prefix -> authority.startsWith(prefix.startsWith(groupPrefix) ? prefix : groupPrefix + prefix));
     }
 
     /**

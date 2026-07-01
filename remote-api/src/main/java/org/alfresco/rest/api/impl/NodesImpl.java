@@ -3313,7 +3313,7 @@ public class NodesImpl implements Nodes
         {
             writeContent(nodeRef, fileName, stream, true);
 
-            if ((isVersioned) || (versionMajor != null) || (versionComment != null))
+            if (shouldCreateVersionOnContentUpdate(nodeRef, isVersioned, versionMajor, versionComment))
             {
                 VersionType versionType = null;
                 if (versionMajor != null)
@@ -3347,6 +3347,25 @@ public class NodesImpl implements Nodes
         }
 
         return getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
+    }
+
+    private boolean shouldCreateVersionOnContentUpdate(NodeRef nodeRef, boolean isVersioned, Boolean versionMajor, String versionComment)
+    {
+        if (!isVersioned && versionMajor == null && versionComment == null)
+        {
+            return false;
+        }
+
+        if (isVersioned)
+        {
+            Boolean autoVersion = (Boolean) nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION);
+            if (Boolean.FALSE.equals(autoVersion))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void writeContent(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding)

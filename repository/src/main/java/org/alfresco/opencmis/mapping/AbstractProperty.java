@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,7 +28,6 @@ package org.alfresco.opencmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.service.ServiceRegistry;
@@ -49,23 +48,13 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
     public static final String CONTENT_PROPERTY = "::content";
 
     private ServiceRegistry serviceRegistry;
-    protected CMISConnector connector;
+    protected CMISFacade cmisFacade;
     private String propertyName;
 
-    /**
-     * Construct
-     * 
-     * @param serviceRegistry
-     *            ServiceRegistry
-     * @param connector
-     *            CMISConnector
-     * @param propertyName
-     *            String
-     */
-    protected AbstractProperty(ServiceRegistry serviceRegistry, CMISConnector connector, String propertyName)
+    protected AbstractProperty(ServiceRegistry serviceRegistry, CMISFacade cmisFacade, String propertyName)
     {
         this.serviceRegistry = serviceRegistry;
-        this.connector = connector;
+        this.cmisFacade = cmisFacade;
         this.propertyName = propertyName;
     }
 
@@ -135,12 +124,12 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
 
     public CMISNodeInfo createNodeInfo(NodeRef nodeRef)
     {
-        return connector.createNodeInfo(nodeRef);
+        return cmisFacade.createNodeInfo(nodeRef);
     }
 
     public CMISNodeInfo createNodeInfo(AssociationRef assocRef)
     {
-        return connector.createNodeInfo(assocRef);
+        return cmisFacade.createNodeInfo(assocRef);
     }
 
     protected ContentData getContentData(CMISNodeInfo nodeInfo)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -40,17 +40,9 @@ import org.alfresco.service.ServiceRegistry;
  */
 public class VersionSeriesCheckedOutIdProperty extends AbstractProperty
 {
-    /**
-     * Construct
-     * 
-     * @param serviceRegistry
-     *            ServiceRegistry
-     * @param connector
-     *            CMISConnector
-     */
-    public VersionSeriesCheckedOutIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
+    public VersionSeriesCheckedOutIdProperty(ServiceRegistry serviceRegistry, CMISFacade cmisFacade)
     {
-        super(serviceRegistry, connector, PropertyIds.VERSION_SERIES_CHECKED_OUT_ID);
+        super(serviceRegistry, cmisFacade, PropertyIds.VERSION_SERIES_CHECKED_OUT_ID);
     }
 
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
@@ -60,6 +52,6 @@ public class VersionSeriesCheckedOutIdProperty extends AbstractProperty
             return null;
         }
 
-        return connector.constructObjectId(nodeInfo.getCurrentNodeId(), CMISConnector.PWC_VERSION_LABEL);
+        return cmisFacade.constructObjectId(nodeInfo.getCurrentNodeId(), CMISConnector.PWC_VERSION_LABEL);
     }
 }

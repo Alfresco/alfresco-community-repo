@@ -1,9 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd">
+        http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <context:annotation-config />
     <import resource="classpath:alfresco/opencmis-qnamefilter-context.xml" />
 
     <bean id="CMIS.DictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
@@ -15,18 +17,21 @@
         </property>
     </bean>
 
+    <bean id="OpenCMISFacade" class="org.alfresco.opencmis.mapping.RuntimeSwitchingCMISFacade" autowire="constructor">
+        <property name="fallbackFacade" ref="CMISConnector" />
+        <property name="failOnManyFacades" value="${cmis.fail.on.many.facades}" />
+    </bean>
+
     <bean id="OpenCMISPropertyAccessorMapping" class="org.alfresco.opencmis.mapping.RuntimePropertyAccessorMapping" init-method="init">
         <property name="serviceRegistry"           ref="ServiceRegistry" />
-        <property name="cmisConnector"             ref="CMISConnector" />
+        <property name="cmisFacade"             ref="OpenCMISFacade" />
         <property name="cmisMapping"               ref="OpenCMISMapping" />
-        <property name="cmisDictionaryService"     ref="OpenCMISDictionaryService" />
     </bean>
     
     <bean id="OpenCMISPropertyAccessorMapping1.1" class="org.alfresco.opencmis.mapping.RuntimePropertyAccessorMapping" init-method="init">
         <property name="serviceRegistry"           ref="ServiceRegistry" />
-        <property name="cmisConnector"             ref="CMISConnector" />
+        <property name="cmisFacade"             ref="OpenCMISFacade" />
         <property name="cmisMapping"               ref="OpenCMISMapping1.1" />
-        <property name="cmisDictionaryService"     ref="OpenCMISDictionaryService1.1" />
     </bean>
     
     <bean id="OpenCMISPropertyLuceneBuilderMapping" class="org.alfresco.opencmis.mapping.RuntimePropertyLuceneBuilderMapping" >

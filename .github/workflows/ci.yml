@@ -19,21 +19,11 @@ on:
 
 env:
   JAVA_VERSION: '21'
-  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
   LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   CI_WORKSPACE: ${{ github.workspace }}
   TAS_ENVIRONMENT: ./packaging/tests/environment
   TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
-  AUTH0_CLIENT_ID: ${{ secrets.AUTH0_OIDC_ADMIN_CLIENT_ID }}
-  AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_OIDC_CLIENT_SECRET }}
-  AUTH0_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
-  ES_VERSION: 8.17.0
 
 jobs:
   commit_parser:
@@ -42,7 +32,7 @@ jobs:
     outputs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v18.11.0
@@ -55,8 +45,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [commit_parser]
     if: >
-      !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
-      !contains(needs.commit_parser.outputs.title, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -103,6 +100,9 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true' && github.event_name == 'pull_request'
+    env:
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
@@ -120,6 +120,13 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -152,7 +159,7 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   remote_api_app_context_test_suites:
-    name: > 
+    name: >
       ${{ matrix.testSuite == 'org.alfresco.rest.api.tests.RenditionsTest' && 
       'Alfresco Base T-Engine compatibility test' || 
       format('Remote-api - {0}', matrix.testSuite) }}
@@ -161,6 +168,15 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -179,8 +195,6 @@ jobs:
           - testSuite: org.alfresco.rest.api.tests.RenditionsTest
             compose-profile: with-transform-core-aio
             transformers-tag: 5.2.0
-    env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -216,6 +230,13 @@ jobs:
       - test_run_check
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -245,6 +266,13 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -270,6 +298,13 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -296,6 +331,13 @@ jobs:
       - test_run_check
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -322,6 +364,13 @@ jobs:
       - test_run_check
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -347,6 +396,13 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -372,6 +428,13 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -399,6 +462,16 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      AUTH0_CLIENT_ID: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_CLIENT_ID || '' }}
+      AUTH0_CLIENT_SECRET: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_CLIENT_SECRET || '' }}
+      AUTH0_ADMIN_PASSWORD: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_PASSWORD || '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -475,6 +548,14 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      REQUIRES_LOCAL_IMAGES: true
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -503,8 +584,6 @@ jobs:
             pom-dir: tas-webdav
           - test-name: "Integration TAS tests"
             pom-dir: tas-integration
-    env:
-      REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -523,7 +602,7 @@ jobs:
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       - name: "Build TAS integration tests"
-        if: ${{ matrix.test-name }} == 'Integration TAS tests'
+        if: ${{ matrix.test-name == 'Integration TAS tests' }}
         run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       - name: "Run tests"
         id: tests
@@ -545,6 +624,13 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -568,12 +654,18 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
-        part: [1, 2, 3, 4]
-    env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
+        part: [ 1, 2, 3, 4 ]
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -599,12 +691,18 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
-        part: [1, 2, 3, 4]
-    env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
+        part: [ 1, 2, 3, 4 ]
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -632,6 +730,12 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     env:
       REQUIRES_LOCAL_IMAGES: true
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -655,7 +759,7 @@ jobs:
         run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
       - name: "Configure AWS credentials"
         if: ${{ always() }}
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
         with:
           aws-access-key-id: ${{ secrets.AGS_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AGS_AWS_SECRET_ACCESS_KEY }}
@@ -677,6 +781,13 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@v7
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0

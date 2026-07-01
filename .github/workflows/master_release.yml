@@ -13,15 +13,6 @@ on:
 
 env:
   JAVA_VERSION: '21'
-  GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
-  GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
-  GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
-  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
 
 jobs:
@@ -46,7 +37,16 @@ jobs:
       contents: read
       security-events: write
     uses: ./.github/workflows/ci.yml
-    secrets: inherit
+    secrets:
+      BOT_GITHUB_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
+      BOT_GITHUB_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
+      BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   push_to_nexus:
     name: "Push to Nexus"
     runs-on: ubuntu-latest
@@ -55,6 +55,16 @@ jobs:
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no release]') &&
       github.event_name != 'pull_request'
+    env:
+      GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
+      GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
+      GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -86,6 +96,16 @@ jobs:
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no downstream]') &&
       github.event_name != 'pull_request'
+    env:
+      GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
+      GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
+      GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
     steps:
       - uses: actions/checkout@v7
         with:

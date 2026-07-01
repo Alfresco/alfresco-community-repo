@@ -58,6 +58,12 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
     private final HashSet<String> globalReaders;
     private final Set<String> stripFromQueryPrefixes;
 
+    @Deprecated
+    public FlatElasticsearchPermissionQueryFactory(PermissionService permissionService)
+    {
+        this(permissionService, null);
+    }
+
     public FlatElasticsearchPermissionQueryFactory(PermissionService permissionService, String stripFromQueryPrefixes)
     {
         this.permissionService = permissionService;
@@ -102,16 +108,15 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
         {
             return authorities;
         }
-        Set<String> strippedAuthorities = authorities.stream()
+        return authorities.stream()
                 .filter(authority -> !matchesAnyStripPrefix(authority))
                 .collect(Collectors.toSet());
-
-        return strippedAuthorities;
     }
 
     private boolean matchesAnyStripPrefix(String authority)
     {
-        return stripFromQueryPrefixes.stream().anyMatch(prefix -> authority.startsWith("GROUP_" + prefix));
+        final String groupPrefix = PermissionService.GROUP_PREFIX;
+        return stripFromQueryPrefixes.stream().anyMatch(prefix -> authority.startsWith(prefix.startsWith(groupPrefix) ? prefix : groupPrefix + prefix));
     }
 
     /**

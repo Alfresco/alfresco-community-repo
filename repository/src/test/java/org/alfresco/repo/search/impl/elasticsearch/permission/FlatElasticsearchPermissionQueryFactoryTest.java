@@ -67,7 +67,7 @@ public class FlatElasticsearchPermissionQueryFactoryTest
     @Before
     public void setUp()
     {
-        this.flatPermissionService = new FlatElasticsearchPermissionQueryFactory(permissionService, "");
+        this.flatPermissionService = new FlatElasticsearchPermissionQueryFactory(permissionService);
         given(permissionService.getOwnerAuthority()).willReturn(PermissionService.OWNER_AUTHORITY);
     }
 

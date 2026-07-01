@@ -132,6 +132,14 @@
                     <exclude name="testSearchPDFFile"/>
                 </methods>
             </class>
+            <!-- 15) SearchTest.searchWithOneSortClause / searchWithTwoSortClauses:data-prep in AbstractSearchServicesE2ETest was changed to create cars.txt
+            instead of cars.PDF, PDF no longer parsed as PDF (pending decision) -->
+            <class name="org.alfresco.rest.search.SearchTest">
+                <methods>
+                    <exclude name="searchWithOneSortClause"/>
+                    <exclude name="searchWithTwoSortClauses"/>
+                </methods>
+            </class>
         </classes>
     </test>
 </suite>

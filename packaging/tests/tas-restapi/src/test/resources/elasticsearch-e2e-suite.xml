@@ -119,7 +119,7 @@
             <class name="org.alfresco.rest.search.SearchExactTermTest">
                 <methods>
                     <exclude name="exactSearch_singleTermConjunction_shouldReturnException"/>
-                    <exclude name="exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch"/>
+                    <exclude name="exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch"/> <!-- pragma: allowlist secret -->
                     <exclude name="exactSearch_singleTerm_shouldReturnResultsContainingExactTermInName"/>
                     <exclude name="exactSearch_multiTerm_shouldReturnResultsContainingExactTerm"/>
                     <exclude name="exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase"/>

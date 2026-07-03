@@ -56,7 +56,7 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
       <div class="index">
 
          <div class="title">
-            <span class="logo"><a href="http://www.alfresco.com"><img src="./images/logo/logo.png" width="145" height="48" alt="" border="0" /></a></span>
+            <span class="logo"><a href="http://www.alfresco.com"><img src="./images/logo/logo.svg" width="145" height="48" alt="" border="0" /></a></span>
             <span class="logo-separator">&nbsp;</span>
             <h1>Welcome to Alfresco</h1>
          </div>

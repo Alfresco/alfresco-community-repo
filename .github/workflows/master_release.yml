@@ -38,8 +38,6 @@ jobs:
       security-events: write
     uses: ./.github/workflows/ci.yml
     secrets:
-      BOT_GITHUB_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
-      BOT_GITHUB_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
       BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -56,9 +54,6 @@ jobs:
       !contains(needs.commit_parser.outputs.title, '[no release]') &&
       github.event_name != 'pull_request'
     env:
-      GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
-      GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
-      GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
@@ -79,11 +74,14 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v18.11.0
         with:
-          username: ${{ env.GIT_USERNAME }}
-          email: ${{ env.GIT_EMAIL }}
+          username: ${{ vars.BOT_GITHUB_USERNAME }}
+          email: ${{ vars.BOT_GITHUB_EMAIL }}
           global: true
       - name: "Release"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        env:
+          GIT_USERNAME: ${{ vars.BOT_GITHUB_USERNAME }}
+          GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
         run: |
           bash scripts/ci/verify_release_tag.sh
           bash scripts/ci/maven_release.sh
@@ -98,9 +96,6 @@ jobs:
       !contains(needs.commit_parser.outputs.title, '[no downstream]') &&
       github.event_name != 'pull_request'
     env:
-      GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
-      GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
-      GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
@@ -121,12 +116,14 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v18.11.0
         with:
-          username: ${{ env.GIT_USERNAME }}
-          email: ${{ env.GIT_EMAIL }}
+          username: ${{ vars.BOT_GITHUB_USERNAME }}
+          email: ${{ vars.BOT_GITHUB_EMAIL }}
           global: true
       - name: "Update downstream"
         run: bash ./scripts/ci/update_downstream.sh
         env:
+          GIT_USERNAME: ${{ vars.BOT_GITHUB_USERNAME }}
+          GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
           COMMIT_MESSAGE: ${{ needs.commit_parser.outputs.title }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

@@ -42,7 +42,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
-
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -54,10 +53,8 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 
-
 /**
- * The Disposition Lifecycle Job Finds all disposition action nodes which are for disposition actions specified Where
- * asOf  &gt; now OR dispositionEventsEligible = true; Runs the cut off or retain action for eligible records.
+ * The Disposition Lifecycle Job Finds all disposition action nodes which are for disposition actions specified Where asOf &gt; now OR dispositionEventsEligible = true; Runs the cut off or retain action for eligible records.
  *
  * @author mrogers
  * @author Roy Wetherall
@@ -121,7 +118,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * @param freezeService freeze service
+     * @param freezeService
+     *            freeze service
      */
     public void setFreezeService(FreezeService freezeService)
     {
@@ -131,7 +129,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * List of disposition actions to automatically execute when eligible.
      *
-     * @param dispositionActions disposition actions
+     * @param dispositionActions
+     *            disposition actions
      */
     public void setDispositionActions(List<String> dispositionActions)
     {
@@ -149,7 +148,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * @param recordsManagementActionService records management action service
+     * @param recordsManagementActionService
+     *            records management action service
      */
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
@@ -157,7 +157,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * @param nodeService node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -165,7 +166,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * @param searchService search service
+     * @param searchService
+     *            search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -177,19 +179,19 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         String actionFilterQuery = null;
         StringBuilder sb = new StringBuilder("@rma\\:dispositionAction:(");
         boolean first = true;
-            for (String dispositionAction : dispositionActions)
-            {
+        for (String dispositionAction : dispositionActions)
+        {
             if (!first)
-                {
-                    sb.append(" OR ");
-                }
-                sb.append("\"").append(dispositionAction).append("\"");
+            {
+                sb.append(" OR ");
+            }
+            sb.append("\"").append(dispositionAction).append("\"");
             first = false;
         }
         if (dispositionActions.size() > 1)
         {
             actionFilterQuery = sb.append(")").toString();
-            }
+        }
 
         return actionFilterQuery;
     }
@@ -307,7 +309,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     // Advance skip by raw hit count so paging stays aligned with the index; post-search
                     // freeze filtering must not shrink the skip step (would duplicate or skip hits).
                     rawPageLength = rawPage.size();
-                hasMore = results.hasMore();
+                    hasMore = results.hasMore();
                     skipCount += rawPageLength;
                     totalReturned += rawPageLength;
 
@@ -326,7 +328,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 }
                 finally
                 {
-                results.close();
+                    results.close();
                 }
 
                 int batchEligible = eligibleNodes.size();
@@ -523,42 +525,42 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         int processedCount = 0;
 
         for (Map.Entry<NodeRef, ChildAssociationRef> entry : eligibleNodes.entrySet())
-            {
+        {
             NodeRef actionNode = entry.getKey();
             // Reuse the parent computed during the freeze-filter pass — no extra DB call.
             ChildAssociationRef parent = entry.getValue();
 
-                if (!nodeService.exists(actionNode))
-                {
-                    continue;
-                }
+            if (!nodeService.exists(actionNode))
+            {
+                continue;
+            }
 
-                final String dispAction = (String) nodeService.getProperty(actionNode, PROP_DISPOSITION_ACTION);
+            final String dispAction = (String) nodeService.getProperty(actionNode, PROP_DISPOSITION_ACTION);
 
-                // Run disposition action
-                if (dispAction == null || !dispositionActions.contains(dispAction))
-                {
-                    continue;
-                }
+            // Run disposition action
+            if (dispAction == null || !dispositionActions.contains(dispAction))
+            {
+                continue;
+            }
 
             if (parent == null || !parent.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
-                {
-                    continue;
-                }
-                Map<String, Serializable> props = Map.of(PARAM_NO_ERROR_CHECK, false);
+            {
+                continue;
+            }
+            Map<String, Serializable> props = Map.of(PARAM_NO_ERROR_CHECK, false);
 
-                try
-                {
-                    recordsManagementActionService
+            try
+            {
+                recordsManagementActionService
                         .executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
                 processedCount++;
                 log.trace("Processed action: {} on {}", dispAction, parent);
-                }
-                catch (AlfrescoRuntimeException exception)
-                {
-                log.error("Failed to process disposition action '{}' for node {}.", dispAction, actionNode, exception);
-                }
             }
+            catch (AlfrescoRuntimeException exception)
+            {
+                log.error("Failed to process disposition action '{}' for node {}.", dispAction, actionNode, exception);
+            }
+        }
         return processedCount;
     }
 

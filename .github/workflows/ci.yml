@@ -1,5 +1,8 @@
 name: Alfresco Community Repo CI
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches:
@@ -39,10 +42,10 @@ jobs:
     outputs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 2
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v17.2.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v18.11.0
         id: get-commit
         with:
           header-only: "true"
@@ -55,15 +58,15 @@ jobs:
       !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
       !contains(needs.commit_parser.outputs.title, '[force]')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v17.2.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v18.11.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare maven cache and check compilation"
@@ -92,14 +95,18 @@ jobs:
   pmd_scan:
     name: "PMD Scan"
     runs-on: ubuntu-latest
+    # ya-pmd-scan uploads its findings as SARIF to GitHub code scanning, which needs security-events: write.
+    permissions:
+      contents: read
+      security-events: write
     needs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true' && github.event_name == 'pull_request'
     steps:
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - uses: Alfresco/ya-pmd-scan@v4.4.1
@@ -130,10 +137,10 @@ jobs:
             testModule: mmt
             testAttributes: "-Dtest=AllMmtUnitTestSuite"
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -175,10 +182,10 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
@@ -214,10 +221,10 @@ jobs:
       matrix:
         version: ['10.11']
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -239,10 +246,10 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -264,10 +271,10 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -290,10 +297,10 @@ jobs:
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -316,10 +323,10 @@ jobs:
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -341,10 +348,10 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -370,10 +377,10 @@ jobs:
       matrix:
         activemq: [ 'activemq6', 'activemq5' ]
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -430,10 +437,10 @@ jobs:
             disabledHostnameVerification: false
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -499,10 +506,10 @@ jobs:
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
@@ -539,10 +546,10 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -568,10 +575,10 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
@@ -599,10 +606,10 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
@@ -626,10 +633,10 @@ jobs:
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
@@ -671,10 +678,10 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
-      - uses: actions/checkout@v6
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v17.2.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v17.2.0
+      - uses: actions/checkout@v7
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"

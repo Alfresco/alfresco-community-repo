@@ -39,6 +39,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
 
         TestCMIS.class,
+        TestCMISVirtualRepository.class,
         TestRemovePermissions.class,
 
         TestEnterpriseAtomPubTCK.class,

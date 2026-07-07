@@ -320,6 +320,26 @@ public interface Nodes
     Node unlock(String nodeId, Parameters parameters);
 
     /**
+     * Checkout a node for offline editing
+     *
+     * @param nodeId
+     * @param parameters
+     * @return
+     */
+
+    Node checkout(String nodeId, Parameters parameters);
+
+    /**
+     * Cancels the checkout of a node, removing the working copy and any changes made to it. The original node will be unchanged and available for editing again. If the node is locked but not checked out, it will be unlocked
+     *
+     * @param nodeId
+     * @param parameters
+     * @return
+     */
+
+    Node cancelCheckout(String nodeId, Parameters parameters);
+
+    /**
      * Gets a presigned URL to directly access content.
      * 
      * @param nodeId

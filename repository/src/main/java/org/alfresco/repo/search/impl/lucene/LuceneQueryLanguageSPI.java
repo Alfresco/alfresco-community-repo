@@ -60,4 +60,9 @@ public interface LuceneQueryLanguageSPI
      * Register
      */
     public void setFactories(List<IndexerAndSearcher> factories);
+
+    default boolean supportsFilterFlattening()
+    {
+        return true;
+    }
 }

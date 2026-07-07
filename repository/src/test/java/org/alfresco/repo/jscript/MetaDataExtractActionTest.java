@@ -46,6 +46,9 @@ package org.alfresco.repo.jscript;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -72,7 +75,9 @@ public class MetaDataExtractActionTest
 
         String nodeRefStr = "workspace://SpacesStore/abc/def";
         Mockito.when(contentService.getReader(Mockito.any(), Mockito.any())).thenReturn(reader);
-        Mockito.when(reader.getContentString()).thenReturn("oldContent");
+        Mockito.when(reader.exists()).thenReturn(true);
+        Mockito.when(reader.getEncoding()).thenReturn(StandardCharsets.UTF_8.name());
+        Mockito.when(reader.getContentInputStream()).thenReturn(new ByteArrayInputStream("oldContent".getBytes(StandardCharsets.UTF_8)));
         Mockito.when(formData.getFieldData("prop_cm_content")).thenReturn(fieldData);
         Mockito.when(fieldData.getValue()).thenReturn("newContent");
 
@@ -93,7 +98,9 @@ public class MetaDataExtractActionTest
 
         String nodeRefStr = "workspace://SpacesStore/abc/def";
         Mockito.when(contentService.getReader(Mockito.any(), Mockito.any())).thenReturn(reader);
-        Mockito.when(reader.getContentString()).thenReturn("sameContent");
+        Mockito.when(reader.exists()).thenReturn(true);
+        Mockito.when(reader.getEncoding()).thenReturn(StandardCharsets.UTF_8.name());
+        Mockito.when(reader.getContentInputStream()).thenReturn(new ByteArrayInputStream("sameContent".getBytes(StandardCharsets.UTF_8)));
         Mockito.when(formData.getFieldData("prop_cm_content")).thenReturn(fieldData);
         Mockito.when(fieldData.getValue()).thenReturn("sameContent");
 
@@ -101,6 +108,22 @@ public class MetaDataExtractActionTest
 
         boolean result = action.isContentChanged(nodeRefStr, formData);
         assertFalse(result);
+    }
+
+    @Test
+    public void testIsContentChangedReturnsFalseWhenContentFieldAbsent()
+    {
+        MetaDataExtractAction action = new MetaDataExtractAction();
+        ContentService contentService = Mockito.mock(ContentService.class);
+        FormData formData = Mockito.mock(FormData.class);
+
+        Mockito.when(formData.getFieldData("prop_cm_content")).thenReturn(null);
+
+        action.setContentService(contentService);
+
+        boolean result = action.isContentChanged("workspace://SpacesStore/abc/def", formData);
+        assertFalse(result);
+        Mockito.verifyNoInteractions(contentService);
     }
 
     @Test

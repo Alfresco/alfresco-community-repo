@@ -648,7 +648,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         try
         {
             stmt = connection.createStatement();
-            stmt.executeQuery("select min(id_) from ACT_RU_TASK");
+            stmt.executeQuery("select min(ID_) from ACT_RU_TASK");
             return true;
         }
         catch (SQLException e)

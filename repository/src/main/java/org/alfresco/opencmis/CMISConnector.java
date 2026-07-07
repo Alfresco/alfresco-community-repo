@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
@@ -153,6 +154,7 @@ import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.ItemTypeDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
+import org.alfresco.opencmis.mapping.CMISFacade;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.opencmis.search.CMISQueryService;
@@ -178,7 +180,6 @@ import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
@@ -249,7 +250,7 @@ import org.alfresco.util.TempFileProvider;
  * @author Derek Hulley
  * @author steveglover
  */
-public class CMISConnector implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer
+public class CMISConnector implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer, CMISFacade
 {
     private static Log logger = LogFactory.getLog(CMISConnector.class);
 
@@ -362,6 +363,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private Map<String, PermissionMapping> permissionMappings;
 
     private ObjectFilter objectFilter;
+    private CMISVirtualRepository virtualRepository = CMISVirtualRepository.noVirtualRepository();
 
     // Bulk update properties
     private int bulkMaxItems = 1000;
@@ -375,6 +377,21 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public void setObjectFilter(ObjectFilter objectFilter)
     {
         this.objectFilter = objectFilter;
+    }
+
+    public void setVirtualRepository(CMISVirtualRepository virtualRepository)
+    {
+        this.virtualRepository = Objects.requireNonNull(virtualRepository);
+    }
+
+    public CMISVirtualRepository getVirtualRepository()
+    {
+        return virtualRepository;
+    }
+
+    public boolean isFilteredOutByVirtualRepository(NodeRef nodeRef)
+    {
+        return !virtualRepository.contains(nodeRef);
     }
 
     /**
@@ -865,6 +882,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
     }
 
+    @Override
     public void init()
     {
         // register as tenant deployer
@@ -881,27 +899,32 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         permissionMappings = getPermissionMappings();
     }
 
+    @Override
     public void destroy()
     {
         singletonCache.remove(KEY_CMIS_ROOT_NODEREF);
         singletonCache.remove(KEY_CMIS_RENDITION_MAPPING_NODEREF);
     }
 
+    @Override
     public void onEnableTenant()
     {
         init();
     }
 
+    @Override
     public void onDisableTenant()
     {
         destroy();
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         lifecycle.setApplicationContext(applicationContext);
     }
 
+    @Override
     public void onApplicationEvent(ApplicationContextEvent event)
     {
         lifecycle.onApplicationEvent(event);
@@ -1132,35 +1155,36 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         NodeRef rootNodeRef = (NodeRef) singletonCache.get(KEY_CMIS_ROOT_NODEREF);
         if (rootNodeRef == null)
         {
-            rootNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
-                public NodeRef doWork() throws Exception
-                {
-                    return transactionService.getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<NodeRef>() {
-                                public NodeRef execute() throws Exception
-                                {
-                                    NodeRef root = nodeService.getRootNode(storeRef);
-                                    List<NodeRef> rootNodes = searchService.selectNodes(root, rootPath, null,
-                                            namespaceService, false);
-                                    if (rootNodes.size() != 1)
-                                    {
-                                        throw new CmisRuntimeException("Unable to locate CMIS root path " + rootPath);
-                                    }
-                                    return rootNodes.get(0);
-                                };
-                            }, true);
-                }
-            }, AuthenticationUtil.getSystemUserName());
+            rootNodeRef = AuthenticationUtil.runAs(() -> {
+                final NodeRef root = findRootNode();
 
-            if (rootNodeRef == null)
-            {
-                throw new CmisObjectNotFoundException("Root folder path '" + rootPath + "' not found!");
-            }
+                if (root == null || !virtualRepository.contains(root))
+                {
+                    throw new CmisObjectNotFoundException("Root folder path '" + rootPath + "' not found!");
+                }
+
+                return root;
+            }, AuthenticationUtil.getSystemUserName());
 
             singletonCache.put(KEY_CMIS_ROOT_NODEREF, rootNodeRef);
         }
 
         return rootNodeRef;
+    }
+
+    protected NodeRef findRootNode()
+    {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(
+                () -> {
+                    NodeRef root = nodeService.getRootNode(storeRef);
+                    List<NodeRef> rootNodes = searchService.selectNodes(root, rootPath, null,
+                            namespaceService, false);
+                    if (rootNodes.size() != 1)
+                    {
+                        throw new CmisRuntimeException("Unable to locate CMIS root path " + rootPath);
+                    }
+                    return rootNodes.getFirst();
+                }, true);
     }
 
     public String getName(NodeRef nodeRef)
@@ -1206,6 +1230,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Creates an object info object.
      */
+    @Override
     public CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef)
     {
         return createNodeInfo(nodeRef, null, null, null, true);
@@ -1222,9 +1247,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Creates an object info object.
      */
+    @Override
     public CMISNodeInfoImpl createNodeInfo(AssociationRef assocRef)
     {
         return new CMISNodeInfoImpl(this, assocRef);
+    }
+
+    @Override
+    public boolean isWorkingCopy(NodeRef nodeRef)
+    {
+        return getCheckOutCheckInService().isWorkingCopy(nodeRef);
     }
 
     /* Strip store ref from the id, if there is one. */
@@ -1275,6 +1307,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     }
 
     /* Construct an object id based on the incoming incomingNodeId and versionLabel. The object id will always be the node guid. */
+    @Override
     public String constructObjectId(String incomingNodeId, String versionLabel)
     {
         return constructObjectId(incomingNodeId, versionLabel, isPublicApi());
@@ -2658,6 +2691,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     public static class AccessPermissionComparator implements Comparator<AccessPermission>
     {
+        @Override
         public int compare(AccessPermission left, AccessPermission right)
         {
             if (left.getPosition() != right.getPosition())
@@ -2955,6 +2989,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         // prepare query
         CMISQueryOptions options = new CMISQueryOptions(statement, getRootStoreRef());
+        getVirtualRepository().applyQueryFiltering(options);
         CmisVersion cmisVersion = getRequestCmisVersion();
         options.setCmisVersion(cmisVersion);
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
@@ -3196,6 +3231,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         Set<QName> aspectsToRemove = new HashSet<QName>();
         aspectsToRemove.addAll(existingAspects);
         aspectsToRemove.removeAll(aspectsToIgnore);
+        aspectsToRemove.removeAll(virtualRepository.getRequiredAspects());
         Iterator<QName> it = aspectsToRemove.iterator();
         while (it.hasNext())
         {
@@ -3801,11 +3837,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             return entryId == null ? null : entryId.toString();
         }
 
+        @Override
         public boolean valuesRequired()
         {
             return this.valuesRequired;
         }
 
+        @Override
         public final boolean handleAuditEntry(Long entryId, String applicationName, String user, long time,
                 Map<String, Serializable> values)
         {
@@ -3822,6 +3860,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             return true;
         }
 
+        @Override
         public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
         {
             throw new CmisRuntimeException("Audit entry " + entryId + ": " + errorMsg, error);

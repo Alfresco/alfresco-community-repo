@@ -26,7 +26,6 @@
 package org.alfresco.repo.search.impl.elasticsearch.contentmodelsync;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -71,6 +70,11 @@ public class ElasticsearchInitialiser implements DictionaryListener
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchInitialiser.class);
 
+    /**
+     * Upper bound on how long {@link #stop()} will wait for the initialiser thread to terminate before giving up and logging a warning. Prevents Spring context reload or shutdown from blocking indefinitely if the worker is stuck in non-interruptible work.
+     */
+    private static final long STOP_MAX_WAIT_MILLIS = TimeUnit.SECONDS.toMillis(30);
+
     private DictionaryDAOImpl dictionaryDAO;
     private ContentModelSynchronizer contentModelSynchronizer;
     private ElasticsearchIndexService elasticsearchIndexService;
@@ -111,10 +115,54 @@ public class ElasticsearchInitialiser implements DictionaryListener
     /**
      * Stop the index initialization. This method is required when the Spring context is reloaded in order to stop the asynchronous initialization.
      */
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
     public void stop()
     {
         LOGGER.debug("Elasticsearch index initialising stopped");
         isTerminated.set(true);
+
+        Thread initialiserThread = thread;
+        // Intentional reference comparison: we need to know whether the caller is the initialiser thread itself.
+        if (initialiserThread != null && initialiserThread != Thread.currentThread())
+        {
+            initialiserThread.interrupt();
+            waitForThreadToStop(initialiserThread);
+        }
+    }
+
+    private void waitForThreadToStop(Thread initialiserThread)
+    {
+        boolean interrupted = false;
+        long deadline = System.currentTimeMillis() + STOP_MAX_WAIT_MILLIS;
+        try
+        {
+            while (initialiserThread.isAlive())
+            {
+                long remaining = deadline - System.currentTimeMillis();
+                if (remaining <= 0)
+                {
+                    LOGGER.warn("Elasticsearch initialiser thread did not stop within {} ms; abandoning wait",
+                            STOP_MAX_WAIT_MILLIS);
+                    break;
+                }
+                try
+                {
+                    initialiserThread.join(Math.min(TimeUnit.SECONDS.toMillis(1), remaining));
+                }
+                catch (InterruptedException exception)
+                {
+                    interrupted = true;
+                    LOGGER.debug("Interrupted while waiting for Elasticsearch initialiser thread to stop", exception);
+                }
+            }
+        }
+        finally
+        {
+            if (interrupted)
+            {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     /**
@@ -315,6 +363,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
     private boolean mapModels()
     {
         int attemptsRemaining = retryAttempts;
+        String lastFailureReason = "No failure detected";
         Collection<QName> modelsToInit = dictionaryDAO.getModels(true);
         int currentPropertiesInitialisedCounter = 0;
         while (!modelsToInit.isEmpty() && attemptsRemaining > 0)
@@ -340,11 +389,13 @@ public class ElasticsearchInitialiser implements DictionaryListener
                         else
                         {
                             failedModels.add(model);
+                            lastFailureReason = "Mappings update was not acknowledged by Elasticsearch";
                         }
                     }
                     catch (IOException e)
                     {
                         failedModels.add(model);
+                        lastFailureReason = "Elasticsearch request failed: " + e.getMessage();
                         LOGGER.warn("Elasticsearch is not responding, {} model, {} attempts left", model.toString(),
                                 attemptsRemaining, e);
                     }
@@ -353,6 +404,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
             }
             else
             {
+                lastFailureReason = "Index does not exist";
                 LOGGER.warn("Elasticsearch mappings could not be updated as the Index does not exist, {} attempts left",
                         attemptsRemaining);
             }
@@ -371,7 +423,8 @@ public class ElasticsearchInitialiser implements DictionaryListener
         }
         else
         {
-            LOGGER.error("Elasticsearch mappings update failed for models: " + Arrays.toString(modelsToInit.toArray()));
+            LOGGER.error("Elasticsearch mappings update failed after {} attempts. {} models were not mapped. reason='{}', models={}",
+                    retryAttempts, modelsToInit.size(), lastFailureReason, modelsToInit);
             return false;
         }
     }

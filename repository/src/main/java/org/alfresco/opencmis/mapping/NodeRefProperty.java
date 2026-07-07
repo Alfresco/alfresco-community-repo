@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,7 +27,6 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
-import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 
@@ -38,15 +37,9 @@ public class NodeRefProperty extends AbstractProperty
 {
     public static final String NodeRefPropertyId = "alfcmis:nodeRef";
 
-    /**
-     * Construct
-     * 
-     * @param serviceRegistry
-     *            ServiceRegistry
-     */
-    public NodeRefProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
+    public NodeRefProperty(ServiceRegistry serviceRegistry, CMISFacade cmisFacade)
     {
-        super(serviceRegistry, connector, NodeRefPropertyId);
+        super(serviceRegistry, cmisFacade, NodeRefPropertyId);
     }
 
     @Override

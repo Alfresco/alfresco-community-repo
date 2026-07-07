@@ -169,14 +169,10 @@ public class XMLUtil
             throws SAXException,
             IOException
     {
-        try
+        try (source)
         {
             final DocumentBuilder db = XMLUtil.getDocumentBuilder();
             return db.parse(new InputSource(source));
-        }
-        finally
-        {
-            source.close();
         }
     }
 

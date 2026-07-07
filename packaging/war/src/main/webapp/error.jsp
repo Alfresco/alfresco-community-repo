@@ -62,7 +62,7 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
          </div>
 
          <div class="index-list">
-            <h4><%=descriptorService.getServerDescriptor().getEdition()%>&nbsp;-&nbsp;<%=descriptorService.getServerDescriptor().getVersion()%></h4>
+            <h4><%=descriptorService.getServerDescriptor().getEdition()%></h4>
             <p></p>
             <p id ="errorMessage">An error was encountered, please contact your system administrator.</p>
          </div>

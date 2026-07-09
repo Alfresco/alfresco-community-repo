@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.elasticsearch.permission;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.atMostOnce;
@@ -35,6 +36,7 @@ import static org.mockito.internal.util.collections.Sets.newSet;
 import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.OWNER;
 import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.READER;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -75,6 +77,21 @@ public class FlatElasticsearchPermissionQueryFactoryTest
         Query query = QueryBuilders.matchAll().build().toQuery();
         Query queryBuilderWithPermissionSystem = flatPermissionService.getQueryWithPermissionFilter(query, true);
         assertEquals(query, queryBuilderWithPermissionSystem);
+    }
+
+    @Test
+    public void shouldGetUnfilteredQueryWhenAuthoritiesAreEmpty()
+    {
+        // PermissionServiceNOOPImpl#getAuthorisations() returns an empty set. In that case no
+        // permission filter must be applied, otherwise an empty terms query would be generated
+        // which OpenSearch treats as match-none (changing the previous match-all behaviour).
+        given(permissionService.getAuthorisations()).willReturn(Collections.emptySet());
+
+        Query query = QueryBuilders.matchAll().build().toQuery();
+        Query queryBuilderWithPermission = flatPermissionService.getQueryWithPermissionFilter(query, true);
+
+        assertSame("Expected the original query to be returned unchanged when there are no authorities",
+                query, queryBuilderWithPermission);
     }
 
     @Test
@@ -202,8 +219,9 @@ public class FlatElasticsearchPermissionQueryFactoryTest
 
         List<Query> should = filterQuery.bool().should();
         List<Query> mustNot = filterQuery.bool().mustNot();
-        int authoritiesPlusOwnerQueryCount = expectedAuths.length + 1;
-        assertEquals(authoritiesPlusOwnerQueryCount, should.size());
+        // The reader authorities are collapsed into a single terms clause, so the should clause
+        // contains the reader terms query plus the owner query.
+        assertEquals(2, should.size());
 
         String ownerName = expectedAuths[0];
         assertOwnerQuery(ownerName, should, roleOwnerInReaders);
@@ -214,27 +232,24 @@ public class FlatElasticsearchPermissionQueryFactoryTest
     private void assertAuthorities(String[] expectedAuths, List<Query> deniedQueries,
             List<Query> readerQueries)
     {
+        List<String> readerAuths = extractTermsValues(readerQueries, QueryConstants.FIELD_READER);
+        List<String> deniedAuths = extractTermsValues(deniedQueries, QueryConstants.FIELD_DENIED);
 
         for (String expected : expectedAuths)
         {
-            readerQueries.forEach(readerQuery -> {
-                if (readerQuery._kind().jsonValue().equals("match") && readerQuery.match().query()._get().toString().equals(expected) && readerQuery.match().field().equals(QueryConstants.FIELD_READER))
-                {
-
-                    boolean contains = true;
-                    assertTrue("Permission reader filter doesn't check " + expected, contains);
-                }
-            });
-
-            deniedQueries.forEach(deniedQuery -> {
-                if (deniedQuery._kind().jsonValue().equals("match") && deniedQuery.match().query()._get().toString().equals(expected) && deniedQuery.match().field().equals(QueryConstants.FIELD_DENIED))
-                {
-
-                    boolean contains = true;
-                    assertTrue("Permission denied filter doesn't check " + expected, contains);
-                }
-            });
+            assertTrue("Permission reader filter doesn't check " + expected, readerAuths.contains(expected));
+            assertTrue("Permission denied filter doesn't check " + expected, deniedAuths.contains(expected));
         }
+    }
+
+    private List<String> extractTermsValues(List<Query> queries, String field)
+    {
+        return queries.stream()
+                .filter(query -> query._kind().jsonValue().equals("terms"))
+                .filter(query -> query.terms().field().equals(field))
+                .flatMap(query -> query.terms().terms().value().stream())
+                .map(value -> value._get().toString())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private void assertOwnerQuery(String ownerName, List<Query> queries, boolean roleOwnerInReaders)

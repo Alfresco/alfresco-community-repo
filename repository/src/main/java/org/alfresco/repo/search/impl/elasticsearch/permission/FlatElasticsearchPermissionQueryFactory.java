@@ -77,7 +77,7 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
     {
         Set<String> authorities = getAuthorisations(includeGroupsForRoleAdmin);
 
-        if (hasGlobalReader(authorities))
+        if (authorities.isEmpty() || hasGlobalReader(authorities))
         {
             // No filter will be applied, so a unfiltered query will be returned
             return queryBuilder;

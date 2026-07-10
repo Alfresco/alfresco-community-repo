@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model name="virtcmis:TestModel" xmlns="http://www.alfresco.org/model/dictionary/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    
+    <description>Virtual CMIS Repository test model</description>
+    <author>Alfresco</author>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/test/virtcmis/1.0" prefix="virtcmis"/>
+    </namespaces>
+
+    <aspects>
+        <aspect name="virtcmis:VirtualRepository">
+            <title>Test CMIS Virtual Repository Aspect</title>
+            <properties>
+                <property name="virtcmis:repositoryId">
+                    <title>Test CMIS Virtual Repository Identifier</title>
+                    <type>d:text</type>
+                    <protected>true</protected>
+                    <mandatory  enforced="true">true</mandatory>
+                    <index enabled="true">
+                        <atomic>false</atomic>
+                        <stored>false</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+    
+</model>

@@ -575,7 +575,7 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   tas_tests:
-    name: ${{ matrix.test-name }}
+    name: ${{ matrix['test-name'] }}
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -636,7 +636,7 @@ jobs:
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       - name: "Build TAS integration tests"
-        if: ${{ matrix.test-name == 'Integration TAS tests' }}
+        if: ${{ matrix['test-name'] == 'Integration TAS tests' }}
         run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       - name: "Run tests"
         id: tests
@@ -683,7 +683,7 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_postgresql_tests:
-    name: AGS Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix.test-name }}
+    name: AGS Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix['test-name'] }}
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -721,7 +721,7 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_mysql_tests:
-    name: AGS Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix.test-name }}
+    name: AGS Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix['test-name'] }}
     runs-on: ubuntu-latest
     needs:
       - prepare

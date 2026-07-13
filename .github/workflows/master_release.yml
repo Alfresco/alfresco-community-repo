@@ -13,6 +13,15 @@ on:
 
 env:
   JAVA_VERSION: '21'
+  GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
+  GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
+  GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
+  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
 
 jobs:
@@ -22,7 +31,7 @@ jobs:
     outputs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v18.11.0
@@ -37,14 +46,7 @@ jobs:
       contents: read
       security-events: write
     uses: ./.github/workflows/ci.yml
-    secrets:
-      BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+    secrets: inherit
   push_to_nexus:
     name: "Push to Nexus"
     runs-on: ubuntu-latest
@@ -53,11 +55,8 @@ jobs:
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no release]') &&
       github.event_name != 'pull_request'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -66,22 +65,14 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
-        env:
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v18.11.0
         with:
-          username: ${{ vars.BOT_GITHUB_USERNAME }}
-          email: ${{ vars.BOT_GITHUB_EMAIL }}
+          username: ${{ env.GIT_USERNAME }}
+          email: ${{ env.GIT_EMAIL }}
           global: true
       - name: "Release"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        env:
-          GIT_USERNAME: ${{ vars.BOT_GITHUB_USERNAME }}
-          GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
         run: |
           bash scripts/ci/verify_release_tag.sh
           bash scripts/ci/maven_release.sh
@@ -95,11 +86,8 @@ jobs:
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no downstream]') &&
       github.event_name != 'pull_request'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
@@ -108,22 +96,15 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
-        env:
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v18.11.0
         with:
-          username: ${{ vars.BOT_GITHUB_USERNAME }}
-          email: ${{ vars.BOT_GITHUB_EMAIL }}
+          username: ${{ env.GIT_USERNAME }}
+          email: ${{ env.GIT_EMAIL }}
           global: true
       - name: "Update downstream"
         run: bash ./scripts/ci/update_downstream.sh
         env:
-          GIT_USERNAME: ${{ vars.BOT_GITHUB_USERNAME }}
-          GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
           COMMIT_MESSAGE: ${{ needs.commit_parser.outputs.title }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

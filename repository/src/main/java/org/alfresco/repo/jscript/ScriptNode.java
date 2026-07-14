@@ -3167,10 +3167,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                     }
                     catch (RenditionService2PreventedException e)
                     {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Unable to create thumbnail '" + thumbnailName + "' as rendition is prevented for this node: " + e.getMessage());
-                        }
+                        logger.debug("Unable to create thumbnail '" + thumbnailName + "' as rendition is prevented for this node: " + e.getMessage());
                     }
                 }
                 else
@@ -4280,7 +4277,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
 
         protected abstract void doTransform(SynchronousTransformClient synchronousTransformClient,
                 ContentReader reader, ContentWriter writer);
-    };
+    }
 
     /**
      * NamespacePrefixResolverProvider getter implementation

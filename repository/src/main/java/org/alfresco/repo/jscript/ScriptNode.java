@@ -3158,28 +3158,36 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             }
             else
             {
-                RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
-                if (renditionDefinition != null)
-                {
-                    try
-                    {
-                        renditionService2.render(nodeRef, thumbnailName);
-                    }
-                    catch (RenditionService2PreventedException e)
-                    {
-                        logger.debug("Unable to create thumbnail '" + thumbnailName + "' as rendition is prevented for this node: " + e.getMessage());
-                    }
-                }
-                else
-                {
-                    Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
-
-                    // Queue async creation of thumbnail
-                    this.services.getActionService().executeAction(action, this.nodeRef, true, true);
-                }
+                createAsyncThumbnail(thumbnailName, details);
             }
         }
         return result;
+    }
+
+    private void createAsyncThumbnail(String thumbnailName, ThumbnailDefinition details)
+    {
+        RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
+        if (renditionDefinition != null)
+        {
+            try
+            {
+                renditionService2.render(nodeRef, thumbnailName);
+            }
+            catch (RenditionService2PreventedException e)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Unable to create thumbnail '" + thumbnailName + "' as rendition is prevented for this node: " + e.getMessage());
+                }
+            }
+        }
+        else
+        {
+            Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
+
+            // Queue async creation of thumbnail
+            this.services.getActionService().executeAction(action, this.nodeRef, true, true);
+        }
     }
 
     /**
@@ -3216,7 +3224,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                 null,
                 null);
 
-        List<ScriptThumbnail> result = new ArrayList<ScriptThumbnail>(thumbnails.size());
+        List<ScriptThumbnail> result = new ArrayList<>(thumbnails.size());
         for (NodeRef thumbnail : thumbnails)
         {
             ScriptThumbnail scriptThumbnail = new ScriptThumbnail(thumbnail, this.services, this.scope);
@@ -3236,7 +3244,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     {
         ThumbnailService thumbnailService = this.services.getThumbnailService();
 
-        List<String> result = new ArrayList<String>(7);
+        List<String> result = new ArrayList<>(7);
 
         Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);

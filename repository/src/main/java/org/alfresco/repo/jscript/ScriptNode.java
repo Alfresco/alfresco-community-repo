@@ -80,6 +80,7 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionService2;
+import org.alfresco.repo.rendition2.RenditionService2PreventedException;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -3160,7 +3161,17 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                 RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
                 if (renditionDefinition != null)
                 {
-                    renditionService2.render(nodeRef, thumbnailName);
+                    try
+                    {
+                        renditionService2.render(nodeRef, thumbnailName);
+                    }
+                    catch (RenditionService2PreventedException e)
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Unable to create thumbnail '" + thumbnailName + "' as rendition is prevented for this node: " + e.getMessage());
+                        }
+                    }
                 }
                 else
                 {

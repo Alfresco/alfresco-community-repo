@@ -240,7 +240,7 @@ public class ElasticsearchResultSetBuilderTest
         Aggregation aggregation = new Aggregation(facetQueries, fieldFacets);
         when(aggregationHandler.handle(searchResponse, emptyMap(), emptyMap())).thenReturn(aggregation);
 
-        Map<NodeRef, List<Pair<String, List<String>>>> highlights = Collections.emptyMap();
+        Map<NodeRef, List<Pair<String, List<String>>>> highlights = emptyMap();
         when(highlightsHandler.handle(searchParameters, searchResponse)).thenReturn(highlights);
 
         // When
@@ -264,7 +264,7 @@ public class ElasticsearchResultSetBuilderTest
                 nodeRef1, List.of(new Pair<>("field1", List.of("highlight1"))));
         when(highlightsHandler.handle(searchParameters, searchResponse)).thenReturn(highlights);
 
-        Aggregation aggregation = new Aggregation(Collections.emptyMap(), Collections.emptyMap());
+        Aggregation aggregation = new Aggregation(emptyMap(), emptyMap());
         when(aggregationHandler.handle(searchResponse, emptyMap(), emptyMap())).thenReturn(aggregation);
 
         // When
@@ -365,9 +365,9 @@ public class ElasticsearchResultSetBuilderTest
 
     private void setupAggregationAndHighlights()
     {
-        Aggregation emptyAggregation = new Aggregation(Collections.emptyMap(), Collections.emptyMap());
+        Aggregation emptyAggregation = new Aggregation(emptyMap(), emptyMap());
         when(aggregationHandler.handle(searchResponse, emptyMap(), emptyMap())).thenReturn(emptyAggregation);
-        when(highlightsHandler.handle(searchParameters, searchResponse)).thenReturn(Collections.emptyMap());
+        when(highlightsHandler.handle(searchParameters, searchResponse)).thenReturn(emptyMap());
     }
 
     @SafeVarargs

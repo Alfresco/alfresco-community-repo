@@ -233,7 +233,7 @@ public class ElasticsearchAggregationBuilder
         if (siteIdToName.isEmpty())
         {
             LOGGER.debug("No sites visible and Shared Files folder not resolved; skipping SITE terms aggregation.");
-            return Optional.empty();
+            return empty();
         }
 
         List<String> includeUUIDs = new ArrayList<>(siteIdToName.keySet());
@@ -310,7 +310,7 @@ public class ElasticsearchAggregationBuilder
         if (companyHomeAssocs.isEmpty())
         {
             LOGGER.warn("Could not find company home node; {} bucket will not be available.", SHARED_FILES_LABEL);
-            return Optional.empty();
+            return empty();
         }
 
         NodeRef companyHome = companyHomeAssocs.get(0).getChildRef();
@@ -322,7 +322,7 @@ public class ElasticsearchAggregationBuilder
         if (sharedAssocs.isEmpty())
         {
             LOGGER.warn("Could not find Shared Files folder; {} bucket will not be available.", SHARED_FILES_LABEL);
-            return Optional.empty();
+            return empty();
         }
 
         sharedHomeNodeRef = sharedAssocs.get(0).getChildRef();

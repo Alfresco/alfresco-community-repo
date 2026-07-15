@@ -101,7 +101,7 @@ public class AuthenticationComponentImplUnitTest
         MutableAuthenticationDao authenticationDao = mock(MutableAuthenticationDao.class);
         when(authenticationDao.loadUserByUsername(STORED_USER_NAME)).thenReturn(storedUser);
 
-        // the login name resolves (case-insensitively) to the stored name
+        // typing "aNdY" should find the stored user "Andy"
         PersonService personService = mock(PersonService.class);
         when(personService.getUserIdentifier(LOGIN_USER_NAME)).thenReturn(STORED_USER_NAME);
 

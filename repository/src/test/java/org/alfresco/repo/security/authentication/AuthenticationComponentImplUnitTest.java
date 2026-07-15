@@ -76,7 +76,7 @@ public class AuthenticationComponentImplUnitTest
         authUtil = mockStatic(AuthenticationUtil.class);
         txSupport = mockStatic(AlfrescoTransactionSupport.class);
 
-        // run the "system tenant" work inline and resolve the login name to its default tenant
+        // run the tenant work inline and resolve the login name to the default (single) tenant
         tenantUtil.when(() -> TenantUtil.runAsSystemTenant(any(), any()))
                 .thenAnswer(call -> ((TenantRunAsWork<?>) call.getArgument(0)).doWork());
         authUtil.when(() -> AuthenticationUtil.getUserTenant(LOGIN_USER_NAME))
@@ -101,9 +101,11 @@ public class AuthenticationComponentImplUnitTest
         MutableAuthenticationDao authenticationDao = mock(MutableAuthenticationDao.class);
         when(authenticationDao.loadUserByUsername(STORED_USER_NAME)).thenReturn(storedUser);
 
+        // the login name resolves (case-insensitively) to the stored name
         PersonService personService = mock(PersonService.class);
         when(personService.getUserIdentifier(LOGIN_USER_NAME)).thenReturn(STORED_USER_NAME);
 
+        // the stored hash is not the preferred encoding, so login triggers a re-hash
         CompositePasswordEncoder passwordEncoder = mock(CompositePasswordEncoder.class);
         when(passwordEncoder.lastEncodingIsPreferred(hashIndicator)).thenReturn(false);
 
@@ -128,7 +130,8 @@ public class AuthenticationComponentImplUnitTest
         ArgumentCaptor<TransactionListener> listener = ArgumentCaptor.forClass(TransactionListener.class);
         txSupport.verify(() -> AlfrescoTransactionSupport.bindListener(listener.capture()));
 
-        // the deferred re-hash must run against the stored name (Andy), not the login name (aNdY)
+        // before the listener re-hashed against the login name (aNdY) and updateUser failed;
+        // it must now run against the stored name (Andy)
         listener.getValue().afterCommit();
         verify(authenticationDao).updateUser(eq(STORED_USER_NAME), any());
     }

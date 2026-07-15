@@ -67,6 +67,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.StoreRefStripperTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.TagQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.TermsAggregationsIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.TypeQueryIT;
+import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.AFTSBooleanOperatorsAdaptorTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ElasticsearchAFTSQueryBuilderTest;
@@ -79,6 +80,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PrefixQ
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.RangeQueryTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.TermOrPhraseQueryTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.WildcardQueryTest;
+import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationHandlerTest;
 import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtilTest;
 import org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResultSetBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTest;
@@ -134,6 +136,8 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTe
         ElasticsearchResultSetBuilderTest.class,
         AggregationNameUtilTest.class,
         HighlightsHandlerTest.class,
+        AggregationHandlerTest.class,
+        ElasticsearchAggregationBuilderTest.class,
 
         // Query ITs
         FilterQueryIT.class,

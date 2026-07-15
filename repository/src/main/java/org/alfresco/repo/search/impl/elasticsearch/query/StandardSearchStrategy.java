@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.elasticsearch.query;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.SearchRequest;
@@ -35,6 +36,7 @@ import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClien
 import org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResultSetBuilder;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.util.Pair;
 
 @SuppressWarnings("PMD.GuardLogStatement")
 public class StandardSearchStrategy extends SearchExecutionStrategy
@@ -76,12 +78,15 @@ public class StandardSearchStrategy extends SearchExecutionStrategy
         int limit = searchParameters.getLimit();
         int effectiveLimit = limit < 0 ? maxResultWindow : limit;
         String indexName = requestBuilderService.getElasticIndex(searchParameters.getStores());
-        SearchRequest searchRequest = requestBuilderService.buildSearchRequest(
+        SearchRequestWrapper searchRequestWrapper = requestBuilderService.buildSearchRequest(
                 searchParameters,
                 queryWithPermissions,
                 skipCount,
                 effectiveLimit,
                 indexName);
+        SearchRequest searchRequest = searchRequestWrapper.searchRequest();
+        Map<String, String> bucketsTranslator = searchRequestWrapper.bucketsTranslator();
+        Map<String, Pair<String, String>> complementaryBucketsTranslator = searchRequestWrapper.complementaryBucketsTranslator();
 
         try
         {
@@ -92,7 +97,7 @@ public class StandardSearchStrategy extends SearchExecutionStrategy
             LOGGER.trace("Query response JSON: {}", searchResponse.toJsonString());
 
             validateResponse(searchResponse);
-            return resultSetBuilder.build(searchParameters, searchResponse);
+            return resultSetBuilder.build(searchParameters, searchResponse, bucketsTranslator, complementaryBucketsTranslator);
         }
         catch (IOException exception)
         {

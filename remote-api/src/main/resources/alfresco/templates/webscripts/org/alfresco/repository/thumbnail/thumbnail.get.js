@@ -84,10 +84,7 @@ function main()
                status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found and no place holder resource set for '" + thumbnailName + "'");
                return;
             }
-            else
-            {
-               model.contentPath = phPath;
-            }
+            model.contentPath = phPath;
          }
          else
          {
@@ -113,11 +110,8 @@ function main()
                status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found and no place holder resource set for '" + thumbnailName + "'");
                return;
             }
-            else
-            {
-               // Set the resouce path in the model ready for the content stream to send back to the client
-               model.contentPath = phPath;
-            }
+            // Set the resouce path in the model ready for the content stream to send back to the client
+            model.contentPath = phPath;
          }
          else
          {

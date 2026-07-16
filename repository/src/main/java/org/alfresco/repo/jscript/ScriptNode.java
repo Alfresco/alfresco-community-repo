@@ -80,7 +80,6 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionService2;
-import org.alfresco.repo.rendition2.RenditionService2PreventedException;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -912,7 +911,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     public Scriptable getChildAssocsByType(String type)
     {
         // get the list of child assoc nodes for each association type
-        Set<QName> types = new HashSet<QName>(1, 1.0f);
+        Set<QName> types = new HashSet<>(1, 1.0f);
         types.add(createQName(type));
         List<ChildAssociationRef> refs = this.nodeService.getChildAssocs(this.nodeRef, types);
         Object[] nodes = new Object[refs.size()];
@@ -1559,8 +1558,8 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      */
     public static List<AccessPermission> getSortedACLs(Set<AccessPermission> acls)
     {
-        ArrayList<AccessPermission> ordered = new ArrayList<AccessPermission>(acls);
-        Map<String, AccessPermission> deDuplicatedPermissions = new HashMap<String, AccessPermission>(acls.size());
+        ArrayList<AccessPermission> ordered = new ArrayList<>(acls);
+        Map<String, AccessPermission> deDuplicatedPermissions = new HashMap<>(acls.size());
         Collections.sort(ordered, new CMISConnector.AccessPermissionComparator());
         for (AccessPermission current : ordered)
         {
@@ -3130,6 +3129,12 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             }
 
             // Have the thumbnail created
+            if (renditionService2.isRenditionPrevented(nodeRef))
+            {
+                logger.debug("Unable to create thumbnail '" + details.getName() + "' as rendition is prevented for this node.");
+                return null;
+            }
+
             if (async == false)
             {
                 try
@@ -3169,17 +3174,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
         if (renditionDefinition != null)
         {
-            try
-            {
-                renditionService2.render(nodeRef, thumbnailName);
-            }
-            catch (RenditionService2PreventedException e)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Unable to create thumbnail '" + thumbnailName + "' as rendition is prevented for this node: " + e.getMessage());
-                }
-            }
+            renditionService2.render(nodeRef, thumbnailName);
         }
         else
         {

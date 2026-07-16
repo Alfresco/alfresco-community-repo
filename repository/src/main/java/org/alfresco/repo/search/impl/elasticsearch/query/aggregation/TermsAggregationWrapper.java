@@ -36,7 +36,7 @@ import org.opensearch.client.opensearch._types.query_dsl.Query;
  * <p>
  * Practical examples of the use of this wrapper include:
  * <p>
- * For non-SITE aggregations {@code postProcessingData} is empty and {@code complementaryAggregator} is absent.
+ * For non-SITE aggregations {@code postProcessingData} is empty and {@code complementaryAggregation} is absent.
  * <p>
  * For SITE aggregations:
  * <ul>

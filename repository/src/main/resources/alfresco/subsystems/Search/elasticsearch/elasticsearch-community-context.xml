@@ -260,11 +260,15 @@
         <constructor-arg name="esTypeResolver" ref="esTypeResolver" />
     </bean>
 
+    <bean id="siteTermsAggregationBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteTermsAggregationBuilder">
+        <constructor-arg name="siteService" ref="siteService"/>
+        <constructor-arg name="nodeService" ref="nodeService"/>
+    </bean>
+
     <bean id="elasticsearchAggregationBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilder">
         <constructor-arg name="namespaceDAO" ref="namespaceDAO"/>
         <constructor-arg name="dictionaryService" ref="dictionaryService"/>
-        <constructor-arg name="siteService" ref="siteService"/>
-        <constructor-arg name="nodeService" ref="nodeService"/>        
+        <constructor-arg name="siteTermsAggregationBuilder" ref="siteTermsAggregationBuilder"/>
         <property name="defaultFacetLimit" value="${elasticsearch.defaultFacetLimit}"/>
     </bean>
 

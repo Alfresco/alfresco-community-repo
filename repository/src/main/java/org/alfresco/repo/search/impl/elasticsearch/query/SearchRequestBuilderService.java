@@ -201,7 +201,7 @@ public class SearchRequestBuilderService
                 .filter(ta -> ta.complementaryAggregation().isPresent())
                 .collect(Collectors.toMap(
                         ta -> AggregationNameUtil.encode(ta.complementaryAggregation().get().aggregationName()),
-                        ta -> new Pair<>(AggregationNameUtil.encode(ta.name()), ta.complementaryAggregation().get().displayLabel())));
+                        ta -> new Pair<>(ta.name(), ta.complementaryAggregation().get().displayLabel())));
 
         builder.highlight(elasticsearchHighlightBuilder.getHighlightBuilder(searchParameters));
         builder.index(indexName);

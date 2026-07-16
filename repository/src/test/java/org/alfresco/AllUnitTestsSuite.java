@@ -167,6 +167,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         CachingUserTokenProviderTest.class,
         DirectUserTokenProviderTest.class,
         IdentityServiceUserTokenWiringTest.class,
+        org.alfresco.repo.security.authentication.AuthenticationComponentImplUnitTest.class,
         org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
         org.alfresco.repo.security.authentication.PasswordHashingTest.class,
         org.alfresco.repo.security.authority.script.ScriptAuthorityService_RegExTest.class,

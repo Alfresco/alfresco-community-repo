@@ -199,6 +199,11 @@ public class SearchParameters implements BasicSearchParameters
     private boolean trackScore = true;
 
     /**
+     * An opaque cursor token identifying the position to resume paging from. When set, the search subsystem resumes results immediately after the encoded position (Elasticsearch {@code search_after}) instead of using {@link #skipCount} offset paging. The token is minted by the search subsystem and is opaque to callers.
+     */
+    private String searchAfter;
+
+    /**
      * Default constructor
      */
     public SearchParameters()
@@ -250,6 +255,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.timezone = this.timezone;
         sp.trackTotalHits = this.trackTotalHits;
         sp.trackScore = this.trackScore;
+        sp.searchAfter = this.searchAfter;
         return sp;
     }
 
@@ -598,6 +604,27 @@ public class SearchParameters implements BasicSearchParameters
     public void setLimit(int limit)
     {
         this.limit = limit;
+    }
+
+    /**
+     * Get the opaque cursor token to resume paging from, or {@code null} for offset-based paging.
+     *
+     * @return the search-after cursor token
+     */
+    public String getSearchAfter()
+    {
+        return searchAfter;
+    }
+
+    /**
+     * Set an opaque cursor token to resume paging from. When set, the search subsystem resumes immediately after the encoded position instead of applying {@link #setSkipCount(int) skipCount} offset paging. Mutually exclusive with a non-zero skip count.
+     *
+     * @param searchAfter
+     *            the opaque cursor token, or {@code null} for offset paging
+     */
+    public void setSearchAfter(String searchAfter)
+    {
+        this.searchAfter = searchAfter;
     }
 
     /**
@@ -1197,6 +1224,7 @@ public class SearchParameters implements BasicSearchParameters
         result = prime * result + ((ranges == null) ? 0 : ranges.hashCode());
         result = prime * result + ((searchTerm == null) ? 0 : searchTerm.hashCode());
         result = prime * result + (spellCheck ? 1231 : 1237);
+        result = prime * result + ((searchAfter == null) ? 0 : searchAfter.hashCode());
         return result;
     }
 
@@ -1359,6 +1387,13 @@ public class SearchParameters implements BasicSearchParameters
             return false;
         if (spellCheck != other.spellCheck)
             return false;
+        if (searchAfter == null)
+        {
+            if (other.searchAfter != null)
+                return false;
+        }
+        else if (!searchAfter.equals(other.searchAfter))
+            return false;
         return true;
     }
 
@@ -1401,7 +1436,8 @@ public class SearchParameters implements BasicSearchParameters
                 .append(", interval=").append(this.interval)
                 .append(", range=").append(this.ranges)
                 .append(", timezone=").append(this.timezone)
-                .append(", spellCheck=").append(this.spellCheck).append("]");
+                .append(", spellCheck=").append(this.spellCheck)
+                .append(", searchAfter=").append(this.searchAfter).append("]");
         return builder.toString();
     }
 

@@ -25,13 +25,4 @@
             </modules>
         </profile>
     </profiles>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.alfresco.tas</groupId>
-            <artifactId>cmis</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 </project>

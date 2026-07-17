@@ -30,7 +30,8 @@
         <dependency>
             <groupId>org.alfresco.tas</groupId>
             <artifactId>cmis</artifactId>
-            <version>26.2.0.66</version>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

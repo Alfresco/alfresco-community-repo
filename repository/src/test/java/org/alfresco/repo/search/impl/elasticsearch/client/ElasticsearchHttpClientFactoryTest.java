@@ -162,6 +162,12 @@ public class ElasticsearchHttpClientFactoryTest
         elasticsearchHttpClientFactory.setHost("localhost");
         elasticsearchHttpClientFactory.setPort(9200);
         elasticsearchHttpClientFactory.setBaseUrl("/");
+        elasticsearchHttpClientFactory.setConnectionTimeout(1000);
+        elasticsearchHttpClientFactory.setSocketTimeout(30000);
+        elasticsearchHttpClientFactory.setResponseTimeout(30000);
+        elasticsearchHttpClientFactory.setMaxTotalConnections(30);
+        elasticsearchHttpClientFactory.setMaxHostConnections(30);
+        elasticsearchHttpClientFactory.setThreadCount(0);
     }
 
     @Test

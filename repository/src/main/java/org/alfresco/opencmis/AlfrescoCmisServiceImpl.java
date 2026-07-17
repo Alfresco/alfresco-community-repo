@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -505,11 +505,14 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             typeqnames.add(type.getAlfrescoClass());
         }
+
         PagingResults<FileInfo> pageOfNodeInfos = connector.getFileFolderService().list(
                 folderNodeRef,
+                Collections.singleton(ContentModel.ASSOC_CONTAINS),
                 typeqnames,
                 null, // ignoreAspectQNames,
                 sortProps,
+                connector.getVirtualRepository().getChildrenFilteringProperties(),
                 pageRequest);
 
         if (max > 0)
@@ -780,6 +783,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 }
 
                 if (connector.filter(child.getChildRef()))
+                {
+                    continue;
+                }
+
+                if (connector.isFilteredOutByVirtualRepository(child.getChildRef()))
                 {
                     continue;
                 }
@@ -1064,7 +1072,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             for (NodeRef nodeRef : nodeRefs)
             {
                 // TODO - perhaps filter by path in the query instead?
-                if (connector.filter(nodeRef))
+                if (connector.filter(nodeRef) || connector.isFilteredOutByVirtualRepository(nodeRef))
                 {
                     continue;
                 }
@@ -2167,7 +2175,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                         rootNodeRef,
                         Arrays.asList(path.substring(1).split("/")));
 
-                if (connector.filter(fileInfo.getNodeRef()))
+                if (connector.filter(fileInfo.getNodeRef()) || connector.isFilteredOutByVirtualRepository(fileInfo.getNodeRef()))
                 {
                     throw new CmisObjectNotFoundException("Object not found: " + path);
                 }

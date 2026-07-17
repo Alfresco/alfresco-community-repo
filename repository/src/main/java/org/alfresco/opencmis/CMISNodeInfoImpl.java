@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -278,7 +278,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                 if (isNodeWorkingCopy())
                 {
                     NodeRef checkedOut = connector.getCheckOutCheckInService().getCheckedOut(nodeRef);
-                    if (connector.filter(nodeRef))
+                    if (connector.filter(nodeRef) || connector.isFilteredOutByVirtualRepository(nodeRef))
                     {
                         objecVariant = CMISObjectVariant.NOT_EXISTING;
                     }
@@ -467,7 +467,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             return;
         }
 
-        if (connector.filter(nodeRef))
+        if (connector.filter(nodeRef) || connector.isFilteredOutByVirtualRepository(nodeRef))
         {
             objecVariant = CMISObjectVariant.NOT_EXISTING;
             return;

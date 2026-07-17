@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,7 +27,6 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
-import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 
@@ -40,22 +39,10 @@ public class FixedValueProperty extends AbstractProperty
 {
     private Serializable value;
 
-    /**
-     * Construct
-     * 
-     * @param serviceRegistry
-     *            ServiceRegistry
-     * @param connector
-     *            CMISConnector
-     * @param propertyName
-     *            String
-     * @param value
-     *            Serializable
-     */
-    public FixedValueProperty(ServiceRegistry serviceRegistry, CMISConnector connector, String propertyName,
+    public FixedValueProperty(ServiceRegistry serviceRegistry, CMISFacade cmisFacade, String propertyName,
             Serializable value)
     {
-        super(serviceRegistry, connector, propertyName);
+        super(serviceRegistry, cmisFacade, propertyName);
         this.value = value;
     }
 

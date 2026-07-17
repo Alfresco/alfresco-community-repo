@@ -110,6 +110,12 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
         }
     }
 
+    @Override
+    public boolean supportsFilterFlattening()
+    {
+        return false;
+    }
+
     private ResultSet executeQueryImpl(SearchParameters searchParameters)
     {
         CMISQueryOptions options = CMISQueryOptions.create(searchParameters);

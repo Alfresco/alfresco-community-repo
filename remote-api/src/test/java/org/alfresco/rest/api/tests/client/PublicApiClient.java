@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -139,6 +140,7 @@ public class PublicApiClient
 
     private ThreadLocal<RequestContext> rc = new ThreadLocal<RequestContext>();
     private ObjectMapper objectMapper = new ObjectMapper();
+    private Consumer<Session> cmisSessionAdjuster;
 
     public PublicApiClient(PublicApiHttpClient client, UserDataService userDataService)
     {
@@ -302,6 +304,10 @@ public class PublicApiClient
 
             // create session
             Session session = factory.createSession(parameters);
+            if (cmisSessionAdjuster != null)
+            {
+                cmisSessionAdjuster.accept(session);
+            }
 
             cmisSession = new CmisSession(session);
         }
@@ -722,6 +728,11 @@ public class PublicApiClient
         }
 
         return repositoryIds;
+    }
+
+    public void setCmisSessionAdjuster(Consumer<Session> adjuster)
+    {
+        this.cmisSessionAdjuster = adjuster;
     }
 
     public class AbstractProxy

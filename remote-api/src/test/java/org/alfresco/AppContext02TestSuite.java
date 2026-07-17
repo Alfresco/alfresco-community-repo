@@ -41,6 +41,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
 
         // this need to be run first
         org.alfresco.rest.api.tests.TestCMIS.class,
+        org.alfresco.rest.api.tests.TestCMISVirtualRepository.class,
 
         org.alfresco.rest.api.tests.TestCustomModelExport.class,
         org.alfresco.rest.DeletedNodesTest.class,

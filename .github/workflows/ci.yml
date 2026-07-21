@@ -124,10 +124,10 @@ jobs:
     steps:
       - name: "Generate GitHub App token"
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          app-id: ${{ vars.GH_APP_RELEASE_APP_ID }}
-          private-key: ${{ secrets.GH_APP_RELEASE_PRIVATE_KEY }}
+          client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
           permission-contents: write
       - uses: actions/checkout@v7
         with:
@@ -148,7 +148,7 @@ jobs:
         env:
           COMMIT_MESSAGE: ${{ needs.commit_parser.outputs.title }}
       - name: "Commit downstream version update"
-        uses: iarekylew00t/verified-bot-commit@v2
+        uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
         with:
           token: ${{ steps.app-token.outputs.token }}
           repository: Alfresco/alfresco-enterprise-repo

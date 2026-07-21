@@ -61,8 +61,8 @@ jobs:
         uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@feature/ACS-12079_use_github_app_to_release
       - name: "Display computed versions"
         run: |
-          echo "Computed release version: ${{ steps.versions.outputs.releaseVersion }}"
-          echo "Computed next development version: ${{ steps.versions.outputs.nextDevelopmentVersion }}"
+          echo "Computed release version: ${{ steps.versions.outputs.release-version }}"
+          echo "Computed next development version: ${{ steps.versions.outputs.development-version }}"
   prepare:
     name: "Prepare"
     runs-on: ubuntu-latest

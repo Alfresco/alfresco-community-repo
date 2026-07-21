@@ -1,7 +1,7 @@
 name: Master/Release branch workflow
 
 # Read-only is enough for the default GITHUB_TOKEN: the release/downstream jobs
-# push using the bot PAT (BOT_GITHUB_TOKEN), not the workflow token.
+# push using a GitHub App installation token, not the workflow token.
 permissions:
   contents: read
 
@@ -13,9 +13,6 @@ on:
 
 env:
   JAVA_VERSION: '21'
-  GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
-  GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
-  GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
   DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
@@ -47,6 +44,7 @@ jobs:
       security-events: write
     uses: ./.github/workflows/ci.yml
     secrets: inherit
+
   push_to_nexus:
     name: "Push to Nexus"
     runs-on: ubuntu-latest
@@ -56,9 +54,17 @@ jobs:
       !contains(needs.commit_parser.outputs.title, '[no release]') &&
       github.event_name != 'pull_request'
     steps:
+      - name: "Generate GitHub App token"
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.GH_APP_RELEASE_APP_ID }}
+          private-key: ${{ secrets.GH_APP_RELEASE_PRIVATE_KEY }}
+          permission-contents: write
       - uses: actions/checkout@v7
         with:
-          persist-credentials: false
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
@@ -66,18 +72,30 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v18.18.0
         with:
-          username: ${{ env.GIT_USERNAME }}
-          email: ${{ env.GIT_EMAIL }}
-          global: true
+          username: ${{ secrets.BOT_GITHUB_USERNAME }}
+          email: ${{ secrets.BOT_GITHUB_EMAIL }}
+      - name: "Compute release and next development versions"
+        run: |
+          POM_VERSION=$(mvn -B -q help:evaluate -Dexpression=project.version -DforceStdout)
+          RELEASE_VERSION="${POM_VERSION%-SNAPSHOT}"
+          NEXT_VERSION=$(echo "${RELEASE_VERSION}" | awk -F. '{$NF=$NF+1; OFS="."; print $0}')
+          DEVELOPMENT_VERSION="${NEXT_VERSION}-SNAPSHOT"
+          echo "RELEASE_VERSION=${RELEASE_VERSION}" >> "$GITHUB_ENV"
+          echo "DEVELOPMENT_VERSION=${DEVELOPMENT_VERSION}" >> "$GITHUB_ENV"
       - name: "Release"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: |
-          bash scripts/ci/verify_release_tag.sh
-          bash scripts/ci/maven_release.sh
+        uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@v18.11.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          release-version: ${{ env.RELEASE_VERSION }}
+          development-version: ${{ env.DEVELOPMENT_VERSION }}
+          release-profile: "all-tas-tests,ags"
+          maven-args: "-DskipTests -Dbuild-number=${{ env.BUILD_NUMBER }}"
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
+
   update_downstream:
     name: "Update alfresco-enterprise-repo"
     runs-on: ubuntu-latest
@@ -87,9 +105,17 @@ jobs:
       !contains(needs.commit_parser.outputs.title, '[no downstream]') &&
       github.event_name != 'pull_request'
     steps:
+      - name: "Generate GitHub App token"
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.GH_APP_RELEASE_APP_ID }}
+          private-key: ${{ secrets.GH_APP_RELEASE_PRIVATE_KEY }}
+          permission-contents: write
       - uses: actions/checkout@v7
         with:
-          persist-credentials: false
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.11.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.11.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.11.0
@@ -97,14 +123,24 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v18.11.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v18.18.0
         with:
-          username: ${{ env.GIT_USERNAME }}
-          email: ${{ env.GIT_EMAIL }}
-          global: true
+          username: ${{ secrets.BOT_GITHUB_USERNAME }}
+          email: ${{ secrets.BOT_GITHUB_EMAIL }}
       - name: "Update downstream"
         run: bash ./scripts/ci/update_downstream.sh
         env:
           COMMIT_MESSAGE: ${{ needs.commit_parser.outputs.title }}
+          GIT_PASSWORD: ${{ steps.app-token.outputs.token }}
+      - name: "Commit downstream version update"
+        uses: iarekylew00t/verified-bot-commit@v2
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          repository: Alfresco/alfresco-enterprise-repo
+          ref: ${{ github.ref_name }}
+          workspace: ${{ github.workspace }}/../alfresco-enterprise-repo
+          files: pom.xml
+          message: "Update community-repo version to ${{ needs.commit_parser.outputs.title }}"
+          if-no-commit: info
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

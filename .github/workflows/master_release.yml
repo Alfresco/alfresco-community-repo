@@ -74,20 +74,15 @@ jobs:
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Compute release and next development versions"
-        run: |
-          POM_VERSION=$(mvn -B -q help:evaluate -Dexpression=project.version -DforceStdout)
-          RELEASE_VERSION="${POM_VERSION%-SNAPSHOT}"
-          NEXT_VERSION=$(echo "${RELEASE_VERSION}" | awk -F. '{OFS="."; $NF=$NF+1; print $0}')
-          DEVELOPMENT_VERSION="${NEXT_VERSION}-SNAPSHOT"
-          echo "RELEASE_VERSION=${RELEASE_VERSION}" >> "$GITHUB_ENV"
-          echo "DEVELOPMENT_VERSION=${DEVELOPMENT_VERSION}" >> "$GITHUB_ENV"
+        id: versions
+        uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@feature/ACS-12079_use_github_app_to_release
       - name: "Release"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@v18.11.0
         with:
           token: ${{ steps.app-token.outputs.token }}
-          release-version: ${{ env.RELEASE_VERSION }}
-          development-version: ${{ env.DEVELOPMENT_VERSION }}
+          release-version: ${{ steps.versions.outputs.release-version }}
+          development-version: ${{ steps.versions.outputs.development-version }}
           release-profile: "all-tas-tests,ags"
           maven-args: "-DskipTests -Dbuild-number=${{ env.BUILD_NUMBER }}"
       - name: "Clean Maven cache"

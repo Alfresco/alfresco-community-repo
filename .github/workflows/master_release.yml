@@ -82,7 +82,7 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
           release-version: ${{ steps.versions.outputs.release-version }}
-          development-version: ${{ steps.versions.outputs.development-version }}
+          development-version: ${{ steps.versions.outputs.next-development-version }}
           release-profile: "all-tas-tests,ags"
           maven-args: "-DskipTests -Dbuild-number=${{ env.BUILD_NUMBER }}"
       - name: "Clean Maven cache"
@@ -119,6 +119,7 @@ jobs:
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Update downstream"
+        id: update-downstream
         run: bash ./scripts/ci/update_downstream.sh
         env:
           COMMIT_MESSAGE: ${{ needs.commit_parser.outputs.title }}

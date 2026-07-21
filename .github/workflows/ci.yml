@@ -52,8 +52,6 @@ jobs:
   test_maven_compute_release_versions_action:
     name: "Test Maven Compute Release Versions Action"
     runs-on: ubuntu-latest
-    outputs:
-      title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: "Compute release and next development versions"
@@ -62,7 +60,7 @@ jobs:
       - name: "Display computed versions"
         run: |
           echo "Computed release version: ${{ steps.versions.outputs.release-version }}"
-          echo "Computed next development version: ${{ steps.versions.outputs.development-version }}"
+          echo "Computed next development version: ${{ steps.versions.outputs.next-development-version }}"
   prepare:
     name: "Prepare"
     runs-on: ubuntu-latest

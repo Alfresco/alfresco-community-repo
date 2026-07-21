@@ -155,7 +155,7 @@ jobs:
           ref: feature/ACS-12079_use_github_app_to_release_test
           workspace: ${{ github.workspace }}/../alfresco-enterprise-repo
           files: pom.xml
-          message: "Update community-repo version to ${{ needs.update-downstream.outputs.version }}"
+          message: "Update community-repo version to ${{ steps.update-downstream.outputs.version }}"
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 #  all_unit_tests_suite:

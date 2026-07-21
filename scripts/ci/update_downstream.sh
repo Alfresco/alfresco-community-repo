@@ -12,7 +12,7 @@ git checkout "${BRANCH_NAME}"
 git pull
 
 # Retrieve the current Community version - latest tag on the current branch
-VERSION="26.2.0.94"
+VERSION="26.2.0.93"
 
 DOWNSTREAM_REPO="github.com/Alfresco/alfresco-enterprise-repo.git"
 

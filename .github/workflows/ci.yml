@@ -56,8 +56,6 @@ jobs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          token: ${{ steps.app-token.outputs.token }}
       - name: "Compute release and next development versions"
         id: versions
         uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@feature/ACS-12079_use_github_app_to_release

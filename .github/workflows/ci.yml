@@ -129,6 +129,8 @@ jobs:
           client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
           private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
           permission-contents: write
+          repositories: |
+            Alfresco/alfresco-enterprise-repo
       - uses: actions/checkout@v7
         with:
           token: ${{ steps.app-token.outputs.token }}

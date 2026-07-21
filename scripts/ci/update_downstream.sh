@@ -28,6 +28,8 @@ mvn -B versions:set-property versions:commit \
   -Dproperty=dependency.alfresco-community-repo.version \
   "-DnewVersion=${VERSION}"
 
+echo "VERSION=${VERSION}" >> "${GITHUB_OUTPUT}"
+
 popd
 set +vex
 echo "=========================== Finishing Update Downstream Script =========================="

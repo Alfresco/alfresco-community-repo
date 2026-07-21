@@ -198,9 +198,6 @@ public class SearchParameters implements BasicSearchParameters
 
     private boolean trackScore = true;
 
-    /**
-     * An opaque cursor token identifying the position to resume paging from. When set, the search subsystem resumes results immediately after the encoded position (Elasticsearch {@code search_after}) instead of using {@link #skipCount} offset paging. The token is minted by the search subsystem and is opaque to callers.
-     */
     private String searchAfter;
 
     /**
@@ -606,22 +603,11 @@ public class SearchParameters implements BasicSearchParameters
         this.limit = limit;
     }
 
-    /**
-     * Get the opaque cursor token to resume paging from, or {@code null} for offset-based paging.
-     *
-     * @return the search-after cursor token
-     */
     public String getSearchAfter()
     {
         return searchAfter;
     }
 
-    /**
-     * Set an opaque cursor token to resume paging from. When set, the search subsystem resumes immediately after the encoded position instead of applying {@link #setSkipCount(int) skipCount} offset paging. Mutually exclusive with a non-zero skip count.
-     *
-     * @param searchAfter
-     *            the opaque cursor token, or {@code null} for offset paging
-     */
     public void setSearchAfter(String searchAfter)
     {
         this.searchAfter = searchAfter;

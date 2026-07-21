@@ -1261,6 +1261,15 @@
         <property name="resultMapper" ref="searchapiResultMapper" />
         <property name="searchMapper" ref="searchapiSearchMapper" />
     </bean>
+
+    <bean id="webscript.org.alfresco.api.DeepSearchApiWebscript.post"
+          class="org.alfresco.rest.api.search.DeepSearchApiWebscript" parent="webscript">
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="assistant" ref="apiAssistant" />
+        <property name="helper" ref="webscriptHelper" />
+        <property name="resultMapper" ref="searchapiResultMapper" />
+        <property name="searchMapper" ref="searchapiSearchMapper" />
+    </bean>
     
     <bean id="webscript.org.alfresco.api.SearchSQLApiWebscript.post"
           class="org.alfresco.rest.api.search.SearchSQLApiWebscript" parent="webscript">

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,18 +26,27 @@
 package org.alfresco.rest.api.search;
 
 import org.alfresco.rest.api.search.model.SearchQuery;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
- * An implementation of the {{baseUrl}}/{{networkId}}/public/search/versions/1/search endpoint
- *
- * @author Gethin James
+ * POST /search/versions/1/deep-search cursor-based deep pagination (Elasticsearch search_after). Same body as {@link SearchApiWebscript} plus a {@code searchAfter} cursor and the next cursor is returned in {@code list.context.nextCursor}.
  */
-public class SearchApiWebscript extends AbstractSearchApiWebscript
+public class DeepSearchApiWebscript extends AbstractSearchApiWebscript
 {
     @Override
     protected void applyPaginationContract(SearchParameters searchParams, SearchQuery searchQuery)
     {
-        // Offset paging is already applied by the SearchMapper
+        Paging paging = searchQuery.getPaging();
+        if (paging != null && paging.getSkipCount() > 0)
+        {
+            throw new InvalidArgumentException(
+                    "skipCount (offset paging) is not supported by deep-search; page using searchAfter instead.");
+        }
+
+        // No cursor means the first page keep it non-null so every page uses search_after with the same sort
+        String searchAfter = searchQuery.getSearchAfter();
+        searchParams.setSearchAfter(searchAfter == null ? "" : searchAfter);
     }
 }

@@ -12,7 +12,7 @@ git checkout "${BRANCH_NAME}"
 git pull
 
 # Retrieve the current Community version - latest tag on the current branch
-VERSION="26.2.0.95"
+VERSION="26.2.0.94"
 
 DOWNSTREAM_REPO="github.com/Alfresco/alfresco-enterprise-repo.git"
 
@@ -28,7 +28,7 @@ mvn -B versions:set-property versions:commit \
   -Dproperty=dependency.alfresco-community-repo.version \
   "-DnewVersion=${VERSION}"
 
-echo "VERSION=${VERSION}" >> "${GITHUB_OUTPUT}"
+echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
 
 popd
 set +vex

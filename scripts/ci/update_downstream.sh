@@ -12,11 +12,11 @@ git checkout "${BRANCH_NAME}"
 git pull
 
 # Retrieve the current Community version - latest tag on the current branch
-VERSION="26.2.0.93"
+VERSION="$(git describe --abbrev=0 --tags)"
 
 DOWNSTREAM_REPO="github.com/Alfresco/alfresco-enterprise-repo.git"
 
-cloneRepo "${DOWNSTREAM_REPO}" "feature/ACS-12079_use_github_app_to_release_test"
+cloneRepo "${DOWNSTREAM_REPO}" "${BRANCH_NAME}"
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../../../$(basename "${DOWNSTREAM_REPO%.git}")"
 

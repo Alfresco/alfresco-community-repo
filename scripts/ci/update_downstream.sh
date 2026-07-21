@@ -7,8 +7,8 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
 #Fetch the latest changes, as GHA will only checkout the PR commit
-git fetch origin "feature/ACS-12079_use_github_app_to_release_test"
-git checkout "feature/ACS-12079_use_github_app_to_release_test"
+git fetch origin "${BRANCH_NAME}"
+git checkout "${BRANCH_NAME}"
 git pull
 
 # Retrieve the current Community version - latest tag on the current branch

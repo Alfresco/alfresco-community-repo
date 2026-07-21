@@ -151,6 +151,7 @@ jobs:
         run: bash ./scripts/ci/update_downstream.sh
         env:
           COMMIT_MESSAGE: ${{ needs.commit_parser.outputs.title }}
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: "Commit downstream version update"
         uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
         with:

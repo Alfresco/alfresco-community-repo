@@ -271,7 +271,7 @@ restClient.onResponse().assertThat().body("entry.modifiedBy.firstName", org.hamc
 
 ### How to generate models or check coverage
 
-There are some simple generators that could parse [Swagger YAML](https://docs.hyland.com/r/Alfresco/Alfresco-Content-Services/23.4/Alfresco-Content-Services/Develop/REST-API-Guide/Things-to-Know-Before-You-Start/The-API-Explorer-is-Your-Source-of-Truth) files and provide some usefull information to you like:
+There are some simple generators that could parse [Swagger YAML](https://docs.hyland.com/r/Alfresco/Alfresco-Content-Services/23.4/Alfresco-Content-Services/Develop/REST-API-Guide/Things-to-Know-Before-You-Start/The-API-Explorer-is-Your-Source-of-Truth) files and provide some useful information to you like:
  
 a) Show on screen the actual coverage of TAS vs requests that exists in each YAML file - defined in pom.xml) 
 

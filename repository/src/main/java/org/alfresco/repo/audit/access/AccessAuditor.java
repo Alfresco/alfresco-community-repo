@@ -32,6 +32,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.alfresco.repo.content.ContentServicePolicies;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -43,6 +44,7 @@ import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCancelCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
@@ -175,7 +177,7 @@ public class AccessAuditor implements InitializingBean,
 
         OnCopyCompletePolicy,
 
-        OnCheckOut, OnCheckIn, OnCancelCheckOut
+        OnCheckOut, OnCheckIn, OnCancelCheckOut, ContentServicePolicies.OnContentDownloadPolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(AccessAuditor.class);
@@ -265,6 +267,7 @@ public class AccessAuditor implements InitializingBean,
         policyComponent.bindClassBehaviour(OnRemoveAspectPolicy.QNAME, this, new JavaBehaviour(this, "onRemoveAspect"));
 
         policyComponent.bindClassBehaviour(OnContentUpdatePolicy.QNAME, this, new JavaBehaviour(this, "onContentUpdate"));
+        policyComponent.bindClassBehaviour(OnContentDownloadPolicy.QNAME, this, new JavaBehaviour(this, "onContentDownload"));
         policyComponent.bindClassBehaviour(OnContentReadPolicy.QNAME, this, new JavaBehaviour(this, "onContentRead"));
 
         policyComponent.bindClassBehaviour(OnCreateVersionPolicy.QNAME, ContentModel.TYPE_CONTENT, new JavaBehaviour(this, "onCreateVersion"));
@@ -568,6 +571,17 @@ public class AccessAuditor implements InitializingBean,
         else
         {
             sb.append(value);
+        }
+    }
+
+    /**
+     * @param nodeRef the node reference
+     */
+    @Override
+    public void onContentDownload(NodeRef nodeRef) {
+        if (auditEnabled())
+        {
+            getNodeChange(nodeRef).onContentDownload(nodeRef);
         }
     }
 

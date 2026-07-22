@@ -93,6 +93,19 @@ public interface ContentServicePolicies
                 ContentData afterValue);
     }
 
+    @AlfrescoPublicApi
+    interface OnContentDownloadPolicy extends ClassPolicy
+    {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentDownload");
+
+        /**
+         * @param nodeRef
+         *            the node reference
+         */
+        public void onContentDownload(NodeRef nodeRef);
+    }
+
+
     /**
      * On content read policy interface.
      * 

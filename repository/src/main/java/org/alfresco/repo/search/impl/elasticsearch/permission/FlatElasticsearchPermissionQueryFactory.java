@@ -31,6 +31,7 @@ import static org.alfresco.service.cmr.security.AuthorityType.getAuthorityType;
 import static org.alfresco.service.cmr.security.PermissionService.ADMINISTRATOR_AUTHORITY;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,6 +42,8 @@ import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch._types.query_dsl.QueryBuilders;
 import org.opensearch.client.opensearch._types.query_dsl.TermQuery;
+import org.opensearch.client.opensearch._types.query_dsl.TermsQuery;
+import org.opensearch.client.opensearch._types.query_dsl.TermsQueryField;
 
 import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -74,7 +77,7 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
     {
         Set<String> authorities = getAuthorisations(includeGroupsForRoleAdmin);
 
-        if (hasGlobalReader(authorities))
+        if (authorities.isEmpty() || hasGlobalReader(authorities))
         {
             // No filter will be applied, so a unfiltered query will be returned
             return queryBuilder;
@@ -120,8 +123,23 @@ public class FlatElasticsearchPermissionQueryFactory implements ElasticsearchPer
     private BoolQuery buildFilter(Set<String> authorities)
     {
         BoolQuery.Builder aclQueryBuilder = QueryBuilders.bool();
-        authorities.forEach(auth -> aclQueryBuilder.should(new Query.Builder().match(new MatchQuery.Builder().field(FIELD_READER).query(FieldValue.of(auth)).build()).build()));
-        authorities.forEach(auth -> aclQueryBuilder.mustNot(new Query.Builder().match(new MatchQuery.Builder().field(QueryConstants.FIELD_DENIED).query(FieldValue.of(auth)).build()).build()));
+
+        List<FieldValue> authorityValues = authorities.stream().map(FieldValue::of).toList();
+
+        aclQueryBuilder.should(new Query.Builder()
+                .terms(new TermsQuery.Builder()
+                        .field(FIELD_READER)
+                        .terms(new TermsQueryField.Builder().value(authorityValues).build())
+                        .build())
+                .build());
+
+        aclQueryBuilder.mustNot(new Query.Builder()
+                .terms(new TermsQuery.Builder()
+                        .field(QueryConstants.FIELD_DENIED)
+                        .terms(new TermsQueryField.Builder().value(authorityValues).build())
+                        .build())
+                .build());
+
         addOwnerQuery(authorities, aclQueryBuilder);
         return aclQueryBuilder.build();
     }

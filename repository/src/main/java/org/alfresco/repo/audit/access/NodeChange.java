@@ -43,6 +43,7 @@ import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCancelCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
@@ -77,7 +78,7 @@ import org.alfresco.service.namespace.QName;
 
         OnCopyCompletePolicy,
 
-        OnCheckOut, OnCheckIn, OnCancelCheckOut
+        OnCheckOut, OnCheckIn, OnCancelCheckOut, OnContentDownloadPolicy
 {
     private static final String USER = "user";
     private static final String ACTION = "action";
@@ -106,6 +107,7 @@ import org.alfresco.service.namespace.QName;
     private static final String CREATE_CONTENT = "createContent";
     private static final String UPDATE_CONTENT = "updateContent";
     private static final String READ_CONTENT = "readContent";
+    private static final String DOWNLOAD_CONTENT = "downloadContent";
     private static final String CREATE_VERSION = "createVersion";
     private static final String COPY_NODE = "copyNode";
     private static final String CHECK_IN = "checkIn";
@@ -185,6 +187,9 @@ import org.alfresco.service.namespace.QName;
         else if (subActions.contains(CREATE_NODE))
         {
             action = "CREATE";
+        }
+        else if(subActions.contains(DOWNLOAD_CONTENT)){
+            action = "DOWNLOAD";
         }
         else if (subActions.size() == 1 && subActions.contains(READ_CONTENT))
         {
@@ -791,5 +796,14 @@ import org.alfresco.service.namespace.QName;
     private String replaceInvalidPathChars(String path)
     {
         return AuditApplication.AUDIT_INVALID_PATH_COMP_CHAR_PATTERN.matcher(path).replaceAll(INVALID_PATH_CHAR_REPLACEMENT);
+    }
+
+    /**
+     * @param nodeRef the node reference
+     */
+    @Override
+    public void onContentDownload(NodeRef nodeRef) {
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(DOWNLOAD_CONTENT));
+        runAsUser = AuthenticationUtil.getRunAsUser();
     }
 }

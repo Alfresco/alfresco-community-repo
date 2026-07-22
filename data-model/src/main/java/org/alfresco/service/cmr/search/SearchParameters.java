@@ -1376,10 +1376,14 @@ public class SearchParameters implements BasicSearchParameters
         if (searchAfter == null)
         {
             if (other.searchAfter != null)
+            {
                 return false;
+            }
         }
         else if (!searchAfter.equals(other.searchAfter))
+        {
             return false;
+        }
         return true;
     }
 

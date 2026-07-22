@@ -44,6 +44,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
@@ -115,6 +116,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     ClassPolicyDelegate<ContentServicePolicies.OnContentUpdatePolicy> onContentUpdateDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentPropertyUpdatePolicy> onContentPropertyUpdateDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
+    ClassPolicyDelegate<ContentServicePolicies.OnContentDownloadPolicy> onContentDownloadDelegate;
 
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
     {
@@ -198,6 +200,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         this.onContentUpdateDelegate = this.policyComponent.registerClassPolicy(OnContentUpdatePolicy.class);
         this.onContentPropertyUpdateDelegate = this.policyComponent.registerClassPolicy(OnContentPropertyUpdatePolicy.class);
         this.onContentReadDelegate = this.policyComponent.registerClassPolicy(OnContentReadPolicy.class);
+        this.onContentDownloadDelegate = this.policyComponent.registerClassPolicy(OnContentDownloadPolicy.class);
     }
 
     /**
@@ -389,11 +392,17 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName)
     {
-        return getReader(nodeRef, propertyQName, true);
+        return getReaderImpl(nodeRef, propertyQName, true, false);
+    }
+
+    @Override
+    public ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean attachment)
+    {
+        return getReaderImpl(nodeRef, propertyQName, true, attachment);
     }
 
     @SuppressWarnings("unchecked")
-    private ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy)
+    private ContentReader getReaderImpl(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy, boolean fireContentDownloadPolicy)
     {
         ContentData contentData = getContentData(nodeRef, propertyQName);
 
@@ -418,13 +427,21 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         reader.setLocale(contentData.getLocale());
 
         // Fire the content read policy
-        if (reader != null && fireContentReadPolicy == true)
+        if (fireContentReadPolicy)
         {
-            // Fire the content update policy
-            Set<QName> types = new HashSet<QName>(this.nodeService.getAspects(nodeRef));
+            Set<QName> types = new HashSet<>(this.nodeService.getAspects(nodeRef));
             types.add(this.nodeService.getType(nodeRef));
             OnContentReadPolicy policy = this.onContentReadDelegate.get(nodeRef, types);
             policy.onContentRead(nodeRef);
+        }
+
+        // Fire the content download policy when content is being downloaded as attachment
+        if (fireContentDownloadPolicy)
+        {
+            Set<QName> types = new HashSet<>(this.nodeService.getAspects(nodeRef));
+            types.add(this.nodeService.getType(nodeRef));
+            OnContentDownloadPolicy policy = this.onContentDownloadDelegate.get(nodeRef, types);
+            policy.onContentDownload(nodeRef);
         }
 
         // we don't listen for anything
@@ -483,7 +500,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         }
 
         // check for an existing URL - the get of the reader will perform type checking
-        ContentReader existingContentReader = getReader(nodeRef, propertyQName, false);
+        ContentReader existingContentReader = getReaderImpl(nodeRef, propertyQName, false, false);
 
         // get the content using the (potentially) existing content - the new content
         // can be wherever the store decides.

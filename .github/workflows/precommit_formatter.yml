@@ -13,13 +13,21 @@ jobs:
   format-code:
     name: "Reformat code"
     runs-on: ubuntu-latest
-    # Commits the reformatted code and pushes it back using the default GITHUB_TOKEN.
     permissions:
       contents: write
     if: contains(github.event.head_commit.message, '[reformat code]')
     steps:
+      - name: "Generate GitHub App token"
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
+          permission-contents: write
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - name: Set up Python ${{ inputs.python-version }}
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+      - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.9"
@@ -29,11 +37,9 @@ jobs:
           extra_args: --all-files
       - name: Update secrets baseline
         run: pip install detect-secrets && detect-secrets scan --baseline .secrets.baseline
-      - uses: Alfresco/alfresco-build-tools/.github/actions/git-commit-changes@v18.20.0
+      - uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
         with:
-          username: ${{ secrets.BOT_GITHUB_USERNAME }}
-          add-options: -u
-          commit-message: "Apply Pre-Commit code formatting"
-          skip-if-no-changes: true
-      - name: Push changes
-        run: git push
+          token: ${{ steps.app-token.outputs.token }}
+          files: "*.java"
+          message: "Apply Pre-Commit code formatting"
+          if-no-commit: info

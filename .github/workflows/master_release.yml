@@ -76,6 +76,8 @@ jobs:
       - name: "Compute release and next development versions"
         id: versions
         uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@v18.20.0
+      - name: "Verify release version"
+        run: bash scripts/ci/verify_release_tag.sh
       - name: "Release"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@v18.20.0

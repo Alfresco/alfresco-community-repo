@@ -449,10 +449,18 @@ jobs:
         run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set the host IP"
         run: echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
+      - name: "Generate GitHub App token"
+        id: app-token
+        if: ${{ matrix.mtls }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
+          permission-contents: write
       - name: "Generate Keystores and Truststores for Mutual TLS configuration"
         if: ${{ matrix.mtls }}
         run: |
-          git clone -b "master" --depth=1 "https://${{ secrets.BOT_GITHUB_USERNAME }}:${{ secrets.BOT_GITHUB_TOKEN }}@github.com/Alfresco/alfresco-ssl-generator.git"
+          git clone -b "master" --depth=1 "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/Alfresco/alfresco-ssl-generator.git"
           if ${{ matrix.disabledHostnameVerification }} ; then
             bash ${{ env.CI_WORKSPACE }}/alfresco-ssl-generator/scripts/ci/generate_keystores_wrong_hostnames.sh
             echo "HOSTNAME_VERIFICATION_DISABLED=true" >> "$GITHUB_ENV"

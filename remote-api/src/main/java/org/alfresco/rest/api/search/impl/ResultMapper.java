@@ -549,6 +549,7 @@ public class ResultMapper
 
         // Put it all together
         context = new SearchContext(resultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest() ? searchQuery : null);
+        context.setNextCursor(resultSet.getNextCursor());
         return isNullContext(context) ? null : context;
     }
 
@@ -810,7 +811,8 @@ public class ResultMapper
                 && context.getConsistency() == null
                 && context.getSpellCheck() == null
                 && context.getFacetsFields() == null
-                && context.getFacets() == null);
+                && context.getFacets() == null
+                && context.getNextCursor() == null);
     }
 
     /**

@@ -65,6 +65,11 @@ public class ElasticsearchResultSetBuilder
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse)
     {
+        return build(searchParameters, searchResponse, null);
+    }
+
+    public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, String nextCursor)
+    {
         var hits = ofNullable(searchResponse.hits()).map(HitsMetadata::hits).orElse(List.of());
         List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters.isBulkFetchEnabled());
 
@@ -89,7 +94,8 @@ public class ElasticsearchResultSetBuilder
                 start,
                 facetQueries,
                 fieldFacets,
-                highlights);
+                highlights,
+                nextCursor);
     }
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, List<Hit<Object>> hits, long totalHits, long queryTime)

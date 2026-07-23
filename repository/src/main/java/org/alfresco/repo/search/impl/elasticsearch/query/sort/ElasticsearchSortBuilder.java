@@ -28,6 +28,7 @@ package org.alfresco.repo.search.impl.elasticsearch.query.sort;
 import static org.alfresco.repo.search.adaptor.QueryConstants.PROPERTY_FIELD_PREFIX;
 import static org.alfresco.repo.search.impl.QueryParserUtils.matchPropertyDefinition;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -57,6 +58,7 @@ public class ElasticsearchSortBuilder
 {
     private final static Logger LOGGER = LoggerFactory.getLogger(ElasticsearchSortBuilder.class);
 
+    public static final String SHARD_DOC_FIELD = "_shard_doc";
     private final NamespaceDAO namespaceDAO;
     private final DictionaryService dictionaryService;
     private final IndexConfigurationInitializer indexConfigurationInitializer;
@@ -125,6 +127,20 @@ public class ElasticsearchSortBuilder
 
             return sortBuilder;
         }).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    public List<SortOptions> getSortBuildersWithTiebreaker(SearchParameters searchParameters)
+    {
+        List<SortOptions> sortOptions = new ArrayList<>(getSortBuilders(searchParameters));
+        if (sortOptions.isEmpty())
+        {
+            // no user sort then sort by score, then tiebreaker
+            sortOptions.add(new SortOptions.Builder().score(new ScoreSort.Builder().order(SortOrder.Desc).build()).build());
+        }
+        sortOptions.add(new SortOptions.Builder()
+                .field(new FieldSort.Builder().field(SHARD_DOC_FIELD).order(SortOrder.Asc).build())
+                .build());
+        return sortOptions;
     }
 
     private String getSortableFieldName(String name)

@@ -65,11 +65,21 @@ public class ElasticsearchResultSet implements SearchEngineResultSet
     private final Map<String, Integer> facetQueries;
     private final Map<String, List<Pair<String, Integer>>> fieldFacets;
     private final Map<NodeRef, List<Pair<String, List<String>>>> highlights;
+    private final String nextCursor;
 
     public ElasticsearchResultSet(NodeService nodeService, List<NodeRefAndScore> nodeRefAndScores, SimpleResultSetMetaData resultSetMetaData,
             SpellCheckResult spellCheckResult, long queryTime, long numFound, int start,
             Map<String, Integer> facetQueries, Map<String, List<Pair<String, Integer>>> fieldFacets,
             Map<NodeRef, List<Pair<String, List<String>>>> highlights)
+    {
+        this(nodeService, nodeRefAndScores, resultSetMetaData, spellCheckResult, queryTime, numFound, start,
+                facetQueries, fieldFacets, highlights, (String) null);
+    }
+
+    public ElasticsearchResultSet(NodeService nodeService, List<NodeRefAndScore> nodeRefAndScores, SimpleResultSetMetaData resultSetMetaData,
+            SpellCheckResult spellCheckResult, long queryTime, long numFound, int start,
+            Map<String, Integer> facetQueries, Map<String, List<Pair<String, Integer>>> fieldFacets,
+            Map<NodeRef, List<Pair<String, List<String>>>> highlights, String nextCursor)
     {
         this.nodeService = nodeService;
         this.nodeRefAndScores = nodeRefAndScores;
@@ -81,6 +91,7 @@ public class ElasticsearchResultSet implements SearchEngineResultSet
         this.facetQueries = facetQueries;
         this.fieldFacets = fieldFacets;
         this.highlights = highlights;
+        this.nextCursor = nextCursor;
     }
 
     @Override
@@ -152,6 +163,12 @@ public class ElasticsearchResultSet implements SearchEngineResultSet
     public int getStart()
     {
         return start;
+    }
+
+    @Override
+    public String getNextCursor()
+    {
+        return nextCursor;
     }
 
     @Override

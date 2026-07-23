@@ -132,11 +132,6 @@ public class ElasticsearchSortBuilder
     public List<SortOptions> getSortBuildersWithTiebreaker(SearchParameters searchParameters)
     {
         List<SortOptions> sortOptions = new ArrayList<>(getSortBuilders(searchParameters));
-        if (sortOptions.isEmpty())
-        {
-            // no user sort then sort by score, then tiebreaker
-            sortOptions.add(new SortOptions.Builder().score(new ScoreSort.Builder().order(SortOrder.Desc).build()).build());
-        }
         sortOptions.add(new SortOptions.Builder()
                 .field(new FieldSort.Builder().field(SHARD_DOC_FIELD).order(SortOrder.Asc).build())
                 .build());

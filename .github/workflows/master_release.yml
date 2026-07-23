@@ -125,6 +125,20 @@ jobs:
         run: bash ./scripts/ci/update_downstream.sh
         env:
           APP_TOKEN: ${{ steps.app-token.outputs.token }}
+      - name: "Compute downstream commit message"
+        id: commit-meta
+        env:
+          COMMIT_TITLE: ${{ needs.commit_parser.outputs.title }}
+          VERSION: ${{ steps.update-downstream.outputs.version }}
+        run: |
+          if [[ "${COMMIT_TITLE}" =~ \[force[^]]*\] ]]; then
+            FORCE_TOKEN=$(echo "${COMMIT_TITLE}" | sed "s|^.*\(\[force[^]]*\]\).*$|\1|g")
+            echo "message=${FORCE_TOKEN} Update community-repo version to ${VERSION}" >> "$GITHUB_OUTPUT"
+            echo "allow-empty=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "message=Update community-repo version to ${VERSION}" >> "$GITHUB_OUTPUT"
+            echo "allow-empty=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: "Commit downstream version update"
         uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
         with:
@@ -133,7 +147,8 @@ jobs:
           ref: ${{ github.ref_name }}
           workspace: ${{ github.workspace }}/../alfresco-enterprise-repo
           files: pom.xml
-          message: "Update community-repo version to ${{ steps.update-downstream.outputs.version }}"
+          message: ${{ steps.commit-meta.outputs.message }}
+          allow-empty-commit: ${{ steps.commit-meta.outputs.allow-empty }}
           if-no-commit: info
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

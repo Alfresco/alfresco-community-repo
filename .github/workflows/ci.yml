@@ -456,7 +456,7 @@ jobs:
         with:
           client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
           private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
-          permission-contents: write
+          permission-contents: read
       - name: "Generate Keystores and Truststores for Mutual TLS configuration"
         if: ${{ matrix.mtls }}
         run: |

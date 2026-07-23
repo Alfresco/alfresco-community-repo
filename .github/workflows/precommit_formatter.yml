@@ -40,6 +40,8 @@ jobs:
       - uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
         with:
           token: ${{ steps.app-token.outputs.token }}
-          files: "*.java"
+          files: |
+            *.java
+            .secrets.baseline
           message: "Apply Pre-Commit code formatting"
           if-no-commit: info

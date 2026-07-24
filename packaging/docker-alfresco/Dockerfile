@@ -44,7 +44,7 @@ RUN sed -i "s/shared.loader=/shared.loader=\${catalina.base}\/shared\/classes/" 
 RUN mkdir -p ${TOMCAT_DIR}/amps
 
 # Copy the amps from build context to the appropriate location for your application server
-COPY ${resource_path}/amps ${TOMCAT_DIR}/amps/
+COPY ${resource_path}/amps ${TOMCAT_DIR}/amps
 
 # Install amps on alfresco.war
 RUN java -jar ${TOMCAT_DIR}/alfresco-mmt/alfresco-mmt*.jar install \

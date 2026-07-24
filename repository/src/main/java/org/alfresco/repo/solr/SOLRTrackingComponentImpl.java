@@ -955,7 +955,9 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
                         @Override
                         public void done()
-                        {}
+                        {
+                            // No action required once all parent associations have been handled.
+                        }
                     });
 
                     for (ChildAssociationRef ref : categoryPaths.getCategoryParents())

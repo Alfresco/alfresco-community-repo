@@ -160,7 +160,7 @@ public class SearchRequestBuilderService
 
         if (!context.getSearchAfter().isEmpty())
         {
-            builder.searchAfter(context.getSearchAfter());
+            builder.searchAfterVals(context.getSearchAfter());
         }
 
         applyCommonWithoutIndex(searchParameters, builder, elasticsearchSortBuilder.getSortBuildersWithTiebreaker(searchParameters));

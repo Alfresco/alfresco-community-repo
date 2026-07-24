@@ -25,13 +25,15 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.opensearch.client.opensearch._types.FieldValue;
 
-// Encodes/decodes the opaque cursor a Base64 JSON blob holding the PIT id and the last page's sort values ({@code {"pitId":..., "sort":[...]}}). Clients just sends nextCursor back as searchAfter the PIT id is refreshed from each response.
+// Encodes and decodes the opaque cursor, a Base64-encoded JSON blob holding the PIT id and the last page's sort values {"pitId":..., "sort":[...]}. The client then sends nextCursor back as searchAfter, and the PIT id is refreshed from each response.
 public final class SearchAfterCursor
 {
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -45,10 +47,10 @@ public final class SearchAfterCursor
      * @param pitId
      *            the (latest) Point-In-Time id for the pagination session
      * @param sortValues
-     *            the last hit's sort values
+     *            the last hit's typed sort values
      * @return the opaque cursor, or {@code null} when there is nothing to carry forward
      */
-    public static String encode(String pitId, List<String> sortValues)
+    public static String encode(String pitId, List<FieldValue> sortValues)
     {
         boolean noPit = pitId == null || pitId.isBlank();
         boolean noSort = sortValues == null || sortValues.isEmpty();
@@ -58,7 +60,8 @@ public final class SearchAfterCursor
         }
         try
         {
-            byte[] json = MAPPER.writeValueAsBytes(new Payload(pitId, noSort ? List.of() : sortValues));
+            List<Object> rawSort = noSort ? List.of() : sortValues.stream().map(SearchAfterCursor::toRawValue).toList();
+            byte[] json = MAPPER.writeValueAsBytes(new Payload(pitId, rawSort));
             return Base64.getUrlEncoder().withoutPadding().encodeToString(json);
         }
         catch (Exception exception)
@@ -77,8 +80,12 @@ public final class SearchAfterCursor
         {
             byte[] json = Base64.getUrlDecoder().decode(cursor);
             Payload payload = MAPPER.readValue(json, Payload.class);
-            List<String> sort = payload.sort() == null ? List.of() : payload.sort();
-            return new Decoded(payload.pitId(), sort);
+            List<FieldValue> sort = new ArrayList<>();
+            if (payload.sort() != null)
+            {
+                payload.sort().forEach(raw -> sort.add(toFieldValue(raw)));
+            }
+            return new Decoded(payload.pitId(), List.copyOf(sort));
         }
         catch (Exception exception)
         {
@@ -86,9 +93,52 @@ public final class SearchAfterCursor
         }
     }
 
-    public record Decoded(String pitId, List<String> sort)
+    private static Object toRawValue(FieldValue fieldValue)
+    {
+        if (fieldValue == null || fieldValue.isNull())
+        {
+            return null;
+        }
+        if (fieldValue.isLong())
+        {
+            return fieldValue.longValue();
+        }
+        if (fieldValue.isDouble())
+        {
+            return fieldValue.doubleValue();
+        }
+        if (fieldValue.isBoolean())
+        {
+            return fieldValue.booleanValue();
+        }
+        return fieldValue.stringValue();
+    }
+
+    // Rebuild a typed FieldValue from the plain JSON value produced by {@link #toRawValue}.
+    private static FieldValue toFieldValue(Object raw)
+    {
+        if (raw == null)
+        {
+            return FieldValue.NULL;
+        }
+        if (raw instanceof Boolean booleanValue)
+        {
+            return FieldValue.of(booleanValue);
+        }
+        if (raw instanceof Double || raw instanceof Float)
+        {
+            return FieldValue.of(((Number) raw).doubleValue());
+        }
+        if (raw instanceof Number number)
+        {
+            return FieldValue.of(number.longValue());
+        }
+        return FieldValue.of(raw.toString());
+    }
+
+    public record Decoded(String pitId, List<FieldValue> sort)
     {}
 
-    private record Payload(@JsonProperty("pitId") String pitId, @JsonProperty("sort") List<String> sort)
+    private record Payload(@JsonProperty("pitId") String pitId, @JsonProperty("sort") List<Object> sort)
     {}
 }

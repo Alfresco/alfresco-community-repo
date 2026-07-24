@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.junit.Test;
+import org.opensearch.client.opensearch._types.FieldValue;
 
 import org.alfresco.repo.search.impl.elasticsearch.query.SearchAfterCursor.Decoded;
 
@@ -42,13 +43,13 @@ public class SearchAfterCursorTest
     public void shouldRoundTripPitIdAndSortValues()
     {
         String pitId = "pit-abc-123";
-        List<String> sort = List.of("2024-01-01T00:00:00Z", "abc-123-uuid");
+        List<FieldValue> sort = List.of(FieldValue.of("2024-01-01T00:00:00Z"), FieldValue.of("abc-123-uuid"));
 
         String cursor = SearchAfterCursor.encode(pitId, sort);
         Decoded decoded = SearchAfterCursor.decode(cursor);
 
         assertEquals(pitId, decoded.pitId());
-        assertEquals(sort, decoded.sort());
+        assertSortEquals(sort, decoded.sort());
     }
 
     @Test
@@ -83,5 +84,36 @@ public class SearchAfterCursorTest
     public void shouldRejectInvalidCursor()
     {
         SearchAfterCursor.decode("@@@not-a-valid-cursor@@@");
+    }
+
+    @Test
+    public void shouldPreserveSortValueTypes()
+    {
+        // A keyword value stays a string, while the epoch-millis date and the _shard_doc tiebreaker stay numeric;
+        // coercing the numeric values to strings would break search_after because OpenSearch compares by type.
+        List<FieldValue> sort = List.of(
+                FieldValue.of("text/plain"),
+                FieldValue.of(1704067200000L),
+                FieldValue.of(42L));
+
+        Decoded decoded = SearchAfterCursor.decode(SearchAfterCursor.encode("pit-1", sort));
+        List<FieldValue> roundTripped = decoded.sort();
+
+        assertEquals(3, roundTripped.size());
+        assertTrue("keyword value must stay a string", roundTripped.get(0).isString());
+        assertEquals("text/plain", roundTripped.get(0).stringValue());
+        assertTrue("date value must stay numeric", roundTripped.get(1).isLong());
+        assertEquals(1704067200000L, roundTripped.get(1).longValue());
+        assertTrue("_shard_doc tiebreaker must stay numeric", roundTripped.get(2).isLong());
+        assertEquals(42L, roundTripped.get(2).longValue());
+    }
+
+    private static void assertSortEquals(List<FieldValue> expected, List<FieldValue> actual)
+    {
+        assertEquals(expected.size(), actual.size());
+        for (int i = 0; i < expected.size(); i++)
+        {
+            assertEquals(expected.get(i)._toJsonString(), actual.get(i)._toJsonString());
+        }
     }
 }

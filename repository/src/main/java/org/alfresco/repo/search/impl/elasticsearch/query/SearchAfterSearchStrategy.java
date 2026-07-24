@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
@@ -143,13 +144,13 @@ public class SearchAfterSearchStrategy extends SearchExecutionStrategy
         }
     }
 
-    private static List<String> lastSort(List<Hit<Object>> hits)
+    private static List<FieldValue> lastSort(List<Hit<Object>> hits)
     {
         if (hits.isEmpty())
         {
             return List.of();
         }
-        List<String> sort = hits.get(hits.size() - 1).sort();
+        List<FieldValue> sort = hits.get(hits.size() - 1).sortVals();
         return sort == null ? List.of() : sort;
     }
 }

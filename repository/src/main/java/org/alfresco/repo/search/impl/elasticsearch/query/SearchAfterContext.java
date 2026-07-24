@@ -27,13 +27,15 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 
 import java.util.List;
 
+import org.opensearch.client.opensearch._types.FieldValue;
+
 public final class SearchAfterContext
 {
     private final String pitId;
     private final String keepAlive;
-    private final List<String> searchAfter;
+    private final List<FieldValue> searchAfter;
 
-    public SearchAfterContext(String pitId, String keepAlive, List<String> searchAfter)
+    public SearchAfterContext(String pitId, String keepAlive, List<FieldValue> searchAfter)
     {
         this.pitId = pitId;
         this.keepAlive = keepAlive;
@@ -51,7 +53,7 @@ public final class SearchAfterContext
     }
 
     // the previous page's last sort values, or an empty list for the first page
-    public List<String> getSearchAfter()
+    public List<FieldValue> getSearchAfter()
     {
         return searchAfter;
     }

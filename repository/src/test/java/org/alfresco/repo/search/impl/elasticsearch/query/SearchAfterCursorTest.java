@@ -93,7 +93,7 @@ public class SearchAfterCursorTest
         // coercing the numeric values to strings would break search_after because OpenSearch compares by type.
         List<FieldValue> sort = List.of(
                 FieldValue.of("text/plain"),
-                FieldValue.of(1704067200000L),
+                FieldValue.of(1_704_067_200_000L),
                 FieldValue.of(42L));
 
         Decoded decoded = SearchAfterCursor.decode(SearchAfterCursor.encode("pit-1", sort));
@@ -103,7 +103,7 @@ public class SearchAfterCursorTest
         assertTrue("keyword value must stay a string", roundTripped.get(0).isString());
         assertEquals("text/plain", roundTripped.get(0).stringValue());
         assertTrue("date value must stay numeric", roundTripped.get(1).isLong());
-        assertEquals(1704067200000L, roundTripped.get(1).longValue());
+        assertEquals(1_704_067_200_000L, roundTripped.get(1).longValue());
         assertTrue("_shard_doc tiebreaker must stay numeric", roundTripped.get(2).isLong());
         assertEquals(42L, roundTripped.get(2).longValue());
     }

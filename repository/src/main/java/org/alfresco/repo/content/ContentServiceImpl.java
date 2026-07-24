@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -86,7 +87,7 @@ import org.alfresco.util.TempFileProvider;
 public class ContentServiceImpl implements ContentService, ApplicationContextAware
 {
     private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
-
+    private AuditModelRegistry auditModelRegistry;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private MimetypeService mimetypeService;
@@ -118,6 +119,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentDownloadPolicy> onContentDownloadDelegate;
 
+    public void setAuditModelRegistry(AuditModelRegistry auditModelRegistry){
+        this.auditModelRegistry = auditModelRegistry;
+    }
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
     {
         this.transactionHelper = helper;
@@ -405,6 +409,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private ContentReader getReaderImpl(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy, boolean fireContentDownloadPolicy)
     {
         ContentData contentData = getContentData(nodeRef, propertyQName);
+        boolean isContentDownloadAsReadEnabled = isContentDownloadTreatedAsRead();
 
         // check that the URL is available
         if (contentData == null || contentData.getContentUrl() == null)
@@ -427,7 +432,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         reader.setLocale(contentData.getLocale());
 
         // Fire the content read policy
-        if (fireContentReadPolicy)
+        if (fireContentReadPolicy && (!fireContentDownloadPolicy || isContentDownloadAsReadEnabled))
         {
             Set<QName> types = new HashSet<>(this.nodeService.getAspects(nodeRef));
             types.add(this.nodeService.getType(nodeRef));
@@ -764,5 +769,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " and property name: " + propertyQName + " has no content.");
         }
         return contentData;
+    }
+
+    private boolean isContentDownloadTreatedAsRead(){
+        return auditModelRegistry.isContentDownloadAsReadEnabled();
     }
 }

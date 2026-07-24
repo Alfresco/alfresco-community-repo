@@ -503,7 +503,6 @@ jobs:
             pom-dir: tas-webdav
           - test-name: "Integration TAS tests"
             pom-dir: tas-integration
-
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:

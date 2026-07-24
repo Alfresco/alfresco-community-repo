@@ -43,6 +43,7 @@ import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
@@ -113,6 +114,27 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
                 nodeResource.getModifiedByUser().getDisplayName());
         assertNotNull("Missing modifiedAt property.", nodeResource.getModifiedAt());
         assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, nodeResource.getPrimaryAssocQName());
+    }
+
+    @Test
+    public void testCreateEventWithEmptyNamespaceAssocQName()
+    {
+        // Create a node whose primary child-association QName has an empty namespace.
+        // The rendered primaryAssocQName must have no prefix and no leading colon (name, not :name).
+        final String localName = "emptyNsAssoc-" + System.currentTimeMillis();
+        final NodeRef nodeRef = retryingTransactionHelper.doInTransaction(() -> nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.DEFAULT_URI, localName),
+                ContentModel.TYPE_CONTENT).getChildRef());
+
+        final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
+        assertEquals("Repo event type", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+
+        final NodeResource nodeResource = getNodeResource(resultRepoEvent);
+        assertEquals(nodeRef.getId(), nodeResource.getId());
+        assertEquals("Empty-namespace primaryAssocQName should have no prefix or leading colon.",
+                localName, nodeResource.getPrimaryAssocQName());
     }
 
     @Test

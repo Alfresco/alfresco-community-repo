@@ -185,7 +185,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
         }
         catch (IOException e)
         {
-            throw new ApiException("Could not read content from HTTP request body.", e.getCause());
+            throw new ApiException("Could not read content from HTTP request body.", e);
         }
     }
 

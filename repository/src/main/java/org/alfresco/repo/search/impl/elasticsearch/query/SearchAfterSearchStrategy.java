@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 
 // Deep-pagination strategy based on Elasticsearch search_after over a Point-In-Time (PIT). The opaque cursor carried on SearchParameters.getSearchAfter() holds the pagination session's PIT id and the previous page's last sort values. On the first page (empty cursor) a PIT is opened on every page the query runs with from=0, the search_after clause and a sort that ends with the _shard_doc tiebreaker, so pages contain no gaps or duplicates and the view stays consistent for the whole session.
 // Each response returns a (possibly rotated) PIT id which is folded into the next cursor. The PIT is closed on the last page (fewer hits than requested) and abandoned PITs expire via their keep_alive. Because it never asks Elasticsearch to skip documents, it is not bound by {@code index.max_result_window} and never loads-and-skips results in memory.
+@SuppressWarnings("PMD.GuardLogStatement")
 public class SearchAfterSearchStrategy extends SearchExecutionStrategy
 {
     private final SearchRequestBuilderService requestBuilderService;
@@ -94,23 +95,24 @@ public class SearchAfterSearchStrategy extends SearchExecutionStrategy
             pitId = pitService.open(indexName, keepAlive);
         }
 
+        boolean success = false;
         try
         {
             SearchAfterContext context = new SearchAfterContext(pitId, keepAlive, cursor.sort());
             SearchRequest searchRequest = requestBuilderService.buildSearchAfterRequest(searchParameters, queryWithPermissions, size, context);
 
-            LOGGER.debug("Execute search_after query request: {}", searchRequest.toJsonString());
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Execute search_after query request: {}", searchRequest.toJsonString());
+            }
             SearchResponse<Object> searchResponse = httpClientFactory.getElasticsearchClient().search(searchRequest, Object.class);
-
-            LOGGER.debug("Response hits from search_after query {}", searchResponse.hits().total().value());
-            LOGGER.trace("Query response JSON: {}", searchResponse.toJsonString());
 
             validateResponse(searchResponse);
 
             List<Hit<Object>> hits = Optional.ofNullable(searchResponse.hits()).map(HitsMetadata::hits).orElse(List.of());
             // The response may rotate the PIT id always carry the latest one forward.
             String responsePitId = searchResponse.pitId() != null ? searchResponse.pitId() : pitId;
-            boolean lastPage = hits.size() < size;
+            boolean lastPage = size <= 0 || hits.size() < size;
 
             String nextCursor;
             if (lastPage)
@@ -123,24 +125,22 @@ public class SearchAfterSearchStrategy extends SearchExecutionStrategy
                 nextCursor = SearchAfterCursor.encode(responsePitId, lastSort(hits));
             }
 
-            return resultSetBuilder.build(searchParameters, searchResponse, nextCursor);
+            ResultSet resultSet = resultSetBuilder.build(searchParameters, searchResponse, nextCursor);
+            success = true;
+            return resultSet;
         }
         catch (IOException exception)
         {
-            if (firstPage)
-            {
-                pitService.close(pitId);
-            }
             LOGGER.error("Error during search_after search execution: " + exception);
             throw new IllegalStateException("Error during search_after search execution", exception);
         }
-        catch (RuntimeException exception)
+        finally
         {
-            if (firstPage)
+            // Release the PIT we opened for this page if the request did not complete successfully.
+            if (!success && firstPage)
             {
                 pitService.close(pitId);
             }
-            throw exception;
         }
     }
 

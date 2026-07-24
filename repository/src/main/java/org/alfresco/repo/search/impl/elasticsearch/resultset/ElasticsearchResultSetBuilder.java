@@ -84,7 +84,7 @@ public class ElasticsearchResultSetBuilder
         Map<String, Integer> facetQueries = aggregation.facetQueries();
         Map<String, List<Pair<String, Integer>>> fieldFacets = aggregation.fieldFacets();
         Map<NodeRef, List<Pair<String, List<String>>>> highlights = highlightsHandler.handle(searchParameters, searchResponse);
-        return new ElasticsearchResultSet(
+        ElasticsearchResultSet resultSet = new ElasticsearchResultSet(
                 nodeService,
                 nodeRefAndScores,
                 resultSetMetaData,
@@ -94,8 +94,9 @@ public class ElasticsearchResultSetBuilder
                 start,
                 facetQueries,
                 fieldFacets,
-                highlights,
-                nextCursor);
+                highlights);
+        resultSet.setNextCursor(nextCursor);
+        return resultSet;
     }
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, List<Hit<Object>> hits, long totalHits, long queryTime)

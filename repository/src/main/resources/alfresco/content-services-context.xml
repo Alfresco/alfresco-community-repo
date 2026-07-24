@@ -140,6 +140,9 @@
    
    <!-- Abstract bean definition defining base definition for content service -->
    <bean id="baseContentService" class="org.alfresco.repo.content.ContentServiceImpl" abstract="true" init-method="init">
+       <property name="auditModelRegistry">
+           <ref bean="Audit" />
+       </property>
       <property name="retryingTransactionHelper">
           <ref bean="retryingTransactionHelper"/>
       </property>

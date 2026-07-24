@@ -86,6 +86,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /** The name of the global enablement property. */
     public static final String PROPERTY_AUDIT_ENABLED = "audit.enabled";
 
+    private static final String AUDIT_PROPERTY_DOWNLOAD_AS_READ = ".contentDownloadsAsRead";
     private static final String AUDITING_TO_DATABASE = ".auditingToDatabase";
     private static final String AUDITING_TO_AUDIT_STORAGE = ".auditingToAuditStorage";
     /** The name of the strict loading flag. */
@@ -253,6 +254,18 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     }
 
     /**
+     * Audit Component defines if the Downloading the component content will be marked as read.
+     * If this is enabled, then the onContentRead policy will be fired when the content is downloaded.
+     * @return the status
+     */
+    @Override
+    public boolean isContentDownloadAsReadEnabled() {
+        String value = getProperty(AUDIT_PROPERTY_AUDIT_ENABLED + AUDIT_PROPERTY_DOWNLOAD_AS_READ);
+        return value != null && value.equalsIgnoreCase("true");
+    }
+
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -321,7 +334,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             properties.put(AUDIT_PROPERTY_AUDIT_ENABLED, false);
             properties.put(AUDIT_PROPERTY_AUDIT_ENABLED + AUDITING_TO_DATABASE, true);
             properties.put(AUDIT_PROPERTY_AUDIT_ENABLED + AUDITING_TO_AUDIT_STORAGE, false);
-
+            properties.put(AUDIT_PROPERTY_AUDIT_ENABLED + AUDIT_PROPERTY_DOWNLOAD_AS_READ,true);
             // Let's search for config files in the appropriate places. The individual applications they contain can still
             // be enabled/disabled by the bean properties
             ResourceFinder resourceFinder = new ResourceFinder(getParent());

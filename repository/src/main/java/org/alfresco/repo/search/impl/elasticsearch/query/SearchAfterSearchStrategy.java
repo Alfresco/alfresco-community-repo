@@ -101,12 +101,11 @@ public class SearchAfterSearchStrategy extends SearchExecutionStrategy
             SearchAfterContext context = new SearchAfterContext(pitId, keepAlive, cursor.sort());
             SearchRequest searchRequest = requestBuilderService.buildSearchAfterRequest(searchParameters, queryWithPermissions, size, context);
 
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Execute search_after query request: {}", searchRequest.toJsonString());
-            }
+            LOGGER.debug("Execute search_after query request: {}", searchRequest.toJsonString());
             SearchResponse<Object> searchResponse = httpClientFactory.getElasticsearchClient().search(searchRequest, Object.class);
 
+            LOGGER.debug("Response hits from search_after query {}", searchResponse.hits().total().value());
+            LOGGER.trace("Query response JSON: {}", searchResponse.toJsonString());
             validateResponse(searchResponse);
 
             List<Hit<Object>> hits = Optional.ofNullable(searchResponse.hits()).map(HitsMetadata::hits).orElse(List.of());

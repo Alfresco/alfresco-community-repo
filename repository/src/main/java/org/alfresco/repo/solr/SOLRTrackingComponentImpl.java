@@ -932,7 +932,7 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
                     // DB query restricted to the primary parent once a node's total parent-assoc count exceeds
                     // PARENT_ASSOCS_CACHE_FILTER_THRESHOLD, silently dropping non-primary parents (e.g. group
                     // memberships) from what gets indexed.
-                    final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
+                    final List<ChildAssociationRef> parentAssocs = new ArrayList<>(100);
                     nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback() {
                         @Override
                         public boolean preLoadNodes()

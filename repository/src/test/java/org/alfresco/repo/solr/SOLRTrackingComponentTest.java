@@ -496,14 +496,14 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
     {
         final int numberOfSecondaryParents = 2005;
 
-        final Set<NodeRef> expectedParents = new HashSet<NodeRef>();
+        final Set<NodeRef> expectedParents = new HashSet<>();
         expectedParents.add(rootNodeRef);
 
-        final NodeRef childNodeRef = txnHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
+        final NodeRef childNodeRef = txnHelper.doInTransaction(new RetryingTransactionCallback<>() {
             @Override
             public NodeRef execute() throws Throwable
             {
-                PropertyMap childProps = new PropertyMap();
+                Map<QName, Serializable> childProps = new PropertyMap();
                 childProps.put(ContentModel.PROP_NAME, "testGetNodesMetadata_manyParentAssociations_child");
                 NodeRef child = nodeService.createNode(
                         rootNodeRef,
@@ -514,7 +514,7 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
 
                 for (int i = 0; i < numberOfSecondaryParents; i++)
                 {
-                    PropertyMap parentProps = new PropertyMap();
+                    Map<QName, Serializable> parentProps = new PropertyMap();
                     parentProps.put(ContentModel.PROP_NAME, "testGetNodesMetadata_manyParentAssociations_parent" + i);
                     NodeRef secondaryParent = nodeService.createNode(
                             rootNodeRef,
@@ -538,7 +538,7 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
 
         final Long childNodeId = nodeDAO.getNodeRefStatus(childNodeRef).getDbId();
 
-        final List<NodeMetaData> results = new ArrayList<NodeMetaData>(1);
+        final List<NodeMetaData> results = new ArrayList<>(1);
         final NodeMetaDataQueryCallback callback = new NodeMetaDataQueryCallback() {
             @Override
             public boolean handleNodeMetaData(NodeMetaData nodeMetaData)
@@ -564,7 +564,7 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
 
         assertEquals("Expected metadata for exactly one node", 1, results.size());
 
-        Set<NodeRef> actualParents = new HashSet<NodeRef>();
+        Set<NodeRef> actualParents = new HashSet<>();
         for (ChildAssociationRef assoc : results.get(0).getParentAssocs())
         {
             actualParents.add(assoc.getParentRef());

@@ -41,7 +41,7 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
           files: |
-            *.java
+            **/*.java
             .secrets.baseline
           message: "Apply Pre-Commit code formatting"
           if-no-commit: info

@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -63,6 +64,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -483,6 +485,94 @@ public class SOLRTrackingComponentTest extends BaseSpringTest
         // filter.setIncludePaths(false);
         filter.setIncludeChildAssociations(false);
         getNodeMetaData(nodeMetaDataParams, filter, st);
+    }
+
+    /**
+     * Nodes whose total number of parent associations (primary + secondary) exceed {@code AbstractNodeDAOImpl.PARENT_ASSOCS_CACHE_FILTER_THRESHOLD} (2000) used to have only its primary parent association reported by {@link SOLRTrackingComponentImpl#getNodesMetadata}, silently dropping every non-primary parent (e.g. group membership, modelled as a secondary child association) from what gets indexed by SOLR.
+     */
+    @Category(PerformanceTests.class)
+    @Test
+    public void testGetNodesMetadata_manyParentAssociations() throws Exception
+    {
+        final int numberOfSecondaryParents = 2005;
+
+        final Set<NodeRef> expectedParents = new HashSet<NodeRef>();
+        expectedParents.add(rootNodeRef);
+
+        final NodeRef childNodeRef = txnHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                PropertyMap childProps = new PropertyMap();
+                childProps.put(ContentModel.PROP_NAME, "testGetNodesMetadata_manyParentAssociations_child");
+                NodeRef child = nodeService.createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        ContentModel.ASSOC_CHILDREN,
+                        ContentModel.TYPE_CONTENT,
+                        childProps).getChildRef();
+
+                for (int i = 0; i < numberOfSecondaryParents; i++)
+                {
+                    PropertyMap parentProps = new PropertyMap();
+                    parentProps.put(ContentModel.PROP_NAME, "testGetNodesMetadata_manyParentAssociations_parent" + i);
+                    NodeRef secondaryParent = nodeService.createNode(
+                            rootNodeRef,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.ASSOC_CHILDREN,
+                            ContentModel.TYPE_FOLDER,
+                            parentProps).getChildRef();
+                    expectedParents.add(secondaryParent);
+
+                    // Secondary (non-primary) child association - this is how group membership is modelled.
+                    nodeService.addChild(
+                            secondaryParent,
+                            child,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "secondaryParent" + i));
+                }
+
+                return child;
+            }
+        });
+
+        final Long childNodeId = nodeDAO.getNodeRefStatus(childNodeRef).getDbId();
+
+        final List<NodeMetaData> results = new ArrayList<NodeMetaData>(1);
+        final NodeMetaDataQueryCallback callback = new NodeMetaDataQueryCallback() {
+            @Override
+            public boolean handleNodeMetaData(NodeMetaData nodeMetaData)
+            {
+                results.add(nodeMetaData);
+                return true;
+            }
+        };
+
+        final NodeMetaDataParameters params = new NodeMetaDataParameters();
+        params.setNodeIds(Collections.singletonList(childNodeId));
+        final MetaDataResultsFilter filter = new MetaDataResultsFilter();
+        filter.setIncludeParentAssociations(true);
+
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+            {
+                solrTrackingComponent.getNodesMetadata(params, filter, callback);
+                return null;
+            }
+        }, true, true);
+
+        assertEquals("Expected metadata for exactly one node", 1, results.size());
+
+        Set<NodeRef> actualParents = new HashSet<NodeRef>();
+        for (ChildAssociationRef assoc : results.get(0).getParentAssocs())
+        {
+            actualParents.add(assoc.getParentRef());
+        }
+
+        assertEquals("Expected every parent association (primary and " + numberOfSecondaryParents
+                + " secondary) to be reported to SOLR, but some were silently dropped",
+                expectedParents, actualParents);
     }
 
     @Test

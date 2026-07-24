@@ -187,7 +187,7 @@ public class NodeResourceHelper implements InitializingBean
             ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
             if (primaryParent != null && primaryParent.getQName() != null)
             {
-                result = primaryParent.getQName().getPrefixedQName(namespaceService).getPrefixString();
+                result = primaryParent.getQName().toPrefixString(namespaceService);
             }
         }
         catch (NamespaceException namespaceException)

@@ -495,7 +495,40 @@ import org.alfresco.service.namespace.QName;
         appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(CANCEL_CHECK_OUT));
     }
 
+    /**
+     * @return {@code true} if both readContent and downloadContent sub-actions are present,
+     *         indicating that two separate audit entries (READ and DOWNLOAD) should be emitted.
+     */
+    public boolean hasReadAndDownloadActions()
+    {
+        return subActions.contains(READ_CONTENT) && subActions.contains(DOWNLOAD_CONTENT);
+    }
+
+    /**
+     * Produces audit data with the given action override instead of using getDerivedAction().
+     * Used when both READ and DOWNLOAD are present to emit two separate audit records.
+     *
+     * @param actionOverride the action string to use (e.g., "READ" or "DOWNLOAD")
+     * @return audit data map with the overridden action
+     */
+    public Map<String, Serializable> getAuditDataForAction(String actionOverride)
+    {
+        Map<String, Serializable> auditMap = buildAuditMap(false);
+        // Override the derived action with the specified one
+        auditMap.put(ACTION, actionOverride);
+        return auditMap;
+    }
+
     public Map<String, Serializable> getAuditData(boolean subAction)
+    {
+        if (!subAction)
+        {
+            setAction(getDerivedAction());
+        }
+        return buildAuditMap(subAction);
+    }
+
+    private Map<String, Serializable> buildAuditMap(boolean subAction)
     {
         Map<String, Serializable> auditMap = new HashMap<String, Serializable>(
                 2 *
@@ -513,11 +546,6 @@ import org.alfresco.service.namespace.QName;
                                 (versionProperties != null ? versionProperties.size() + 1 : 0) +
                                 getSubAuditDataSize()));
 
-        // For a transaction, set the action
-        if (!subAction)
-        {
-            setAction(getDerivedAction());
-        }
         auditMap.put(ACTION, action);
 
         if (!subAction) // no need to repeat for sub actions

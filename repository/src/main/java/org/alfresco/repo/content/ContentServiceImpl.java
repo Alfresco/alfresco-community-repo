@@ -88,7 +88,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
     private DictionaryService dictionaryService;
     private NodeService nodeService;
-    private boolean downloadTriggersReadPolicy;
+    private boolean isContentDownloadTriggersReadPolicy;
     private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
@@ -118,9 +118,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentDownloadPolicy> onContentDownloadDelegate;
 
-    public void setDownloadTriggersReadPolicy(boolean downloadTriggersReadPolicy)
+    public void setContentDownloadTriggersReadPolicy(boolean downloadTriggersReadPolicy)
     {
-        this.downloadTriggersReadPolicy = downloadTriggersReadPolicy;
+        this.isContentDownloadTriggersReadPolicy = downloadTriggersReadPolicy;
     }
 
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
@@ -431,10 +431,16 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         reader.setEncoding(contentData.getEncoding());
         reader.setLocale(contentData.getLocale());
 
-        boolean shouldFireRead = fireContentReadPolicy && (!fireContentDownloadPolicy || downloadTriggersReadPolicy);
+        // Determine which policies to fire.
+        // When downloading (fireContentDownloadPolicy=true):
+        //   - Always fire OnContentDownloadPolicy → audit: "DOWNLOAD"
+        //   - If isContentDownloadTriggersReadPolicy is true, also fire OnContentReadPolicy → audit: "READ"
+        //     (AccessAuditor.afterCommit will emit two separate audit entries)
+        // When previewing (fireContentDownloadPolicy=false):
+        //   - Fire OnContentReadPolicy → audit: "READ"
+        boolean shouldFireRead = fireContentReadPolicy && (!fireContentDownloadPolicy || isContentDownloadTriggersReadPolicy);
         boolean shouldFireDownload = fireContentDownloadPolicy;
 
-        // Compute types only once if any policy needs firing
         if (shouldFireRead || shouldFireDownload)
         {
             Set<QName> types = new HashSet<>(this.nodeService.getAspects(nodeRef));
@@ -442,11 +448,13 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
             if (shouldFireRead)
             {
-                this.onContentReadDelegate.get(nodeRef, types).onContentRead(nodeRef);
+                OnContentReadPolicy readPolicy = this.onContentReadDelegate.get(nodeRef, types);
+                readPolicy.onContentRead(nodeRef);
             }
             if (shouldFireDownload)
             {
-                this.onContentDownloadDelegate.get(nodeRef, types).onContentDownload(nodeRef);
+                OnContentDownloadPolicy downloadPolicy = this.onContentDownloadDelegate.get(nodeRef, types);
+                downloadPolicy.onContentDownload(nodeRef);
             }
         }
 

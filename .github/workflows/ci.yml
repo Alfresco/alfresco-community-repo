@@ -701,3 +701,55 @@ jobs:
         run: |
           mvn verify -Pags,start-api-explorer -DskipTests &
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8085/api-explorer"
+
+  test_get_downstream_commit_message:
+    name: "Test get-downstream-commit-message action"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Test - plain commit produces version-bump message"
+        id: plain
+        uses: Alfresco/alfresco-build-tools/.github/actions/get-downstream-commit-message@feature/ACS-12079_add_get_downstream_commit_message_action
+        with:
+          commit-title: "ACS-123: some regular change"
+          version: "1.2.3"
+          downstream-repo: "community-repo"
+
+      - name: "Assert - plain message and allow-empty-commit=false"
+        env:
+          MSG: ${{ steps.plain.outputs.message }}
+          ALLOW_EMPTY: ${{ steps.plain.outputs.allow-empty-commit }}
+        run: |
+          [ "$MSG" = "Update community-repo version to 1.2.3" ] || { echo "::error::unexpected message: '$MSG'"; exit 1; }
+          [ "$ALLOW_EMPTY" = "false" ] || { echo "::error::expected allow-empty-commit=false, got: '$ALLOW_EMPTY'"; exit 1; }
+
+      - name: "Test - [force] token is prepended and allow-empty-commit=true"
+        id: force
+        uses: Alfresco/alfresco-build-tools/.github/actions/get-downstream-commit-message@feature/ACS-12079_add_get_downstream_commit_message_action
+        with:
+          commit-title: "[force] ACS-123: trigger downstream CI"
+          version: "1.2.3"
+          downstream-repo: "community-repo"
+
+      - name: "Assert - force message and allow-empty-commit=true"
+        env:
+          MSG: ${{ steps.force.outputs.message }}
+          ALLOW_EMPTY: ${{ steps.force.outputs.allow-empty-commit }}
+        run: |
+          [ "$MSG" = "[force] Update community-repo version to 1.2.3" ] || { echo "::error::unexpected message: '$MSG'"; exit 1; }
+          [ "$ALLOW_EMPTY" = "true" ] || { echo "::error::expected allow-empty-commit=true, got: '$ALLOW_EMPTY'"; exit 1; }
+
+      - name: "Test - qualified [force ci] token is preserved"
+        id: force-qualified
+        uses: Alfresco/alfresco-build-tools/.github/actions/get-downstream-commit-message@feature/ACS-12079_add_get_downstream_commit_message_action
+        with:
+          commit-title: "[force ci] ACS-456: force with qualifier"
+          version: "2.0.0"
+          downstream-repo: "enterprise-repo"
+
+      - name: "Assert - qualified force message and allow-empty-commit=true"
+        env:
+          MSG: ${{ steps.force-qualified.outputs.message }}
+          ALLOW_EMPTY: ${{ steps.force-qualified.outputs.allow-empty-commit }}
+        run: |
+          [ "$MSG" = "[force ci] Update enterprise-repo version to 2.0.0" ] || { echo "::error::unexpected message: '$MSG'"; exit 1; }
+          [ "$ALLOW_EMPTY" = "true" ] || { echo "::error::expected allow-empty-commit=true, got: '$ALLOW_EMPTY'"; exit 1; }

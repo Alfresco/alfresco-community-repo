@@ -1632,7 +1632,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         {
             throw new InvalidTypeException("Unable to get a content reader for a folder: " + fileInfo);
         }
-        return contentService.getReader(nodeRef, ContentModel.PROP_CONTENT,true); // explicitly making sure all the CMIS and WebDav has this method selected as DOWNLOAD
+        return contentService.getReader(nodeRef, ContentModel.PROP_CONTENT, true); // explicitly making sure all the CMIS and WebDav has this method selected as DOWNLOAD
     }
 
     @Override

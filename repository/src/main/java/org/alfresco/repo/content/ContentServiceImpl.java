@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,9 +42,10 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.audit.model.AuditModelRegistry;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
-import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
@@ -119,9 +119,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentDownloadPolicy> onContentDownloadDelegate;
 
-    public void setAuditModelRegistry(AuditModelRegistry auditModelRegistry){
+    public void setAuditModelRegistry(AuditModelRegistry auditModelRegistry)
+    {
         this.auditModelRegistry = auditModelRegistry;
     }
+
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
     {
         this.transactionHelper = helper;
@@ -771,7 +773,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return contentData;
     }
 
-    private boolean isContentDownloadTreatedAsRead(){
+    private boolean isContentDownloadTreatedAsRead()
+    {
         return auditModelRegistry.isContentDownloadAsReadEnabled();
     }
 }

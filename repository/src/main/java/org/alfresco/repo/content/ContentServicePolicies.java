@@ -105,7 +105,6 @@ public interface ContentServicePolicies
         public void onContentDownload(NodeRef nodeRef);
     }
 
-
     /**
      * On content read policy interface.
      * 

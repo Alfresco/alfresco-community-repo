@@ -126,10 +126,13 @@
                 </methods>
             </class>
 
-            <!-- 14) SearchCasesTest.testSearchPDFFile: PDF no longer parsed as PDF (pending decision) -->
+            <!-- 14) SearchCasesTest:
+                  - testSearchPDFFile: PDF no longer parsed as PDF (pending decision)
+                  - testSearchExactTermQueries: '=' exact-term operator not supported by ES -->
             <class name="org.alfresco.rest.search.SearchCasesTest">
                 <methods>
                     <exclude name="testSearchPDFFile"/>
+                    <exclude name="testSearchExactTermQueries"/>
                 </methods>
             </class>
             <!-- 15) SearchTest.searchWithOneSortClause / searchWithTwoSortClauses:data-prep in AbstractSearchServicesE2ETest was changed to create cars.txt

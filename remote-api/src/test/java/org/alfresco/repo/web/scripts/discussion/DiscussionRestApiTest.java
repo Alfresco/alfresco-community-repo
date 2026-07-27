@@ -1270,7 +1270,8 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     /**
      * Verifies that ActivitySummaryParser, when processing discussion activity types, strips the internal "params" nested object via DiscussionsActivitySummaryProcessor.
      */
-    public void testDiscussionActivitySummaryParserStripsParams() {
+    public void testDiscussionActivitySummaryParserStripsParams()
+    {
         ActivitySummaryParser parser = (ActivitySummaryParser) getServer().getApplicationContext().getBean("activitySummaryParser");
 
         // Raw activity JSON as stored in alf_activity_post by AbstractDiscussionWebScript.addActivityEntry().

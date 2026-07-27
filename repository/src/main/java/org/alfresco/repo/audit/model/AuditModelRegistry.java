@@ -106,11 +106,4 @@ public interface AuditModelRegistry
      * @return the path mapper
      */
     public PathMapper getAuditPathMapper();
-
-    /**
-     * Audit Component defines if the Downloading the component content will be marked as read. If this is enabled, then the onContentRead policy will be fired when the content is downloaded.
-     * 
-     * @return the status
-     */
-    public boolean isContentDownloadAsReadEnabled();
 }

@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>26.2.0.93-SNAPSHOT</version>
+      <version>26.3.0.7-SNAPSHOT</version>
    </parent>
 
    <build>
@@ -88,7 +88,7 @@
       <dependency>
          <groupId>com.github.docker-java</groupId>
          <artifactId>docker-java</artifactId>
-         <version>3.4.0</version>
+         <version>3.7.1</version>
          <exclusions>
             <exclusion>
                <groupId>org.bouncycastle</groupId>
@@ -99,6 +99,29 @@
                <artifactId>bcpkix-jdk15on</artifactId>
             </exclusion>
          </exclusions>
+      </dependency>
+      <!-- Netty artifacts declared explicitly so the patched Netty propagates to depending projects, e.g. alfresco-enterprise-share -->
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-codec-http</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-handler</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-handler-proxy</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-transport-native-epoll</artifactId>
+         <classifier>linux-x86_64</classifier>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-transport-native-kqueue</artifactId>
+         <classifier>osx-x86_64</classifier>
       </dependency>
       <dependency>
          <groupId>org.bouncycastle</groupId>

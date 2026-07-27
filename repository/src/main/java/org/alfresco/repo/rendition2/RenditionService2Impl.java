@@ -768,16 +768,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }
     }
 
-    /**
-     * This method checks whether the specified source node is of a content class which has been registered for rendition prevention.
-     *
-     * @param sourceNode
-     *            the node to check.
-     * @throws RenditionService2PreventedException
-     *             if the source node is configured for rendition prevention.
-     */
-    // This code is based on the old RenditionServiceImpl.checkSourceNodeForPreventionClass(...)
-    private void checkSourceNodeForPreventionClass(NodeRef sourceNode)
+    @Override
+    public boolean isRenditionPrevented(NodeRef sourceNode)
     {
         if (sourceNode != null && nodeService.exists(sourceNode))
         {
@@ -789,11 +781,29 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             {
                 if (renditionPreventionRegistry.isContentClassRegistered(contentClass))
                 {
-                    String msg = "Node " + sourceNode + " cannot be renditioned as it is of class " + contentClass;
-                    logger.debug(msg);
-                    throw new RenditionService2PreventedException(msg);
+                    logger.debug("Node " + sourceNode + " cannot be renditioned as it is of class " + contentClass);
+                    return true;
                 }
             }
+        }
+        return false;
+    }
+
+    /**
+     * This method checks whether the specified source node is of a content class which has been registered for rendition prevention.
+     *
+     * @param sourceNode
+     *            the node to check.
+     * @throws RenditionService2PreventedException
+     *             if the source node is configured for rendition prevention.
+     */
+    // This code is based on the old RenditionServiceImpl.checkSourceNodeForPreventionClass(...)
+    private void checkSourceNodeForPreventionClass(NodeRef sourceNode)
+    {
+        if (isRenditionPrevented(sourceNode))
+        {
+            String msg = "Node " + sourceNode + " cannot be renditioned as its type or an aspect is registered for rendition prevention.";
+            throw new RenditionService2PreventedException(msg);
         }
     }
 

@@ -30,8 +30,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.TreeMap;
 
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.util.PropertyCheck;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.InitializingBean;
@@ -41,20 +39,11 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * Returns a map of namespace {@code URI -> prefix} for every namespace registered in the repository's
- * {@link NamespaceService}. This is the supported, product replacement for the unofficial prefix-mapping
- * extension the Search Enterprise Re-Indexer previously relied on (see ACS-12299 / PRODMAN-840).
- * <p>
- * Unlike the {@code /types} and {@code /aspects} public REST endpoints, this sources directly from
- * {@link NamespaceService}, so it returns the complete registered set — including platform namespaces such as
- * {@code sys} and {@code module} that have no enumerable type/aspect.
- * <p>
- * The response deliberately matches the shape of the legacy prefixes file so callers (and the re-indexer's
- * on-disk cache) can consume it unchanged.
- *
- * Authentication follows the same model as the data-model API (an ordinary authenticated user; no admin role
- * required) — enforced by the {@code user} authentication declared in the web script descriptor.
+ * Returns a map of namespace {@code URI -> prefix} for every namespace registered in the repository's {@link NamespaceService}.
  */
 public class NamespacePrefixGet extends AbstractWebScript implements InitializingBean
 {

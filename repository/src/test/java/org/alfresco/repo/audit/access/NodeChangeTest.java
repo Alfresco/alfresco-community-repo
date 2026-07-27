@@ -459,6 +459,99 @@ public class NodeChangeTest
     }
 
     @Test
+    public final void testOnContentDownload()
+    {
+        nodeChange.onContentDownload(content1);
+
+        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+
+        assertStandardData(auditMap, "DOWNLOAD", "downloadContent");
+    }
+
+    @Test
+    public final void testHasReadAndDownloadActions_onlyRead()
+    {
+        nodeChange.onContentRead(content1);
+        assertFalse("Should be false when only readContent is present",
+                nodeChange.hasReadAndDownloadActions());
+    }
+
+    @Test
+    public final void testHasReadAndDownloadActions_onlyDownload()
+    {
+        nodeChange.onContentDownload(content1);
+        assertFalse("Should be false when only downloadContent is present",
+                nodeChange.hasReadAndDownloadActions());
+    }
+
+    @Test
+    public final void testHasReadAndDownloadActions_bothPresent()
+    {
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+        assertTrue("Should be true when both readContent and downloadContent are present",
+                nodeChange.hasReadAndDownloadActions());
+    }
+
+    @Test
+    public final void testGetAuditDataForAction_readOverride()
+    {
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+
+        Map<String, Serializable> auditMap = nodeChange.getAuditDataForAction("READ");
+
+        assertEquals("Action should be overridden to READ", "READ", auditMap.get("action"));
+        assertEquals("Sub-actions should contain both", "readContent downloadContent", auditMap.get("sub-actions"));
+        assertEquals(content1, auditMap.get("node"));
+    }
+
+    @Test
+    public final void testGetAuditDataForAction_downloadOverride()
+    {
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+
+        Map<String, Serializable> auditMap = nodeChange.getAuditDataForAction("DOWNLOAD");
+
+        assertEquals("Action should be overridden to DOWNLOAD", "DOWNLOAD", auditMap.get("action"));
+        assertEquals("Sub-actions should contain both", "readContent downloadContent", auditMap.get("sub-actions"));
+        assertEquals(content1, auditMap.get("node"));
+    }
+
+    @Test
+    public final void testGetDerivedAction_readAndDownload_derivesToDownload()
+    {
+        // When both are present and using normal getAuditData (not overridden),
+        // getDerivedAction should pick DOWNLOAD because READ requires size==1
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+
+        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+
+        assertEquals("Derived action should be DOWNLOAD when both present", "DOWNLOAD", auditMap.get("action"));
+    }
+
+    @Test
+    public final void testGetAuditDataForAction_doesNotCorruptSubsequentCalls()
+    {
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+
+        // First call with override
+        Map<String, Serializable> readMap = nodeChange.getAuditDataForAction("READ");
+        assertEquals("READ", readMap.get("action"));
+
+        // Second call with different override
+        Map<String, Serializable> downloadMap = nodeChange.getAuditDataForAction("DOWNLOAD");
+        assertEquals("DOWNLOAD", downloadMap.get("action"));
+
+        // Regular call should still derive properly
+        Map<String, Serializable> derivedMap = nodeChange.getAuditData(false);
+        assertEquals("DOWNLOAD", derivedMap.get("action"));
+    }
+
+    @Test
     public final void testOnCreateVersion()
     {
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();

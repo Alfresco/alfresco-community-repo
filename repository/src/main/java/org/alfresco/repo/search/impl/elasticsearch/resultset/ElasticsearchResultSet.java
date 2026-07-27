@@ -65,6 +65,7 @@ public class ElasticsearchResultSet implements SearchEngineResultSet
     private final Map<String, Integer> facetQueries;
     private final Map<String, List<Pair<String, Integer>>> fieldFacets;
     private final Map<NodeRef, List<Pair<String, List<String>>>> highlights;
+    private String nextCursor;
 
     public ElasticsearchResultSet(NodeService nodeService, List<NodeRefAndScore> nodeRefAndScores, SimpleResultSetMetaData resultSetMetaData,
             SpellCheckResult spellCheckResult, long queryTime, long numFound, int start,
@@ -152,6 +153,17 @@ public class ElasticsearchResultSet implements SearchEngineResultSet
     public int getStart()
     {
         return start;
+    }
+
+    @Override
+    public String getNextCursor()
+    {
+        return nextCursor;
+    }
+
+    public void setNextCursor(String nextCursor)
+    {
+        this.nextCursor = nextCursor;
     }
 
     @Override

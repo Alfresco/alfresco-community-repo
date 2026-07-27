@@ -61,6 +61,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.MultiValueFieldQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.PathQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.QueryByIdIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.ResultSetIT;
+import org.alfresco.repo.search.impl.elasticsearch.query.SearchAfterPaginationIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.SiteQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.SortIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.StoreRefStripperTest;
@@ -150,6 +151,7 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTe
         ClassQueryIT.class,
         IgnoreUnsupportedPropertyIT.class,
         SortIT.class,
+        SearchAfterPaginationIT.class,
 
         // Lucene unit tests
         FuzzyQueryTest.class,

@@ -1110,7 +1110,7 @@ public class SearchMapperTests
         Query query = new Query("afts", "a*", "");
         SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null,
-                null, null, null, null, FacetFormat.V2);
+                null, null, null, null, FacetFormat.V2, null);
 
         SearchRequestContext searchRequestContext = SearchRequestContext.from(sq);
         SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, sq, searchRequestContext);
@@ -1166,7 +1166,7 @@ public class SearchMapperTests
         Query query = new Query("cmis", "foo", "");
         SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null,
-                null, null, null, null, null);
+                null, null, null, null, null, null);
         return sq;
     }
 

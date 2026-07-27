@@ -52,4 +52,9 @@ public interface SearchEngineResultSet extends ResultSet, SearchEngineResultMeta
     long getLastIndexedTxId();
 
     boolean getProcessedDenies();
+
+    default String getNextCursor()
+    {
+        return null;
+    }
 }

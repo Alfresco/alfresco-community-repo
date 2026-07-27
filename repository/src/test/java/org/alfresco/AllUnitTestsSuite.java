@@ -299,6 +299,8 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchQueryExecutorTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchQueryHelperTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.ScrollSearchStrategyTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.SearchAfterCursorTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.SearchAfterSearchStrategyTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.SearchExecutionStrategyTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.SearchRequestBuilderServiceTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.SearchStrategySelectorTest.class,

@@ -53,6 +53,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.rest.api.impl.activities.ActivitySummaryParser;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -1264,5 +1265,43 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         JSONObject result = new JSONObject(response.getContentAsString());
 
         assertTrue("The user sould have permission to create a new discussion.", result.getJSONObject("forumPermissions").getBoolean("create"));
+    }
+
+    /**
+     * Verifies that ActivitySummaryParser, when processing discussion activity types, strips the internal "params" nested object via DiscussionsActivitySummaryProcessor.
+     */
+    public void testDiscussionActivitySummaryParserStripsParams() {
+        ActivitySummaryParser parser = (ActivitySummaryParser) getServer().getApplicationContext().getBean("activitySummaryParser");
+
+        // Raw activity JSON as stored in alf_activity_post by AbstractDiscussionWebScript.addActivityEntry().
+        String rawActivityJson = "{" +
+                "\"title\":\"My Discussion Topic\"," +
+                "\"page\":\"discussions-topicview?topicId=post-12345\"," +
+                "\"params\":{\"topicId\":\"post-12345\"}" +
+                "}";
+
+        List.of(
+                "org.alfresco.discussions.post-created",
+                "org.alfresco.discussions.post-updated",
+                "org.alfresco.discussions.post-deleted",
+                "org.alfresco.discussions.reply-created",
+                "org.alfresco.discussions.reply-updated").forEach(activityType -> {
+                    try
+                    {
+                        Map<String, Object> summary = parser.parse(activityType, rawActivityJson);
+
+                        // "params" must be stripped by DiscussionsActivitySummaryProcessor.
+                        assertFalse(
+                                "activitySummary must not contain 'params' for type [" + activityType + "]",
+                                summary.containsKey("params"));
+
+                        assertEquals("title must be preserved for type [" + activityType + "]",
+                                "My Discussion Topic", summary.get("title"));
+                    }
+                    catch (Exception e)
+                    {
+                        throw new AssertionError("parse() failed for type [" + activityType + "]", e);
+                    }
+                });
     }
 }

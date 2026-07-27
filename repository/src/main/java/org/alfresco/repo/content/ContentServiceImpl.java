@@ -87,9 +87,9 @@ import org.alfresco.util.TempFileProvider;
 public class ContentServiceImpl implements ContentService, ApplicationContextAware
 {
     private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
-    private AuditModelRegistry auditModelRegistry;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
+    private boolean downloadTriggersReadPolicy;
     private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
@@ -119,9 +119,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentDownloadPolicy> onContentDownloadDelegate;
 
-    public void setAuditModelRegistry(AuditModelRegistry auditModelRegistry)
-    {
-        this.auditModelRegistry = auditModelRegistry;
+    public void setDownloadTriggersReadPolicy(boolean downloadTriggersReadPolicy){
+        this.downloadTriggersReadPolicy = downloadTriggersReadPolicy;
     }
 
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
@@ -411,7 +410,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private ContentReader getReaderImpl(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy, boolean fireContentDownloadPolicy)
     {
         ContentData contentData = getContentData(nodeRef, propertyQName);
-        boolean isContentDownloadAsReadEnabled = isContentDownloadTreatedAsRead();
 
         // check that the URL is available
         if (contentData == null || contentData.getContentUrl() == null)
@@ -433,22 +431,23 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         reader.setEncoding(contentData.getEncoding());
         reader.setLocale(contentData.getLocale());
 
-        // Fire the content read policy
-        if (fireContentReadPolicy && (!fireContentDownloadPolicy || isContentDownloadAsReadEnabled))
-        {
-            Set<QName> types = new HashSet<>(this.nodeService.getAspects(nodeRef));
-            types.add(this.nodeService.getType(nodeRef));
-            OnContentReadPolicy policy = this.onContentReadDelegate.get(nodeRef, types);
-            policy.onContentRead(nodeRef);
-        }
+        boolean shouldFireRead = fireContentReadPolicy && (!fireContentDownloadPolicy || downloadTriggersReadPolicy);
+        boolean shouldFireDownload = fireContentDownloadPolicy;
 
-        // Fire the content download policy when content is being downloaded as attachment
-        if (fireContentDownloadPolicy)
+        // Compute types only once if any policy needs firing
+        if (shouldFireRead || shouldFireDownload)
         {
             Set<QName> types = new HashSet<>(this.nodeService.getAspects(nodeRef));
             types.add(this.nodeService.getType(nodeRef));
-            OnContentDownloadPolicy policy = this.onContentDownloadDelegate.get(nodeRef, types);
-            policy.onContentDownload(nodeRef);
+
+            if (shouldFireRead)
+            {
+                this.onContentReadDelegate.get(nodeRef, types).onContentRead(nodeRef);
+            }
+            if (shouldFireDownload)
+            {
+                this.onContentDownloadDelegate.get(nodeRef, types).onContentDownload(nodeRef);
+            }
         }
 
         // we don't listen for anything
@@ -771,10 +770,5 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " and property name: " + propertyQName + " has no content.");
         }
         return contentData;
-    }
-
-    private boolean isContentDownloadTreatedAsRead()
-    {
-        return auditModelRegistry.isContentDownloadAsReadEnabled();
     }
 }

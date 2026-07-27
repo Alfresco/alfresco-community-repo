@@ -198,6 +198,8 @@ public class SearchParameters implements BasicSearchParameters
 
     private boolean trackScore = true;
 
+    private String searchAfter;
+
     /**
      * Default constructor
      */
@@ -250,6 +252,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.timezone = this.timezone;
         sp.trackTotalHits = this.trackTotalHits;
         sp.trackScore = this.trackScore;
+        sp.searchAfter = this.searchAfter;
         return sp;
     }
 
@@ -598,6 +601,16 @@ public class SearchParameters implements BasicSearchParameters
     public void setLimit(int limit)
     {
         this.limit = limit;
+    }
+
+    public String getSearchAfter()
+    {
+        return searchAfter;
+    }
+
+    public void setSearchAfter(String searchAfter)
+    {
+        this.searchAfter = searchAfter;
     }
 
     /**
@@ -1197,6 +1210,7 @@ public class SearchParameters implements BasicSearchParameters
         result = prime * result + ((ranges == null) ? 0 : ranges.hashCode());
         result = prime * result + ((searchTerm == null) ? 0 : searchTerm.hashCode());
         result = prime * result + (spellCheck ? 1231 : 1237);
+        result = prime * result + ((searchAfter == null) ? 0 : searchAfter.hashCode());
         return result;
     }
 
@@ -1359,6 +1373,17 @@ public class SearchParameters implements BasicSearchParameters
             return false;
         if (spellCheck != other.spellCheck)
             return false;
+        if (searchAfter == null)
+        {
+            if (other.searchAfter != null)
+            {
+                return false;
+            }
+        }
+        else if (!searchAfter.equals(other.searchAfter))
+        {
+            return false;
+        }
         return true;
     }
 
@@ -1401,7 +1426,8 @@ public class SearchParameters implements BasicSearchParameters
                 .append(", interval=").append(this.interval)
                 .append(", range=").append(this.ranges)
                 .append(", timezone=").append(this.timezone)
-                .append(", spellCheck=").append(this.spellCheck).append("]");
+                .append(", spellCheck=").append(this.spellCheck)
+                .append(", searchAfter=").append(this.searchAfter).append("]");
         return builder.toString();
     }
 

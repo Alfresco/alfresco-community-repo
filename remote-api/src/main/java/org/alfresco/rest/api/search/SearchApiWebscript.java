@@ -39,6 +39,7 @@ import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.SearchQuery;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -97,6 +98,8 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             // Turn the SearchQuery json into the Java SearchParameters object
             SearchParameters searchParams = searchMapper.toSearchParameters(params, searchQuery, searchRequestContext);
 
+            applySearchAfter(searchParams, searchQuery);
+
             // Call searchService
             ResultSet results = searchService.query(searchParams);
 
@@ -145,6 +148,25 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
 
         Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, paging, filter, null, include, null, null, null, false);
         return Params.valueOf(null, recognizedParams, null, webScriptRequest);
+    }
+
+    protected void applySearchAfter(SearchParameters searchParams, SearchQuery searchQuery)
+    {
+        String searchAfter = searchQuery.getSearchAfter();
+        if (searchAfter == null)
+        {
+            // Offset paging (default) is already applied by the SearchMapper.
+            return;
+        }
+
+        Paging paging = searchQuery.getPaging();
+        if (paging != null && paging.getSkipCount() > 0)
+        {
+            throw new InvalidArgumentException(
+                    "skipCount (offset paging) cannot be combined with searchAfter (cursor paging); use one paging mode.");
+        }
+
+        searchParams.setSearchAfter(searchAfter);
     }
 
     public void setSearchMapper(SearchMapper searchMapper)

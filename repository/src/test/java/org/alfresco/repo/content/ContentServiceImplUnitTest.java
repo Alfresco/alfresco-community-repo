@@ -341,7 +341,6 @@ public class ContentServiceImplUnitTest
         contentService.setSystemWideDirectUrlConfig(sysConfig);
     }
 
-
     @SuppressWarnings("unchecked")
     private void setupReaderMocks()
     {

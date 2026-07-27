@@ -58,6 +58,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
+@SuppressWarnings("PMD.GuardLogStatement")
 public class SiteTermsAggregationBuilder
 {
     // The primary hierarchy field name in Elasticsearch, used to resolve SITE aggregations.
@@ -146,8 +147,7 @@ public class SiteTermsAggregationBuilder
     private Map<String, String> fetchAuthenticatedUserSites()
     {
         String user = AuthenticationUtil.getRunAsUser();
-
-        Map<String, String> siteIdToName = sitesCache.get(user);
+        Map<String, String> siteIdToName = (user != null) ? sitesCache.get(user) : null;
 
         LOGGER.debug("Sites cache {} for user '{}'.", siteIdToName != null ? "hit" : "miss", user);
 
@@ -162,7 +162,11 @@ public class SiteTermsAggregationBuilder
                     .filter(site -> site.getNodeRef() != null)
                     .collect(Collectors.toMap(site -> site.getNodeRef().getId(), SiteInfo::getShortName,
                             (existing, replacement) -> replacement, LinkedHashMap::new));
-            sitesCache.put(user, siteIdToName);
+
+            if (user != null)
+            {
+                sitesCache.put(user, siteIdToName);
+            }
         }
 
         return siteIdToName;

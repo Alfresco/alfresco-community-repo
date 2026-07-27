@@ -32,6 +32,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_SITE;
@@ -330,8 +331,6 @@ public class SiteTermsAggregationBuilderTest
     public void build_withSiteFacet_siteWithNullNodeRef_isIgnored()
     {
         setupSharedHomeResolution();
-        // siteWithNullRef is created and configured before the thenReturn() call to avoid
-        // nested mock creation inside thenReturn() arguments.
         SiteInfo siteWithNullRef = mock(SiteInfo.class);
         when(siteWithNullRef.getNodeRef()).thenReturn(null);
         when(siteService.listSites(null, null)).thenReturn(List.of(siteWithNullRef, site1));
@@ -343,6 +342,18 @@ public class SiteTermsAggregationBuilderTest
                 postProcessingData.containsValue(null));
         assertTrue("Valid site must still be in post-processing data",
                 postProcessingData.containsKey(SITE_UUID_1));
+    }
+
+    @Test
+    public void build_withNoAuthenticatedUserInContext_bypassesCacheWithoutError()
+    {
+        setupSharedHomeResolution();
+        when(siteService.listSites(null, null)).thenReturn(List.of(site1));
+
+        Optional<TermsAggregationWrapper> wrapper = builder.build(siteFacet(FIELD_SITE));
+
+        assertTrue("Should still produce a wrapper with no authenticated user in context", wrapper.isPresent());
+        verifyNoInteractions(sitesCache);
     }
 
     private SearchParameters.FieldFacet siteFacet(String fieldName)

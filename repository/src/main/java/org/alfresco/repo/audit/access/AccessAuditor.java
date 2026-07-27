@@ -598,29 +598,33 @@ public class AccessAuditor implements InitializingBean,
             // Note: auditComponent.recordAuditValues(...) creates a transaction to record
             // audit messages, so there is no need to create our own. dod5015 still
             // does (not sure why).
-
             final Map<NodeRef, NodeChange> changedNodes = TransactionalResourceHelper.getMap(this);
             for (Map.Entry<NodeRef, NodeChange> entry : changedNodes.entrySet())
             {
                 NodeChange nodeChange = entry.getValue();
                 if (!nodeChange.isTemporaryNode())
                 {
-                    // When both READ and DOWNLOAD sub-actions are present (i.e., the
-                    // contentDownloadsAsRead flag is enabled), emit two separate audit entries.
-                    if (nodeChange.hasReadAndDownloadActions())
-                    {
-                        Map<String, Serializable> readAuditMap = nodeChange.getAuditDataForAction("READ");
-                        recordAuditValues(TRANSACTION, readAuditMap);
-
-                        Map<String, Serializable> downloadAuditMap = nodeChange.getAuditDataForAction("DOWNLOAD");
-                        recordAuditValues(TRANSACTION, downloadAuditMap);
-                    }
-                    else
-                    {
-                        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
-                        recordAuditValues(TRANSACTION, auditMap);
-                    }
+                    publishAuditForTheTransaction(nodeChange);
                 }
+            }
+        }
+
+        private void publishAuditForTheTransaction(NodeChange nodeChange)
+        {
+            // When both READ and DOWNLOAD sub-actions are present (i.e., the
+            // contentDownloadsAsRead flag is enabled), emit two separate audit entries.
+            if (nodeChange.hasReadAndDownloadActions())
+            {
+                Map<String, Serializable> readAuditMap = nodeChange.getAuditDataForAction("READ");
+                recordAuditValues(TRANSACTION, readAuditMap);
+
+                Map<String, Serializable> downloadAuditMap = nodeChange.getAuditDataForAction("DOWNLOAD");
+                recordAuditValues(TRANSACTION, downloadAuditMap);
+            }
+            else
+            {
+                Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+                recordAuditValues(TRANSACTION, auditMap);
             }
         }
     }

@@ -100,7 +100,7 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     private static final String URL_FORUM_NODE_POST_BASE = "/api/forum/post/node/"; // Plus node id
     private static final String URL_FORUM_NODE_POSTS_BASE = "/api/forum/node/"; // Plus node id + /posts
 
-    private List<String> posts = new ArrayList<String>(5);
+    private List<String> posts = new ArrayList<>(5);
     private NodeRef FORUM_NODE;
 
     // General methods
@@ -139,11 +139,11 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         FORUM_NODE = nodeService.getChildByName(siteInfo.getNodeRef(), ContentModel.ASSOC_CONTAINS, forumNodeName);
         if (FORUM_NODE == null)
         {
-            FORUM_NODE = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>() {
+            FORUM_NODE = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<>() {
                 @Override
                 public NodeRef execute() throws Throwable
                 {
-                    Map<QName, Serializable> props = new HashMap<QName, Serializable>(5);
+                    Map<QName, Serializable> props = new HashMap<>(5);
                     props.put(ContentModel.PROP_NAME, forumNodeName);
                     props.put(ContentModel.PROP_TITLE, forumNodeName);
 
@@ -369,20 +369,20 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
 
     private JSONObject doGetPosts(String baseUrl, String type, int expectedStatus) throws Exception
     {
-        String url = null;
+        String url;
         if (type == null)
         {
             url = baseUrl;
         }
-        else if (type == "limit")
+        else if (type.equals("limit"))
         {
             url = baseUrl + "?pageSize=1";
         }
-        else if (type == "hot")
+        else if (type.equals("hot"))
         {
             url = baseUrl + "/hot";
         }
-        else if (type == "mine")
+        else if (type.equals("mine"))
         {
             url = baseUrl + "/myposts";
         }

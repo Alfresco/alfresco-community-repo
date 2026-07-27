@@ -28,25 +28,8 @@ mvn -B versions:set-property versions:commit \
   -Dproperty=dependency.alfresco-community-repo.version \
   "-DnewVersion=${VERSION}"
 
-# Commit changes
-git status
-git --no-pager diff pom.xml
-git add pom.xml
-
-if [[ "${COMMIT_MESSAGE}" =~ \[force[^\]]*\] ]]; then
-  FORCE_TOKEN=$(echo "${COMMIT_MESSAGE}" | sed "s|^.*\(\[force[^]]*\]\).*$|\1|g")
-  git commit --allow-empty -m "${FORCE_TOKEN} Update community-repo version to ${VERSION}"
-  git push
-elif git status --untracked-files=no --porcelain | grep -q '^' ; then
-  git commit -m "Update community-repo version to ${VERSION}"
-  git push
-else
-  echo "Dependencies are already up to date."
-  git status
-fi
-
+echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
 
 popd
 set +vex
 echo "=========================== Finishing Update Downstream Script =========================="
-

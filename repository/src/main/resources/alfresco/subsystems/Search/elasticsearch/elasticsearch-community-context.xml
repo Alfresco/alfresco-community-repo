@@ -260,9 +260,20 @@
         <constructor-arg name="esTypeResolver" ref="esTypeResolver" />
     </bean>
 
+    <bean name="userVisibleSitesCache" factory-bean="cacheFactory" factory-method="createCache">
+        <constructor-arg value="cache.userVisibleSitesCache"/>
+    </bean>
+
     <bean id="siteTermsAggregationBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteTermsAggregationBuilder">
         <constructor-arg name="siteService" ref="siteService"/>
         <constructor-arg name="nodeService" ref="nodeService"/>
+        <constructor-arg name="sitesCache" ref="userVisibleSitesCache"/>
+    </bean>
+
+    <bean id="siteMembershipCacheEvictionListener" class="org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteMembershipCacheEvictionListener" init-method="init">
+        <constructor-arg name="policyComponent" ref="policyComponent"/>
+        <constructor-arg name="siteService" ref="siteService"/>
+        <constructor-arg name="sitesCache" ref="userVisibleSitesCache"/>
     </bean>
 
     <bean id="elasticsearchAggregationBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilder">

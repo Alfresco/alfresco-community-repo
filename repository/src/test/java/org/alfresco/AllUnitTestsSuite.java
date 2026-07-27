@@ -319,6 +319,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.WildcardQueryTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilderTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteTermsAggregationBuilderTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteMembershipCacheEvictionListenerTest.class,
         org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResultSetBuilderTest.class,
         org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationHandlerTest.class,
         org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtilTest.class,

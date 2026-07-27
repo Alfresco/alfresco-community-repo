@@ -33,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.SortOrder;
@@ -43,7 +44,9 @@ import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.TermsAggregationWrapper.ComplementaryAggregation;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -73,18 +76,21 @@ public class SiteTermsAggregationBuilder
 
     private final SiteService siteService;
     private final NodeService nodeService;
+    private final SimpleCache<String, Map<String, String>> sitesCache;
     private volatile NodeRef sharedHomeNodeRef;
 
-    public SiteTermsAggregationBuilder(SiteService siteService, NodeService nodeService)
+    public SiteTermsAggregationBuilder(SiteService siteService, NodeService nodeService,
+            SimpleCache<String, Map<String, String>> sitesCache)
     {
         this.siteService = siteService;
         this.nodeService = nodeService;
+        this.sitesCache = sitesCache;
     }
 
     /**
      * Builds a {@link TermsAggregationWrapper} for a SITE facet.
      * <p>
-     * Calls {@link SiteService#listSites(String, String)} to obtain the visible sites to the authenticated user, then constructs a {@code primaryHierarchy} terms aggregation whose {@code include} list is limited to accessible site node UUIDs plus the Shared Files folder UUID.
+     * Obtains the visible sites to the authenticated user, then constructs a {@code primaryHierarchy} terms aggregation whose {@code include} list is limited to accessible site node UUIDs plus the Shared Files folder UUID.
      * <p>
      * A repository filter aggregation is also produced to count documents that do not belong to any of the included site UUIDs; this will be presented as a {@code _REPOSITORY_} bucket in the results.
      * <p>
@@ -92,14 +98,7 @@ public class SiteTermsAggregationBuilder
      */
     public Optional<TermsAggregationWrapper> build(SearchParameters.FieldFacet specs)
     {
-        List<SiteInfo> sites = siteService.listSites(null, null);
-
-        Map<String, String> siteIdToName = new LinkedHashMap<>();
-
-        // Collect site UUID and corresponding short name entries
-        sites.stream()
-                .filter(site -> site.getNodeRef() != null)
-                .forEach(site -> siteIdToName.put(site.getNodeRef().getId(), site.getShortName()));
+        Map<String, String> siteIdToName = new LinkedHashMap<>(fetchAuthenticatedUserSites());
 
         // Add Shared Files folder UUID (_SHARED_FILES_)
         Optional<NodeRef> sharedHome = getSharedHomeNodeRef();
@@ -137,6 +136,36 @@ public class SiteTermsAggregationBuilder
                 termsBuilder.build(),
                 Collections.unmodifiableMap(siteIdToName),
                 Optional.of(repositoryAggregation)));
+    }
+
+    /**
+     * Obtains the visible site UUID-to-shortName entries for the authenticated user, either from the cache or by calling {@link SiteService#listSites(String, String)}.
+     *
+     * @return a map of visible site UUIDs to their short names; empty if none are visible
+     */
+    private Map<String, String> fetchAuthenticatedUserSites()
+    {
+        String user = AuthenticationUtil.getRunAsUser();
+
+        Map<String, String> siteIdToName = sitesCache.get(user);
+
+        LOGGER.debug("Sites cache {} for user '{}'.", siteIdToName != null ? "hit" : "miss", user);
+
+        if (siteIdToName == null)
+        {
+            LOGGER.debug("Starting listSites call for user '{}'.", user);
+            long startTime = System.nanoTime();
+            List<SiteInfo> sites = siteService.listSites(null, null);
+            LOGGER.debug("listSites call for user '{}' completed in {} ms.", user, (System.nanoTime() - startTime) / 1_000_000L);
+
+            siteIdToName = sites.stream()
+                    .filter(site -> site.getNodeRef() != null)
+                    .collect(Collectors.toMap(site -> site.getNodeRef().getId(), SiteInfo::getShortName,
+                            (existing, replacement) -> replacement, LinkedHashMap::new));
+            sitesCache.put(user, siteIdToName);
+        }
+
+        return siteIdToName;
     }
 
     /**

@@ -46,6 +46,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.TermsAggregationWrapper.ComplementaryAggregation;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -85,6 +86,8 @@ public class SiteTermsAggregationBuilderTest
     private SiteService siteService;
     @Mock
     private NodeService nodeService;
+    @Mock
+    private SimpleCache<String, Map<String, String>> sitesCache;
 
     private SiteTermsAggregationBuilder builder;
 
@@ -100,7 +103,7 @@ public class SiteTermsAggregationBuilderTest
     @Before
     public void setUp()
     {
-        builder = new SiteTermsAggregationBuilder(siteService, nodeService);
+        builder = new SiteTermsAggregationBuilder(siteService, nodeService, sitesCache);
 
         rootNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, ROOT_UUID);
         companyHome = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, COMPANY_HOME_UUID);

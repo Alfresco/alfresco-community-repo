@@ -282,7 +282,6 @@ public class ContentStreamer implements ResourceLoaderAware
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for node ref " + nodeRef + " (property: " + propertyQName.toString() + ")");
         }
 
-
         // Stream the content
         streamContentImpl(req, res, reader, nodeRef, propertyQName, attach, modified, modified == null ? null : Long.toString(modified.getTime()), attachFileName, model);
     }

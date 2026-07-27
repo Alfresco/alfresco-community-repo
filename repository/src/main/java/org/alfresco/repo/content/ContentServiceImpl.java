@@ -433,11 +433,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
         // Determine which policies to fire.
         // When downloading (fireContentDownloadPolicy=true):
-        //   - Always fire OnContentDownloadPolicy → audit: "DOWNLOAD"
-        //   - If isContentDownloadTriggersReadPolicy is true, also fire OnContentReadPolicy → audit: "READ"
-        //     (AccessAuditor.afterCommit will emit two separate audit entries)
+        // - Always fire OnContentDownloadPolicy → audit: "DOWNLOAD"
+        // - If isContentDownloadTriggersReadPolicy is true, also fire OnContentReadPolicy → audit: "READ"
+        // (AccessAuditor.afterCommit will emit two separate audit entries)
         // When previewing (fireContentDownloadPolicy=false):
-        //   - Fire OnContentReadPolicy → audit: "READ"
+        // - Fire OnContentReadPolicy → audit: "READ"
         boolean shouldFireRead = fireContentReadPolicy && (!fireContentDownloadPolicy || isContentDownloadTriggersReadPolicy);
         boolean shouldFireDownload = fireContentDownloadPolicy;
 

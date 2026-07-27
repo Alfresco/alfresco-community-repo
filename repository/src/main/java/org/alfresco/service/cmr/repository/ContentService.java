@@ -105,17 +105,19 @@ public interface ContentService
             throws InvalidNodeRefException, InvalidTypeException;
 
     /**
-     * Get a content reader for the given node property, optionally firing the
-     * {@link org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy}
-     * if the content is being downloaded as an attachment.
+     * Get a content reader for the given node property, optionally firing the {@link org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy} if the content is being downloaded as an attachment.
      *
-     * @param nodeRef       a reference to a node having a content property
-     * @param propertyQName the name of the property, which must be of type <b>content</b>
-     * @param attachment    {@code true} if the content is being downloaded (attachment), fires OnContentDownloadPolicy
-     * @return Returns a reader for the content associated with the node property,
-     *         or null if no content has been written for the property
-     * @throws InvalidNodeRefException if the node doesn't exist
-     * @throws InvalidTypeException    if the node is not of type <b>content</b>
+     * @param nodeRef
+     *            a reference to a node having a content property
+     * @param propertyQName
+     *            the name of the property, which must be of type <b>content</b>
+     * @param attachment
+     *            {@code true} if the content is being downloaded (attachment), fires OnContentDownloadPolicy
+     * @return Returns a reader for the content associated with the node property, or null if no content has been written for the property
+     * @throws InvalidNodeRefException
+     *             if the node doesn't exist
+     * @throws InvalidTypeException
+     *             if the node is not of type <b>content</b>
      */
     @Auditable(parameters = {"nodeRef", "propertyQName", "attachment"})
     ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean attachment)

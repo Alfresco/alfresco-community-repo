@@ -42,8 +42,8 @@ import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCancelCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
-import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
@@ -188,7 +188,8 @@ import org.alfresco.service.namespace.QName;
         {
             action = "CREATE";
         }
-        else if(subActions.contains(DOWNLOAD_CONTENT)){
+        else if (subActions.contains(DOWNLOAD_CONTENT))
+        {
             action = "DOWNLOAD";
         }
         else if (subActions.size() == 1 && subActions.contains(READ_CONTENT))
@@ -799,16 +800,19 @@ import org.alfresco.service.namespace.QName;
     }
 
     /**
-     * @param nodeRef the node reference
+     * @param nodeRef
+     *            the node reference
      */
     @Override
-    public void onContentDownload(NodeRef nodeRef) {
-        //sanitizeSubList();
+    public void onContentDownload(NodeRef nodeRef)
+    {
+        // sanitizeSubList();
         appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(DOWNLOAD_CONTENT));
         runAsUser = AuthenticationUtil.getRunAsUser();
     }
 
-    private void sanitizeSubList(){
+    private void sanitizeSubList()
+    {
         subActions.remove(READ_CONTENT);
     }
 }

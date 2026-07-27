@@ -150,7 +150,7 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
             return;
         }
 
-        bindClassPolicy(ContentServicePolicies.OnContentDownloadPolicy.QNAME,NodeContentPutEvent.EVENT_TYPE);
+        bindClassPolicy(ContentServicePolicies.OnContentDownloadPolicy.QNAME, NodeContentPutEvent.EVENT_TYPE);
 
         bindClassPolicy(ContentServicePolicies.OnContentPropertyUpdatePolicy.QNAME, NodeContentPutEvent.EVENT_TYPE);
 
@@ -553,10 +553,12 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     }
 
     /**
-     * @param nodeRef the node reference
+     * @param nodeRef
+     *            the node reference
      */
     @Override
-    public void onContentDownload(NodeRef nodeRef) {
+    public void onContentDownload(NodeRef nodeRef)
+    {
         eventsService.contentGet(nodeRef);
     }
 }

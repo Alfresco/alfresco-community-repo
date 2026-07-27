@@ -42,7 +42,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
@@ -119,7 +118,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentDownloadPolicy> onContentDownloadDelegate;
 
-    public void setDownloadTriggersReadPolicy(boolean downloadTriggersReadPolicy){
+    public void setDownloadTriggersReadPolicy(boolean downloadTriggersReadPolicy)
+    {
         this.downloadTriggersReadPolicy = downloadTriggersReadPolicy;
     }
 

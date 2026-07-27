@@ -116,6 +116,16 @@ public interface RenditionService2
     void clearRenditionContentDataInTransaction(NodeRef renditionNode);
 
     /**
+     * Checks whether rendition is prevented for the given source node due to its type or aspects being registered in the {@link org.alfresco.repo.rendition.RenditionPreventionRegistry}.
+     *
+     * @param sourceNodeRef
+     *            the node to check.
+     * @return {@code true} if the node's type or one of its aspects is registered for rendition prevention.
+     */
+    @NotAuditable
+    boolean isRenditionPrevented(NodeRef sourceNodeRef);
+
+    /**
      * Indicates if renditions are enabled. Set using the {@code system.thumbnail.generate} value.
      */
     boolean isEnabled();

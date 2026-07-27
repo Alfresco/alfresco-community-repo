@@ -911,7 +911,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     public Scriptable getChildAssocsByType(String type)
     {
         // get the list of child assoc nodes for each association type
-        Set<QName> types = new HashSet<QName>(1, 1.0f);
+        Set<QName> types = new HashSet<>(1, 1.0f);
         types.add(createQName(type));
         List<ChildAssociationRef> refs = this.nodeService.getChildAssocs(this.nodeRef, types);
         Object[] nodes = new Object[refs.size()];
@@ -1558,8 +1558,8 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      */
     public static List<AccessPermission> getSortedACLs(Set<AccessPermission> acls)
     {
-        ArrayList<AccessPermission> ordered = new ArrayList<AccessPermission>(acls);
-        Map<String, AccessPermission> deDuplicatedPermissions = new HashMap<String, AccessPermission>(acls.size());
+        ArrayList<AccessPermission> ordered = new ArrayList<>(acls);
+        Map<String, AccessPermission> deDuplicatedPermissions = new HashMap<>(acls.size());
         Collections.sort(ordered, new CMISConnector.AccessPermissionComparator());
         for (AccessPermission current : ordered)
         {
@@ -3129,6 +3129,12 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             }
 
             // Have the thumbnail created
+            if (renditionService2.isRenditionPrevented(nodeRef))
+            {
+                logger.debug("Unable to create thumbnail '" + details.getName() + "' as rendition is prevented for this node.");
+                return null;
+            }
+
             if (async == false)
             {
                 try
@@ -3157,21 +3163,26 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             }
             else
             {
-                RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
-                if (renditionDefinition != null)
-                {
-                    renditionService2.render(nodeRef, thumbnailName);
-                }
-                else
-                {
-                    Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
-
-                    // Queue async creation of thumbnail
-                    this.services.getActionService().executeAction(action, this.nodeRef, true, true);
-                }
+                createAsyncThumbnail(thumbnailName, details);
             }
         }
         return result;
+    }
+
+    private void createAsyncThumbnail(String thumbnailName, ThumbnailDefinition details)
+    {
+        RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
+        if (renditionDefinition != null)
+        {
+            renditionService2.render(nodeRef, thumbnailName);
+        }
+        else
+        {
+            Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
+
+            // Queue async creation of thumbnail
+            this.services.getActionService().executeAction(action, this.nodeRef, true, true);
+        }
     }
 
     /**
@@ -3208,7 +3219,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                 null,
                 null);
 
-        List<ScriptThumbnail> result = new ArrayList<ScriptThumbnail>(thumbnails.size());
+        List<ScriptThumbnail> result = new ArrayList<>(thumbnails.size());
         for (NodeRef thumbnail : thumbnails)
         {
             ScriptThumbnail scriptThumbnail = new ScriptThumbnail(thumbnail, this.services, this.scope);
@@ -3228,7 +3239,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     {
         ThumbnailService thumbnailService = this.services.getThumbnailService();
 
-        List<String> result = new ArrayList<String>(7);
+        List<String> result = new ArrayList<>(7);
 
         Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
@@ -4269,7 +4280,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
 
         protected abstract void doTransform(SynchronousTransformClient synchronousTransformClient,
                 ContentReader reader, ContentWriter writer);
-    };
+    }
 
     /**
      * NamespacePrefixResolverProvider getter implementation

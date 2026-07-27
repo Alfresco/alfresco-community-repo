@@ -496,8 +496,7 @@ import org.alfresco.service.namespace.QName;
     }
 
     /**
-     * @return {@code true} if both readContent and downloadContent sub-actions are present,
-     *         indicating that two separate audit entries (READ and DOWNLOAD) should be emitted.
+     * @return {@code true} if both readContent and downloadContent sub-actions are present, indicating that two separate audit entries (READ and DOWNLOAD) should be emitted.
      */
     public boolean hasReadAndDownloadActions()
     {
@@ -505,10 +504,10 @@ import org.alfresco.service.namespace.QName;
     }
 
     /**
-     * Produces audit data with the given action override instead of using getDerivedAction().
-     * Used when both READ and DOWNLOAD are present to emit two separate audit records.
+     * Produces audit data with the given action override instead of using getDerivedAction(). Used when both READ and DOWNLOAD are present to emit two separate audit records.
      *
-     * @param actionOverride the action string to use (e.g., "READ" or "DOWNLOAD")
+     * @param actionOverride
+     *            the action string to use (e.g., "READ" or "DOWNLOAD")
      * @return audit data map with the overridden action
      */
     public Map<String, Serializable> getAuditDataForAction(String actionOverride)

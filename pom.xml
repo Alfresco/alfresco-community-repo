@@ -58,7 +58,7 @@
 
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
         <dependency.spring.version>6.2.18</dependency.spring.version>
-        <dependency.spring-security.version>6.5.10</dependency.spring-security.version>
+        <dependency.spring-security.version>6.5.11</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.22.0</dependency.jackson.version>
         <dependency.jackson.annotations.version>2.22</dependency.jackson.annotations.version>

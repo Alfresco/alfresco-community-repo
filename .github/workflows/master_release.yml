@@ -127,7 +127,7 @@ jobs:
           APP_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: "Compute downstream commit message"
         id: commit-meta
-        uses: Alfresco/alfresco-build-tools/.github/actions/get-downstream-commit-message@feature/ACS-12079_add_get_downstream_commit_message_action
+        uses: ./.github/actions/get-downstream-commit-message
         with:
           commit-title: ${{ needs.commit_parser.outputs.title }}
           version: ${{ steps.update-downstream.outputs.version }}

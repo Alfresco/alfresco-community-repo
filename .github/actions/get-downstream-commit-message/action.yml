@@ -1,0 +1,42 @@
+name: "Get downstream commit message"
+description: >
+  Computes the commit message and allow-empty-commit flag for a downstream version-bump commit.
+
+  If the upstream commit title contains a [force...] token (e.g. [force] or [force ci]),
+  that token is prepended to the message and allow-empty-commit is set to true, so the downstream
+  commit is created even when no files changed. This is used to force-trigger downstream CI
+  without a real code change.
+
+  Without a [force...] token the plain version-bump message is returned and allow-empty-commit is
+  false, meaning an empty commit will not be created when there is nothing to commit.
+
+inputs:
+  commit-title:
+    description: "Upstream commit title to inspect for a [force...] token"
+    required: true
+  version:
+    description: "Version string to embed in the commit message"
+    required: true
+  downstream-repo:
+    description: "Short name of the downstream repository, used in the commit message (e.g. community-repo)"
+    required: true
+
+outputs:
+  message:
+    description: "Commit message to use for the downstream version-bump commit"
+    value: ${{ steps.compute.outputs.message }}
+  allow-empty-commit:
+    description: "Whether to allow an empty commit (true when a [force...] token was detected)"
+    value: ${{ steps.compute.outputs.allow-empty-commit }}
+
+runs:
+  using: composite
+  steps:
+    - name: Compute downstream commit message
+      id: compute
+      env:
+        COMMIT_TITLE: ${{ inputs.commit-title }}
+        VERSION: ${{ inputs.version }}
+        DOWNSTREAM_REPO: ${{ inputs.downstream-repo }}
+      shell: bash
+      run: ${{ github.action_path }}/action.sh

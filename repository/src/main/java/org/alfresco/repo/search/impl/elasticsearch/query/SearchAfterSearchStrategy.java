@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.opensearch.client.opensearch._types.FieldValue;
+import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
@@ -128,6 +129,17 @@ public class SearchAfterSearchStrategy extends SearchExecutionStrategy
             ResultSet resultSet = resultSetBuilder.build(searchParameters, searchResponse, nextCursor);
             success = true;
             return resultSet;
+        }
+        catch (OpenSearchException exception)
+        {
+            if (exception.status() == 400 || exception.status() == 404)
+            {
+                throw new InvalidSearchAfterCursorException(
+                        "The search_after cursor is invalid or has expired. Start a new search without searchAfter to begin a new pagination session.",
+                        exception);
+            }
+            LOGGER.error("Error during search_after search execution: " + exception);
+            throw new IllegalStateException("Error during search_after search execution", exception);
         }
         catch (IOException exception)
         {

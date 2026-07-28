@@ -26,8 +26,10 @@
 package org.alfresco.repo.search.impl.elasticsearch.query;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opensearch.client.opensearch.generic.Body;
 import org.opensearch.client.opensearch.generic.Request;
@@ -38,11 +40,14 @@ import org.slf4j.LoggerFactory;
 
 import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
 
-// Opens and closes Elasticsearch Point-In-Time (PIT) snapshots for search_after deep pagination, via the low-level transport (ES uses /_pit, not the OpenSearch client's endpoint).
+/**
+ * Opens and closes Point-In-Time (PIT) snapshots used by {@code search_after} deep pagination. The PIT endpoint and id field diverged between Elasticsearch ({@code /_pit}, id field {@code id}) and OpenSearch ({@code /_search/point_in_time}, id field {@code pit_id}); the engine in use is read from {@link ElasticsearchHttpClientFactory#getEngine()}, and requests are issued via the client's low-level (generic) transport since the typed client only exists for the OpenSearch endpoint.
+ */
 public class ElasticsearchPitService
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchPitService.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final String OPENSEARCH_ENGINE = "opensearch";
 
     private final ElasticsearchHttpClientFactory httpClientFactory;
 
@@ -53,31 +58,16 @@ public class ElasticsearchPitService
 
     public String open(String indexName, String keepAlive) throws IOException
     {
-        Request request = Requests.builder()
-                .method("POST")
-                .endpoint("/" + indexName + "/_pit")
-                .query(Map.of("keep_alive", keepAlive))
-                .build();
+        boolean openSearch = isOpenSearchEngine();
+        String endpoint = "/" + indexName + (openSearch ? "/_search/point_in_time" : "/_pit");
+        JsonNode response = post(endpoint, Map.of("keep_alive", keepAlive));
 
-        try (Response response = httpClientFactory.getElasticsearchClient().generic().execute(request))
+        String pitId = response.path(openSearch ? "pit_id" : "id").asText(null);
+        if (pitId == null || pitId.isBlank())
         {
-            int status = response.getStatus();
-            if (status < 200 || status >= 300)
-            {
-                throw new IllegalStateException("Failed to open PIT on index " + indexName + " (status " + status + "): " + response.getReason());
-            }
-
-            String body = response.getBody()
-                    .map(Body::bodyAsString)
-                    .orElseThrow(() -> new IllegalStateException("Empty response opening PIT on index " + indexName));
-
-            String pitId = MAPPER.readTree(body).path("id").asText(null);
-            if (pitId == null || pitId.isBlank())
-            {
-                throw new IllegalStateException("PIT open response did not contain an id for index " + indexName + ": " + body);
-            }
-            return pitId;
+            throw new PointInTimeException("PIT open response did not contain a pit id for index " + indexName);
         }
+        return pitId;
     }
 
     public void close(String pitId)
@@ -89,25 +79,44 @@ public class ElasticsearchPitService
 
         try
         {
-            String body = MAPPER.writeValueAsString(Map.of("id", pitId));
-            Request request = Requests.builder()
-                    .method("DELETE")
-                    .endpoint("/_pit")
-                    .json(body)
-                    .build();
-
-            try (Response response = httpClientFactory.getElasticsearchClient().generic().execute(request))
-            {
-                int status = response.getStatus();
-                if (status < 200 || status >= 300)
-                {
-                    LOGGER.warn("Best-effort PIT close returned status {}: {}", status, response.getReason());
-                }
-            }
+            boolean openSearch = isOpenSearchEngine();
+            String endpoint = openSearch ? "/_search/point_in_time" : "/_pit";
+            Object body = openSearch ? Map.of("pit_id", List.of(pitId)) : Map.of("id", pitId);
+            delete(endpoint, body);
         }
-        catch (Exception exception)
+        catch (IOException | PointInTimeException exception)
         {
             LOGGER.warn("Best-effort PIT close failed (suppressed): {}", exception.toString());
+        }
+    }
+
+    private boolean isOpenSearchEngine()
+    {
+        return OPENSEARCH_ENGINE.equalsIgnoreCase(httpClientFactory.getEngine());
+    }
+
+    private JsonNode post(String endpoint, Map<String, String> queryParams) throws IOException
+    {
+        return execute(Requests.builder().method("POST").endpoint(endpoint).query(queryParams).build(), "POST " + endpoint);
+    }
+
+    private JsonNode delete(String endpoint, Object jsonBody) throws IOException
+    {
+        return execute(
+                Requests.builder().method("DELETE").endpoint(endpoint).json(MAPPER.writeValueAsString(jsonBody)).build(),
+                "DELETE " + endpoint);
+    }
+
+    private JsonNode execute(Request request, String description) throws IOException
+    {
+        try (Response response = httpClientFactory.getElasticsearchClient().generic().execute(request))
+        {
+            int status = response.getStatus();
+            if (status < 200 || status >= 300)
+            {
+                throw new PointInTimeException(description + " failed (status " + status + "): " + response.getReason());
+            }
+            return MAPPER.readTree(response.getBody().map(Body::bodyAsString).orElse("{}"));
         }
     }
 }

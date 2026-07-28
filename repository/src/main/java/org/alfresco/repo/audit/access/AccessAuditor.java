@@ -623,8 +623,10 @@ public class AccessAuditor implements InitializingBean,
             }
         }
 
-        private void recordAudits(String transaction,final Collection<Map<String, Serializable>> auditMaps){
-            for(Map<String,Serializable> auditMap : auditMaps){
+        private void recordAudits(String transaction, final Collection<Map<String, Serializable>> auditMaps)
+        {
+            for (Map<String, Serializable> auditMap : auditMaps)
+            {
                 recordAuditValues(transaction, auditMap);
             }
         }

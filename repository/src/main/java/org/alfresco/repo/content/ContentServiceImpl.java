@@ -88,7 +88,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
     private DictionaryService dictionaryService;
     private NodeService nodeService;
-    private boolean isContentDownloadTriggersReadPolicy;
+    private boolean isDownloadAsRead;
     private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
@@ -118,9 +118,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentDownloadPolicy> onContentDownloadDelegate;
 
-    public void setContentDownloadTriggersReadPolicy(boolean downloadTriggersReadPolicy)
+    public void setDownloadAsRead(boolean downloadAsRead)
     {
-        this.isContentDownloadTriggersReadPolicy = downloadTriggersReadPolicy;
+        this.isDownloadAsRead = downloadAsRead;
     }
 
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
@@ -431,7 +431,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         reader.setEncoding(contentData.getEncoding());
         reader.setLocale(contentData.getLocale());
 
-        boolean shouldFireRead = fireContentReadPolicy && (!fireContentDownloadPolicy || isContentDownloadTriggersReadPolicy);
+        boolean shouldFireRead = fireContentReadPolicy && (!fireContentDownloadPolicy || isDownloadAsRead);
         boolean shouldFireDownload = fireContentDownloadPolicy;
 
         if (shouldFireRead || shouldFireDownload)
@@ -722,9 +722,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return store.requestRestoreContentFromArchive(contentData.getContentUrl(), restoreParams);
     }
 
-    public boolean getIsContentDownloadTriggersReadPolicy()
+    public boolean isDownloadAsRead()
     {
-        return isContentDownloadTriggersReadPolicy;
+        return isDownloadAsRead;
     }
 
     protected String getFileName(NodeRef nodeRef)

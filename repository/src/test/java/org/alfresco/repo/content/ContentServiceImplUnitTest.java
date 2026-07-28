@@ -393,7 +393,7 @@ public class ContentServiceImplUnitTest
     public void testGetReader_attachmentTrue_flagDisabled_firesOnlyDownloadPolicy()
     {
         setupReaderMocks();
-        contentService.setContentDownloadTriggersReadPolicy(false);
+        contentService.setDownloadAsRead(false);
 
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME, true);
 
@@ -406,7 +406,7 @@ public class ContentServiceImplUnitTest
     public void testGetReader_attachmentTrue_flagEnabled_firesBothPolicies()
     {
         setupReaderMocks();
-        contentService.setContentDownloadTriggersReadPolicy(true);
+        contentService.setDownloadAsRead(true);
 
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME, true);
 

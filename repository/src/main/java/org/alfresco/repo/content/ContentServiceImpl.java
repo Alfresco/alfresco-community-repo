@@ -722,7 +722,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return store.requestRestoreContentFromArchive(contentData.getContentUrl(), restoreParams);
     }
 
-    public boolean getIsContentDownloadTriggersReadPolicy(){
+    public boolean getIsContentDownloadTriggersReadPolicy()
+    {
         return isContentDownloadTriggersReadPolicy;
     }
 

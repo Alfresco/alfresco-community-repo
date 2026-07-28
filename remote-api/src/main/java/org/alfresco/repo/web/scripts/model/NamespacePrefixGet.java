@@ -33,8 +33,8 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -50,7 +50,7 @@ import org.alfresco.util.PropertyCheck;
  */
 public class NamespacePrefixGet extends AbstractWebScript implements InitializingBean
 {
-    private static final Log logger = LogFactory.getLog(NamespacePrefixGet.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NamespacePrefixGet.class);
 
     private static final String KEY_PREFIX_URI_MAP = "prefixUriMap";
 
@@ -87,7 +87,7 @@ public class NamespacePrefixGet extends AbstractWebScript implements Initializin
                 String existing = prefixUriMap.put(uri, prefix);
                 if (existing != null && !existing.equals(prefix))
                 {
-                    logger.warn(String.format(
+                    LOGGER.warn(String.format(
                             "Namespace URI '%s' is registered under multiple prefixes; replacing '%s' with '%s'.",
                             uri, existing, prefix));
                 }

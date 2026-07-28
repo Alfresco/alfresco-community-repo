@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.web.scripts.model;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import org.json.JSONObject;
@@ -41,8 +42,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
- * * Unit Tests for the namespace-prefix api.
+ * Unit Tests for the namespace-prefix api.
  */
+@SuppressWarnings("PMD.TestClassWithoutTestCases")
 public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
 {
     private static final String URL = "/api/model/namespace-prefix";
@@ -70,13 +72,15 @@ public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
         super.tearDown();
     }
 
-    private JSONObject getPrefixUriMap() throws Exception
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
+    private JSONObject getPrefixUriMap() throws IOException
     {
         Response response = sendRequest(new GetRequest(URL), 200);
         return new JSONObject(response.getContentAsString()).getJSONObject(KEY);
     }
 
     /** Happy path: the response has the {@code prefixUriMap} envelope and the always-present content model. */
+    @SuppressWarnings({"PMD.UnitTestShouldUseTestAnnotation", "PMD.SignatureDeclareThrowsException"})
     public void testReturnsPrefixUriMap() throws Exception
     {
         JSONObject map = getPrefixUriMap();
@@ -85,6 +89,7 @@ public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
         assertTrue("Expected the registry to contain many namespaces", map.length() > 1);
     }
 
+    @SuppressWarnings({"PMD.UnitTestShouldUseTestAnnotation", "PMD.SignatureDeclareThrowsException"})
     public void testIncludesPlatformNamespaces() throws Exception
     {
         JSONObject map = getPrefixUriMap();
@@ -96,12 +101,13 @@ public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
     /**
      * Fidelity: every namespace registered in the live {@link NamespaceService} must appear in the response, so the endpoint is a faithful projection of the registry (no silent filtering/drift).
      */
+    @SuppressWarnings({"PMD.UnitTestShouldUseTestAnnotation", "PMD.SignatureDeclareThrowsException"})
     public void testMatchesNamespaceService() throws Exception
     {
         JSONObject map = getPrefixUriMap();
 
         Collection<String> prefixes = transactionService.getRetryingTransactionHelper()
-                .doInTransaction(() -> namespaceService.getPrefixes(), true);
+                .doInTransaction(namespaceService::getPrefixes, true);
 
         for (String prefix : prefixes)
         {
@@ -114,6 +120,7 @@ public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
     /**
      * A custom content model registered at runtime (as a customer would via a deployed model / Custom Model Management) introduces a namespace that is <em>not</em> in the bootstrapped set. Because the endpoint sources from {@link NamespaceService}, that user-registered prefix must appear — this is the core drift/maintenance problem the old static prefixes file could not solve.
      */
+    @SuppressWarnings({"PMD.UnitTestShouldUseTestAnnotation", "PMD.SignatureDeclareThrowsException"})
     public void testIncludesUserRegisteredCustomNamespace() throws Exception
     {
         final String testUri = "http://www.example.com/model/testmodel/1.0";
@@ -153,6 +160,7 @@ public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
     /**
      * The descriptor declares {@code <authentication>user</authentication>}: an unauthenticated (guest) call is rejected. (Verify the exact status against the running server; the web-script framework returns 401 for a missing/guest authentication on a user-scoped script.)
      */
+    @SuppressWarnings({"PMD.UnitTestShouldUseTestAnnotation", "PMD.SignatureDeclareThrowsException"})
     public void testRequiresAuthentication() throws Exception
     {
         AuthenticationUtil.clearCurrentSecurityContext();

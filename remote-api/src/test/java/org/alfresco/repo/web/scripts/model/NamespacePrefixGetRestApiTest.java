@@ -41,11 +41,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
- * Integration tests for the {@code /api/model/namespace-prefix} web script (ACS-12299), exercised end-to-end
- * against a running repository via the test web-script server.
- * <p>
- * Follows the repository's convention of testing web scripts through {@link BaseWebScriptTest} (HTTP round-trip)
- * rather than unit-testing the controller in isolation.
+ * Integration test for namespace-prefix api.
  */
 public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
 {

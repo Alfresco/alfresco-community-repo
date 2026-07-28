@@ -619,7 +619,7 @@ public class AccessAuditorTest
     {
         // Disable the flag so download does NOT also fire read
         boolean originalFlag = getDownloadTriggersReadFlag();
-        contentServiceImpl.setContentDownloadTriggersReadPolicy(false);
+        contentServiceImpl.setDownloadAsRead(false);
         try
         {
             serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT, true);
@@ -636,7 +636,7 @@ public class AccessAuditorTest
         }
         finally
         {
-            contentServiceImpl.setContentDownloadTriggersReadPolicy(originalFlag);
+            contentServiceImpl.setDownloadAsRead(originalFlag);
         }
     }
 
@@ -648,7 +648,7 @@ public class AccessAuditorTest
     {
         // Enable the flag so download also fires read
         boolean originalFlag = getDownloadTriggersReadFlag();
-        contentServiceImpl.setContentDownloadTriggersReadPolicy(true);
+        contentServiceImpl.setDownloadAsRead(true);
         try
         {
             serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT, true);
@@ -688,7 +688,7 @@ public class AccessAuditorTest
         }
         finally
         {
-            contentServiceImpl.setContentDownloadTriggersReadPolicy(originalFlag);
+            contentServiceImpl.setDownloadAsRead(originalFlag);
         }
     }
 
@@ -700,7 +700,7 @@ public class AccessAuditorTest
     {
         // Enable the flag - should have no effect on default getReader()
         boolean originalFlag = getDownloadTriggersReadFlag();
-        contentServiceImpl.setContentDownloadTriggersReadPolicy(true);
+        contentServiceImpl.setDownloadAsRead(true);
         try
         {
             serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
@@ -717,12 +717,12 @@ public class AccessAuditorTest
         }
         finally
         {
-            contentServiceImpl.setContentDownloadTriggersReadPolicy(originalFlag);
+            contentServiceImpl.setDownloadAsRead(originalFlag);
         }
     }
 
     private boolean getDownloadTriggersReadFlag()
     {
-        return contentServiceImpl.getIsContentDownloadTriggersReadPolicy();
+        return contentServiceImpl.isDownloadAsRead();
     }
 }

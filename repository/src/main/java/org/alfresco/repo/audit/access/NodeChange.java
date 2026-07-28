@@ -527,6 +527,7 @@ import org.alfresco.service.namespace.QName;
         return buildAuditMap(subAction);
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     private Map<String, Serializable> buildAuditMap(boolean subAction)
     {
         Map<String, Serializable> auditMap = new HashMap<String, Serializable>(
@@ -836,10 +837,5 @@ import org.alfresco.service.namespace.QName;
         // sanitizeSubList();
         appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(DOWNLOAD_CONTENT));
         runAsUser = AuthenticationUtil.getRunAsUser();
-    }
-
-    private void sanitizeSubList()
-    {
-        subActions.remove(READ_CONTENT);
     }
 }

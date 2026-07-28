@@ -56,6 +56,7 @@ import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.AuditComponent;
+import org.alfresco.repo.content.ContentServiceImpl;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -91,6 +92,7 @@ public class AccessAuditorTest
     private static NamespaceService namespaceService = serviceRegistry.getNamespaceService();
     private static PolicyComponent policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
     private static AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+    private static ContentServiceImpl contentServiceImpl = (ContentServiceImpl) ctx.getBean("contentService");
 
     // Integration test data store
     private static StoreRef storeRef;
@@ -588,5 +590,142 @@ public class AccessAuditorTest
         assertContains("cancelCheckOut", origMap.get("sub-actions"));
         assertEquals("/cm:homeFolder/cm:folder1/cm:content1", origMap.get("path"));
         assertEquals("cm:content", origMap.get("type"));
+    }
+
+    /**
+     * Test that reading content with attachment=false produces a single READ audit entry.
+     */
+    @Test
+    public final void test15OnContentReadWithAttachmentFalse() throws Exception
+    {
+        serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT, false);
+
+        txn.commit();
+        txn = null;
+
+        assertEquals(1, auditMapList.size());
+        Map<String, Serializable> auditMap = auditMapList.get(0);
+        assertEquals("READ", auditMap.get("action"));
+        assertContains("readContent", auditMap.get("sub-actions"));
+        assertEquals("/cm:homeFolder/cm:folder1/cm:content1", auditMap.get("path"));
+        assertEquals("cm:content", auditMap.get("type"));
+    }
+
+    /**
+     * Test that downloading content (attachment=true) with the flag disabled produces
+     * a single DOWNLOAD audit entry (no READ).
+     */
+    @Test
+    public final void test16OnContentDownloadOnly() throws Exception
+    {
+        // Disable the flag so download does NOT also fire read
+        boolean originalFlag = getDownloadTriggersReadFlag();
+        contentServiceImpl.setContentDownloadTriggersReadPolicy(false);
+        try
+        {
+            serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT, true);
+
+            txn.commit();
+            txn = null;
+
+            assertEquals(1, auditMapList.size());
+            Map<String, Serializable> auditMap = auditMapList.get(0);
+            assertEquals("DOWNLOAD", auditMap.get("action"));
+            assertContains("downloadContent", auditMap.get("sub-actions"));
+            assertEquals("/cm:homeFolder/cm:folder1/cm:content1", auditMap.get("path"));
+            assertEquals("cm:content", auditMap.get("type"));
+        }
+        finally
+        {
+            contentServiceImpl.setContentDownloadTriggersReadPolicy(originalFlag);
+        }
+    }
+
+    /**
+     * Test that downloading content (attachment=true) with the flag enabled produces
+     * two separate audit entries: READ and DOWNLOAD.
+     */
+    @Test
+    public final void test17OnContentDownloadWithReadFlag() throws Exception
+    {
+        // Enable the flag so download also fires read
+        boolean originalFlag = getDownloadTriggersReadFlag();
+        contentServiceImpl.setContentDownloadTriggersReadPolicy(true);
+        try
+        {
+            serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT, true);
+
+            txn.commit();
+            txn = null;
+
+            // Two audit entries should be produced: one READ and one DOWNLOAD
+            assertEquals(2, auditMapList.size());
+
+            // Find which is READ and which is DOWNLOAD
+            Map<String, Serializable> readMap = null;
+            Map<String, Serializable> downloadMap = null;
+            for (Map<String, Serializable> auditMap : auditMapList)
+            {
+                if ("READ".equals(auditMap.get("action")))
+                {
+                    readMap = auditMap;
+                }
+                else if ("DOWNLOAD".equals(auditMap.get("action")))
+                {
+                    downloadMap = auditMap;
+                }
+            }
+
+            // Verify READ audit entry
+            assertTrue("Expected READ audit entry", readMap != null);
+            assertContains("readContent", readMap.get("sub-actions"));
+            assertEquals("/cm:homeFolder/cm:folder1/cm:content1", readMap.get("path"));
+            assertEquals("cm:content", readMap.get("type"));
+
+            // Verify DOWNLOAD audit entry
+            assertTrue("Expected DOWNLOAD audit entry", downloadMap != null);
+            assertContains("downloadContent", downloadMap.get("sub-actions"));
+            assertEquals("/cm:homeFolder/cm:folder1/cm:content1", downloadMap.get("path"));
+            assertEquals("cm:content", downloadMap.get("type"));
+        }
+        finally
+        {
+            contentServiceImpl.setContentDownloadTriggersReadPolicy(originalFlag);
+        }
+    }
+
+    /**
+     * Test that default getReader (no attachment parameter) still produces READ only.
+     */
+    @Test
+    public final void test18OnContentReadDefault() throws Exception
+    {
+        // Enable the flag - should have no effect on default getReader()
+        boolean originalFlag = getDownloadTriggersReadFlag();
+        contentServiceImpl.setContentDownloadTriggersReadPolicy(true);
+        try
+        {
+            serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
+
+            txn.commit();
+            txn = null;
+
+            assertEquals(1, auditMapList.size());
+            Map<String, Serializable> auditMap = auditMapList.get(0);
+            assertEquals("READ", auditMap.get("action"));
+            assertContains("readContent", auditMap.get("sub-actions"));
+            assertEquals("/cm:homeFolder/cm:folder1/cm:content1", auditMap.get("path"));
+            assertEquals("cm:content", auditMap.get("type"));
+        }
+        finally
+        {
+            contentServiceImpl.setContentDownloadTriggersReadPolicy(originalFlag);
+        }
+    }
+
+
+    private boolean getDownloadTriggersReadFlag()
+    {
+       return contentServiceImpl.getIsContentDownloadTriggersReadPolicy();
     }
 }

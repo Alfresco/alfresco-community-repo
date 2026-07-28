@@ -33,7 +33,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -77,7 +76,7 @@ public class NamespacePrefixGet extends AbstractWebScript implements Initializin
         byte[] payload;
         try
         {
-            HashMap<String, String> prefixUriMap = new HashMap<>();
+            Map<String, String> prefixUriMap = new HashMap<>();
             for (String prefix : namespaceService.getPrefixes())
             {
                 String uri = namespaceService.getNamespaceURI(prefix);
@@ -86,7 +85,7 @@ public class NamespacePrefixGet extends AbstractWebScript implements Initializin
                     continue;
                 }
                 String existing = prefixUriMap.put(uri, prefix);
-                if (!Strings.CS.equals(existing, prefix))
+                if (existing != null && !existing.equals(prefix))
                 {
                     logger.warn(String.format(
                             "Namespace URI '%s' is registered under multiple prefixes; replacing '%s' with '%s'.",

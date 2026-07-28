@@ -41,7 +41,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
- * Integration test for namespace-prefix api.
+ * * Unit Tests for the namespace-prefix api.
  */
 public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
 {

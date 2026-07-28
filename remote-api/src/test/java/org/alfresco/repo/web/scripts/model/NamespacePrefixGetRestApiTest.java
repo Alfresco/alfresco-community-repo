@@ -85,10 +85,6 @@ public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
         assertTrue("Expected the registry to contain many namespaces", map.length() > 1);
     }
 
-    /**
-     * The whole point of ACS-12299: because the endpoint sources from NamespaceService (not /types + /aspects),
-     * it returns the platform namespaces those endpoints structurally cannot — e.g. {@code sys} and {@code module}.
-     */
     public void testIncludesPlatformNamespaces() throws Exception
     {
         JSONObject map = getPrefixUriMap();
@@ -98,8 +94,7 @@ public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
     }
 
     /**
-     * Fidelity: every namespace registered in the live {@link NamespaceService} must appear in the response, so
-     * the endpoint is a faithful projection of the registry (no silent filtering/drift).
+     * Fidelity: every namespace registered in the live {@link NamespaceService} must appear in the response, so the endpoint is a faithful projection of the registry (no silent filtering/drift).
      */
     public void testMatchesNamespaceService() throws Exception
     {
@@ -117,10 +112,7 @@ public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
     }
 
     /**
-     * A custom content model registered at runtime (as a customer would via a deployed model / Custom Model
-     * Management) introduces a namespace that is <em>not</em> in the bootstrapped set. Because the endpoint
-     * sources from {@link NamespaceService}, that user-registered prefix must appear — this is the core
-     * drift/maintenance problem the old static prefixes file could not solve.
+     * A custom content model registered at runtime (as a customer would via a deployed model / Custom Model Management) introduces a namespace that is <em>not</em> in the bootstrapped set. Because the endpoint sources from {@link NamespaceService}, that user-registered prefix must appear — this is the core drift/maintenance problem the old static prefixes file could not solve.
      */
     public void testIncludesUserRegisteredCustomNamespace() throws Exception
     {
@@ -159,9 +151,7 @@ public class NamespacePrefixGetRestApiTest extends BaseWebScriptTest
     }
 
     /**
-     * The descriptor declares {@code <authentication>user</authentication>}: an unauthenticated (guest) call is
-     * rejected. (Verify the exact status against the running server; the web-script framework returns 401 for a
-     * missing/guest authentication on a user-scoped script.)
+     * The descriptor declares {@code <authentication>user</authentication>}: an unauthenticated (guest) call is rejected. (Verify the exact status against the running server; the web-script framework returns 401 for a missing/guest authentication on a user-scoped script.)
      */
     public void testRequiresAuthentication() throws Exception
     {

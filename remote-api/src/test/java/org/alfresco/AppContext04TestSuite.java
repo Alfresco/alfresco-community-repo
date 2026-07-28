@@ -25,7 +25,6 @@
  */
 package org.alfresco;
 
-import org.alfresco.repo.web.scripts.model.NamespacePrefixGetRestApiTest;
 import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

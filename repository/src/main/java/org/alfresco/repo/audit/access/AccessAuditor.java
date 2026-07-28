@@ -26,11 +26,7 @@
 package org.alfresco.repo.audit.access;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -615,16 +611,21 @@ public class AccessAuditor implements InitializingBean,
             // contentDownloadsAsRead flag is enabled), emit two separate audit entries.
             if (nodeChange.hasReadAndDownloadActions())
             {
-                Map<String, Serializable> readAuditMap = nodeChange.getAuditDataForAction("READ");
-                recordAuditValues(TRANSACTION, readAuditMap);
-
-                Map<String, Serializable> downloadAuditMap = nodeChange.getAuditDataForAction("DOWNLOAD");
-                recordAuditValues(TRANSACTION, downloadAuditMap);
+                List<Map<String, Serializable>> auditMaps = List.of(
+                        Collections.unmodifiableMap(nodeChange.getAuditDataForAction("READ")),
+                        Collections.unmodifiableMap(nodeChange.getAuditDataForAction("DOWNLOAD")));
+                recordAudits(TRANSACTION, auditMaps);
             }
             else
             {
                 Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
                 recordAuditValues(TRANSACTION, auditMap);
+            }
+        }
+
+        private void recordAudits(String transaction,final Collection<Map<String, Serializable>> auditMaps){
+            for(Map<String,Serializable> auditMap : auditMaps){
+                recordAuditValues(transaction, auditMap);
             }
         }
     }

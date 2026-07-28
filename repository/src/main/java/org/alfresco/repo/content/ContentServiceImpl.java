@@ -431,13 +431,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         reader.setEncoding(contentData.getEncoding());
         reader.setLocale(contentData.getLocale());
 
-        // Determine which policies to fire.
-        // When downloading (fireContentDownloadPolicy=true):
-        // - Always fire OnContentDownloadPolicy → audit: "DOWNLOAD"
-        // - If isContentDownloadTriggersReadPolicy is true, also fire OnContentReadPolicy → audit: "READ"
-        // (AccessAuditor.afterCommit will emit two separate audit entries)
-        // When previewing (fireContentDownloadPolicy=false):
-        // - Fire OnContentReadPolicy → audit: "READ"
         boolean shouldFireRead = fireContentReadPolicy && (!fireContentDownloadPolicy || isContentDownloadTriggersReadPolicy);
         boolean shouldFireDownload = fireContentDownloadPolicy;
 
@@ -727,6 +720,10 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         final ContentData contentData = getContentDataOrThrowError(nodeRef, propertyQName);
         return store.requestRestoreContentFromArchive(contentData.getContentUrl(), restoreParams);
+    }
+
+    public boolean getIsContentDownloadTriggersReadPolicy(){
+        return isContentDownloadTriggersReadPolicy;
     }
 
     protected String getFileName(NodeRef nodeRef)

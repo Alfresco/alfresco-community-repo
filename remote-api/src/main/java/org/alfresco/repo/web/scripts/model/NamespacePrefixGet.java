@@ -28,10 +28,14 @@ package org.alfresco.repo.web.scripts.model;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.TreeMap;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.Strings;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -47,7 +51,12 @@ import org.alfresco.util.PropertyCheck;
  */
 public class NamespacePrefixGet extends AbstractWebScript implements InitializingBean
 {
+    private static final Log logger = LogFactory.getLog(NamespacePrefixGet.class);
+
     private static final String KEY_PREFIX_URI_MAP = "prefixUriMap";
+
+    // Thread-safe once configured, so shared as a single instance across concurrent requests.
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private NamespaceService namespaceService;
 
@@ -65,31 +74,39 @@ public class NamespacePrefixGet extends AbstractWebScript implements Initializin
     @Override
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
-        // Sorted for deterministic, cache/diff-friendly output.
-        TreeMap<String, String> prefixUriMap = new TreeMap<>();
-        for (String prefix : namespaceService.getPrefixes())
+        byte[] payload;
+        try
         {
-            prefixUriMap.put(namespaceService.getNamespaceURI(prefix), prefix);
+            HashMap<String, String> prefixUriMap = new HashMap<>();
+            for (String prefix : namespaceService.getPrefixes())
+            {
+                String uri = namespaceService.getNamespaceURI(prefix);
+                if (uri == null)
+                {
+                    continue;
+                }
+                String existing = prefixUriMap.put(uri, prefix);
+                if (!Strings.CS.equals(existing, prefix))
+                {
+                    logger.warn(String.format(
+                            "Namespace URI '%s' is registered under multiple prefixes; replacing '%s' with '%s'.",
+                            uri, existing, prefix));
+                }
+            }
+
+            payload = OBJECT_MAPPER.writeValueAsBytes(Map.of(KEY_PREFIX_URI_MAP, prefixUriMap));
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+                    "Failed to write namespace prefix map JSON", e);
         }
 
         res.setContentType("application/json");
         res.setContentEncoding(StandardCharsets.UTF_8.name());
-
         try (OutputStream os = res.getOutputStream())
         {
-            JSONObject map = new JSONObject();
-            for (var entry : prefixUriMap.entrySet())
-            {
-                map.put(entry.getKey(), entry.getValue());
-            }
-            JSONObject json = new JSONObject();
-            json.put(KEY_PREFIX_URI_MAP, map);
-            os.write(json.toString(2).getBytes(StandardCharsets.UTF_8));
-        }
-        catch (JSONException e)
-        {
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "Failed to write namespace prefix map JSON", e);
+            os.write(payload);
         }
     }
 }

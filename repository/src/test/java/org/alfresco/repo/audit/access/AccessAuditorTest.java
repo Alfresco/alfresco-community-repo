@@ -612,8 +612,7 @@ public class AccessAuditorTest
     }
 
     /**
-     * Test that downloading content (attachment=true) with the flag disabled produces
-     * a single DOWNLOAD audit entry (no READ).
+     * Test that downloading content (attachment=true) with the flag disabled produces a single DOWNLOAD audit entry (no READ).
      */
     @Test
     public final void test16OnContentDownloadOnly() throws Exception
@@ -642,8 +641,7 @@ public class AccessAuditorTest
     }
 
     /**
-     * Test that downloading content (attachment=true) with the flag enabled produces
-     * two separate audit entries: READ and DOWNLOAD.
+     * Test that downloading content (attachment=true) with the flag enabled produces two separate audit entries: READ and DOWNLOAD.
      */
     @Test
     public final void test17OnContentDownloadWithReadFlag() throws Exception
@@ -723,9 +721,8 @@ public class AccessAuditorTest
         }
     }
 
-
     private boolean getDownloadTriggersReadFlag()
     {
-       return contentServiceImpl.getIsContentDownloadTriggersReadPolicy();
+        return contentServiceImpl.getIsContentDownloadTriggersReadPolicy();
     }
 }

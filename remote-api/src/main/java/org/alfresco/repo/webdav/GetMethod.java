@@ -262,7 +262,8 @@ public class GetMethod extends WebDAVMethod
 
             m_response.setHeader("Content-Disposition", getContentDispositionHeader(nodeInfo));
 
-            ContentReader reader = fileFolderService.getReader(realNodeInfo.getNodeRef());
+            // WebDAV GET streams the content to the client as a download, so fire the download policy.
+            ContentReader reader = getContentService().getReader(realNodeInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
             // ensure that we generate something, even if the content is missing
             reader = FileContentReader.getSafeContentReader(
                     (ContentReader) reader,

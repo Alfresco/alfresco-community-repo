@@ -494,61 +494,19 @@ public class NodeChangeTest
     }
 
     @Test
-    public final void testGetAuditDataForAction_readOverride()
+    public final void testReadAndDownload_derivesToDownloadAndKeepsBothSubActions()
     {
-        nodeChange.onContentRead(content1);
-        nodeChange.onContentDownload(content1);
-
-        Map<String, Serializable> auditMap = nodeChange.getAuditDataForAction("READ");
-
-        assertEquals("Action should be overridden to READ", "READ", auditMap.get("action"));
-        assertEquals("Sub-actions should contain both", "readContent downloadContent", auditMap.get("sub-actions"));
-        assertEquals(content1, auditMap.get("node"));
-    }
-
-    @Test
-    public final void testGetAuditDataForAction_downloadOverride()
-    {
-        nodeChange.onContentRead(content1);
-        nodeChange.onContentDownload(content1);
-
-        Map<String, Serializable> auditMap = nodeChange.getAuditDataForAction("DOWNLOAD");
-
-        assertEquals("Action should be overridden to DOWNLOAD", "DOWNLOAD", auditMap.get("action"));
-        assertEquals("Sub-actions should contain both", "readContent downloadContent", auditMap.get("sub-actions"));
-        assertEquals(content1, auditMap.get("node"));
-    }
-
-    @Test
-    public final void testGetDerivedAction_readAndDownload_derivesToDownload()
-    {
-        // When both are present and using normal getAuditData (not overridden),
-        // getDerivedAction should pick DOWNLOAD because READ requires size==1
+        // When both a read and a download occur (contentDownloadsAsRead enabled), the derived
+        // action is DOWNLOAD and both sub-actions are retained. AccessAuditor is responsible for
+        // additionally emitting the legacy READ entry - see AccessAuditor.publishAuditForTheTransaction.
         nodeChange.onContentRead(content1);
         nodeChange.onContentDownload(content1);
 
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertEquals("Derived action should be DOWNLOAD when both present", "DOWNLOAD", auditMap.get("action"));
-    }
-
-    @Test
-    public final void testGetAuditDataForAction_doesNotCorruptSubsequentCalls()
-    {
-        nodeChange.onContentRead(content1);
-        nodeChange.onContentDownload(content1);
-
-        // First call with override
-        Map<String, Serializable> readMap = nodeChange.getAuditDataForAction("READ");
-        assertEquals("READ", readMap.get("action"));
-
-        // Second call with different override
-        Map<String, Serializable> downloadMap = nodeChange.getAuditDataForAction("DOWNLOAD");
-        assertEquals("DOWNLOAD", downloadMap.get("action"));
-
-        // Regular call should still derive properly
-        Map<String, Serializable> derivedMap = nodeChange.getAuditData(false);
-        assertEquals("DOWNLOAD", derivedMap.get("action"));
+        assertEquals("Sub-actions should contain both", "readContent downloadContent", auditMap.get("sub-actions"));
+        assertEquals(content1, auditMap.get("node"));
     }
 
     @Test

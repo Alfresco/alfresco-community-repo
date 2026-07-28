@@ -150,7 +150,9 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
             return;
         }
 
-        bindClassPolicy(ContentServicePolicies.OnContentDownloadPolicy.QNAME, NodeContentPutEvent.EVENT_TYPE);
+        // A download emits a NodeContentGetEvent (see onContentDownload below), so it must be
+        // gated on the GET event type - the same way OnContentReadPolicy is - not the PUT type.
+        bindClassPolicy(ContentServicePolicies.OnContentDownloadPolicy.QNAME, NodeContentGetEvent.EVENT_TYPE);
 
         bindClassPolicy(ContentServicePolicies.OnContentPropertyUpdatePolicy.QNAME, NodeContentPutEvent.EVENT_TYPE);
 

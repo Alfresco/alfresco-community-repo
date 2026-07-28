@@ -181,6 +181,9 @@ public class AccessAuditor implements InitializingBean,
     private static final String ROOT_PATH = "/alfresco-access";
     private static final String TRANSACTION = "transaction";
     private static final String AUDIT_SUB_ACTIONS = "audit.alfresco-access.sub-actions.enabled";
+    /** Audit map key for the derived action; mirrors {@code NodeChange.ACTION}. */
+    private static final String ACTION = "action";
+    private static final String READ_ACTION = "READ";
 
     private Properties properties;
     private PolicyComponent policyComponent;
@@ -607,28 +610,20 @@ public class AccessAuditor implements InitializingBean,
 
         private void publishAuditForTheTransaction(NodeChange nodeChange)
         {
-            // When both READ and DOWNLOAD sub-actions are present (i.e., the
-            // contentDownloadsAsRead flag is enabled), emit two separate audit entries.
+            // The derived action is emitted normally (DOWNLOAD when a download occurred).
+            Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+
+            // Backward compatibility: when the contentDownloadsAsRead flag is enabled a download
+            // also fired the read policy, so both readContent and downloadContent sub-actions are
+            // present. Emit an additional legacy READ entry for consumers that only look for READ.
             if (nodeChange.hasReadAndDownloadActions())
             {
-                List<Map<String, Serializable>> auditMaps = List.of(
-                        Collections.unmodifiableMap(nodeChange.getAuditDataForAction("READ")),
-                        Collections.unmodifiableMap(nodeChange.getAuditDataForAction("DOWNLOAD")));
-                recordAudits(TRANSACTION, auditMaps);
+                Map<String, Serializable> readAuditMap = new HashMap<>(auditMap);
+                readAuditMap.put(ACTION, READ_ACTION);
+                recordAuditValues(TRANSACTION, readAuditMap);
             }
-            else
-            {
-                Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
-                recordAuditValues(TRANSACTION, auditMap);
-            }
-        }
 
-        private void recordAudits(String transaction, final Collection<Map<String, Serializable>> auditMaps)
-        {
-            for (Map<String, Serializable> auditMap : auditMaps)
-            {
-                recordAuditValues(transaction, auditMap);
-            }
+            recordAuditValues(TRANSACTION, auditMap);
         }
     }
 }

@@ -173,7 +173,6 @@ public class GetMethod extends WebDAVMethod
      */
     protected void executeImpl() throws WebDAVServerException, Exception
     {
-        FileFolderService fileFolderService = getFileFolderService();
         NodeRef rootNodeRef = getRootNodeRef();
         String path = getPath();
 

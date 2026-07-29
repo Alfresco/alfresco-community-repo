@@ -26,12 +26,9 @@
 package org.alfresco.rest.api.search;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -42,7 +39,6 @@ import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.SearchQuery;
-import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -68,8 +64,6 @@ import org.alfresco.util.PropertyCheck;
 public class SearchApiWebscript extends AbstractWebScript implements RecognizedParamsExtractor, RequestReader, ResponseWriter,
         InitializingBean
 {
-    private static final ObjectMapper SEARCH_QUERY_JSON = new ObjectMapper();
-
     private ServiceRegistry serviceRegistry;
     private SearchService searchService;
     private SearchMapper searchMapper;
@@ -92,11 +86,8 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
     {
         try
         {
-            // JSON binding turns an empty "searchAfter" into null, making it look like a normal
-            // search. So we check the raw body for the key: present = start cursor paging.
-            String requestBody = readRequestBody(webScriptRequest);
-            SearchQuery searchQuery = parseSearchQuery(requestBody);
-            boolean searchAfterRequested = isSearchAfterRequested(requestBody);
+            // Turn JSON into a Java object representation
+            SearchQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchQuery.class);
 
             // Parse the parameters
             Params params = getParams(webScriptRequest, searchQuery.getFields(), searchQuery.getInclude(), searchQuery.getPaging());
@@ -107,7 +98,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             // Turn the SearchQuery json into the Java SearchParameters object
             SearchParameters searchParams = searchMapper.toSearchParameters(params, searchQuery, searchRequestContext);
 
-            applySearchAfter(searchParams, searchQuery, searchAfterRequested);
+            applySearchAfter(searchParams, searchQuery);
 
             // Call searchService
             ResultSet results = searchService.query(searchParams);
@@ -159,56 +150,25 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
         return Params.valueOf(null, recognizedParams, null, webScriptRequest);
     }
 
-    protected void applySearchAfter(SearchParameters searchParams, SearchQuery searchQuery, boolean searchAfterRequested)
+    protected void applySearchAfter(SearchParameters searchParams, SearchQuery searchQuery)
     {
-        if (!searchAfterRequested)
+        String cursor = searchQuery.getSearchAfter();
+        boolean hasSearchAfter = cursor != null;
+        if (!hasSearchAfter)
         {
+            // Offset paging (default) is already applied by the SearchMapper.
             return;
         }
 
         Paging paging = searchQuery.getPaging();
-        if (paging != null && paging.getSkipCount() > 0)
+        boolean hasSkipCount = paging != null && paging.getSkipCount() > 0;
+        if (hasSkipCount)
         {
             throw new InvalidArgumentException(
                     "skipCount (offset paging) cannot be combined with searchAfter (cursor paging); use one paging mode.");
         }
 
-        String cursor = searchQuery.getSearchAfter();
-        searchParams.setSearchAfter(cursor == null ? "" : cursor);
-    }
-
-    private String readRequestBody(WebScriptRequest webScriptRequest)
-    {
-        try
-        {
-            return webScriptRequest.getContent().getContent();
-        }
-        catch (IOException e)
-        {
-            throw new ApiException("Could not read content from HTTP request body.", e);
-        }
-    }
-
-    private SearchQuery parseSearchQuery(String requestBody)
-    {
-        return assistant.getJsonHelper().construct(new StringReader(requestBody), SearchQuery.class);
-    }
-
-    private boolean isSearchAfterRequested(String requestBody)
-    {
-        if (requestBody == null || requestBody.isBlank())
-        {
-            return false;
-        }
-        try
-        {
-            JsonNode root = SEARCH_QUERY_JSON.readTree(requestBody);
-            return root != null && root.has("searchAfter");
-        }
-        catch (IOException e)
-        {
-            return false;
-        }
+        searchParams.setSearchAfter(cursor);
     }
 
     public void setSearchMapper(SearchMapper searchMapper)

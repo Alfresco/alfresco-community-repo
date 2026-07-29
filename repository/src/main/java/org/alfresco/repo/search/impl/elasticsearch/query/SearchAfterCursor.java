@@ -33,7 +33,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opensearch.client.opensearch._types.FieldValue;
 
-// Encodes and decodes the opaque cursor, a Base64-encoded JSON blob holding the PIT id and the last page's sort values {"pitId":..., "sort":[...]}. The client then sends nextCursor back as searchAfter, and the PIT id is refreshed from each response.
+/**
+ * Encodes and decodes the opaque {@code search_after} cursor, a Base64-encoded JSON blob holding the PIT id and the last page's sort values ({@code {"pitId":..., "sort":[...]}}). The client sends the previous response's {@code nextCursor} back as {@code searchAfter}, and the PIT id is refreshed from each response.
+ */
 public final class SearchAfterCursor
 {
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -89,7 +91,9 @@ public final class SearchAfterCursor
         }
         catch (Exception exception)
         {
-            throw new IllegalArgumentException("Invalid search_after cursor", exception);
+            throw new InvalidSearchAfterCursorException(
+                    "The search_after cursor is invalid or has expired. Start a new search without searchAfter to begin a new pagination session.",
+                    exception);
         }
     }
 

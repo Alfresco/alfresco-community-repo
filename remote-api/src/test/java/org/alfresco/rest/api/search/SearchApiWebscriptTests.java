@@ -116,7 +116,7 @@ public class SearchApiWebscriptTests
     {
         SearchParameters sp = new SearchParameters();
 
-        webscript.applySearchAfter(sp, searchQuery(Paging.valueOf(10, 100), null), false);
+        webscript.applySearchAfter(sp, searchQuery(Paging.valueOf(10, 100), null));
 
         assertNull(sp.getSearchAfter());
     }
@@ -126,7 +126,7 @@ public class SearchApiWebscriptTests
     {
         SearchParameters sp = new SearchParameters();
 
-        webscript.applySearchAfter(sp, searchQuery(null, "SEARCH_AFTER_TOKEN"), true);
+        webscript.applySearchAfter(sp, searchQuery(null, "SEARCH_AFTER_TOKEN"));
 
         assertEquals("SEARCH_AFTER_TOKEN", sp.getSearchAfter());
     }
@@ -136,8 +136,8 @@ public class SearchApiWebscriptTests
     {
         SearchParameters sp = new SearchParameters();
 
-        // The JSON layer coalesces an empty searchAfter to null; key presence still requests cursor mode.
-        webscript.applySearchAfter(sp, searchQuery(null, null), true);
+        // An explicit empty searchAfter starts a new cursor-paging session (first page).
+        webscript.applySearchAfter(sp, searchQuery(null, ""));
 
         assertEquals("", sp.getSearchAfter());
     }
@@ -145,6 +145,6 @@ public class SearchApiWebscriptTests
     @Test(expected = InvalidArgumentException.class)
     public void skipCountCombinedWithSearchAfterIsRejected()
     {
-        webscript.applySearchAfter(new SearchParameters(), searchQuery(Paging.valueOf(10, 100), "SEARCH_AFTER_TOKEN"), true);
+        webscript.applySearchAfter(new SearchParameters(), searchQuery(Paging.valueOf(10, 100), "SEARCH_AFTER_TOKEN"));
     }
 }

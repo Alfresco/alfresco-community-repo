@@ -44,7 +44,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 
 /**
- * This class provides parameters to define a search. TODO - paging of results page number and page size - paging isolation - REPEATABLE READ, READ COMMITTED, may SEE ONCE tracking node refs in previous result sets - how long repeatable read may be held - limit by the number of permission evaluations
+ * This class provides parameters to define a search.
  * 
  * @author Andy Hind
  */
@@ -198,7 +198,7 @@ public class SearchParameters implements BasicSearchParameters
 
     private boolean trackScore = true;
 
-    private String searchAfter;
+    private String searchAfterToken;
 
     /**
      * Default constructor
@@ -252,7 +252,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.timezone = this.timezone;
         sp.trackTotalHits = this.trackTotalHits;
         sp.trackScore = this.trackScore;
-        sp.searchAfter = this.searchAfter;
+        sp.searchAfterToken = this.searchAfterToken;
         return sp;
     }
 
@@ -605,12 +605,12 @@ public class SearchParameters implements BasicSearchParameters
 
     public String getSearchAfter()
     {
-        return searchAfter;
+        return searchAfterToken;
     }
 
     public void setSearchAfter(String searchAfter)
     {
-        this.searchAfter = searchAfter;
+        this.searchAfterToken = searchAfter;
     }
 
     /**
@@ -1210,7 +1210,7 @@ public class SearchParameters implements BasicSearchParameters
         result = prime * result + ((ranges == null) ? 0 : ranges.hashCode());
         result = prime * result + ((searchTerm == null) ? 0 : searchTerm.hashCode());
         result = prime * result + (spellCheck ? 1231 : 1237);
-        result = prime * result + ((searchAfter == null) ? 0 : searchAfter.hashCode());
+        result = prime * result + ((searchAfterToken == null) ? 0 : searchAfterToken.hashCode());
         return result;
     }
 
@@ -1373,14 +1373,14 @@ public class SearchParameters implements BasicSearchParameters
             return false;
         if (spellCheck != other.spellCheck)
             return false;
-        if (searchAfter == null)
+        if (searchAfterToken == null)
         {
-            if (other.searchAfter != null)
+            if (other.searchAfterToken != null)
             {
                 return false;
             }
         }
-        else if (!searchAfter.equals(other.searchAfter))
+        else if (!searchAfterToken.equals(other.searchAfterToken))
         {
             return false;
         }
@@ -1427,7 +1427,7 @@ public class SearchParameters implements BasicSearchParameters
                 .append(", range=").append(this.ranges)
                 .append(", timezone=").append(this.timezone)
                 .append(", spellCheck=").append(this.spellCheck)
-                .append(", searchAfter=").append(this.searchAfter).append("]");
+                .append(", searchAfter=").append(this.searchAfterToken).append("]");
         return builder.toString();
     }
 

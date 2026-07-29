@@ -80,7 +80,7 @@ public class SearchAfterCursorTest
         assertTrue(SearchAfterCursor.decode("   ").sort().isEmpty());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidSearchAfterCursorException.class)
     public void shouldRejectInvalidCursor()
     {
         SearchAfterCursor.decode("@@@not-a-valid-cursor@@@");

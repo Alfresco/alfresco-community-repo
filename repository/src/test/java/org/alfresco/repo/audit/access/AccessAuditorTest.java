@@ -618,7 +618,7 @@ public class AccessAuditorTest
     public final void test16OnContentDownloadOnly() throws Exception
     {
         // Disable the flag so download does NOT also fire read
-        boolean originalFlag = getDownloadTriggersReadFlag();
+        boolean originalFlag = contentServiceImpl.isDownloadAsRead();
         contentServiceImpl.setDownloadAsRead(false);
         try
         {
@@ -647,7 +647,7 @@ public class AccessAuditorTest
     public final void test17OnContentDownloadWithReadFlag() throws Exception
     {
         // Enable the flag so download also fires read
-        boolean originalFlag = getDownloadTriggersReadFlag();
+        boolean originalFlag = contentServiceImpl.isDownloadAsRead();
         contentServiceImpl.setDownloadAsRead(true);
         try
         {
@@ -699,7 +699,7 @@ public class AccessAuditorTest
     public final void test18OnContentReadDefault() throws Exception
     {
         // Enable the flag - should have no effect on default getReader()
-        boolean originalFlag = getDownloadTriggersReadFlag();
+        boolean originalFlag = contentServiceImpl.isDownloadAsRead();
         contentServiceImpl.setDownloadAsRead(true);
         try
         {
@@ -719,10 +719,5 @@ public class AccessAuditorTest
         {
             contentServiceImpl.setDownloadAsRead(originalFlag);
         }
-    }
-
-    private boolean getDownloadTriggersReadFlag()
-    {
-        return contentServiceImpl.isDownloadAsRead();
     }
 }

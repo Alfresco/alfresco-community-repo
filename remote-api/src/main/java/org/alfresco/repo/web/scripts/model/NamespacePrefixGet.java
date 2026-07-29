@@ -84,13 +84,7 @@ public class NamespacePrefixGet extends AbstractWebScript implements Initializin
                 {
                     continue;
                 }
-                String existing = prefixUriMap.put(uri, prefix);
-                if (existing != null && !existing.equals(prefix))
-                {
-                    LOGGER.warn(String.format(
-                            "Namespace URI '%s' is registered under multiple prefixes; replacing '%s' with '%s'.",
-                            uri, existing, prefix));
-                }
+                prefixUriMap.put(uri, prefix);
             }
 
             payload = OBJECT_MAPPER.writeValueAsBytes(Map.of(KEY_PREFIX_URI_MAP, prefixUriMap));

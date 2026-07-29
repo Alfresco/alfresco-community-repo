@@ -30,6 +30,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.search.FacetFormat;
@@ -94,7 +96,8 @@ public class SearchQuery
             @JsonProperty("ranges") List<RangeParameters> ranges,
             @JsonProperty("localization") Localization localization,
             @JsonProperty("facetFormat") FacetFormat facetFormat,
-            @JsonProperty("searchAfterToken") String searchAfterToken)
+            // Empty string means start searchAfter pagination and preserve it instead of converting it to null.
+            @JsonProperty("searchAfterToken") @JsonDeserialize(using = StringDeserializer.class) String searchAfterToken)
     {
         this.query = query;
         this.includeRequest = includeRequest == null ? false : includeRequest;

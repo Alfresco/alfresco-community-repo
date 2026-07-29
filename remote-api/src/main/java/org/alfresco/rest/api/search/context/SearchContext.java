@@ -27,7 +27,7 @@ package org.alfresco.rest.api.search.context;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -43,7 +43,7 @@ public class SearchContext
     private final List<FacetFieldContext> facetsFields;
     private final List<GenericFacetResponse> facets;
     private final SearchQuery request;
-    private String nextCursor;
+    private String nextSearchAfterToken;
 
     public SearchContext(long lastTxId, List<GenericFacetResponse> facets, List<FacetQueryContext> facetResults, List<FacetFieldContext> facetsFields, SpellCheckContext spellCheck,
             SearchQuery request)
@@ -93,15 +93,15 @@ public class SearchContext
         return request;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String getNextCursor()
+    @JsonIgnore
+    public String getNextSearchAfterToken()
     {
-        return nextCursor;
+        return nextSearchAfterToken;
     }
 
-    public void setNextCursor(String nextCursor)
+    public void setNextSearchAfterToken(String nextSearchAfterToken)
     {
-        this.nextCursor = nextCursor;
+        this.nextSearchAfterToken = nextSearchAfterToken;
     }
 
     public class Consistency

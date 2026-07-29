@@ -153,8 +153,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
     protected void applySearchAfter(SearchParameters searchParams, SearchQuery searchQuery)
     {
         String cursor = searchQuery.getSearchAfterToken();
-        boolean hasSearchAfter = cursor != null;
-        if (!hasSearchAfter)
+        if (cursor == null)
         {
             // Offset paging (default) is already applied by the SearchMapper.
             return;

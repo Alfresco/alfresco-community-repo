@@ -53,7 +53,7 @@ public interface SearchEngineResultSet extends ResultSet, SearchEngineResultMeta
 
     boolean getProcessedDenies();
 
-    default String getNextCursor()
+    default String getNextSearchAfterToken()
     {
         return null;
     }

@@ -530,6 +530,9 @@ jobs:
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      - name: "Install TAS CMIS dependency"
+        if: ${{ matrix.pom-dir == 'tas-restapi' }}
+        run: mvn install -pl :cmis -am -DskipTests -Pall-tas-tests
       - name: "Build TAS integration tests"
         if: ${{ matrix.test-name == 'Integration TAS tests' }}
         run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests

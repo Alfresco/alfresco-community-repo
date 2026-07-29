@@ -25,11 +25,13 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opensearch.client.opensearch._types.FieldValue;
 
@@ -66,7 +68,7 @@ public final class SearchAfterCursor
             byte[] json = MAPPER.writeValueAsBytes(new Payload(pitId, rawSort));
             return Base64.getUrlEncoder().withoutPadding().encodeToString(json);
         }
-        catch (Exception exception)
+        catch (JsonProcessingException exception)
         {
             throw new IllegalStateException("Unable to encode search_after cursor", exception);
         }
@@ -89,7 +91,7 @@ public final class SearchAfterCursor
             }
             return new Decoded(payload.pitId(), List.copyOf(sort));
         }
-        catch (Exception exception)
+        catch (IOException | IllegalArgumentException exception)
         {
             throw new InvalidSearchAfterCursorException(
                     "The search_after cursor is invalid or has expired. Start a new search without searchAfter to begin a new pagination session.",

@@ -83,6 +83,7 @@ public class SearchAfterSearchStrategy extends SearchExecutionStrategy
      *             If the search fails.
      */
     @Override
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     public ResultSet executeSearch(SearchParameters searchParameters, Query queryWithPermissions) throws IOException
     {
         int limit = searchParameters.getLimit();
@@ -138,12 +139,12 @@ public class SearchAfterSearchStrategy extends SearchExecutionStrategy
                         "The search_after cursor is invalid or has expired. Start a new search without searchAfter to begin a new pagination session.",
                         exception);
             }
-            LOGGER.error("Error during search_after search execution", exception);
+            LOGGER.error("Error during search_after search execution: " + exception);
             throw new IllegalStateException("Error during search_after search execution", exception);
         }
         catch (IOException exception)
         {
-            LOGGER.error("Error during search_after search execution", exception);
+            LOGGER.error("Error during search_after search execution: " + exception);
             throw new IllegalStateException("Error during search_after search execution", exception);
         }
         finally

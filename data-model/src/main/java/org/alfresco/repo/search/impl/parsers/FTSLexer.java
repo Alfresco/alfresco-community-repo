@@ -1,4 +1,4 @@
-// $ANTLR null /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g 2019-12-18 09:26:26
+// $ANTLR 3.5.3 FTS.g 2026-03-19 15:48:58
 
 package org.alfresco.repo.search.impl.parsers;
 
@@ -198,7 +198,7 @@ public class FTSLexer extends Lexer
     @Override
     public String getGrammarFileName()
     {
-        return "/home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g";
+        return "FTS.g";
     }
 
     // $ANTLR start "FTSPHRASE"
@@ -208,38 +208,43 @@ public class FTSLexer extends Lexer
         {
             int _type = FTSPHRASE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:970:9: ( '\"' ( F_ESC |~ ( '\\\\' | '\"' ) )* '\"' | '\\'' ( F_ESC |~ ( '\\\\' | '\\'' ) )* '\\'' )
-            int alt3 = 2;
-            int LA3_0 = input.LA(1);
-            if ((LA3_0 == '\"'))
+            // FTS.g:970:9: ( '\"' ( F_ESC |~ ( '\\\\' | '\"' ) )* '\"' | '\\'' ( F_ESC |~ ( '\\\\' | '\\'' ) )* '\\'' | '\\u201D' ( F_ESC |~ ( '\\\\' | '\\u201D' ) )* '\\u201D' )
+            int alt4 = 3;
+            switch (input.LA(1))
             {
-                alt3 = 1;
+            case '\"':
+            {
+                alt4 = 1;
             }
-            else if ((LA3_0 == '\''))
+                break;
+            case '\'':
             {
-                alt3 = 2;
+                alt4 = 2;
             }
-
-            else
+                break;
+            case '\u201D':
             {
+                alt4 = 3;
+            }
+                break;
+            default:
                 if (state.backtracking > 0)
                 {
                     state.failed = true;
                     return;
                 }
-                NoViableAltException nvae = new NoViableAltException("", 3, 0, input);
+                NoViableAltException nvae = new NoViableAltException("", 4, 0, input);
                 throw nvae;
             }
-
-            switch (alt3)
+            switch (alt4)
             {
             case 1:
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:971:9: '\"' ( F_ESC |~ ( '\\\\' | '\"' ) )* '\"'
+            // FTS.g:971:9: '\"' ( F_ESC |~ ( '\\\\' | '\"' ) )* '\"'
             {
                 match('\"');
                 if (state.failed)
                     return;
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:972:9: ( F_ESC |~ ( '\\\\' | '\"' ) )*
+                // FTS.g:972:9: ( F_ESC |~ ( '\\\\' | '\"' ) )*
                 loop1: while (true)
                 {
                     int alt1 = 3;
@@ -256,7 +261,7 @@ public class FTSLexer extends Lexer
                     switch (alt1)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:973:17: F_ESC
+                    // FTS.g:973:17: F_ESC
                     {
                         mF_ESC();
                         if (state.failed)
@@ -265,7 +270,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 2:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:975:17: ~ ( '\\\\' | '\"' )
+                    // FTS.g:975:17: ~ ( '\\\\' | '\"' )
                     {
                         if ((input.LA(1) >= '\u0000' && input.LA(1) <= '!') || (input.LA(1) >= '#' && input.LA(1) <= '[') || (input.LA(1) >= ']' && input.LA(1) <= '\uFFFF'))
                         {
@@ -297,12 +302,12 @@ public class FTSLexer extends Lexer
             }
                 break;
             case 2:
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:981:11: '\\'' ( F_ESC |~ ( '\\\\' | '\\'' ) )* '\\''
+            // FTS.g:981:11: '\\'' ( F_ESC |~ ( '\\\\' | '\\'' ) )* '\\''
             {
                 match('\'');
                 if (state.failed)
                     return;
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:982:9: ( F_ESC |~ ( '\\\\' | '\\'' ) )*
+                // FTS.g:982:9: ( F_ESC |~ ( '\\\\' | '\\'' ) )*
                 loop2: while (true)
                 {
                     int alt2 = 3;
@@ -319,7 +324,7 @@ public class FTSLexer extends Lexer
                     switch (alt2)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:983:17: F_ESC
+                    // FTS.g:983:17: F_ESC
                     {
                         mF_ESC();
                         if (state.failed)
@@ -328,7 +333,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 2:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:985:17: ~ ( '\\\\' | '\\'' )
+                    // FTS.g:985:17: ~ ( '\\\\' | '\\'' )
                     {
                         if ((input.LA(1) >= '\u0000' && input.LA(1) <= '&') || (input.LA(1) >= '(' && input.LA(1) <= '[') || (input.LA(1) >= ']' && input.LA(1) <= '\uFFFF'))
                         {
@@ -359,6 +364,69 @@ public class FTSLexer extends Lexer
                     return;
             }
                 break;
+            case 3:
+            // FTS.g:991:11: '\\u201D' ( F_ESC |~ ( '\\\\' | '\\u201D' ) )* '\\u201D'
+            {
+                match('\u201D');
+                if (state.failed)
+                    return;
+                // FTS.g:992:9: ( F_ESC |~ ( '\\\\' | '\\u201D' ) )*
+                loop3: while (true)
+                {
+                    int alt3 = 3;
+                    int LA3_0 = input.LA(1);
+                    if ((LA3_0 == '\\'))
+                    {
+                        alt3 = 1;
+                    }
+                    else if (((LA3_0 >= '\u0000' && LA3_0 <= '[') || (LA3_0 >= ']' && LA3_0 <= '\u201C') || (LA3_0 >= '\u201E' && LA3_0 <= '\uFFFF')))
+                    {
+                        alt3 = 2;
+                    }
+
+                    switch (alt3)
+                    {
+                    case 1:
+                    // FTS.g:993:17: F_ESC
+                    {
+                        mF_ESC();
+                        if (state.failed)
+                            return;
+
+                    }
+                        break;
+                    case 2:
+                    // FTS.g:995:17: ~ ( '\\\\' | '\\u201D' )
+                    {
+                        if ((input.LA(1) >= '\u0000' && input.LA(1) <= '[') || (input.LA(1) >= ']' && input.LA(1) <= '\u201C') || (input.LA(1) >= '\u201E' && input.LA(1) <= '\uFFFF'))
+                        {
+                            input.consume();
+                            state.failed = false;
+                        }
+                        else
+                        {
+                            if (state.backtracking > 0)
+                            {
+                                state.failed = true;
+                                return;
+                            }
+                            MismatchedSetException mse = new MismatchedSetException(null, input);
+                            recover(mse);
+                            throw mse;
+                        }
+                    }
+                        break;
+
+                    default:
+                        break loop3;
+                    }
+                }
+
+                match('\u201D');
+                if (state.failed)
+                    return;
+            }
+                break;
 
             }
             state.type = _type;
@@ -378,35 +446,35 @@ public class FTSLexer extends Lexer
         {
             int _type = URI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:999:9: ( '{' ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+ COLON )? ( ( ( '//' )=> '//' ) ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON ) )* )? ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' )* ( '?' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' )* )? ( '#' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' | '#' )* )? '}' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1000:9: '{' ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+ COLON )? ( ( ( '//' )=> '//' ) ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON ) )* )? ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' )* ( '?' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' )* )? ( '#' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' | '#' )* )? '}'
+            // FTS.g:1009:9: ( '{' ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+ COLON )? ( ( ( '//' )=> '//' ) ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON ) )* )? ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' )* ( '?' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' )* )? ( '#' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' | '#' )* )? '}' )
+            // FTS.g:1010:9: '{' ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+ COLON )? ( ( ( '//' )=> '//' ) ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON ) )* )? ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' )* ( '?' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' )* )? ( '#' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' | '#' )* )? '}'
             {
                 match('{');
                 if (state.failed)
                     return;
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1001:9: ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+ COLON )?
-                int alt5 = 2;
-                alt5 = dfa5.predict(input);
-                switch (alt5)
+                // FTS.g:1011:9: ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+ COLON )?
+                int alt6 = 2;
+                alt6 = dfa6.predict(input);
+                switch (alt6)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1002:17: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+ COLON
+                // FTS.g:1012:17: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+ COLON
                 {
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1008:17: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+
-                    int cnt4 = 0;
-                    loop4: while (true)
+                    // FTS.g:1018:17: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+
+                    int cnt5 = 0;
+                    loop5: while (true)
                     {
-                        int alt4 = 2;
-                        int LA4_0 = input.LA(1);
-                        if ((LA4_0 == '!' || LA4_0 == '$' || (LA4_0 >= '&' && LA4_0 <= '.') || (LA4_0 >= '0' && LA4_0 <= '9') || LA4_0 == ';' || LA4_0 == '=' || (LA4_0 >= '@' && LA4_0 <= '[') || LA4_0 == ']' || LA4_0 == '_' || (LA4_0 >= 'a' && LA4_0 <= 'z') || LA4_0 == '~'))
+                        int alt5 = 2;
+                        int LA5_0 = input.LA(1);
+                        if ((LA5_0 == '!' || LA5_0 == '$' || (LA5_0 >= '&' && LA5_0 <= '.') || (LA5_0 >= '0' && LA5_0 <= '9') || LA5_0 == ';' || LA5_0 == '=' || (LA5_0 >= '@' && LA5_0 <= '[') || LA5_0 == ']' || LA5_0 == '_' || (LA5_0 >= 'a' && LA5_0 <= 'z') || LA5_0 == '~'))
                         {
-                            alt4 = 1;
+                            alt5 = 1;
                         }
 
-                        switch (alt4)
+                        switch (alt5)
                         {
                         case 1:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                        // FTS.g:
                         {
                             if (input.LA(1) == '!' || input.LA(1) == '$' || (input.LA(1) >= '&' && input.LA(1) <= '.') || (input.LA(1) >= '0' && input.LA(1) <= '9') || input.LA(1) == ';' || input.LA(1) == '=' || (input.LA(1) >= '@' && input.LA(1) <= '[') || input.LA(1) == ']' || input.LA(1) == '_' || (input.LA(1) >= 'a' && input.LA(1) <= 'z') || input.LA(1) == '~')
                             {
@@ -428,17 +496,17 @@ public class FTSLexer extends Lexer
                             break;
 
                         default:
-                            if (cnt4 >= 1)
-                                break loop4;
+                            if (cnt5 >= 1)
+                                break loop5;
                             if (state.backtracking > 0)
                             {
                                 state.failed = true;
                                 return;
                             }
-                            EarlyExitException eee = new EarlyExitException(4, input);
+                            EarlyExitException eee = new EarlyExitException(5, input);
                             throw eee;
                         }
-                        cnt4++;
+                        cnt5++;
                     }
 
                     mCOLON();
@@ -450,28 +518,28 @@ public class FTSLexer extends Lexer
 
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1015:9: ( ( ( '//' )=> '//' ) ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON ) )* )?
-                int alt7 = 2;
-                int LA7_0 = input.LA(1);
-                if ((LA7_0 == '/'))
+                // FTS.g:1025:9: ( ( ( '//' )=> '//' ) ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON ) )* )?
+                int alt8 = 2;
+                int LA8_0 = input.LA(1);
+                if ((LA8_0 == '/'))
                 {
-                    int LA7_1 = input.LA(2);
-                    if ((LA7_1 == '/'))
+                    int LA8_1 = input.LA(2);
+                    if ((LA8_1 == '/'))
                     {
-                        int LA7_3 = input.LA(3);
+                        int LA8_3 = input.LA(3);
                         if ((synpred2_FTS()))
                         {
-                            alt7 = 1;
+                            alt8 = 1;
                         }
                     }
                 }
-                switch (alt7)
+                switch (alt8)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1016:17: ( ( '//' )=> '//' ) ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON ) )*
+                // FTS.g:1026:17: ( ( '//' )=> '//' ) ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON ) )*
                 {
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1016:17: ( ( '//' )=> '//' )
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1016:19: ( '//' )=> '//'
+                    // FTS.g:1026:17: ( ( '//' )=> '//' )
+                    // FTS.g:1026:19: ( '//' )=> '//'
                     {
                         match("//");
                         if (state.failed)
@@ -479,25 +547,25 @@ public class FTSLexer extends Lexer
 
                     }
 
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1017:17: ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON ) )*
-                    loop6: while (true)
+                    // FTS.g:1027:17: ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON ) )*
+                    loop7: while (true)
                     {
-                        int alt6 = 2;
-                        int LA6_0 = input.LA(1);
-                        if ((LA6_0 == '!' || LA6_0 == '$' || (LA6_0 >= '&' && LA6_0 <= '.') || (LA6_0 >= '0' && LA6_0 <= ';') || LA6_0 == '=' || (LA6_0 >= '@' && LA6_0 <= '[') || LA6_0 == ']' || LA6_0 == '_' || (LA6_0 >= 'a' && LA6_0 <= 'z') || LA6_0 == '~'))
+                        int alt7 = 2;
+                        int LA7_0 = input.LA(1);
+                        if ((LA7_0 == '!' || LA7_0 == '$' || (LA7_0 >= '&' && LA7_0 <= '.') || (LA7_0 >= '0' && LA7_0 <= ';') || LA7_0 == '=' || (LA7_0 >= '@' && LA7_0 <= '[') || LA7_0 == ']' || LA7_0 == '_' || (LA7_0 >= 'a' && LA7_0 <= 'z') || LA7_0 == '~'))
                         {
-                            int LA6_1 = input.LA(2);
+                            int LA7_1 = input.LA(2);
                             if ((synpred3_FTS()))
                             {
-                                alt6 = 1;
+                                alt7 = 1;
                             }
 
                         }
 
-                        switch (alt6)
+                        switch (alt7)
                         {
                         case 1:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1018:25: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )
+                        // FTS.g:1028:25: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )
                         {
                             if (input.LA(1) == '!' || input.LA(1) == '$' || (input.LA(1) >= '&' && input.LA(1) <= '.') || (input.LA(1) >= '0' && input.LA(1) <= ';') || input.LA(1) == '=' || (input.LA(1) >= '@' && input.LA(1) <= '[') || input.LA(1) == ']' || input.LA(1) == '_' || (input.LA(1) >= 'a' && input.LA(1) <= 'z') || input.LA(1) == '~')
                             {
@@ -519,7 +587,7 @@ public class FTSLexer extends Lexer
                             break;
 
                         default:
-                            break loop6;
+                            break loop7;
                         }
                     }
 
@@ -528,20 +596,20 @@ public class FTSLexer extends Lexer
 
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1033:9: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' )*
-                loop8: while (true)
+                // FTS.g:1043:9: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' )*
+                loop9: while (true)
                 {
-                    int alt8 = 2;
-                    int LA8_0 = input.LA(1);
-                    if ((LA8_0 == '!' || LA8_0 == '$' || (LA8_0 >= '&' && LA8_0 <= ';') || LA8_0 == '=' || (LA8_0 >= '@' && LA8_0 <= '[') || LA8_0 == ']' || LA8_0 == '_' || (LA8_0 >= 'a' && LA8_0 <= 'z') || LA8_0 == '~'))
+                    int alt9 = 2;
+                    int LA9_0 = input.LA(1);
+                    if ((LA9_0 == '!' || LA9_0 == '$' || (LA9_0 >= '&' && LA9_0 <= ';') || LA9_0 == '=' || (LA9_0 >= '@' && LA9_0 <= '[') || LA9_0 == ']' || LA9_0 == '_' || (LA9_0 >= 'a' && LA9_0 <= 'z') || LA9_0 == '~'))
                     {
-                        alt8 = 1;
+                        alt9 = 1;
                     }
 
-                    switch (alt8)
+                    switch (alt9)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                    // FTS.g:
                     {
                         if (input.LA(1) == '!' || input.LA(1) == '$' || (input.LA(1) >= '&' && input.LA(1) <= ';') || input.LA(1) == '=' || (input.LA(1) >= '@' && input.LA(1) <= '[') || input.LA(1) == ']' || input.LA(1) == '_' || (input.LA(1) >= 'a' && input.LA(1) <= 'z') || input.LA(1) == '~')
                         {
@@ -563,39 +631,39 @@ public class FTSLexer extends Lexer
                         break;
 
                     default:
-                        break loop8;
+                        break loop9;
                     }
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1040:9: ( '?' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' )* )?
-                int alt10 = 2;
-                int LA10_0 = input.LA(1);
-                if ((LA10_0 == '?'))
+                // FTS.g:1050:9: ( '?' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' )* )?
+                int alt11 = 2;
+                int LA11_0 = input.LA(1);
+                if ((LA11_0 == '?'))
                 {
-                    alt10 = 1;
+                    alt11 = 1;
                 }
-                switch (alt10)
+                switch (alt11)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1041:17: '?' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' )*
+                // FTS.g:1051:17: '?' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' )*
                 {
                     match('?');
                     if (state.failed)
                         return;
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1042:17: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' )*
-                    loop9: while (true)
+                    // FTS.g:1052:17: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' )*
+                    loop10: while (true)
                     {
-                        int alt9 = 2;
-                        int LA9_0 = input.LA(1);
-                        if ((LA9_0 == '!' || LA9_0 == '$' || (LA9_0 >= '&' && LA9_0 <= ';') || LA9_0 == '=' || (LA9_0 >= '?' && LA9_0 <= '[') || LA9_0 == ']' || LA9_0 == '_' || (LA9_0 >= 'a' && LA9_0 <= 'z') || LA9_0 == '~'))
+                        int alt10 = 2;
+                        int LA10_0 = input.LA(1);
+                        if ((LA10_0 == '!' || LA10_0 == '$' || (LA10_0 >= '&' && LA10_0 <= ';') || LA10_0 == '=' || (LA10_0 >= '?' && LA10_0 <= '[') || LA10_0 == ']' || LA10_0 == '_' || (LA10_0 >= 'a' && LA10_0 <= 'z') || LA10_0 == '~'))
                         {
-                            alt9 = 1;
+                            alt10 = 1;
                         }
 
-                        switch (alt9)
+                        switch (alt10)
                         {
                         case 1:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                        // FTS.g:
                         {
                             if (input.LA(1) == '!' || input.LA(1) == '$' || (input.LA(1) >= '&' && input.LA(1) <= ';') || input.LA(1) == '=' || (input.LA(1) >= '?' && input.LA(1) <= '[') || input.LA(1) == ']' || input.LA(1) == '_' || (input.LA(1) >= 'a' && input.LA(1) <= 'z') || input.LA(1) == '~')
                             {
@@ -617,7 +685,7 @@ public class FTSLexer extends Lexer
                             break;
 
                         default:
-                            break loop9;
+                            break loop10;
                         }
                     }
 
@@ -626,35 +694,35 @@ public class FTSLexer extends Lexer
 
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1051:9: ( '#' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' | '#' )* )?
-                int alt12 = 2;
-                int LA12_0 = input.LA(1);
-                if ((LA12_0 == '#'))
+                // FTS.g:1061:9: ( '#' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' | '#' )* )?
+                int alt13 = 2;
+                int LA13_0 = input.LA(1);
+                if ((LA13_0 == '#'))
                 {
-                    alt12 = 1;
+                    alt13 = 1;
                 }
-                switch (alt12)
+                switch (alt13)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1052:17: '#' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' | '#' )*
+                // FTS.g:1062:17: '#' ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' | '#' )*
                 {
                     match('#');
                     if (state.failed)
                         return;
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1053:17: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' | '#' )*
-                    loop11: while (true)
+                    // FTS.g:1063:17: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON | '/' | '?' | '#' )*
+                    loop12: while (true)
                     {
-                        int alt11 = 2;
-                        int LA11_0 = input.LA(1);
-                        if ((LA11_0 == '!' || (LA11_0 >= '#' && LA11_0 <= '$') || (LA11_0 >= '&' && LA11_0 <= ';') || LA11_0 == '=' || (LA11_0 >= '?' && LA11_0 <= '[') || LA11_0 == ']' || LA11_0 == '_' || (LA11_0 >= 'a' && LA11_0 <= 'z') || LA11_0 == '~'))
+                        int alt12 = 2;
+                        int LA12_0 = input.LA(1);
+                        if ((LA12_0 == '!' || (LA12_0 >= '#' && LA12_0 <= '$') || (LA12_0 >= '&' && LA12_0 <= ';') || LA12_0 == '=' || (LA12_0 >= '?' && LA12_0 <= '[') || LA12_0 == ']' || LA12_0 == '_' || (LA12_0 >= 'a' && LA12_0 <= 'z') || LA12_0 == '~'))
                         {
-                            alt11 = 1;
+                            alt12 = 1;
                         }
 
-                        switch (alt11)
+                        switch (alt12)
                         {
                         case 1:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                        // FTS.g:
                         {
                             if (input.LA(1) == '!' || (input.LA(1) >= '#' && input.LA(1) <= '$') || (input.LA(1) >= '&' && input.LA(1) <= ';') || input.LA(1) == '=' || (input.LA(1) >= '?' && input.LA(1) <= '[') || input.LA(1) == ']' || input.LA(1) == '_' || (input.LA(1) >= 'a' && input.LA(1) <= 'z') || input.LA(1) == '~')
                             {
@@ -676,7 +744,7 @@ public class FTSLexer extends Lexer
                             break;
 
                         default:
-                            break loop11;
+                            break loop12;
                         }
                     }
 
@@ -705,8 +773,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1069:9: ( 'A' .. 'Z' | 'a' .. 'z' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+            // FTS.g:1079:9: ( 'A' .. 'Z' | 'a' .. 'z' )
+            // FTS.g:
             {
                 if ((input.LA(1) >= 'A' && input.LA(1) <= 'Z') || (input.LA(1) >= 'a' && input.LA(1) <= 'z'))
                 {
@@ -739,8 +807,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1076:9: ( '0' .. '9' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+            // FTS.g:1086:9: ( '0' .. '9' )
+            // FTS.g:
             {
                 if ((input.LA(1) >= '0' && input.LA(1) <= '9'))
                 {
@@ -773,8 +841,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1082:9: ( '%' F_HEX F_HEX )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1083:9: '%' F_HEX F_HEX
+            // FTS.g:1092:9: ( '%' F_HEX F_HEX )
+            // FTS.g:1093:9: '%' F_HEX F_HEX
             {
                 match('%');
                 if (state.failed)
@@ -802,8 +870,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1088:9: ( '-' | '.' | '_' | '~' | '[' | ']' | '@' | '!' | '$' | '&' | '\\'' | '(' | ')' | '*' | '+' | ',' | ';' | '=' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+            // FTS.g:1098:9: ( '-' | '.' | '_' | '~' | '[' | ']' | '@' | '!' | '$' | '&' | '\\'' | '(' | ')' | '*' | '+' | ',' | ';' | '=' )
+            // FTS.g:
             {
                 if (input.LA(1) == '!' || input.LA(1) == '$' || (input.LA(1) >= '&' && input.LA(1) <= '.') || input.LA(1) == ';' || input.LA(1) == '=' || input.LA(1) == '@' || input.LA(1) == '[' || input.LA(1) == ']' || input.LA(1) == '_' || input.LA(1) == '~')
                 {
@@ -838,19 +906,19 @@ public class FTSLexer extends Lexer
         {
             int _type = DATETIME;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1119:9: ( ( SPECIFICDATETIME | NOW ) ( FS UNIT )? ( ( PLUS | MINUS ) ( DIGIT )+ UNIT )* )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1120:10: ( SPECIFICDATETIME | NOW ) ( FS UNIT )? ( ( PLUS | MINUS ) ( DIGIT )+ UNIT )*
+            // FTS.g:1129:9: ( ( SPECIFICDATETIME | NOW ) ( FS UNIT )? ( ( PLUS | MINUS ) ( DIGIT )+ UNIT )* )
+            // FTS.g:1130:10: ( SPECIFICDATETIME | NOW ) ( FS UNIT )? ( ( PLUS | MINUS ) ( DIGIT )+ UNIT )*
             {
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1120:10: ( SPECIFICDATETIME | NOW )
-                int alt13 = 2;
-                int LA13_0 = input.LA(1);
-                if (((LA13_0 >= '0' && LA13_0 <= '9')))
+                // FTS.g:1130:10: ( SPECIFICDATETIME | NOW )
+                int alt14 = 2;
+                int LA14_0 = input.LA(1);
+                if (((LA14_0 >= '0' && LA14_0 <= '9')))
                 {
-                    alt13 = 1;
+                    alt14 = 1;
                 }
-                else if ((LA13_0 == 'N' || LA13_0 == 'n'))
+                else if ((LA14_0 == 'N' || LA14_0 == 'n'))
                 {
-                    alt13 = 2;
+                    alt14 = 2;
                 }
 
                 else
@@ -860,14 +928,14 @@ public class FTSLexer extends Lexer
                         state.failed = true;
                         return;
                     }
-                    NoViableAltException nvae = new NoViableAltException("", 13, 0, input);
+                    NoViableAltException nvae = new NoViableAltException("", 14, 0, input);
                     throw nvae;
                 }
 
-                switch (alt13)
+                switch (alt14)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1120:11: SPECIFICDATETIME
+                // FTS.g:1130:11: SPECIFICDATETIME
                 {
                     mSPECIFICDATETIME();
                     if (state.failed)
@@ -876,7 +944,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 2:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1120:30: NOW
+                // FTS.g:1130:30: NOW
                 {
                     mNOW();
                     if (state.failed)
@@ -887,17 +955,17 @@ public class FTSLexer extends Lexer
 
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1120:35: ( FS UNIT )?
-                int alt14 = 2;
-                int LA14_0 = input.LA(1);
-                if ((LA14_0 == '/'))
+                // FTS.g:1130:35: ( FS UNIT )?
+                int alt15 = 2;
+                int LA15_0 = input.LA(1);
+                if ((LA15_0 == '/'))
                 {
-                    alt14 = 1;
+                    alt15 = 1;
                 }
-                switch (alt14)
+                switch (alt15)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1120:36: FS UNIT
+                // FTS.g:1130:36: FS UNIT
                 {
                     mFS();
                     if (state.failed)
@@ -912,20 +980,20 @@ public class FTSLexer extends Lexer
 
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1120:46: ( ( PLUS | MINUS ) ( DIGIT )+ UNIT )*
-                loop16: while (true)
+                // FTS.g:1130:46: ( ( PLUS | MINUS ) ( DIGIT )+ UNIT )*
+                loop17: while (true)
                 {
-                    int alt16 = 2;
-                    int LA16_0 = input.LA(1);
-                    if ((LA16_0 == '+' || LA16_0 == '-'))
+                    int alt17 = 2;
+                    int LA17_0 = input.LA(1);
+                    if ((LA17_0 == '+' || LA17_0 == '-'))
                     {
-                        alt16 = 1;
+                        alt17 = 1;
                     }
 
-                    switch (alt16)
+                    switch (alt17)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1120:48: ( PLUS | MINUS ) ( DIGIT )+ UNIT
+                    // FTS.g:1130:48: ( PLUS | MINUS ) ( DIGIT )+ UNIT
                     {
                         if (input.LA(1) == '+' || input.LA(1) == '-')
                         {
@@ -943,21 +1011,21 @@ public class FTSLexer extends Lexer
                             recover(mse);
                             throw mse;
                         }
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1120:61: ( DIGIT )+
-                        int cnt15 = 0;
-                        loop15: while (true)
+                        // FTS.g:1130:61: ( DIGIT )+
+                        int cnt16 = 0;
+                        loop16: while (true)
                         {
-                            int alt15 = 2;
-                            int LA15_0 = input.LA(1);
-                            if (((LA15_0 >= '0' && LA15_0 <= '9')))
+                            int alt16 = 2;
+                            int LA16_0 = input.LA(1);
+                            if (((LA16_0 >= '0' && LA16_0 <= '9')))
                             {
-                                alt15 = 1;
+                                alt16 = 1;
                             }
 
-                            switch (alt15)
+                            switch (alt16)
                             {
                             case 1:
-                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                            // FTS.g:
                             {
                                 if ((input.LA(1) >= '0' && input.LA(1) <= '9'))
                                 {
@@ -979,17 +1047,17 @@ public class FTSLexer extends Lexer
                                 break;
 
                             default:
-                                if (cnt15 >= 1)
-                                    break loop15;
+                                if (cnt16 >= 1)
+                                    break loop16;
                                 if (state.backtracking > 0)
                                 {
                                     state.failed = true;
                                     return;
                                 }
-                                EarlyExitException eee = new EarlyExitException(15, input);
+                                EarlyExitException eee = new EarlyExitException(16, input);
                                 throw eee;
                             }
-                            cnt15++;
+                            cnt16++;
                         }
 
                         mUNIT();
@@ -1000,7 +1068,7 @@ public class FTSLexer extends Lexer
                         break;
 
                     default:
-                        break loop16;
+                        break loop17;
                     }
                 }
 
@@ -1021,37 +1089,37 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1120:9: ( ( YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | MILLIS ) )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1121:9: ( YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | MILLIS )
+            // FTS.g:1130:9: ( ( YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | MILLIS ) )
+            // FTS.g:1131:9: ( YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | MILLIS )
             {
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1121:9: ( YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | MILLIS )
-                int alt17 = 7;
+                // FTS.g:1131:9: ( YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | MILLIS )
+                int alt18 = 7;
                 switch (input.LA(1))
                 {
                 case 'Y':
                 case 'y':
                 {
-                    alt17 = 1;
+                    alt18 = 1;
                 }
                     break;
                 case 'M':
                 case 'm':
                 {
-                    int LA17_2 = input.LA(2);
-                    if ((LA17_2 == 'O' || LA17_2 == 'o'))
+                    int LA18_2 = input.LA(2);
+                    if ((LA18_2 == 'O' || LA18_2 == 'o'))
                     {
-                        alt17 = 2;
+                        alt18 = 2;
                     }
-                    else if ((LA17_2 == 'I' || LA17_2 == 'i'))
+                    else if ((LA18_2 == 'I' || LA18_2 == 'i'))
                     {
-                        int LA17_7 = input.LA(3);
-                        if ((LA17_7 == 'N' || LA17_7 == 'n'))
+                        int LA18_7 = input.LA(3);
+                        if ((LA18_7 == 'N' || LA18_7 == 'n'))
                         {
-                            alt17 = 5;
+                            alt18 = 5;
                         }
-                        else if ((LA17_7 == 'L' || LA17_7 == 'l'))
+                        else if ((LA18_7 == 'L' || LA18_7 == 'l'))
                         {
-                            alt17 = 7;
+                            alt18 = 7;
                         }
 
                         else
@@ -1068,7 +1136,7 @@ public class FTSLexer extends Lexer
                                 {
                                     input.consume();
                                 }
-                                NoViableAltException nvae = new NoViableAltException("", 17, 7, input);
+                                NoViableAltException nvae = new NoViableAltException("", 18, 7, input);
                                 throw nvae;
                             }
                             finally
@@ -1090,7 +1158,7 @@ public class FTSLexer extends Lexer
                         try
                         {
                             input.consume();
-                            NoViableAltException nvae = new NoViableAltException("", 17, 2, input);
+                            NoViableAltException nvae = new NoViableAltException("", 18, 2, input);
                             throw nvae;
                         }
                         finally
@@ -1104,19 +1172,19 @@ public class FTSLexer extends Lexer
                 case 'D':
                 case 'd':
                 {
-                    alt17 = 3;
+                    alt18 = 3;
                 }
                     break;
                 case 'H':
                 case 'h':
                 {
-                    alt17 = 4;
+                    alt18 = 4;
                 }
                     break;
                 case 'S':
                 case 's':
                 {
-                    alt17 = 6;
+                    alt18 = 6;
                 }
                     break;
                 default:
@@ -1125,13 +1193,13 @@ public class FTSLexer extends Lexer
                         state.failed = true;
                         return;
                     }
-                    NoViableAltException nvae = new NoViableAltException("", 17, 0, input);
+                    NoViableAltException nvae = new NoViableAltException("", 18, 0, input);
                     throw nvae;
                 }
-                switch (alt17)
+                switch (alt18)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1121:10: YEAR
+                // FTS.g:1131:10: YEAR
                 {
                     mYEAR();
                     if (state.failed)
@@ -1140,7 +1208,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 2:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1121:17: MONTH
+                // FTS.g:1131:17: MONTH
                 {
                     mMONTH();
                     if (state.failed)
@@ -1149,7 +1217,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 3:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1121:25: DAY
+                // FTS.g:1131:25: DAY
                 {
                     mDAY();
                     if (state.failed)
@@ -1158,7 +1226,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 4:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1121:31: HOUR
+                // FTS.g:1131:31: HOUR
                 {
                     mHOUR();
                     if (state.failed)
@@ -1167,7 +1235,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 5:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1121:38: MINUTE
+                // FTS.g:1131:38: MINUTE
                 {
                     mMINUTE();
                     if (state.failed)
@@ -1176,7 +1244,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 6:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1121:47: SECOND
+                // FTS.g:1131:47: SECOND
                 {
                     mSECOND();
                     if (state.failed)
@@ -1185,7 +1253,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 7:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1121:56: MILLIS
+                // FTS.g:1131:56: MILLIS
                 {
                     mMILLIS();
                     if (state.failed)
@@ -1211,8 +1279,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1125:9: ( DIGIT DIGIT DIGIT DIGIT ( '-' DIGIT DIGIT ( '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )? )? )? )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1126:12: DIGIT DIGIT DIGIT DIGIT ( '-' DIGIT DIGIT ( '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )? )? )?
+            // FTS.g:1135:9: ( DIGIT DIGIT DIGIT DIGIT ( '-' DIGIT DIGIT ( '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )? )? )? )
+            // FTS.g:1136:12: DIGIT DIGIT DIGIT DIGIT ( '-' DIGIT DIGIT ( '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )? )? )?
             {
                 mDIGIT();
                 if (state.failed)
@@ -1230,17 +1298,17 @@ public class FTSLexer extends Lexer
                 if (state.failed)
                     return;
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:15: ( '-' DIGIT DIGIT ( '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )? )? )?
-                int alt26 = 2;
-                int LA26_0 = input.LA(1);
-                if ((LA26_0 == '-'))
+                // FTS.g:1137:15: ( '-' DIGIT DIGIT ( '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )? )? )?
+                int alt27 = 2;
+                int LA27_0 = input.LA(1);
+                if ((LA27_0 == '-'))
                 {
-                    alt26 = 1;
+                    alt27 = 1;
                 }
-                switch (alt26)
+                switch (alt27)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:17: '-' DIGIT DIGIT ( '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )? )?
+                // FTS.g:1137:17: '-' DIGIT DIGIT ( '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )? )?
                 {
                     match('-');
                     if (state.failed)
@@ -1253,17 +1321,17 @@ public class FTSLexer extends Lexer
                     if (state.failed)
                         return;
 
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:33: ( '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )? )?
-                    int alt25 = 2;
-                    int LA25_0 = input.LA(1);
-                    if ((LA25_0 == '-'))
+                    // FTS.g:1137:33: ( '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )? )?
+                    int alt26 = 2;
+                    int LA26_0 = input.LA(1);
+                    if ((LA26_0 == '-'))
                     {
-                        alt25 = 1;
+                        alt26 = 1;
                     }
-                    switch (alt25)
+                    switch (alt26)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:35: '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )?
+                    // FTS.g:1137:35: '-' DIGIT DIGIT ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )?
                     {
                         match('-');
                         if (state.failed)
@@ -1276,32 +1344,32 @@ public class FTSLexer extends Lexer
                         if (state.failed)
                             return;
 
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:51: ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )?
-                        int alt24 = 2;
-                        int LA24_0 = input.LA(1);
-                        if ((LA24_0 == 'T'))
+                        // FTS.g:1137:51: ( 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )? )?
+                        int alt25 = 2;
+                        int LA25_0 = input.LA(1);
+                        if ((LA25_0 == 'T'))
                         {
-                            alt24 = 1;
+                            alt25 = 1;
                         }
-                        switch (alt24)
+                        switch (alt25)
                         {
                         case 1:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:53: 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )?
+                        // FTS.g:1137:53: 'T' ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )?
                         {
                             match('T');
                             if (state.failed)
                                 return;
-                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:57: ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )?
-                            int alt23 = 2;
-                            int LA23_0 = input.LA(1);
-                            if (((LA23_0 >= '0' && LA23_0 <= '9')))
+                            // FTS.g:1137:57: ( DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )? )?
+                            int alt24 = 2;
+                            int LA24_0 = input.LA(1);
+                            if (((LA24_0 >= '0' && LA24_0 <= '9')))
                             {
-                                alt23 = 1;
+                                alt24 = 1;
                             }
-                            switch (alt23)
+                            switch (alt24)
                             {
                             case 1:
-                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:58: DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )?
+                            // FTS.g:1137:58: DIGIT DIGIT ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )?
                             {
                                 mDIGIT();
                                 if (state.failed)
@@ -1311,17 +1379,17 @@ public class FTSLexer extends Lexer
                                 if (state.failed)
                                     return;
 
-                                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:70: ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )?
-                                int alt22 = 2;
-                                int LA22_0 = input.LA(1);
-                                if ((LA22_0 == ':'))
+                                // FTS.g:1137:70: ( ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )? )?
+                                int alt23 = 2;
+                                int LA23_0 = input.LA(1);
+                                if ((LA23_0 == ':'))
                                 {
-                                    alt22 = 1;
+                                    alt23 = 1;
                                 }
-                                switch (alt22)
+                                switch (alt23)
                                 {
                                 case 1:
-                                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:72: ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )?
+                                // FTS.g:1137:72: ':' DIGIT DIGIT ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )?
                                 {
                                     match(':');
                                     if (state.failed)
@@ -1334,17 +1402,17 @@ public class FTSLexer extends Lexer
                                     if (state.failed)
                                         return;
 
-                                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:88: ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )?
-                                    int alt21 = 2;
-                                    int LA21_0 = input.LA(1);
-                                    if ((LA21_0 == ':'))
+                                    // FTS.g:1137:88: ( ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )? )?
+                                    int alt22 = 2;
+                                    int LA22_0 = input.LA(1);
+                                    if ((LA22_0 == ':'))
                                     {
-                                        alt21 = 1;
+                                        alt22 = 1;
                                     }
-                                    switch (alt21)
+                                    switch (alt22)
                                     {
                                     case 1:
-                                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:90: ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )?
+                                    // FTS.g:1137:90: ':' DIGIT DIGIT ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )?
                                     {
                                         match(':');
                                         if (state.failed)
@@ -1357,17 +1425,17 @@ public class FTSLexer extends Lexer
                                         if (state.failed)
                                             return;
 
-                                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:106: ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )?
-                                        int alt20 = 2;
-                                        int LA20_0 = input.LA(1);
-                                        if ((LA20_0 == '.'))
+                                        // FTS.g:1137:106: ( '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )? )?
+                                        int alt21 = 2;
+                                        int LA21_0 = input.LA(1);
+                                        if ((LA21_0 == '.'))
                                         {
-                                            alt20 = 1;
+                                            alt21 = 1;
                                         }
-                                        switch (alt20)
+                                        switch (alt21)
                                         {
                                         case 1:
-                                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:108: '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )?
+                                        // FTS.g:1137:108: '.' DIGIT DIGIT DIGIT ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )?
                                         {
                                             match('.');
                                             if (state.failed)
@@ -1384,21 +1452,21 @@ public class FTSLexer extends Lexer
                                             if (state.failed)
                                                 return;
 
-                                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:130: ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )?
-                                            int alt19 = 3;
-                                            int LA19_0 = input.LA(1);
-                                            if ((LA19_0 == 'Z'))
+                                            // FTS.g:1137:130: ( 'Z' | ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? ) )?
+                                            int alt20 = 3;
+                                            int LA20_0 = input.LA(1);
+                                            if ((LA20_0 == 'Z'))
                                             {
-                                                alt19 = 1;
+                                                alt20 = 1;
                                             }
-                                            else if ((LA19_0 == '+' || LA19_0 == '-'))
+                                            else if ((LA20_0 == '+' || LA20_0 == '-'))
                                             {
-                                                alt19 = 2;
+                                                alt20 = 2;
                                             }
-                                            switch (alt19)
+                                            switch (alt20)
                                             {
                                             case 1:
-                                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:132: 'Z'
+                                            // FTS.g:1137:132: 'Z'
                                             {
                                                 match('Z');
                                                 if (state.failed)
@@ -1406,10 +1474,10 @@ public class FTSLexer extends Lexer
                                             }
                                                 break;
                                             case 2:
-                                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:138: ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? )
+                                            // FTS.g:1137:138: ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? )
                                             {
-                                                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:138: ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? )
-                                                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:139: ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )?
+                                                // FTS.g:1137:138: ( ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )? )
+                                                // FTS.g:1137:139: ( '+' | '-' ) DIGIT DIGIT ( ':' DIGIT DIGIT )?
                                                 {
                                                     if (input.LA(1) == '+' || input.LA(1) == '-')
                                                     {
@@ -1435,17 +1503,17 @@ public class FTSLexer extends Lexer
                                                     if (state.failed)
                                                         return;
 
-                                                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:164: ( ':' DIGIT DIGIT )?
-                                                    int alt18 = 2;
-                                                    int LA18_0 = input.LA(1);
-                                                    if ((LA18_0 == ':'))
+                                                    // FTS.g:1137:164: ( ':' DIGIT DIGIT )?
+                                                    int alt19 = 2;
+                                                    int LA19_0 = input.LA(1);
+                                                    if ((LA19_0 == ':'))
                                                     {
-                                                        alt18 = 1;
+                                                        alt19 = 1;
                                                     }
-                                                    switch (alt18)
+                                                    switch (alt19)
                                                     {
                                                     case 1:
-                                                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1127:166: ':' DIGIT DIGIT
+                                                    // FTS.g:1137:166: ':' DIGIT DIGIT
                                                     {
                                                         match(':');
                                                         if (state.failed)
@@ -1520,8 +1588,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1131:9: ( ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'W' | 'w' ) )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1132:12: ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'W' | 'w' )
+            // FTS.g:1141:9: ( ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'W' | 'w' ) )
+            // FTS.g:1142:12: ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'W' | 'w' )
             {
                 if (input.LA(1) == 'N' || input.LA(1) == 'n')
                 {
@@ -1586,8 +1654,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1136:9: ( ( 'Y' | 'y' ) ( 'E' | 'e' ) ( 'A' | 'a' ) ( 'R' | 'r' ) ( 'S' | 's' )? )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1137:11: ( 'Y' | 'y' ) ( 'E' | 'e' ) ( 'A' | 'a' ) ( 'R' | 'r' ) ( 'S' | 's' )?
+            // FTS.g:1146:9: ( ( 'Y' | 'y' ) ( 'E' | 'e' ) ( 'A' | 'a' ) ( 'R' | 'r' ) ( 'S' | 's' )? )
+            // FTS.g:1147:11: ( 'Y' | 'y' ) ( 'E' | 'e' ) ( 'A' | 'a' ) ( 'R' | 'r' ) ( 'S' | 's' )?
             {
                 if (input.LA(1) == 'Y' || input.LA(1) == 'y')
                 {
@@ -1653,17 +1721,17 @@ public class FTSLexer extends Lexer
                     recover(mse);
                     throw mse;
                 }
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1137:51: ( 'S' | 's' )?
-                int alt27 = 2;
-                int LA27_0 = input.LA(1);
-                if ((LA27_0 == 'S' || LA27_0 == 's'))
+                // FTS.g:1147:51: ( 'S' | 's' )?
+                int alt28 = 2;
+                int LA28_0 = input.LA(1);
+                if ((LA28_0 == 'S' || LA28_0 == 's'))
                 {
-                    alt27 = 1;
+                    alt28 = 1;
                 }
-                switch (alt27)
+                switch (alt28)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                // FTS.g:
                 {
                     if (input.LA(1) == 'S' || input.LA(1) == 's')
                     {
@@ -1701,8 +1769,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1141:9: ( ( 'M' | 'm' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'T' | 't' ) ( 'H' | 'h' ) ( 'S' | 's' )? )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1142:11: ( 'M' | 'm' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'T' | 't' ) ( 'H' | 'h' ) ( 'S' | 's' )?
+            // FTS.g:1151:9: ( ( 'M' | 'm' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'T' | 't' ) ( 'H' | 'h' ) ( 'S' | 's' )? )
+            // FTS.g:1152:11: ( 'M' | 'm' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'T' | 't' ) ( 'H' | 'h' ) ( 'S' | 's' )?
             {
                 if (input.LA(1) == 'M' || input.LA(1) == 'm')
                 {
@@ -1784,17 +1852,17 @@ public class FTSLexer extends Lexer
                     recover(mse);
                     throw mse;
                 }
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1142:61: ( 'S' | 's' )?
-                int alt28 = 2;
-                int LA28_0 = input.LA(1);
-                if ((LA28_0 == 'S' || LA28_0 == 's'))
+                // FTS.g:1152:61: ( 'S' | 's' )?
+                int alt29 = 2;
+                int LA29_0 = input.LA(1);
+                if ((LA29_0 == 'S' || LA29_0 == 's'))
                 {
-                    alt28 = 1;
+                    alt29 = 1;
                 }
-                switch (alt28)
+                switch (alt29)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                // FTS.g:
                 {
                     if (input.LA(1) == 'S' || input.LA(1) == 's')
                     {
@@ -1832,22 +1900,22 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1146:9: ( ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'Y' | 'y' ) ( 'S' | 's' )? | ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' ) )
-            int alt30 = 2;
-            int LA30_0 = input.LA(1);
-            if ((LA30_0 == 'D' || LA30_0 == 'd'))
+            // FTS.g:1156:9: ( ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'Y' | 'y' ) ( 'S' | 's' )? | ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' ) )
+            int alt31 = 2;
+            int LA31_0 = input.LA(1);
+            if ((LA31_0 == 'D' || LA31_0 == 'd'))
             {
-                int LA30_1 = input.LA(2);
-                if ((LA30_1 == 'A' || LA30_1 == 'a'))
+                int LA31_1 = input.LA(2);
+                if ((LA31_1 == 'A' || LA31_1 == 'a'))
                 {
-                    int LA30_2 = input.LA(3);
-                    if ((LA30_2 == 'Y' || LA30_2 == 'y'))
+                    int LA31_2 = input.LA(3);
+                    if ((LA31_2 == 'Y' || LA31_2 == 'y'))
                     {
-                        alt30 = 1;
+                        alt31 = 1;
                     }
-                    else if ((LA30_2 == 'T' || LA30_2 == 't'))
+                    else if ((LA31_2 == 'T' || LA31_2 == 't'))
                     {
-                        alt30 = 2;
+                        alt31 = 2;
                     }
 
                     else
@@ -1864,7 +1932,7 @@ public class FTSLexer extends Lexer
                             {
                                 input.consume();
                             }
-                            NoViableAltException nvae = new NoViableAltException("", 30, 2, input);
+                            NoViableAltException nvae = new NoViableAltException("", 31, 2, input);
                             throw nvae;
                         }
                         finally
@@ -1886,7 +1954,7 @@ public class FTSLexer extends Lexer
                     try
                     {
                         input.consume();
-                        NoViableAltException nvae = new NoViableAltException("", 30, 1, input);
+                        NoViableAltException nvae = new NoViableAltException("", 31, 1, input);
                         throw nvae;
                     }
                     finally
@@ -1904,14 +1972,14 @@ public class FTSLexer extends Lexer
                     state.failed = true;
                     return;
                 }
-                NoViableAltException nvae = new NoViableAltException("", 30, 0, input);
+                NoViableAltException nvae = new NoViableAltException("", 31, 0, input);
                 throw nvae;
             }
 
-            switch (alt30)
+            switch (alt31)
             {
             case 1:
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1147:11: ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'Y' | 'y' ) ( 'S' | 's' )?
+            // FTS.g:1157:11: ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'Y' | 'y' ) ( 'S' | 's' )?
             {
                 if (input.LA(1) == 'D' || input.LA(1) == 'd')
                 {
@@ -1961,17 +2029,17 @@ public class FTSLexer extends Lexer
                     recover(mse);
                     throw mse;
                 }
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1147:41: ( 'S' | 's' )?
-                int alt29 = 2;
-                int LA29_0 = input.LA(1);
-                if ((LA29_0 == 'S' || LA29_0 == 's'))
+                // FTS.g:1157:41: ( 'S' | 's' )?
+                int alt30 = 2;
+                int LA30_0 = input.LA(1);
+                if ((LA30_0 == 'S' || LA30_0 == 's'))
                 {
-                    alt29 = 1;
+                    alt30 = 1;
                 }
-                switch (alt29)
+                switch (alt30)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                // FTS.g:
                 {
                     if (input.LA(1) == 'S' || input.LA(1) == 's')
                     {
@@ -1997,7 +2065,7 @@ public class FTSLexer extends Lexer
             }
                 break;
             case 2:
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1148:11: ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' )
+            // FTS.g:1158:11: ( 'D' | 'd' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'E' | 'e' )
             {
                 if (input.LA(1) == 'D' || input.LA(1) == 'd')
                 {
@@ -2080,8 +2148,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1152:9: ( ( 'H' | 'h' ) ( 'O' | 'o' ) ( 'U' | 'u' ) ( 'R' | 'r' ) ( 'S' | 's' )? )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1153:11: ( 'H' | 'h' ) ( 'O' | 'o' ) ( 'U' | 'u' ) ( 'R' | 'r' ) ( 'S' | 's' )?
+            // FTS.g:1162:9: ( ( 'H' | 'h' ) ( 'O' | 'o' ) ( 'U' | 'u' ) ( 'R' | 'r' ) ( 'S' | 's' )? )
+            // FTS.g:1163:11: ( 'H' | 'h' ) ( 'O' | 'o' ) ( 'U' | 'u' ) ( 'R' | 'r' ) ( 'S' | 's' )?
             {
                 if (input.LA(1) == 'H' || input.LA(1) == 'h')
                 {
@@ -2147,17 +2215,17 @@ public class FTSLexer extends Lexer
                     recover(mse);
                     throw mse;
                 }
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1153:51: ( 'S' | 's' )?
-                int alt31 = 2;
-                int LA31_0 = input.LA(1);
-                if ((LA31_0 == 'S' || LA31_0 == 's'))
+                // FTS.g:1163:51: ( 'S' | 's' )?
+                int alt32 = 2;
+                int LA32_0 = input.LA(1);
+                if ((LA32_0 == 'S' || LA32_0 == 's'))
                 {
-                    alt31 = 1;
+                    alt32 = 1;
                 }
-                switch (alt31)
+                switch (alt32)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                // FTS.g:
                 {
                     if (input.LA(1) == 'S' || input.LA(1) == 's')
                     {
@@ -2195,8 +2263,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1157:9: ( ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'T' | 't' ) ( 'E' | 'e' ) ( 'S' | 's' )? )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1158:11: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'T' | 't' ) ( 'E' | 'e' ) ( 'S' | 's' )?
+            // FTS.g:1167:9: ( ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'T' | 't' ) ( 'E' | 'e' ) ( 'S' | 's' )? )
+            // FTS.g:1168:11: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'T' | 't' ) ( 'E' | 'e' ) ( 'S' | 's' )?
             {
                 if (input.LA(1) == 'M' || input.LA(1) == 'm')
                 {
@@ -2294,17 +2362,17 @@ public class FTSLexer extends Lexer
                     recover(mse);
                     throw mse;
                 }
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1158:71: ( 'S' | 's' )?
-                int alt32 = 2;
-                int LA32_0 = input.LA(1);
-                if ((LA32_0 == 'S' || LA32_0 == 's'))
+                // FTS.g:1168:71: ( 'S' | 's' )?
+                int alt33 = 2;
+                int LA33_0 = input.LA(1);
+                if ((LA33_0 == 'S' || LA33_0 == 's'))
                 {
-                    alt32 = 1;
+                    alt33 = 1;
                 }
-                switch (alt32)
+                switch (alt33)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                // FTS.g:
                 {
                     if (input.LA(1) == 'S' || input.LA(1) == 's')
                     {
@@ -2342,8 +2410,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1162:9: ( ( 'S' | 's' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'D' | 'd' ) ( 'S' | 's' )? )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1163:11: ( 'S' | 's' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'D' | 'd' ) ( 'S' | 's' )?
+            // FTS.g:1172:9: ( ( 'S' | 's' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'D' | 'd' ) ( 'S' | 's' )? )
+            // FTS.g:1173:11: ( 'S' | 's' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'D' | 'd' ) ( 'S' | 's' )?
             {
                 if (input.LA(1) == 'S' || input.LA(1) == 's')
                 {
@@ -2441,17 +2509,17 @@ public class FTSLexer extends Lexer
                     recover(mse);
                     throw mse;
                 }
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1163:71: ( 'S' | 's' )?
-                int alt33 = 2;
-                int LA33_0 = input.LA(1);
-                if ((LA33_0 == 'S' || LA33_0 == 's'))
+                // FTS.g:1173:71: ( 'S' | 's' )?
+                int alt34 = 2;
+                int LA34_0 = input.LA(1);
+                if ((LA34_0 == 'S' || LA34_0 == 's'))
                 {
-                    alt33 = 1;
+                    alt34 = 1;
                 }
-                switch (alt33)
+                switch (alt34)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                // FTS.g:
                 {
                     if (input.LA(1) == 'S' || input.LA(1) == 's')
                     {
@@ -2489,42 +2557,42 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1167:9: ( ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'L' | 'l' ) ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'S' | 's' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'D' | 'd' ) ( 'S' | 's' )? | ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'L' | 'l' ) ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'S' | 's' )? )
-            int alt36 = 2;
-            int LA36_0 = input.LA(1);
-            if ((LA36_0 == 'M' || LA36_0 == 'm'))
+            // FTS.g:1177:9: ( ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'L' | 'l' ) ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'S' | 's' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'D' | 'd' ) ( 'S' | 's' )? | ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'L' | 'l' ) ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'S' | 's' )? )
+            int alt37 = 2;
+            int LA37_0 = input.LA(1);
+            if ((LA37_0 == 'M' || LA37_0 == 'm'))
             {
-                int LA36_1 = input.LA(2);
-                if ((LA36_1 == 'I' || LA36_1 == 'i'))
+                int LA37_1 = input.LA(2);
+                if ((LA37_1 == 'I' || LA37_1 == 'i'))
                 {
-                    int LA36_2 = input.LA(3);
-                    if ((LA36_2 == 'L' || LA36_2 == 'l'))
+                    int LA37_2 = input.LA(3);
+                    if ((LA37_2 == 'L' || LA37_2 == 'l'))
                     {
-                        int LA36_3 = input.LA(4);
-                        if ((LA36_3 == 'L' || LA36_3 == 'l'))
+                        int LA37_3 = input.LA(4);
+                        if ((LA37_3 == 'L' || LA37_3 == 'l'))
                         {
-                            int LA36_4 = input.LA(5);
-                            if ((LA36_4 == 'I' || LA36_4 == 'i'))
+                            int LA37_4 = input.LA(5);
+                            if ((LA37_4 == 'I' || LA37_4 == 'i'))
                             {
-                                int LA36_5 = input.LA(6);
-                                if ((LA36_5 == 'S' || LA36_5 == 's'))
+                                int LA37_5 = input.LA(6);
+                                if ((LA37_5 == 'S' || LA37_5 == 's'))
                                 {
-                                    int LA36_6 = input.LA(7);
-                                    if ((LA36_6 == 'E' || LA36_6 == 'e'))
+                                    int LA37_6 = input.LA(7);
+                                    if ((LA37_6 == 'E' || LA37_6 == 'e'))
                                     {
-                                        alt36 = 1;
+                                        alt37 = 1;
                                     }
 
                                     else
                                     {
-                                        alt36 = 2;
+                                        alt37 = 2;
                                     }
 
                                 }
 
                                 else
                                 {
-                                    alt36 = 2;
+                                    alt37 = 2;
                                 }
 
                             }
@@ -2543,7 +2611,7 @@ public class FTSLexer extends Lexer
                                     {
                                         input.consume();
                                     }
-                                    NoViableAltException nvae = new NoViableAltException("", 36, 4, input);
+                                    NoViableAltException nvae = new NoViableAltException("", 37, 4, input);
                                     throw nvae;
                                 }
                                 finally
@@ -2568,7 +2636,7 @@ public class FTSLexer extends Lexer
                                 {
                                     input.consume();
                                 }
-                                NoViableAltException nvae = new NoViableAltException("", 36, 3, input);
+                                NoViableAltException nvae = new NoViableAltException("", 37, 3, input);
                                 throw nvae;
                             }
                             finally
@@ -2593,7 +2661,7 @@ public class FTSLexer extends Lexer
                             {
                                 input.consume();
                             }
-                            NoViableAltException nvae = new NoViableAltException("", 36, 2, input);
+                            NoViableAltException nvae = new NoViableAltException("", 37, 2, input);
                             throw nvae;
                         }
                         finally
@@ -2615,7 +2683,7 @@ public class FTSLexer extends Lexer
                     try
                     {
                         input.consume();
-                        NoViableAltException nvae = new NoViableAltException("", 36, 1, input);
+                        NoViableAltException nvae = new NoViableAltException("", 37, 1, input);
                         throw nvae;
                     }
                     finally
@@ -2633,14 +2701,14 @@ public class FTSLexer extends Lexer
                     state.failed = true;
                     return;
                 }
-                NoViableAltException nvae = new NoViableAltException("", 36, 0, input);
+                NoViableAltException nvae = new NoViableAltException("", 37, 0, input);
                 throw nvae;
             }
 
-            switch (alt36)
+            switch (alt37)
             {
             case 1:
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1168:11: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'L' | 'l' ) ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'S' | 's' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'D' | 'd' ) ( 'S' | 's' )?
+            // FTS.g:1178:11: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'L' | 'l' ) ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'S' | 's' ) ( 'E' | 'e' ) ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'N' | 'n' ) ( 'D' | 'd' ) ( 'S' | 's' )?
             {
                 if (input.LA(1) == 'M' || input.LA(1) == 'm')
                 {
@@ -2818,17 +2886,17 @@ public class FTSLexer extends Lexer
                     recover(mse);
                     throw mse;
                 }
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1168:121: ( 'S' | 's' )?
-                int alt34 = 2;
-                int LA34_0 = input.LA(1);
-                if ((LA34_0 == 'S' || LA34_0 == 's'))
+                // FTS.g:1178:121: ( 'S' | 's' )?
+                int alt35 = 2;
+                int LA35_0 = input.LA(1);
+                if ((LA35_0 == 'S' || LA35_0 == 's'))
                 {
-                    alt34 = 1;
+                    alt35 = 1;
                 }
-                switch (alt34)
+                switch (alt35)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                // FTS.g:
                 {
                     if (input.LA(1) == 'S' || input.LA(1) == 's')
                     {
@@ -2854,7 +2922,7 @@ public class FTSLexer extends Lexer
             }
                 break;
             case 2:
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1169:11: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'L' | 'l' ) ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'S' | 's' )?
+            // FTS.g:1179:11: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'L' | 'l' ) ( 'L' | 'l' ) ( 'I' | 'i' ) ( 'S' | 's' )?
             {
                 if (input.LA(1) == 'M' || input.LA(1) == 'm')
                 {
@@ -2936,17 +3004,17 @@ public class FTSLexer extends Lexer
                     recover(mse);
                     throw mse;
                 }
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1169:61: ( 'S' | 's' )?
-                int alt35 = 2;
-                int LA35_0 = input.LA(1);
-                if ((LA35_0 == 'S' || LA35_0 == 's'))
+                // FTS.g:1179:61: ( 'S' | 's' )?
+                int alt36 = 2;
+                int LA36_0 = input.LA(1);
+                if ((LA36_0 == 'S' || LA36_0 == 's'))
                 {
-                    alt35 = 1;
+                    alt36 = 1;
                 }
-                switch (alt35)
+                switch (alt36)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                // FTS.g:
                 {
                     if (input.LA(1) == 'S' || input.LA(1) == 's')
                     {
@@ -2986,8 +3054,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1173:9: ( '/' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1174:9: '/'
+            // FTS.g:1183:9: ( '/' )
+            // FTS.g:1184:9: '/'
             {
                 match('/');
                 if (state.failed)
@@ -3009,8 +3077,8 @@ public class FTSLexer extends Lexer
         {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1183:9: ( ( 'O' | 'o' ) ( 'R' | 'r' ) )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1184:9: ( 'O' | 'o' ) ( 'R' | 'r' )
+            // FTS.g:1193:9: ( ( 'O' | 'o' ) ( 'R' | 'r' ) )
+            // FTS.g:1194:9: ( 'O' | 'o' ) ( 'R' | 'r' )
             {
                 if (input.LA(1) == 'O' || input.LA(1) == 'o')
                 {
@@ -3063,8 +3131,8 @@ public class FTSLexer extends Lexer
         {
             int _type = AND;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1195:9: ( ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1196:9: ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' )
+            // FTS.g:1205:9: ( ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
+            // FTS.g:1206:9: ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' )
             {
                 if (input.LA(1) == 'A' || input.LA(1) == 'a')
                 {
@@ -3133,8 +3201,8 @@ public class FTSLexer extends Lexer
         {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1211:9: ( ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' ) )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1212:9: ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' )
+            // FTS.g:1221:9: ( ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' ) )
+            // FTS.g:1222:9: ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' )
             {
                 if (input.LA(1) == 'N' || input.LA(1) == 'n')
                 {
@@ -3203,8 +3271,8 @@ public class FTSLexer extends Lexer
         {
             int _type = TILDA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1227:9: ( '~' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1228:9: '~'
+            // FTS.g:1237:9: ( '~' )
+            // FTS.g:1238:9: '~'
             {
                 match('~');
                 if (state.failed)
@@ -3228,8 +3296,8 @@ public class FTSLexer extends Lexer
         {
             int _type = LPAREN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1232:9: ( '(' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1233:9: '('
+            // FTS.g:1242:9: ( '(' )
+            // FTS.g:1243:9: '('
             {
                 match('(');
                 if (state.failed)
@@ -3253,8 +3321,8 @@ public class FTSLexer extends Lexer
         {
             int _type = RPAREN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1237:9: ( ')' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1238:9: ')'
+            // FTS.g:1247:9: ( ')' )
+            // FTS.g:1248:9: ')'
             {
                 match(')');
                 if (state.failed)
@@ -3278,8 +3346,8 @@ public class FTSLexer extends Lexer
         {
             int _type = PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1242:9: ( '+' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1243:9: '+'
+            // FTS.g:1252:9: ( '+' )
+            // FTS.g:1253:9: '+'
             {
                 match('+');
                 if (state.failed)
@@ -3303,8 +3371,8 @@ public class FTSLexer extends Lexer
         {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1247:9: ( '-' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1248:9: '-'
+            // FTS.g:1257:9: ( '-' )
+            // FTS.g:1258:9: '-'
             {
                 match('-');
                 if (state.failed)
@@ -3328,8 +3396,8 @@ public class FTSLexer extends Lexer
         {
             int _type = COLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1252:9: ( ':' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1253:9: ':'
+            // FTS.g:1262:9: ( ':' )
+            // FTS.g:1263:9: ':'
             {
                 match(':');
                 if (state.failed)
@@ -3353,8 +3421,8 @@ public class FTSLexer extends Lexer
         {
             int _type = STAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1257:9: ( '*' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1258:9: '*'
+            // FTS.g:1267:9: ( '*' )
+            // FTS.g:1268:9: '*'
             {
                 match('*');
                 if (state.failed)
@@ -3376,8 +3444,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1263:9: ( '..' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1264:9: '..'
+            // FTS.g:1273:9: ( '..' )
+            // FTS.g:1274:9: '..'
             {
                 match("..");
                 if (state.failed)
@@ -3398,8 +3466,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1269:9: ( '.' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1270:9: '.'
+            // FTS.g:1279:9: ( '.' )
+            // FTS.g:1280:9: '.'
             {
                 match('.');
                 if (state.failed)
@@ -3421,8 +3489,8 @@ public class FTSLexer extends Lexer
         {
             int _type = AMP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1274:9: ( '&' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1275:9: '&'
+            // FTS.g:1284:9: ( '&' )
+            // FTS.g:1285:9: '&'
             {
                 match('&');
                 if (state.failed)
@@ -3446,8 +3514,8 @@ public class FTSLexer extends Lexer
         {
             int _type = EXCLAMATION;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1279:9: ( '!' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1280:9: '!'
+            // FTS.g:1289:9: ( '!' )
+            // FTS.g:1290:9: '!'
             {
                 match('!');
                 if (state.failed)
@@ -3471,8 +3539,8 @@ public class FTSLexer extends Lexer
         {
             int _type = BAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1284:9: ( '|' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1285:9: '|'
+            // FTS.g:1294:9: ( '|' )
+            // FTS.g:1295:9: '|'
             {
                 match('|');
                 if (state.failed)
@@ -3496,8 +3564,8 @@ public class FTSLexer extends Lexer
         {
             int _type = EQUALS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1289:9: ( '=' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1290:9: '='
+            // FTS.g:1299:9: ( '=' )
+            // FTS.g:1300:9: '='
             {
                 match('=');
                 if (state.failed)
@@ -3521,8 +3589,8 @@ public class FTSLexer extends Lexer
         {
             int _type = QUESTION_MARK;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1294:9: ( '?' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1295:9: '?'
+            // FTS.g:1304:9: ( '?' )
+            // FTS.g:1305:9: '?'
             {
                 match('?');
                 if (state.failed)
@@ -3546,8 +3614,8 @@ public class FTSLexer extends Lexer
         {
             int _type = LCURL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1299:9: ( '{' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1300:9: '{'
+            // FTS.g:1309:9: ( '{' )
+            // FTS.g:1310:9: '{'
             {
                 match('{');
                 if (state.failed)
@@ -3571,8 +3639,8 @@ public class FTSLexer extends Lexer
         {
             int _type = RCURL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1304:9: ( '}' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1305:9: '}'
+            // FTS.g:1314:9: ( '}' )
+            // FTS.g:1315:9: '}'
             {
                 match('}');
                 if (state.failed)
@@ -3596,8 +3664,8 @@ public class FTSLexer extends Lexer
         {
             int _type = LSQUARE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1309:9: ( '[' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1310:9: '['
+            // FTS.g:1319:9: ( '[' )
+            // FTS.g:1320:9: '['
             {
                 match('[');
                 if (state.failed)
@@ -3621,8 +3689,8 @@ public class FTSLexer extends Lexer
         {
             int _type = RSQUARE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1314:9: ( ']' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1315:9: ']'
+            // FTS.g:1324:9: ( ']' )
+            // FTS.g:1325:9: ']'
             {
                 match(']');
                 if (state.failed)
@@ -3646,8 +3714,8 @@ public class FTSLexer extends Lexer
         {
             int _type = TO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1319:9: ( ( 'T' | 't' ) ( 'O' | 'o' ) )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1320:9: ( 'T' | 't' ) ( 'O' | 'o' )
+            // FTS.g:1329:9: ( ( 'T' | 't' ) ( 'O' | 'o' ) )
+            // FTS.g:1330:9: ( 'T' | 't' ) ( 'O' | 'o' )
             {
                 if (input.LA(1) == 'T' || input.LA(1) == 't')
                 {
@@ -3700,8 +3768,8 @@ public class FTSLexer extends Lexer
         {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1331:9: ( ',' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1332:9: ','
+            // FTS.g:1341:9: ( ',' )
+            // FTS.g:1342:9: ','
             {
                 match(',');
                 if (state.failed)
@@ -3725,8 +3793,8 @@ public class FTSLexer extends Lexer
         {
             int _type = CARAT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1336:9: ( '^' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1337:9: '^'
+            // FTS.g:1346:9: ( '^' )
+            // FTS.g:1347:9: '^'
             {
                 match('^');
                 if (state.failed)
@@ -3750,8 +3818,8 @@ public class FTSLexer extends Lexer
         {
             int _type = DOLLAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1341:9: ( '$' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1342:9: '$'
+            // FTS.g:1351:9: ( '$' )
+            // FTS.g:1352:9: '$'
             {
                 match('$');
                 if (state.failed)
@@ -3775,8 +3843,8 @@ public class FTSLexer extends Lexer
         {
             int _type = GT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1346:9: ( '>' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1347:9: '>'
+            // FTS.g:1356:9: ( '>' )
+            // FTS.g:1357:9: '>'
             {
                 match('>');
                 if (state.failed)
@@ -3800,8 +3868,8 @@ public class FTSLexer extends Lexer
         {
             int _type = LT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1351:9: ( '<' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1352:9: '<'
+            // FTS.g:1361:9: ( '<' )
+            // FTS.g:1362:9: '<'
             {
                 match('<');
                 if (state.failed)
@@ -3825,8 +3893,8 @@ public class FTSLexer extends Lexer
         {
             int _type = AT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1356:9: ( '@' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1357:9: '@'
+            // FTS.g:1366:9: ( '@' )
+            // FTS.g:1367:9: '@'
             {
                 match('@');
                 if (state.failed)
@@ -3850,8 +3918,8 @@ public class FTSLexer extends Lexer
         {
             int _type = PERCENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1361:9: ( '%' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1362:9: '%'
+            // FTS.g:1371:9: ( '%' )
+            // FTS.g:1372:9: '%'
             {
                 match('%');
                 if (state.failed)
@@ -3875,20 +3943,20 @@ public class FTSLexer extends Lexer
         {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1377:9: ( ( ( '0' .. '9' ) ( '0' .. '9' | '$' | '#' | F_ESC )* )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' | '$' | '#' | F_ESC )* )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1378:9: ( ( '0' .. '9' ) ( '0' .. '9' | '$' | '#' | F_ESC )* )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' | '$' | '#' | F_ESC )*
+            // FTS.g:1387:9: ( ( ( '0' .. '9' ) ( '0' .. '9' | '$' | '#' | F_ESC )* )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' | '$' | '#' | F_ESC )* )
+            // FTS.g:1388:9: ( ( '0' .. '9' ) ( '0' .. '9' | '$' | '#' | F_ESC )* )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' | '$' | '#' | F_ESC )*
             {
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1378:9: ( ( '0' .. '9' ) ( '0' .. '9' | '$' | '#' | F_ESC )* )?
-                int alt38 = 2;
-                int LA38_0 = input.LA(1);
-                if (((LA38_0 >= '0' && LA38_0 <= '9')))
+                // FTS.g:1388:9: ( ( '0' .. '9' ) ( '0' .. '9' | '$' | '#' | F_ESC )* )?
+                int alt39 = 2;
+                int LA39_0 = input.LA(1);
+                if (((LA39_0 >= '0' && LA39_0 <= '9')))
                 {
-                    alt38 = 1;
+                    alt39 = 1;
                 }
-                switch (alt38)
+                switch (alt39)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1379:17: ( '0' .. '9' ) ( '0' .. '9' | '$' | '#' | F_ESC )*
+                // FTS.g:1389:17: ( '0' .. '9' ) ( '0' .. '9' | '$' | '#' | F_ESC )*
                 {
                     if ((input.LA(1) >= '0' && input.LA(1) <= '9'))
                     {
@@ -3906,10 +3974,10 @@ public class FTSLexer extends Lexer
                         recover(mse);
                         throw mse;
                     }
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1380:17: ( '0' .. '9' | '$' | '#' | F_ESC )*
-                    loop37: while (true)
+                    // FTS.g:1390:17: ( '0' .. '9' | '$' | '#' | F_ESC )*
+                    loop38: while (true)
                     {
-                        int alt37 = 5;
+                        int alt38 = 5;
                         switch (input.LA(1))
                         {
                         case '0':
@@ -3923,29 +3991,29 @@ public class FTSLexer extends Lexer
                         case '8':
                         case '9':
                         {
-                            alt37 = 1;
+                            alt38 = 1;
                         }
                             break;
                         case '$':
                         {
-                            alt37 = 2;
+                            alt38 = 2;
                         }
                             break;
                         case '#':
                         {
-                            alt37 = 3;
+                            alt38 = 3;
                         }
                             break;
                         case '\\':
                         {
-                            alt37 = 4;
+                            alt38 = 4;
                         }
                             break;
                         }
-                        switch (alt37)
+                        switch (alt38)
                         {
                         case 1:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1380:19: '0' .. '9'
+                        // FTS.g:1390:19: '0' .. '9'
                         {
                             matchRange('0', '9');
                             if (state.failed)
@@ -3953,7 +4021,7 @@ public class FTSLexer extends Lexer
                         }
                             break;
                         case 2:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1380:30: '$'
+                        // FTS.g:1390:30: '$'
                         {
                             match('$');
                             if (state.failed)
@@ -3961,7 +4029,7 @@ public class FTSLexer extends Lexer
                         }
                             break;
                         case 3:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1380:36: '#'
+                        // FTS.g:1390:36: '#'
                         {
                             match('#');
                             if (state.failed)
@@ -3969,7 +4037,7 @@ public class FTSLexer extends Lexer
                         }
                             break;
                         case 4:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1380:42: F_ESC
+                        // FTS.g:1390:42: F_ESC
                         {
                             mF_ESC();
                             if (state.failed)
@@ -3979,7 +4047,7 @@ public class FTSLexer extends Lexer
                             break;
 
                         default:
-                            break loop37;
+                            break loop38;
                         }
                     }
 
@@ -4004,10 +4072,10 @@ public class FTSLexer extends Lexer
                     recover(mse);
                     throw mse;
                 }
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1383:9: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' | '$' | '#' | F_ESC )*
-                loop39: while (true)
+                // FTS.g:1393:9: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | '_' | '$' | '#' | F_ESC )*
+                loop40: while (true)
                 {
-                    int alt39 = 9;
+                    int alt40 = 9;
                     switch (input.LA(1))
                     {
                     case 'a':
@@ -4037,7 +4105,7 @@ public class FTSLexer extends Lexer
                     case 'y':
                     case 'z':
                     {
-                        alt39 = 1;
+                        alt40 = 1;
                     }
                         break;
                     case 'A':
@@ -4067,7 +4135,7 @@ public class FTSLexer extends Lexer
                     case 'Y':
                     case 'Z':
                     {
-                        alt39 = 2;
+                        alt40 = 2;
                     }
                         break;
                     case '0':
@@ -4081,39 +4149,39 @@ public class FTSLexer extends Lexer
                     case '8':
                     case '9':
                     {
-                        alt39 = 3;
+                        alt40 = 3;
                     }
                         break;
                     case '-':
                     {
-                        alt39 = 4;
+                        alt40 = 4;
                     }
                         break;
                     case '_':
                     {
-                        alt39 = 5;
+                        alt40 = 5;
                     }
                         break;
                     case '$':
                     {
-                        alt39 = 6;
+                        alt40 = 6;
                     }
                         break;
                     case '#':
                     {
-                        alt39 = 7;
+                        alt40 = 7;
                     }
                         break;
                     case '\\':
                     {
-                        alt39 = 8;
+                        alt40 = 8;
                     }
                         break;
                     }
-                    switch (alt39)
+                    switch (alt40)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1383:11: 'a' .. 'z'
+                    // FTS.g:1393:11: 'a' .. 'z'
                     {
                         matchRange('a', 'z');
                         if (state.failed)
@@ -4121,7 +4189,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 2:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1383:22: 'A' .. 'Z'
+                    // FTS.g:1393:22: 'A' .. 'Z'
                     {
                         matchRange('A', 'Z');
                         if (state.failed)
@@ -4129,7 +4197,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 3:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1383:33: '0' .. '9'
+                    // FTS.g:1393:33: '0' .. '9'
                     {
                         matchRange('0', '9');
                         if (state.failed)
@@ -4137,7 +4205,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 4:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1383:44: '-'
+                    // FTS.g:1393:44: '-'
                     {
                         match('-');
                         if (state.failed)
@@ -4145,7 +4213,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 5:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1383:50: '_'
+                    // FTS.g:1393:50: '_'
                     {
                         match('_');
                         if (state.failed)
@@ -4153,7 +4221,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 6:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1383:56: '$'
+                    // FTS.g:1393:56: '$'
                     {
                         match('$');
                         if (state.failed)
@@ -4161,7 +4229,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 7:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1383:62: '#'
+                    // FTS.g:1393:62: '#'
                     {
                         match('#');
                         if (state.failed)
@@ -4169,7 +4237,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 8:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1383:68: F_ESC
+                    // FTS.g:1393:68: F_ESC
                     {
                         mF_ESC();
                         if (state.failed)
@@ -4179,7 +4247,7 @@ public class FTSLexer extends Lexer
                         break;
 
                     default:
-                        break loop39;
+                        break loop40;
                     }
                 }
 
@@ -4200,8 +4268,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1386:9: ()
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1387:9:
+            // FTS.g:1396:9: ()
+            // FTS.g:1397:9:
             {}
 
         }
@@ -4219,20 +4287,20 @@ public class FTSLexer extends Lexer
         {
             int _type = FLOATING_POINT_LITERAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1390:9: ( ( PLUS | MINUS )? ( ( DIGIT )+ ({...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |) | ( EXPONENT |) ) | DOT ( ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |) |{...}? => '.' |) ) )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1391:10: ( PLUS | MINUS )? ( ( DIGIT )+ ({...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |) | ( EXPONENT |) ) | DOT ( ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |) |{...}? => '.' |) )
+            // FTS.g:1400:9: ( ( PLUS | MINUS )? ( ( DIGIT )+ ({...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |) | ( EXPONENT |) ) | DOT ( ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |) |{...}? => '.' |) ) )
+            // FTS.g:1401:10: ( PLUS | MINUS )? ( ( DIGIT )+ ({...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |) | ( EXPONENT |) ) | DOT ( ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |) |{...}? => '.' |) )
             {
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1391:10: ( PLUS | MINUS )?
-                int alt40 = 2;
-                int LA40_0 = input.LA(1);
-                if ((LA40_0 == '+' || LA40_0 == '-'))
+                // FTS.g:1401:10: ( PLUS | MINUS )?
+                int alt41 = 2;
+                int LA41_0 = input.LA(1);
+                if ((LA41_0 == '+' || LA41_0 == '-'))
                 {
-                    alt40 = 1;
+                    alt41 = 1;
                 }
-                switch (alt40)
+                switch (alt41)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                // FTS.g:
                 {
                     if (input.LA(1) == '+' || input.LA(1) == '-')
                     {
@@ -4255,16 +4323,16 @@ public class FTSLexer extends Lexer
 
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1392:10: ( ( DIGIT )+ ({...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |) | ( EXPONENT |) ) | DOT ( ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |) |{...}? => '.' |) )
-                int alt50 = 2;
-                int LA50_0 = input.LA(1);
-                if (((LA50_0 >= '0' && LA50_0 <= '9')))
+                // FTS.g:1402:10: ( ( DIGIT )+ ({...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |) | ( EXPONENT |) ) | DOT ( ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |) |{...}? => '.' |) )
+                int alt51 = 2;
+                int LA51_0 = input.LA(1);
+                if (((LA51_0 >= '0' && LA51_0 <= '9')))
                 {
-                    alt50 = 1;
+                    alt51 = 1;
                 }
-                else if ((LA50_0 == '.'))
+                else if ((LA51_0 == '.'))
                 {
-                    alt50 = 2;
+                    alt51 = 2;
                 }
 
                 else
@@ -4274,30 +4342,30 @@ public class FTSLexer extends Lexer
                         state.failed = true;
                         return;
                     }
-                    NoViableAltException nvae = new NoViableAltException("", 50, 0, input);
+                    NoViableAltException nvae = new NoViableAltException("", 51, 0, input);
                     throw nvae;
                 }
 
-                switch (alt50)
+                switch (alt51)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1393:17: ( DIGIT )+ ({...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |) | ( EXPONENT |) )
+                // FTS.g:1403:17: ( DIGIT )+ ({...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |) | ( EXPONENT |) )
                 {
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1393:17: ( DIGIT )+
-                    int cnt41 = 0;
-                    loop41: while (true)
+                    // FTS.g:1403:17: ( DIGIT )+
+                    int cnt42 = 0;
+                    loop42: while (true)
                     {
-                        int alt41 = 2;
-                        int LA41_0 = input.LA(1);
-                        if (((LA41_0 >= '0' && LA41_0 <= '9')))
+                        int alt42 = 2;
+                        int LA42_0 = input.LA(1);
+                        if (((LA42_0 >= '0' && LA42_0 <= '9')))
                         {
-                            alt41 = 1;
+                            alt42 = 1;
                         }
 
-                        switch (alt41)
+                        switch (alt42)
                         {
                         case 1:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                        // FTS.g:
                         {
                             if ((input.LA(1) >= '0' && input.LA(1) <= '9'))
                             {
@@ -4319,31 +4387,31 @@ public class FTSLexer extends Lexer
                             break;
 
                         default:
-                            if (cnt41 >= 1)
-                                break loop41;
+                            if (cnt42 >= 1)
+                                break loop42;
                             if (state.backtracking > 0)
                             {
                                 state.failed = true;
                                 return;
                             }
-                            EarlyExitException eee = new EarlyExitException(41, input);
+                            EarlyExitException eee = new EarlyExitException(42, input);
                             throw eee;
                         }
-                        cnt41++;
+                        cnt42++;
                     }
 
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1394:17: ({...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |) | ( EXPONENT |) )
-                    int alt46 = 2;
-                    int LA46_0 = input.LA(1);
-                    if ((LA46_0 == '.') && ((input.LA(2) != '.')))
+                    // FTS.g:1404:17: ({...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |) | ( EXPONENT |) )
+                    int alt47 = 2;
+                    int LA47_0 = input.LA(1);
+                    if ((LA47_0 == '.') && ((input.LA(2) != '.')))
                     {
-                        alt46 = 1;
+                        alt47 = 1;
                     }
 
-                    switch (alt46)
+                    switch (alt47)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1395:25: {...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |)
+                    // FTS.g:1405:25: {...}? => DOT ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |)
                     {
                         if (!((input.LA(2) != '.')))
                         {
@@ -4358,8 +4426,8 @@ public class FTSLexer extends Lexer
                         if (state.failed)
                             return;
 
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1396:25: ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |)
-                        int alt44 = 3;
+                        // FTS.g:1406:25: ( ( DIGIT )+ ( EXPONENT |{...}? => DOT |) | EXPONENT |)
+                        int alt45 = 3;
                         switch (input.LA(1))
                         {
                         case '0':
@@ -4373,38 +4441,38 @@ public class FTSLexer extends Lexer
                         case '8':
                         case '9':
                         {
-                            alt44 = 1;
+                            alt45 = 1;
                         }
                             break;
                         case 'E':
                         case 'e':
                         {
-                            alt44 = 2;
+                            alt45 = 2;
                         }
                             break;
                         default:
-                            alt44 = 3;
+                            alt45 = 3;
                         }
-                        switch (alt44)
+                        switch (alt45)
                         {
                         case 1:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1397:33: ( DIGIT )+ ( EXPONENT |{...}? => DOT |)
+                        // FTS.g:1407:33: ( DIGIT )+ ( EXPONENT |{...}? => DOT |)
                         {
-                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1397:33: ( DIGIT )+
-                            int cnt42 = 0;
-                            loop42: while (true)
+                            // FTS.g:1407:33: ( DIGIT )+
+                            int cnt43 = 0;
+                            loop43: while (true)
                             {
-                                int alt42 = 2;
-                                int LA42_0 = input.LA(1);
-                                if (((LA42_0 >= '0' && LA42_0 <= '9')))
+                                int alt43 = 2;
+                                int LA43_0 = input.LA(1);
+                                if (((LA43_0 >= '0' && LA43_0 <= '9')))
                                 {
-                                    alt42 = 1;
+                                    alt43 = 1;
                                 }
 
-                                switch (alt42)
+                                switch (alt43)
                                 {
                                 case 1:
-                                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                                // FTS.g:
                                 {
                                     if ((input.LA(1) >= '0' && input.LA(1) <= '9'))
                                     {
@@ -4426,35 +4494,35 @@ public class FTSLexer extends Lexer
                                     break;
 
                                 default:
-                                    if (cnt42 >= 1)
-                                        break loop42;
+                                    if (cnt43 >= 1)
+                                        break loop43;
                                     if (state.backtracking > 0)
                                     {
                                         state.failed = true;
                                         return;
                                     }
-                                    EarlyExitException eee = new EarlyExitException(42, input);
+                                    EarlyExitException eee = new EarlyExitException(43, input);
                                     throw eee;
                                 }
-                                cnt42++;
+                                cnt43++;
                             }
 
-                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1398:33: ( EXPONENT |{...}? => DOT |)
-                            int alt43 = 3;
-                            int LA43_0 = input.LA(1);
-                            if ((LA43_0 == 'E' || LA43_0 == 'e'))
+                            // FTS.g:1408:33: ( EXPONENT |{...}? => DOT |)
+                            int alt44 = 3;
+                            int LA44_0 = input.LA(1);
+                            if ((LA44_0 == 'E' || LA44_0 == 'e'))
                             {
-                                alt43 = 1;
+                                alt44 = 1;
                             }
-                            else if ((LA43_0 == '.') && ((input.LA(2) != '.')))
+                            else if ((LA44_0 == '.') && ((input.LA(2) != '.')))
                             {
-                                alt43 = 2;
+                                alt44 = 2;
                             }
 
-                            switch (alt43)
+                            switch (alt44)
                             {
                             case 1:
-                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1399:37: EXPONENT
+                            // FTS.g:1409:37: EXPONENT
                             {
                                 mEXPONENT();
                                 if (state.failed)
@@ -4467,7 +4535,7 @@ public class FTSLexer extends Lexer
                             }
                                 break;
                             case 2:
-                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1402:37: {...}? => DOT
+                            // FTS.g:1412:37: {...}? => DOT
                             {
                                 if (!((input.LA(2) != '.')))
                                 {
@@ -4502,7 +4570,7 @@ public class FTSLexer extends Lexer
                             }
                                 break;
                             case 3:
-                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1420:37:
+                            // FTS.g:1430:37:
                             {
                                 if (state.backtracking == 0)
                                 {
@@ -4516,7 +4584,7 @@ public class FTSLexer extends Lexer
                         }
                             break;
                         case 2:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1423:33: EXPONENT
+                        // FTS.g:1433:33: EXPONENT
                         {
                             mEXPONENT();
                             if (state.failed)
@@ -4529,7 +4597,7 @@ public class FTSLexer extends Lexer
                         }
                             break;
                         case 3:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1426:33:
+                        // FTS.g:1436:33:
                         {
                             if (state.backtracking == 0)
                             {
@@ -4543,25 +4611,25 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 2:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1429:25: ( EXPONENT |)
+                    // FTS.g:1439:25: ( EXPONENT |)
                     {
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1429:25: ( EXPONENT |)
-                        int alt45 = 2;
-                        int LA45_0 = input.LA(1);
-                        if ((LA45_0 == 'E' || LA45_0 == 'e'))
+                        // FTS.g:1439:25: ( EXPONENT |)
+                        int alt46 = 2;
+                        int LA46_0 = input.LA(1);
+                        if ((LA46_0 == 'E' || LA46_0 == 'e'))
                         {
-                            alt45 = 1;
+                            alt46 = 1;
                         }
 
                         else
                         {
-                            alt45 = 2;
+                            alt46 = 2;
                         }
 
-                        switch (alt45)
+                        switch (alt46)
                         {
                         case 1:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1430:33: EXPONENT
+                        // FTS.g:1440:33: EXPONENT
                         {
                             mEXPONENT();
                             if (state.failed)
@@ -4574,7 +4642,7 @@ public class FTSLexer extends Lexer
                         }
                             break;
                         case 2:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1433:33:
+                        // FTS.g:1443:33:
                         {
                             if (state.backtracking == 0)
                             {
@@ -4593,44 +4661,44 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 2:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1439:17: DOT ( ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |) |{...}? => '.' |)
+                // FTS.g:1449:17: DOT ( ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |) |{...}? => '.' |)
                 {
                     mDOT();
                     if (state.failed)
                         return;
 
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1440:17: ( ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |) |{...}? => '.' |)
-                    int alt49 = 3;
-                    int LA49_0 = input.LA(1);
-                    if (((LA49_0 >= '0' && LA49_0 <= '9')))
+                    // FTS.g:1450:17: ( ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |) |{...}? => '.' |)
+                    int alt50 = 3;
+                    int LA50_0 = input.LA(1);
+                    if (((LA50_0 >= '0' && LA50_0 <= '9')))
                     {
-                        alt49 = 1;
+                        alt50 = 1;
                     }
-                    else if ((LA49_0 == '.') && ((input.LA(2) != '.')))
+                    else if ((LA50_0 == '.') && ((input.LA(2) != '.')))
                     {
-                        alt49 = 2;
+                        alt50 = 2;
                     }
 
-                    switch (alt49)
+                    switch (alt50)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1441:25: ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |)
+                    // FTS.g:1451:25: ( DIGIT )+ ( EXPONENT |{...}?{...}? => DOT |)
                     {
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1441:25: ( DIGIT )+
-                        int cnt47 = 0;
-                        loop47: while (true)
+                        // FTS.g:1451:25: ( DIGIT )+
+                        int cnt48 = 0;
+                        loop48: while (true)
                         {
-                            int alt47 = 2;
-                            int LA47_0 = input.LA(1);
-                            if (((LA47_0 >= '0' && LA47_0 <= '9')))
+                            int alt48 = 2;
+                            int LA48_0 = input.LA(1);
+                            if (((LA48_0 >= '0' && LA48_0 <= '9')))
                             {
-                                alt47 = 1;
+                                alt48 = 1;
                             }
 
-                            switch (alt47)
+                            switch (alt48)
                             {
                             case 1:
-                            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                            // FTS.g:
                             {
                                 if ((input.LA(1) >= '0' && input.LA(1) <= '9'))
                                 {
@@ -4652,35 +4720,35 @@ public class FTSLexer extends Lexer
                                 break;
 
                             default:
-                                if (cnt47 >= 1)
-                                    break loop47;
+                                if (cnt48 >= 1)
+                                    break loop48;
                                 if (state.backtracking > 0)
                                 {
                                     state.failed = true;
                                     return;
                                 }
-                                EarlyExitException eee = new EarlyExitException(47, input);
+                                EarlyExitException eee = new EarlyExitException(48, input);
                                 throw eee;
                             }
-                            cnt47++;
+                            cnt48++;
                         }
 
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1442:25: ( EXPONENT |{...}?{...}? => DOT |)
-                        int alt48 = 3;
-                        int LA48_0 = input.LA(1);
-                        if ((LA48_0 == 'E' || LA48_0 == 'e'))
+                        // FTS.g:1452:25: ( EXPONENT |{...}?{...}? => DOT |)
+                        int alt49 = 3;
+                        int LA49_0 = input.LA(1);
+                        if ((LA49_0 == 'E' || LA49_0 == 'e'))
                         {
-                            alt48 = 1;
+                            alt49 = 1;
                         }
-                        else if ((LA48_0 == '.') && ((input.LA(2) != '.')))
+                        else if ((LA49_0 == '.') && ((input.LA(2) != '.')))
                         {
-                            alt48 = 2;
+                            alt49 = 2;
                         }
 
-                        switch (alt48)
+                        switch (alt49)
                         {
                         case 1:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1443:29: EXPONENT
+                        // FTS.g:1453:29: EXPONENT
                         {
                             mEXPONENT();
                             if (state.failed)
@@ -4693,7 +4761,7 @@ public class FTSLexer extends Lexer
                         }
                             break;
                         case 2:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1446:29: {...}?{...}? => DOT
+                        // FTS.g:1456:29: {...}?{...}? => DOT
                         {
                             if (!((getText().startsWith("."))))
                             {
@@ -4733,7 +4801,7 @@ public class FTSLexer extends Lexer
                         }
                             break;
                         case 3:
-                        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1461:29:
+                        // FTS.g:1471:29:
                         {
                             if (state.backtracking == 0)
                             {
@@ -4747,7 +4815,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 2:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1465:25: {...}? => '.'
+                    // FTS.g:1475:25: {...}? => '.'
                     {
                         if (!((input.LA(2) != '.')))
                         {
@@ -4768,7 +4836,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 3:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1468:25:
+                    // FTS.g:1478:25:
                     {
                         if (state.backtracking == 0)
                         {
@@ -4801,16 +4869,16 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1497:9: ( ZERO_DIGIT | NON_ZERO_DIGIT ( DIGIT )* )
-            int alt52 = 2;
-            int LA52_0 = input.LA(1);
-            if ((LA52_0 == '0'))
+            // FTS.g:1507:9: ( ZERO_DIGIT | NON_ZERO_DIGIT ( DIGIT )* )
+            int alt53 = 2;
+            int LA53_0 = input.LA(1);
+            if ((LA53_0 == '0'))
             {
-                alt52 = 1;
+                alt53 = 1;
             }
-            else if (((LA52_0 >= '1' && LA52_0 <= '9')))
+            else if (((LA53_0 >= '1' && LA53_0 <= '9')))
             {
-                alt52 = 2;
+                alt53 = 2;
             }
 
             else
@@ -4820,14 +4888,14 @@ public class FTSLexer extends Lexer
                     state.failed = true;
                     return;
                 }
-                NoViableAltException nvae = new NoViableAltException("", 52, 0, input);
+                NoViableAltException nvae = new NoViableAltException("", 53, 0, input);
                 throw nvae;
             }
 
-            switch (alt52)
+            switch (alt53)
             {
             case 1:
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1498:9: ZERO_DIGIT
+            // FTS.g:1508:9: ZERO_DIGIT
             {
                 mZERO_DIGIT();
                 if (state.failed)
@@ -4836,26 +4904,26 @@ public class FTSLexer extends Lexer
             }
                 break;
             case 2:
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1499:11: NON_ZERO_DIGIT ( DIGIT )*
+            // FTS.g:1509:11: NON_ZERO_DIGIT ( DIGIT )*
             {
                 mNON_ZERO_DIGIT();
                 if (state.failed)
                     return;
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1499:26: ( DIGIT )*
-                loop51: while (true)
+                // FTS.g:1509:26: ( DIGIT )*
+                loop52: while (true)
                 {
-                    int alt51 = 2;
-                    int LA51_0 = input.LA(1);
-                    if (((LA51_0 >= '0' && LA51_0 <= '9')))
+                    int alt52 = 2;
+                    int LA52_0 = input.LA(1);
+                    if (((LA52_0 >= '0' && LA52_0 <= '9')))
                     {
-                        alt51 = 1;
+                        alt52 = 1;
                     }
 
-                    switch (alt51)
+                    switch (alt52)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                    // FTS.g:
                     {
                         if ((input.LA(1) >= '0' && input.LA(1) <= '9'))
                         {
@@ -4877,7 +4945,7 @@ public class FTSLexer extends Lexer
                         break;
 
                     default:
-                        break loop51;
+                        break loop52;
                     }
                 }
 
@@ -4898,8 +4966,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1501:9: ( ZERO_DIGIT | NON_ZERO_DIGIT )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+            // FTS.g:1511:9: ( ZERO_DIGIT | NON_ZERO_DIGIT )
+            // FTS.g:
             {
                 if ((input.LA(1) >= '0' && input.LA(1) <= '9'))
                 {
@@ -4932,8 +5000,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1508:9: ( '0' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1509:9: '0'
+            // FTS.g:1518:9: ( '0' )
+            // FTS.g:1519:9: '0'
             {
                 match('0');
                 if (state.failed)
@@ -4953,8 +5021,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1514:9: ( '1' .. '9' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+            // FTS.g:1524:9: ( '1' .. '9' )
+            // FTS.g:
             {
                 if ((input.LA(1) >= '1' && input.LA(1) <= '9'))
                 {
@@ -4987,8 +5055,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1520:9: ( ( 'e' | 'E' ) )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+            // FTS.g:1530:9: ( ( 'e' | 'E' ) )
+            // FTS.g:
             {
                 if (input.LA(1) == 'E' || input.LA(1) == 'e')
                 {
@@ -5021,8 +5089,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1529:9: ( E SIGNED_INTEGER )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1530:9: E SIGNED_INTEGER
+            // FTS.g:1539:9: ( E SIGNED_INTEGER )
+            // FTS.g:1540:9: E SIGNED_INTEGER
             {
                 mE();
                 if (state.failed)
@@ -5047,20 +5115,20 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1535:9: ( ( PLUS | MINUS )? ( DIGIT )+ )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1536:9: ( PLUS | MINUS )? ( DIGIT )+
+            // FTS.g:1545:9: ( ( PLUS | MINUS )? ( DIGIT )+ )
+            // FTS.g:1546:9: ( PLUS | MINUS )? ( DIGIT )+
             {
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1536:9: ( PLUS | MINUS )?
-                int alt53 = 2;
-                int LA53_0 = input.LA(1);
-                if ((LA53_0 == '+' || LA53_0 == '-'))
+                // FTS.g:1546:9: ( PLUS | MINUS )?
+                int alt54 = 2;
+                int LA54_0 = input.LA(1);
+                if ((LA54_0 == '+' || LA54_0 == '-'))
                 {
-                    alt53 = 1;
+                    alt54 = 1;
                 }
-                switch (alt53)
+                switch (alt54)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                // FTS.g:
                 {
                     if (input.LA(1) == '+' || input.LA(1) == '-')
                     {
@@ -5083,21 +5151,21 @@ public class FTSLexer extends Lexer
 
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1540:9: ( DIGIT )+
-                int cnt54 = 0;
-                loop54: while (true)
+                // FTS.g:1550:9: ( DIGIT )+
+                int cnt55 = 0;
+                loop55: while (true)
                 {
-                    int alt54 = 2;
-                    int LA54_0 = input.LA(1);
-                    if (((LA54_0 >= '0' && LA54_0 <= '9')))
+                    int alt55 = 2;
+                    int LA55_0 = input.LA(1);
+                    if (((LA55_0 >= '0' && LA55_0 <= '9')))
                     {
-                        alt54 = 1;
+                        alt55 = 1;
                     }
 
-                    switch (alt54)
+                    switch (alt55)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                    // FTS.g:
                     {
                         if ((input.LA(1) >= '0' && input.LA(1) <= '9'))
                         {
@@ -5119,17 +5187,17 @@ public class FTSLexer extends Lexer
                         break;
 
                     default:
-                        if (cnt54 >= 1)
-                            break loop54;
+                        if (cnt55 >= 1)
+                            break loop55;
                         if (state.backtracking > 0)
                         {
                             state.failed = true;
                             return;
                         }
-                        EarlyExitException eee = new EarlyExitException(54, input);
+                        EarlyExitException eee = new EarlyExitException(55, input);
                         throw eee;
                     }
-                    cnt54++;
+                    cnt55++;
                 }
 
             }
@@ -5149,37 +5217,37 @@ public class FTSLexer extends Lexer
         {
             int _type = FTSWORD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1544:9: ( ( F_ESC | START_WORD ) ( F_ESC | IN_WORD )* )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1545:9: ( F_ESC | START_WORD ) ( F_ESC | IN_WORD )*
+            // FTS.g:1554:9: ( ( F_ESC | START_WORD ) ( F_ESC | IN_WORD )* )
+            // FTS.g:1555:9: ( F_ESC | START_WORD ) ( F_ESC | IN_WORD )*
             {
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1545:9: ( F_ESC | START_WORD )
-                int alt55 = 2;
-                int LA55_0 = input.LA(1);
-                if ((LA55_0 == '\\'))
+                // FTS.g:1555:9: ( F_ESC | START_WORD )
+                int alt56 = 2;
+                int LA56_0 = input.LA(1);
+                if ((LA56_0 == '\\'))
                 {
-                    alt55 = 1;
+                    alt56 = 1;
                 }
-                else if ((LA55_0 == '$' || (LA55_0 >= '0' && LA55_0 <= '9') || (LA55_0 >= 'A' && LA55_0 <= 'Z') || (LA55_0 >= 'a' && LA55_0 <= 'z') || (LA55_0 >= '\u00A2' && LA55_0 <= '\u00A7') || (LA55_0 >= '\u00A9' && LA55_0 <= '\u00AA') || LA55_0 == '\u00AE' || LA55_0 == '\u00B0' || (LA55_0 >= '\u00B2' && LA55_0 <= '\u00B3') || (LA55_0 >= '\u00B5' && LA55_0 <= '\u00B6') || (LA55_0 >= '\u00B9' && LA55_0 <= '\u00BA') || (LA55_0 >= '\u00BC' && LA55_0 <= '\u00BE') || (LA55_0 >= '\u00C0' && LA55_0 <= '\u00D6') || (LA55_0 >= '\u00D8' && LA55_0 <= '\u00F6') || (LA55_0 >= '\u00F8' && LA55_0 <= '\u0236') || (LA55_0 >= '\u0250' && LA55_0 <= '\u02C1') || (LA55_0 >= '\u02C6' && LA55_0 <= '\u02D1') || (LA55_0 >= '\u02E0' && LA55_0 <= '\u02E4') || LA55_0 == '\u02EE' || (LA55_0 >= '\u0300' && LA55_0 <= '\u0357') || (LA55_0 >= '\u035D' && LA55_0 <= '\u036F') || LA55_0 == '\u037A' || LA55_0 == '\u0386' || (LA55_0 >= '\u0388' && LA55_0 <= '\u038A') || LA55_0 == '\u038C'
-                        || (LA55_0 >= '\u038E' && LA55_0 <= '\u03A1') || (LA55_0 >= '\u03A3' && LA55_0 <= '\u03CE') || (LA55_0 >= '\u03D0' && LA55_0 <= '\u03F5') || (LA55_0 >= '\u03F7' && LA55_0 <= '\u03FB') || (LA55_0 >= '\u0400' && LA55_0 <= '\u0486') || (LA55_0 >= '\u0488' && LA55_0 <= '\u04CE') || (LA55_0 >= '\u04D0' && LA55_0 <= '\u04F5') || (LA55_0 >= '\u04F8' && LA55_0 <= '\u04F9') || (LA55_0 >= '\u0500' && LA55_0 <= '\u050F') || (LA55_0 >= '\u0531' && LA55_0 <= '\u0556') || LA55_0 == '\u0559' || (LA55_0 >= '\u0561' && LA55_0 <= '\u0587') || (LA55_0 >= '\u0591' && LA55_0 <= '\u05A1') || (LA55_0 >= '\u05A3' && LA55_0 <= '\u05B9') || (LA55_0 >= '\u05BB' && LA55_0 <= '\u05BD') || LA55_0 == '\u05BF' || (LA55_0 >= '\u05C1' && LA55_0 <= '\u05C2') || LA55_0 == '\u05C4' || (LA55_0 >= '\u05D0' && LA55_0 <= '\u05EA') || (LA55_0 >= '\u05F0' && LA55_0 <= '\u05F2') || (LA55_0 >= '\u060E' && LA55_0 <= '\u0615') || (LA55_0 >= '\u0621' && LA55_0 <= '\u063A')
-                        || (LA55_0 >= '\u0640' && LA55_0 <= '\u0658') || (LA55_0 >= '\u0660' && LA55_0 <= '\u0669') || (LA55_0 >= '\u066E' && LA55_0 <= '\u06D3') || (LA55_0 >= '\u06D5' && LA55_0 <= '\u06DC') || (LA55_0 >= '\u06DE' && LA55_0 <= '\u06FF') || (LA55_0 >= '\u0710' && LA55_0 <= '\u074A') || (LA55_0 >= '\u074D' && LA55_0 <= '\u074F') || (LA55_0 >= '\u0780' && LA55_0 <= '\u07B1') || (LA55_0 >= '\u0901' && LA55_0 <= '\u0939') || (LA55_0 >= '\u093C' && LA55_0 <= '\u094D') || (LA55_0 >= '\u0950' && LA55_0 <= '\u0954') || (LA55_0 >= '\u0958' && LA55_0 <= '\u0963') || (LA55_0 >= '\u0966' && LA55_0 <= '\u096F') || (LA55_0 >= '\u0981' && LA55_0 <= '\u0983') || (LA55_0 >= '\u0985' && LA55_0 <= '\u098C') || (LA55_0 >= '\u098F' && LA55_0 <= '\u0990') || (LA55_0 >= '\u0993' && LA55_0 <= '\u09A8') || (LA55_0 >= '\u09AA' && LA55_0 <= '\u09B0') || LA55_0 == '\u09B2' || (LA55_0 >= '\u09B6' && LA55_0 <= '\u09B9') || (LA55_0 >= '\u09BC' && LA55_0 <= '\u09C4')
-                        || (LA55_0 >= '\u09C7' && LA55_0 <= '\u09C8') || (LA55_0 >= '\u09CB' && LA55_0 <= '\u09CD') || LA55_0 == '\u09D7' || (LA55_0 >= '\u09DC' && LA55_0 <= '\u09DD') || (LA55_0 >= '\u09DF' && LA55_0 <= '\u09E3') || (LA55_0 >= '\u09E6' && LA55_0 <= '\u09FA') || (LA55_0 >= '\u0A01' && LA55_0 <= '\u0A03') || (LA55_0 >= '\u0A05' && LA55_0 <= '\u0A0A') || (LA55_0 >= '\u0A0F' && LA55_0 <= '\u0A10') || (LA55_0 >= '\u0A13' && LA55_0 <= '\u0A28') || (LA55_0 >= '\u0A2A' && LA55_0 <= '\u0A30') || (LA55_0 >= '\u0A32' && LA55_0 <= '\u0A33') || (LA55_0 >= '\u0A35' && LA55_0 <= '\u0A36') || (LA55_0 >= '\u0A38' && LA55_0 <= '\u0A39') || LA55_0 == '\u0A3C' || (LA55_0 >= '\u0A3E' && LA55_0 <= '\u0A42') || (LA55_0 >= '\u0A47' && LA55_0 <= '\u0A48') || (LA55_0 >= '\u0A4B' && LA55_0 <= '\u0A4D') || (LA55_0 >= '\u0A59' && LA55_0 <= '\u0A5C') || LA55_0 == '\u0A5E' || (LA55_0 >= '\u0A66' && LA55_0 <= '\u0A74') || (LA55_0 >= '\u0A81' && LA55_0 <= '\u0A83')
-                        || (LA55_0 >= '\u0A85' && LA55_0 <= '\u0A8D') || (LA55_0 >= '\u0A8F' && LA55_0 <= '\u0A91') || (LA55_0 >= '\u0A93' && LA55_0 <= '\u0AA8') || (LA55_0 >= '\u0AAA' && LA55_0 <= '\u0AB0') || (LA55_0 >= '\u0AB2' && LA55_0 <= '\u0AB3') || (LA55_0 >= '\u0AB5' && LA55_0 <= '\u0AB9') || (LA55_0 >= '\u0ABC' && LA55_0 <= '\u0AC5') || (LA55_0 >= '\u0AC7' && LA55_0 <= '\u0AC9') || (LA55_0 >= '\u0ACB' && LA55_0 <= '\u0ACD') || LA55_0 == '\u0AD0' || (LA55_0 >= '\u0AE0' && LA55_0 <= '\u0AE3') || (LA55_0 >= '\u0AE6' && LA55_0 <= '\u0AEF') || LA55_0 == '\u0AF1' || (LA55_0 >= '\u0B01' && LA55_0 <= '\u0B03') || (LA55_0 >= '\u0B05' && LA55_0 <= '\u0B0C') || (LA55_0 >= '\u0B0F' && LA55_0 <= '\u0B10') || (LA55_0 >= '\u0B13' && LA55_0 <= '\u0B28') || (LA55_0 >= '\u0B2A' && LA55_0 <= '\u0B30') || (LA55_0 >= '\u0B32' && LA55_0 <= '\u0B33') || (LA55_0 >= '\u0B35' && LA55_0 <= '\u0B39') || (LA55_0 >= '\u0B3C' && LA55_0 <= '\u0B43') || (LA55_0 >= '\u0B47' && LA55_0 <= '\u0B48')
-                        || (LA55_0 >= '\u0B4B' && LA55_0 <= '\u0B4D') || (LA55_0 >= '\u0B56' && LA55_0 <= '\u0B57') || (LA55_0 >= '\u0B5C' && LA55_0 <= '\u0B5D') || (LA55_0 >= '\u0B5F' && LA55_0 <= '\u0B61') || (LA55_0 >= '\u0B66' && LA55_0 <= '\u0B71') || (LA55_0 >= '\u0B82' && LA55_0 <= '\u0B83') || (LA55_0 >= '\u0B85' && LA55_0 <= '\u0B8A') || (LA55_0 >= '\u0B8E' && LA55_0 <= '\u0B90') || (LA55_0 >= '\u0B92' && LA55_0 <= '\u0B95') || (LA55_0 >= '\u0B99' && LA55_0 <= '\u0B9A') || LA55_0 == '\u0B9C' || (LA55_0 >= '\u0B9E' && LA55_0 <= '\u0B9F') || (LA55_0 >= '\u0BA3' && LA55_0 <= '\u0BA4') || (LA55_0 >= '\u0BA8' && LA55_0 <= '\u0BAA') || (LA55_0 >= '\u0BAE' && LA55_0 <= '\u0BB5') || (LA55_0 >= '\u0BB7' && LA55_0 <= '\u0BB9') || (LA55_0 >= '\u0BBE' && LA55_0 <= '\u0BC2') || (LA55_0 >= '\u0BC6' && LA55_0 <= '\u0BC8') || (LA55_0 >= '\u0BCA' && LA55_0 <= '\u0BCD') || LA55_0 == '\u0BD7' || (LA55_0 >= '\u0BE7' && LA55_0 <= '\u0BFA') || (LA55_0 >= '\u0C01' && LA55_0 <= '\u0C03')
-                        || (LA55_0 >= '\u0C05' && LA55_0 <= '\u0C0C') || (LA55_0 >= '\u0C0E' && LA55_0 <= '\u0C10') || (LA55_0 >= '\u0C12' && LA55_0 <= '\u0C28') || (LA55_0 >= '\u0C2A' && LA55_0 <= '\u0C33') || (LA55_0 >= '\u0C35' && LA55_0 <= '\u0C39') || (LA55_0 >= '\u0C3E' && LA55_0 <= '\u0C44') || (LA55_0 >= '\u0C46' && LA55_0 <= '\u0C48') || (LA55_0 >= '\u0C4A' && LA55_0 <= '\u0C4D') || (LA55_0 >= '\u0C55' && LA55_0 <= '\u0C56') || (LA55_0 >= '\u0C60' && LA55_0 <= '\u0C61') || (LA55_0 >= '\u0C66' && LA55_0 <= '\u0C6F') || (LA55_0 >= '\u0C82' && LA55_0 <= '\u0C83') || (LA55_0 >= '\u0C85' && LA55_0 <= '\u0C8C') || (LA55_0 >= '\u0C8E' && LA55_0 <= '\u0C90') || (LA55_0 >= '\u0C92' && LA55_0 <= '\u0CA8') || (LA55_0 >= '\u0CAA' && LA55_0 <= '\u0CB3') || (LA55_0 >= '\u0CB5' && LA55_0 <= '\u0CB9') || (LA55_0 >= '\u0CBC' && LA55_0 <= '\u0CC4') || (LA55_0 >= '\u0CC6' && LA55_0 <= '\u0CC8') || (LA55_0 >= '\u0CCA' && LA55_0 <= '\u0CCD') || (LA55_0 >= '\u0CD5' && LA55_0 <= '\u0CD6')
-                        || LA55_0 == '\u0CDE' || (LA55_0 >= '\u0CE0' && LA55_0 <= '\u0CE1') || (LA55_0 >= '\u0CE6' && LA55_0 <= '\u0CEF') || (LA55_0 >= '\u0D02' && LA55_0 <= '\u0D03') || (LA55_0 >= '\u0D05' && LA55_0 <= '\u0D0C') || (LA55_0 >= '\u0D0E' && LA55_0 <= '\u0D10') || (LA55_0 >= '\u0D12' && LA55_0 <= '\u0D28') || (LA55_0 >= '\u0D2A' && LA55_0 <= '\u0D39') || (LA55_0 >= '\u0D3E' && LA55_0 <= '\u0D43') || (LA55_0 >= '\u0D46' && LA55_0 <= '\u0D48') || (LA55_0 >= '\u0D4A' && LA55_0 <= '\u0D4D') || LA55_0 == '\u0D57' || (LA55_0 >= '\u0D60' && LA55_0 <= '\u0D61') || (LA55_0 >= '\u0D66' && LA55_0 <= '\u0D6F') || (LA55_0 >= '\u0D82' && LA55_0 <= '\u0D83') || (LA55_0 >= '\u0D85' && LA55_0 <= '\u0D96') || (LA55_0 >= '\u0D9A' && LA55_0 <= '\u0DB1') || (LA55_0 >= '\u0DB3' && LA55_0 <= '\u0DBB') || LA55_0 == '\u0DBD' || (LA55_0 >= '\u0DC0' && LA55_0 <= '\u0DC6') || LA55_0 == '\u0DCA' || (LA55_0 >= '\u0DCF' && LA55_0 <= '\u0DD4') || LA55_0 == '\u0DD6'
-                        || (LA55_0 >= '\u0DD8' && LA55_0 <= '\u0DDF') || (LA55_0 >= '\u0DF2' && LA55_0 <= '\u0DF3') || (LA55_0 >= '\u0E01' && LA55_0 <= '\u0E3A') || (LA55_0 >= '\u0E3F' && LA55_0 <= '\u0E4E') || (LA55_0 >= '\u0E50' && LA55_0 <= '\u0E59') || (LA55_0 >= '\u0E81' && LA55_0 <= '\u0E82') || LA55_0 == '\u0E84' || (LA55_0 >= '\u0E87' && LA55_0 <= '\u0E88') || LA55_0 == '\u0E8A' || LA55_0 == '\u0E8D' || (LA55_0 >= '\u0E94' && LA55_0 <= '\u0E97') || (LA55_0 >= '\u0E99' && LA55_0 <= '\u0E9F') || (LA55_0 >= '\u0EA1' && LA55_0 <= '\u0EA3') || LA55_0 == '\u0EA5' || LA55_0 == '\u0EA7' || (LA55_0 >= '\u0EAA' && LA55_0 <= '\u0EAB') || (LA55_0 >= '\u0EAD' && LA55_0 <= '\u0EB9') || (LA55_0 >= '\u0EBB' && LA55_0 <= '\u0EBD') || (LA55_0 >= '\u0EC0' && LA55_0 <= '\u0EC4') || LA55_0 == '\u0EC6' || (LA55_0 >= '\u0EC8' && LA55_0 <= '\u0ECD') || (LA55_0 >= '\u0ED0' && LA55_0 <= '\u0ED9') || (LA55_0 >= '\u0EDC' && LA55_0 <= '\u0EDD') || (LA55_0 >= '\u0F00' && LA55_0 <= '\u0F03')
-                        || (LA55_0 >= '\u0F13' && LA55_0 <= '\u0F39') || (LA55_0 >= '\u0F3E' && LA55_0 <= '\u0F47') || (LA55_0 >= '\u0F49' && LA55_0 <= '\u0F6A') || (LA55_0 >= '\u0F71' && LA55_0 <= '\u0F84') || (LA55_0 >= '\u0F86' && LA55_0 <= '\u0F8B') || (LA55_0 >= '\u0F90' && LA55_0 <= '\u0F97') || (LA55_0 >= '\u0F99' && LA55_0 <= '\u0FBC') || (LA55_0 >= '\u0FBE' && LA55_0 <= '\u0FCC') || LA55_0 == '\u0FCF' || (LA55_0 >= '\u1000' && LA55_0 <= '\u1021') || (LA55_0 >= '\u1023' && LA55_0 <= '\u1027') || (LA55_0 >= '\u1029' && LA55_0 <= '\u102A') || (LA55_0 >= '\u102C' && LA55_0 <= '\u1032') || (LA55_0 >= '\u1036' && LA55_0 <= '\u1039') || (LA55_0 >= '\u1040' && LA55_0 <= '\u1049') || (LA55_0 >= '\u1050' && LA55_0 <= '\u1059') || (LA55_0 >= '\u10A0' && LA55_0 <= '\u10C5') || (LA55_0 >= '\u10D0' && LA55_0 <= '\u10F8') || (LA55_0 >= '\u1100' && LA55_0 <= '\u1159') || (LA55_0 >= '\u115F' && LA55_0 <= '\u11A2') || (LA55_0 >= '\u11A8' && LA55_0 <= '\u11F9')
-                        || (LA55_0 >= '\u1200' && LA55_0 <= '\u1206') || (LA55_0 >= '\u1208' && LA55_0 <= '\u1246') || LA55_0 == '\u1248' || (LA55_0 >= '\u124A' && LA55_0 <= '\u124D') || (LA55_0 >= '\u1250' && LA55_0 <= '\u1256') || LA55_0 == '\u1258' || (LA55_0 >= '\u125A' && LA55_0 <= '\u125D') || (LA55_0 >= '\u1260' && LA55_0 <= '\u1286') || LA55_0 == '\u1288' || (LA55_0 >= '\u128A' && LA55_0 <= '\u128D') || (LA55_0 >= '\u1290' && LA55_0 <= '\u12AE') || LA55_0 == '\u12B0' || (LA55_0 >= '\u12B2' && LA55_0 <= '\u12B5') || (LA55_0 >= '\u12B8' && LA55_0 <= '\u12BE') || LA55_0 == '\u12C0' || (LA55_0 >= '\u12C2' && LA55_0 <= '\u12C5') || (LA55_0 >= '\u12C8' && LA55_0 <= '\u12CE') || (LA55_0 >= '\u12D0' && LA55_0 <= '\u12D6') || (LA55_0 >= '\u12D8' && LA55_0 <= '\u12EE') || (LA55_0 >= '\u12F0' && LA55_0 <= '\u130E') || LA55_0 == '\u1310' || (LA55_0 >= '\u1312' && LA55_0 <= '\u1315') || (LA55_0 >= '\u1318' && LA55_0 <= '\u131E') || (LA55_0 >= '\u1320' && LA55_0 <= '\u1346')
-                        || (LA55_0 >= '\u1348' && LA55_0 <= '\u135A') || (LA55_0 >= '\u1369' && LA55_0 <= '\u137C') || (LA55_0 >= '\u13A0' && LA55_0 <= '\u13F4') || (LA55_0 >= '\u1401' && LA55_0 <= '\u166C') || (LA55_0 >= '\u166F' && LA55_0 <= '\u1676') || (LA55_0 >= '\u1681' && LA55_0 <= '\u169A') || (LA55_0 >= '\u16A0' && LA55_0 <= '\u16EA') || (LA55_0 >= '\u16EE' && LA55_0 <= '\u16F0') || (LA55_0 >= '\u1700' && LA55_0 <= '\u170C') || (LA55_0 >= '\u170E' && LA55_0 <= '\u1714') || (LA55_0 >= '\u1720' && LA55_0 <= '\u1734') || (LA55_0 >= '\u1740' && LA55_0 <= '\u1753') || (LA55_0 >= '\u1760' && LA55_0 <= '\u176C') || (LA55_0 >= '\u176E' && LA55_0 <= '\u1770') || (LA55_0 >= '\u1772' && LA55_0 <= '\u1773') || (LA55_0 >= '\u1780' && LA55_0 <= '\u17B3') || (LA55_0 >= '\u17B6' && LA55_0 <= '\u17D3') || LA55_0 == '\u17D7' || (LA55_0 >= '\u17DB' && LA55_0 <= '\u17DD') || (LA55_0 >= '\u17E0' && LA55_0 <= '\u17E9') || (LA55_0 >= '\u17F0' && LA55_0 <= '\u17F9')
-                        || (LA55_0 >= '\u180B' && LA55_0 <= '\u180D') || (LA55_0 >= '\u1810' && LA55_0 <= '\u1819') || (LA55_0 >= '\u1820' && LA55_0 <= '\u1877') || (LA55_0 >= '\u1880' && LA55_0 <= '\u18A9') || (LA55_0 >= '\u1900' && LA55_0 <= '\u191C') || (LA55_0 >= '\u1920' && LA55_0 <= '\u192B') || (LA55_0 >= '\u1930' && LA55_0 <= '\u193B') || LA55_0 == '\u1940' || (LA55_0 >= '\u1946' && LA55_0 <= '\u196D') || (LA55_0 >= '\u1970' && LA55_0 <= '\u1974') || (LA55_0 >= '\u19E0' && LA55_0 <= '\u19FF') || (LA55_0 >= '\u1D00' && LA55_0 <= '\u1D6B') || (LA55_0 >= '\u1E00' && LA55_0 <= '\u1E9B') || (LA55_0 >= '\u1EA0' && LA55_0 <= '\u1EF9') || (LA55_0 >= '\u1F00' && LA55_0 <= '\u1F15') || (LA55_0 >= '\u1F18' && LA55_0 <= '\u1F1D') || (LA55_0 >= '\u1F20' && LA55_0 <= '\u1F45') || (LA55_0 >= '\u1F48' && LA55_0 <= '\u1F4D') || (LA55_0 >= '\u1F50' && LA55_0 <= '\u1F57') || LA55_0 == '\u1F59' || LA55_0 == '\u1F5B' || LA55_0 == '\u1F5D' || (LA55_0 >= '\u1F5F' && LA55_0 <= '\u1F7D')
-                        || (LA55_0 >= '\u1F80' && LA55_0 <= '\u1FB4') || (LA55_0 >= '\u1FB6' && LA55_0 <= '\u1FBC') || LA55_0 == '\u1FBE' || (LA55_0 >= '\u1FC2' && LA55_0 <= '\u1FC4') || (LA55_0 >= '\u1FC6' && LA55_0 <= '\u1FCC') || (LA55_0 >= '\u1FD0' && LA55_0 <= '\u1FD3') || (LA55_0 >= '\u1FD6' && LA55_0 <= '\u1FDB') || (LA55_0 >= '\u1FE0' && LA55_0 <= '\u1FEC') || (LA55_0 >= '\u1FF2' && LA55_0 <= '\u1FF4') || (LA55_0 >= '\u1FF6' && LA55_0 <= '\u1FFC') || (LA55_0 >= '\u2070' && LA55_0 <= '\u2071') || (LA55_0 >= '\u2074' && LA55_0 <= '\u2079') || (LA55_0 >= '\u207F' && LA55_0 <= '\u2089') || (LA55_0 >= '\u20A0' && LA55_0 <= '\u20B1') || (LA55_0 >= '\u20D0' && LA55_0 <= '\u20EA') || (LA55_0 >= '\u2100' && LA55_0 <= '\u213B') || (LA55_0 >= '\u213D' && LA55_0 <= '\u213F') || (LA55_0 >= '\u2145' && LA55_0 <= '\u214A') || (LA55_0 >= '\u2153' && LA55_0 <= '\u2183') || (LA55_0 >= '\u2195' && LA55_0 <= '\u2199') || (LA55_0 >= '\u219C' && LA55_0 <= '\u219F')
-                        || (LA55_0 >= '\u21A1' && LA55_0 <= '\u21A2') || (LA55_0 >= '\u21A4' && LA55_0 <= '\u21A5') || (LA55_0 >= '\u21A7' && LA55_0 <= '\u21AD') || (LA55_0 >= '\u21AF' && LA55_0 <= '\u21CD') || (LA55_0 >= '\u21D0' && LA55_0 <= '\u21D1') || LA55_0 == '\u21D3' || (LA55_0 >= '\u21D5' && LA55_0 <= '\u21F3') || (LA55_0 >= '\u2300' && LA55_0 <= '\u2307') || (LA55_0 >= '\u230C' && LA55_0 <= '\u231F') || (LA55_0 >= '\u2322' && LA55_0 <= '\u2328') || (LA55_0 >= '\u232B' && LA55_0 <= '\u237B') || (LA55_0 >= '\u237D' && LA55_0 <= '\u239A') || (LA55_0 >= '\u23B7' && LA55_0 <= '\u23D0') || (LA55_0 >= '\u2400' && LA55_0 <= '\u2426') || (LA55_0 >= '\u2440' && LA55_0 <= '\u244A') || (LA55_0 >= '\u2460' && LA55_0 <= '\u25B6') || (LA55_0 >= '\u25B8' && LA55_0 <= '\u25C0') || (LA55_0 >= '\u25C2' && LA55_0 <= '\u25F7') || (LA55_0 >= '\u2600' && LA55_0 <= '\u2617') || (LA55_0 >= '\u2619' && LA55_0 <= '\u266E') || (LA55_0 >= '\u2670' && LA55_0 <= '\u267D')
-                        || (LA55_0 >= '\u2680' && LA55_0 <= '\u2691') || (LA55_0 >= '\u26A0' && LA55_0 <= '\u26A1') || (LA55_0 >= '\u2701' && LA55_0 <= '\u2704') || (LA55_0 >= '\u2706' && LA55_0 <= '\u2709') || (LA55_0 >= '\u270C' && LA55_0 <= '\u2727') || (LA55_0 >= '\u2729' && LA55_0 <= '\u274B') || LA55_0 == '\u274D' || (LA55_0 >= '\u274F' && LA55_0 <= '\u2752') || LA55_0 == '\u2756' || (LA55_0 >= '\u2758' && LA55_0 <= '\u275E') || (LA55_0 >= '\u2761' && LA55_0 <= '\u2767') || (LA55_0 >= '\u2776' && LA55_0 <= '\u2794') || (LA55_0 >= '\u2798' && LA55_0 <= '\u27AF') || (LA55_0 >= '\u27B1' && LA55_0 <= '\u27BE') || (LA55_0 >= '\u2800' && LA55_0 <= '\u28FF') || (LA55_0 >= '\u2B00' && LA55_0 <= '\u2B0D') || (LA55_0 >= '\u2E80' && LA55_0 <= '\u2E99') || (LA55_0 >= '\u2E9B' && LA55_0 <= '\u2EF3') || (LA55_0 >= '\u2F00' && LA55_0 <= '\u2FD5') || (LA55_0 >= '\u2FF0' && LA55_0 <= '\u2FFB') || (LA55_0 >= '\u3004' && LA55_0 <= '\u3007') || (LA55_0 >= '\u3012' && LA55_0 <= '\u3013')
-                        || (LA55_0 >= '\u3020' && LA55_0 <= '\u302F') || (LA55_0 >= '\u3031' && LA55_0 <= '\u303C') || (LA55_0 >= '\u303E' && LA55_0 <= '\u303F') || (LA55_0 >= '\u3041' && LA55_0 <= '\u3096') || (LA55_0 >= '\u3099' && LA55_0 <= '\u309A') || (LA55_0 >= '\u309D' && LA55_0 <= '\u309F') || (LA55_0 >= '\u30A1' && LA55_0 <= '\u30FA') || (LA55_0 >= '\u30FC' && LA55_0 <= '\u30FF') || (LA55_0 >= '\u3105' && LA55_0 <= '\u312C') || (LA55_0 >= '\u3131' && LA55_0 <= '\u318E') || (LA55_0 >= '\u3190' && LA55_0 <= '\u31B7') || (LA55_0 >= '\u31F0' && LA55_0 <= '\u321E') || (LA55_0 >= '\u3220' && LA55_0 <= '\u3243') || (LA55_0 >= '\u3250' && LA55_0 <= '\u327D') || (LA55_0 >= '\u327F' && LA55_0 <= '\u32FE') || (LA55_0 >= '\u3300' && LA55_0 <= '\u4DB5') || (LA55_0 >= '\u4DC0' && LA55_0 <= '\u9FA5') || (LA55_0 >= '\uA000' && LA55_0 <= '\uA48C') || (LA55_0 >= '\uA490' && LA55_0 <= '\uA4C6') || (LA55_0 >= '\uAC00' && LA55_0 <= '\uD7A3') || (LA55_0 >= '\uF900' && LA55_0 <= '\uFA2D')
-                        || (LA55_0 >= '\uFA30' && LA55_0 <= '\uFA6A') || (LA55_0 >= '\uFB00' && LA55_0 <= '\uFB06') || (LA55_0 >= '\uFB13' && LA55_0 <= '\uFB17') || (LA55_0 >= '\uFB1D' && LA55_0 <= '\uFB28') || (LA55_0 >= '\uFB2A' && LA55_0 <= '\uFB36') || (LA55_0 >= '\uFB38' && LA55_0 <= '\uFB3C') || LA55_0 == '\uFB3E' || (LA55_0 >= '\uFB40' && LA55_0 <= '\uFB41') || (LA55_0 >= '\uFB43' && LA55_0 <= '\uFB44') || (LA55_0 >= '\uFB46' && LA55_0 <= '\uFBB1') || (LA55_0 >= '\uFBD3' && LA55_0 <= '\uFD3D') || (LA55_0 >= '\uFD50' && LA55_0 <= '\uFD8F') || (LA55_0 >= '\uFD92' && LA55_0 <= '\uFDC7') || (LA55_0 >= '\uFDF0' && LA55_0 <= '\uFDFD') || (LA55_0 >= '\uFE00' && LA55_0 <= '\uFE0F') || (LA55_0 >= '\uFE20' && LA55_0 <= '\uFE23') || LA55_0 == '\uFE69' || (LA55_0 >= '\uFE70' && LA55_0 <= '\uFE74') || (LA55_0 >= '\uFE76' && LA55_0 <= '\uFEFC') || LA55_0 == '\uFF04' || (LA55_0 >= '\uFF10' && LA55_0 <= '\uFF19') || (LA55_0 >= '\uFF21' && LA55_0 <= '\uFF3A')
-                        || (LA55_0 >= '\uFF41' && LA55_0 <= '\uFF5A') || (LA55_0 >= '\uFF66' && LA55_0 <= '\uFFBE') || (LA55_0 >= '\uFFC2' && LA55_0 <= '\uFFC7') || (LA55_0 >= '\uFFCA' && LA55_0 <= '\uFFCF') || (LA55_0 >= '\uFFD2' && LA55_0 <= '\uFFD7') || (LA55_0 >= '\uFFDA' && LA55_0 <= '\uFFDC') || (LA55_0 >= '\uFFE0' && LA55_0 <= '\uFFE1') || (LA55_0 >= '\uFFE4' && LA55_0 <= '\uFFE6') || LA55_0 == '\uFFE8' || (LA55_0 >= '\uFFED' && LA55_0 <= '\uFFEE')))
+                else if ((LA56_0 == '$' || (LA56_0 >= '0' && LA56_0 <= '9') || (LA56_0 >= 'A' && LA56_0 <= 'Z') || (LA56_0 >= 'a' && LA56_0 <= 'z') || (LA56_0 >= '\u00A2' && LA56_0 <= '\u00A7') || (LA56_0 >= '\u00A9' && LA56_0 <= '\u00AA') || LA56_0 == '\u00AE' || LA56_0 == '\u00B0' || (LA56_0 >= '\u00B2' && LA56_0 <= '\u00B3') || (LA56_0 >= '\u00B5' && LA56_0 <= '\u00B6') || (LA56_0 >= '\u00B9' && LA56_0 <= '\u00BA') || (LA56_0 >= '\u00BC' && LA56_0 <= '\u00BE') || (LA56_0 >= '\u00C0' && LA56_0 <= '\u00D6') || (LA56_0 >= '\u00D8' && LA56_0 <= '\u00F6') || (LA56_0 >= '\u00F8' && LA56_0 <= '\u0236') || (LA56_0 >= '\u0250' && LA56_0 <= '\u02C1') || (LA56_0 >= '\u02C6' && LA56_0 <= '\u02D1') || (LA56_0 >= '\u02E0' && LA56_0 <= '\u02E4') || LA56_0 == '\u02EE' || (LA56_0 >= '\u0300' && LA56_0 <= '\u0357') || (LA56_0 >= '\u035D' && LA56_0 <= '\u036F') || LA56_0 == '\u037A' || LA56_0 == '\u0386' || (LA56_0 >= '\u0388' && LA56_0 <= '\u038A') || LA56_0 == '\u038C'
+                        || (LA56_0 >= '\u038E' && LA56_0 <= '\u03A1') || (LA56_0 >= '\u03A3' && LA56_0 <= '\u03CE') || (LA56_0 >= '\u03D0' && LA56_0 <= '\u03F5') || (LA56_0 >= '\u03F7' && LA56_0 <= '\u03FB') || (LA56_0 >= '\u0400' && LA56_0 <= '\u0486') || (LA56_0 >= '\u0488' && LA56_0 <= '\u04CE') || (LA56_0 >= '\u04D0' && LA56_0 <= '\u04F5') || (LA56_0 >= '\u04F8' && LA56_0 <= '\u04F9') || (LA56_0 >= '\u0500' && LA56_0 <= '\u050F') || (LA56_0 >= '\u0531' && LA56_0 <= '\u0556') || LA56_0 == '\u0559' || (LA56_0 >= '\u0561' && LA56_0 <= '\u0587') || (LA56_0 >= '\u0591' && LA56_0 <= '\u05A1') || (LA56_0 >= '\u05A3' && LA56_0 <= '\u05B9') || (LA56_0 >= '\u05BB' && LA56_0 <= '\u05BD') || LA56_0 == '\u05BF' || (LA56_0 >= '\u05C1' && LA56_0 <= '\u05C2') || LA56_0 == '\u05C4' || (LA56_0 >= '\u05D0' && LA56_0 <= '\u05EA') || (LA56_0 >= '\u05F0' && LA56_0 <= '\u05F2') || (LA56_0 >= '\u060E' && LA56_0 <= '\u0615') || (LA56_0 >= '\u0621' && LA56_0 <= '\u063A')
+                        || (LA56_0 >= '\u0640' && LA56_0 <= '\u0658') || (LA56_0 >= '\u0660' && LA56_0 <= '\u0669') || (LA56_0 >= '\u066E' && LA56_0 <= '\u06D3') || (LA56_0 >= '\u06D5' && LA56_0 <= '\u06DC') || (LA56_0 >= '\u06DE' && LA56_0 <= '\u06FF') || (LA56_0 >= '\u0710' && LA56_0 <= '\u074A') || (LA56_0 >= '\u074D' && LA56_0 <= '\u074F') || (LA56_0 >= '\u0780' && LA56_0 <= '\u07B1') || (LA56_0 >= '\u0901' && LA56_0 <= '\u0939') || (LA56_0 >= '\u093C' && LA56_0 <= '\u094D') || (LA56_0 >= '\u0950' && LA56_0 <= '\u0954') || (LA56_0 >= '\u0958' && LA56_0 <= '\u0963') || (LA56_0 >= '\u0966' && LA56_0 <= '\u096F') || (LA56_0 >= '\u0981' && LA56_0 <= '\u0983') || (LA56_0 >= '\u0985' && LA56_0 <= '\u098C') || (LA56_0 >= '\u098F' && LA56_0 <= '\u0990') || (LA56_0 >= '\u0993' && LA56_0 <= '\u09A8') || (LA56_0 >= '\u09AA' && LA56_0 <= '\u09B0') || LA56_0 == '\u09B2' || (LA56_0 >= '\u09B6' && LA56_0 <= '\u09B9') || (LA56_0 >= '\u09BC' && LA56_0 <= '\u09C4')
+                        || (LA56_0 >= '\u09C7' && LA56_0 <= '\u09C8') || (LA56_0 >= '\u09CB' && LA56_0 <= '\u09CD') || LA56_0 == '\u09D7' || (LA56_0 >= '\u09DC' && LA56_0 <= '\u09DD') || (LA56_0 >= '\u09DF' && LA56_0 <= '\u09E3') || (LA56_0 >= '\u09E6' && LA56_0 <= '\u09FA') || (LA56_0 >= '\u0A01' && LA56_0 <= '\u0A03') || (LA56_0 >= '\u0A05' && LA56_0 <= '\u0A0A') || (LA56_0 >= '\u0A0F' && LA56_0 <= '\u0A10') || (LA56_0 >= '\u0A13' && LA56_0 <= '\u0A28') || (LA56_0 >= '\u0A2A' && LA56_0 <= '\u0A30') || (LA56_0 >= '\u0A32' && LA56_0 <= '\u0A33') || (LA56_0 >= '\u0A35' && LA56_0 <= '\u0A36') || (LA56_0 >= '\u0A38' && LA56_0 <= '\u0A39') || LA56_0 == '\u0A3C' || (LA56_0 >= '\u0A3E' && LA56_0 <= '\u0A42') || (LA56_0 >= '\u0A47' && LA56_0 <= '\u0A48') || (LA56_0 >= '\u0A4B' && LA56_0 <= '\u0A4D') || (LA56_0 >= '\u0A59' && LA56_0 <= '\u0A5C') || LA56_0 == '\u0A5E' || (LA56_0 >= '\u0A66' && LA56_0 <= '\u0A74') || (LA56_0 >= '\u0A81' && LA56_0 <= '\u0A83')
+                        || (LA56_0 >= '\u0A85' && LA56_0 <= '\u0A8D') || (LA56_0 >= '\u0A8F' && LA56_0 <= '\u0A91') || (LA56_0 >= '\u0A93' && LA56_0 <= '\u0AA8') || (LA56_0 >= '\u0AAA' && LA56_0 <= '\u0AB0') || (LA56_0 >= '\u0AB2' && LA56_0 <= '\u0AB3') || (LA56_0 >= '\u0AB5' && LA56_0 <= '\u0AB9') || (LA56_0 >= '\u0ABC' && LA56_0 <= '\u0AC5') || (LA56_0 >= '\u0AC7' && LA56_0 <= '\u0AC9') || (LA56_0 >= '\u0ACB' && LA56_0 <= '\u0ACD') || LA56_0 == '\u0AD0' || (LA56_0 >= '\u0AE0' && LA56_0 <= '\u0AE3') || (LA56_0 >= '\u0AE6' && LA56_0 <= '\u0AEF') || LA56_0 == '\u0AF1' || (LA56_0 >= '\u0B01' && LA56_0 <= '\u0B03') || (LA56_0 >= '\u0B05' && LA56_0 <= '\u0B0C') || (LA56_0 >= '\u0B0F' && LA56_0 <= '\u0B10') || (LA56_0 >= '\u0B13' && LA56_0 <= '\u0B28') || (LA56_0 >= '\u0B2A' && LA56_0 <= '\u0B30') || (LA56_0 >= '\u0B32' && LA56_0 <= '\u0B33') || (LA56_0 >= '\u0B35' && LA56_0 <= '\u0B39') || (LA56_0 >= '\u0B3C' && LA56_0 <= '\u0B43') || (LA56_0 >= '\u0B47' && LA56_0 <= '\u0B48')
+                        || (LA56_0 >= '\u0B4B' && LA56_0 <= '\u0B4D') || (LA56_0 >= '\u0B56' && LA56_0 <= '\u0B57') || (LA56_0 >= '\u0B5C' && LA56_0 <= '\u0B5D') || (LA56_0 >= '\u0B5F' && LA56_0 <= '\u0B61') || (LA56_0 >= '\u0B66' && LA56_0 <= '\u0B71') || (LA56_0 >= '\u0B82' && LA56_0 <= '\u0B83') || (LA56_0 >= '\u0B85' && LA56_0 <= '\u0B8A') || (LA56_0 >= '\u0B8E' && LA56_0 <= '\u0B90') || (LA56_0 >= '\u0B92' && LA56_0 <= '\u0B95') || (LA56_0 >= '\u0B99' && LA56_0 <= '\u0B9A') || LA56_0 == '\u0B9C' || (LA56_0 >= '\u0B9E' && LA56_0 <= '\u0B9F') || (LA56_0 >= '\u0BA3' && LA56_0 <= '\u0BA4') || (LA56_0 >= '\u0BA8' && LA56_0 <= '\u0BAA') || (LA56_0 >= '\u0BAE' && LA56_0 <= '\u0BB5') || (LA56_0 >= '\u0BB7' && LA56_0 <= '\u0BB9') || (LA56_0 >= '\u0BBE' && LA56_0 <= '\u0BC2') || (LA56_0 >= '\u0BC6' && LA56_0 <= '\u0BC8') || (LA56_0 >= '\u0BCA' && LA56_0 <= '\u0BCD') || LA56_0 == '\u0BD7' || (LA56_0 >= '\u0BE7' && LA56_0 <= '\u0BFA') || (LA56_0 >= '\u0C01' && LA56_0 <= '\u0C03')
+                        || (LA56_0 >= '\u0C05' && LA56_0 <= '\u0C0C') || (LA56_0 >= '\u0C0E' && LA56_0 <= '\u0C10') || (LA56_0 >= '\u0C12' && LA56_0 <= '\u0C28') || (LA56_0 >= '\u0C2A' && LA56_0 <= '\u0C33') || (LA56_0 >= '\u0C35' && LA56_0 <= '\u0C39') || (LA56_0 >= '\u0C3E' && LA56_0 <= '\u0C44') || (LA56_0 >= '\u0C46' && LA56_0 <= '\u0C48') || (LA56_0 >= '\u0C4A' && LA56_0 <= '\u0C4D') || (LA56_0 >= '\u0C55' && LA56_0 <= '\u0C56') || (LA56_0 >= '\u0C60' && LA56_0 <= '\u0C61') || (LA56_0 >= '\u0C66' && LA56_0 <= '\u0C6F') || (LA56_0 >= '\u0C82' && LA56_0 <= '\u0C83') || (LA56_0 >= '\u0C85' && LA56_0 <= '\u0C8C') || (LA56_0 >= '\u0C8E' && LA56_0 <= '\u0C90') || (LA56_0 >= '\u0C92' && LA56_0 <= '\u0CA8') || (LA56_0 >= '\u0CAA' && LA56_0 <= '\u0CB3') || (LA56_0 >= '\u0CB5' && LA56_0 <= '\u0CB9') || (LA56_0 >= '\u0CBC' && LA56_0 <= '\u0CC4') || (LA56_0 >= '\u0CC6' && LA56_0 <= '\u0CC8') || (LA56_0 >= '\u0CCA' && LA56_0 <= '\u0CCD') || (LA56_0 >= '\u0CD5' && LA56_0 <= '\u0CD6')
+                        || LA56_0 == '\u0CDE' || (LA56_0 >= '\u0CE0' && LA56_0 <= '\u0CE1') || (LA56_0 >= '\u0CE6' && LA56_0 <= '\u0CEF') || (LA56_0 >= '\u0D02' && LA56_0 <= '\u0D03') || (LA56_0 >= '\u0D05' && LA56_0 <= '\u0D0C') || (LA56_0 >= '\u0D0E' && LA56_0 <= '\u0D10') || (LA56_0 >= '\u0D12' && LA56_0 <= '\u0D28') || (LA56_0 >= '\u0D2A' && LA56_0 <= '\u0D39') || (LA56_0 >= '\u0D3E' && LA56_0 <= '\u0D43') || (LA56_0 >= '\u0D46' && LA56_0 <= '\u0D48') || (LA56_0 >= '\u0D4A' && LA56_0 <= '\u0D4D') || LA56_0 == '\u0D57' || (LA56_0 >= '\u0D60' && LA56_0 <= '\u0D61') || (LA56_0 >= '\u0D66' && LA56_0 <= '\u0D6F') || (LA56_0 >= '\u0D82' && LA56_0 <= '\u0D83') || (LA56_0 >= '\u0D85' && LA56_0 <= '\u0D96') || (LA56_0 >= '\u0D9A' && LA56_0 <= '\u0DB1') || (LA56_0 >= '\u0DB3' && LA56_0 <= '\u0DBB') || LA56_0 == '\u0DBD' || (LA56_0 >= '\u0DC0' && LA56_0 <= '\u0DC6') || LA56_0 == '\u0DCA' || (LA56_0 >= '\u0DCF' && LA56_0 <= '\u0DD4') || LA56_0 == '\u0DD6'
+                        || (LA56_0 >= '\u0DD8' && LA56_0 <= '\u0DDF') || (LA56_0 >= '\u0DF2' && LA56_0 <= '\u0DF3') || (LA56_0 >= '\u0E01' && LA56_0 <= '\u0E3A') || (LA56_0 >= '\u0E3F' && LA56_0 <= '\u0E4E') || (LA56_0 >= '\u0E50' && LA56_0 <= '\u0E59') || (LA56_0 >= '\u0E81' && LA56_0 <= '\u0E82') || LA56_0 == '\u0E84' || (LA56_0 >= '\u0E87' && LA56_0 <= '\u0E88') || LA56_0 == '\u0E8A' || LA56_0 == '\u0E8D' || (LA56_0 >= '\u0E94' && LA56_0 <= '\u0E97') || (LA56_0 >= '\u0E99' && LA56_0 <= '\u0E9F') || (LA56_0 >= '\u0EA1' && LA56_0 <= '\u0EA3') || LA56_0 == '\u0EA5' || LA56_0 == '\u0EA7' || (LA56_0 >= '\u0EAA' && LA56_0 <= '\u0EAB') || (LA56_0 >= '\u0EAD' && LA56_0 <= '\u0EB9') || (LA56_0 >= '\u0EBB' && LA56_0 <= '\u0EBD') || (LA56_0 >= '\u0EC0' && LA56_0 <= '\u0EC4') || LA56_0 == '\u0EC6' || (LA56_0 >= '\u0EC8' && LA56_0 <= '\u0ECD') || (LA56_0 >= '\u0ED0' && LA56_0 <= '\u0ED9') || (LA56_0 >= '\u0EDC' && LA56_0 <= '\u0EDD') || (LA56_0 >= '\u0F00' && LA56_0 <= '\u0F03')
+                        || (LA56_0 >= '\u0F13' && LA56_0 <= '\u0F39') || (LA56_0 >= '\u0F3E' && LA56_0 <= '\u0F47') || (LA56_0 >= '\u0F49' && LA56_0 <= '\u0F6A') || (LA56_0 >= '\u0F71' && LA56_0 <= '\u0F84') || (LA56_0 >= '\u0F86' && LA56_0 <= '\u0F8B') || (LA56_0 >= '\u0F90' && LA56_0 <= '\u0F97') || (LA56_0 >= '\u0F99' && LA56_0 <= '\u0FBC') || (LA56_0 >= '\u0FBE' && LA56_0 <= '\u0FCC') || LA56_0 == '\u0FCF' || (LA56_0 >= '\u1000' && LA56_0 <= '\u1021') || (LA56_0 >= '\u1023' && LA56_0 <= '\u1027') || (LA56_0 >= '\u1029' && LA56_0 <= '\u102A') || (LA56_0 >= '\u102C' && LA56_0 <= '\u1032') || (LA56_0 >= '\u1036' && LA56_0 <= '\u1039') || (LA56_0 >= '\u1040' && LA56_0 <= '\u1049') || (LA56_0 >= '\u1050' && LA56_0 <= '\u1059') || (LA56_0 >= '\u10A0' && LA56_0 <= '\u10C5') || (LA56_0 >= '\u10D0' && LA56_0 <= '\u10F8') || (LA56_0 >= '\u1100' && LA56_0 <= '\u1159') || (LA56_0 >= '\u115F' && LA56_0 <= '\u11A2') || (LA56_0 >= '\u11A8' && LA56_0 <= '\u11F9')
+                        || (LA56_0 >= '\u1200' && LA56_0 <= '\u1206') || (LA56_0 >= '\u1208' && LA56_0 <= '\u1246') || LA56_0 == '\u1248' || (LA56_0 >= '\u124A' && LA56_0 <= '\u124D') || (LA56_0 >= '\u1250' && LA56_0 <= '\u1256') || LA56_0 == '\u1258' || (LA56_0 >= '\u125A' && LA56_0 <= '\u125D') || (LA56_0 >= '\u1260' && LA56_0 <= '\u1286') || LA56_0 == '\u1288' || (LA56_0 >= '\u128A' && LA56_0 <= '\u128D') || (LA56_0 >= '\u1290' && LA56_0 <= '\u12AE') || LA56_0 == '\u12B0' || (LA56_0 >= '\u12B2' && LA56_0 <= '\u12B5') || (LA56_0 >= '\u12B8' && LA56_0 <= '\u12BE') || LA56_0 == '\u12C0' || (LA56_0 >= '\u12C2' && LA56_0 <= '\u12C5') || (LA56_0 >= '\u12C8' && LA56_0 <= '\u12CE') || (LA56_0 >= '\u12D0' && LA56_0 <= '\u12D6') || (LA56_0 >= '\u12D8' && LA56_0 <= '\u12EE') || (LA56_0 >= '\u12F0' && LA56_0 <= '\u130E') || LA56_0 == '\u1310' || (LA56_0 >= '\u1312' && LA56_0 <= '\u1315') || (LA56_0 >= '\u1318' && LA56_0 <= '\u131E') || (LA56_0 >= '\u1320' && LA56_0 <= '\u1346')
+                        || (LA56_0 >= '\u1348' && LA56_0 <= '\u135A') || (LA56_0 >= '\u1369' && LA56_0 <= '\u137C') || (LA56_0 >= '\u13A0' && LA56_0 <= '\u13F4') || (LA56_0 >= '\u1401' && LA56_0 <= '\u166C') || (LA56_0 >= '\u166F' && LA56_0 <= '\u1676') || (LA56_0 >= '\u1681' && LA56_0 <= '\u169A') || (LA56_0 >= '\u16A0' && LA56_0 <= '\u16EA') || (LA56_0 >= '\u16EE' && LA56_0 <= '\u16F0') || (LA56_0 >= '\u1700' && LA56_0 <= '\u170C') || (LA56_0 >= '\u170E' && LA56_0 <= '\u1714') || (LA56_0 >= '\u1720' && LA56_0 <= '\u1734') || (LA56_0 >= '\u1740' && LA56_0 <= '\u1753') || (LA56_0 >= '\u1760' && LA56_0 <= '\u176C') || (LA56_0 >= '\u176E' && LA56_0 <= '\u1770') || (LA56_0 >= '\u1772' && LA56_0 <= '\u1773') || (LA56_0 >= '\u1780' && LA56_0 <= '\u17B3') || (LA56_0 >= '\u17B6' && LA56_0 <= '\u17D3') || LA56_0 == '\u17D7' || (LA56_0 >= '\u17DB' && LA56_0 <= '\u17DD') || (LA56_0 >= '\u17E0' && LA56_0 <= '\u17E9') || (LA56_0 >= '\u17F0' && LA56_0 <= '\u17F9')
+                        || (LA56_0 >= '\u180B' && LA56_0 <= '\u180D') || (LA56_0 >= '\u1810' && LA56_0 <= '\u1819') || (LA56_0 >= '\u1820' && LA56_0 <= '\u1877') || (LA56_0 >= '\u1880' && LA56_0 <= '\u18A9') || (LA56_0 >= '\u1900' && LA56_0 <= '\u191C') || (LA56_0 >= '\u1920' && LA56_0 <= '\u192B') || (LA56_0 >= '\u1930' && LA56_0 <= '\u193B') || LA56_0 == '\u1940' || (LA56_0 >= '\u1946' && LA56_0 <= '\u196D') || (LA56_0 >= '\u1970' && LA56_0 <= '\u1974') || (LA56_0 >= '\u19E0' && LA56_0 <= '\u19FF') || (LA56_0 >= '\u1D00' && LA56_0 <= '\u1D6B') || (LA56_0 >= '\u1E00' && LA56_0 <= '\u1E9B') || (LA56_0 >= '\u1EA0' && LA56_0 <= '\u1EF9') || (LA56_0 >= '\u1F00' && LA56_0 <= '\u1F15') || (LA56_0 >= '\u1F18' && LA56_0 <= '\u1F1D') || (LA56_0 >= '\u1F20' && LA56_0 <= '\u1F45') || (LA56_0 >= '\u1F48' && LA56_0 <= '\u1F4D') || (LA56_0 >= '\u1F50' && LA56_0 <= '\u1F57') || LA56_0 == '\u1F59' || LA56_0 == '\u1F5B' || LA56_0 == '\u1F5D' || (LA56_0 >= '\u1F5F' && LA56_0 <= '\u1F7D')
+                        || (LA56_0 >= '\u1F80' && LA56_0 <= '\u1FB4') || (LA56_0 >= '\u1FB6' && LA56_0 <= '\u1FBC') || LA56_0 == '\u1FBE' || (LA56_0 >= '\u1FC2' && LA56_0 <= '\u1FC4') || (LA56_0 >= '\u1FC6' && LA56_0 <= '\u1FCC') || (LA56_0 >= '\u1FD0' && LA56_0 <= '\u1FD3') || (LA56_0 >= '\u1FD6' && LA56_0 <= '\u1FDB') || (LA56_0 >= '\u1FE0' && LA56_0 <= '\u1FEC') || (LA56_0 >= '\u1FF2' && LA56_0 <= '\u1FF4') || (LA56_0 >= '\u1FF6' && LA56_0 <= '\u1FFC') || (LA56_0 >= '\u2070' && LA56_0 <= '\u2071') || (LA56_0 >= '\u2074' && LA56_0 <= '\u2079') || (LA56_0 >= '\u207F' && LA56_0 <= '\u2089') || (LA56_0 >= '\u20A0' && LA56_0 <= '\u20B1') || (LA56_0 >= '\u20D0' && LA56_0 <= '\u20EA') || (LA56_0 >= '\u2100' && LA56_0 <= '\u213B') || (LA56_0 >= '\u213D' && LA56_0 <= '\u213F') || (LA56_0 >= '\u2145' && LA56_0 <= '\u214A') || (LA56_0 >= '\u2153' && LA56_0 <= '\u2183') || (LA56_0 >= '\u2195' && LA56_0 <= '\u2199') || (LA56_0 >= '\u219C' && LA56_0 <= '\u219F')
+                        || (LA56_0 >= '\u21A1' && LA56_0 <= '\u21A2') || (LA56_0 >= '\u21A4' && LA56_0 <= '\u21A5') || (LA56_0 >= '\u21A7' && LA56_0 <= '\u21AD') || (LA56_0 >= '\u21AF' && LA56_0 <= '\u21CD') || (LA56_0 >= '\u21D0' && LA56_0 <= '\u21D1') || LA56_0 == '\u21D3' || (LA56_0 >= '\u21D5' && LA56_0 <= '\u21F3') || (LA56_0 >= '\u2300' && LA56_0 <= '\u2307') || (LA56_0 >= '\u230C' && LA56_0 <= '\u231F') || (LA56_0 >= '\u2322' && LA56_0 <= '\u2328') || (LA56_0 >= '\u232B' && LA56_0 <= '\u237B') || (LA56_0 >= '\u237D' && LA56_0 <= '\u239A') || (LA56_0 >= '\u23B7' && LA56_0 <= '\u23D0') || (LA56_0 >= '\u2400' && LA56_0 <= '\u2426') || (LA56_0 >= '\u2440' && LA56_0 <= '\u244A') || (LA56_0 >= '\u2460' && LA56_0 <= '\u25B6') || (LA56_0 >= '\u25B8' && LA56_0 <= '\u25C0') || (LA56_0 >= '\u25C2' && LA56_0 <= '\u25F7') || (LA56_0 >= '\u2600' && LA56_0 <= '\u2617') || (LA56_0 >= '\u2619' && LA56_0 <= '\u266E') || (LA56_0 >= '\u2670' && LA56_0 <= '\u267D')
+                        || (LA56_0 >= '\u2680' && LA56_0 <= '\u2691') || (LA56_0 >= '\u26A0' && LA56_0 <= '\u26A1') || (LA56_0 >= '\u2701' && LA56_0 <= '\u2704') || (LA56_0 >= '\u2706' && LA56_0 <= '\u2709') || (LA56_0 >= '\u270C' && LA56_0 <= '\u2727') || (LA56_0 >= '\u2729' && LA56_0 <= '\u274B') || LA56_0 == '\u274D' || (LA56_0 >= '\u274F' && LA56_0 <= '\u2752') || LA56_0 == '\u2756' || (LA56_0 >= '\u2758' && LA56_0 <= '\u275E') || (LA56_0 >= '\u2761' && LA56_0 <= '\u2767') || (LA56_0 >= '\u2776' && LA56_0 <= '\u2794') || (LA56_0 >= '\u2798' && LA56_0 <= '\u27AF') || (LA56_0 >= '\u27B1' && LA56_0 <= '\u27BE') || (LA56_0 >= '\u2800' && LA56_0 <= '\u28FF') || (LA56_0 >= '\u2B00' && LA56_0 <= '\u2B0D') || (LA56_0 >= '\u2E80' && LA56_0 <= '\u2E99') || (LA56_0 >= '\u2E9B' && LA56_0 <= '\u2EF3') || (LA56_0 >= '\u2F00' && LA56_0 <= '\u2FD5') || (LA56_0 >= '\u2FF0' && LA56_0 <= '\u2FFB') || (LA56_0 >= '\u3004' && LA56_0 <= '\u3007') || (LA56_0 >= '\u3012' && LA56_0 <= '\u3013')
+                        || (LA56_0 >= '\u3020' && LA56_0 <= '\u302F') || (LA56_0 >= '\u3031' && LA56_0 <= '\u303C') || (LA56_0 >= '\u303E' && LA56_0 <= '\u303F') || (LA56_0 >= '\u3041' && LA56_0 <= '\u3096') || (LA56_0 >= '\u3099' && LA56_0 <= '\u309A') || (LA56_0 >= '\u309D' && LA56_0 <= '\u309F') || (LA56_0 >= '\u30A1' && LA56_0 <= '\u30FA') || (LA56_0 >= '\u30FC' && LA56_0 <= '\u30FF') || (LA56_0 >= '\u3105' && LA56_0 <= '\u312C') || (LA56_0 >= '\u3131' && LA56_0 <= '\u318E') || (LA56_0 >= '\u3190' && LA56_0 <= '\u31B7') || (LA56_0 >= '\u31F0' && LA56_0 <= '\u321E') || (LA56_0 >= '\u3220' && LA56_0 <= '\u3243') || (LA56_0 >= '\u3250' && LA56_0 <= '\u327D') || (LA56_0 >= '\u327F' && LA56_0 <= '\u32FE') || (LA56_0 >= '\u3300' && LA56_0 <= '\u4DB5') || (LA56_0 >= '\u4DC0' && LA56_0 <= '\u9FA5') || (LA56_0 >= '\uA000' && LA56_0 <= '\uA48C') || (LA56_0 >= '\uA490' && LA56_0 <= '\uA4C6') || (LA56_0 >= '\uAC00' && LA56_0 <= '\uD7A3') || (LA56_0 >= '\uF900' && LA56_0 <= '\uFA2D')
+                        || (LA56_0 >= '\uFA30' && LA56_0 <= '\uFA6A') || (LA56_0 >= '\uFB00' && LA56_0 <= '\uFB06') || (LA56_0 >= '\uFB13' && LA56_0 <= '\uFB17') || (LA56_0 >= '\uFB1D' && LA56_0 <= '\uFB28') || (LA56_0 >= '\uFB2A' && LA56_0 <= '\uFB36') || (LA56_0 >= '\uFB38' && LA56_0 <= '\uFB3C') || LA56_0 == '\uFB3E' || (LA56_0 >= '\uFB40' && LA56_0 <= '\uFB41') || (LA56_0 >= '\uFB43' && LA56_0 <= '\uFB44') || (LA56_0 >= '\uFB46' && LA56_0 <= '\uFBB1') || (LA56_0 >= '\uFBD3' && LA56_0 <= '\uFD3D') || (LA56_0 >= '\uFD50' && LA56_0 <= '\uFD8F') || (LA56_0 >= '\uFD92' && LA56_0 <= '\uFDC7') || (LA56_0 >= '\uFDF0' && LA56_0 <= '\uFDFD') || (LA56_0 >= '\uFE00' && LA56_0 <= '\uFE0F') || (LA56_0 >= '\uFE20' && LA56_0 <= '\uFE23') || LA56_0 == '\uFE69' || (LA56_0 >= '\uFE70' && LA56_0 <= '\uFE74') || (LA56_0 >= '\uFE76' && LA56_0 <= '\uFEFC') || LA56_0 == '\uFF04' || (LA56_0 >= '\uFF10' && LA56_0 <= '\uFF19') || (LA56_0 >= '\uFF21' && LA56_0 <= '\uFF3A')
+                        || (LA56_0 >= '\uFF41' && LA56_0 <= '\uFF5A') || (LA56_0 >= '\uFF66' && LA56_0 <= '\uFFBE') || (LA56_0 >= '\uFFC2' && LA56_0 <= '\uFFC7') || (LA56_0 >= '\uFFCA' && LA56_0 <= '\uFFCF') || (LA56_0 >= '\uFFD2' && LA56_0 <= '\uFFD7') || (LA56_0 >= '\uFFDA' && LA56_0 <= '\uFFDC') || (LA56_0 >= '\uFFE0' && LA56_0 <= '\uFFE1') || (LA56_0 >= '\uFFE4' && LA56_0 <= '\uFFE6') || LA56_0 == '\uFFE8' || (LA56_0 >= '\uFFED' && LA56_0 <= '\uFFEE')))
                 {
-                    alt55 = 2;
+                    alt56 = 2;
                 }
 
                 else
@@ -5189,14 +5257,14 @@ public class FTSLexer extends Lexer
                         state.failed = true;
                         return;
                     }
-                    NoViableAltException nvae = new NoViableAltException("", 55, 0, input);
+                    NoViableAltException nvae = new NoViableAltException("", 56, 0, input);
                     throw nvae;
                 }
 
-                switch (alt55)
+                switch (alt56)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1546:17: F_ESC
+                // FTS.g:1556:17: F_ESC
                 {
                     mF_ESC();
                     if (state.failed)
@@ -5205,7 +5273,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 2:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1547:19: START_WORD
+                // FTS.g:1557:19: START_WORD
                 {
                     mSTART_WORD();
                     if (state.failed)
@@ -5216,41 +5284,41 @@ public class FTSLexer extends Lexer
 
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1549:9: ( F_ESC | IN_WORD )*
-                loop56: while (true)
+                // FTS.g:1559:9: ( F_ESC | IN_WORD )*
+                loop57: while (true)
                 {
-                    int alt56 = 3;
-                    int LA56_0 = input.LA(1);
-                    if ((LA56_0 == '\\'))
+                    int alt57 = 3;
+                    int LA57_0 = input.LA(1);
+                    if ((LA57_0 == '\\'))
                     {
-                        alt56 = 1;
+                        alt57 = 1;
                     }
-                    else if (((LA56_0 >= '!' && LA56_0 <= '\'') || LA56_0 == '+' || LA56_0 == '-' || (LA56_0 >= '/' && LA56_0 <= '9') || LA56_0 == ';' || LA56_0 == '=' || (LA56_0 >= '@' && LA56_0 <= 'Z') || LA56_0 == '_' || (LA56_0 >= 'a' && LA56_0 <= 'z') || LA56_0 == '|' || (LA56_0 >= '\u00A1' && LA56_0 <= '\u00A7') || (LA56_0 >= '\u00A9' && LA56_0 <= '\u00AA') || LA56_0 == '\u00AC' || LA56_0 == '\u00AE' || (LA56_0 >= '\u00B0' && LA56_0 <= '\u00B3') || (LA56_0 >= '\u00B5' && LA56_0 <= '\u00B7') || (LA56_0 >= '\u00B9' && LA56_0 <= '\u00BA') || (LA56_0 >= '\u00BC' && LA56_0 <= '\u0236') || (LA56_0 >= '\u0250' && LA56_0 <= '\u02C1') || (LA56_0 >= '\u02C6' && LA56_0 <= '\u02D1') || (LA56_0 >= '\u02E0' && LA56_0 <= '\u02E4') || LA56_0 == '\u02EE' || (LA56_0 >= '\u0300' && LA56_0 <= '\u0357') || (LA56_0 >= '\u035D' && LA56_0 <= '\u036F') || LA56_0 == '\u037A' || LA56_0 == '\u037E' || (LA56_0 >= '\u0386' && LA56_0 <= '\u038A') || LA56_0 == '\u038C'
-                            || (LA56_0 >= '\u038E' && LA56_0 <= '\u03A1') || (LA56_0 >= '\u03A3' && LA56_0 <= '\u03CE') || (LA56_0 >= '\u03D0' && LA56_0 <= '\u03FB') || (LA56_0 >= '\u0400' && LA56_0 <= '\u0486') || (LA56_0 >= '\u0488' && LA56_0 <= '\u04CE') || (LA56_0 >= '\u04D0' && LA56_0 <= '\u04F5') || (LA56_0 >= '\u04F8' && LA56_0 <= '\u04F9') || (LA56_0 >= '\u0500' && LA56_0 <= '\u050F') || (LA56_0 >= '\u0531' && LA56_0 <= '\u0556') || (LA56_0 >= '\u0559' && LA56_0 <= '\u055F') || (LA56_0 >= '\u0561' && LA56_0 <= '\u0587') || (LA56_0 >= '\u0589' && LA56_0 <= '\u058A') || (LA56_0 >= '\u0591' && LA56_0 <= '\u05A1') || (LA56_0 >= '\u05A3' && LA56_0 <= '\u05B9') || (LA56_0 >= '\u05BB' && LA56_0 <= '\u05C4') || (LA56_0 >= '\u05D0' && LA56_0 <= '\u05EA') || (LA56_0 >= '\u05F0' && LA56_0 <= '\u05F4') || (LA56_0 >= '\u060C' && LA56_0 <= '\u0615') || LA56_0 == '\u061B' || LA56_0 == '\u061F' || (LA56_0 >= '\u0621' && LA56_0 <= '\u063A') || (LA56_0 >= '\u0640' && LA56_0 <= '\u0658')
-                            || (LA56_0 >= '\u0660' && LA56_0 <= '\u06DC') || (LA56_0 >= '\u06DE' && LA56_0 <= '\u070D') || (LA56_0 >= '\u0710' && LA56_0 <= '\u074A') || (LA56_0 >= '\u074D' && LA56_0 <= '\u074F') || (LA56_0 >= '\u0780' && LA56_0 <= '\u07B1') || (LA56_0 >= '\u0901' && LA56_0 <= '\u0939') || (LA56_0 >= '\u093C' && LA56_0 <= '\u094D') || (LA56_0 >= '\u0950' && LA56_0 <= '\u0954') || (LA56_0 >= '\u0958' && LA56_0 <= '\u0970') || (LA56_0 >= '\u0981' && LA56_0 <= '\u0983') || (LA56_0 >= '\u0985' && LA56_0 <= '\u098C') || (LA56_0 >= '\u098F' && LA56_0 <= '\u0990') || (LA56_0 >= '\u0993' && LA56_0 <= '\u09A8') || (LA56_0 >= '\u09AA' && LA56_0 <= '\u09B0') || LA56_0 == '\u09B2' || (LA56_0 >= '\u09B6' && LA56_0 <= '\u09B9') || (LA56_0 >= '\u09BC' && LA56_0 <= '\u09C4') || (LA56_0 >= '\u09C7' && LA56_0 <= '\u09C8') || (LA56_0 >= '\u09CB' && LA56_0 <= '\u09CD') || LA56_0 == '\u09D7' || (LA56_0 >= '\u09DC' && LA56_0 <= '\u09DD') || (LA56_0 >= '\u09DF' && LA56_0 <= '\u09E3')
-                            || (LA56_0 >= '\u09E6' && LA56_0 <= '\u09FA') || (LA56_0 >= '\u0A01' && LA56_0 <= '\u0A03') || (LA56_0 >= '\u0A05' && LA56_0 <= '\u0A0A') || (LA56_0 >= '\u0A0F' && LA56_0 <= '\u0A10') || (LA56_0 >= '\u0A13' && LA56_0 <= '\u0A28') || (LA56_0 >= '\u0A2A' && LA56_0 <= '\u0A30') || (LA56_0 >= '\u0A32' && LA56_0 <= '\u0A33') || (LA56_0 >= '\u0A35' && LA56_0 <= '\u0A36') || (LA56_0 >= '\u0A38' && LA56_0 <= '\u0A39') || LA56_0 == '\u0A3C' || (LA56_0 >= '\u0A3E' && LA56_0 <= '\u0A42') || (LA56_0 >= '\u0A47' && LA56_0 <= '\u0A48') || (LA56_0 >= '\u0A4B' && LA56_0 <= '\u0A4D') || (LA56_0 >= '\u0A59' && LA56_0 <= '\u0A5C') || LA56_0 == '\u0A5E' || (LA56_0 >= '\u0A66' && LA56_0 <= '\u0A74') || (LA56_0 >= '\u0A81' && LA56_0 <= '\u0A83') || (LA56_0 >= '\u0A85' && LA56_0 <= '\u0A8D') || (LA56_0 >= '\u0A8F' && LA56_0 <= '\u0A91') || (LA56_0 >= '\u0A93' && LA56_0 <= '\u0AA8') || (LA56_0 >= '\u0AAA' && LA56_0 <= '\u0AB0') || (LA56_0 >= '\u0AB2' && LA56_0 <= '\u0AB3')
-                            || (LA56_0 >= '\u0AB5' && LA56_0 <= '\u0AB9') || (LA56_0 >= '\u0ABC' && LA56_0 <= '\u0AC5') || (LA56_0 >= '\u0AC7' && LA56_0 <= '\u0AC9') || (LA56_0 >= '\u0ACB' && LA56_0 <= '\u0ACD') || LA56_0 == '\u0AD0' || (LA56_0 >= '\u0AE0' && LA56_0 <= '\u0AE3') || (LA56_0 >= '\u0AE6' && LA56_0 <= '\u0AEF') || LA56_0 == '\u0AF1' || (LA56_0 >= '\u0B01' && LA56_0 <= '\u0B03') || (LA56_0 >= '\u0B05' && LA56_0 <= '\u0B0C') || (LA56_0 >= '\u0B0F' && LA56_0 <= '\u0B10') || (LA56_0 >= '\u0B13' && LA56_0 <= '\u0B28') || (LA56_0 >= '\u0B2A' && LA56_0 <= '\u0B30') || (LA56_0 >= '\u0B32' && LA56_0 <= '\u0B33') || (LA56_0 >= '\u0B35' && LA56_0 <= '\u0B39') || (LA56_0 >= '\u0B3C' && LA56_0 <= '\u0B43') || (LA56_0 >= '\u0B47' && LA56_0 <= '\u0B48') || (LA56_0 >= '\u0B4B' && LA56_0 <= '\u0B4D') || (LA56_0 >= '\u0B56' && LA56_0 <= '\u0B57') || (LA56_0 >= '\u0B5C' && LA56_0 <= '\u0B5D') || (LA56_0 >= '\u0B5F' && LA56_0 <= '\u0B61') || (LA56_0 >= '\u0B66' && LA56_0 <= '\u0B71')
-                            || (LA56_0 >= '\u0B82' && LA56_0 <= '\u0B83') || (LA56_0 >= '\u0B85' && LA56_0 <= '\u0B8A') || (LA56_0 >= '\u0B8E' && LA56_0 <= '\u0B90') || (LA56_0 >= '\u0B92' && LA56_0 <= '\u0B95') || (LA56_0 >= '\u0B99' && LA56_0 <= '\u0B9A') || LA56_0 == '\u0B9C' || (LA56_0 >= '\u0B9E' && LA56_0 <= '\u0B9F') || (LA56_0 >= '\u0BA3' && LA56_0 <= '\u0BA4') || (LA56_0 >= '\u0BA8' && LA56_0 <= '\u0BAA') || (LA56_0 >= '\u0BAE' && LA56_0 <= '\u0BB5') || (LA56_0 >= '\u0BB7' && LA56_0 <= '\u0BB9') || (LA56_0 >= '\u0BBE' && LA56_0 <= '\u0BC2') || (LA56_0 >= '\u0BC6' && LA56_0 <= '\u0BC8') || (LA56_0 >= '\u0BCA' && LA56_0 <= '\u0BCD') || LA56_0 == '\u0BD7' || (LA56_0 >= '\u0BE7' && LA56_0 <= '\u0BFA') || (LA56_0 >= '\u0C01' && LA56_0 <= '\u0C03') || (LA56_0 >= '\u0C05' && LA56_0 <= '\u0C0C') || (LA56_0 >= '\u0C0E' && LA56_0 <= '\u0C10') || (LA56_0 >= '\u0C12' && LA56_0 <= '\u0C28') || (LA56_0 >= '\u0C2A' && LA56_0 <= '\u0C33') || (LA56_0 >= '\u0C35' && LA56_0 <= '\u0C39')
-                            || (LA56_0 >= '\u0C3E' && LA56_0 <= '\u0C44') || (LA56_0 >= '\u0C46' && LA56_0 <= '\u0C48') || (LA56_0 >= '\u0C4A' && LA56_0 <= '\u0C4D') || (LA56_0 >= '\u0C55' && LA56_0 <= '\u0C56') || (LA56_0 >= '\u0C60' && LA56_0 <= '\u0C61') || (LA56_0 >= '\u0C66' && LA56_0 <= '\u0C6F') || (LA56_0 >= '\u0C82' && LA56_0 <= '\u0C83') || (LA56_0 >= '\u0C85' && LA56_0 <= '\u0C8C') || (LA56_0 >= '\u0C8E' && LA56_0 <= '\u0C90') || (LA56_0 >= '\u0C92' && LA56_0 <= '\u0CA8') || (LA56_0 >= '\u0CAA' && LA56_0 <= '\u0CB3') || (LA56_0 >= '\u0CB5' && LA56_0 <= '\u0CB9') || (LA56_0 >= '\u0CBC' && LA56_0 <= '\u0CC4') || (LA56_0 >= '\u0CC6' && LA56_0 <= '\u0CC8') || (LA56_0 >= '\u0CCA' && LA56_0 <= '\u0CCD') || (LA56_0 >= '\u0CD5' && LA56_0 <= '\u0CD6') || LA56_0 == '\u0CDE' || (LA56_0 >= '\u0CE0' && LA56_0 <= '\u0CE1') || (LA56_0 >= '\u0CE6' && LA56_0 <= '\u0CEF') || (LA56_0 >= '\u0D02' && LA56_0 <= '\u0D03') || (LA56_0 >= '\u0D05' && LA56_0 <= '\u0D0C')
-                            || (LA56_0 >= '\u0D0E' && LA56_0 <= '\u0D10') || (LA56_0 >= '\u0D12' && LA56_0 <= '\u0D28') || (LA56_0 >= '\u0D2A' && LA56_0 <= '\u0D39') || (LA56_0 >= '\u0D3E' && LA56_0 <= '\u0D43') || (LA56_0 >= '\u0D46' && LA56_0 <= '\u0D48') || (LA56_0 >= '\u0D4A' && LA56_0 <= '\u0D4D') || LA56_0 == '\u0D57' || (LA56_0 >= '\u0D60' && LA56_0 <= '\u0D61') || (LA56_0 >= '\u0D66' && LA56_0 <= '\u0D6F') || (LA56_0 >= '\u0D82' && LA56_0 <= '\u0D83') || (LA56_0 >= '\u0D85' && LA56_0 <= '\u0D96') || (LA56_0 >= '\u0D9A' && LA56_0 <= '\u0DB1') || (LA56_0 >= '\u0DB3' && LA56_0 <= '\u0DBB') || LA56_0 == '\u0DBD' || (LA56_0 >= '\u0DC0' && LA56_0 <= '\u0DC6') || LA56_0 == '\u0DCA' || (LA56_0 >= '\u0DCF' && LA56_0 <= '\u0DD4') || LA56_0 == '\u0DD6' || (LA56_0 >= '\u0DD8' && LA56_0 <= '\u0DDF') || (LA56_0 >= '\u0DF2' && LA56_0 <= '\u0DF4') || (LA56_0 >= '\u0E01' && LA56_0 <= '\u0E3A') || (LA56_0 >= '\u0E3F' && LA56_0 <= '\u0E5B') || (LA56_0 >= '\u0E81' && LA56_0 <= '\u0E82')
-                            || LA56_0 == '\u0E84' || (LA56_0 >= '\u0E87' && LA56_0 <= '\u0E88') || LA56_0 == '\u0E8A' || LA56_0 == '\u0E8D' || (LA56_0 >= '\u0E94' && LA56_0 <= '\u0E97') || (LA56_0 >= '\u0E99' && LA56_0 <= '\u0E9F') || (LA56_0 >= '\u0EA1' && LA56_0 <= '\u0EA3') || LA56_0 == '\u0EA5' || LA56_0 == '\u0EA7' || (LA56_0 >= '\u0EAA' && LA56_0 <= '\u0EAB') || (LA56_0 >= '\u0EAD' && LA56_0 <= '\u0EB9') || (LA56_0 >= '\u0EBB' && LA56_0 <= '\u0EBD') || (LA56_0 >= '\u0EC0' && LA56_0 <= '\u0EC4') || LA56_0 == '\u0EC6' || (LA56_0 >= '\u0EC8' && LA56_0 <= '\u0ECD') || (LA56_0 >= '\u0ED0' && LA56_0 <= '\u0ED9') || (LA56_0 >= '\u0EDC' && LA56_0 <= '\u0EDD') || (LA56_0 >= '\u0F00' && LA56_0 <= '\u0F39') || (LA56_0 >= '\u0F3E' && LA56_0 <= '\u0F47') || (LA56_0 >= '\u0F49' && LA56_0 <= '\u0F6A') || (LA56_0 >= '\u0F71' && LA56_0 <= '\u0F8B') || (LA56_0 >= '\u0F90' && LA56_0 <= '\u0F97') || (LA56_0 >= '\u0F99' && LA56_0 <= '\u0FBC') || (LA56_0 >= '\u0FBE' && LA56_0 <= '\u0FCC')
-                            || LA56_0 == '\u0FCF' || (LA56_0 >= '\u1000' && LA56_0 <= '\u1021') || (LA56_0 >= '\u1023' && LA56_0 <= '\u1027') || (LA56_0 >= '\u1029' && LA56_0 <= '\u102A') || (LA56_0 >= '\u102C' && LA56_0 <= '\u1032') || (LA56_0 >= '\u1036' && LA56_0 <= '\u1039') || (LA56_0 >= '\u1040' && LA56_0 <= '\u1059') || (LA56_0 >= '\u10A0' && LA56_0 <= '\u10C5') || (LA56_0 >= '\u10D0' && LA56_0 <= '\u10F8') || LA56_0 == '\u10FB' || (LA56_0 >= '\u1100' && LA56_0 <= '\u1159') || (LA56_0 >= '\u115F' && LA56_0 <= '\u11A2') || (LA56_0 >= '\u11A8' && LA56_0 <= '\u11F9') || (LA56_0 >= '\u1200' && LA56_0 <= '\u1206') || (LA56_0 >= '\u1208' && LA56_0 <= '\u1246') || LA56_0 == '\u1248' || (LA56_0 >= '\u124A' && LA56_0 <= '\u124D') || (LA56_0 >= '\u1250' && LA56_0 <= '\u1256') || LA56_0 == '\u1258' || (LA56_0 >= '\u125A' && LA56_0 <= '\u125D') || (LA56_0 >= '\u1260' && LA56_0 <= '\u1286') || LA56_0 == '\u1288' || (LA56_0 >= '\u128A' && LA56_0 <= '\u128D')
-                            || (LA56_0 >= '\u1290' && LA56_0 <= '\u12AE') || LA56_0 == '\u12B0' || (LA56_0 >= '\u12B2' && LA56_0 <= '\u12B5') || (LA56_0 >= '\u12B8' && LA56_0 <= '\u12BE') || LA56_0 == '\u12C0' || (LA56_0 >= '\u12C2' && LA56_0 <= '\u12C5') || (LA56_0 >= '\u12C8' && LA56_0 <= '\u12CE') || (LA56_0 >= '\u12D0' && LA56_0 <= '\u12D6') || (LA56_0 >= '\u12D8' && LA56_0 <= '\u12EE') || (LA56_0 >= '\u12F0' && LA56_0 <= '\u130E') || LA56_0 == '\u1310' || (LA56_0 >= '\u1312' && LA56_0 <= '\u1315') || (LA56_0 >= '\u1318' && LA56_0 <= '\u131E') || (LA56_0 >= '\u1320' && LA56_0 <= '\u1346') || (LA56_0 >= '\u1348' && LA56_0 <= '\u135A') || (LA56_0 >= '\u1361' && LA56_0 <= '\u137C') || (LA56_0 >= '\u13A0' && LA56_0 <= '\u13F4') || (LA56_0 >= '\u1401' && LA56_0 <= '\u1676') || (LA56_0 >= '\u1681' && LA56_0 <= '\u169A') || (LA56_0 >= '\u16A0' && LA56_0 <= '\u16F0') || (LA56_0 >= '\u1700' && LA56_0 <= '\u170C') || (LA56_0 >= '\u170E' && LA56_0 <= '\u1714')
-                            || (LA56_0 >= '\u1720' && LA56_0 <= '\u1736') || (LA56_0 >= '\u1740' && LA56_0 <= '\u1753') || (LA56_0 >= '\u1760' && LA56_0 <= '\u176C') || (LA56_0 >= '\u176E' && LA56_0 <= '\u1770') || (LA56_0 >= '\u1772' && LA56_0 <= '\u1773') || (LA56_0 >= '\u1780' && LA56_0 <= '\u17B3') || (LA56_0 >= '\u17B6' && LA56_0 <= '\u17DD') || (LA56_0 >= '\u17E0' && LA56_0 <= '\u17E9') || (LA56_0 >= '\u17F0' && LA56_0 <= '\u17F9') || (LA56_0 >= '\u1800' && LA56_0 <= '\u180D') || (LA56_0 >= '\u1810' && LA56_0 <= '\u1819') || (LA56_0 >= '\u1820' && LA56_0 <= '\u1877') || (LA56_0 >= '\u1880' && LA56_0 <= '\u18A9') || (LA56_0 >= '\u1900' && LA56_0 <= '\u191C') || (LA56_0 >= '\u1920' && LA56_0 <= '\u192B') || (LA56_0 >= '\u1930' && LA56_0 <= '\u193B') || LA56_0 == '\u1940' || (LA56_0 >= '\u1944' && LA56_0 <= '\u196D') || (LA56_0 >= '\u1970' && LA56_0 <= '\u1974') || (LA56_0 >= '\u19E0' && LA56_0 <= '\u19FF') || (LA56_0 >= '\u1D00' && LA56_0 <= '\u1D6B')
-                            || (LA56_0 >= '\u1E00' && LA56_0 <= '\u1E9B') || (LA56_0 >= '\u1EA0' && LA56_0 <= '\u1EF9') || (LA56_0 >= '\u1F00' && LA56_0 <= '\u1F15') || (LA56_0 >= '\u1F18' && LA56_0 <= '\u1F1D') || (LA56_0 >= '\u1F20' && LA56_0 <= '\u1F45') || (LA56_0 >= '\u1F48' && LA56_0 <= '\u1F4D') || (LA56_0 >= '\u1F50' && LA56_0 <= '\u1F57') || LA56_0 == '\u1F59' || LA56_0 == '\u1F5B' || LA56_0 == '\u1F5D' || (LA56_0 >= '\u1F5F' && LA56_0 <= '\u1F7D') || (LA56_0 >= '\u1F80' && LA56_0 <= '\u1FB4') || (LA56_0 >= '\u1FB6' && LA56_0 <= '\u1FBC') || LA56_0 == '\u1FBE' || (LA56_0 >= '\u1FC2' && LA56_0 <= '\u1FC4') || (LA56_0 >= '\u1FC6' && LA56_0 <= '\u1FCC') || (LA56_0 >= '\u1FD0' && LA56_0 <= '\u1FD3') || (LA56_0 >= '\u1FD6' && LA56_0 <= '\u1FDB') || (LA56_0 >= '\u1FE0' && LA56_0 <= '\u1FEC') || (LA56_0 >= '\u1FF2' && LA56_0 <= '\u1FF4') || (LA56_0 >= '\u1FF6' && LA56_0 <= '\u1FFC') || (LA56_0 >= '\u2010' && LA56_0 <= '\u2017') || (LA56_0 >= '\u2020' && LA56_0 <= '\u2027')
-                            || (LA56_0 >= '\u2030' && LA56_0 <= '\u2038') || (LA56_0 >= '\u203B' && LA56_0 <= '\u2044') || (LA56_0 >= '\u2047' && LA56_0 <= '\u2054') || LA56_0 == '\u2057' || (LA56_0 >= '\u2070' && LA56_0 <= '\u2071') || (LA56_0 >= '\u2074' && LA56_0 <= '\u207C') || (LA56_0 >= '\u207F' && LA56_0 <= '\u208C') || (LA56_0 >= '\u20A0' && LA56_0 <= '\u20B1') || (LA56_0 >= '\u20D0' && LA56_0 <= '\u20EA') || (LA56_0 >= '\u2100' && LA56_0 <= '\u213B') || (LA56_0 >= '\u213D' && LA56_0 <= '\u214B') || (LA56_0 >= '\u2153' && LA56_0 <= '\u2183') || (LA56_0 >= '\u2190' && LA56_0 <= '\u2328') || (LA56_0 >= '\u232B' && LA56_0 <= '\u23B3') || (LA56_0 >= '\u23B6' && LA56_0 <= '\u23D0') || (LA56_0 >= '\u2400' && LA56_0 <= '\u2426') || (LA56_0 >= '\u2440' && LA56_0 <= '\u244A') || (LA56_0 >= '\u2460' && LA56_0 <= '\u2617') || (LA56_0 >= '\u2619' && LA56_0 <= '\u267D') || (LA56_0 >= '\u2680' && LA56_0 <= '\u2691') || (LA56_0 >= '\u26A0' && LA56_0 <= '\u26A1')
-                            || (LA56_0 >= '\u2701' && LA56_0 <= '\u2704') || (LA56_0 >= '\u2706' && LA56_0 <= '\u2709') || (LA56_0 >= '\u270C' && LA56_0 <= '\u2727') || (LA56_0 >= '\u2729' && LA56_0 <= '\u274B') || LA56_0 == '\u274D' || (LA56_0 >= '\u274F' && LA56_0 <= '\u2752') || LA56_0 == '\u2756' || (LA56_0 >= '\u2758' && LA56_0 <= '\u275E') || (LA56_0 >= '\u2761' && LA56_0 <= '\u2767') || (LA56_0 >= '\u2776' && LA56_0 <= '\u2794') || (LA56_0 >= '\u2798' && LA56_0 <= '\u27AF') || (LA56_0 >= '\u27B1' && LA56_0 <= '\u27BE') || (LA56_0 >= '\u27D0' && LA56_0 <= '\u27E5') || (LA56_0 >= '\u27F0' && LA56_0 <= '\u2982') || (LA56_0 >= '\u2999' && LA56_0 <= '\u29D7') || (LA56_0 >= '\u29DC' && LA56_0 <= '\u29FB') || (LA56_0 >= '\u29FE' && LA56_0 <= '\u2B0D') || (LA56_0 >= '\u2E80' && LA56_0 <= '\u2E99') || (LA56_0 >= '\u2E9B' && LA56_0 <= '\u2EF3') || (LA56_0 >= '\u2F00' && LA56_0 <= '\u2FD5') || (LA56_0 >= '\u2FF0' && LA56_0 <= '\u2FFB') || (LA56_0 >= '\u3001' && LA56_0 <= '\u3007')
-                            || (LA56_0 >= '\u3012' && LA56_0 <= '\u3013') || LA56_0 == '\u301C' || (LA56_0 >= '\u3020' && LA56_0 <= '\u303F') || (LA56_0 >= '\u3041' && LA56_0 <= '\u3096') || (LA56_0 >= '\u3099' && LA56_0 <= '\u309A') || (LA56_0 >= '\u309D' && LA56_0 <= '\u30FF') || (LA56_0 >= '\u3105' && LA56_0 <= '\u312C') || (LA56_0 >= '\u3131' && LA56_0 <= '\u318E') || (LA56_0 >= '\u3190' && LA56_0 <= '\u31B7') || (LA56_0 >= '\u31F0' && LA56_0 <= '\u321E') || (LA56_0 >= '\u3220' && LA56_0 <= '\u3243') || (LA56_0 >= '\u3250' && LA56_0 <= '\u327D') || (LA56_0 >= '\u327F' && LA56_0 <= '\u32FE') || (LA56_0 >= '\u3300' && LA56_0 <= '\u4DB5') || (LA56_0 >= '\u4DC0' && LA56_0 <= '\u9FA5') || (LA56_0 >= '\uA000' && LA56_0 <= '\uA48C') || (LA56_0 >= '\uA490' && LA56_0 <= '\uA4C6') || (LA56_0 >= '\uAC00' && LA56_0 <= '\uD7A3') || (LA56_0 >= '\uF900' && LA56_0 <= '\uFA2D') || (LA56_0 >= '\uFA30' && LA56_0 <= '\uFA6A') || (LA56_0 >= '\uFB00' && LA56_0 <= '\uFB06')
-                            || (LA56_0 >= '\uFB13' && LA56_0 <= '\uFB17') || (LA56_0 >= '\uFB1D' && LA56_0 <= '\uFB36') || (LA56_0 >= '\uFB38' && LA56_0 <= '\uFB3C') || LA56_0 == '\uFB3E' || (LA56_0 >= '\uFB40' && LA56_0 <= '\uFB41') || (LA56_0 >= '\uFB43' && LA56_0 <= '\uFB44') || (LA56_0 >= '\uFB46' && LA56_0 <= '\uFBB1') || (LA56_0 >= '\uFBD3' && LA56_0 <= '\uFD3D') || (LA56_0 >= '\uFD50' && LA56_0 <= '\uFD8F') || (LA56_0 >= '\uFD92' && LA56_0 <= '\uFDC7') || (LA56_0 >= '\uFDF0' && LA56_0 <= '\uFDFD') || (LA56_0 >= '\uFE00' && LA56_0 <= '\uFE0F') || (LA56_0 >= '\uFE20' && LA56_0 <= '\uFE23') || (LA56_0 >= '\uFE30' && LA56_0 <= '\uFE34') || (LA56_0 >= '\uFE45' && LA56_0 <= '\uFE46') || (LA56_0 >= '\uFE49' && LA56_0 <= '\uFE52') || (LA56_0 >= '\uFE54' && LA56_0 <= '\uFE58') || (LA56_0 >= '\uFE5F' && LA56_0 <= '\uFE66') || (LA56_0 >= '\uFE68' && LA56_0 <= '\uFE6B') || (LA56_0 >= '\uFE70' && LA56_0 <= '\uFE74') || (LA56_0 >= '\uFE76' && LA56_0 <= '\uFEFC')
-                            || (LA56_0 >= '\uFF01' && LA56_0 <= '\uFF07') || (LA56_0 >= '\uFF0A' && LA56_0 <= '\uFF3A') || LA56_0 == '\uFF3C' || LA56_0 == '\uFF3F' || (LA56_0 >= '\uFF41' && LA56_0 <= '\uFF5A') || LA56_0 == '\uFF5C' || LA56_0 == '\uFF5E' || LA56_0 == '\uFF61' || (LA56_0 >= '\uFF64' && LA56_0 <= '\uFFBE') || (LA56_0 >= '\uFFC2' && LA56_0 <= '\uFFC7') || (LA56_0 >= '\uFFCA' && LA56_0 <= '\uFFCF') || (LA56_0 >= '\uFFD2' && LA56_0 <= '\uFFD7') || (LA56_0 >= '\uFFDA' && LA56_0 <= '\uFFDC') || (LA56_0 >= '\uFFE0' && LA56_0 <= '\uFFE2') || (LA56_0 >= '\uFFE4' && LA56_0 <= '\uFFE6') || (LA56_0 >= '\uFFE8' && LA56_0 <= '\uFFEE')))
+                    else if (((LA57_0 >= '!' && LA57_0 <= '\'') || LA57_0 == '+' || LA57_0 == '-' || (LA57_0 >= '/' && LA57_0 <= '9') || LA57_0 == ';' || LA57_0 == '=' || (LA57_0 >= '@' && LA57_0 <= 'Z') || LA57_0 == '_' || (LA57_0 >= 'a' && LA57_0 <= 'z') || LA57_0 == '|' || (LA57_0 >= '\u00A1' && LA57_0 <= '\u00A7') || (LA57_0 >= '\u00A9' && LA57_0 <= '\u00AA') || LA57_0 == '\u00AC' || LA57_0 == '\u00AE' || (LA57_0 >= '\u00B0' && LA57_0 <= '\u00B3') || (LA57_0 >= '\u00B5' && LA57_0 <= '\u00B7') || (LA57_0 >= '\u00B9' && LA57_0 <= '\u00BA') || (LA57_0 >= '\u00BC' && LA57_0 <= '\u0236') || (LA57_0 >= '\u0250' && LA57_0 <= '\u02C1') || (LA57_0 >= '\u02C6' && LA57_0 <= '\u02D1') || (LA57_0 >= '\u02E0' && LA57_0 <= '\u02E4') || LA57_0 == '\u02EE' || (LA57_0 >= '\u0300' && LA57_0 <= '\u0357') || (LA57_0 >= '\u035D' && LA57_0 <= '\u036F') || LA57_0 == '\u037A' || LA57_0 == '\u037E' || (LA57_0 >= '\u0386' && LA57_0 <= '\u038A') || LA57_0 == '\u038C'
+                            || (LA57_0 >= '\u038E' && LA57_0 <= '\u03A1') || (LA57_0 >= '\u03A3' && LA57_0 <= '\u03CE') || (LA57_0 >= '\u03D0' && LA57_0 <= '\u03FB') || (LA57_0 >= '\u0400' && LA57_0 <= '\u0486') || (LA57_0 >= '\u0488' && LA57_0 <= '\u04CE') || (LA57_0 >= '\u04D0' && LA57_0 <= '\u04F5') || (LA57_0 >= '\u04F8' && LA57_0 <= '\u04F9') || (LA57_0 >= '\u0500' && LA57_0 <= '\u050F') || (LA57_0 >= '\u0531' && LA57_0 <= '\u0556') || (LA57_0 >= '\u0559' && LA57_0 <= '\u055F') || (LA57_0 >= '\u0561' && LA57_0 <= '\u0587') || (LA57_0 >= '\u0589' && LA57_0 <= '\u058A') || (LA57_0 >= '\u0591' && LA57_0 <= '\u05A1') || (LA57_0 >= '\u05A3' && LA57_0 <= '\u05B9') || (LA57_0 >= '\u05BB' && LA57_0 <= '\u05C4') || (LA57_0 >= '\u05D0' && LA57_0 <= '\u05EA') || (LA57_0 >= '\u05F0' && LA57_0 <= '\u05F4') || (LA57_0 >= '\u060C' && LA57_0 <= '\u0615') || LA57_0 == '\u061B' || LA57_0 == '\u061F' || (LA57_0 >= '\u0621' && LA57_0 <= '\u063A') || (LA57_0 >= '\u0640' && LA57_0 <= '\u0658')
+                            || (LA57_0 >= '\u0660' && LA57_0 <= '\u06DC') || (LA57_0 >= '\u06DE' && LA57_0 <= '\u070D') || (LA57_0 >= '\u0710' && LA57_0 <= '\u074A') || (LA57_0 >= '\u074D' && LA57_0 <= '\u074F') || (LA57_0 >= '\u0780' && LA57_0 <= '\u07B1') || (LA57_0 >= '\u0901' && LA57_0 <= '\u0939') || (LA57_0 >= '\u093C' && LA57_0 <= '\u094D') || (LA57_0 >= '\u0950' && LA57_0 <= '\u0954') || (LA57_0 >= '\u0958' && LA57_0 <= '\u0970') || (LA57_0 >= '\u0981' && LA57_0 <= '\u0983') || (LA57_0 >= '\u0985' && LA57_0 <= '\u098C') || (LA57_0 >= '\u098F' && LA57_0 <= '\u0990') || (LA57_0 >= '\u0993' && LA57_0 <= '\u09A8') || (LA57_0 >= '\u09AA' && LA57_0 <= '\u09B0') || LA57_0 == '\u09B2' || (LA57_0 >= '\u09B6' && LA57_0 <= '\u09B9') || (LA57_0 >= '\u09BC' && LA57_0 <= '\u09C4') || (LA57_0 >= '\u09C7' && LA57_0 <= '\u09C8') || (LA57_0 >= '\u09CB' && LA57_0 <= '\u09CD') || LA57_0 == '\u09D7' || (LA57_0 >= '\u09DC' && LA57_0 <= '\u09DD') || (LA57_0 >= '\u09DF' && LA57_0 <= '\u09E3')
+                            || (LA57_0 >= '\u09E6' && LA57_0 <= '\u09FA') || (LA57_0 >= '\u0A01' && LA57_0 <= '\u0A03') || (LA57_0 >= '\u0A05' && LA57_0 <= '\u0A0A') || (LA57_0 >= '\u0A0F' && LA57_0 <= '\u0A10') || (LA57_0 >= '\u0A13' && LA57_0 <= '\u0A28') || (LA57_0 >= '\u0A2A' && LA57_0 <= '\u0A30') || (LA57_0 >= '\u0A32' && LA57_0 <= '\u0A33') || (LA57_0 >= '\u0A35' && LA57_0 <= '\u0A36') || (LA57_0 >= '\u0A38' && LA57_0 <= '\u0A39') || LA57_0 == '\u0A3C' || (LA57_0 >= '\u0A3E' && LA57_0 <= '\u0A42') || (LA57_0 >= '\u0A47' && LA57_0 <= '\u0A48') || (LA57_0 >= '\u0A4B' && LA57_0 <= '\u0A4D') || (LA57_0 >= '\u0A59' && LA57_0 <= '\u0A5C') || LA57_0 == '\u0A5E' || (LA57_0 >= '\u0A66' && LA57_0 <= '\u0A74') || (LA57_0 >= '\u0A81' && LA57_0 <= '\u0A83') || (LA57_0 >= '\u0A85' && LA57_0 <= '\u0A8D') || (LA57_0 >= '\u0A8F' && LA57_0 <= '\u0A91') || (LA57_0 >= '\u0A93' && LA57_0 <= '\u0AA8') || (LA57_0 >= '\u0AAA' && LA57_0 <= '\u0AB0') || (LA57_0 >= '\u0AB2' && LA57_0 <= '\u0AB3')
+                            || (LA57_0 >= '\u0AB5' && LA57_0 <= '\u0AB9') || (LA57_0 >= '\u0ABC' && LA57_0 <= '\u0AC5') || (LA57_0 >= '\u0AC7' && LA57_0 <= '\u0AC9') || (LA57_0 >= '\u0ACB' && LA57_0 <= '\u0ACD') || LA57_0 == '\u0AD0' || (LA57_0 >= '\u0AE0' && LA57_0 <= '\u0AE3') || (LA57_0 >= '\u0AE6' && LA57_0 <= '\u0AEF') || LA57_0 == '\u0AF1' || (LA57_0 >= '\u0B01' && LA57_0 <= '\u0B03') || (LA57_0 >= '\u0B05' && LA57_0 <= '\u0B0C') || (LA57_0 >= '\u0B0F' && LA57_0 <= '\u0B10') || (LA57_0 >= '\u0B13' && LA57_0 <= '\u0B28') || (LA57_0 >= '\u0B2A' && LA57_0 <= '\u0B30') || (LA57_0 >= '\u0B32' && LA57_0 <= '\u0B33') || (LA57_0 >= '\u0B35' && LA57_0 <= '\u0B39') || (LA57_0 >= '\u0B3C' && LA57_0 <= '\u0B43') || (LA57_0 >= '\u0B47' && LA57_0 <= '\u0B48') || (LA57_0 >= '\u0B4B' && LA57_0 <= '\u0B4D') || (LA57_0 >= '\u0B56' && LA57_0 <= '\u0B57') || (LA57_0 >= '\u0B5C' && LA57_0 <= '\u0B5D') || (LA57_0 >= '\u0B5F' && LA57_0 <= '\u0B61') || (LA57_0 >= '\u0B66' && LA57_0 <= '\u0B71')
+                            || (LA57_0 >= '\u0B82' && LA57_0 <= '\u0B83') || (LA57_0 >= '\u0B85' && LA57_0 <= '\u0B8A') || (LA57_0 >= '\u0B8E' && LA57_0 <= '\u0B90') || (LA57_0 >= '\u0B92' && LA57_0 <= '\u0B95') || (LA57_0 >= '\u0B99' && LA57_0 <= '\u0B9A') || LA57_0 == '\u0B9C' || (LA57_0 >= '\u0B9E' && LA57_0 <= '\u0B9F') || (LA57_0 >= '\u0BA3' && LA57_0 <= '\u0BA4') || (LA57_0 >= '\u0BA8' && LA57_0 <= '\u0BAA') || (LA57_0 >= '\u0BAE' && LA57_0 <= '\u0BB5') || (LA57_0 >= '\u0BB7' && LA57_0 <= '\u0BB9') || (LA57_0 >= '\u0BBE' && LA57_0 <= '\u0BC2') || (LA57_0 >= '\u0BC6' && LA57_0 <= '\u0BC8') || (LA57_0 >= '\u0BCA' && LA57_0 <= '\u0BCD') || LA57_0 == '\u0BD7' || (LA57_0 >= '\u0BE7' && LA57_0 <= '\u0BFA') || (LA57_0 >= '\u0C01' && LA57_0 <= '\u0C03') || (LA57_0 >= '\u0C05' && LA57_0 <= '\u0C0C') || (LA57_0 >= '\u0C0E' && LA57_0 <= '\u0C10') || (LA57_0 >= '\u0C12' && LA57_0 <= '\u0C28') || (LA57_0 >= '\u0C2A' && LA57_0 <= '\u0C33') || (LA57_0 >= '\u0C35' && LA57_0 <= '\u0C39')
+                            || (LA57_0 >= '\u0C3E' && LA57_0 <= '\u0C44') || (LA57_0 >= '\u0C46' && LA57_0 <= '\u0C48') || (LA57_0 >= '\u0C4A' && LA57_0 <= '\u0C4D') || (LA57_0 >= '\u0C55' && LA57_0 <= '\u0C56') || (LA57_0 >= '\u0C60' && LA57_0 <= '\u0C61') || (LA57_0 >= '\u0C66' && LA57_0 <= '\u0C6F') || (LA57_0 >= '\u0C82' && LA57_0 <= '\u0C83') || (LA57_0 >= '\u0C85' && LA57_0 <= '\u0C8C') || (LA57_0 >= '\u0C8E' && LA57_0 <= '\u0C90') || (LA57_0 >= '\u0C92' && LA57_0 <= '\u0CA8') || (LA57_0 >= '\u0CAA' && LA57_0 <= '\u0CB3') || (LA57_0 >= '\u0CB5' && LA57_0 <= '\u0CB9') || (LA57_0 >= '\u0CBC' && LA57_0 <= '\u0CC4') || (LA57_0 >= '\u0CC6' && LA57_0 <= '\u0CC8') || (LA57_0 >= '\u0CCA' && LA57_0 <= '\u0CCD') || (LA57_0 >= '\u0CD5' && LA57_0 <= '\u0CD6') || LA57_0 == '\u0CDE' || (LA57_0 >= '\u0CE0' && LA57_0 <= '\u0CE1') || (LA57_0 >= '\u0CE6' && LA57_0 <= '\u0CEF') || (LA57_0 >= '\u0D02' && LA57_0 <= '\u0D03') || (LA57_0 >= '\u0D05' && LA57_0 <= '\u0D0C')
+                            || (LA57_0 >= '\u0D0E' && LA57_0 <= '\u0D10') || (LA57_0 >= '\u0D12' && LA57_0 <= '\u0D28') || (LA57_0 >= '\u0D2A' && LA57_0 <= '\u0D39') || (LA57_0 >= '\u0D3E' && LA57_0 <= '\u0D43') || (LA57_0 >= '\u0D46' && LA57_0 <= '\u0D48') || (LA57_0 >= '\u0D4A' && LA57_0 <= '\u0D4D') || LA57_0 == '\u0D57' || (LA57_0 >= '\u0D60' && LA57_0 <= '\u0D61') || (LA57_0 >= '\u0D66' && LA57_0 <= '\u0D6F') || (LA57_0 >= '\u0D82' && LA57_0 <= '\u0D83') || (LA57_0 >= '\u0D85' && LA57_0 <= '\u0D96') || (LA57_0 >= '\u0D9A' && LA57_0 <= '\u0DB1') || (LA57_0 >= '\u0DB3' && LA57_0 <= '\u0DBB') || LA57_0 == '\u0DBD' || (LA57_0 >= '\u0DC0' && LA57_0 <= '\u0DC6') || LA57_0 == '\u0DCA' || (LA57_0 >= '\u0DCF' && LA57_0 <= '\u0DD4') || LA57_0 == '\u0DD6' || (LA57_0 >= '\u0DD8' && LA57_0 <= '\u0DDF') || (LA57_0 >= '\u0DF2' && LA57_0 <= '\u0DF4') || (LA57_0 >= '\u0E01' && LA57_0 <= '\u0E3A') || (LA57_0 >= '\u0E3F' && LA57_0 <= '\u0E5B') || (LA57_0 >= '\u0E81' && LA57_0 <= '\u0E82')
+                            || LA57_0 == '\u0E84' || (LA57_0 >= '\u0E87' && LA57_0 <= '\u0E88') || LA57_0 == '\u0E8A' || LA57_0 == '\u0E8D' || (LA57_0 >= '\u0E94' && LA57_0 <= '\u0E97') || (LA57_0 >= '\u0E99' && LA57_0 <= '\u0E9F') || (LA57_0 >= '\u0EA1' && LA57_0 <= '\u0EA3') || LA57_0 == '\u0EA5' || LA57_0 == '\u0EA7' || (LA57_0 >= '\u0EAA' && LA57_0 <= '\u0EAB') || (LA57_0 >= '\u0EAD' && LA57_0 <= '\u0EB9') || (LA57_0 >= '\u0EBB' && LA57_0 <= '\u0EBD') || (LA57_0 >= '\u0EC0' && LA57_0 <= '\u0EC4') || LA57_0 == '\u0EC6' || (LA57_0 >= '\u0EC8' && LA57_0 <= '\u0ECD') || (LA57_0 >= '\u0ED0' && LA57_0 <= '\u0ED9') || (LA57_0 >= '\u0EDC' && LA57_0 <= '\u0EDD') || (LA57_0 >= '\u0F00' && LA57_0 <= '\u0F39') || (LA57_0 >= '\u0F3E' && LA57_0 <= '\u0F47') || (LA57_0 >= '\u0F49' && LA57_0 <= '\u0F6A') || (LA57_0 >= '\u0F71' && LA57_0 <= '\u0F8B') || (LA57_0 >= '\u0F90' && LA57_0 <= '\u0F97') || (LA57_0 >= '\u0F99' && LA57_0 <= '\u0FBC') || (LA57_0 >= '\u0FBE' && LA57_0 <= '\u0FCC')
+                            || LA57_0 == '\u0FCF' || (LA57_0 >= '\u1000' && LA57_0 <= '\u1021') || (LA57_0 >= '\u1023' && LA57_0 <= '\u1027') || (LA57_0 >= '\u1029' && LA57_0 <= '\u102A') || (LA57_0 >= '\u102C' && LA57_0 <= '\u1032') || (LA57_0 >= '\u1036' && LA57_0 <= '\u1039') || (LA57_0 >= '\u1040' && LA57_0 <= '\u1059') || (LA57_0 >= '\u10A0' && LA57_0 <= '\u10C5') || (LA57_0 >= '\u10D0' && LA57_0 <= '\u10F8') || LA57_0 == '\u10FB' || (LA57_0 >= '\u1100' && LA57_0 <= '\u1159') || (LA57_0 >= '\u115F' && LA57_0 <= '\u11A2') || (LA57_0 >= '\u11A8' && LA57_0 <= '\u11F9') || (LA57_0 >= '\u1200' && LA57_0 <= '\u1206') || (LA57_0 >= '\u1208' && LA57_0 <= '\u1246') || LA57_0 == '\u1248' || (LA57_0 >= '\u124A' && LA57_0 <= '\u124D') || (LA57_0 >= '\u1250' && LA57_0 <= '\u1256') || LA57_0 == '\u1258' || (LA57_0 >= '\u125A' && LA57_0 <= '\u125D') || (LA57_0 >= '\u1260' && LA57_0 <= '\u1286') || LA57_0 == '\u1288' || (LA57_0 >= '\u128A' && LA57_0 <= '\u128D')
+                            || (LA57_0 >= '\u1290' && LA57_0 <= '\u12AE') || LA57_0 == '\u12B0' || (LA57_0 >= '\u12B2' && LA57_0 <= '\u12B5') || (LA57_0 >= '\u12B8' && LA57_0 <= '\u12BE') || LA57_0 == '\u12C0' || (LA57_0 >= '\u12C2' && LA57_0 <= '\u12C5') || (LA57_0 >= '\u12C8' && LA57_0 <= '\u12CE') || (LA57_0 >= '\u12D0' && LA57_0 <= '\u12D6') || (LA57_0 >= '\u12D8' && LA57_0 <= '\u12EE') || (LA57_0 >= '\u12F0' && LA57_0 <= '\u130E') || LA57_0 == '\u1310' || (LA57_0 >= '\u1312' && LA57_0 <= '\u1315') || (LA57_0 >= '\u1318' && LA57_0 <= '\u131E') || (LA57_0 >= '\u1320' && LA57_0 <= '\u1346') || (LA57_0 >= '\u1348' && LA57_0 <= '\u135A') || (LA57_0 >= '\u1361' && LA57_0 <= '\u137C') || (LA57_0 >= '\u13A0' && LA57_0 <= '\u13F4') || (LA57_0 >= '\u1401' && LA57_0 <= '\u1676') || (LA57_0 >= '\u1681' && LA57_0 <= '\u169A') || (LA57_0 >= '\u16A0' && LA57_0 <= '\u16F0') || (LA57_0 >= '\u1700' && LA57_0 <= '\u170C') || (LA57_0 >= '\u170E' && LA57_0 <= '\u1714')
+                            || (LA57_0 >= '\u1720' && LA57_0 <= '\u1736') || (LA57_0 >= '\u1740' && LA57_0 <= '\u1753') || (LA57_0 >= '\u1760' && LA57_0 <= '\u176C') || (LA57_0 >= '\u176E' && LA57_0 <= '\u1770') || (LA57_0 >= '\u1772' && LA57_0 <= '\u1773') || (LA57_0 >= '\u1780' && LA57_0 <= '\u17B3') || (LA57_0 >= '\u17B6' && LA57_0 <= '\u17DD') || (LA57_0 >= '\u17E0' && LA57_0 <= '\u17E9') || (LA57_0 >= '\u17F0' && LA57_0 <= '\u17F9') || (LA57_0 >= '\u1800' && LA57_0 <= '\u180D') || (LA57_0 >= '\u1810' && LA57_0 <= '\u1819') || (LA57_0 >= '\u1820' && LA57_0 <= '\u1877') || (LA57_0 >= '\u1880' && LA57_0 <= '\u18A9') || (LA57_0 >= '\u1900' && LA57_0 <= '\u191C') || (LA57_0 >= '\u1920' && LA57_0 <= '\u192B') || (LA57_0 >= '\u1930' && LA57_0 <= '\u193B') || LA57_0 == '\u1940' || (LA57_0 >= '\u1944' && LA57_0 <= '\u196D') || (LA57_0 >= '\u1970' && LA57_0 <= '\u1974') || (LA57_0 >= '\u19E0' && LA57_0 <= '\u19FF') || (LA57_0 >= '\u1D00' && LA57_0 <= '\u1D6B')
+                            || (LA57_0 >= '\u1E00' && LA57_0 <= '\u1E9B') || (LA57_0 >= '\u1EA0' && LA57_0 <= '\u1EF9') || (LA57_0 >= '\u1F00' && LA57_0 <= '\u1F15') || (LA57_0 >= '\u1F18' && LA57_0 <= '\u1F1D') || (LA57_0 >= '\u1F20' && LA57_0 <= '\u1F45') || (LA57_0 >= '\u1F48' && LA57_0 <= '\u1F4D') || (LA57_0 >= '\u1F50' && LA57_0 <= '\u1F57') || LA57_0 == '\u1F59' || LA57_0 == '\u1F5B' || LA57_0 == '\u1F5D' || (LA57_0 >= '\u1F5F' && LA57_0 <= '\u1F7D') || (LA57_0 >= '\u1F80' && LA57_0 <= '\u1FB4') || (LA57_0 >= '\u1FB6' && LA57_0 <= '\u1FBC') || LA57_0 == '\u1FBE' || (LA57_0 >= '\u1FC2' && LA57_0 <= '\u1FC4') || (LA57_0 >= '\u1FC6' && LA57_0 <= '\u1FCC') || (LA57_0 >= '\u1FD0' && LA57_0 <= '\u1FD3') || (LA57_0 >= '\u1FD6' && LA57_0 <= '\u1FDB') || (LA57_0 >= '\u1FE0' && LA57_0 <= '\u1FEC') || (LA57_0 >= '\u1FF2' && LA57_0 <= '\u1FF4') || (LA57_0 >= '\u1FF6' && LA57_0 <= '\u1FFC') || (LA57_0 >= '\u2010' && LA57_0 <= '\u2017') || (LA57_0 >= '\u2020' && LA57_0 <= '\u2027')
+                            || (LA57_0 >= '\u2030' && LA57_0 <= '\u2038') || (LA57_0 >= '\u203B' && LA57_0 <= '\u2044') || (LA57_0 >= '\u2047' && LA57_0 <= '\u2054') || LA57_0 == '\u2057' || (LA57_0 >= '\u2070' && LA57_0 <= '\u2071') || (LA57_0 >= '\u2074' && LA57_0 <= '\u207C') || (LA57_0 >= '\u207F' && LA57_0 <= '\u208C') || (LA57_0 >= '\u20A0' && LA57_0 <= '\u20B1') || (LA57_0 >= '\u20D0' && LA57_0 <= '\u20EA') || (LA57_0 >= '\u2100' && LA57_0 <= '\u213B') || (LA57_0 >= '\u213D' && LA57_0 <= '\u214B') || (LA57_0 >= '\u2153' && LA57_0 <= '\u2183') || (LA57_0 >= '\u2190' && LA57_0 <= '\u2328') || (LA57_0 >= '\u232B' && LA57_0 <= '\u23B3') || (LA57_0 >= '\u23B6' && LA57_0 <= '\u23D0') || (LA57_0 >= '\u2400' && LA57_0 <= '\u2426') || (LA57_0 >= '\u2440' && LA57_0 <= '\u244A') || (LA57_0 >= '\u2460' && LA57_0 <= '\u2617') || (LA57_0 >= '\u2619' && LA57_0 <= '\u267D') || (LA57_0 >= '\u2680' && LA57_0 <= '\u2691') || (LA57_0 >= '\u26A0' && LA57_0 <= '\u26A1')
+                            || (LA57_0 >= '\u2701' && LA57_0 <= '\u2704') || (LA57_0 >= '\u2706' && LA57_0 <= '\u2709') || (LA57_0 >= '\u270C' && LA57_0 <= '\u2727') || (LA57_0 >= '\u2729' && LA57_0 <= '\u274B') || LA57_0 == '\u274D' || (LA57_0 >= '\u274F' && LA57_0 <= '\u2752') || LA57_0 == '\u2756' || (LA57_0 >= '\u2758' && LA57_0 <= '\u275E') || (LA57_0 >= '\u2761' && LA57_0 <= '\u2767') || (LA57_0 >= '\u2776' && LA57_0 <= '\u2794') || (LA57_0 >= '\u2798' && LA57_0 <= '\u27AF') || (LA57_0 >= '\u27B1' && LA57_0 <= '\u27BE') || (LA57_0 >= '\u27D0' && LA57_0 <= '\u27E5') || (LA57_0 >= '\u27F0' && LA57_0 <= '\u2982') || (LA57_0 >= '\u2999' && LA57_0 <= '\u29D7') || (LA57_0 >= '\u29DC' && LA57_0 <= '\u29FB') || (LA57_0 >= '\u29FE' && LA57_0 <= '\u2B0D') || (LA57_0 >= '\u2E80' && LA57_0 <= '\u2E99') || (LA57_0 >= '\u2E9B' && LA57_0 <= '\u2EF3') || (LA57_0 >= '\u2F00' && LA57_0 <= '\u2FD5') || (LA57_0 >= '\u2FF0' && LA57_0 <= '\u2FFB') || (LA57_0 >= '\u3001' && LA57_0 <= '\u3007')
+                            || (LA57_0 >= '\u3012' && LA57_0 <= '\u3013') || LA57_0 == '\u301C' || (LA57_0 >= '\u3020' && LA57_0 <= '\u303F') || (LA57_0 >= '\u3041' && LA57_0 <= '\u3096') || (LA57_0 >= '\u3099' && LA57_0 <= '\u309A') || (LA57_0 >= '\u309D' && LA57_0 <= '\u30FF') || (LA57_0 >= '\u3105' && LA57_0 <= '\u312C') || (LA57_0 >= '\u3131' && LA57_0 <= '\u318E') || (LA57_0 >= '\u3190' && LA57_0 <= '\u31B7') || (LA57_0 >= '\u31F0' && LA57_0 <= '\u321E') || (LA57_0 >= '\u3220' && LA57_0 <= '\u3243') || (LA57_0 >= '\u3250' && LA57_0 <= '\u327D') || (LA57_0 >= '\u327F' && LA57_0 <= '\u32FE') || (LA57_0 >= '\u3300' && LA57_0 <= '\u4DB5') || (LA57_0 >= '\u4DC0' && LA57_0 <= '\u9FA5') || (LA57_0 >= '\uA000' && LA57_0 <= '\uA48C') || (LA57_0 >= '\uA490' && LA57_0 <= '\uA4C6') || (LA57_0 >= '\uAC00' && LA57_0 <= '\uD7A3') || (LA57_0 >= '\uF900' && LA57_0 <= '\uFA2D') || (LA57_0 >= '\uFA30' && LA57_0 <= '\uFA6A') || (LA57_0 >= '\uFB00' && LA57_0 <= '\uFB06')
+                            || (LA57_0 >= '\uFB13' && LA57_0 <= '\uFB17') || (LA57_0 >= '\uFB1D' && LA57_0 <= '\uFB36') || (LA57_0 >= '\uFB38' && LA57_0 <= '\uFB3C') || LA57_0 == '\uFB3E' || (LA57_0 >= '\uFB40' && LA57_0 <= '\uFB41') || (LA57_0 >= '\uFB43' && LA57_0 <= '\uFB44') || (LA57_0 >= '\uFB46' && LA57_0 <= '\uFBB1') || (LA57_0 >= '\uFBD3' && LA57_0 <= '\uFD3D') || (LA57_0 >= '\uFD50' && LA57_0 <= '\uFD8F') || (LA57_0 >= '\uFD92' && LA57_0 <= '\uFDC7') || (LA57_0 >= '\uFDF0' && LA57_0 <= '\uFDFD') || (LA57_0 >= '\uFE00' && LA57_0 <= '\uFE0F') || (LA57_0 >= '\uFE20' && LA57_0 <= '\uFE23') || (LA57_0 >= '\uFE30' && LA57_0 <= '\uFE34') || (LA57_0 >= '\uFE45' && LA57_0 <= '\uFE46') || (LA57_0 >= '\uFE49' && LA57_0 <= '\uFE52') || (LA57_0 >= '\uFE54' && LA57_0 <= '\uFE58') || (LA57_0 >= '\uFE5F' && LA57_0 <= '\uFE66') || (LA57_0 >= '\uFE68' && LA57_0 <= '\uFE6B') || (LA57_0 >= '\uFE70' && LA57_0 <= '\uFE74') || (LA57_0 >= '\uFE76' && LA57_0 <= '\uFEFC')
+                            || (LA57_0 >= '\uFF01' && LA57_0 <= '\uFF07') || (LA57_0 >= '\uFF0A' && LA57_0 <= '\uFF3A') || LA57_0 == '\uFF3C' || LA57_0 == '\uFF3F' || (LA57_0 >= '\uFF41' && LA57_0 <= '\uFF5A') || LA57_0 == '\uFF5C' || LA57_0 == '\uFF5E' || LA57_0 == '\uFF61' || (LA57_0 >= '\uFF64' && LA57_0 <= '\uFFBE') || (LA57_0 >= '\uFFC2' && LA57_0 <= '\uFFC7') || (LA57_0 >= '\uFFCA' && LA57_0 <= '\uFFCF') || (LA57_0 >= '\uFFD2' && LA57_0 <= '\uFFD7') || (LA57_0 >= '\uFFDA' && LA57_0 <= '\uFFDC') || (LA57_0 >= '\uFFE0' && LA57_0 <= '\uFFE2') || (LA57_0 >= '\uFFE4' && LA57_0 <= '\uFFE6') || (LA57_0 >= '\uFFE8' && LA57_0 <= '\uFFEE')))
                     {
-                        alt56 = 2;
+                        alt57 = 2;
                     }
 
-                    switch (alt56)
+                    switch (alt57)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1550:17: F_ESC
+                    // FTS.g:1560:17: F_ESC
                     {
                         mF_ESC();
                         if (state.failed)
@@ -5259,7 +5327,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 2:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1551:19: IN_WORD
+                    // FTS.g:1561:19: IN_WORD
                     {
                         mIN_WORD();
                         if (state.failed)
@@ -5269,7 +5337,7 @@ public class FTSLexer extends Lexer
                         break;
 
                     default:
-                        break loop56;
+                        break loop57;
                     }
                 }
 
@@ -5292,37 +5360,37 @@ public class FTSLexer extends Lexer
         {
             int _type = FTSPRE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1556:9: ( ( F_ESC | START_WORD ) ( F_ESC | IN_WORD )* STAR )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1557:9: ( F_ESC | START_WORD ) ( F_ESC | IN_WORD )* STAR
+            // FTS.g:1566:9: ( ( F_ESC | START_WORD ) ( F_ESC | IN_WORD )* STAR )
+            // FTS.g:1567:9: ( F_ESC | START_WORD ) ( F_ESC | IN_WORD )* STAR
             {
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1557:9: ( F_ESC | START_WORD )
-                int alt57 = 2;
-                int LA57_0 = input.LA(1);
-                if ((LA57_0 == '\\'))
+                // FTS.g:1567:9: ( F_ESC | START_WORD )
+                int alt58 = 2;
+                int LA58_0 = input.LA(1);
+                if ((LA58_0 == '\\'))
                 {
-                    alt57 = 1;
+                    alt58 = 1;
                 }
-                else if ((LA57_0 == '$' || (LA57_0 >= '0' && LA57_0 <= '9') || (LA57_0 >= 'A' && LA57_0 <= 'Z') || (LA57_0 >= 'a' && LA57_0 <= 'z') || (LA57_0 >= '\u00A2' && LA57_0 <= '\u00A7') || (LA57_0 >= '\u00A9' && LA57_0 <= '\u00AA') || LA57_0 == '\u00AE' || LA57_0 == '\u00B0' || (LA57_0 >= '\u00B2' && LA57_0 <= '\u00B3') || (LA57_0 >= '\u00B5' && LA57_0 <= '\u00B6') || (LA57_0 >= '\u00B9' && LA57_0 <= '\u00BA') || (LA57_0 >= '\u00BC' && LA57_0 <= '\u00BE') || (LA57_0 >= '\u00C0' && LA57_0 <= '\u00D6') || (LA57_0 >= '\u00D8' && LA57_0 <= '\u00F6') || (LA57_0 >= '\u00F8' && LA57_0 <= '\u0236') || (LA57_0 >= '\u0250' && LA57_0 <= '\u02C1') || (LA57_0 >= '\u02C6' && LA57_0 <= '\u02D1') || (LA57_0 >= '\u02E0' && LA57_0 <= '\u02E4') || LA57_0 == '\u02EE' || (LA57_0 >= '\u0300' && LA57_0 <= '\u0357') || (LA57_0 >= '\u035D' && LA57_0 <= '\u036F') || LA57_0 == '\u037A' || LA57_0 == '\u0386' || (LA57_0 >= '\u0388' && LA57_0 <= '\u038A') || LA57_0 == '\u038C'
-                        || (LA57_0 >= '\u038E' && LA57_0 <= '\u03A1') || (LA57_0 >= '\u03A3' && LA57_0 <= '\u03CE') || (LA57_0 >= '\u03D0' && LA57_0 <= '\u03F5') || (LA57_0 >= '\u03F7' && LA57_0 <= '\u03FB') || (LA57_0 >= '\u0400' && LA57_0 <= '\u0486') || (LA57_0 >= '\u0488' && LA57_0 <= '\u04CE') || (LA57_0 >= '\u04D0' && LA57_0 <= '\u04F5') || (LA57_0 >= '\u04F8' && LA57_0 <= '\u04F9') || (LA57_0 >= '\u0500' && LA57_0 <= '\u050F') || (LA57_0 >= '\u0531' && LA57_0 <= '\u0556') || LA57_0 == '\u0559' || (LA57_0 >= '\u0561' && LA57_0 <= '\u0587') || (LA57_0 >= '\u0591' && LA57_0 <= '\u05A1') || (LA57_0 >= '\u05A3' && LA57_0 <= '\u05B9') || (LA57_0 >= '\u05BB' && LA57_0 <= '\u05BD') || LA57_0 == '\u05BF' || (LA57_0 >= '\u05C1' && LA57_0 <= '\u05C2') || LA57_0 == '\u05C4' || (LA57_0 >= '\u05D0' && LA57_0 <= '\u05EA') || (LA57_0 >= '\u05F0' && LA57_0 <= '\u05F2') || (LA57_0 >= '\u060E' && LA57_0 <= '\u0615') || (LA57_0 >= '\u0621' && LA57_0 <= '\u063A')
-                        || (LA57_0 >= '\u0640' && LA57_0 <= '\u0658') || (LA57_0 >= '\u0660' && LA57_0 <= '\u0669') || (LA57_0 >= '\u066E' && LA57_0 <= '\u06D3') || (LA57_0 >= '\u06D5' && LA57_0 <= '\u06DC') || (LA57_0 >= '\u06DE' && LA57_0 <= '\u06FF') || (LA57_0 >= '\u0710' && LA57_0 <= '\u074A') || (LA57_0 >= '\u074D' && LA57_0 <= '\u074F') || (LA57_0 >= '\u0780' && LA57_0 <= '\u07B1') || (LA57_0 >= '\u0901' && LA57_0 <= '\u0939') || (LA57_0 >= '\u093C' && LA57_0 <= '\u094D') || (LA57_0 >= '\u0950' && LA57_0 <= '\u0954') || (LA57_0 >= '\u0958' && LA57_0 <= '\u0963') || (LA57_0 >= '\u0966' && LA57_0 <= '\u096F') || (LA57_0 >= '\u0981' && LA57_0 <= '\u0983') || (LA57_0 >= '\u0985' && LA57_0 <= '\u098C') || (LA57_0 >= '\u098F' && LA57_0 <= '\u0990') || (LA57_0 >= '\u0993' && LA57_0 <= '\u09A8') || (LA57_0 >= '\u09AA' && LA57_0 <= '\u09B0') || LA57_0 == '\u09B2' || (LA57_0 >= '\u09B6' && LA57_0 <= '\u09B9') || (LA57_0 >= '\u09BC' && LA57_0 <= '\u09C4')
-                        || (LA57_0 >= '\u09C7' && LA57_0 <= '\u09C8') || (LA57_0 >= '\u09CB' && LA57_0 <= '\u09CD') || LA57_0 == '\u09D7' || (LA57_0 >= '\u09DC' && LA57_0 <= '\u09DD') || (LA57_0 >= '\u09DF' && LA57_0 <= '\u09E3') || (LA57_0 >= '\u09E6' && LA57_0 <= '\u09FA') || (LA57_0 >= '\u0A01' && LA57_0 <= '\u0A03') || (LA57_0 >= '\u0A05' && LA57_0 <= '\u0A0A') || (LA57_0 >= '\u0A0F' && LA57_0 <= '\u0A10') || (LA57_0 >= '\u0A13' && LA57_0 <= '\u0A28') || (LA57_0 >= '\u0A2A' && LA57_0 <= '\u0A30') || (LA57_0 >= '\u0A32' && LA57_0 <= '\u0A33') || (LA57_0 >= '\u0A35' && LA57_0 <= '\u0A36') || (LA57_0 >= '\u0A38' && LA57_0 <= '\u0A39') || LA57_0 == '\u0A3C' || (LA57_0 >= '\u0A3E' && LA57_0 <= '\u0A42') || (LA57_0 >= '\u0A47' && LA57_0 <= '\u0A48') || (LA57_0 >= '\u0A4B' && LA57_0 <= '\u0A4D') || (LA57_0 >= '\u0A59' && LA57_0 <= '\u0A5C') || LA57_0 == '\u0A5E' || (LA57_0 >= '\u0A66' && LA57_0 <= '\u0A74') || (LA57_0 >= '\u0A81' && LA57_0 <= '\u0A83')
-                        || (LA57_0 >= '\u0A85' && LA57_0 <= '\u0A8D') || (LA57_0 >= '\u0A8F' && LA57_0 <= '\u0A91') || (LA57_0 >= '\u0A93' && LA57_0 <= '\u0AA8') || (LA57_0 >= '\u0AAA' && LA57_0 <= '\u0AB0') || (LA57_0 >= '\u0AB2' && LA57_0 <= '\u0AB3') || (LA57_0 >= '\u0AB5' && LA57_0 <= '\u0AB9') || (LA57_0 >= '\u0ABC' && LA57_0 <= '\u0AC5') || (LA57_0 >= '\u0AC7' && LA57_0 <= '\u0AC9') || (LA57_0 >= '\u0ACB' && LA57_0 <= '\u0ACD') || LA57_0 == '\u0AD0' || (LA57_0 >= '\u0AE0' && LA57_0 <= '\u0AE3') || (LA57_0 >= '\u0AE6' && LA57_0 <= '\u0AEF') || LA57_0 == '\u0AF1' || (LA57_0 >= '\u0B01' && LA57_0 <= '\u0B03') || (LA57_0 >= '\u0B05' && LA57_0 <= '\u0B0C') || (LA57_0 >= '\u0B0F' && LA57_0 <= '\u0B10') || (LA57_0 >= '\u0B13' && LA57_0 <= '\u0B28') || (LA57_0 >= '\u0B2A' && LA57_0 <= '\u0B30') || (LA57_0 >= '\u0B32' && LA57_0 <= '\u0B33') || (LA57_0 >= '\u0B35' && LA57_0 <= '\u0B39') || (LA57_0 >= '\u0B3C' && LA57_0 <= '\u0B43') || (LA57_0 >= '\u0B47' && LA57_0 <= '\u0B48')
-                        || (LA57_0 >= '\u0B4B' && LA57_0 <= '\u0B4D') || (LA57_0 >= '\u0B56' && LA57_0 <= '\u0B57') || (LA57_0 >= '\u0B5C' && LA57_0 <= '\u0B5D') || (LA57_0 >= '\u0B5F' && LA57_0 <= '\u0B61') || (LA57_0 >= '\u0B66' && LA57_0 <= '\u0B71') || (LA57_0 >= '\u0B82' && LA57_0 <= '\u0B83') || (LA57_0 >= '\u0B85' && LA57_0 <= '\u0B8A') || (LA57_0 >= '\u0B8E' && LA57_0 <= '\u0B90') || (LA57_0 >= '\u0B92' && LA57_0 <= '\u0B95') || (LA57_0 >= '\u0B99' && LA57_0 <= '\u0B9A') || LA57_0 == '\u0B9C' || (LA57_0 >= '\u0B9E' && LA57_0 <= '\u0B9F') || (LA57_0 >= '\u0BA3' && LA57_0 <= '\u0BA4') || (LA57_0 >= '\u0BA8' && LA57_0 <= '\u0BAA') || (LA57_0 >= '\u0BAE' && LA57_0 <= '\u0BB5') || (LA57_0 >= '\u0BB7' && LA57_0 <= '\u0BB9') || (LA57_0 >= '\u0BBE' && LA57_0 <= '\u0BC2') || (LA57_0 >= '\u0BC6' && LA57_0 <= '\u0BC8') || (LA57_0 >= '\u0BCA' && LA57_0 <= '\u0BCD') || LA57_0 == '\u0BD7' || (LA57_0 >= '\u0BE7' && LA57_0 <= '\u0BFA') || (LA57_0 >= '\u0C01' && LA57_0 <= '\u0C03')
-                        || (LA57_0 >= '\u0C05' && LA57_0 <= '\u0C0C') || (LA57_0 >= '\u0C0E' && LA57_0 <= '\u0C10') || (LA57_0 >= '\u0C12' && LA57_0 <= '\u0C28') || (LA57_0 >= '\u0C2A' && LA57_0 <= '\u0C33') || (LA57_0 >= '\u0C35' && LA57_0 <= '\u0C39') || (LA57_0 >= '\u0C3E' && LA57_0 <= '\u0C44') || (LA57_0 >= '\u0C46' && LA57_0 <= '\u0C48') || (LA57_0 >= '\u0C4A' && LA57_0 <= '\u0C4D') || (LA57_0 >= '\u0C55' && LA57_0 <= '\u0C56') || (LA57_0 >= '\u0C60' && LA57_0 <= '\u0C61') || (LA57_0 >= '\u0C66' && LA57_0 <= '\u0C6F') || (LA57_0 >= '\u0C82' && LA57_0 <= '\u0C83') || (LA57_0 >= '\u0C85' && LA57_0 <= '\u0C8C') || (LA57_0 >= '\u0C8E' && LA57_0 <= '\u0C90') || (LA57_0 >= '\u0C92' && LA57_0 <= '\u0CA8') || (LA57_0 >= '\u0CAA' && LA57_0 <= '\u0CB3') || (LA57_0 >= '\u0CB5' && LA57_0 <= '\u0CB9') || (LA57_0 >= '\u0CBC' && LA57_0 <= '\u0CC4') || (LA57_0 >= '\u0CC6' && LA57_0 <= '\u0CC8') || (LA57_0 >= '\u0CCA' && LA57_0 <= '\u0CCD') || (LA57_0 >= '\u0CD5' && LA57_0 <= '\u0CD6')
-                        || LA57_0 == '\u0CDE' || (LA57_0 >= '\u0CE0' && LA57_0 <= '\u0CE1') || (LA57_0 >= '\u0CE6' && LA57_0 <= '\u0CEF') || (LA57_0 >= '\u0D02' && LA57_0 <= '\u0D03') || (LA57_0 >= '\u0D05' && LA57_0 <= '\u0D0C') || (LA57_0 >= '\u0D0E' && LA57_0 <= '\u0D10') || (LA57_0 >= '\u0D12' && LA57_0 <= '\u0D28') || (LA57_0 >= '\u0D2A' && LA57_0 <= '\u0D39') || (LA57_0 >= '\u0D3E' && LA57_0 <= '\u0D43') || (LA57_0 >= '\u0D46' && LA57_0 <= '\u0D48') || (LA57_0 >= '\u0D4A' && LA57_0 <= '\u0D4D') || LA57_0 == '\u0D57' || (LA57_0 >= '\u0D60' && LA57_0 <= '\u0D61') || (LA57_0 >= '\u0D66' && LA57_0 <= '\u0D6F') || (LA57_0 >= '\u0D82' && LA57_0 <= '\u0D83') || (LA57_0 >= '\u0D85' && LA57_0 <= '\u0D96') || (LA57_0 >= '\u0D9A' && LA57_0 <= '\u0DB1') || (LA57_0 >= '\u0DB3' && LA57_0 <= '\u0DBB') || LA57_0 == '\u0DBD' || (LA57_0 >= '\u0DC0' && LA57_0 <= '\u0DC6') || LA57_0 == '\u0DCA' || (LA57_0 >= '\u0DCF' && LA57_0 <= '\u0DD4') || LA57_0 == '\u0DD6'
-                        || (LA57_0 >= '\u0DD8' && LA57_0 <= '\u0DDF') || (LA57_0 >= '\u0DF2' && LA57_0 <= '\u0DF3') || (LA57_0 >= '\u0E01' && LA57_0 <= '\u0E3A') || (LA57_0 >= '\u0E3F' && LA57_0 <= '\u0E4E') || (LA57_0 >= '\u0E50' && LA57_0 <= '\u0E59') || (LA57_0 >= '\u0E81' && LA57_0 <= '\u0E82') || LA57_0 == '\u0E84' || (LA57_0 >= '\u0E87' && LA57_0 <= '\u0E88') || LA57_0 == '\u0E8A' || LA57_0 == '\u0E8D' || (LA57_0 >= '\u0E94' && LA57_0 <= '\u0E97') || (LA57_0 >= '\u0E99' && LA57_0 <= '\u0E9F') || (LA57_0 >= '\u0EA1' && LA57_0 <= '\u0EA3') || LA57_0 == '\u0EA5' || LA57_0 == '\u0EA7' || (LA57_0 >= '\u0EAA' && LA57_0 <= '\u0EAB') || (LA57_0 >= '\u0EAD' && LA57_0 <= '\u0EB9') || (LA57_0 >= '\u0EBB' && LA57_0 <= '\u0EBD') || (LA57_0 >= '\u0EC0' && LA57_0 <= '\u0EC4') || LA57_0 == '\u0EC6' || (LA57_0 >= '\u0EC8' && LA57_0 <= '\u0ECD') || (LA57_0 >= '\u0ED0' && LA57_0 <= '\u0ED9') || (LA57_0 >= '\u0EDC' && LA57_0 <= '\u0EDD') || (LA57_0 >= '\u0F00' && LA57_0 <= '\u0F03')
-                        || (LA57_0 >= '\u0F13' && LA57_0 <= '\u0F39') || (LA57_0 >= '\u0F3E' && LA57_0 <= '\u0F47') || (LA57_0 >= '\u0F49' && LA57_0 <= '\u0F6A') || (LA57_0 >= '\u0F71' && LA57_0 <= '\u0F84') || (LA57_0 >= '\u0F86' && LA57_0 <= '\u0F8B') || (LA57_0 >= '\u0F90' && LA57_0 <= '\u0F97') || (LA57_0 >= '\u0F99' && LA57_0 <= '\u0FBC') || (LA57_0 >= '\u0FBE' && LA57_0 <= '\u0FCC') || LA57_0 == '\u0FCF' || (LA57_0 >= '\u1000' && LA57_0 <= '\u1021') || (LA57_0 >= '\u1023' && LA57_0 <= '\u1027') || (LA57_0 >= '\u1029' && LA57_0 <= '\u102A') || (LA57_0 >= '\u102C' && LA57_0 <= '\u1032') || (LA57_0 >= '\u1036' && LA57_0 <= '\u1039') || (LA57_0 >= '\u1040' && LA57_0 <= '\u1049') || (LA57_0 >= '\u1050' && LA57_0 <= '\u1059') || (LA57_0 >= '\u10A0' && LA57_0 <= '\u10C5') || (LA57_0 >= '\u10D0' && LA57_0 <= '\u10F8') || (LA57_0 >= '\u1100' && LA57_0 <= '\u1159') || (LA57_0 >= '\u115F' && LA57_0 <= '\u11A2') || (LA57_0 >= '\u11A8' && LA57_0 <= '\u11F9')
-                        || (LA57_0 >= '\u1200' && LA57_0 <= '\u1206') || (LA57_0 >= '\u1208' && LA57_0 <= '\u1246') || LA57_0 == '\u1248' || (LA57_0 >= '\u124A' && LA57_0 <= '\u124D') || (LA57_0 >= '\u1250' && LA57_0 <= '\u1256') || LA57_0 == '\u1258' || (LA57_0 >= '\u125A' && LA57_0 <= '\u125D') || (LA57_0 >= '\u1260' && LA57_0 <= '\u1286') || LA57_0 == '\u1288' || (LA57_0 >= '\u128A' && LA57_0 <= '\u128D') || (LA57_0 >= '\u1290' && LA57_0 <= '\u12AE') || LA57_0 == '\u12B0' || (LA57_0 >= '\u12B2' && LA57_0 <= '\u12B5') || (LA57_0 >= '\u12B8' && LA57_0 <= '\u12BE') || LA57_0 == '\u12C0' || (LA57_0 >= '\u12C2' && LA57_0 <= '\u12C5') || (LA57_0 >= '\u12C8' && LA57_0 <= '\u12CE') || (LA57_0 >= '\u12D0' && LA57_0 <= '\u12D6') || (LA57_0 >= '\u12D8' && LA57_0 <= '\u12EE') || (LA57_0 >= '\u12F0' && LA57_0 <= '\u130E') || LA57_0 == '\u1310' || (LA57_0 >= '\u1312' && LA57_0 <= '\u1315') || (LA57_0 >= '\u1318' && LA57_0 <= '\u131E') || (LA57_0 >= '\u1320' && LA57_0 <= '\u1346')
-                        || (LA57_0 >= '\u1348' && LA57_0 <= '\u135A') || (LA57_0 >= '\u1369' && LA57_0 <= '\u137C') || (LA57_0 >= '\u13A0' && LA57_0 <= '\u13F4') || (LA57_0 >= '\u1401' && LA57_0 <= '\u166C') || (LA57_0 >= '\u166F' && LA57_0 <= '\u1676') || (LA57_0 >= '\u1681' && LA57_0 <= '\u169A') || (LA57_0 >= '\u16A0' && LA57_0 <= '\u16EA') || (LA57_0 >= '\u16EE' && LA57_0 <= '\u16F0') || (LA57_0 >= '\u1700' && LA57_0 <= '\u170C') || (LA57_0 >= '\u170E' && LA57_0 <= '\u1714') || (LA57_0 >= '\u1720' && LA57_0 <= '\u1734') || (LA57_0 >= '\u1740' && LA57_0 <= '\u1753') || (LA57_0 >= '\u1760' && LA57_0 <= '\u176C') || (LA57_0 >= '\u176E' && LA57_0 <= '\u1770') || (LA57_0 >= '\u1772' && LA57_0 <= '\u1773') || (LA57_0 >= '\u1780' && LA57_0 <= '\u17B3') || (LA57_0 >= '\u17B6' && LA57_0 <= '\u17D3') || LA57_0 == '\u17D7' || (LA57_0 >= '\u17DB' && LA57_0 <= '\u17DD') || (LA57_0 >= '\u17E0' && LA57_0 <= '\u17E9') || (LA57_0 >= '\u17F0' && LA57_0 <= '\u17F9')
-                        || (LA57_0 >= '\u180B' && LA57_0 <= '\u180D') || (LA57_0 >= '\u1810' && LA57_0 <= '\u1819') || (LA57_0 >= '\u1820' && LA57_0 <= '\u1877') || (LA57_0 >= '\u1880' && LA57_0 <= '\u18A9') || (LA57_0 >= '\u1900' && LA57_0 <= '\u191C') || (LA57_0 >= '\u1920' && LA57_0 <= '\u192B') || (LA57_0 >= '\u1930' && LA57_0 <= '\u193B') || LA57_0 == '\u1940' || (LA57_0 >= '\u1946' && LA57_0 <= '\u196D') || (LA57_0 >= '\u1970' && LA57_0 <= '\u1974') || (LA57_0 >= '\u19E0' && LA57_0 <= '\u19FF') || (LA57_0 >= '\u1D00' && LA57_0 <= '\u1D6B') || (LA57_0 >= '\u1E00' && LA57_0 <= '\u1E9B') || (LA57_0 >= '\u1EA0' && LA57_0 <= '\u1EF9') || (LA57_0 >= '\u1F00' && LA57_0 <= '\u1F15') || (LA57_0 >= '\u1F18' && LA57_0 <= '\u1F1D') || (LA57_0 >= '\u1F20' && LA57_0 <= '\u1F45') || (LA57_0 >= '\u1F48' && LA57_0 <= '\u1F4D') || (LA57_0 >= '\u1F50' && LA57_0 <= '\u1F57') || LA57_0 == '\u1F59' || LA57_0 == '\u1F5B' || LA57_0 == '\u1F5D' || (LA57_0 >= '\u1F5F' && LA57_0 <= '\u1F7D')
-                        || (LA57_0 >= '\u1F80' && LA57_0 <= '\u1FB4') || (LA57_0 >= '\u1FB6' && LA57_0 <= '\u1FBC') || LA57_0 == '\u1FBE' || (LA57_0 >= '\u1FC2' && LA57_0 <= '\u1FC4') || (LA57_0 >= '\u1FC6' && LA57_0 <= '\u1FCC') || (LA57_0 >= '\u1FD0' && LA57_0 <= '\u1FD3') || (LA57_0 >= '\u1FD6' && LA57_0 <= '\u1FDB') || (LA57_0 >= '\u1FE0' && LA57_0 <= '\u1FEC') || (LA57_0 >= '\u1FF2' && LA57_0 <= '\u1FF4') || (LA57_0 >= '\u1FF6' && LA57_0 <= '\u1FFC') || (LA57_0 >= '\u2070' && LA57_0 <= '\u2071') || (LA57_0 >= '\u2074' && LA57_0 <= '\u2079') || (LA57_0 >= '\u207F' && LA57_0 <= '\u2089') || (LA57_0 >= '\u20A0' && LA57_0 <= '\u20B1') || (LA57_0 >= '\u20D0' && LA57_0 <= '\u20EA') || (LA57_0 >= '\u2100' && LA57_0 <= '\u213B') || (LA57_0 >= '\u213D' && LA57_0 <= '\u213F') || (LA57_0 >= '\u2145' && LA57_0 <= '\u214A') || (LA57_0 >= '\u2153' && LA57_0 <= '\u2183') || (LA57_0 >= '\u2195' && LA57_0 <= '\u2199') || (LA57_0 >= '\u219C' && LA57_0 <= '\u219F')
-                        || (LA57_0 >= '\u21A1' && LA57_0 <= '\u21A2') || (LA57_0 >= '\u21A4' && LA57_0 <= '\u21A5') || (LA57_0 >= '\u21A7' && LA57_0 <= '\u21AD') || (LA57_0 >= '\u21AF' && LA57_0 <= '\u21CD') || (LA57_0 >= '\u21D0' && LA57_0 <= '\u21D1') || LA57_0 == '\u21D3' || (LA57_0 >= '\u21D5' && LA57_0 <= '\u21F3') || (LA57_0 >= '\u2300' && LA57_0 <= '\u2307') || (LA57_0 >= '\u230C' && LA57_0 <= '\u231F') || (LA57_0 >= '\u2322' && LA57_0 <= '\u2328') || (LA57_0 >= '\u232B' && LA57_0 <= '\u237B') || (LA57_0 >= '\u237D' && LA57_0 <= '\u239A') || (LA57_0 >= '\u23B7' && LA57_0 <= '\u23D0') || (LA57_0 >= '\u2400' && LA57_0 <= '\u2426') || (LA57_0 >= '\u2440' && LA57_0 <= '\u244A') || (LA57_0 >= '\u2460' && LA57_0 <= '\u25B6') || (LA57_0 >= '\u25B8' && LA57_0 <= '\u25C0') || (LA57_0 >= '\u25C2' && LA57_0 <= '\u25F7') || (LA57_0 >= '\u2600' && LA57_0 <= '\u2617') || (LA57_0 >= '\u2619' && LA57_0 <= '\u266E') || (LA57_0 >= '\u2670' && LA57_0 <= '\u267D')
-                        || (LA57_0 >= '\u2680' && LA57_0 <= '\u2691') || (LA57_0 >= '\u26A0' && LA57_0 <= '\u26A1') || (LA57_0 >= '\u2701' && LA57_0 <= '\u2704') || (LA57_0 >= '\u2706' && LA57_0 <= '\u2709') || (LA57_0 >= '\u270C' && LA57_0 <= '\u2727') || (LA57_0 >= '\u2729' && LA57_0 <= '\u274B') || LA57_0 == '\u274D' || (LA57_0 >= '\u274F' && LA57_0 <= '\u2752') || LA57_0 == '\u2756' || (LA57_0 >= '\u2758' && LA57_0 <= '\u275E') || (LA57_0 >= '\u2761' && LA57_0 <= '\u2767') || (LA57_0 >= '\u2776' && LA57_0 <= '\u2794') || (LA57_0 >= '\u2798' && LA57_0 <= '\u27AF') || (LA57_0 >= '\u27B1' && LA57_0 <= '\u27BE') || (LA57_0 >= '\u2800' && LA57_0 <= '\u28FF') || (LA57_0 >= '\u2B00' && LA57_0 <= '\u2B0D') || (LA57_0 >= '\u2E80' && LA57_0 <= '\u2E99') || (LA57_0 >= '\u2E9B' && LA57_0 <= '\u2EF3') || (LA57_0 >= '\u2F00' && LA57_0 <= '\u2FD5') || (LA57_0 >= '\u2FF0' && LA57_0 <= '\u2FFB') || (LA57_0 >= '\u3004' && LA57_0 <= '\u3007') || (LA57_0 >= '\u3012' && LA57_0 <= '\u3013')
-                        || (LA57_0 >= '\u3020' && LA57_0 <= '\u302F') || (LA57_0 >= '\u3031' && LA57_0 <= '\u303C') || (LA57_0 >= '\u303E' && LA57_0 <= '\u303F') || (LA57_0 >= '\u3041' && LA57_0 <= '\u3096') || (LA57_0 >= '\u3099' && LA57_0 <= '\u309A') || (LA57_0 >= '\u309D' && LA57_0 <= '\u309F') || (LA57_0 >= '\u30A1' && LA57_0 <= '\u30FA') || (LA57_0 >= '\u30FC' && LA57_0 <= '\u30FF') || (LA57_0 >= '\u3105' && LA57_0 <= '\u312C') || (LA57_0 >= '\u3131' && LA57_0 <= '\u318E') || (LA57_0 >= '\u3190' && LA57_0 <= '\u31B7') || (LA57_0 >= '\u31F0' && LA57_0 <= '\u321E') || (LA57_0 >= '\u3220' && LA57_0 <= '\u3243') || (LA57_0 >= '\u3250' && LA57_0 <= '\u327D') || (LA57_0 >= '\u327F' && LA57_0 <= '\u32FE') || (LA57_0 >= '\u3300' && LA57_0 <= '\u4DB5') || (LA57_0 >= '\u4DC0' && LA57_0 <= '\u9FA5') || (LA57_0 >= '\uA000' && LA57_0 <= '\uA48C') || (LA57_0 >= '\uA490' && LA57_0 <= '\uA4C6') || (LA57_0 >= '\uAC00' && LA57_0 <= '\uD7A3') || (LA57_0 >= '\uF900' && LA57_0 <= '\uFA2D')
-                        || (LA57_0 >= '\uFA30' && LA57_0 <= '\uFA6A') || (LA57_0 >= '\uFB00' && LA57_0 <= '\uFB06') || (LA57_0 >= '\uFB13' && LA57_0 <= '\uFB17') || (LA57_0 >= '\uFB1D' && LA57_0 <= '\uFB28') || (LA57_0 >= '\uFB2A' && LA57_0 <= '\uFB36') || (LA57_0 >= '\uFB38' && LA57_0 <= '\uFB3C') || LA57_0 == '\uFB3E' || (LA57_0 >= '\uFB40' && LA57_0 <= '\uFB41') || (LA57_0 >= '\uFB43' && LA57_0 <= '\uFB44') || (LA57_0 >= '\uFB46' && LA57_0 <= '\uFBB1') || (LA57_0 >= '\uFBD3' && LA57_0 <= '\uFD3D') || (LA57_0 >= '\uFD50' && LA57_0 <= '\uFD8F') || (LA57_0 >= '\uFD92' && LA57_0 <= '\uFDC7') || (LA57_0 >= '\uFDF0' && LA57_0 <= '\uFDFD') || (LA57_0 >= '\uFE00' && LA57_0 <= '\uFE0F') || (LA57_0 >= '\uFE20' && LA57_0 <= '\uFE23') || LA57_0 == '\uFE69' || (LA57_0 >= '\uFE70' && LA57_0 <= '\uFE74') || (LA57_0 >= '\uFE76' && LA57_0 <= '\uFEFC') || LA57_0 == '\uFF04' || (LA57_0 >= '\uFF10' && LA57_0 <= '\uFF19') || (LA57_0 >= '\uFF21' && LA57_0 <= '\uFF3A')
-                        || (LA57_0 >= '\uFF41' && LA57_0 <= '\uFF5A') || (LA57_0 >= '\uFF66' && LA57_0 <= '\uFFBE') || (LA57_0 >= '\uFFC2' && LA57_0 <= '\uFFC7') || (LA57_0 >= '\uFFCA' && LA57_0 <= '\uFFCF') || (LA57_0 >= '\uFFD2' && LA57_0 <= '\uFFD7') || (LA57_0 >= '\uFFDA' && LA57_0 <= '\uFFDC') || (LA57_0 >= '\uFFE0' && LA57_0 <= '\uFFE1') || (LA57_0 >= '\uFFE4' && LA57_0 <= '\uFFE6') || LA57_0 == '\uFFE8' || (LA57_0 >= '\uFFED' && LA57_0 <= '\uFFEE')))
+                else if ((LA58_0 == '$' || (LA58_0 >= '0' && LA58_0 <= '9') || (LA58_0 >= 'A' && LA58_0 <= 'Z') || (LA58_0 >= 'a' && LA58_0 <= 'z') || (LA58_0 >= '\u00A2' && LA58_0 <= '\u00A7') || (LA58_0 >= '\u00A9' && LA58_0 <= '\u00AA') || LA58_0 == '\u00AE' || LA58_0 == '\u00B0' || (LA58_0 >= '\u00B2' && LA58_0 <= '\u00B3') || (LA58_0 >= '\u00B5' && LA58_0 <= '\u00B6') || (LA58_0 >= '\u00B9' && LA58_0 <= '\u00BA') || (LA58_0 >= '\u00BC' && LA58_0 <= '\u00BE') || (LA58_0 >= '\u00C0' && LA58_0 <= '\u00D6') || (LA58_0 >= '\u00D8' && LA58_0 <= '\u00F6') || (LA58_0 >= '\u00F8' && LA58_0 <= '\u0236') || (LA58_0 >= '\u0250' && LA58_0 <= '\u02C1') || (LA58_0 >= '\u02C6' && LA58_0 <= '\u02D1') || (LA58_0 >= '\u02E0' && LA58_0 <= '\u02E4') || LA58_0 == '\u02EE' || (LA58_0 >= '\u0300' && LA58_0 <= '\u0357') || (LA58_0 >= '\u035D' && LA58_0 <= '\u036F') || LA58_0 == '\u037A' || LA58_0 == '\u0386' || (LA58_0 >= '\u0388' && LA58_0 <= '\u038A') || LA58_0 == '\u038C'
+                        || (LA58_0 >= '\u038E' && LA58_0 <= '\u03A1') || (LA58_0 >= '\u03A3' && LA58_0 <= '\u03CE') || (LA58_0 >= '\u03D0' && LA58_0 <= '\u03F5') || (LA58_0 >= '\u03F7' && LA58_0 <= '\u03FB') || (LA58_0 >= '\u0400' && LA58_0 <= '\u0486') || (LA58_0 >= '\u0488' && LA58_0 <= '\u04CE') || (LA58_0 >= '\u04D0' && LA58_0 <= '\u04F5') || (LA58_0 >= '\u04F8' && LA58_0 <= '\u04F9') || (LA58_0 >= '\u0500' && LA58_0 <= '\u050F') || (LA58_0 >= '\u0531' && LA58_0 <= '\u0556') || LA58_0 == '\u0559' || (LA58_0 >= '\u0561' && LA58_0 <= '\u0587') || (LA58_0 >= '\u0591' && LA58_0 <= '\u05A1') || (LA58_0 >= '\u05A3' && LA58_0 <= '\u05B9') || (LA58_0 >= '\u05BB' && LA58_0 <= '\u05BD') || LA58_0 == '\u05BF' || (LA58_0 >= '\u05C1' && LA58_0 <= '\u05C2') || LA58_0 == '\u05C4' || (LA58_0 >= '\u05D0' && LA58_0 <= '\u05EA') || (LA58_0 >= '\u05F0' && LA58_0 <= '\u05F2') || (LA58_0 >= '\u060E' && LA58_0 <= '\u0615') || (LA58_0 >= '\u0621' && LA58_0 <= '\u063A')
+                        || (LA58_0 >= '\u0640' && LA58_0 <= '\u0658') || (LA58_0 >= '\u0660' && LA58_0 <= '\u0669') || (LA58_0 >= '\u066E' && LA58_0 <= '\u06D3') || (LA58_0 >= '\u06D5' && LA58_0 <= '\u06DC') || (LA58_0 >= '\u06DE' && LA58_0 <= '\u06FF') || (LA58_0 >= '\u0710' && LA58_0 <= '\u074A') || (LA58_0 >= '\u074D' && LA58_0 <= '\u074F') || (LA58_0 >= '\u0780' && LA58_0 <= '\u07B1') || (LA58_0 >= '\u0901' && LA58_0 <= '\u0939') || (LA58_0 >= '\u093C' && LA58_0 <= '\u094D') || (LA58_0 >= '\u0950' && LA58_0 <= '\u0954') || (LA58_0 >= '\u0958' && LA58_0 <= '\u0963') || (LA58_0 >= '\u0966' && LA58_0 <= '\u096F') || (LA58_0 >= '\u0981' && LA58_0 <= '\u0983') || (LA58_0 >= '\u0985' && LA58_0 <= '\u098C') || (LA58_0 >= '\u098F' && LA58_0 <= '\u0990') || (LA58_0 >= '\u0993' && LA58_0 <= '\u09A8') || (LA58_0 >= '\u09AA' && LA58_0 <= '\u09B0') || LA58_0 == '\u09B2' || (LA58_0 >= '\u09B6' && LA58_0 <= '\u09B9') || (LA58_0 >= '\u09BC' && LA58_0 <= '\u09C4')
+                        || (LA58_0 >= '\u09C7' && LA58_0 <= '\u09C8') || (LA58_0 >= '\u09CB' && LA58_0 <= '\u09CD') || LA58_0 == '\u09D7' || (LA58_0 >= '\u09DC' && LA58_0 <= '\u09DD') || (LA58_0 >= '\u09DF' && LA58_0 <= '\u09E3') || (LA58_0 >= '\u09E6' && LA58_0 <= '\u09FA') || (LA58_0 >= '\u0A01' && LA58_0 <= '\u0A03') || (LA58_0 >= '\u0A05' && LA58_0 <= '\u0A0A') || (LA58_0 >= '\u0A0F' && LA58_0 <= '\u0A10') || (LA58_0 >= '\u0A13' && LA58_0 <= '\u0A28') || (LA58_0 >= '\u0A2A' && LA58_0 <= '\u0A30') || (LA58_0 >= '\u0A32' && LA58_0 <= '\u0A33') || (LA58_0 >= '\u0A35' && LA58_0 <= '\u0A36') || (LA58_0 >= '\u0A38' && LA58_0 <= '\u0A39') || LA58_0 == '\u0A3C' || (LA58_0 >= '\u0A3E' && LA58_0 <= '\u0A42') || (LA58_0 >= '\u0A47' && LA58_0 <= '\u0A48') || (LA58_0 >= '\u0A4B' && LA58_0 <= '\u0A4D') || (LA58_0 >= '\u0A59' && LA58_0 <= '\u0A5C') || LA58_0 == '\u0A5E' || (LA58_0 >= '\u0A66' && LA58_0 <= '\u0A74') || (LA58_0 >= '\u0A81' && LA58_0 <= '\u0A83')
+                        || (LA58_0 >= '\u0A85' && LA58_0 <= '\u0A8D') || (LA58_0 >= '\u0A8F' && LA58_0 <= '\u0A91') || (LA58_0 >= '\u0A93' && LA58_0 <= '\u0AA8') || (LA58_0 >= '\u0AAA' && LA58_0 <= '\u0AB0') || (LA58_0 >= '\u0AB2' && LA58_0 <= '\u0AB3') || (LA58_0 >= '\u0AB5' && LA58_0 <= '\u0AB9') || (LA58_0 >= '\u0ABC' && LA58_0 <= '\u0AC5') || (LA58_0 >= '\u0AC7' && LA58_0 <= '\u0AC9') || (LA58_0 >= '\u0ACB' && LA58_0 <= '\u0ACD') || LA58_0 == '\u0AD0' || (LA58_0 >= '\u0AE0' && LA58_0 <= '\u0AE3') || (LA58_0 >= '\u0AE6' && LA58_0 <= '\u0AEF') || LA58_0 == '\u0AF1' || (LA58_0 >= '\u0B01' && LA58_0 <= '\u0B03') || (LA58_0 >= '\u0B05' && LA58_0 <= '\u0B0C') || (LA58_0 >= '\u0B0F' && LA58_0 <= '\u0B10') || (LA58_0 >= '\u0B13' && LA58_0 <= '\u0B28') || (LA58_0 >= '\u0B2A' && LA58_0 <= '\u0B30') || (LA58_0 >= '\u0B32' && LA58_0 <= '\u0B33') || (LA58_0 >= '\u0B35' && LA58_0 <= '\u0B39') || (LA58_0 >= '\u0B3C' && LA58_0 <= '\u0B43') || (LA58_0 >= '\u0B47' && LA58_0 <= '\u0B48')
+                        || (LA58_0 >= '\u0B4B' && LA58_0 <= '\u0B4D') || (LA58_0 >= '\u0B56' && LA58_0 <= '\u0B57') || (LA58_0 >= '\u0B5C' && LA58_0 <= '\u0B5D') || (LA58_0 >= '\u0B5F' && LA58_0 <= '\u0B61') || (LA58_0 >= '\u0B66' && LA58_0 <= '\u0B71') || (LA58_0 >= '\u0B82' && LA58_0 <= '\u0B83') || (LA58_0 >= '\u0B85' && LA58_0 <= '\u0B8A') || (LA58_0 >= '\u0B8E' && LA58_0 <= '\u0B90') || (LA58_0 >= '\u0B92' && LA58_0 <= '\u0B95') || (LA58_0 >= '\u0B99' && LA58_0 <= '\u0B9A') || LA58_0 == '\u0B9C' || (LA58_0 >= '\u0B9E' && LA58_0 <= '\u0B9F') || (LA58_0 >= '\u0BA3' && LA58_0 <= '\u0BA4') || (LA58_0 >= '\u0BA8' && LA58_0 <= '\u0BAA') || (LA58_0 >= '\u0BAE' && LA58_0 <= '\u0BB5') || (LA58_0 >= '\u0BB7' && LA58_0 <= '\u0BB9') || (LA58_0 >= '\u0BBE' && LA58_0 <= '\u0BC2') || (LA58_0 >= '\u0BC6' && LA58_0 <= '\u0BC8') || (LA58_0 >= '\u0BCA' && LA58_0 <= '\u0BCD') || LA58_0 == '\u0BD7' || (LA58_0 >= '\u0BE7' && LA58_0 <= '\u0BFA') || (LA58_0 >= '\u0C01' && LA58_0 <= '\u0C03')
+                        || (LA58_0 >= '\u0C05' && LA58_0 <= '\u0C0C') || (LA58_0 >= '\u0C0E' && LA58_0 <= '\u0C10') || (LA58_0 >= '\u0C12' && LA58_0 <= '\u0C28') || (LA58_0 >= '\u0C2A' && LA58_0 <= '\u0C33') || (LA58_0 >= '\u0C35' && LA58_0 <= '\u0C39') || (LA58_0 >= '\u0C3E' && LA58_0 <= '\u0C44') || (LA58_0 >= '\u0C46' && LA58_0 <= '\u0C48') || (LA58_0 >= '\u0C4A' && LA58_0 <= '\u0C4D') || (LA58_0 >= '\u0C55' && LA58_0 <= '\u0C56') || (LA58_0 >= '\u0C60' && LA58_0 <= '\u0C61') || (LA58_0 >= '\u0C66' && LA58_0 <= '\u0C6F') || (LA58_0 >= '\u0C82' && LA58_0 <= '\u0C83') || (LA58_0 >= '\u0C85' && LA58_0 <= '\u0C8C') || (LA58_0 >= '\u0C8E' && LA58_0 <= '\u0C90') || (LA58_0 >= '\u0C92' && LA58_0 <= '\u0CA8') || (LA58_0 >= '\u0CAA' && LA58_0 <= '\u0CB3') || (LA58_0 >= '\u0CB5' && LA58_0 <= '\u0CB9') || (LA58_0 >= '\u0CBC' && LA58_0 <= '\u0CC4') || (LA58_0 >= '\u0CC6' && LA58_0 <= '\u0CC8') || (LA58_0 >= '\u0CCA' && LA58_0 <= '\u0CCD') || (LA58_0 >= '\u0CD5' && LA58_0 <= '\u0CD6')
+                        || LA58_0 == '\u0CDE' || (LA58_0 >= '\u0CE0' && LA58_0 <= '\u0CE1') || (LA58_0 >= '\u0CE6' && LA58_0 <= '\u0CEF') || (LA58_0 >= '\u0D02' && LA58_0 <= '\u0D03') || (LA58_0 >= '\u0D05' && LA58_0 <= '\u0D0C') || (LA58_0 >= '\u0D0E' && LA58_0 <= '\u0D10') || (LA58_0 >= '\u0D12' && LA58_0 <= '\u0D28') || (LA58_0 >= '\u0D2A' && LA58_0 <= '\u0D39') || (LA58_0 >= '\u0D3E' && LA58_0 <= '\u0D43') || (LA58_0 >= '\u0D46' && LA58_0 <= '\u0D48') || (LA58_0 >= '\u0D4A' && LA58_0 <= '\u0D4D') || LA58_0 == '\u0D57' || (LA58_0 >= '\u0D60' && LA58_0 <= '\u0D61') || (LA58_0 >= '\u0D66' && LA58_0 <= '\u0D6F') || (LA58_0 >= '\u0D82' && LA58_0 <= '\u0D83') || (LA58_0 >= '\u0D85' && LA58_0 <= '\u0D96') || (LA58_0 >= '\u0D9A' && LA58_0 <= '\u0DB1') || (LA58_0 >= '\u0DB3' && LA58_0 <= '\u0DBB') || LA58_0 == '\u0DBD' || (LA58_0 >= '\u0DC0' && LA58_0 <= '\u0DC6') || LA58_0 == '\u0DCA' || (LA58_0 >= '\u0DCF' && LA58_0 <= '\u0DD4') || LA58_0 == '\u0DD6'
+                        || (LA58_0 >= '\u0DD8' && LA58_0 <= '\u0DDF') || (LA58_0 >= '\u0DF2' && LA58_0 <= '\u0DF3') || (LA58_0 >= '\u0E01' && LA58_0 <= '\u0E3A') || (LA58_0 >= '\u0E3F' && LA58_0 <= '\u0E4E') || (LA58_0 >= '\u0E50' && LA58_0 <= '\u0E59') || (LA58_0 >= '\u0E81' && LA58_0 <= '\u0E82') || LA58_0 == '\u0E84' || (LA58_0 >= '\u0E87' && LA58_0 <= '\u0E88') || LA58_0 == '\u0E8A' || LA58_0 == '\u0E8D' || (LA58_0 >= '\u0E94' && LA58_0 <= '\u0E97') || (LA58_0 >= '\u0E99' && LA58_0 <= '\u0E9F') || (LA58_0 >= '\u0EA1' && LA58_0 <= '\u0EA3') || LA58_0 == '\u0EA5' || LA58_0 == '\u0EA7' || (LA58_0 >= '\u0EAA' && LA58_0 <= '\u0EAB') || (LA58_0 >= '\u0EAD' && LA58_0 <= '\u0EB9') || (LA58_0 >= '\u0EBB' && LA58_0 <= '\u0EBD') || (LA58_0 >= '\u0EC0' && LA58_0 <= '\u0EC4') || LA58_0 == '\u0EC6' || (LA58_0 >= '\u0EC8' && LA58_0 <= '\u0ECD') || (LA58_0 >= '\u0ED0' && LA58_0 <= '\u0ED9') || (LA58_0 >= '\u0EDC' && LA58_0 <= '\u0EDD') || (LA58_0 >= '\u0F00' && LA58_0 <= '\u0F03')
+                        || (LA58_0 >= '\u0F13' && LA58_0 <= '\u0F39') || (LA58_0 >= '\u0F3E' && LA58_0 <= '\u0F47') || (LA58_0 >= '\u0F49' && LA58_0 <= '\u0F6A') || (LA58_0 >= '\u0F71' && LA58_0 <= '\u0F84') || (LA58_0 >= '\u0F86' && LA58_0 <= '\u0F8B') || (LA58_0 >= '\u0F90' && LA58_0 <= '\u0F97') || (LA58_0 >= '\u0F99' && LA58_0 <= '\u0FBC') || (LA58_0 >= '\u0FBE' && LA58_0 <= '\u0FCC') || LA58_0 == '\u0FCF' || (LA58_0 >= '\u1000' && LA58_0 <= '\u1021') || (LA58_0 >= '\u1023' && LA58_0 <= '\u1027') || (LA58_0 >= '\u1029' && LA58_0 <= '\u102A') || (LA58_0 >= '\u102C' && LA58_0 <= '\u1032') || (LA58_0 >= '\u1036' && LA58_0 <= '\u1039') || (LA58_0 >= '\u1040' && LA58_0 <= '\u1049') || (LA58_0 >= '\u1050' && LA58_0 <= '\u1059') || (LA58_0 >= '\u10A0' && LA58_0 <= '\u10C5') || (LA58_0 >= '\u10D0' && LA58_0 <= '\u10F8') || (LA58_0 >= '\u1100' && LA58_0 <= '\u1159') || (LA58_0 >= '\u115F' && LA58_0 <= '\u11A2') || (LA58_0 >= '\u11A8' && LA58_0 <= '\u11F9')
+                        || (LA58_0 >= '\u1200' && LA58_0 <= '\u1206') || (LA58_0 >= '\u1208' && LA58_0 <= '\u1246') || LA58_0 == '\u1248' || (LA58_0 >= '\u124A' && LA58_0 <= '\u124D') || (LA58_0 >= '\u1250' && LA58_0 <= '\u1256') || LA58_0 == '\u1258' || (LA58_0 >= '\u125A' && LA58_0 <= '\u125D') || (LA58_0 >= '\u1260' && LA58_0 <= '\u1286') || LA58_0 == '\u1288' || (LA58_0 >= '\u128A' && LA58_0 <= '\u128D') || (LA58_0 >= '\u1290' && LA58_0 <= '\u12AE') || LA58_0 == '\u12B0' || (LA58_0 >= '\u12B2' && LA58_0 <= '\u12B5') || (LA58_0 >= '\u12B8' && LA58_0 <= '\u12BE') || LA58_0 == '\u12C0' || (LA58_0 >= '\u12C2' && LA58_0 <= '\u12C5') || (LA58_0 >= '\u12C8' && LA58_0 <= '\u12CE') || (LA58_0 >= '\u12D0' && LA58_0 <= '\u12D6') || (LA58_0 >= '\u12D8' && LA58_0 <= '\u12EE') || (LA58_0 >= '\u12F0' && LA58_0 <= '\u130E') || LA58_0 == '\u1310' || (LA58_0 >= '\u1312' && LA58_0 <= '\u1315') || (LA58_0 >= '\u1318' && LA58_0 <= '\u131E') || (LA58_0 >= '\u1320' && LA58_0 <= '\u1346')
+                        || (LA58_0 >= '\u1348' && LA58_0 <= '\u135A') || (LA58_0 >= '\u1369' && LA58_0 <= '\u137C') || (LA58_0 >= '\u13A0' && LA58_0 <= '\u13F4') || (LA58_0 >= '\u1401' && LA58_0 <= '\u166C') || (LA58_0 >= '\u166F' && LA58_0 <= '\u1676') || (LA58_0 >= '\u1681' && LA58_0 <= '\u169A') || (LA58_0 >= '\u16A0' && LA58_0 <= '\u16EA') || (LA58_0 >= '\u16EE' && LA58_0 <= '\u16F0') || (LA58_0 >= '\u1700' && LA58_0 <= '\u170C') || (LA58_0 >= '\u170E' && LA58_0 <= '\u1714') || (LA58_0 >= '\u1720' && LA58_0 <= '\u1734') || (LA58_0 >= '\u1740' && LA58_0 <= '\u1753') || (LA58_0 >= '\u1760' && LA58_0 <= '\u176C') || (LA58_0 >= '\u176E' && LA58_0 <= '\u1770') || (LA58_0 >= '\u1772' && LA58_0 <= '\u1773') || (LA58_0 >= '\u1780' && LA58_0 <= '\u17B3') || (LA58_0 >= '\u17B6' && LA58_0 <= '\u17D3') || LA58_0 == '\u17D7' || (LA58_0 >= '\u17DB' && LA58_0 <= '\u17DD') || (LA58_0 >= '\u17E0' && LA58_0 <= '\u17E9') || (LA58_0 >= '\u17F0' && LA58_0 <= '\u17F9')
+                        || (LA58_0 >= '\u180B' && LA58_0 <= '\u180D') || (LA58_0 >= '\u1810' && LA58_0 <= '\u1819') || (LA58_0 >= '\u1820' && LA58_0 <= '\u1877') || (LA58_0 >= '\u1880' && LA58_0 <= '\u18A9') || (LA58_0 >= '\u1900' && LA58_0 <= '\u191C') || (LA58_0 >= '\u1920' && LA58_0 <= '\u192B') || (LA58_0 >= '\u1930' && LA58_0 <= '\u193B') || LA58_0 == '\u1940' || (LA58_0 >= '\u1946' && LA58_0 <= '\u196D') || (LA58_0 >= '\u1970' && LA58_0 <= '\u1974') || (LA58_0 >= '\u19E0' && LA58_0 <= '\u19FF') || (LA58_0 >= '\u1D00' && LA58_0 <= '\u1D6B') || (LA58_0 >= '\u1E00' && LA58_0 <= '\u1E9B') || (LA58_0 >= '\u1EA0' && LA58_0 <= '\u1EF9') || (LA58_0 >= '\u1F00' && LA58_0 <= '\u1F15') || (LA58_0 >= '\u1F18' && LA58_0 <= '\u1F1D') || (LA58_0 >= '\u1F20' && LA58_0 <= '\u1F45') || (LA58_0 >= '\u1F48' && LA58_0 <= '\u1F4D') || (LA58_0 >= '\u1F50' && LA58_0 <= '\u1F57') || LA58_0 == '\u1F59' || LA58_0 == '\u1F5B' || LA58_0 == '\u1F5D' || (LA58_0 >= '\u1F5F' && LA58_0 <= '\u1F7D')
+                        || (LA58_0 >= '\u1F80' && LA58_0 <= '\u1FB4') || (LA58_0 >= '\u1FB6' && LA58_0 <= '\u1FBC') || LA58_0 == '\u1FBE' || (LA58_0 >= '\u1FC2' && LA58_0 <= '\u1FC4') || (LA58_0 >= '\u1FC6' && LA58_0 <= '\u1FCC') || (LA58_0 >= '\u1FD0' && LA58_0 <= '\u1FD3') || (LA58_0 >= '\u1FD6' && LA58_0 <= '\u1FDB') || (LA58_0 >= '\u1FE0' && LA58_0 <= '\u1FEC') || (LA58_0 >= '\u1FF2' && LA58_0 <= '\u1FF4') || (LA58_0 >= '\u1FF6' && LA58_0 <= '\u1FFC') || (LA58_0 >= '\u2070' && LA58_0 <= '\u2071') || (LA58_0 >= '\u2074' && LA58_0 <= '\u2079') || (LA58_0 >= '\u207F' && LA58_0 <= '\u2089') || (LA58_0 >= '\u20A0' && LA58_0 <= '\u20B1') || (LA58_0 >= '\u20D0' && LA58_0 <= '\u20EA') || (LA58_0 >= '\u2100' && LA58_0 <= '\u213B') || (LA58_0 >= '\u213D' && LA58_0 <= '\u213F') || (LA58_0 >= '\u2145' && LA58_0 <= '\u214A') || (LA58_0 >= '\u2153' && LA58_0 <= '\u2183') || (LA58_0 >= '\u2195' && LA58_0 <= '\u2199') || (LA58_0 >= '\u219C' && LA58_0 <= '\u219F')
+                        || (LA58_0 >= '\u21A1' && LA58_0 <= '\u21A2') || (LA58_0 >= '\u21A4' && LA58_0 <= '\u21A5') || (LA58_0 >= '\u21A7' && LA58_0 <= '\u21AD') || (LA58_0 >= '\u21AF' && LA58_0 <= '\u21CD') || (LA58_0 >= '\u21D0' && LA58_0 <= '\u21D1') || LA58_0 == '\u21D3' || (LA58_0 >= '\u21D5' && LA58_0 <= '\u21F3') || (LA58_0 >= '\u2300' && LA58_0 <= '\u2307') || (LA58_0 >= '\u230C' && LA58_0 <= '\u231F') || (LA58_0 >= '\u2322' && LA58_0 <= '\u2328') || (LA58_0 >= '\u232B' && LA58_0 <= '\u237B') || (LA58_0 >= '\u237D' && LA58_0 <= '\u239A') || (LA58_0 >= '\u23B7' && LA58_0 <= '\u23D0') || (LA58_0 >= '\u2400' && LA58_0 <= '\u2426') || (LA58_0 >= '\u2440' && LA58_0 <= '\u244A') || (LA58_0 >= '\u2460' && LA58_0 <= '\u25B6') || (LA58_0 >= '\u25B8' && LA58_0 <= '\u25C0') || (LA58_0 >= '\u25C2' && LA58_0 <= '\u25F7') || (LA58_0 >= '\u2600' && LA58_0 <= '\u2617') || (LA58_0 >= '\u2619' && LA58_0 <= '\u266E') || (LA58_0 >= '\u2670' && LA58_0 <= '\u267D')
+                        || (LA58_0 >= '\u2680' && LA58_0 <= '\u2691') || (LA58_0 >= '\u26A0' && LA58_0 <= '\u26A1') || (LA58_0 >= '\u2701' && LA58_0 <= '\u2704') || (LA58_0 >= '\u2706' && LA58_0 <= '\u2709') || (LA58_0 >= '\u270C' && LA58_0 <= '\u2727') || (LA58_0 >= '\u2729' && LA58_0 <= '\u274B') || LA58_0 == '\u274D' || (LA58_0 >= '\u274F' && LA58_0 <= '\u2752') || LA58_0 == '\u2756' || (LA58_0 >= '\u2758' && LA58_0 <= '\u275E') || (LA58_0 >= '\u2761' && LA58_0 <= '\u2767') || (LA58_0 >= '\u2776' && LA58_0 <= '\u2794') || (LA58_0 >= '\u2798' && LA58_0 <= '\u27AF') || (LA58_0 >= '\u27B1' && LA58_0 <= '\u27BE') || (LA58_0 >= '\u2800' && LA58_0 <= '\u28FF') || (LA58_0 >= '\u2B00' && LA58_0 <= '\u2B0D') || (LA58_0 >= '\u2E80' && LA58_0 <= '\u2E99') || (LA58_0 >= '\u2E9B' && LA58_0 <= '\u2EF3') || (LA58_0 >= '\u2F00' && LA58_0 <= '\u2FD5') || (LA58_0 >= '\u2FF0' && LA58_0 <= '\u2FFB') || (LA58_0 >= '\u3004' && LA58_0 <= '\u3007') || (LA58_0 >= '\u3012' && LA58_0 <= '\u3013')
+                        || (LA58_0 >= '\u3020' && LA58_0 <= '\u302F') || (LA58_0 >= '\u3031' && LA58_0 <= '\u303C') || (LA58_0 >= '\u303E' && LA58_0 <= '\u303F') || (LA58_0 >= '\u3041' && LA58_0 <= '\u3096') || (LA58_0 >= '\u3099' && LA58_0 <= '\u309A') || (LA58_0 >= '\u309D' && LA58_0 <= '\u309F') || (LA58_0 >= '\u30A1' && LA58_0 <= '\u30FA') || (LA58_0 >= '\u30FC' && LA58_0 <= '\u30FF') || (LA58_0 >= '\u3105' && LA58_0 <= '\u312C') || (LA58_0 >= '\u3131' && LA58_0 <= '\u318E') || (LA58_0 >= '\u3190' && LA58_0 <= '\u31B7') || (LA58_0 >= '\u31F0' && LA58_0 <= '\u321E') || (LA58_0 >= '\u3220' && LA58_0 <= '\u3243') || (LA58_0 >= '\u3250' && LA58_0 <= '\u327D') || (LA58_0 >= '\u327F' && LA58_0 <= '\u32FE') || (LA58_0 >= '\u3300' && LA58_0 <= '\u4DB5') || (LA58_0 >= '\u4DC0' && LA58_0 <= '\u9FA5') || (LA58_0 >= '\uA000' && LA58_0 <= '\uA48C') || (LA58_0 >= '\uA490' && LA58_0 <= '\uA4C6') || (LA58_0 >= '\uAC00' && LA58_0 <= '\uD7A3') || (LA58_0 >= '\uF900' && LA58_0 <= '\uFA2D')
+                        || (LA58_0 >= '\uFA30' && LA58_0 <= '\uFA6A') || (LA58_0 >= '\uFB00' && LA58_0 <= '\uFB06') || (LA58_0 >= '\uFB13' && LA58_0 <= '\uFB17') || (LA58_0 >= '\uFB1D' && LA58_0 <= '\uFB28') || (LA58_0 >= '\uFB2A' && LA58_0 <= '\uFB36') || (LA58_0 >= '\uFB38' && LA58_0 <= '\uFB3C') || LA58_0 == '\uFB3E' || (LA58_0 >= '\uFB40' && LA58_0 <= '\uFB41') || (LA58_0 >= '\uFB43' && LA58_0 <= '\uFB44') || (LA58_0 >= '\uFB46' && LA58_0 <= '\uFBB1') || (LA58_0 >= '\uFBD3' && LA58_0 <= '\uFD3D') || (LA58_0 >= '\uFD50' && LA58_0 <= '\uFD8F') || (LA58_0 >= '\uFD92' && LA58_0 <= '\uFDC7') || (LA58_0 >= '\uFDF0' && LA58_0 <= '\uFDFD') || (LA58_0 >= '\uFE00' && LA58_0 <= '\uFE0F') || (LA58_0 >= '\uFE20' && LA58_0 <= '\uFE23') || LA58_0 == '\uFE69' || (LA58_0 >= '\uFE70' && LA58_0 <= '\uFE74') || (LA58_0 >= '\uFE76' && LA58_0 <= '\uFEFC') || LA58_0 == '\uFF04' || (LA58_0 >= '\uFF10' && LA58_0 <= '\uFF19') || (LA58_0 >= '\uFF21' && LA58_0 <= '\uFF3A')
+                        || (LA58_0 >= '\uFF41' && LA58_0 <= '\uFF5A') || (LA58_0 >= '\uFF66' && LA58_0 <= '\uFFBE') || (LA58_0 >= '\uFFC2' && LA58_0 <= '\uFFC7') || (LA58_0 >= '\uFFCA' && LA58_0 <= '\uFFCF') || (LA58_0 >= '\uFFD2' && LA58_0 <= '\uFFD7') || (LA58_0 >= '\uFFDA' && LA58_0 <= '\uFFDC') || (LA58_0 >= '\uFFE0' && LA58_0 <= '\uFFE1') || (LA58_0 >= '\uFFE4' && LA58_0 <= '\uFFE6') || LA58_0 == '\uFFE8' || (LA58_0 >= '\uFFED' && LA58_0 <= '\uFFEE')))
                 {
-                    alt57 = 2;
+                    alt58 = 2;
                 }
 
                 else
@@ -5332,14 +5400,14 @@ public class FTSLexer extends Lexer
                         state.failed = true;
                         return;
                     }
-                    NoViableAltException nvae = new NoViableAltException("", 57, 0, input);
+                    NoViableAltException nvae = new NoViableAltException("", 58, 0, input);
                     throw nvae;
                 }
 
-                switch (alt57)
+                switch (alt58)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1558:17: F_ESC
+                // FTS.g:1568:17: F_ESC
                 {
                     mF_ESC();
                     if (state.failed)
@@ -5348,7 +5416,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 2:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1559:19: START_WORD
+                // FTS.g:1569:19: START_WORD
                 {
                     mSTART_WORD();
                     if (state.failed)
@@ -5359,41 +5427,41 @@ public class FTSLexer extends Lexer
 
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1561:9: ( F_ESC | IN_WORD )*
-                loop58: while (true)
+                // FTS.g:1571:9: ( F_ESC | IN_WORD )*
+                loop59: while (true)
                 {
-                    int alt58 = 3;
-                    int LA58_0 = input.LA(1);
-                    if ((LA58_0 == '\\'))
+                    int alt59 = 3;
+                    int LA59_0 = input.LA(1);
+                    if ((LA59_0 == '\\'))
                     {
-                        alt58 = 1;
+                        alt59 = 1;
                     }
-                    else if (((LA58_0 >= '!' && LA58_0 <= '\'') || LA58_0 == '+' || LA58_0 == '-' || (LA58_0 >= '/' && LA58_0 <= '9') || LA58_0 == ';' || LA58_0 == '=' || (LA58_0 >= '@' && LA58_0 <= 'Z') || LA58_0 == '_' || (LA58_0 >= 'a' && LA58_0 <= 'z') || LA58_0 == '|' || (LA58_0 >= '\u00A1' && LA58_0 <= '\u00A7') || (LA58_0 >= '\u00A9' && LA58_0 <= '\u00AA') || LA58_0 == '\u00AC' || LA58_0 == '\u00AE' || (LA58_0 >= '\u00B0' && LA58_0 <= '\u00B3') || (LA58_0 >= '\u00B5' && LA58_0 <= '\u00B7') || (LA58_0 >= '\u00B9' && LA58_0 <= '\u00BA') || (LA58_0 >= '\u00BC' && LA58_0 <= '\u0236') || (LA58_0 >= '\u0250' && LA58_0 <= '\u02C1') || (LA58_0 >= '\u02C6' && LA58_0 <= '\u02D1') || (LA58_0 >= '\u02E0' && LA58_0 <= '\u02E4') || LA58_0 == '\u02EE' || (LA58_0 >= '\u0300' && LA58_0 <= '\u0357') || (LA58_0 >= '\u035D' && LA58_0 <= '\u036F') || LA58_0 == '\u037A' || LA58_0 == '\u037E' || (LA58_0 >= '\u0386' && LA58_0 <= '\u038A') || LA58_0 == '\u038C'
-                            || (LA58_0 >= '\u038E' && LA58_0 <= '\u03A1') || (LA58_0 >= '\u03A3' && LA58_0 <= '\u03CE') || (LA58_0 >= '\u03D0' && LA58_0 <= '\u03FB') || (LA58_0 >= '\u0400' && LA58_0 <= '\u0486') || (LA58_0 >= '\u0488' && LA58_0 <= '\u04CE') || (LA58_0 >= '\u04D0' && LA58_0 <= '\u04F5') || (LA58_0 >= '\u04F8' && LA58_0 <= '\u04F9') || (LA58_0 >= '\u0500' && LA58_0 <= '\u050F') || (LA58_0 >= '\u0531' && LA58_0 <= '\u0556') || (LA58_0 >= '\u0559' && LA58_0 <= '\u055F') || (LA58_0 >= '\u0561' && LA58_0 <= '\u0587') || (LA58_0 >= '\u0589' && LA58_0 <= '\u058A') || (LA58_0 >= '\u0591' && LA58_0 <= '\u05A1') || (LA58_0 >= '\u05A3' && LA58_0 <= '\u05B9') || (LA58_0 >= '\u05BB' && LA58_0 <= '\u05C4') || (LA58_0 >= '\u05D0' && LA58_0 <= '\u05EA') || (LA58_0 >= '\u05F0' && LA58_0 <= '\u05F4') || (LA58_0 >= '\u060C' && LA58_0 <= '\u0615') || LA58_0 == '\u061B' || LA58_0 == '\u061F' || (LA58_0 >= '\u0621' && LA58_0 <= '\u063A') || (LA58_0 >= '\u0640' && LA58_0 <= '\u0658')
-                            || (LA58_0 >= '\u0660' && LA58_0 <= '\u06DC') || (LA58_0 >= '\u06DE' && LA58_0 <= '\u070D') || (LA58_0 >= '\u0710' && LA58_0 <= '\u074A') || (LA58_0 >= '\u074D' && LA58_0 <= '\u074F') || (LA58_0 >= '\u0780' && LA58_0 <= '\u07B1') || (LA58_0 >= '\u0901' && LA58_0 <= '\u0939') || (LA58_0 >= '\u093C' && LA58_0 <= '\u094D') || (LA58_0 >= '\u0950' && LA58_0 <= '\u0954') || (LA58_0 >= '\u0958' && LA58_0 <= '\u0970') || (LA58_0 >= '\u0981' && LA58_0 <= '\u0983') || (LA58_0 >= '\u0985' && LA58_0 <= '\u098C') || (LA58_0 >= '\u098F' && LA58_0 <= '\u0990') || (LA58_0 >= '\u0993' && LA58_0 <= '\u09A8') || (LA58_0 >= '\u09AA' && LA58_0 <= '\u09B0') || LA58_0 == '\u09B2' || (LA58_0 >= '\u09B6' && LA58_0 <= '\u09B9') || (LA58_0 >= '\u09BC' && LA58_0 <= '\u09C4') || (LA58_0 >= '\u09C7' && LA58_0 <= '\u09C8') || (LA58_0 >= '\u09CB' && LA58_0 <= '\u09CD') || LA58_0 == '\u09D7' || (LA58_0 >= '\u09DC' && LA58_0 <= '\u09DD') || (LA58_0 >= '\u09DF' && LA58_0 <= '\u09E3')
-                            || (LA58_0 >= '\u09E6' && LA58_0 <= '\u09FA') || (LA58_0 >= '\u0A01' && LA58_0 <= '\u0A03') || (LA58_0 >= '\u0A05' && LA58_0 <= '\u0A0A') || (LA58_0 >= '\u0A0F' && LA58_0 <= '\u0A10') || (LA58_0 >= '\u0A13' && LA58_0 <= '\u0A28') || (LA58_0 >= '\u0A2A' && LA58_0 <= '\u0A30') || (LA58_0 >= '\u0A32' && LA58_0 <= '\u0A33') || (LA58_0 >= '\u0A35' && LA58_0 <= '\u0A36') || (LA58_0 >= '\u0A38' && LA58_0 <= '\u0A39') || LA58_0 == '\u0A3C' || (LA58_0 >= '\u0A3E' && LA58_0 <= '\u0A42') || (LA58_0 >= '\u0A47' && LA58_0 <= '\u0A48') || (LA58_0 >= '\u0A4B' && LA58_0 <= '\u0A4D') || (LA58_0 >= '\u0A59' && LA58_0 <= '\u0A5C') || LA58_0 == '\u0A5E' || (LA58_0 >= '\u0A66' && LA58_0 <= '\u0A74') || (LA58_0 >= '\u0A81' && LA58_0 <= '\u0A83') || (LA58_0 >= '\u0A85' && LA58_0 <= '\u0A8D') || (LA58_0 >= '\u0A8F' && LA58_0 <= '\u0A91') || (LA58_0 >= '\u0A93' && LA58_0 <= '\u0AA8') || (LA58_0 >= '\u0AAA' && LA58_0 <= '\u0AB0') || (LA58_0 >= '\u0AB2' && LA58_0 <= '\u0AB3')
-                            || (LA58_0 >= '\u0AB5' && LA58_0 <= '\u0AB9') || (LA58_0 >= '\u0ABC' && LA58_0 <= '\u0AC5') || (LA58_0 >= '\u0AC7' && LA58_0 <= '\u0AC9') || (LA58_0 >= '\u0ACB' && LA58_0 <= '\u0ACD') || LA58_0 == '\u0AD0' || (LA58_0 >= '\u0AE0' && LA58_0 <= '\u0AE3') || (LA58_0 >= '\u0AE6' && LA58_0 <= '\u0AEF') || LA58_0 == '\u0AF1' || (LA58_0 >= '\u0B01' && LA58_0 <= '\u0B03') || (LA58_0 >= '\u0B05' && LA58_0 <= '\u0B0C') || (LA58_0 >= '\u0B0F' && LA58_0 <= '\u0B10') || (LA58_0 >= '\u0B13' && LA58_0 <= '\u0B28') || (LA58_0 >= '\u0B2A' && LA58_0 <= '\u0B30') || (LA58_0 >= '\u0B32' && LA58_0 <= '\u0B33') || (LA58_0 >= '\u0B35' && LA58_0 <= '\u0B39') || (LA58_0 >= '\u0B3C' && LA58_0 <= '\u0B43') || (LA58_0 >= '\u0B47' && LA58_0 <= '\u0B48') || (LA58_0 >= '\u0B4B' && LA58_0 <= '\u0B4D') || (LA58_0 >= '\u0B56' && LA58_0 <= '\u0B57') || (LA58_0 >= '\u0B5C' && LA58_0 <= '\u0B5D') || (LA58_0 >= '\u0B5F' && LA58_0 <= '\u0B61') || (LA58_0 >= '\u0B66' && LA58_0 <= '\u0B71')
-                            || (LA58_0 >= '\u0B82' && LA58_0 <= '\u0B83') || (LA58_0 >= '\u0B85' && LA58_0 <= '\u0B8A') || (LA58_0 >= '\u0B8E' && LA58_0 <= '\u0B90') || (LA58_0 >= '\u0B92' && LA58_0 <= '\u0B95') || (LA58_0 >= '\u0B99' && LA58_0 <= '\u0B9A') || LA58_0 == '\u0B9C' || (LA58_0 >= '\u0B9E' && LA58_0 <= '\u0B9F') || (LA58_0 >= '\u0BA3' && LA58_0 <= '\u0BA4') || (LA58_0 >= '\u0BA8' && LA58_0 <= '\u0BAA') || (LA58_0 >= '\u0BAE' && LA58_0 <= '\u0BB5') || (LA58_0 >= '\u0BB7' && LA58_0 <= '\u0BB9') || (LA58_0 >= '\u0BBE' && LA58_0 <= '\u0BC2') || (LA58_0 >= '\u0BC6' && LA58_0 <= '\u0BC8') || (LA58_0 >= '\u0BCA' && LA58_0 <= '\u0BCD') || LA58_0 == '\u0BD7' || (LA58_0 >= '\u0BE7' && LA58_0 <= '\u0BFA') || (LA58_0 >= '\u0C01' && LA58_0 <= '\u0C03') || (LA58_0 >= '\u0C05' && LA58_0 <= '\u0C0C') || (LA58_0 >= '\u0C0E' && LA58_0 <= '\u0C10') || (LA58_0 >= '\u0C12' && LA58_0 <= '\u0C28') || (LA58_0 >= '\u0C2A' && LA58_0 <= '\u0C33') || (LA58_0 >= '\u0C35' && LA58_0 <= '\u0C39')
-                            || (LA58_0 >= '\u0C3E' && LA58_0 <= '\u0C44') || (LA58_0 >= '\u0C46' && LA58_0 <= '\u0C48') || (LA58_0 >= '\u0C4A' && LA58_0 <= '\u0C4D') || (LA58_0 >= '\u0C55' && LA58_0 <= '\u0C56') || (LA58_0 >= '\u0C60' && LA58_0 <= '\u0C61') || (LA58_0 >= '\u0C66' && LA58_0 <= '\u0C6F') || (LA58_0 >= '\u0C82' && LA58_0 <= '\u0C83') || (LA58_0 >= '\u0C85' && LA58_0 <= '\u0C8C') || (LA58_0 >= '\u0C8E' && LA58_0 <= '\u0C90') || (LA58_0 >= '\u0C92' && LA58_0 <= '\u0CA8') || (LA58_0 >= '\u0CAA' && LA58_0 <= '\u0CB3') || (LA58_0 >= '\u0CB5' && LA58_0 <= '\u0CB9') || (LA58_0 >= '\u0CBC' && LA58_0 <= '\u0CC4') || (LA58_0 >= '\u0CC6' && LA58_0 <= '\u0CC8') || (LA58_0 >= '\u0CCA' && LA58_0 <= '\u0CCD') || (LA58_0 >= '\u0CD5' && LA58_0 <= '\u0CD6') || LA58_0 == '\u0CDE' || (LA58_0 >= '\u0CE0' && LA58_0 <= '\u0CE1') || (LA58_0 >= '\u0CE6' && LA58_0 <= '\u0CEF') || (LA58_0 >= '\u0D02' && LA58_0 <= '\u0D03') || (LA58_0 >= '\u0D05' && LA58_0 <= '\u0D0C')
-                            || (LA58_0 >= '\u0D0E' && LA58_0 <= '\u0D10') || (LA58_0 >= '\u0D12' && LA58_0 <= '\u0D28') || (LA58_0 >= '\u0D2A' && LA58_0 <= '\u0D39') || (LA58_0 >= '\u0D3E' && LA58_0 <= '\u0D43') || (LA58_0 >= '\u0D46' && LA58_0 <= '\u0D48') || (LA58_0 >= '\u0D4A' && LA58_0 <= '\u0D4D') || LA58_0 == '\u0D57' || (LA58_0 >= '\u0D60' && LA58_0 <= '\u0D61') || (LA58_0 >= '\u0D66' && LA58_0 <= '\u0D6F') || (LA58_0 >= '\u0D82' && LA58_0 <= '\u0D83') || (LA58_0 >= '\u0D85' && LA58_0 <= '\u0D96') || (LA58_0 >= '\u0D9A' && LA58_0 <= '\u0DB1') || (LA58_0 >= '\u0DB3' && LA58_0 <= '\u0DBB') || LA58_0 == '\u0DBD' || (LA58_0 >= '\u0DC0' && LA58_0 <= '\u0DC6') || LA58_0 == '\u0DCA' || (LA58_0 >= '\u0DCF' && LA58_0 <= '\u0DD4') || LA58_0 == '\u0DD6' || (LA58_0 >= '\u0DD8' && LA58_0 <= '\u0DDF') || (LA58_0 >= '\u0DF2' && LA58_0 <= '\u0DF4') || (LA58_0 >= '\u0E01' && LA58_0 <= '\u0E3A') || (LA58_0 >= '\u0E3F' && LA58_0 <= '\u0E5B') || (LA58_0 >= '\u0E81' && LA58_0 <= '\u0E82')
-                            || LA58_0 == '\u0E84' || (LA58_0 >= '\u0E87' && LA58_0 <= '\u0E88') || LA58_0 == '\u0E8A' || LA58_0 == '\u0E8D' || (LA58_0 >= '\u0E94' && LA58_0 <= '\u0E97') || (LA58_0 >= '\u0E99' && LA58_0 <= '\u0E9F') || (LA58_0 >= '\u0EA1' && LA58_0 <= '\u0EA3') || LA58_0 == '\u0EA5' || LA58_0 == '\u0EA7' || (LA58_0 >= '\u0EAA' && LA58_0 <= '\u0EAB') || (LA58_0 >= '\u0EAD' && LA58_0 <= '\u0EB9') || (LA58_0 >= '\u0EBB' && LA58_0 <= '\u0EBD') || (LA58_0 >= '\u0EC0' && LA58_0 <= '\u0EC4') || LA58_0 == '\u0EC6' || (LA58_0 >= '\u0EC8' && LA58_0 <= '\u0ECD') || (LA58_0 >= '\u0ED0' && LA58_0 <= '\u0ED9') || (LA58_0 >= '\u0EDC' && LA58_0 <= '\u0EDD') || (LA58_0 >= '\u0F00' && LA58_0 <= '\u0F39') || (LA58_0 >= '\u0F3E' && LA58_0 <= '\u0F47') || (LA58_0 >= '\u0F49' && LA58_0 <= '\u0F6A') || (LA58_0 >= '\u0F71' && LA58_0 <= '\u0F8B') || (LA58_0 >= '\u0F90' && LA58_0 <= '\u0F97') || (LA58_0 >= '\u0F99' && LA58_0 <= '\u0FBC') || (LA58_0 >= '\u0FBE' && LA58_0 <= '\u0FCC')
-                            || LA58_0 == '\u0FCF' || (LA58_0 >= '\u1000' && LA58_0 <= '\u1021') || (LA58_0 >= '\u1023' && LA58_0 <= '\u1027') || (LA58_0 >= '\u1029' && LA58_0 <= '\u102A') || (LA58_0 >= '\u102C' && LA58_0 <= '\u1032') || (LA58_0 >= '\u1036' && LA58_0 <= '\u1039') || (LA58_0 >= '\u1040' && LA58_0 <= '\u1059') || (LA58_0 >= '\u10A0' && LA58_0 <= '\u10C5') || (LA58_0 >= '\u10D0' && LA58_0 <= '\u10F8') || LA58_0 == '\u10FB' || (LA58_0 >= '\u1100' && LA58_0 <= '\u1159') || (LA58_0 >= '\u115F' && LA58_0 <= '\u11A2') || (LA58_0 >= '\u11A8' && LA58_0 <= '\u11F9') || (LA58_0 >= '\u1200' && LA58_0 <= '\u1206') || (LA58_0 >= '\u1208' && LA58_0 <= '\u1246') || LA58_0 == '\u1248' || (LA58_0 >= '\u124A' && LA58_0 <= '\u124D') || (LA58_0 >= '\u1250' && LA58_0 <= '\u1256') || LA58_0 == '\u1258' || (LA58_0 >= '\u125A' && LA58_0 <= '\u125D') || (LA58_0 >= '\u1260' && LA58_0 <= '\u1286') || LA58_0 == '\u1288' || (LA58_0 >= '\u128A' && LA58_0 <= '\u128D')
-                            || (LA58_0 >= '\u1290' && LA58_0 <= '\u12AE') || LA58_0 == '\u12B0' || (LA58_0 >= '\u12B2' && LA58_0 <= '\u12B5') || (LA58_0 >= '\u12B8' && LA58_0 <= '\u12BE') || LA58_0 == '\u12C0' || (LA58_0 >= '\u12C2' && LA58_0 <= '\u12C5') || (LA58_0 >= '\u12C8' && LA58_0 <= '\u12CE') || (LA58_0 >= '\u12D0' && LA58_0 <= '\u12D6') || (LA58_0 >= '\u12D8' && LA58_0 <= '\u12EE') || (LA58_0 >= '\u12F0' && LA58_0 <= '\u130E') || LA58_0 == '\u1310' || (LA58_0 >= '\u1312' && LA58_0 <= '\u1315') || (LA58_0 >= '\u1318' && LA58_0 <= '\u131E') || (LA58_0 >= '\u1320' && LA58_0 <= '\u1346') || (LA58_0 >= '\u1348' && LA58_0 <= '\u135A') || (LA58_0 >= '\u1361' && LA58_0 <= '\u137C') || (LA58_0 >= '\u13A0' && LA58_0 <= '\u13F4') || (LA58_0 >= '\u1401' && LA58_0 <= '\u1676') || (LA58_0 >= '\u1681' && LA58_0 <= '\u169A') || (LA58_0 >= '\u16A0' && LA58_0 <= '\u16F0') || (LA58_0 >= '\u1700' && LA58_0 <= '\u170C') || (LA58_0 >= '\u170E' && LA58_0 <= '\u1714')
-                            || (LA58_0 >= '\u1720' && LA58_0 <= '\u1736') || (LA58_0 >= '\u1740' && LA58_0 <= '\u1753') || (LA58_0 >= '\u1760' && LA58_0 <= '\u176C') || (LA58_0 >= '\u176E' && LA58_0 <= '\u1770') || (LA58_0 >= '\u1772' && LA58_0 <= '\u1773') || (LA58_0 >= '\u1780' && LA58_0 <= '\u17B3') || (LA58_0 >= '\u17B6' && LA58_0 <= '\u17DD') || (LA58_0 >= '\u17E0' && LA58_0 <= '\u17E9') || (LA58_0 >= '\u17F0' && LA58_0 <= '\u17F9') || (LA58_0 >= '\u1800' && LA58_0 <= '\u180D') || (LA58_0 >= '\u1810' && LA58_0 <= '\u1819') || (LA58_0 >= '\u1820' && LA58_0 <= '\u1877') || (LA58_0 >= '\u1880' && LA58_0 <= '\u18A9') || (LA58_0 >= '\u1900' && LA58_0 <= '\u191C') || (LA58_0 >= '\u1920' && LA58_0 <= '\u192B') || (LA58_0 >= '\u1930' && LA58_0 <= '\u193B') || LA58_0 == '\u1940' || (LA58_0 >= '\u1944' && LA58_0 <= '\u196D') || (LA58_0 >= '\u1970' && LA58_0 <= '\u1974') || (LA58_0 >= '\u19E0' && LA58_0 <= '\u19FF') || (LA58_0 >= '\u1D00' && LA58_0 <= '\u1D6B')
-                            || (LA58_0 >= '\u1E00' && LA58_0 <= '\u1E9B') || (LA58_0 >= '\u1EA0' && LA58_0 <= '\u1EF9') || (LA58_0 >= '\u1F00' && LA58_0 <= '\u1F15') || (LA58_0 >= '\u1F18' && LA58_0 <= '\u1F1D') || (LA58_0 >= '\u1F20' && LA58_0 <= '\u1F45') || (LA58_0 >= '\u1F48' && LA58_0 <= '\u1F4D') || (LA58_0 >= '\u1F50' && LA58_0 <= '\u1F57') || LA58_0 == '\u1F59' || LA58_0 == '\u1F5B' || LA58_0 == '\u1F5D' || (LA58_0 >= '\u1F5F' && LA58_0 <= '\u1F7D') || (LA58_0 >= '\u1F80' && LA58_0 <= '\u1FB4') || (LA58_0 >= '\u1FB6' && LA58_0 <= '\u1FBC') || LA58_0 == '\u1FBE' || (LA58_0 >= '\u1FC2' && LA58_0 <= '\u1FC4') || (LA58_0 >= '\u1FC6' && LA58_0 <= '\u1FCC') || (LA58_0 >= '\u1FD0' && LA58_0 <= '\u1FD3') || (LA58_0 >= '\u1FD6' && LA58_0 <= '\u1FDB') || (LA58_0 >= '\u1FE0' && LA58_0 <= '\u1FEC') || (LA58_0 >= '\u1FF2' && LA58_0 <= '\u1FF4') || (LA58_0 >= '\u1FF6' && LA58_0 <= '\u1FFC') || (LA58_0 >= '\u2010' && LA58_0 <= '\u2017') || (LA58_0 >= '\u2020' && LA58_0 <= '\u2027')
-                            || (LA58_0 >= '\u2030' && LA58_0 <= '\u2038') || (LA58_0 >= '\u203B' && LA58_0 <= '\u2044') || (LA58_0 >= '\u2047' && LA58_0 <= '\u2054') || LA58_0 == '\u2057' || (LA58_0 >= '\u2070' && LA58_0 <= '\u2071') || (LA58_0 >= '\u2074' && LA58_0 <= '\u207C') || (LA58_0 >= '\u207F' && LA58_0 <= '\u208C') || (LA58_0 >= '\u20A0' && LA58_0 <= '\u20B1') || (LA58_0 >= '\u20D0' && LA58_0 <= '\u20EA') || (LA58_0 >= '\u2100' && LA58_0 <= '\u213B') || (LA58_0 >= '\u213D' && LA58_0 <= '\u214B') || (LA58_0 >= '\u2153' && LA58_0 <= '\u2183') || (LA58_0 >= '\u2190' && LA58_0 <= '\u2328') || (LA58_0 >= '\u232B' && LA58_0 <= '\u23B3') || (LA58_0 >= '\u23B6' && LA58_0 <= '\u23D0') || (LA58_0 >= '\u2400' && LA58_0 <= '\u2426') || (LA58_0 >= '\u2440' && LA58_0 <= '\u244A') || (LA58_0 >= '\u2460' && LA58_0 <= '\u2617') || (LA58_0 >= '\u2619' && LA58_0 <= '\u267D') || (LA58_0 >= '\u2680' && LA58_0 <= '\u2691') || (LA58_0 >= '\u26A0' && LA58_0 <= '\u26A1')
-                            || (LA58_0 >= '\u2701' && LA58_0 <= '\u2704') || (LA58_0 >= '\u2706' && LA58_0 <= '\u2709') || (LA58_0 >= '\u270C' && LA58_0 <= '\u2727') || (LA58_0 >= '\u2729' && LA58_0 <= '\u274B') || LA58_0 == '\u274D' || (LA58_0 >= '\u274F' && LA58_0 <= '\u2752') || LA58_0 == '\u2756' || (LA58_0 >= '\u2758' && LA58_0 <= '\u275E') || (LA58_0 >= '\u2761' && LA58_0 <= '\u2767') || (LA58_0 >= '\u2776' && LA58_0 <= '\u2794') || (LA58_0 >= '\u2798' && LA58_0 <= '\u27AF') || (LA58_0 >= '\u27B1' && LA58_0 <= '\u27BE') || (LA58_0 >= '\u27D0' && LA58_0 <= '\u27E5') || (LA58_0 >= '\u27F0' && LA58_0 <= '\u2982') || (LA58_0 >= '\u2999' && LA58_0 <= '\u29D7') || (LA58_0 >= '\u29DC' && LA58_0 <= '\u29FB') || (LA58_0 >= '\u29FE' && LA58_0 <= '\u2B0D') || (LA58_0 >= '\u2E80' && LA58_0 <= '\u2E99') || (LA58_0 >= '\u2E9B' && LA58_0 <= '\u2EF3') || (LA58_0 >= '\u2F00' && LA58_0 <= '\u2FD5') || (LA58_0 >= '\u2FF0' && LA58_0 <= '\u2FFB') || (LA58_0 >= '\u3001' && LA58_0 <= '\u3007')
-                            || (LA58_0 >= '\u3012' && LA58_0 <= '\u3013') || LA58_0 == '\u301C' || (LA58_0 >= '\u3020' && LA58_0 <= '\u303F') || (LA58_0 >= '\u3041' && LA58_0 <= '\u3096') || (LA58_0 >= '\u3099' && LA58_0 <= '\u309A') || (LA58_0 >= '\u309D' && LA58_0 <= '\u30FF') || (LA58_0 >= '\u3105' && LA58_0 <= '\u312C') || (LA58_0 >= '\u3131' && LA58_0 <= '\u318E') || (LA58_0 >= '\u3190' && LA58_0 <= '\u31B7') || (LA58_0 >= '\u31F0' && LA58_0 <= '\u321E') || (LA58_0 >= '\u3220' && LA58_0 <= '\u3243') || (LA58_0 >= '\u3250' && LA58_0 <= '\u327D') || (LA58_0 >= '\u327F' && LA58_0 <= '\u32FE') || (LA58_0 >= '\u3300' && LA58_0 <= '\u4DB5') || (LA58_0 >= '\u4DC0' && LA58_0 <= '\u9FA5') || (LA58_0 >= '\uA000' && LA58_0 <= '\uA48C') || (LA58_0 >= '\uA490' && LA58_0 <= '\uA4C6') || (LA58_0 >= '\uAC00' && LA58_0 <= '\uD7A3') || (LA58_0 >= '\uF900' && LA58_0 <= '\uFA2D') || (LA58_0 >= '\uFA30' && LA58_0 <= '\uFA6A') || (LA58_0 >= '\uFB00' && LA58_0 <= '\uFB06')
-                            || (LA58_0 >= '\uFB13' && LA58_0 <= '\uFB17') || (LA58_0 >= '\uFB1D' && LA58_0 <= '\uFB36') || (LA58_0 >= '\uFB38' && LA58_0 <= '\uFB3C') || LA58_0 == '\uFB3E' || (LA58_0 >= '\uFB40' && LA58_0 <= '\uFB41') || (LA58_0 >= '\uFB43' && LA58_0 <= '\uFB44') || (LA58_0 >= '\uFB46' && LA58_0 <= '\uFBB1') || (LA58_0 >= '\uFBD3' && LA58_0 <= '\uFD3D') || (LA58_0 >= '\uFD50' && LA58_0 <= '\uFD8F') || (LA58_0 >= '\uFD92' && LA58_0 <= '\uFDC7') || (LA58_0 >= '\uFDF0' && LA58_0 <= '\uFDFD') || (LA58_0 >= '\uFE00' && LA58_0 <= '\uFE0F') || (LA58_0 >= '\uFE20' && LA58_0 <= '\uFE23') || (LA58_0 >= '\uFE30' && LA58_0 <= '\uFE34') || (LA58_0 >= '\uFE45' && LA58_0 <= '\uFE46') || (LA58_0 >= '\uFE49' && LA58_0 <= '\uFE52') || (LA58_0 >= '\uFE54' && LA58_0 <= '\uFE58') || (LA58_0 >= '\uFE5F' && LA58_0 <= '\uFE66') || (LA58_0 >= '\uFE68' && LA58_0 <= '\uFE6B') || (LA58_0 >= '\uFE70' && LA58_0 <= '\uFE74') || (LA58_0 >= '\uFE76' && LA58_0 <= '\uFEFC')
-                            || (LA58_0 >= '\uFF01' && LA58_0 <= '\uFF07') || (LA58_0 >= '\uFF0A' && LA58_0 <= '\uFF3A') || LA58_0 == '\uFF3C' || LA58_0 == '\uFF3F' || (LA58_0 >= '\uFF41' && LA58_0 <= '\uFF5A') || LA58_0 == '\uFF5C' || LA58_0 == '\uFF5E' || LA58_0 == '\uFF61' || (LA58_0 >= '\uFF64' && LA58_0 <= '\uFFBE') || (LA58_0 >= '\uFFC2' && LA58_0 <= '\uFFC7') || (LA58_0 >= '\uFFCA' && LA58_0 <= '\uFFCF') || (LA58_0 >= '\uFFD2' && LA58_0 <= '\uFFD7') || (LA58_0 >= '\uFFDA' && LA58_0 <= '\uFFDC') || (LA58_0 >= '\uFFE0' && LA58_0 <= '\uFFE2') || (LA58_0 >= '\uFFE4' && LA58_0 <= '\uFFE6') || (LA58_0 >= '\uFFE8' && LA58_0 <= '\uFFEE')))
+                    else if (((LA59_0 >= '!' && LA59_0 <= '\'') || LA59_0 == '+' || LA59_0 == '-' || (LA59_0 >= '/' && LA59_0 <= '9') || LA59_0 == ';' || LA59_0 == '=' || (LA59_0 >= '@' && LA59_0 <= 'Z') || LA59_0 == '_' || (LA59_0 >= 'a' && LA59_0 <= 'z') || LA59_0 == '|' || (LA59_0 >= '\u00A1' && LA59_0 <= '\u00A7') || (LA59_0 >= '\u00A9' && LA59_0 <= '\u00AA') || LA59_0 == '\u00AC' || LA59_0 == '\u00AE' || (LA59_0 >= '\u00B0' && LA59_0 <= '\u00B3') || (LA59_0 >= '\u00B5' && LA59_0 <= '\u00B7') || (LA59_0 >= '\u00B9' && LA59_0 <= '\u00BA') || (LA59_0 >= '\u00BC' && LA59_0 <= '\u0236') || (LA59_0 >= '\u0250' && LA59_0 <= '\u02C1') || (LA59_0 >= '\u02C6' && LA59_0 <= '\u02D1') || (LA59_0 >= '\u02E0' && LA59_0 <= '\u02E4') || LA59_0 == '\u02EE' || (LA59_0 >= '\u0300' && LA59_0 <= '\u0357') || (LA59_0 >= '\u035D' && LA59_0 <= '\u036F') || LA59_0 == '\u037A' || LA59_0 == '\u037E' || (LA59_0 >= '\u0386' && LA59_0 <= '\u038A') || LA59_0 == '\u038C'
+                            || (LA59_0 >= '\u038E' && LA59_0 <= '\u03A1') || (LA59_0 >= '\u03A3' && LA59_0 <= '\u03CE') || (LA59_0 >= '\u03D0' && LA59_0 <= '\u03FB') || (LA59_0 >= '\u0400' && LA59_0 <= '\u0486') || (LA59_0 >= '\u0488' && LA59_0 <= '\u04CE') || (LA59_0 >= '\u04D0' && LA59_0 <= '\u04F5') || (LA59_0 >= '\u04F8' && LA59_0 <= '\u04F9') || (LA59_0 >= '\u0500' && LA59_0 <= '\u050F') || (LA59_0 >= '\u0531' && LA59_0 <= '\u0556') || (LA59_0 >= '\u0559' && LA59_0 <= '\u055F') || (LA59_0 >= '\u0561' && LA59_0 <= '\u0587') || (LA59_0 >= '\u0589' && LA59_0 <= '\u058A') || (LA59_0 >= '\u0591' && LA59_0 <= '\u05A1') || (LA59_0 >= '\u05A3' && LA59_0 <= '\u05B9') || (LA59_0 >= '\u05BB' && LA59_0 <= '\u05C4') || (LA59_0 >= '\u05D0' && LA59_0 <= '\u05EA') || (LA59_0 >= '\u05F0' && LA59_0 <= '\u05F4') || (LA59_0 >= '\u060C' && LA59_0 <= '\u0615') || LA59_0 == '\u061B' || LA59_0 == '\u061F' || (LA59_0 >= '\u0621' && LA59_0 <= '\u063A') || (LA59_0 >= '\u0640' && LA59_0 <= '\u0658')
+                            || (LA59_0 >= '\u0660' && LA59_0 <= '\u06DC') || (LA59_0 >= '\u06DE' && LA59_0 <= '\u070D') || (LA59_0 >= '\u0710' && LA59_0 <= '\u074A') || (LA59_0 >= '\u074D' && LA59_0 <= '\u074F') || (LA59_0 >= '\u0780' && LA59_0 <= '\u07B1') || (LA59_0 >= '\u0901' && LA59_0 <= '\u0939') || (LA59_0 >= '\u093C' && LA59_0 <= '\u094D') || (LA59_0 >= '\u0950' && LA59_0 <= '\u0954') || (LA59_0 >= '\u0958' && LA59_0 <= '\u0970') || (LA59_0 >= '\u0981' && LA59_0 <= '\u0983') || (LA59_0 >= '\u0985' && LA59_0 <= '\u098C') || (LA59_0 >= '\u098F' && LA59_0 <= '\u0990') || (LA59_0 >= '\u0993' && LA59_0 <= '\u09A8') || (LA59_0 >= '\u09AA' && LA59_0 <= '\u09B0') || LA59_0 == '\u09B2' || (LA59_0 >= '\u09B6' && LA59_0 <= '\u09B9') || (LA59_0 >= '\u09BC' && LA59_0 <= '\u09C4') || (LA59_0 >= '\u09C7' && LA59_0 <= '\u09C8') || (LA59_0 >= '\u09CB' && LA59_0 <= '\u09CD') || LA59_0 == '\u09D7' || (LA59_0 >= '\u09DC' && LA59_0 <= '\u09DD') || (LA59_0 >= '\u09DF' && LA59_0 <= '\u09E3')
+                            || (LA59_0 >= '\u09E6' && LA59_0 <= '\u09FA') || (LA59_0 >= '\u0A01' && LA59_0 <= '\u0A03') || (LA59_0 >= '\u0A05' && LA59_0 <= '\u0A0A') || (LA59_0 >= '\u0A0F' && LA59_0 <= '\u0A10') || (LA59_0 >= '\u0A13' && LA59_0 <= '\u0A28') || (LA59_0 >= '\u0A2A' && LA59_0 <= '\u0A30') || (LA59_0 >= '\u0A32' && LA59_0 <= '\u0A33') || (LA59_0 >= '\u0A35' && LA59_0 <= '\u0A36') || (LA59_0 >= '\u0A38' && LA59_0 <= '\u0A39') || LA59_0 == '\u0A3C' || (LA59_0 >= '\u0A3E' && LA59_0 <= '\u0A42') || (LA59_0 >= '\u0A47' && LA59_0 <= '\u0A48') || (LA59_0 >= '\u0A4B' && LA59_0 <= '\u0A4D') || (LA59_0 >= '\u0A59' && LA59_0 <= '\u0A5C') || LA59_0 == '\u0A5E' || (LA59_0 >= '\u0A66' && LA59_0 <= '\u0A74') || (LA59_0 >= '\u0A81' && LA59_0 <= '\u0A83') || (LA59_0 >= '\u0A85' && LA59_0 <= '\u0A8D') || (LA59_0 >= '\u0A8F' && LA59_0 <= '\u0A91') || (LA59_0 >= '\u0A93' && LA59_0 <= '\u0AA8') || (LA59_0 >= '\u0AAA' && LA59_0 <= '\u0AB0') || (LA59_0 >= '\u0AB2' && LA59_0 <= '\u0AB3')
+                            || (LA59_0 >= '\u0AB5' && LA59_0 <= '\u0AB9') || (LA59_0 >= '\u0ABC' && LA59_0 <= '\u0AC5') || (LA59_0 >= '\u0AC7' && LA59_0 <= '\u0AC9') || (LA59_0 >= '\u0ACB' && LA59_0 <= '\u0ACD') || LA59_0 == '\u0AD0' || (LA59_0 >= '\u0AE0' && LA59_0 <= '\u0AE3') || (LA59_0 >= '\u0AE6' && LA59_0 <= '\u0AEF') || LA59_0 == '\u0AF1' || (LA59_0 >= '\u0B01' && LA59_0 <= '\u0B03') || (LA59_0 >= '\u0B05' && LA59_0 <= '\u0B0C') || (LA59_0 >= '\u0B0F' && LA59_0 <= '\u0B10') || (LA59_0 >= '\u0B13' && LA59_0 <= '\u0B28') || (LA59_0 >= '\u0B2A' && LA59_0 <= '\u0B30') || (LA59_0 >= '\u0B32' && LA59_0 <= '\u0B33') || (LA59_0 >= '\u0B35' && LA59_0 <= '\u0B39') || (LA59_0 >= '\u0B3C' && LA59_0 <= '\u0B43') || (LA59_0 >= '\u0B47' && LA59_0 <= '\u0B48') || (LA59_0 >= '\u0B4B' && LA59_0 <= '\u0B4D') || (LA59_0 >= '\u0B56' && LA59_0 <= '\u0B57') || (LA59_0 >= '\u0B5C' && LA59_0 <= '\u0B5D') || (LA59_0 >= '\u0B5F' && LA59_0 <= '\u0B61') || (LA59_0 >= '\u0B66' && LA59_0 <= '\u0B71')
+                            || (LA59_0 >= '\u0B82' && LA59_0 <= '\u0B83') || (LA59_0 >= '\u0B85' && LA59_0 <= '\u0B8A') || (LA59_0 >= '\u0B8E' && LA59_0 <= '\u0B90') || (LA59_0 >= '\u0B92' && LA59_0 <= '\u0B95') || (LA59_0 >= '\u0B99' && LA59_0 <= '\u0B9A') || LA59_0 == '\u0B9C' || (LA59_0 >= '\u0B9E' && LA59_0 <= '\u0B9F') || (LA59_0 >= '\u0BA3' && LA59_0 <= '\u0BA4') || (LA59_0 >= '\u0BA8' && LA59_0 <= '\u0BAA') || (LA59_0 >= '\u0BAE' && LA59_0 <= '\u0BB5') || (LA59_0 >= '\u0BB7' && LA59_0 <= '\u0BB9') || (LA59_0 >= '\u0BBE' && LA59_0 <= '\u0BC2') || (LA59_0 >= '\u0BC6' && LA59_0 <= '\u0BC8') || (LA59_0 >= '\u0BCA' && LA59_0 <= '\u0BCD') || LA59_0 == '\u0BD7' || (LA59_0 >= '\u0BE7' && LA59_0 <= '\u0BFA') || (LA59_0 >= '\u0C01' && LA59_0 <= '\u0C03') || (LA59_0 >= '\u0C05' && LA59_0 <= '\u0C0C') || (LA59_0 >= '\u0C0E' && LA59_0 <= '\u0C10') || (LA59_0 >= '\u0C12' && LA59_0 <= '\u0C28') || (LA59_0 >= '\u0C2A' && LA59_0 <= '\u0C33') || (LA59_0 >= '\u0C35' && LA59_0 <= '\u0C39')
+                            || (LA59_0 >= '\u0C3E' && LA59_0 <= '\u0C44') || (LA59_0 >= '\u0C46' && LA59_0 <= '\u0C48') || (LA59_0 >= '\u0C4A' && LA59_0 <= '\u0C4D') || (LA59_0 >= '\u0C55' && LA59_0 <= '\u0C56') || (LA59_0 >= '\u0C60' && LA59_0 <= '\u0C61') || (LA59_0 >= '\u0C66' && LA59_0 <= '\u0C6F') || (LA59_0 >= '\u0C82' && LA59_0 <= '\u0C83') || (LA59_0 >= '\u0C85' && LA59_0 <= '\u0C8C') || (LA59_0 >= '\u0C8E' && LA59_0 <= '\u0C90') || (LA59_0 >= '\u0C92' && LA59_0 <= '\u0CA8') || (LA59_0 >= '\u0CAA' && LA59_0 <= '\u0CB3') || (LA59_0 >= '\u0CB5' && LA59_0 <= '\u0CB9') || (LA59_0 >= '\u0CBC' && LA59_0 <= '\u0CC4') || (LA59_0 >= '\u0CC6' && LA59_0 <= '\u0CC8') || (LA59_0 >= '\u0CCA' && LA59_0 <= '\u0CCD') || (LA59_0 >= '\u0CD5' && LA59_0 <= '\u0CD6') || LA59_0 == '\u0CDE' || (LA59_0 >= '\u0CE0' && LA59_0 <= '\u0CE1') || (LA59_0 >= '\u0CE6' && LA59_0 <= '\u0CEF') || (LA59_0 >= '\u0D02' && LA59_0 <= '\u0D03') || (LA59_0 >= '\u0D05' && LA59_0 <= '\u0D0C')
+                            || (LA59_0 >= '\u0D0E' && LA59_0 <= '\u0D10') || (LA59_0 >= '\u0D12' && LA59_0 <= '\u0D28') || (LA59_0 >= '\u0D2A' && LA59_0 <= '\u0D39') || (LA59_0 >= '\u0D3E' && LA59_0 <= '\u0D43') || (LA59_0 >= '\u0D46' && LA59_0 <= '\u0D48') || (LA59_0 >= '\u0D4A' && LA59_0 <= '\u0D4D') || LA59_0 == '\u0D57' || (LA59_0 >= '\u0D60' && LA59_0 <= '\u0D61') || (LA59_0 >= '\u0D66' && LA59_0 <= '\u0D6F') || (LA59_0 >= '\u0D82' && LA59_0 <= '\u0D83') || (LA59_0 >= '\u0D85' && LA59_0 <= '\u0D96') || (LA59_0 >= '\u0D9A' && LA59_0 <= '\u0DB1') || (LA59_0 >= '\u0DB3' && LA59_0 <= '\u0DBB') || LA59_0 == '\u0DBD' || (LA59_0 >= '\u0DC0' && LA59_0 <= '\u0DC6') || LA59_0 == '\u0DCA' || (LA59_0 >= '\u0DCF' && LA59_0 <= '\u0DD4') || LA59_0 == '\u0DD6' || (LA59_0 >= '\u0DD8' && LA59_0 <= '\u0DDF') || (LA59_0 >= '\u0DF2' && LA59_0 <= '\u0DF4') || (LA59_0 >= '\u0E01' && LA59_0 <= '\u0E3A') || (LA59_0 >= '\u0E3F' && LA59_0 <= '\u0E5B') || (LA59_0 >= '\u0E81' && LA59_0 <= '\u0E82')
+                            || LA59_0 == '\u0E84' || (LA59_0 >= '\u0E87' && LA59_0 <= '\u0E88') || LA59_0 == '\u0E8A' || LA59_0 == '\u0E8D' || (LA59_0 >= '\u0E94' && LA59_0 <= '\u0E97') || (LA59_0 >= '\u0E99' && LA59_0 <= '\u0E9F') || (LA59_0 >= '\u0EA1' && LA59_0 <= '\u0EA3') || LA59_0 == '\u0EA5' || LA59_0 == '\u0EA7' || (LA59_0 >= '\u0EAA' && LA59_0 <= '\u0EAB') || (LA59_0 >= '\u0EAD' && LA59_0 <= '\u0EB9') || (LA59_0 >= '\u0EBB' && LA59_0 <= '\u0EBD') || (LA59_0 >= '\u0EC0' && LA59_0 <= '\u0EC4') || LA59_0 == '\u0EC6' || (LA59_0 >= '\u0EC8' && LA59_0 <= '\u0ECD') || (LA59_0 >= '\u0ED0' && LA59_0 <= '\u0ED9') || (LA59_0 >= '\u0EDC' && LA59_0 <= '\u0EDD') || (LA59_0 >= '\u0F00' && LA59_0 <= '\u0F39') || (LA59_0 >= '\u0F3E' && LA59_0 <= '\u0F47') || (LA59_0 >= '\u0F49' && LA59_0 <= '\u0F6A') || (LA59_0 >= '\u0F71' && LA59_0 <= '\u0F8B') || (LA59_0 >= '\u0F90' && LA59_0 <= '\u0F97') || (LA59_0 >= '\u0F99' && LA59_0 <= '\u0FBC') || (LA59_0 >= '\u0FBE' && LA59_0 <= '\u0FCC')
+                            || LA59_0 == '\u0FCF' || (LA59_0 >= '\u1000' && LA59_0 <= '\u1021') || (LA59_0 >= '\u1023' && LA59_0 <= '\u1027') || (LA59_0 >= '\u1029' && LA59_0 <= '\u102A') || (LA59_0 >= '\u102C' && LA59_0 <= '\u1032') || (LA59_0 >= '\u1036' && LA59_0 <= '\u1039') || (LA59_0 >= '\u1040' && LA59_0 <= '\u1059') || (LA59_0 >= '\u10A0' && LA59_0 <= '\u10C5') || (LA59_0 >= '\u10D0' && LA59_0 <= '\u10F8') || LA59_0 == '\u10FB' || (LA59_0 >= '\u1100' && LA59_0 <= '\u1159') || (LA59_0 >= '\u115F' && LA59_0 <= '\u11A2') || (LA59_0 >= '\u11A8' && LA59_0 <= '\u11F9') || (LA59_0 >= '\u1200' && LA59_0 <= '\u1206') || (LA59_0 >= '\u1208' && LA59_0 <= '\u1246') || LA59_0 == '\u1248' || (LA59_0 >= '\u124A' && LA59_0 <= '\u124D') || (LA59_0 >= '\u1250' && LA59_0 <= '\u1256') || LA59_0 == '\u1258' || (LA59_0 >= '\u125A' && LA59_0 <= '\u125D') || (LA59_0 >= '\u1260' && LA59_0 <= '\u1286') || LA59_0 == '\u1288' || (LA59_0 >= '\u128A' && LA59_0 <= '\u128D')
+                            || (LA59_0 >= '\u1290' && LA59_0 <= '\u12AE') || LA59_0 == '\u12B0' || (LA59_0 >= '\u12B2' && LA59_0 <= '\u12B5') || (LA59_0 >= '\u12B8' && LA59_0 <= '\u12BE') || LA59_0 == '\u12C0' || (LA59_0 >= '\u12C2' && LA59_0 <= '\u12C5') || (LA59_0 >= '\u12C8' && LA59_0 <= '\u12CE') || (LA59_0 >= '\u12D0' && LA59_0 <= '\u12D6') || (LA59_0 >= '\u12D8' && LA59_0 <= '\u12EE') || (LA59_0 >= '\u12F0' && LA59_0 <= '\u130E') || LA59_0 == '\u1310' || (LA59_0 >= '\u1312' && LA59_0 <= '\u1315') || (LA59_0 >= '\u1318' && LA59_0 <= '\u131E') || (LA59_0 >= '\u1320' && LA59_0 <= '\u1346') || (LA59_0 >= '\u1348' && LA59_0 <= '\u135A') || (LA59_0 >= '\u1361' && LA59_0 <= '\u137C') || (LA59_0 >= '\u13A0' && LA59_0 <= '\u13F4') || (LA59_0 >= '\u1401' && LA59_0 <= '\u1676') || (LA59_0 >= '\u1681' && LA59_0 <= '\u169A') || (LA59_0 >= '\u16A0' && LA59_0 <= '\u16F0') || (LA59_0 >= '\u1700' && LA59_0 <= '\u170C') || (LA59_0 >= '\u170E' && LA59_0 <= '\u1714')
+                            || (LA59_0 >= '\u1720' && LA59_0 <= '\u1736') || (LA59_0 >= '\u1740' && LA59_0 <= '\u1753') || (LA59_0 >= '\u1760' && LA59_0 <= '\u176C') || (LA59_0 >= '\u176E' && LA59_0 <= '\u1770') || (LA59_0 >= '\u1772' && LA59_0 <= '\u1773') || (LA59_0 >= '\u1780' && LA59_0 <= '\u17B3') || (LA59_0 >= '\u17B6' && LA59_0 <= '\u17DD') || (LA59_0 >= '\u17E0' && LA59_0 <= '\u17E9') || (LA59_0 >= '\u17F0' && LA59_0 <= '\u17F9') || (LA59_0 >= '\u1800' && LA59_0 <= '\u180D') || (LA59_0 >= '\u1810' && LA59_0 <= '\u1819') || (LA59_0 >= '\u1820' && LA59_0 <= '\u1877') || (LA59_0 >= '\u1880' && LA59_0 <= '\u18A9') || (LA59_0 >= '\u1900' && LA59_0 <= '\u191C') || (LA59_0 >= '\u1920' && LA59_0 <= '\u192B') || (LA59_0 >= '\u1930' && LA59_0 <= '\u193B') || LA59_0 == '\u1940' || (LA59_0 >= '\u1944' && LA59_0 <= '\u196D') || (LA59_0 >= '\u1970' && LA59_0 <= '\u1974') || (LA59_0 >= '\u19E0' && LA59_0 <= '\u19FF') || (LA59_0 >= '\u1D00' && LA59_0 <= '\u1D6B')
+                            || (LA59_0 >= '\u1E00' && LA59_0 <= '\u1E9B') || (LA59_0 >= '\u1EA0' && LA59_0 <= '\u1EF9') || (LA59_0 >= '\u1F00' && LA59_0 <= '\u1F15') || (LA59_0 >= '\u1F18' && LA59_0 <= '\u1F1D') || (LA59_0 >= '\u1F20' && LA59_0 <= '\u1F45') || (LA59_0 >= '\u1F48' && LA59_0 <= '\u1F4D') || (LA59_0 >= '\u1F50' && LA59_0 <= '\u1F57') || LA59_0 == '\u1F59' || LA59_0 == '\u1F5B' || LA59_0 == '\u1F5D' || (LA59_0 >= '\u1F5F' && LA59_0 <= '\u1F7D') || (LA59_0 >= '\u1F80' && LA59_0 <= '\u1FB4') || (LA59_0 >= '\u1FB6' && LA59_0 <= '\u1FBC') || LA59_0 == '\u1FBE' || (LA59_0 >= '\u1FC2' && LA59_0 <= '\u1FC4') || (LA59_0 >= '\u1FC6' && LA59_0 <= '\u1FCC') || (LA59_0 >= '\u1FD0' && LA59_0 <= '\u1FD3') || (LA59_0 >= '\u1FD6' && LA59_0 <= '\u1FDB') || (LA59_0 >= '\u1FE0' && LA59_0 <= '\u1FEC') || (LA59_0 >= '\u1FF2' && LA59_0 <= '\u1FF4') || (LA59_0 >= '\u1FF6' && LA59_0 <= '\u1FFC') || (LA59_0 >= '\u2010' && LA59_0 <= '\u2017') || (LA59_0 >= '\u2020' && LA59_0 <= '\u2027')
+                            || (LA59_0 >= '\u2030' && LA59_0 <= '\u2038') || (LA59_0 >= '\u203B' && LA59_0 <= '\u2044') || (LA59_0 >= '\u2047' && LA59_0 <= '\u2054') || LA59_0 == '\u2057' || (LA59_0 >= '\u2070' && LA59_0 <= '\u2071') || (LA59_0 >= '\u2074' && LA59_0 <= '\u207C') || (LA59_0 >= '\u207F' && LA59_0 <= '\u208C') || (LA59_0 >= '\u20A0' && LA59_0 <= '\u20B1') || (LA59_0 >= '\u20D0' && LA59_0 <= '\u20EA') || (LA59_0 >= '\u2100' && LA59_0 <= '\u213B') || (LA59_0 >= '\u213D' && LA59_0 <= '\u214B') || (LA59_0 >= '\u2153' && LA59_0 <= '\u2183') || (LA59_0 >= '\u2190' && LA59_0 <= '\u2328') || (LA59_0 >= '\u232B' && LA59_0 <= '\u23B3') || (LA59_0 >= '\u23B6' && LA59_0 <= '\u23D0') || (LA59_0 >= '\u2400' && LA59_0 <= '\u2426') || (LA59_0 >= '\u2440' && LA59_0 <= '\u244A') || (LA59_0 >= '\u2460' && LA59_0 <= '\u2617') || (LA59_0 >= '\u2619' && LA59_0 <= '\u267D') || (LA59_0 >= '\u2680' && LA59_0 <= '\u2691') || (LA59_0 >= '\u26A0' && LA59_0 <= '\u26A1')
+                            || (LA59_0 >= '\u2701' && LA59_0 <= '\u2704') || (LA59_0 >= '\u2706' && LA59_0 <= '\u2709') || (LA59_0 >= '\u270C' && LA59_0 <= '\u2727') || (LA59_0 >= '\u2729' && LA59_0 <= '\u274B') || LA59_0 == '\u274D' || (LA59_0 >= '\u274F' && LA59_0 <= '\u2752') || LA59_0 == '\u2756' || (LA59_0 >= '\u2758' && LA59_0 <= '\u275E') || (LA59_0 >= '\u2761' && LA59_0 <= '\u2767') || (LA59_0 >= '\u2776' && LA59_0 <= '\u2794') || (LA59_0 >= '\u2798' && LA59_0 <= '\u27AF') || (LA59_0 >= '\u27B1' && LA59_0 <= '\u27BE') || (LA59_0 >= '\u27D0' && LA59_0 <= '\u27E5') || (LA59_0 >= '\u27F0' && LA59_0 <= '\u2982') || (LA59_0 >= '\u2999' && LA59_0 <= '\u29D7') || (LA59_0 >= '\u29DC' && LA59_0 <= '\u29FB') || (LA59_0 >= '\u29FE' && LA59_0 <= '\u2B0D') || (LA59_0 >= '\u2E80' && LA59_0 <= '\u2E99') || (LA59_0 >= '\u2E9B' && LA59_0 <= '\u2EF3') || (LA59_0 >= '\u2F00' && LA59_0 <= '\u2FD5') || (LA59_0 >= '\u2FF0' && LA59_0 <= '\u2FFB') || (LA59_0 >= '\u3001' && LA59_0 <= '\u3007')
+                            || (LA59_0 >= '\u3012' && LA59_0 <= '\u3013') || LA59_0 == '\u301C' || (LA59_0 >= '\u3020' && LA59_0 <= '\u303F') || (LA59_0 >= '\u3041' && LA59_0 <= '\u3096') || (LA59_0 >= '\u3099' && LA59_0 <= '\u309A') || (LA59_0 >= '\u309D' && LA59_0 <= '\u30FF') || (LA59_0 >= '\u3105' && LA59_0 <= '\u312C') || (LA59_0 >= '\u3131' && LA59_0 <= '\u318E') || (LA59_0 >= '\u3190' && LA59_0 <= '\u31B7') || (LA59_0 >= '\u31F0' && LA59_0 <= '\u321E') || (LA59_0 >= '\u3220' && LA59_0 <= '\u3243') || (LA59_0 >= '\u3250' && LA59_0 <= '\u327D') || (LA59_0 >= '\u327F' && LA59_0 <= '\u32FE') || (LA59_0 >= '\u3300' && LA59_0 <= '\u4DB5') || (LA59_0 >= '\u4DC0' && LA59_0 <= '\u9FA5') || (LA59_0 >= '\uA000' && LA59_0 <= '\uA48C') || (LA59_0 >= '\uA490' && LA59_0 <= '\uA4C6') || (LA59_0 >= '\uAC00' && LA59_0 <= '\uD7A3') || (LA59_0 >= '\uF900' && LA59_0 <= '\uFA2D') || (LA59_0 >= '\uFA30' && LA59_0 <= '\uFA6A') || (LA59_0 >= '\uFB00' && LA59_0 <= '\uFB06')
+                            || (LA59_0 >= '\uFB13' && LA59_0 <= '\uFB17') || (LA59_0 >= '\uFB1D' && LA59_0 <= '\uFB36') || (LA59_0 >= '\uFB38' && LA59_0 <= '\uFB3C') || LA59_0 == '\uFB3E' || (LA59_0 >= '\uFB40' && LA59_0 <= '\uFB41') || (LA59_0 >= '\uFB43' && LA59_0 <= '\uFB44') || (LA59_0 >= '\uFB46' && LA59_0 <= '\uFBB1') || (LA59_0 >= '\uFBD3' && LA59_0 <= '\uFD3D') || (LA59_0 >= '\uFD50' && LA59_0 <= '\uFD8F') || (LA59_0 >= '\uFD92' && LA59_0 <= '\uFDC7') || (LA59_0 >= '\uFDF0' && LA59_0 <= '\uFDFD') || (LA59_0 >= '\uFE00' && LA59_0 <= '\uFE0F') || (LA59_0 >= '\uFE20' && LA59_0 <= '\uFE23') || (LA59_0 >= '\uFE30' && LA59_0 <= '\uFE34') || (LA59_0 >= '\uFE45' && LA59_0 <= '\uFE46') || (LA59_0 >= '\uFE49' && LA59_0 <= '\uFE52') || (LA59_0 >= '\uFE54' && LA59_0 <= '\uFE58') || (LA59_0 >= '\uFE5F' && LA59_0 <= '\uFE66') || (LA59_0 >= '\uFE68' && LA59_0 <= '\uFE6B') || (LA59_0 >= '\uFE70' && LA59_0 <= '\uFE74') || (LA59_0 >= '\uFE76' && LA59_0 <= '\uFEFC')
+                            || (LA59_0 >= '\uFF01' && LA59_0 <= '\uFF07') || (LA59_0 >= '\uFF0A' && LA59_0 <= '\uFF3A') || LA59_0 == '\uFF3C' || LA59_0 == '\uFF3F' || (LA59_0 >= '\uFF41' && LA59_0 <= '\uFF5A') || LA59_0 == '\uFF5C' || LA59_0 == '\uFF5E' || LA59_0 == '\uFF61' || (LA59_0 >= '\uFF64' && LA59_0 <= '\uFFBE') || (LA59_0 >= '\uFFC2' && LA59_0 <= '\uFFC7') || (LA59_0 >= '\uFFCA' && LA59_0 <= '\uFFCF') || (LA59_0 >= '\uFFD2' && LA59_0 <= '\uFFD7') || (LA59_0 >= '\uFFDA' && LA59_0 <= '\uFFDC') || (LA59_0 >= '\uFFE0' && LA59_0 <= '\uFFE2') || (LA59_0 >= '\uFFE4' && LA59_0 <= '\uFFE6') || (LA59_0 >= '\uFFE8' && LA59_0 <= '\uFFEE')))
                     {
-                        alt58 = 2;
+                        alt59 = 2;
                     }
 
-                    switch (alt58)
+                    switch (alt59)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1562:17: F_ESC
+                    // FTS.g:1572:17: F_ESC
                     {
                         mF_ESC();
                         if (state.failed)
@@ -5402,7 +5470,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 2:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1563:19: IN_WORD
+                    // FTS.g:1573:19: IN_WORD
                     {
                         mIN_WORD();
                         if (state.failed)
@@ -5412,7 +5480,7 @@ public class FTSLexer extends Lexer
                         break;
 
                     default:
-                        break loop58;
+                        break loop59;
                     }
                 }
 
@@ -5439,45 +5507,45 @@ public class FTSLexer extends Lexer
         {
             int _type = FTSWILD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1569:9: ( ( F_ESC | START_WORD | STAR | QUESTION_MARK ) ( F_ESC | IN_WORD | STAR | QUESTION_MARK )* )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1570:9: ( F_ESC | START_WORD | STAR | QUESTION_MARK ) ( F_ESC | IN_WORD | STAR | QUESTION_MARK )*
+            // FTS.g:1579:9: ( ( F_ESC | START_WORD | STAR | QUESTION_MARK ) ( F_ESC | IN_WORD | STAR | QUESTION_MARK )* )
+            // FTS.g:1580:9: ( F_ESC | START_WORD | STAR | QUESTION_MARK ) ( F_ESC | IN_WORD | STAR | QUESTION_MARK )*
             {
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1570:9: ( F_ESC | START_WORD | STAR | QUESTION_MARK )
-                int alt59 = 4;
-                int LA59_0 = input.LA(1);
-                if ((LA59_0 == '\\'))
+                // FTS.g:1580:9: ( F_ESC | START_WORD | STAR | QUESTION_MARK )
+                int alt60 = 4;
+                int LA60_0 = input.LA(1);
+                if ((LA60_0 == '\\'))
                 {
-                    alt59 = 1;
+                    alt60 = 1;
                 }
-                else if ((LA59_0 == '$' || (LA59_0 >= '0' && LA59_0 <= '9') || (LA59_0 >= 'A' && LA59_0 <= 'Z') || (LA59_0 >= 'a' && LA59_0 <= 'z') || (LA59_0 >= '\u00A2' && LA59_0 <= '\u00A7') || (LA59_0 >= '\u00A9' && LA59_0 <= '\u00AA') || LA59_0 == '\u00AE' || LA59_0 == '\u00B0' || (LA59_0 >= '\u00B2' && LA59_0 <= '\u00B3') || (LA59_0 >= '\u00B5' && LA59_0 <= '\u00B6') || (LA59_0 >= '\u00B9' && LA59_0 <= '\u00BA') || (LA59_0 >= '\u00BC' && LA59_0 <= '\u00BE') || (LA59_0 >= '\u00C0' && LA59_0 <= '\u00D6') || (LA59_0 >= '\u00D8' && LA59_0 <= '\u00F6') || (LA59_0 >= '\u00F8' && LA59_0 <= '\u0236') || (LA59_0 >= '\u0250' && LA59_0 <= '\u02C1') || (LA59_0 >= '\u02C6' && LA59_0 <= '\u02D1') || (LA59_0 >= '\u02E0' && LA59_0 <= '\u02E4') || LA59_0 == '\u02EE' || (LA59_0 >= '\u0300' && LA59_0 <= '\u0357') || (LA59_0 >= '\u035D' && LA59_0 <= '\u036F') || LA59_0 == '\u037A' || LA59_0 == '\u0386' || (LA59_0 >= '\u0388' && LA59_0 <= '\u038A') || LA59_0 == '\u038C'
-                        || (LA59_0 >= '\u038E' && LA59_0 <= '\u03A1') || (LA59_0 >= '\u03A3' && LA59_0 <= '\u03CE') || (LA59_0 >= '\u03D0' && LA59_0 <= '\u03F5') || (LA59_0 >= '\u03F7' && LA59_0 <= '\u03FB') || (LA59_0 >= '\u0400' && LA59_0 <= '\u0486') || (LA59_0 >= '\u0488' && LA59_0 <= '\u04CE') || (LA59_0 >= '\u04D0' && LA59_0 <= '\u04F5') || (LA59_0 >= '\u04F8' && LA59_0 <= '\u04F9') || (LA59_0 >= '\u0500' && LA59_0 <= '\u050F') || (LA59_0 >= '\u0531' && LA59_0 <= '\u0556') || LA59_0 == '\u0559' || (LA59_0 >= '\u0561' && LA59_0 <= '\u0587') || (LA59_0 >= '\u0591' && LA59_0 <= '\u05A1') || (LA59_0 >= '\u05A3' && LA59_0 <= '\u05B9') || (LA59_0 >= '\u05BB' && LA59_0 <= '\u05BD') || LA59_0 == '\u05BF' || (LA59_0 >= '\u05C1' && LA59_0 <= '\u05C2') || LA59_0 == '\u05C4' || (LA59_0 >= '\u05D0' && LA59_0 <= '\u05EA') || (LA59_0 >= '\u05F0' && LA59_0 <= '\u05F2') || (LA59_0 >= '\u060E' && LA59_0 <= '\u0615') || (LA59_0 >= '\u0621' && LA59_0 <= '\u063A')
-                        || (LA59_0 >= '\u0640' && LA59_0 <= '\u0658') || (LA59_0 >= '\u0660' && LA59_0 <= '\u0669') || (LA59_0 >= '\u066E' && LA59_0 <= '\u06D3') || (LA59_0 >= '\u06D5' && LA59_0 <= '\u06DC') || (LA59_0 >= '\u06DE' && LA59_0 <= '\u06FF') || (LA59_0 >= '\u0710' && LA59_0 <= '\u074A') || (LA59_0 >= '\u074D' && LA59_0 <= '\u074F') || (LA59_0 >= '\u0780' && LA59_0 <= '\u07B1') || (LA59_0 >= '\u0901' && LA59_0 <= '\u0939') || (LA59_0 >= '\u093C' && LA59_0 <= '\u094D') || (LA59_0 >= '\u0950' && LA59_0 <= '\u0954') || (LA59_0 >= '\u0958' && LA59_0 <= '\u0963') || (LA59_0 >= '\u0966' && LA59_0 <= '\u096F') || (LA59_0 >= '\u0981' && LA59_0 <= '\u0983') || (LA59_0 >= '\u0985' && LA59_0 <= '\u098C') || (LA59_0 >= '\u098F' && LA59_0 <= '\u0990') || (LA59_0 >= '\u0993' && LA59_0 <= '\u09A8') || (LA59_0 >= '\u09AA' && LA59_0 <= '\u09B0') || LA59_0 == '\u09B2' || (LA59_0 >= '\u09B6' && LA59_0 <= '\u09B9') || (LA59_0 >= '\u09BC' && LA59_0 <= '\u09C4')
-                        || (LA59_0 >= '\u09C7' && LA59_0 <= '\u09C8') || (LA59_0 >= '\u09CB' && LA59_0 <= '\u09CD') || LA59_0 == '\u09D7' || (LA59_0 >= '\u09DC' && LA59_0 <= '\u09DD') || (LA59_0 >= '\u09DF' && LA59_0 <= '\u09E3') || (LA59_0 >= '\u09E6' && LA59_0 <= '\u09FA') || (LA59_0 >= '\u0A01' && LA59_0 <= '\u0A03') || (LA59_0 >= '\u0A05' && LA59_0 <= '\u0A0A') || (LA59_0 >= '\u0A0F' && LA59_0 <= '\u0A10') || (LA59_0 >= '\u0A13' && LA59_0 <= '\u0A28') || (LA59_0 >= '\u0A2A' && LA59_0 <= '\u0A30') || (LA59_0 >= '\u0A32' && LA59_0 <= '\u0A33') || (LA59_0 >= '\u0A35' && LA59_0 <= '\u0A36') || (LA59_0 >= '\u0A38' && LA59_0 <= '\u0A39') || LA59_0 == '\u0A3C' || (LA59_0 >= '\u0A3E' && LA59_0 <= '\u0A42') || (LA59_0 >= '\u0A47' && LA59_0 <= '\u0A48') || (LA59_0 >= '\u0A4B' && LA59_0 <= '\u0A4D') || (LA59_0 >= '\u0A59' && LA59_0 <= '\u0A5C') || LA59_0 == '\u0A5E' || (LA59_0 >= '\u0A66' && LA59_0 <= '\u0A74') || (LA59_0 >= '\u0A81' && LA59_0 <= '\u0A83')
-                        || (LA59_0 >= '\u0A85' && LA59_0 <= '\u0A8D') || (LA59_0 >= '\u0A8F' && LA59_0 <= '\u0A91') || (LA59_0 >= '\u0A93' && LA59_0 <= '\u0AA8') || (LA59_0 >= '\u0AAA' && LA59_0 <= '\u0AB0') || (LA59_0 >= '\u0AB2' && LA59_0 <= '\u0AB3') || (LA59_0 >= '\u0AB5' && LA59_0 <= '\u0AB9') || (LA59_0 >= '\u0ABC' && LA59_0 <= '\u0AC5') || (LA59_0 >= '\u0AC7' && LA59_0 <= '\u0AC9') || (LA59_0 >= '\u0ACB' && LA59_0 <= '\u0ACD') || LA59_0 == '\u0AD0' || (LA59_0 >= '\u0AE0' && LA59_0 <= '\u0AE3') || (LA59_0 >= '\u0AE6' && LA59_0 <= '\u0AEF') || LA59_0 == '\u0AF1' || (LA59_0 >= '\u0B01' && LA59_0 <= '\u0B03') || (LA59_0 >= '\u0B05' && LA59_0 <= '\u0B0C') || (LA59_0 >= '\u0B0F' && LA59_0 <= '\u0B10') || (LA59_0 >= '\u0B13' && LA59_0 <= '\u0B28') || (LA59_0 >= '\u0B2A' && LA59_0 <= '\u0B30') || (LA59_0 >= '\u0B32' && LA59_0 <= '\u0B33') || (LA59_0 >= '\u0B35' && LA59_0 <= '\u0B39') || (LA59_0 >= '\u0B3C' && LA59_0 <= '\u0B43') || (LA59_0 >= '\u0B47' && LA59_0 <= '\u0B48')
-                        || (LA59_0 >= '\u0B4B' && LA59_0 <= '\u0B4D') || (LA59_0 >= '\u0B56' && LA59_0 <= '\u0B57') || (LA59_0 >= '\u0B5C' && LA59_0 <= '\u0B5D') || (LA59_0 >= '\u0B5F' && LA59_0 <= '\u0B61') || (LA59_0 >= '\u0B66' && LA59_0 <= '\u0B71') || (LA59_0 >= '\u0B82' && LA59_0 <= '\u0B83') || (LA59_0 >= '\u0B85' && LA59_0 <= '\u0B8A') || (LA59_0 >= '\u0B8E' && LA59_0 <= '\u0B90') || (LA59_0 >= '\u0B92' && LA59_0 <= '\u0B95') || (LA59_0 >= '\u0B99' && LA59_0 <= '\u0B9A') || LA59_0 == '\u0B9C' || (LA59_0 >= '\u0B9E' && LA59_0 <= '\u0B9F') || (LA59_0 >= '\u0BA3' && LA59_0 <= '\u0BA4') || (LA59_0 >= '\u0BA8' && LA59_0 <= '\u0BAA') || (LA59_0 >= '\u0BAE' && LA59_0 <= '\u0BB5') || (LA59_0 >= '\u0BB7' && LA59_0 <= '\u0BB9') || (LA59_0 >= '\u0BBE' && LA59_0 <= '\u0BC2') || (LA59_0 >= '\u0BC6' && LA59_0 <= '\u0BC8') || (LA59_0 >= '\u0BCA' && LA59_0 <= '\u0BCD') || LA59_0 == '\u0BD7' || (LA59_0 >= '\u0BE7' && LA59_0 <= '\u0BFA') || (LA59_0 >= '\u0C01' && LA59_0 <= '\u0C03')
-                        || (LA59_0 >= '\u0C05' && LA59_0 <= '\u0C0C') || (LA59_0 >= '\u0C0E' && LA59_0 <= '\u0C10') || (LA59_0 >= '\u0C12' && LA59_0 <= '\u0C28') || (LA59_0 >= '\u0C2A' && LA59_0 <= '\u0C33') || (LA59_0 >= '\u0C35' && LA59_0 <= '\u0C39') || (LA59_0 >= '\u0C3E' && LA59_0 <= '\u0C44') || (LA59_0 >= '\u0C46' && LA59_0 <= '\u0C48') || (LA59_0 >= '\u0C4A' && LA59_0 <= '\u0C4D') || (LA59_0 >= '\u0C55' && LA59_0 <= '\u0C56') || (LA59_0 >= '\u0C60' && LA59_0 <= '\u0C61') || (LA59_0 >= '\u0C66' && LA59_0 <= '\u0C6F') || (LA59_0 >= '\u0C82' && LA59_0 <= '\u0C83') || (LA59_0 >= '\u0C85' && LA59_0 <= '\u0C8C') || (LA59_0 >= '\u0C8E' && LA59_0 <= '\u0C90') || (LA59_0 >= '\u0C92' && LA59_0 <= '\u0CA8') || (LA59_0 >= '\u0CAA' && LA59_0 <= '\u0CB3') || (LA59_0 >= '\u0CB5' && LA59_0 <= '\u0CB9') || (LA59_0 >= '\u0CBC' && LA59_0 <= '\u0CC4') || (LA59_0 >= '\u0CC6' && LA59_0 <= '\u0CC8') || (LA59_0 >= '\u0CCA' && LA59_0 <= '\u0CCD') || (LA59_0 >= '\u0CD5' && LA59_0 <= '\u0CD6')
-                        || LA59_0 == '\u0CDE' || (LA59_0 >= '\u0CE0' && LA59_0 <= '\u0CE1') || (LA59_0 >= '\u0CE6' && LA59_0 <= '\u0CEF') || (LA59_0 >= '\u0D02' && LA59_0 <= '\u0D03') || (LA59_0 >= '\u0D05' && LA59_0 <= '\u0D0C') || (LA59_0 >= '\u0D0E' && LA59_0 <= '\u0D10') || (LA59_0 >= '\u0D12' && LA59_0 <= '\u0D28') || (LA59_0 >= '\u0D2A' && LA59_0 <= '\u0D39') || (LA59_0 >= '\u0D3E' && LA59_0 <= '\u0D43') || (LA59_0 >= '\u0D46' && LA59_0 <= '\u0D48') || (LA59_0 >= '\u0D4A' && LA59_0 <= '\u0D4D') || LA59_0 == '\u0D57' || (LA59_0 >= '\u0D60' && LA59_0 <= '\u0D61') || (LA59_0 >= '\u0D66' && LA59_0 <= '\u0D6F') || (LA59_0 >= '\u0D82' && LA59_0 <= '\u0D83') || (LA59_0 >= '\u0D85' && LA59_0 <= '\u0D96') || (LA59_0 >= '\u0D9A' && LA59_0 <= '\u0DB1') || (LA59_0 >= '\u0DB3' && LA59_0 <= '\u0DBB') || LA59_0 == '\u0DBD' || (LA59_0 >= '\u0DC0' && LA59_0 <= '\u0DC6') || LA59_0 == '\u0DCA' || (LA59_0 >= '\u0DCF' && LA59_0 <= '\u0DD4') || LA59_0 == '\u0DD6'
-                        || (LA59_0 >= '\u0DD8' && LA59_0 <= '\u0DDF') || (LA59_0 >= '\u0DF2' && LA59_0 <= '\u0DF3') || (LA59_0 >= '\u0E01' && LA59_0 <= '\u0E3A') || (LA59_0 >= '\u0E3F' && LA59_0 <= '\u0E4E') || (LA59_0 >= '\u0E50' && LA59_0 <= '\u0E59') || (LA59_0 >= '\u0E81' && LA59_0 <= '\u0E82') || LA59_0 == '\u0E84' || (LA59_0 >= '\u0E87' && LA59_0 <= '\u0E88') || LA59_0 == '\u0E8A' || LA59_0 == '\u0E8D' || (LA59_0 >= '\u0E94' && LA59_0 <= '\u0E97') || (LA59_0 >= '\u0E99' && LA59_0 <= '\u0E9F') || (LA59_0 >= '\u0EA1' && LA59_0 <= '\u0EA3') || LA59_0 == '\u0EA5' || LA59_0 == '\u0EA7' || (LA59_0 >= '\u0EAA' && LA59_0 <= '\u0EAB') || (LA59_0 >= '\u0EAD' && LA59_0 <= '\u0EB9') || (LA59_0 >= '\u0EBB' && LA59_0 <= '\u0EBD') || (LA59_0 >= '\u0EC0' && LA59_0 <= '\u0EC4') || LA59_0 == '\u0EC6' || (LA59_0 >= '\u0EC8' && LA59_0 <= '\u0ECD') || (LA59_0 >= '\u0ED0' && LA59_0 <= '\u0ED9') || (LA59_0 >= '\u0EDC' && LA59_0 <= '\u0EDD') || (LA59_0 >= '\u0F00' && LA59_0 <= '\u0F03')
-                        || (LA59_0 >= '\u0F13' && LA59_0 <= '\u0F39') || (LA59_0 >= '\u0F3E' && LA59_0 <= '\u0F47') || (LA59_0 >= '\u0F49' && LA59_0 <= '\u0F6A') || (LA59_0 >= '\u0F71' && LA59_0 <= '\u0F84') || (LA59_0 >= '\u0F86' && LA59_0 <= '\u0F8B') || (LA59_0 >= '\u0F90' && LA59_0 <= '\u0F97') || (LA59_0 >= '\u0F99' && LA59_0 <= '\u0FBC') || (LA59_0 >= '\u0FBE' && LA59_0 <= '\u0FCC') || LA59_0 == '\u0FCF' || (LA59_0 >= '\u1000' && LA59_0 <= '\u1021') || (LA59_0 >= '\u1023' && LA59_0 <= '\u1027') || (LA59_0 >= '\u1029' && LA59_0 <= '\u102A') || (LA59_0 >= '\u102C' && LA59_0 <= '\u1032') || (LA59_0 >= '\u1036' && LA59_0 <= '\u1039') || (LA59_0 >= '\u1040' && LA59_0 <= '\u1049') || (LA59_0 >= '\u1050' && LA59_0 <= '\u1059') || (LA59_0 >= '\u10A0' && LA59_0 <= '\u10C5') || (LA59_0 >= '\u10D0' && LA59_0 <= '\u10F8') || (LA59_0 >= '\u1100' && LA59_0 <= '\u1159') || (LA59_0 >= '\u115F' && LA59_0 <= '\u11A2') || (LA59_0 >= '\u11A8' && LA59_0 <= '\u11F9')
-                        || (LA59_0 >= '\u1200' && LA59_0 <= '\u1206') || (LA59_0 >= '\u1208' && LA59_0 <= '\u1246') || LA59_0 == '\u1248' || (LA59_0 >= '\u124A' && LA59_0 <= '\u124D') || (LA59_0 >= '\u1250' && LA59_0 <= '\u1256') || LA59_0 == '\u1258' || (LA59_0 >= '\u125A' && LA59_0 <= '\u125D') || (LA59_0 >= '\u1260' && LA59_0 <= '\u1286') || LA59_0 == '\u1288' || (LA59_0 >= '\u128A' && LA59_0 <= '\u128D') || (LA59_0 >= '\u1290' && LA59_0 <= '\u12AE') || LA59_0 == '\u12B0' || (LA59_0 >= '\u12B2' && LA59_0 <= '\u12B5') || (LA59_0 >= '\u12B8' && LA59_0 <= '\u12BE') || LA59_0 == '\u12C0' || (LA59_0 >= '\u12C2' && LA59_0 <= '\u12C5') || (LA59_0 >= '\u12C8' && LA59_0 <= '\u12CE') || (LA59_0 >= '\u12D0' && LA59_0 <= '\u12D6') || (LA59_0 >= '\u12D8' && LA59_0 <= '\u12EE') || (LA59_0 >= '\u12F0' && LA59_0 <= '\u130E') || LA59_0 == '\u1310' || (LA59_0 >= '\u1312' && LA59_0 <= '\u1315') || (LA59_0 >= '\u1318' && LA59_0 <= '\u131E') || (LA59_0 >= '\u1320' && LA59_0 <= '\u1346')
-                        || (LA59_0 >= '\u1348' && LA59_0 <= '\u135A') || (LA59_0 >= '\u1369' && LA59_0 <= '\u137C') || (LA59_0 >= '\u13A0' && LA59_0 <= '\u13F4') || (LA59_0 >= '\u1401' && LA59_0 <= '\u166C') || (LA59_0 >= '\u166F' && LA59_0 <= '\u1676') || (LA59_0 >= '\u1681' && LA59_0 <= '\u169A') || (LA59_0 >= '\u16A0' && LA59_0 <= '\u16EA') || (LA59_0 >= '\u16EE' && LA59_0 <= '\u16F0') || (LA59_0 >= '\u1700' && LA59_0 <= '\u170C') || (LA59_0 >= '\u170E' && LA59_0 <= '\u1714') || (LA59_0 >= '\u1720' && LA59_0 <= '\u1734') || (LA59_0 >= '\u1740' && LA59_0 <= '\u1753') || (LA59_0 >= '\u1760' && LA59_0 <= '\u176C') || (LA59_0 >= '\u176E' && LA59_0 <= '\u1770') || (LA59_0 >= '\u1772' && LA59_0 <= '\u1773') || (LA59_0 >= '\u1780' && LA59_0 <= '\u17B3') || (LA59_0 >= '\u17B6' && LA59_0 <= '\u17D3') || LA59_0 == '\u17D7' || (LA59_0 >= '\u17DB' && LA59_0 <= '\u17DD') || (LA59_0 >= '\u17E0' && LA59_0 <= '\u17E9') || (LA59_0 >= '\u17F0' && LA59_0 <= '\u17F9')
-                        || (LA59_0 >= '\u180B' && LA59_0 <= '\u180D') || (LA59_0 >= '\u1810' && LA59_0 <= '\u1819') || (LA59_0 >= '\u1820' && LA59_0 <= '\u1877') || (LA59_0 >= '\u1880' && LA59_0 <= '\u18A9') || (LA59_0 >= '\u1900' && LA59_0 <= '\u191C') || (LA59_0 >= '\u1920' && LA59_0 <= '\u192B') || (LA59_0 >= '\u1930' && LA59_0 <= '\u193B') || LA59_0 == '\u1940' || (LA59_0 >= '\u1946' && LA59_0 <= '\u196D') || (LA59_0 >= '\u1970' && LA59_0 <= '\u1974') || (LA59_0 >= '\u19E0' && LA59_0 <= '\u19FF') || (LA59_0 >= '\u1D00' && LA59_0 <= '\u1D6B') || (LA59_0 >= '\u1E00' && LA59_0 <= '\u1E9B') || (LA59_0 >= '\u1EA0' && LA59_0 <= '\u1EF9') || (LA59_0 >= '\u1F00' && LA59_0 <= '\u1F15') || (LA59_0 >= '\u1F18' && LA59_0 <= '\u1F1D') || (LA59_0 >= '\u1F20' && LA59_0 <= '\u1F45') || (LA59_0 >= '\u1F48' && LA59_0 <= '\u1F4D') || (LA59_0 >= '\u1F50' && LA59_0 <= '\u1F57') || LA59_0 == '\u1F59' || LA59_0 == '\u1F5B' || LA59_0 == '\u1F5D' || (LA59_0 >= '\u1F5F' && LA59_0 <= '\u1F7D')
-                        || (LA59_0 >= '\u1F80' && LA59_0 <= '\u1FB4') || (LA59_0 >= '\u1FB6' && LA59_0 <= '\u1FBC') || LA59_0 == '\u1FBE' || (LA59_0 >= '\u1FC2' && LA59_0 <= '\u1FC4') || (LA59_0 >= '\u1FC6' && LA59_0 <= '\u1FCC') || (LA59_0 >= '\u1FD0' && LA59_0 <= '\u1FD3') || (LA59_0 >= '\u1FD6' && LA59_0 <= '\u1FDB') || (LA59_0 >= '\u1FE0' && LA59_0 <= '\u1FEC') || (LA59_0 >= '\u1FF2' && LA59_0 <= '\u1FF4') || (LA59_0 >= '\u1FF6' && LA59_0 <= '\u1FFC') || (LA59_0 >= '\u2070' && LA59_0 <= '\u2071') || (LA59_0 >= '\u2074' && LA59_0 <= '\u2079') || (LA59_0 >= '\u207F' && LA59_0 <= '\u2089') || (LA59_0 >= '\u20A0' && LA59_0 <= '\u20B1') || (LA59_0 >= '\u20D0' && LA59_0 <= '\u20EA') || (LA59_0 >= '\u2100' && LA59_0 <= '\u213B') || (LA59_0 >= '\u213D' && LA59_0 <= '\u213F') || (LA59_0 >= '\u2145' && LA59_0 <= '\u214A') || (LA59_0 >= '\u2153' && LA59_0 <= '\u2183') || (LA59_0 >= '\u2195' && LA59_0 <= '\u2199') || (LA59_0 >= '\u219C' && LA59_0 <= '\u219F')
-                        || (LA59_0 >= '\u21A1' && LA59_0 <= '\u21A2') || (LA59_0 >= '\u21A4' && LA59_0 <= '\u21A5') || (LA59_0 >= '\u21A7' && LA59_0 <= '\u21AD') || (LA59_0 >= '\u21AF' && LA59_0 <= '\u21CD') || (LA59_0 >= '\u21D0' && LA59_0 <= '\u21D1') || LA59_0 == '\u21D3' || (LA59_0 >= '\u21D5' && LA59_0 <= '\u21F3') || (LA59_0 >= '\u2300' && LA59_0 <= '\u2307') || (LA59_0 >= '\u230C' && LA59_0 <= '\u231F') || (LA59_0 >= '\u2322' && LA59_0 <= '\u2328') || (LA59_0 >= '\u232B' && LA59_0 <= '\u237B') || (LA59_0 >= '\u237D' && LA59_0 <= '\u239A') || (LA59_0 >= '\u23B7' && LA59_0 <= '\u23D0') || (LA59_0 >= '\u2400' && LA59_0 <= '\u2426') || (LA59_0 >= '\u2440' && LA59_0 <= '\u244A') || (LA59_0 >= '\u2460' && LA59_0 <= '\u25B6') || (LA59_0 >= '\u25B8' && LA59_0 <= '\u25C0') || (LA59_0 >= '\u25C2' && LA59_0 <= '\u25F7') || (LA59_0 >= '\u2600' && LA59_0 <= '\u2617') || (LA59_0 >= '\u2619' && LA59_0 <= '\u266E') || (LA59_0 >= '\u2670' && LA59_0 <= '\u267D')
-                        || (LA59_0 >= '\u2680' && LA59_0 <= '\u2691') || (LA59_0 >= '\u26A0' && LA59_0 <= '\u26A1') || (LA59_0 >= '\u2701' && LA59_0 <= '\u2704') || (LA59_0 >= '\u2706' && LA59_0 <= '\u2709') || (LA59_0 >= '\u270C' && LA59_0 <= '\u2727') || (LA59_0 >= '\u2729' && LA59_0 <= '\u274B') || LA59_0 == '\u274D' || (LA59_0 >= '\u274F' && LA59_0 <= '\u2752') || LA59_0 == '\u2756' || (LA59_0 >= '\u2758' && LA59_0 <= '\u275E') || (LA59_0 >= '\u2761' && LA59_0 <= '\u2767') || (LA59_0 >= '\u2776' && LA59_0 <= '\u2794') || (LA59_0 >= '\u2798' && LA59_0 <= '\u27AF') || (LA59_0 >= '\u27B1' && LA59_0 <= '\u27BE') || (LA59_0 >= '\u2800' && LA59_0 <= '\u28FF') || (LA59_0 >= '\u2B00' && LA59_0 <= '\u2B0D') || (LA59_0 >= '\u2E80' && LA59_0 <= '\u2E99') || (LA59_0 >= '\u2E9B' && LA59_0 <= '\u2EF3') || (LA59_0 >= '\u2F00' && LA59_0 <= '\u2FD5') || (LA59_0 >= '\u2FF0' && LA59_0 <= '\u2FFB') || (LA59_0 >= '\u3004' && LA59_0 <= '\u3007') || (LA59_0 >= '\u3012' && LA59_0 <= '\u3013')
-                        || (LA59_0 >= '\u3020' && LA59_0 <= '\u302F') || (LA59_0 >= '\u3031' && LA59_0 <= '\u303C') || (LA59_0 >= '\u303E' && LA59_0 <= '\u303F') || (LA59_0 >= '\u3041' && LA59_0 <= '\u3096') || (LA59_0 >= '\u3099' && LA59_0 <= '\u309A') || (LA59_0 >= '\u309D' && LA59_0 <= '\u309F') || (LA59_0 >= '\u30A1' && LA59_0 <= '\u30FA') || (LA59_0 >= '\u30FC' && LA59_0 <= '\u30FF') || (LA59_0 >= '\u3105' && LA59_0 <= '\u312C') || (LA59_0 >= '\u3131' && LA59_0 <= '\u318E') || (LA59_0 >= '\u3190' && LA59_0 <= '\u31B7') || (LA59_0 >= '\u31F0' && LA59_0 <= '\u321E') || (LA59_0 >= '\u3220' && LA59_0 <= '\u3243') || (LA59_0 >= '\u3250' && LA59_0 <= '\u327D') || (LA59_0 >= '\u327F' && LA59_0 <= '\u32FE') || (LA59_0 >= '\u3300' && LA59_0 <= '\u4DB5') || (LA59_0 >= '\u4DC0' && LA59_0 <= '\u9FA5') || (LA59_0 >= '\uA000' && LA59_0 <= '\uA48C') || (LA59_0 >= '\uA490' && LA59_0 <= '\uA4C6') || (LA59_0 >= '\uAC00' && LA59_0 <= '\uD7A3') || (LA59_0 >= '\uF900' && LA59_0 <= '\uFA2D')
-                        || (LA59_0 >= '\uFA30' && LA59_0 <= '\uFA6A') || (LA59_0 >= '\uFB00' && LA59_0 <= '\uFB06') || (LA59_0 >= '\uFB13' && LA59_0 <= '\uFB17') || (LA59_0 >= '\uFB1D' && LA59_0 <= '\uFB28') || (LA59_0 >= '\uFB2A' && LA59_0 <= '\uFB36') || (LA59_0 >= '\uFB38' && LA59_0 <= '\uFB3C') || LA59_0 == '\uFB3E' || (LA59_0 >= '\uFB40' && LA59_0 <= '\uFB41') || (LA59_0 >= '\uFB43' && LA59_0 <= '\uFB44') || (LA59_0 >= '\uFB46' && LA59_0 <= '\uFBB1') || (LA59_0 >= '\uFBD3' && LA59_0 <= '\uFD3D') || (LA59_0 >= '\uFD50' && LA59_0 <= '\uFD8F') || (LA59_0 >= '\uFD92' && LA59_0 <= '\uFDC7') || (LA59_0 >= '\uFDF0' && LA59_0 <= '\uFDFD') || (LA59_0 >= '\uFE00' && LA59_0 <= '\uFE0F') || (LA59_0 >= '\uFE20' && LA59_0 <= '\uFE23') || LA59_0 == '\uFE69' || (LA59_0 >= '\uFE70' && LA59_0 <= '\uFE74') || (LA59_0 >= '\uFE76' && LA59_0 <= '\uFEFC') || LA59_0 == '\uFF04' || (LA59_0 >= '\uFF10' && LA59_0 <= '\uFF19') || (LA59_0 >= '\uFF21' && LA59_0 <= '\uFF3A')
-                        || (LA59_0 >= '\uFF41' && LA59_0 <= '\uFF5A') || (LA59_0 >= '\uFF66' && LA59_0 <= '\uFFBE') || (LA59_0 >= '\uFFC2' && LA59_0 <= '\uFFC7') || (LA59_0 >= '\uFFCA' && LA59_0 <= '\uFFCF') || (LA59_0 >= '\uFFD2' && LA59_0 <= '\uFFD7') || (LA59_0 >= '\uFFDA' && LA59_0 <= '\uFFDC') || (LA59_0 >= '\uFFE0' && LA59_0 <= '\uFFE1') || (LA59_0 >= '\uFFE4' && LA59_0 <= '\uFFE6') || LA59_0 == '\uFFE8' || (LA59_0 >= '\uFFED' && LA59_0 <= '\uFFEE')))
+                else if ((LA60_0 == '$' || (LA60_0 >= '0' && LA60_0 <= '9') || (LA60_0 >= 'A' && LA60_0 <= 'Z') || (LA60_0 >= 'a' && LA60_0 <= 'z') || (LA60_0 >= '\u00A2' && LA60_0 <= '\u00A7') || (LA60_0 >= '\u00A9' && LA60_0 <= '\u00AA') || LA60_0 == '\u00AE' || LA60_0 == '\u00B0' || (LA60_0 >= '\u00B2' && LA60_0 <= '\u00B3') || (LA60_0 >= '\u00B5' && LA60_0 <= '\u00B6') || (LA60_0 >= '\u00B9' && LA60_0 <= '\u00BA') || (LA60_0 >= '\u00BC' && LA60_0 <= '\u00BE') || (LA60_0 >= '\u00C0' && LA60_0 <= '\u00D6') || (LA60_0 >= '\u00D8' && LA60_0 <= '\u00F6') || (LA60_0 >= '\u00F8' && LA60_0 <= '\u0236') || (LA60_0 >= '\u0250' && LA60_0 <= '\u02C1') || (LA60_0 >= '\u02C6' && LA60_0 <= '\u02D1') || (LA60_0 >= '\u02E0' && LA60_0 <= '\u02E4') || LA60_0 == '\u02EE' || (LA60_0 >= '\u0300' && LA60_0 <= '\u0357') || (LA60_0 >= '\u035D' && LA60_0 <= '\u036F') || LA60_0 == '\u037A' || LA60_0 == '\u0386' || (LA60_0 >= '\u0388' && LA60_0 <= '\u038A') || LA60_0 == '\u038C'
+                        || (LA60_0 >= '\u038E' && LA60_0 <= '\u03A1') || (LA60_0 >= '\u03A3' && LA60_0 <= '\u03CE') || (LA60_0 >= '\u03D0' && LA60_0 <= '\u03F5') || (LA60_0 >= '\u03F7' && LA60_0 <= '\u03FB') || (LA60_0 >= '\u0400' && LA60_0 <= '\u0486') || (LA60_0 >= '\u0488' && LA60_0 <= '\u04CE') || (LA60_0 >= '\u04D0' && LA60_0 <= '\u04F5') || (LA60_0 >= '\u04F8' && LA60_0 <= '\u04F9') || (LA60_0 >= '\u0500' && LA60_0 <= '\u050F') || (LA60_0 >= '\u0531' && LA60_0 <= '\u0556') || LA60_0 == '\u0559' || (LA60_0 >= '\u0561' && LA60_0 <= '\u0587') || (LA60_0 >= '\u0591' && LA60_0 <= '\u05A1') || (LA60_0 >= '\u05A3' && LA60_0 <= '\u05B9') || (LA60_0 >= '\u05BB' && LA60_0 <= '\u05BD') || LA60_0 == '\u05BF' || (LA60_0 >= '\u05C1' && LA60_0 <= '\u05C2') || LA60_0 == '\u05C4' || (LA60_0 >= '\u05D0' && LA60_0 <= '\u05EA') || (LA60_0 >= '\u05F0' && LA60_0 <= '\u05F2') || (LA60_0 >= '\u060E' && LA60_0 <= '\u0615') || (LA60_0 >= '\u0621' && LA60_0 <= '\u063A')
+                        || (LA60_0 >= '\u0640' && LA60_0 <= '\u0658') || (LA60_0 >= '\u0660' && LA60_0 <= '\u0669') || (LA60_0 >= '\u066E' && LA60_0 <= '\u06D3') || (LA60_0 >= '\u06D5' && LA60_0 <= '\u06DC') || (LA60_0 >= '\u06DE' && LA60_0 <= '\u06FF') || (LA60_0 >= '\u0710' && LA60_0 <= '\u074A') || (LA60_0 >= '\u074D' && LA60_0 <= '\u074F') || (LA60_0 >= '\u0780' && LA60_0 <= '\u07B1') || (LA60_0 >= '\u0901' && LA60_0 <= '\u0939') || (LA60_0 >= '\u093C' && LA60_0 <= '\u094D') || (LA60_0 >= '\u0950' && LA60_0 <= '\u0954') || (LA60_0 >= '\u0958' && LA60_0 <= '\u0963') || (LA60_0 >= '\u0966' && LA60_0 <= '\u096F') || (LA60_0 >= '\u0981' && LA60_0 <= '\u0983') || (LA60_0 >= '\u0985' && LA60_0 <= '\u098C') || (LA60_0 >= '\u098F' && LA60_0 <= '\u0990') || (LA60_0 >= '\u0993' && LA60_0 <= '\u09A8') || (LA60_0 >= '\u09AA' && LA60_0 <= '\u09B0') || LA60_0 == '\u09B2' || (LA60_0 >= '\u09B6' && LA60_0 <= '\u09B9') || (LA60_0 >= '\u09BC' && LA60_0 <= '\u09C4')
+                        || (LA60_0 >= '\u09C7' && LA60_0 <= '\u09C8') || (LA60_0 >= '\u09CB' && LA60_0 <= '\u09CD') || LA60_0 == '\u09D7' || (LA60_0 >= '\u09DC' && LA60_0 <= '\u09DD') || (LA60_0 >= '\u09DF' && LA60_0 <= '\u09E3') || (LA60_0 >= '\u09E6' && LA60_0 <= '\u09FA') || (LA60_0 >= '\u0A01' && LA60_0 <= '\u0A03') || (LA60_0 >= '\u0A05' && LA60_0 <= '\u0A0A') || (LA60_0 >= '\u0A0F' && LA60_0 <= '\u0A10') || (LA60_0 >= '\u0A13' && LA60_0 <= '\u0A28') || (LA60_0 >= '\u0A2A' && LA60_0 <= '\u0A30') || (LA60_0 >= '\u0A32' && LA60_0 <= '\u0A33') || (LA60_0 >= '\u0A35' && LA60_0 <= '\u0A36') || (LA60_0 >= '\u0A38' && LA60_0 <= '\u0A39') || LA60_0 == '\u0A3C' || (LA60_0 >= '\u0A3E' && LA60_0 <= '\u0A42') || (LA60_0 >= '\u0A47' && LA60_0 <= '\u0A48') || (LA60_0 >= '\u0A4B' && LA60_0 <= '\u0A4D') || (LA60_0 >= '\u0A59' && LA60_0 <= '\u0A5C') || LA60_0 == '\u0A5E' || (LA60_0 >= '\u0A66' && LA60_0 <= '\u0A74') || (LA60_0 >= '\u0A81' && LA60_0 <= '\u0A83')
+                        || (LA60_0 >= '\u0A85' && LA60_0 <= '\u0A8D') || (LA60_0 >= '\u0A8F' && LA60_0 <= '\u0A91') || (LA60_0 >= '\u0A93' && LA60_0 <= '\u0AA8') || (LA60_0 >= '\u0AAA' && LA60_0 <= '\u0AB0') || (LA60_0 >= '\u0AB2' && LA60_0 <= '\u0AB3') || (LA60_0 >= '\u0AB5' && LA60_0 <= '\u0AB9') || (LA60_0 >= '\u0ABC' && LA60_0 <= '\u0AC5') || (LA60_0 >= '\u0AC7' && LA60_0 <= '\u0AC9') || (LA60_0 >= '\u0ACB' && LA60_0 <= '\u0ACD') || LA60_0 == '\u0AD0' || (LA60_0 >= '\u0AE0' && LA60_0 <= '\u0AE3') || (LA60_0 >= '\u0AE6' && LA60_0 <= '\u0AEF') || LA60_0 == '\u0AF1' || (LA60_0 >= '\u0B01' && LA60_0 <= '\u0B03') || (LA60_0 >= '\u0B05' && LA60_0 <= '\u0B0C') || (LA60_0 >= '\u0B0F' && LA60_0 <= '\u0B10') || (LA60_0 >= '\u0B13' && LA60_0 <= '\u0B28') || (LA60_0 >= '\u0B2A' && LA60_0 <= '\u0B30') || (LA60_0 >= '\u0B32' && LA60_0 <= '\u0B33') || (LA60_0 >= '\u0B35' && LA60_0 <= '\u0B39') || (LA60_0 >= '\u0B3C' && LA60_0 <= '\u0B43') || (LA60_0 >= '\u0B47' && LA60_0 <= '\u0B48')
+                        || (LA60_0 >= '\u0B4B' && LA60_0 <= '\u0B4D') || (LA60_0 >= '\u0B56' && LA60_0 <= '\u0B57') || (LA60_0 >= '\u0B5C' && LA60_0 <= '\u0B5D') || (LA60_0 >= '\u0B5F' && LA60_0 <= '\u0B61') || (LA60_0 >= '\u0B66' && LA60_0 <= '\u0B71') || (LA60_0 >= '\u0B82' && LA60_0 <= '\u0B83') || (LA60_0 >= '\u0B85' && LA60_0 <= '\u0B8A') || (LA60_0 >= '\u0B8E' && LA60_0 <= '\u0B90') || (LA60_0 >= '\u0B92' && LA60_0 <= '\u0B95') || (LA60_0 >= '\u0B99' && LA60_0 <= '\u0B9A') || LA60_0 == '\u0B9C' || (LA60_0 >= '\u0B9E' && LA60_0 <= '\u0B9F') || (LA60_0 >= '\u0BA3' && LA60_0 <= '\u0BA4') || (LA60_0 >= '\u0BA8' && LA60_0 <= '\u0BAA') || (LA60_0 >= '\u0BAE' && LA60_0 <= '\u0BB5') || (LA60_0 >= '\u0BB7' && LA60_0 <= '\u0BB9') || (LA60_0 >= '\u0BBE' && LA60_0 <= '\u0BC2') || (LA60_0 >= '\u0BC6' && LA60_0 <= '\u0BC8') || (LA60_0 >= '\u0BCA' && LA60_0 <= '\u0BCD') || LA60_0 == '\u0BD7' || (LA60_0 >= '\u0BE7' && LA60_0 <= '\u0BFA') || (LA60_0 >= '\u0C01' && LA60_0 <= '\u0C03')
+                        || (LA60_0 >= '\u0C05' && LA60_0 <= '\u0C0C') || (LA60_0 >= '\u0C0E' && LA60_0 <= '\u0C10') || (LA60_0 >= '\u0C12' && LA60_0 <= '\u0C28') || (LA60_0 >= '\u0C2A' && LA60_0 <= '\u0C33') || (LA60_0 >= '\u0C35' && LA60_0 <= '\u0C39') || (LA60_0 >= '\u0C3E' && LA60_0 <= '\u0C44') || (LA60_0 >= '\u0C46' && LA60_0 <= '\u0C48') || (LA60_0 >= '\u0C4A' && LA60_0 <= '\u0C4D') || (LA60_0 >= '\u0C55' && LA60_0 <= '\u0C56') || (LA60_0 >= '\u0C60' && LA60_0 <= '\u0C61') || (LA60_0 >= '\u0C66' && LA60_0 <= '\u0C6F') || (LA60_0 >= '\u0C82' && LA60_0 <= '\u0C83') || (LA60_0 >= '\u0C85' && LA60_0 <= '\u0C8C') || (LA60_0 >= '\u0C8E' && LA60_0 <= '\u0C90') || (LA60_0 >= '\u0C92' && LA60_0 <= '\u0CA8') || (LA60_0 >= '\u0CAA' && LA60_0 <= '\u0CB3') || (LA60_0 >= '\u0CB5' && LA60_0 <= '\u0CB9') || (LA60_0 >= '\u0CBC' && LA60_0 <= '\u0CC4') || (LA60_0 >= '\u0CC6' && LA60_0 <= '\u0CC8') || (LA60_0 >= '\u0CCA' && LA60_0 <= '\u0CCD') || (LA60_0 >= '\u0CD5' && LA60_0 <= '\u0CD6')
+                        || LA60_0 == '\u0CDE' || (LA60_0 >= '\u0CE0' && LA60_0 <= '\u0CE1') || (LA60_0 >= '\u0CE6' && LA60_0 <= '\u0CEF') || (LA60_0 >= '\u0D02' && LA60_0 <= '\u0D03') || (LA60_0 >= '\u0D05' && LA60_0 <= '\u0D0C') || (LA60_0 >= '\u0D0E' && LA60_0 <= '\u0D10') || (LA60_0 >= '\u0D12' && LA60_0 <= '\u0D28') || (LA60_0 >= '\u0D2A' && LA60_0 <= '\u0D39') || (LA60_0 >= '\u0D3E' && LA60_0 <= '\u0D43') || (LA60_0 >= '\u0D46' && LA60_0 <= '\u0D48') || (LA60_0 >= '\u0D4A' && LA60_0 <= '\u0D4D') || LA60_0 == '\u0D57' || (LA60_0 >= '\u0D60' && LA60_0 <= '\u0D61') || (LA60_0 >= '\u0D66' && LA60_0 <= '\u0D6F') || (LA60_0 >= '\u0D82' && LA60_0 <= '\u0D83') || (LA60_0 >= '\u0D85' && LA60_0 <= '\u0D96') || (LA60_0 >= '\u0D9A' && LA60_0 <= '\u0DB1') || (LA60_0 >= '\u0DB3' && LA60_0 <= '\u0DBB') || LA60_0 == '\u0DBD' || (LA60_0 >= '\u0DC0' && LA60_0 <= '\u0DC6') || LA60_0 == '\u0DCA' || (LA60_0 >= '\u0DCF' && LA60_0 <= '\u0DD4') || LA60_0 == '\u0DD6'
+                        || (LA60_0 >= '\u0DD8' && LA60_0 <= '\u0DDF') || (LA60_0 >= '\u0DF2' && LA60_0 <= '\u0DF3') || (LA60_0 >= '\u0E01' && LA60_0 <= '\u0E3A') || (LA60_0 >= '\u0E3F' && LA60_0 <= '\u0E4E') || (LA60_0 >= '\u0E50' && LA60_0 <= '\u0E59') || (LA60_0 >= '\u0E81' && LA60_0 <= '\u0E82') || LA60_0 == '\u0E84' || (LA60_0 >= '\u0E87' && LA60_0 <= '\u0E88') || LA60_0 == '\u0E8A' || LA60_0 == '\u0E8D' || (LA60_0 >= '\u0E94' && LA60_0 <= '\u0E97') || (LA60_0 >= '\u0E99' && LA60_0 <= '\u0E9F') || (LA60_0 >= '\u0EA1' && LA60_0 <= '\u0EA3') || LA60_0 == '\u0EA5' || LA60_0 == '\u0EA7' || (LA60_0 >= '\u0EAA' && LA60_0 <= '\u0EAB') || (LA60_0 >= '\u0EAD' && LA60_0 <= '\u0EB9') || (LA60_0 >= '\u0EBB' && LA60_0 <= '\u0EBD') || (LA60_0 >= '\u0EC0' && LA60_0 <= '\u0EC4') || LA60_0 == '\u0EC6' || (LA60_0 >= '\u0EC8' && LA60_0 <= '\u0ECD') || (LA60_0 >= '\u0ED0' && LA60_0 <= '\u0ED9') || (LA60_0 >= '\u0EDC' && LA60_0 <= '\u0EDD') || (LA60_0 >= '\u0F00' && LA60_0 <= '\u0F03')
+                        || (LA60_0 >= '\u0F13' && LA60_0 <= '\u0F39') || (LA60_0 >= '\u0F3E' && LA60_0 <= '\u0F47') || (LA60_0 >= '\u0F49' && LA60_0 <= '\u0F6A') || (LA60_0 >= '\u0F71' && LA60_0 <= '\u0F84') || (LA60_0 >= '\u0F86' && LA60_0 <= '\u0F8B') || (LA60_0 >= '\u0F90' && LA60_0 <= '\u0F97') || (LA60_0 >= '\u0F99' && LA60_0 <= '\u0FBC') || (LA60_0 >= '\u0FBE' && LA60_0 <= '\u0FCC') || LA60_0 == '\u0FCF' || (LA60_0 >= '\u1000' && LA60_0 <= '\u1021') || (LA60_0 >= '\u1023' && LA60_0 <= '\u1027') || (LA60_0 >= '\u1029' && LA60_0 <= '\u102A') || (LA60_0 >= '\u102C' && LA60_0 <= '\u1032') || (LA60_0 >= '\u1036' && LA60_0 <= '\u1039') || (LA60_0 >= '\u1040' && LA60_0 <= '\u1049') || (LA60_0 >= '\u1050' && LA60_0 <= '\u1059') || (LA60_0 >= '\u10A0' && LA60_0 <= '\u10C5') || (LA60_0 >= '\u10D0' && LA60_0 <= '\u10F8') || (LA60_0 >= '\u1100' && LA60_0 <= '\u1159') || (LA60_0 >= '\u115F' && LA60_0 <= '\u11A2') || (LA60_0 >= '\u11A8' && LA60_0 <= '\u11F9')
+                        || (LA60_0 >= '\u1200' && LA60_0 <= '\u1206') || (LA60_0 >= '\u1208' && LA60_0 <= '\u1246') || LA60_0 == '\u1248' || (LA60_0 >= '\u124A' && LA60_0 <= '\u124D') || (LA60_0 >= '\u1250' && LA60_0 <= '\u1256') || LA60_0 == '\u1258' || (LA60_0 >= '\u125A' && LA60_0 <= '\u125D') || (LA60_0 >= '\u1260' && LA60_0 <= '\u1286') || LA60_0 == '\u1288' || (LA60_0 >= '\u128A' && LA60_0 <= '\u128D') || (LA60_0 >= '\u1290' && LA60_0 <= '\u12AE') || LA60_0 == '\u12B0' || (LA60_0 >= '\u12B2' && LA60_0 <= '\u12B5') || (LA60_0 >= '\u12B8' && LA60_0 <= '\u12BE') || LA60_0 == '\u12C0' || (LA60_0 >= '\u12C2' && LA60_0 <= '\u12C5') || (LA60_0 >= '\u12C8' && LA60_0 <= '\u12CE') || (LA60_0 >= '\u12D0' && LA60_0 <= '\u12D6') || (LA60_0 >= '\u12D8' && LA60_0 <= '\u12EE') || (LA60_0 >= '\u12F0' && LA60_0 <= '\u130E') || LA60_0 == '\u1310' || (LA60_0 >= '\u1312' && LA60_0 <= '\u1315') || (LA60_0 >= '\u1318' && LA60_0 <= '\u131E') || (LA60_0 >= '\u1320' && LA60_0 <= '\u1346')
+                        || (LA60_0 >= '\u1348' && LA60_0 <= '\u135A') || (LA60_0 >= '\u1369' && LA60_0 <= '\u137C') || (LA60_0 >= '\u13A0' && LA60_0 <= '\u13F4') || (LA60_0 >= '\u1401' && LA60_0 <= '\u166C') || (LA60_0 >= '\u166F' && LA60_0 <= '\u1676') || (LA60_0 >= '\u1681' && LA60_0 <= '\u169A') || (LA60_0 >= '\u16A0' && LA60_0 <= '\u16EA') || (LA60_0 >= '\u16EE' && LA60_0 <= '\u16F0') || (LA60_0 >= '\u1700' && LA60_0 <= '\u170C') || (LA60_0 >= '\u170E' && LA60_0 <= '\u1714') || (LA60_0 >= '\u1720' && LA60_0 <= '\u1734') || (LA60_0 >= '\u1740' && LA60_0 <= '\u1753') || (LA60_0 >= '\u1760' && LA60_0 <= '\u176C') || (LA60_0 >= '\u176E' && LA60_0 <= '\u1770') || (LA60_0 >= '\u1772' && LA60_0 <= '\u1773') || (LA60_0 >= '\u1780' && LA60_0 <= '\u17B3') || (LA60_0 >= '\u17B6' && LA60_0 <= '\u17D3') || LA60_0 == '\u17D7' || (LA60_0 >= '\u17DB' && LA60_0 <= '\u17DD') || (LA60_0 >= '\u17E0' && LA60_0 <= '\u17E9') || (LA60_0 >= '\u17F0' && LA60_0 <= '\u17F9')
+                        || (LA60_0 >= '\u180B' && LA60_0 <= '\u180D') || (LA60_0 >= '\u1810' && LA60_0 <= '\u1819') || (LA60_0 >= '\u1820' && LA60_0 <= '\u1877') || (LA60_0 >= '\u1880' && LA60_0 <= '\u18A9') || (LA60_0 >= '\u1900' && LA60_0 <= '\u191C') || (LA60_0 >= '\u1920' && LA60_0 <= '\u192B') || (LA60_0 >= '\u1930' && LA60_0 <= '\u193B') || LA60_0 == '\u1940' || (LA60_0 >= '\u1946' && LA60_0 <= '\u196D') || (LA60_0 >= '\u1970' && LA60_0 <= '\u1974') || (LA60_0 >= '\u19E0' && LA60_0 <= '\u19FF') || (LA60_0 >= '\u1D00' && LA60_0 <= '\u1D6B') || (LA60_0 >= '\u1E00' && LA60_0 <= '\u1E9B') || (LA60_0 >= '\u1EA0' && LA60_0 <= '\u1EF9') || (LA60_0 >= '\u1F00' && LA60_0 <= '\u1F15') || (LA60_0 >= '\u1F18' && LA60_0 <= '\u1F1D') || (LA60_0 >= '\u1F20' && LA60_0 <= '\u1F45') || (LA60_0 >= '\u1F48' && LA60_0 <= '\u1F4D') || (LA60_0 >= '\u1F50' && LA60_0 <= '\u1F57') || LA60_0 == '\u1F59' || LA60_0 == '\u1F5B' || LA60_0 == '\u1F5D' || (LA60_0 >= '\u1F5F' && LA60_0 <= '\u1F7D')
+                        || (LA60_0 >= '\u1F80' && LA60_0 <= '\u1FB4') || (LA60_0 >= '\u1FB6' && LA60_0 <= '\u1FBC') || LA60_0 == '\u1FBE' || (LA60_0 >= '\u1FC2' && LA60_0 <= '\u1FC4') || (LA60_0 >= '\u1FC6' && LA60_0 <= '\u1FCC') || (LA60_0 >= '\u1FD0' && LA60_0 <= '\u1FD3') || (LA60_0 >= '\u1FD6' && LA60_0 <= '\u1FDB') || (LA60_0 >= '\u1FE0' && LA60_0 <= '\u1FEC') || (LA60_0 >= '\u1FF2' && LA60_0 <= '\u1FF4') || (LA60_0 >= '\u1FF6' && LA60_0 <= '\u1FFC') || (LA60_0 >= '\u2070' && LA60_0 <= '\u2071') || (LA60_0 >= '\u2074' && LA60_0 <= '\u2079') || (LA60_0 >= '\u207F' && LA60_0 <= '\u2089') || (LA60_0 >= '\u20A0' && LA60_0 <= '\u20B1') || (LA60_0 >= '\u20D0' && LA60_0 <= '\u20EA') || (LA60_0 >= '\u2100' && LA60_0 <= '\u213B') || (LA60_0 >= '\u213D' && LA60_0 <= '\u213F') || (LA60_0 >= '\u2145' && LA60_0 <= '\u214A') || (LA60_0 >= '\u2153' && LA60_0 <= '\u2183') || (LA60_0 >= '\u2195' && LA60_0 <= '\u2199') || (LA60_0 >= '\u219C' && LA60_0 <= '\u219F')
+                        || (LA60_0 >= '\u21A1' && LA60_0 <= '\u21A2') || (LA60_0 >= '\u21A4' && LA60_0 <= '\u21A5') || (LA60_0 >= '\u21A7' && LA60_0 <= '\u21AD') || (LA60_0 >= '\u21AF' && LA60_0 <= '\u21CD') || (LA60_0 >= '\u21D0' && LA60_0 <= '\u21D1') || LA60_0 == '\u21D3' || (LA60_0 >= '\u21D5' && LA60_0 <= '\u21F3') || (LA60_0 >= '\u2300' && LA60_0 <= '\u2307') || (LA60_0 >= '\u230C' && LA60_0 <= '\u231F') || (LA60_0 >= '\u2322' && LA60_0 <= '\u2328') || (LA60_0 >= '\u232B' && LA60_0 <= '\u237B') || (LA60_0 >= '\u237D' && LA60_0 <= '\u239A') || (LA60_0 >= '\u23B7' && LA60_0 <= '\u23D0') || (LA60_0 >= '\u2400' && LA60_0 <= '\u2426') || (LA60_0 >= '\u2440' && LA60_0 <= '\u244A') || (LA60_0 >= '\u2460' && LA60_0 <= '\u25B6') || (LA60_0 >= '\u25B8' && LA60_0 <= '\u25C0') || (LA60_0 >= '\u25C2' && LA60_0 <= '\u25F7') || (LA60_0 >= '\u2600' && LA60_0 <= '\u2617') || (LA60_0 >= '\u2619' && LA60_0 <= '\u266E') || (LA60_0 >= '\u2670' && LA60_0 <= '\u267D')
+                        || (LA60_0 >= '\u2680' && LA60_0 <= '\u2691') || (LA60_0 >= '\u26A0' && LA60_0 <= '\u26A1') || (LA60_0 >= '\u2701' && LA60_0 <= '\u2704') || (LA60_0 >= '\u2706' && LA60_0 <= '\u2709') || (LA60_0 >= '\u270C' && LA60_0 <= '\u2727') || (LA60_0 >= '\u2729' && LA60_0 <= '\u274B') || LA60_0 == '\u274D' || (LA60_0 >= '\u274F' && LA60_0 <= '\u2752') || LA60_0 == '\u2756' || (LA60_0 >= '\u2758' && LA60_0 <= '\u275E') || (LA60_0 >= '\u2761' && LA60_0 <= '\u2767') || (LA60_0 >= '\u2776' && LA60_0 <= '\u2794') || (LA60_0 >= '\u2798' && LA60_0 <= '\u27AF') || (LA60_0 >= '\u27B1' && LA60_0 <= '\u27BE') || (LA60_0 >= '\u2800' && LA60_0 <= '\u28FF') || (LA60_0 >= '\u2B00' && LA60_0 <= '\u2B0D') || (LA60_0 >= '\u2E80' && LA60_0 <= '\u2E99') || (LA60_0 >= '\u2E9B' && LA60_0 <= '\u2EF3') || (LA60_0 >= '\u2F00' && LA60_0 <= '\u2FD5') || (LA60_0 >= '\u2FF0' && LA60_0 <= '\u2FFB') || (LA60_0 >= '\u3004' && LA60_0 <= '\u3007') || (LA60_0 >= '\u3012' && LA60_0 <= '\u3013')
+                        || (LA60_0 >= '\u3020' && LA60_0 <= '\u302F') || (LA60_0 >= '\u3031' && LA60_0 <= '\u303C') || (LA60_0 >= '\u303E' && LA60_0 <= '\u303F') || (LA60_0 >= '\u3041' && LA60_0 <= '\u3096') || (LA60_0 >= '\u3099' && LA60_0 <= '\u309A') || (LA60_0 >= '\u309D' && LA60_0 <= '\u309F') || (LA60_0 >= '\u30A1' && LA60_0 <= '\u30FA') || (LA60_0 >= '\u30FC' && LA60_0 <= '\u30FF') || (LA60_0 >= '\u3105' && LA60_0 <= '\u312C') || (LA60_0 >= '\u3131' && LA60_0 <= '\u318E') || (LA60_0 >= '\u3190' && LA60_0 <= '\u31B7') || (LA60_0 >= '\u31F0' && LA60_0 <= '\u321E') || (LA60_0 >= '\u3220' && LA60_0 <= '\u3243') || (LA60_0 >= '\u3250' && LA60_0 <= '\u327D') || (LA60_0 >= '\u327F' && LA60_0 <= '\u32FE') || (LA60_0 >= '\u3300' && LA60_0 <= '\u4DB5') || (LA60_0 >= '\u4DC0' && LA60_0 <= '\u9FA5') || (LA60_0 >= '\uA000' && LA60_0 <= '\uA48C') || (LA60_0 >= '\uA490' && LA60_0 <= '\uA4C6') || (LA60_0 >= '\uAC00' && LA60_0 <= '\uD7A3') || (LA60_0 >= '\uF900' && LA60_0 <= '\uFA2D')
+                        || (LA60_0 >= '\uFA30' && LA60_0 <= '\uFA6A') || (LA60_0 >= '\uFB00' && LA60_0 <= '\uFB06') || (LA60_0 >= '\uFB13' && LA60_0 <= '\uFB17') || (LA60_0 >= '\uFB1D' && LA60_0 <= '\uFB28') || (LA60_0 >= '\uFB2A' && LA60_0 <= '\uFB36') || (LA60_0 >= '\uFB38' && LA60_0 <= '\uFB3C') || LA60_0 == '\uFB3E' || (LA60_0 >= '\uFB40' && LA60_0 <= '\uFB41') || (LA60_0 >= '\uFB43' && LA60_0 <= '\uFB44') || (LA60_0 >= '\uFB46' && LA60_0 <= '\uFBB1') || (LA60_0 >= '\uFBD3' && LA60_0 <= '\uFD3D') || (LA60_0 >= '\uFD50' && LA60_0 <= '\uFD8F') || (LA60_0 >= '\uFD92' && LA60_0 <= '\uFDC7') || (LA60_0 >= '\uFDF0' && LA60_0 <= '\uFDFD') || (LA60_0 >= '\uFE00' && LA60_0 <= '\uFE0F') || (LA60_0 >= '\uFE20' && LA60_0 <= '\uFE23') || LA60_0 == '\uFE69' || (LA60_0 >= '\uFE70' && LA60_0 <= '\uFE74') || (LA60_0 >= '\uFE76' && LA60_0 <= '\uFEFC') || LA60_0 == '\uFF04' || (LA60_0 >= '\uFF10' && LA60_0 <= '\uFF19') || (LA60_0 >= '\uFF21' && LA60_0 <= '\uFF3A')
+                        || (LA60_0 >= '\uFF41' && LA60_0 <= '\uFF5A') || (LA60_0 >= '\uFF66' && LA60_0 <= '\uFFBE') || (LA60_0 >= '\uFFC2' && LA60_0 <= '\uFFC7') || (LA60_0 >= '\uFFCA' && LA60_0 <= '\uFFCF') || (LA60_0 >= '\uFFD2' && LA60_0 <= '\uFFD7') || (LA60_0 >= '\uFFDA' && LA60_0 <= '\uFFDC') || (LA60_0 >= '\uFFE0' && LA60_0 <= '\uFFE1') || (LA60_0 >= '\uFFE4' && LA60_0 <= '\uFFE6') || LA60_0 == '\uFFE8' || (LA60_0 >= '\uFFED' && LA60_0 <= '\uFFEE')))
                 {
-                    alt59 = 2;
+                    alt60 = 2;
                 }
-                else if ((LA59_0 == '*'))
+                else if ((LA60_0 == '*'))
                 {
-                    alt59 = 3;
+                    alt60 = 3;
                 }
-                else if ((LA59_0 == '?'))
+                else if ((LA60_0 == '?'))
                 {
-                    alt59 = 4;
+                    alt60 = 4;
                 }
 
                 else
@@ -5487,14 +5555,14 @@ public class FTSLexer extends Lexer
                         state.failed = true;
                         return;
                     }
-                    NoViableAltException nvae = new NoViableAltException("", 59, 0, input);
+                    NoViableAltException nvae = new NoViableAltException("", 60, 0, input);
                     throw nvae;
                 }
 
-                switch (alt59)
+                switch (alt60)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1571:17: F_ESC
+                // FTS.g:1581:17: F_ESC
                 {
                     mF_ESC();
                     if (state.failed)
@@ -5503,7 +5571,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 2:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1572:19: START_WORD
+                // FTS.g:1582:19: START_WORD
                 {
                     mSTART_WORD();
                     if (state.failed)
@@ -5512,7 +5580,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 3:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1573:19: STAR
+                // FTS.g:1583:19: STAR
                 {
                     mSTAR();
                     if (state.failed)
@@ -5521,7 +5589,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 4:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1574:19: QUESTION_MARK
+                // FTS.g:1584:19: QUESTION_MARK
                 {
                     mQUESTION_MARK();
                     if (state.failed)
@@ -5532,49 +5600,49 @@ public class FTSLexer extends Lexer
 
                 }
 
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1576:9: ( F_ESC | IN_WORD | STAR | QUESTION_MARK )*
-                loop60: while (true)
+                // FTS.g:1586:9: ( F_ESC | IN_WORD | STAR | QUESTION_MARK )*
+                loop61: while (true)
                 {
-                    int alt60 = 5;
-                    int LA60_0 = input.LA(1);
-                    if ((LA60_0 == '\\'))
+                    int alt61 = 5;
+                    int LA61_0 = input.LA(1);
+                    if ((LA61_0 == '\\'))
                     {
-                        alt60 = 1;
+                        alt61 = 1;
                     }
-                    else if (((LA60_0 >= '!' && LA60_0 <= '\'') || LA60_0 == '+' || LA60_0 == '-' || (LA60_0 >= '/' && LA60_0 <= '9') || LA60_0 == ';' || LA60_0 == '=' || (LA60_0 >= '@' && LA60_0 <= 'Z') || LA60_0 == '_' || (LA60_0 >= 'a' && LA60_0 <= 'z') || LA60_0 == '|' || (LA60_0 >= '\u00A1' && LA60_0 <= '\u00A7') || (LA60_0 >= '\u00A9' && LA60_0 <= '\u00AA') || LA60_0 == '\u00AC' || LA60_0 == '\u00AE' || (LA60_0 >= '\u00B0' && LA60_0 <= '\u00B3') || (LA60_0 >= '\u00B5' && LA60_0 <= '\u00B7') || (LA60_0 >= '\u00B9' && LA60_0 <= '\u00BA') || (LA60_0 >= '\u00BC' && LA60_0 <= '\u0236') || (LA60_0 >= '\u0250' && LA60_0 <= '\u02C1') || (LA60_0 >= '\u02C6' && LA60_0 <= '\u02D1') || (LA60_0 >= '\u02E0' && LA60_0 <= '\u02E4') || LA60_0 == '\u02EE' || (LA60_0 >= '\u0300' && LA60_0 <= '\u0357') || (LA60_0 >= '\u035D' && LA60_0 <= '\u036F') || LA60_0 == '\u037A' || LA60_0 == '\u037E' || (LA60_0 >= '\u0386' && LA60_0 <= '\u038A') || LA60_0 == '\u038C'
-                            || (LA60_0 >= '\u038E' && LA60_0 <= '\u03A1') || (LA60_0 >= '\u03A3' && LA60_0 <= '\u03CE') || (LA60_0 >= '\u03D0' && LA60_0 <= '\u03FB') || (LA60_0 >= '\u0400' && LA60_0 <= '\u0486') || (LA60_0 >= '\u0488' && LA60_0 <= '\u04CE') || (LA60_0 >= '\u04D0' && LA60_0 <= '\u04F5') || (LA60_0 >= '\u04F8' && LA60_0 <= '\u04F9') || (LA60_0 >= '\u0500' && LA60_0 <= '\u050F') || (LA60_0 >= '\u0531' && LA60_0 <= '\u0556') || (LA60_0 >= '\u0559' && LA60_0 <= '\u055F') || (LA60_0 >= '\u0561' && LA60_0 <= '\u0587') || (LA60_0 >= '\u0589' && LA60_0 <= '\u058A') || (LA60_0 >= '\u0591' && LA60_0 <= '\u05A1') || (LA60_0 >= '\u05A3' && LA60_0 <= '\u05B9') || (LA60_0 >= '\u05BB' && LA60_0 <= '\u05C4') || (LA60_0 >= '\u05D0' && LA60_0 <= '\u05EA') || (LA60_0 >= '\u05F0' && LA60_0 <= '\u05F4') || (LA60_0 >= '\u060C' && LA60_0 <= '\u0615') || LA60_0 == '\u061B' || LA60_0 == '\u061F' || (LA60_0 >= '\u0621' && LA60_0 <= '\u063A') || (LA60_0 >= '\u0640' && LA60_0 <= '\u0658')
-                            || (LA60_0 >= '\u0660' && LA60_0 <= '\u06DC') || (LA60_0 >= '\u06DE' && LA60_0 <= '\u070D') || (LA60_0 >= '\u0710' && LA60_0 <= '\u074A') || (LA60_0 >= '\u074D' && LA60_0 <= '\u074F') || (LA60_0 >= '\u0780' && LA60_0 <= '\u07B1') || (LA60_0 >= '\u0901' && LA60_0 <= '\u0939') || (LA60_0 >= '\u093C' && LA60_0 <= '\u094D') || (LA60_0 >= '\u0950' && LA60_0 <= '\u0954') || (LA60_0 >= '\u0958' && LA60_0 <= '\u0970') || (LA60_0 >= '\u0981' && LA60_0 <= '\u0983') || (LA60_0 >= '\u0985' && LA60_0 <= '\u098C') || (LA60_0 >= '\u098F' && LA60_0 <= '\u0990') || (LA60_0 >= '\u0993' && LA60_0 <= '\u09A8') || (LA60_0 >= '\u09AA' && LA60_0 <= '\u09B0') || LA60_0 == '\u09B2' || (LA60_0 >= '\u09B6' && LA60_0 <= '\u09B9') || (LA60_0 >= '\u09BC' && LA60_0 <= '\u09C4') || (LA60_0 >= '\u09C7' && LA60_0 <= '\u09C8') || (LA60_0 >= '\u09CB' && LA60_0 <= '\u09CD') || LA60_0 == '\u09D7' || (LA60_0 >= '\u09DC' && LA60_0 <= '\u09DD') || (LA60_0 >= '\u09DF' && LA60_0 <= '\u09E3')
-                            || (LA60_0 >= '\u09E6' && LA60_0 <= '\u09FA') || (LA60_0 >= '\u0A01' && LA60_0 <= '\u0A03') || (LA60_0 >= '\u0A05' && LA60_0 <= '\u0A0A') || (LA60_0 >= '\u0A0F' && LA60_0 <= '\u0A10') || (LA60_0 >= '\u0A13' && LA60_0 <= '\u0A28') || (LA60_0 >= '\u0A2A' && LA60_0 <= '\u0A30') || (LA60_0 >= '\u0A32' && LA60_0 <= '\u0A33') || (LA60_0 >= '\u0A35' && LA60_0 <= '\u0A36') || (LA60_0 >= '\u0A38' && LA60_0 <= '\u0A39') || LA60_0 == '\u0A3C' || (LA60_0 >= '\u0A3E' && LA60_0 <= '\u0A42') || (LA60_0 >= '\u0A47' && LA60_0 <= '\u0A48') || (LA60_0 >= '\u0A4B' && LA60_0 <= '\u0A4D') || (LA60_0 >= '\u0A59' && LA60_0 <= '\u0A5C') || LA60_0 == '\u0A5E' || (LA60_0 >= '\u0A66' && LA60_0 <= '\u0A74') || (LA60_0 >= '\u0A81' && LA60_0 <= '\u0A83') || (LA60_0 >= '\u0A85' && LA60_0 <= '\u0A8D') || (LA60_0 >= '\u0A8F' && LA60_0 <= '\u0A91') || (LA60_0 >= '\u0A93' && LA60_0 <= '\u0AA8') || (LA60_0 >= '\u0AAA' && LA60_0 <= '\u0AB0') || (LA60_0 >= '\u0AB2' && LA60_0 <= '\u0AB3')
-                            || (LA60_0 >= '\u0AB5' && LA60_0 <= '\u0AB9') || (LA60_0 >= '\u0ABC' && LA60_0 <= '\u0AC5') || (LA60_0 >= '\u0AC7' && LA60_0 <= '\u0AC9') || (LA60_0 >= '\u0ACB' && LA60_0 <= '\u0ACD') || LA60_0 == '\u0AD0' || (LA60_0 >= '\u0AE0' && LA60_0 <= '\u0AE3') || (LA60_0 >= '\u0AE6' && LA60_0 <= '\u0AEF') || LA60_0 == '\u0AF1' || (LA60_0 >= '\u0B01' && LA60_0 <= '\u0B03') || (LA60_0 >= '\u0B05' && LA60_0 <= '\u0B0C') || (LA60_0 >= '\u0B0F' && LA60_0 <= '\u0B10') || (LA60_0 >= '\u0B13' && LA60_0 <= '\u0B28') || (LA60_0 >= '\u0B2A' && LA60_0 <= '\u0B30') || (LA60_0 >= '\u0B32' && LA60_0 <= '\u0B33') || (LA60_0 >= '\u0B35' && LA60_0 <= '\u0B39') || (LA60_0 >= '\u0B3C' && LA60_0 <= '\u0B43') || (LA60_0 >= '\u0B47' && LA60_0 <= '\u0B48') || (LA60_0 >= '\u0B4B' && LA60_0 <= '\u0B4D') || (LA60_0 >= '\u0B56' && LA60_0 <= '\u0B57') || (LA60_0 >= '\u0B5C' && LA60_0 <= '\u0B5D') || (LA60_0 >= '\u0B5F' && LA60_0 <= '\u0B61') || (LA60_0 >= '\u0B66' && LA60_0 <= '\u0B71')
-                            || (LA60_0 >= '\u0B82' && LA60_0 <= '\u0B83') || (LA60_0 >= '\u0B85' && LA60_0 <= '\u0B8A') || (LA60_0 >= '\u0B8E' && LA60_0 <= '\u0B90') || (LA60_0 >= '\u0B92' && LA60_0 <= '\u0B95') || (LA60_0 >= '\u0B99' && LA60_0 <= '\u0B9A') || LA60_0 == '\u0B9C' || (LA60_0 >= '\u0B9E' && LA60_0 <= '\u0B9F') || (LA60_0 >= '\u0BA3' && LA60_0 <= '\u0BA4') || (LA60_0 >= '\u0BA8' && LA60_0 <= '\u0BAA') || (LA60_0 >= '\u0BAE' && LA60_0 <= '\u0BB5') || (LA60_0 >= '\u0BB7' && LA60_0 <= '\u0BB9') || (LA60_0 >= '\u0BBE' && LA60_0 <= '\u0BC2') || (LA60_0 >= '\u0BC6' && LA60_0 <= '\u0BC8') || (LA60_0 >= '\u0BCA' && LA60_0 <= '\u0BCD') || LA60_0 == '\u0BD7' || (LA60_0 >= '\u0BE7' && LA60_0 <= '\u0BFA') || (LA60_0 >= '\u0C01' && LA60_0 <= '\u0C03') || (LA60_0 >= '\u0C05' && LA60_0 <= '\u0C0C') || (LA60_0 >= '\u0C0E' && LA60_0 <= '\u0C10') || (LA60_0 >= '\u0C12' && LA60_0 <= '\u0C28') || (LA60_0 >= '\u0C2A' && LA60_0 <= '\u0C33') || (LA60_0 >= '\u0C35' && LA60_0 <= '\u0C39')
-                            || (LA60_0 >= '\u0C3E' && LA60_0 <= '\u0C44') || (LA60_0 >= '\u0C46' && LA60_0 <= '\u0C48') || (LA60_0 >= '\u0C4A' && LA60_0 <= '\u0C4D') || (LA60_0 >= '\u0C55' && LA60_0 <= '\u0C56') || (LA60_0 >= '\u0C60' && LA60_0 <= '\u0C61') || (LA60_0 >= '\u0C66' && LA60_0 <= '\u0C6F') || (LA60_0 >= '\u0C82' && LA60_0 <= '\u0C83') || (LA60_0 >= '\u0C85' && LA60_0 <= '\u0C8C') || (LA60_0 >= '\u0C8E' && LA60_0 <= '\u0C90') || (LA60_0 >= '\u0C92' && LA60_0 <= '\u0CA8') || (LA60_0 >= '\u0CAA' && LA60_0 <= '\u0CB3') || (LA60_0 >= '\u0CB5' && LA60_0 <= '\u0CB9') || (LA60_0 >= '\u0CBC' && LA60_0 <= '\u0CC4') || (LA60_0 >= '\u0CC6' && LA60_0 <= '\u0CC8') || (LA60_0 >= '\u0CCA' && LA60_0 <= '\u0CCD') || (LA60_0 >= '\u0CD5' && LA60_0 <= '\u0CD6') || LA60_0 == '\u0CDE' || (LA60_0 >= '\u0CE0' && LA60_0 <= '\u0CE1') || (LA60_0 >= '\u0CE6' && LA60_0 <= '\u0CEF') || (LA60_0 >= '\u0D02' && LA60_0 <= '\u0D03') || (LA60_0 >= '\u0D05' && LA60_0 <= '\u0D0C')
-                            || (LA60_0 >= '\u0D0E' && LA60_0 <= '\u0D10') || (LA60_0 >= '\u0D12' && LA60_0 <= '\u0D28') || (LA60_0 >= '\u0D2A' && LA60_0 <= '\u0D39') || (LA60_0 >= '\u0D3E' && LA60_0 <= '\u0D43') || (LA60_0 >= '\u0D46' && LA60_0 <= '\u0D48') || (LA60_0 >= '\u0D4A' && LA60_0 <= '\u0D4D') || LA60_0 == '\u0D57' || (LA60_0 >= '\u0D60' && LA60_0 <= '\u0D61') || (LA60_0 >= '\u0D66' && LA60_0 <= '\u0D6F') || (LA60_0 >= '\u0D82' && LA60_0 <= '\u0D83') || (LA60_0 >= '\u0D85' && LA60_0 <= '\u0D96') || (LA60_0 >= '\u0D9A' && LA60_0 <= '\u0DB1') || (LA60_0 >= '\u0DB3' && LA60_0 <= '\u0DBB') || LA60_0 == '\u0DBD' || (LA60_0 >= '\u0DC0' && LA60_0 <= '\u0DC6') || LA60_0 == '\u0DCA' || (LA60_0 >= '\u0DCF' && LA60_0 <= '\u0DD4') || LA60_0 == '\u0DD6' || (LA60_0 >= '\u0DD8' && LA60_0 <= '\u0DDF') || (LA60_0 >= '\u0DF2' && LA60_0 <= '\u0DF4') || (LA60_0 >= '\u0E01' && LA60_0 <= '\u0E3A') || (LA60_0 >= '\u0E3F' && LA60_0 <= '\u0E5B') || (LA60_0 >= '\u0E81' && LA60_0 <= '\u0E82')
-                            || LA60_0 == '\u0E84' || (LA60_0 >= '\u0E87' && LA60_0 <= '\u0E88') || LA60_0 == '\u0E8A' || LA60_0 == '\u0E8D' || (LA60_0 >= '\u0E94' && LA60_0 <= '\u0E97') || (LA60_0 >= '\u0E99' && LA60_0 <= '\u0E9F') || (LA60_0 >= '\u0EA1' && LA60_0 <= '\u0EA3') || LA60_0 == '\u0EA5' || LA60_0 == '\u0EA7' || (LA60_0 >= '\u0EAA' && LA60_0 <= '\u0EAB') || (LA60_0 >= '\u0EAD' && LA60_0 <= '\u0EB9') || (LA60_0 >= '\u0EBB' && LA60_0 <= '\u0EBD') || (LA60_0 >= '\u0EC0' && LA60_0 <= '\u0EC4') || LA60_0 == '\u0EC6' || (LA60_0 >= '\u0EC8' && LA60_0 <= '\u0ECD') || (LA60_0 >= '\u0ED0' && LA60_0 <= '\u0ED9') || (LA60_0 >= '\u0EDC' && LA60_0 <= '\u0EDD') || (LA60_0 >= '\u0F00' && LA60_0 <= '\u0F39') || (LA60_0 >= '\u0F3E' && LA60_0 <= '\u0F47') || (LA60_0 >= '\u0F49' && LA60_0 <= '\u0F6A') || (LA60_0 >= '\u0F71' && LA60_0 <= '\u0F8B') || (LA60_0 >= '\u0F90' && LA60_0 <= '\u0F97') || (LA60_0 >= '\u0F99' && LA60_0 <= '\u0FBC') || (LA60_0 >= '\u0FBE' && LA60_0 <= '\u0FCC')
-                            || LA60_0 == '\u0FCF' || (LA60_0 >= '\u1000' && LA60_0 <= '\u1021') || (LA60_0 >= '\u1023' && LA60_0 <= '\u1027') || (LA60_0 >= '\u1029' && LA60_0 <= '\u102A') || (LA60_0 >= '\u102C' && LA60_0 <= '\u1032') || (LA60_0 >= '\u1036' && LA60_0 <= '\u1039') || (LA60_0 >= '\u1040' && LA60_0 <= '\u1059') || (LA60_0 >= '\u10A0' && LA60_0 <= '\u10C5') || (LA60_0 >= '\u10D0' && LA60_0 <= '\u10F8') || LA60_0 == '\u10FB' || (LA60_0 >= '\u1100' && LA60_0 <= '\u1159') || (LA60_0 >= '\u115F' && LA60_0 <= '\u11A2') || (LA60_0 >= '\u11A8' && LA60_0 <= '\u11F9') || (LA60_0 >= '\u1200' && LA60_0 <= '\u1206') || (LA60_0 >= '\u1208' && LA60_0 <= '\u1246') || LA60_0 == '\u1248' || (LA60_0 >= '\u124A' && LA60_0 <= '\u124D') || (LA60_0 >= '\u1250' && LA60_0 <= '\u1256') || LA60_0 == '\u1258' || (LA60_0 >= '\u125A' && LA60_0 <= '\u125D') || (LA60_0 >= '\u1260' && LA60_0 <= '\u1286') || LA60_0 == '\u1288' || (LA60_0 >= '\u128A' && LA60_0 <= '\u128D')
-                            || (LA60_0 >= '\u1290' && LA60_0 <= '\u12AE') || LA60_0 == '\u12B0' || (LA60_0 >= '\u12B2' && LA60_0 <= '\u12B5') || (LA60_0 >= '\u12B8' && LA60_0 <= '\u12BE') || LA60_0 == '\u12C0' || (LA60_0 >= '\u12C2' && LA60_0 <= '\u12C5') || (LA60_0 >= '\u12C8' && LA60_0 <= '\u12CE') || (LA60_0 >= '\u12D0' && LA60_0 <= '\u12D6') || (LA60_0 >= '\u12D8' && LA60_0 <= '\u12EE') || (LA60_0 >= '\u12F0' && LA60_0 <= '\u130E') || LA60_0 == '\u1310' || (LA60_0 >= '\u1312' && LA60_0 <= '\u1315') || (LA60_0 >= '\u1318' && LA60_0 <= '\u131E') || (LA60_0 >= '\u1320' && LA60_0 <= '\u1346') || (LA60_0 >= '\u1348' && LA60_0 <= '\u135A') || (LA60_0 >= '\u1361' && LA60_0 <= '\u137C') || (LA60_0 >= '\u13A0' && LA60_0 <= '\u13F4') || (LA60_0 >= '\u1401' && LA60_0 <= '\u1676') || (LA60_0 >= '\u1681' && LA60_0 <= '\u169A') || (LA60_0 >= '\u16A0' && LA60_0 <= '\u16F0') || (LA60_0 >= '\u1700' && LA60_0 <= '\u170C') || (LA60_0 >= '\u170E' && LA60_0 <= '\u1714')
-                            || (LA60_0 >= '\u1720' && LA60_0 <= '\u1736') || (LA60_0 >= '\u1740' && LA60_0 <= '\u1753') || (LA60_0 >= '\u1760' && LA60_0 <= '\u176C') || (LA60_0 >= '\u176E' && LA60_0 <= '\u1770') || (LA60_0 >= '\u1772' && LA60_0 <= '\u1773') || (LA60_0 >= '\u1780' && LA60_0 <= '\u17B3') || (LA60_0 >= '\u17B6' && LA60_0 <= '\u17DD') || (LA60_0 >= '\u17E0' && LA60_0 <= '\u17E9') || (LA60_0 >= '\u17F0' && LA60_0 <= '\u17F9') || (LA60_0 >= '\u1800' && LA60_0 <= '\u180D') || (LA60_0 >= '\u1810' && LA60_0 <= '\u1819') || (LA60_0 >= '\u1820' && LA60_0 <= '\u1877') || (LA60_0 >= '\u1880' && LA60_0 <= '\u18A9') || (LA60_0 >= '\u1900' && LA60_0 <= '\u191C') || (LA60_0 >= '\u1920' && LA60_0 <= '\u192B') || (LA60_0 >= '\u1930' && LA60_0 <= '\u193B') || LA60_0 == '\u1940' || (LA60_0 >= '\u1944' && LA60_0 <= '\u196D') || (LA60_0 >= '\u1970' && LA60_0 <= '\u1974') || (LA60_0 >= '\u19E0' && LA60_0 <= '\u19FF') || (LA60_0 >= '\u1D00' && LA60_0 <= '\u1D6B')
-                            || (LA60_0 >= '\u1E00' && LA60_0 <= '\u1E9B') || (LA60_0 >= '\u1EA0' && LA60_0 <= '\u1EF9') || (LA60_0 >= '\u1F00' && LA60_0 <= '\u1F15') || (LA60_0 >= '\u1F18' && LA60_0 <= '\u1F1D') || (LA60_0 >= '\u1F20' && LA60_0 <= '\u1F45') || (LA60_0 >= '\u1F48' && LA60_0 <= '\u1F4D') || (LA60_0 >= '\u1F50' && LA60_0 <= '\u1F57') || LA60_0 == '\u1F59' || LA60_0 == '\u1F5B' || LA60_0 == '\u1F5D' || (LA60_0 >= '\u1F5F' && LA60_0 <= '\u1F7D') || (LA60_0 >= '\u1F80' && LA60_0 <= '\u1FB4') || (LA60_0 >= '\u1FB6' && LA60_0 <= '\u1FBC') || LA60_0 == '\u1FBE' || (LA60_0 >= '\u1FC2' && LA60_0 <= '\u1FC4') || (LA60_0 >= '\u1FC6' && LA60_0 <= '\u1FCC') || (LA60_0 >= '\u1FD0' && LA60_0 <= '\u1FD3') || (LA60_0 >= '\u1FD6' && LA60_0 <= '\u1FDB') || (LA60_0 >= '\u1FE0' && LA60_0 <= '\u1FEC') || (LA60_0 >= '\u1FF2' && LA60_0 <= '\u1FF4') || (LA60_0 >= '\u1FF6' && LA60_0 <= '\u1FFC') || (LA60_0 >= '\u2010' && LA60_0 <= '\u2017') || (LA60_0 >= '\u2020' && LA60_0 <= '\u2027')
-                            || (LA60_0 >= '\u2030' && LA60_0 <= '\u2038') || (LA60_0 >= '\u203B' && LA60_0 <= '\u2044') || (LA60_0 >= '\u2047' && LA60_0 <= '\u2054') || LA60_0 == '\u2057' || (LA60_0 >= '\u2070' && LA60_0 <= '\u2071') || (LA60_0 >= '\u2074' && LA60_0 <= '\u207C') || (LA60_0 >= '\u207F' && LA60_0 <= '\u208C') || (LA60_0 >= '\u20A0' && LA60_0 <= '\u20B1') || (LA60_0 >= '\u20D0' && LA60_0 <= '\u20EA') || (LA60_0 >= '\u2100' && LA60_0 <= '\u213B') || (LA60_0 >= '\u213D' && LA60_0 <= '\u214B') || (LA60_0 >= '\u2153' && LA60_0 <= '\u2183') || (LA60_0 >= '\u2190' && LA60_0 <= '\u2328') || (LA60_0 >= '\u232B' && LA60_0 <= '\u23B3') || (LA60_0 >= '\u23B6' && LA60_0 <= '\u23D0') || (LA60_0 >= '\u2400' && LA60_0 <= '\u2426') || (LA60_0 >= '\u2440' && LA60_0 <= '\u244A') || (LA60_0 >= '\u2460' && LA60_0 <= '\u2617') || (LA60_0 >= '\u2619' && LA60_0 <= '\u267D') || (LA60_0 >= '\u2680' && LA60_0 <= '\u2691') || (LA60_0 >= '\u26A0' && LA60_0 <= '\u26A1')
-                            || (LA60_0 >= '\u2701' && LA60_0 <= '\u2704') || (LA60_0 >= '\u2706' && LA60_0 <= '\u2709') || (LA60_0 >= '\u270C' && LA60_0 <= '\u2727') || (LA60_0 >= '\u2729' && LA60_0 <= '\u274B') || LA60_0 == '\u274D' || (LA60_0 >= '\u274F' && LA60_0 <= '\u2752') || LA60_0 == '\u2756' || (LA60_0 >= '\u2758' && LA60_0 <= '\u275E') || (LA60_0 >= '\u2761' && LA60_0 <= '\u2767') || (LA60_0 >= '\u2776' && LA60_0 <= '\u2794') || (LA60_0 >= '\u2798' && LA60_0 <= '\u27AF') || (LA60_0 >= '\u27B1' && LA60_0 <= '\u27BE') || (LA60_0 >= '\u27D0' && LA60_0 <= '\u27E5') || (LA60_0 >= '\u27F0' && LA60_0 <= '\u2982') || (LA60_0 >= '\u2999' && LA60_0 <= '\u29D7') || (LA60_0 >= '\u29DC' && LA60_0 <= '\u29FB') || (LA60_0 >= '\u29FE' && LA60_0 <= '\u2B0D') || (LA60_0 >= '\u2E80' && LA60_0 <= '\u2E99') || (LA60_0 >= '\u2E9B' && LA60_0 <= '\u2EF3') || (LA60_0 >= '\u2F00' && LA60_0 <= '\u2FD5') || (LA60_0 >= '\u2FF0' && LA60_0 <= '\u2FFB') || (LA60_0 >= '\u3001' && LA60_0 <= '\u3007')
-                            || (LA60_0 >= '\u3012' && LA60_0 <= '\u3013') || LA60_0 == '\u301C' || (LA60_0 >= '\u3020' && LA60_0 <= '\u303F') || (LA60_0 >= '\u3041' && LA60_0 <= '\u3096') || (LA60_0 >= '\u3099' && LA60_0 <= '\u309A') || (LA60_0 >= '\u309D' && LA60_0 <= '\u30FF') || (LA60_0 >= '\u3105' && LA60_0 <= '\u312C') || (LA60_0 >= '\u3131' && LA60_0 <= '\u318E') || (LA60_0 >= '\u3190' && LA60_0 <= '\u31B7') || (LA60_0 >= '\u31F0' && LA60_0 <= '\u321E') || (LA60_0 >= '\u3220' && LA60_0 <= '\u3243') || (LA60_0 >= '\u3250' && LA60_0 <= '\u327D') || (LA60_0 >= '\u327F' && LA60_0 <= '\u32FE') || (LA60_0 >= '\u3300' && LA60_0 <= '\u4DB5') || (LA60_0 >= '\u4DC0' && LA60_0 <= '\u9FA5') || (LA60_0 >= '\uA000' && LA60_0 <= '\uA48C') || (LA60_0 >= '\uA490' && LA60_0 <= '\uA4C6') || (LA60_0 >= '\uAC00' && LA60_0 <= '\uD7A3') || (LA60_0 >= '\uF900' && LA60_0 <= '\uFA2D') || (LA60_0 >= '\uFA30' && LA60_0 <= '\uFA6A') || (LA60_0 >= '\uFB00' && LA60_0 <= '\uFB06')
-                            || (LA60_0 >= '\uFB13' && LA60_0 <= '\uFB17') || (LA60_0 >= '\uFB1D' && LA60_0 <= '\uFB36') || (LA60_0 >= '\uFB38' && LA60_0 <= '\uFB3C') || LA60_0 == '\uFB3E' || (LA60_0 >= '\uFB40' && LA60_0 <= '\uFB41') || (LA60_0 >= '\uFB43' && LA60_0 <= '\uFB44') || (LA60_0 >= '\uFB46' && LA60_0 <= '\uFBB1') || (LA60_0 >= '\uFBD3' && LA60_0 <= '\uFD3D') || (LA60_0 >= '\uFD50' && LA60_0 <= '\uFD8F') || (LA60_0 >= '\uFD92' && LA60_0 <= '\uFDC7') || (LA60_0 >= '\uFDF0' && LA60_0 <= '\uFDFD') || (LA60_0 >= '\uFE00' && LA60_0 <= '\uFE0F') || (LA60_0 >= '\uFE20' && LA60_0 <= '\uFE23') || (LA60_0 >= '\uFE30' && LA60_0 <= '\uFE34') || (LA60_0 >= '\uFE45' && LA60_0 <= '\uFE46') || (LA60_0 >= '\uFE49' && LA60_0 <= '\uFE52') || (LA60_0 >= '\uFE54' && LA60_0 <= '\uFE58') || (LA60_0 >= '\uFE5F' && LA60_0 <= '\uFE66') || (LA60_0 >= '\uFE68' && LA60_0 <= '\uFE6B') || (LA60_0 >= '\uFE70' && LA60_0 <= '\uFE74') || (LA60_0 >= '\uFE76' && LA60_0 <= '\uFEFC')
-                            || (LA60_0 >= '\uFF01' && LA60_0 <= '\uFF07') || (LA60_0 >= '\uFF0A' && LA60_0 <= '\uFF3A') || LA60_0 == '\uFF3C' || LA60_0 == '\uFF3F' || (LA60_0 >= '\uFF41' && LA60_0 <= '\uFF5A') || LA60_0 == '\uFF5C' || LA60_0 == '\uFF5E' || LA60_0 == '\uFF61' || (LA60_0 >= '\uFF64' && LA60_0 <= '\uFFBE') || (LA60_0 >= '\uFFC2' && LA60_0 <= '\uFFC7') || (LA60_0 >= '\uFFCA' && LA60_0 <= '\uFFCF') || (LA60_0 >= '\uFFD2' && LA60_0 <= '\uFFD7') || (LA60_0 >= '\uFFDA' && LA60_0 <= '\uFFDC') || (LA60_0 >= '\uFFE0' && LA60_0 <= '\uFFE2') || (LA60_0 >= '\uFFE4' && LA60_0 <= '\uFFE6') || (LA60_0 >= '\uFFE8' && LA60_0 <= '\uFFEE')))
+                    else if (((LA61_0 >= '!' && LA61_0 <= '\'') || LA61_0 == '+' || LA61_0 == '-' || (LA61_0 >= '/' && LA61_0 <= '9') || LA61_0 == ';' || LA61_0 == '=' || (LA61_0 >= '@' && LA61_0 <= 'Z') || LA61_0 == '_' || (LA61_0 >= 'a' && LA61_0 <= 'z') || LA61_0 == '|' || (LA61_0 >= '\u00A1' && LA61_0 <= '\u00A7') || (LA61_0 >= '\u00A9' && LA61_0 <= '\u00AA') || LA61_0 == '\u00AC' || LA61_0 == '\u00AE' || (LA61_0 >= '\u00B0' && LA61_0 <= '\u00B3') || (LA61_0 >= '\u00B5' && LA61_0 <= '\u00B7') || (LA61_0 >= '\u00B9' && LA61_0 <= '\u00BA') || (LA61_0 >= '\u00BC' && LA61_0 <= '\u0236') || (LA61_0 >= '\u0250' && LA61_0 <= '\u02C1') || (LA61_0 >= '\u02C6' && LA61_0 <= '\u02D1') || (LA61_0 >= '\u02E0' && LA61_0 <= '\u02E4') || LA61_0 == '\u02EE' || (LA61_0 >= '\u0300' && LA61_0 <= '\u0357') || (LA61_0 >= '\u035D' && LA61_0 <= '\u036F') || LA61_0 == '\u037A' || LA61_0 == '\u037E' || (LA61_0 >= '\u0386' && LA61_0 <= '\u038A') || LA61_0 == '\u038C'
+                            || (LA61_0 >= '\u038E' && LA61_0 <= '\u03A1') || (LA61_0 >= '\u03A3' && LA61_0 <= '\u03CE') || (LA61_0 >= '\u03D0' && LA61_0 <= '\u03FB') || (LA61_0 >= '\u0400' && LA61_0 <= '\u0486') || (LA61_0 >= '\u0488' && LA61_0 <= '\u04CE') || (LA61_0 >= '\u04D0' && LA61_0 <= '\u04F5') || (LA61_0 >= '\u04F8' && LA61_0 <= '\u04F9') || (LA61_0 >= '\u0500' && LA61_0 <= '\u050F') || (LA61_0 >= '\u0531' && LA61_0 <= '\u0556') || (LA61_0 >= '\u0559' && LA61_0 <= '\u055F') || (LA61_0 >= '\u0561' && LA61_0 <= '\u0587') || (LA61_0 >= '\u0589' && LA61_0 <= '\u058A') || (LA61_0 >= '\u0591' && LA61_0 <= '\u05A1') || (LA61_0 >= '\u05A3' && LA61_0 <= '\u05B9') || (LA61_0 >= '\u05BB' && LA61_0 <= '\u05C4') || (LA61_0 >= '\u05D0' && LA61_0 <= '\u05EA') || (LA61_0 >= '\u05F0' && LA61_0 <= '\u05F4') || (LA61_0 >= '\u060C' && LA61_0 <= '\u0615') || LA61_0 == '\u061B' || LA61_0 == '\u061F' || (LA61_0 >= '\u0621' && LA61_0 <= '\u063A') || (LA61_0 >= '\u0640' && LA61_0 <= '\u0658')
+                            || (LA61_0 >= '\u0660' && LA61_0 <= '\u06DC') || (LA61_0 >= '\u06DE' && LA61_0 <= '\u070D') || (LA61_0 >= '\u0710' && LA61_0 <= '\u074A') || (LA61_0 >= '\u074D' && LA61_0 <= '\u074F') || (LA61_0 >= '\u0780' && LA61_0 <= '\u07B1') || (LA61_0 >= '\u0901' && LA61_0 <= '\u0939') || (LA61_0 >= '\u093C' && LA61_0 <= '\u094D') || (LA61_0 >= '\u0950' && LA61_0 <= '\u0954') || (LA61_0 >= '\u0958' && LA61_0 <= '\u0970') || (LA61_0 >= '\u0981' && LA61_0 <= '\u0983') || (LA61_0 >= '\u0985' && LA61_0 <= '\u098C') || (LA61_0 >= '\u098F' && LA61_0 <= '\u0990') || (LA61_0 >= '\u0993' && LA61_0 <= '\u09A8') || (LA61_0 >= '\u09AA' && LA61_0 <= '\u09B0') || LA61_0 == '\u09B2' || (LA61_0 >= '\u09B6' && LA61_0 <= '\u09B9') || (LA61_0 >= '\u09BC' && LA61_0 <= '\u09C4') || (LA61_0 >= '\u09C7' && LA61_0 <= '\u09C8') || (LA61_0 >= '\u09CB' && LA61_0 <= '\u09CD') || LA61_0 == '\u09D7' || (LA61_0 >= '\u09DC' && LA61_0 <= '\u09DD') || (LA61_0 >= '\u09DF' && LA61_0 <= '\u09E3')
+                            || (LA61_0 >= '\u09E6' && LA61_0 <= '\u09FA') || (LA61_0 >= '\u0A01' && LA61_0 <= '\u0A03') || (LA61_0 >= '\u0A05' && LA61_0 <= '\u0A0A') || (LA61_0 >= '\u0A0F' && LA61_0 <= '\u0A10') || (LA61_0 >= '\u0A13' && LA61_0 <= '\u0A28') || (LA61_0 >= '\u0A2A' && LA61_0 <= '\u0A30') || (LA61_0 >= '\u0A32' && LA61_0 <= '\u0A33') || (LA61_0 >= '\u0A35' && LA61_0 <= '\u0A36') || (LA61_0 >= '\u0A38' && LA61_0 <= '\u0A39') || LA61_0 == '\u0A3C' || (LA61_0 >= '\u0A3E' && LA61_0 <= '\u0A42') || (LA61_0 >= '\u0A47' && LA61_0 <= '\u0A48') || (LA61_0 >= '\u0A4B' && LA61_0 <= '\u0A4D') || (LA61_0 >= '\u0A59' && LA61_0 <= '\u0A5C') || LA61_0 == '\u0A5E' || (LA61_0 >= '\u0A66' && LA61_0 <= '\u0A74') || (LA61_0 >= '\u0A81' && LA61_0 <= '\u0A83') || (LA61_0 >= '\u0A85' && LA61_0 <= '\u0A8D') || (LA61_0 >= '\u0A8F' && LA61_0 <= '\u0A91') || (LA61_0 >= '\u0A93' && LA61_0 <= '\u0AA8') || (LA61_0 >= '\u0AAA' && LA61_0 <= '\u0AB0') || (LA61_0 >= '\u0AB2' && LA61_0 <= '\u0AB3')
+                            || (LA61_0 >= '\u0AB5' && LA61_0 <= '\u0AB9') || (LA61_0 >= '\u0ABC' && LA61_0 <= '\u0AC5') || (LA61_0 >= '\u0AC7' && LA61_0 <= '\u0AC9') || (LA61_0 >= '\u0ACB' && LA61_0 <= '\u0ACD') || LA61_0 == '\u0AD0' || (LA61_0 >= '\u0AE0' && LA61_0 <= '\u0AE3') || (LA61_0 >= '\u0AE6' && LA61_0 <= '\u0AEF') || LA61_0 == '\u0AF1' || (LA61_0 >= '\u0B01' && LA61_0 <= '\u0B03') || (LA61_0 >= '\u0B05' && LA61_0 <= '\u0B0C') || (LA61_0 >= '\u0B0F' && LA61_0 <= '\u0B10') || (LA61_0 >= '\u0B13' && LA61_0 <= '\u0B28') || (LA61_0 >= '\u0B2A' && LA61_0 <= '\u0B30') || (LA61_0 >= '\u0B32' && LA61_0 <= '\u0B33') || (LA61_0 >= '\u0B35' && LA61_0 <= '\u0B39') || (LA61_0 >= '\u0B3C' && LA61_0 <= '\u0B43') || (LA61_0 >= '\u0B47' && LA61_0 <= '\u0B48') || (LA61_0 >= '\u0B4B' && LA61_0 <= '\u0B4D') || (LA61_0 >= '\u0B56' && LA61_0 <= '\u0B57') || (LA61_0 >= '\u0B5C' && LA61_0 <= '\u0B5D') || (LA61_0 >= '\u0B5F' && LA61_0 <= '\u0B61') || (LA61_0 >= '\u0B66' && LA61_0 <= '\u0B71')
+                            || (LA61_0 >= '\u0B82' && LA61_0 <= '\u0B83') || (LA61_0 >= '\u0B85' && LA61_0 <= '\u0B8A') || (LA61_0 >= '\u0B8E' && LA61_0 <= '\u0B90') || (LA61_0 >= '\u0B92' && LA61_0 <= '\u0B95') || (LA61_0 >= '\u0B99' && LA61_0 <= '\u0B9A') || LA61_0 == '\u0B9C' || (LA61_0 >= '\u0B9E' && LA61_0 <= '\u0B9F') || (LA61_0 >= '\u0BA3' && LA61_0 <= '\u0BA4') || (LA61_0 >= '\u0BA8' && LA61_0 <= '\u0BAA') || (LA61_0 >= '\u0BAE' && LA61_0 <= '\u0BB5') || (LA61_0 >= '\u0BB7' && LA61_0 <= '\u0BB9') || (LA61_0 >= '\u0BBE' && LA61_0 <= '\u0BC2') || (LA61_0 >= '\u0BC6' && LA61_0 <= '\u0BC8') || (LA61_0 >= '\u0BCA' && LA61_0 <= '\u0BCD') || LA61_0 == '\u0BD7' || (LA61_0 >= '\u0BE7' && LA61_0 <= '\u0BFA') || (LA61_0 >= '\u0C01' && LA61_0 <= '\u0C03') || (LA61_0 >= '\u0C05' && LA61_0 <= '\u0C0C') || (LA61_0 >= '\u0C0E' && LA61_0 <= '\u0C10') || (LA61_0 >= '\u0C12' && LA61_0 <= '\u0C28') || (LA61_0 >= '\u0C2A' && LA61_0 <= '\u0C33') || (LA61_0 >= '\u0C35' && LA61_0 <= '\u0C39')
+                            || (LA61_0 >= '\u0C3E' && LA61_0 <= '\u0C44') || (LA61_0 >= '\u0C46' && LA61_0 <= '\u0C48') || (LA61_0 >= '\u0C4A' && LA61_0 <= '\u0C4D') || (LA61_0 >= '\u0C55' && LA61_0 <= '\u0C56') || (LA61_0 >= '\u0C60' && LA61_0 <= '\u0C61') || (LA61_0 >= '\u0C66' && LA61_0 <= '\u0C6F') || (LA61_0 >= '\u0C82' && LA61_0 <= '\u0C83') || (LA61_0 >= '\u0C85' && LA61_0 <= '\u0C8C') || (LA61_0 >= '\u0C8E' && LA61_0 <= '\u0C90') || (LA61_0 >= '\u0C92' && LA61_0 <= '\u0CA8') || (LA61_0 >= '\u0CAA' && LA61_0 <= '\u0CB3') || (LA61_0 >= '\u0CB5' && LA61_0 <= '\u0CB9') || (LA61_0 >= '\u0CBC' && LA61_0 <= '\u0CC4') || (LA61_0 >= '\u0CC6' && LA61_0 <= '\u0CC8') || (LA61_0 >= '\u0CCA' && LA61_0 <= '\u0CCD') || (LA61_0 >= '\u0CD5' && LA61_0 <= '\u0CD6') || LA61_0 == '\u0CDE' || (LA61_0 >= '\u0CE0' && LA61_0 <= '\u0CE1') || (LA61_0 >= '\u0CE6' && LA61_0 <= '\u0CEF') || (LA61_0 >= '\u0D02' && LA61_0 <= '\u0D03') || (LA61_0 >= '\u0D05' && LA61_0 <= '\u0D0C')
+                            || (LA61_0 >= '\u0D0E' && LA61_0 <= '\u0D10') || (LA61_0 >= '\u0D12' && LA61_0 <= '\u0D28') || (LA61_0 >= '\u0D2A' && LA61_0 <= '\u0D39') || (LA61_0 >= '\u0D3E' && LA61_0 <= '\u0D43') || (LA61_0 >= '\u0D46' && LA61_0 <= '\u0D48') || (LA61_0 >= '\u0D4A' && LA61_0 <= '\u0D4D') || LA61_0 == '\u0D57' || (LA61_0 >= '\u0D60' && LA61_0 <= '\u0D61') || (LA61_0 >= '\u0D66' && LA61_0 <= '\u0D6F') || (LA61_0 >= '\u0D82' && LA61_0 <= '\u0D83') || (LA61_0 >= '\u0D85' && LA61_0 <= '\u0D96') || (LA61_0 >= '\u0D9A' && LA61_0 <= '\u0DB1') || (LA61_0 >= '\u0DB3' && LA61_0 <= '\u0DBB') || LA61_0 == '\u0DBD' || (LA61_0 >= '\u0DC0' && LA61_0 <= '\u0DC6') || LA61_0 == '\u0DCA' || (LA61_0 >= '\u0DCF' && LA61_0 <= '\u0DD4') || LA61_0 == '\u0DD6' || (LA61_0 >= '\u0DD8' && LA61_0 <= '\u0DDF') || (LA61_0 >= '\u0DF2' && LA61_0 <= '\u0DF4') || (LA61_0 >= '\u0E01' && LA61_0 <= '\u0E3A') || (LA61_0 >= '\u0E3F' && LA61_0 <= '\u0E5B') || (LA61_0 >= '\u0E81' && LA61_0 <= '\u0E82')
+                            || LA61_0 == '\u0E84' || (LA61_0 >= '\u0E87' && LA61_0 <= '\u0E88') || LA61_0 == '\u0E8A' || LA61_0 == '\u0E8D' || (LA61_0 >= '\u0E94' && LA61_0 <= '\u0E97') || (LA61_0 >= '\u0E99' && LA61_0 <= '\u0E9F') || (LA61_0 >= '\u0EA1' && LA61_0 <= '\u0EA3') || LA61_0 == '\u0EA5' || LA61_0 == '\u0EA7' || (LA61_0 >= '\u0EAA' && LA61_0 <= '\u0EAB') || (LA61_0 >= '\u0EAD' && LA61_0 <= '\u0EB9') || (LA61_0 >= '\u0EBB' && LA61_0 <= '\u0EBD') || (LA61_0 >= '\u0EC0' && LA61_0 <= '\u0EC4') || LA61_0 == '\u0EC6' || (LA61_0 >= '\u0EC8' && LA61_0 <= '\u0ECD') || (LA61_0 >= '\u0ED0' && LA61_0 <= '\u0ED9') || (LA61_0 >= '\u0EDC' && LA61_0 <= '\u0EDD') || (LA61_0 >= '\u0F00' && LA61_0 <= '\u0F39') || (LA61_0 >= '\u0F3E' && LA61_0 <= '\u0F47') || (LA61_0 >= '\u0F49' && LA61_0 <= '\u0F6A') || (LA61_0 >= '\u0F71' && LA61_0 <= '\u0F8B') || (LA61_0 >= '\u0F90' && LA61_0 <= '\u0F97') || (LA61_0 >= '\u0F99' && LA61_0 <= '\u0FBC') || (LA61_0 >= '\u0FBE' && LA61_0 <= '\u0FCC')
+                            || LA61_0 == '\u0FCF' || (LA61_0 >= '\u1000' && LA61_0 <= '\u1021') || (LA61_0 >= '\u1023' && LA61_0 <= '\u1027') || (LA61_0 >= '\u1029' && LA61_0 <= '\u102A') || (LA61_0 >= '\u102C' && LA61_0 <= '\u1032') || (LA61_0 >= '\u1036' && LA61_0 <= '\u1039') || (LA61_0 >= '\u1040' && LA61_0 <= '\u1059') || (LA61_0 >= '\u10A0' && LA61_0 <= '\u10C5') || (LA61_0 >= '\u10D0' && LA61_0 <= '\u10F8') || LA61_0 == '\u10FB' || (LA61_0 >= '\u1100' && LA61_0 <= '\u1159') || (LA61_0 >= '\u115F' && LA61_0 <= '\u11A2') || (LA61_0 >= '\u11A8' && LA61_0 <= '\u11F9') || (LA61_0 >= '\u1200' && LA61_0 <= '\u1206') || (LA61_0 >= '\u1208' && LA61_0 <= '\u1246') || LA61_0 == '\u1248' || (LA61_0 >= '\u124A' && LA61_0 <= '\u124D') || (LA61_0 >= '\u1250' && LA61_0 <= '\u1256') || LA61_0 == '\u1258' || (LA61_0 >= '\u125A' && LA61_0 <= '\u125D') || (LA61_0 >= '\u1260' && LA61_0 <= '\u1286') || LA61_0 == '\u1288' || (LA61_0 >= '\u128A' && LA61_0 <= '\u128D')
+                            || (LA61_0 >= '\u1290' && LA61_0 <= '\u12AE') || LA61_0 == '\u12B0' || (LA61_0 >= '\u12B2' && LA61_0 <= '\u12B5') || (LA61_0 >= '\u12B8' && LA61_0 <= '\u12BE') || LA61_0 == '\u12C0' || (LA61_0 >= '\u12C2' && LA61_0 <= '\u12C5') || (LA61_0 >= '\u12C8' && LA61_0 <= '\u12CE') || (LA61_0 >= '\u12D0' && LA61_0 <= '\u12D6') || (LA61_0 >= '\u12D8' && LA61_0 <= '\u12EE') || (LA61_0 >= '\u12F0' && LA61_0 <= '\u130E') || LA61_0 == '\u1310' || (LA61_0 >= '\u1312' && LA61_0 <= '\u1315') || (LA61_0 >= '\u1318' && LA61_0 <= '\u131E') || (LA61_0 >= '\u1320' && LA61_0 <= '\u1346') || (LA61_0 >= '\u1348' && LA61_0 <= '\u135A') || (LA61_0 >= '\u1361' && LA61_0 <= '\u137C') || (LA61_0 >= '\u13A0' && LA61_0 <= '\u13F4') || (LA61_0 >= '\u1401' && LA61_0 <= '\u1676') || (LA61_0 >= '\u1681' && LA61_0 <= '\u169A') || (LA61_0 >= '\u16A0' && LA61_0 <= '\u16F0') || (LA61_0 >= '\u1700' && LA61_0 <= '\u170C') || (LA61_0 >= '\u170E' && LA61_0 <= '\u1714')
+                            || (LA61_0 >= '\u1720' && LA61_0 <= '\u1736') || (LA61_0 >= '\u1740' && LA61_0 <= '\u1753') || (LA61_0 >= '\u1760' && LA61_0 <= '\u176C') || (LA61_0 >= '\u176E' && LA61_0 <= '\u1770') || (LA61_0 >= '\u1772' && LA61_0 <= '\u1773') || (LA61_0 >= '\u1780' && LA61_0 <= '\u17B3') || (LA61_0 >= '\u17B6' && LA61_0 <= '\u17DD') || (LA61_0 >= '\u17E0' && LA61_0 <= '\u17E9') || (LA61_0 >= '\u17F0' && LA61_0 <= '\u17F9') || (LA61_0 >= '\u1800' && LA61_0 <= '\u180D') || (LA61_0 >= '\u1810' && LA61_0 <= '\u1819') || (LA61_0 >= '\u1820' && LA61_0 <= '\u1877') || (LA61_0 >= '\u1880' && LA61_0 <= '\u18A9') || (LA61_0 >= '\u1900' && LA61_0 <= '\u191C') || (LA61_0 >= '\u1920' && LA61_0 <= '\u192B') || (LA61_0 >= '\u1930' && LA61_0 <= '\u193B') || LA61_0 == '\u1940' || (LA61_0 >= '\u1944' && LA61_0 <= '\u196D') || (LA61_0 >= '\u1970' && LA61_0 <= '\u1974') || (LA61_0 >= '\u19E0' && LA61_0 <= '\u19FF') || (LA61_0 >= '\u1D00' && LA61_0 <= '\u1D6B')
+                            || (LA61_0 >= '\u1E00' && LA61_0 <= '\u1E9B') || (LA61_0 >= '\u1EA0' && LA61_0 <= '\u1EF9') || (LA61_0 >= '\u1F00' && LA61_0 <= '\u1F15') || (LA61_0 >= '\u1F18' && LA61_0 <= '\u1F1D') || (LA61_0 >= '\u1F20' && LA61_0 <= '\u1F45') || (LA61_0 >= '\u1F48' && LA61_0 <= '\u1F4D') || (LA61_0 >= '\u1F50' && LA61_0 <= '\u1F57') || LA61_0 == '\u1F59' || LA61_0 == '\u1F5B' || LA61_0 == '\u1F5D' || (LA61_0 >= '\u1F5F' && LA61_0 <= '\u1F7D') || (LA61_0 >= '\u1F80' && LA61_0 <= '\u1FB4') || (LA61_0 >= '\u1FB6' && LA61_0 <= '\u1FBC') || LA61_0 == '\u1FBE' || (LA61_0 >= '\u1FC2' && LA61_0 <= '\u1FC4') || (LA61_0 >= '\u1FC6' && LA61_0 <= '\u1FCC') || (LA61_0 >= '\u1FD0' && LA61_0 <= '\u1FD3') || (LA61_0 >= '\u1FD6' && LA61_0 <= '\u1FDB') || (LA61_0 >= '\u1FE0' && LA61_0 <= '\u1FEC') || (LA61_0 >= '\u1FF2' && LA61_0 <= '\u1FF4') || (LA61_0 >= '\u1FF6' && LA61_0 <= '\u1FFC') || (LA61_0 >= '\u2010' && LA61_0 <= '\u2017') || (LA61_0 >= '\u2020' && LA61_0 <= '\u2027')
+                            || (LA61_0 >= '\u2030' && LA61_0 <= '\u2038') || (LA61_0 >= '\u203B' && LA61_0 <= '\u2044') || (LA61_0 >= '\u2047' && LA61_0 <= '\u2054') || LA61_0 == '\u2057' || (LA61_0 >= '\u2070' && LA61_0 <= '\u2071') || (LA61_0 >= '\u2074' && LA61_0 <= '\u207C') || (LA61_0 >= '\u207F' && LA61_0 <= '\u208C') || (LA61_0 >= '\u20A0' && LA61_0 <= '\u20B1') || (LA61_0 >= '\u20D0' && LA61_0 <= '\u20EA') || (LA61_0 >= '\u2100' && LA61_0 <= '\u213B') || (LA61_0 >= '\u213D' && LA61_0 <= '\u214B') || (LA61_0 >= '\u2153' && LA61_0 <= '\u2183') || (LA61_0 >= '\u2190' && LA61_0 <= '\u2328') || (LA61_0 >= '\u232B' && LA61_0 <= '\u23B3') || (LA61_0 >= '\u23B6' && LA61_0 <= '\u23D0') || (LA61_0 >= '\u2400' && LA61_0 <= '\u2426') || (LA61_0 >= '\u2440' && LA61_0 <= '\u244A') || (LA61_0 >= '\u2460' && LA61_0 <= '\u2617') || (LA61_0 >= '\u2619' && LA61_0 <= '\u267D') || (LA61_0 >= '\u2680' && LA61_0 <= '\u2691') || (LA61_0 >= '\u26A0' && LA61_0 <= '\u26A1')
+                            || (LA61_0 >= '\u2701' && LA61_0 <= '\u2704') || (LA61_0 >= '\u2706' && LA61_0 <= '\u2709') || (LA61_0 >= '\u270C' && LA61_0 <= '\u2727') || (LA61_0 >= '\u2729' && LA61_0 <= '\u274B') || LA61_0 == '\u274D' || (LA61_0 >= '\u274F' && LA61_0 <= '\u2752') || LA61_0 == '\u2756' || (LA61_0 >= '\u2758' && LA61_0 <= '\u275E') || (LA61_0 >= '\u2761' && LA61_0 <= '\u2767') || (LA61_0 >= '\u2776' && LA61_0 <= '\u2794') || (LA61_0 >= '\u2798' && LA61_0 <= '\u27AF') || (LA61_0 >= '\u27B1' && LA61_0 <= '\u27BE') || (LA61_0 >= '\u27D0' && LA61_0 <= '\u27E5') || (LA61_0 >= '\u27F0' && LA61_0 <= '\u2982') || (LA61_0 >= '\u2999' && LA61_0 <= '\u29D7') || (LA61_0 >= '\u29DC' && LA61_0 <= '\u29FB') || (LA61_0 >= '\u29FE' && LA61_0 <= '\u2B0D') || (LA61_0 >= '\u2E80' && LA61_0 <= '\u2E99') || (LA61_0 >= '\u2E9B' && LA61_0 <= '\u2EF3') || (LA61_0 >= '\u2F00' && LA61_0 <= '\u2FD5') || (LA61_0 >= '\u2FF0' && LA61_0 <= '\u2FFB') || (LA61_0 >= '\u3001' && LA61_0 <= '\u3007')
+                            || (LA61_0 >= '\u3012' && LA61_0 <= '\u3013') || LA61_0 == '\u301C' || (LA61_0 >= '\u3020' && LA61_0 <= '\u303F') || (LA61_0 >= '\u3041' && LA61_0 <= '\u3096') || (LA61_0 >= '\u3099' && LA61_0 <= '\u309A') || (LA61_0 >= '\u309D' && LA61_0 <= '\u30FF') || (LA61_0 >= '\u3105' && LA61_0 <= '\u312C') || (LA61_0 >= '\u3131' && LA61_0 <= '\u318E') || (LA61_0 >= '\u3190' && LA61_0 <= '\u31B7') || (LA61_0 >= '\u31F0' && LA61_0 <= '\u321E') || (LA61_0 >= '\u3220' && LA61_0 <= '\u3243') || (LA61_0 >= '\u3250' && LA61_0 <= '\u327D') || (LA61_0 >= '\u327F' && LA61_0 <= '\u32FE') || (LA61_0 >= '\u3300' && LA61_0 <= '\u4DB5') || (LA61_0 >= '\u4DC0' && LA61_0 <= '\u9FA5') || (LA61_0 >= '\uA000' && LA61_0 <= '\uA48C') || (LA61_0 >= '\uA490' && LA61_0 <= '\uA4C6') || (LA61_0 >= '\uAC00' && LA61_0 <= '\uD7A3') || (LA61_0 >= '\uF900' && LA61_0 <= '\uFA2D') || (LA61_0 >= '\uFA30' && LA61_0 <= '\uFA6A') || (LA61_0 >= '\uFB00' && LA61_0 <= '\uFB06')
+                            || (LA61_0 >= '\uFB13' && LA61_0 <= '\uFB17') || (LA61_0 >= '\uFB1D' && LA61_0 <= '\uFB36') || (LA61_0 >= '\uFB38' && LA61_0 <= '\uFB3C') || LA61_0 == '\uFB3E' || (LA61_0 >= '\uFB40' && LA61_0 <= '\uFB41') || (LA61_0 >= '\uFB43' && LA61_0 <= '\uFB44') || (LA61_0 >= '\uFB46' && LA61_0 <= '\uFBB1') || (LA61_0 >= '\uFBD3' && LA61_0 <= '\uFD3D') || (LA61_0 >= '\uFD50' && LA61_0 <= '\uFD8F') || (LA61_0 >= '\uFD92' && LA61_0 <= '\uFDC7') || (LA61_0 >= '\uFDF0' && LA61_0 <= '\uFDFD') || (LA61_0 >= '\uFE00' && LA61_0 <= '\uFE0F') || (LA61_0 >= '\uFE20' && LA61_0 <= '\uFE23') || (LA61_0 >= '\uFE30' && LA61_0 <= '\uFE34') || (LA61_0 >= '\uFE45' && LA61_0 <= '\uFE46') || (LA61_0 >= '\uFE49' && LA61_0 <= '\uFE52') || (LA61_0 >= '\uFE54' && LA61_0 <= '\uFE58') || (LA61_0 >= '\uFE5F' && LA61_0 <= '\uFE66') || (LA61_0 >= '\uFE68' && LA61_0 <= '\uFE6B') || (LA61_0 >= '\uFE70' && LA61_0 <= '\uFE74') || (LA61_0 >= '\uFE76' && LA61_0 <= '\uFEFC')
+                            || (LA61_0 >= '\uFF01' && LA61_0 <= '\uFF07') || (LA61_0 >= '\uFF0A' && LA61_0 <= '\uFF3A') || LA61_0 == '\uFF3C' || LA61_0 == '\uFF3F' || (LA61_0 >= '\uFF41' && LA61_0 <= '\uFF5A') || LA61_0 == '\uFF5C' || LA61_0 == '\uFF5E' || LA61_0 == '\uFF61' || (LA61_0 >= '\uFF64' && LA61_0 <= '\uFFBE') || (LA61_0 >= '\uFFC2' && LA61_0 <= '\uFFC7') || (LA61_0 >= '\uFFCA' && LA61_0 <= '\uFFCF') || (LA61_0 >= '\uFFD2' && LA61_0 <= '\uFFD7') || (LA61_0 >= '\uFFDA' && LA61_0 <= '\uFFDC') || (LA61_0 >= '\uFFE0' && LA61_0 <= '\uFFE2') || (LA61_0 >= '\uFFE4' && LA61_0 <= '\uFFE6') || (LA61_0 >= '\uFFE8' && LA61_0 <= '\uFFEE')))
                     {
-                        alt60 = 2;
+                        alt61 = 2;
                     }
-                    else if ((LA60_0 == '*'))
+                    else if ((LA61_0 == '*'))
                     {
-                        alt60 = 3;
+                        alt61 = 3;
                     }
-                    else if ((LA60_0 == '?'))
+                    else if ((LA61_0 == '?'))
                     {
-                        alt60 = 4;
+                        alt61 = 4;
                     }
 
-                    switch (alt60)
+                    switch (alt61)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1577:17: F_ESC
+                    // FTS.g:1587:17: F_ESC
                     {
                         mF_ESC();
                         if (state.failed)
@@ -5583,7 +5651,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 2:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1578:19: IN_WORD
+                    // FTS.g:1588:19: IN_WORD
                     {
                         mIN_WORD();
                         if (state.failed)
@@ -5592,7 +5660,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 3:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1579:19: STAR
+                    // FTS.g:1589:19: STAR
                     {
                         mSTAR();
                         if (state.failed)
@@ -5601,7 +5669,7 @@ public class FTSLexer extends Lexer
                     }
                         break;
                     case 4:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1580:19: QUESTION_MARK
+                    // FTS.g:1590:19: QUESTION_MARK
                     {
                         mQUESTION_MARK();
                         if (state.failed)
@@ -5611,7 +5679,7 @@ public class FTSLexer extends Lexer
                         break;
 
                     default:
-                        break loop60;
+                        break loop61;
                     }
                 }
 
@@ -5632,32 +5700,32 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1587:9: ( '\\\\' ( 'u' F_HEX F_HEX F_HEX F_HEX | . ) )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1588:9: '\\\\' ( 'u' F_HEX F_HEX F_HEX F_HEX | . )
+            // FTS.g:1597:9: ( '\\\\' ( 'u' F_HEX F_HEX F_HEX F_HEX | . ) )
+            // FTS.g:1598:9: '\\\\' ( 'u' F_HEX F_HEX F_HEX F_HEX | . )
             {
                 match('\\');
                 if (state.failed)
                     return;
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1589:9: ( 'u' F_HEX F_HEX F_HEX F_HEX | . )
-                int alt61 = 2;
-                int LA61_0 = input.LA(1);
-                if ((LA61_0 == 'u'))
+                // FTS.g:1599:9: ( 'u' F_HEX F_HEX F_HEX F_HEX | . )
+                int alt62 = 2;
+                int LA62_0 = input.LA(1);
+                if ((LA62_0 == 'u'))
                 {
-                    int LA61_1 = input.LA(2);
-                    if (((LA61_1 >= '0' && LA61_1 <= '9') || (LA61_1 >= 'A' && LA61_1 <= 'F') || (LA61_1 >= 'a' && LA61_1 <= 'f')))
+                    int LA62_1 = input.LA(2);
+                    if (((LA62_1 >= '0' && LA62_1 <= '9') || (LA62_1 >= 'A' && LA62_1 <= 'F') || (LA62_1 >= 'a' && LA62_1 <= 'f')))
                     {
-                        alt61 = 1;
+                        alt62 = 1;
                     }
 
                     else
                     {
-                        alt61 = 2;
+                        alt62 = 2;
                     }
 
                 }
-                else if (((LA61_0 >= '\u0000' && LA61_0 <= 't') || (LA61_0 >= 'v' && LA61_0 <= '\uFFFF')))
+                else if (((LA62_0 >= '\u0000' && LA62_0 <= 't') || (LA62_0 >= 'v' && LA62_0 <= '\uFFFF')))
                 {
-                    alt61 = 2;
+                    alt62 = 2;
                 }
 
                 else
@@ -5667,14 +5735,14 @@ public class FTSLexer extends Lexer
                         state.failed = true;
                         return;
                     }
-                    NoViableAltException nvae = new NoViableAltException("", 61, 0, input);
+                    NoViableAltException nvae = new NoViableAltException("", 62, 0, input);
                     throw nvae;
                 }
 
-                switch (alt61)
+                switch (alt62)
                 {
                 case 1:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1591:17: 'u' F_HEX F_HEX F_HEX F_HEX
+                // FTS.g:1601:17: 'u' F_HEX F_HEX F_HEX F_HEX
                 {
                     match('u');
                     if (state.failed)
@@ -5698,7 +5766,7 @@ public class FTSLexer extends Lexer
                 }
                     break;
                 case 2:
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1593:19: .
+                // FTS.g:1603:19: .
                 {
                     matchAny();
                     if (state.failed)
@@ -5723,8 +5791,8 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1599:9: ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+            // FTS.g:1609:9: ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' )
+            // FTS.g:
             {
                 if ((input.LA(1) >= '0' && input.LA(1) <= '9') || (input.LA(1) >= 'A' && input.LA(1) <= 'F') || (input.LA(1) >= 'a' && input.LA(1) <= 'f'))
                 {
@@ -5757,18 +5825,18 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1607:9: ( '\\u0024' | '\\u0030' .. '\\u0039' | '\\u0041' .. '\\u005a' | '\\u0061' .. '\\u007a' | '\\u00a2' .. '\\u00a7' | '\\u00a9' .. '\\u00aa' | '\\u00ae' | '\\u00b0' | '\\u00b2' .. '\\u00b3' | '\\u00b5' .. '\\u00b6' | '\\u00b9' .. '\\u00ba' | '\\u00bc' .. '\\u00be' | '\\u00c0' .. '\\u00d6' | '\\u00d8' .. '\\u00f6' | '\\u00f8' .. '\\u0236' | '\\u0250' .. '\\u02c1' | '\\u02c6' .. '\\u02d1' | '\\u02e0' .. '\\u02e4' | '\\u02ee' | '\\u0300' .. '\\u0357' | '\\u035d' .. '\\u036f' | '\\u037a' .. '\\u037a' | '\\u0386' | '\\u0388' .. '\\u038a' | '\\u038c' .. '\\u038c' | '\\u038e' .. '\\u03a1' | '\\u03a3' .. '\\u03ce' | '\\u03d0' .. '\\u03f5' | '\\u03f7' .. '\\u03fb' | '\\u0400' .. '\\u0486' | '\\u0488' .. '\\u04ce' | '\\u04d0' .. '\\u04f5' | '\\u04f8' .. '\\u04f9' | '\\u0500' .. '\\u050f' | '\\u0531' .. '\\u0556' | '\\u0559' | '\\u0561' .. '\\u0587' | '\\u0591' .. '\\u05a1' |
-            // '\\u05a3' .. '\\u05b9' | '\\u05bb' .. '\\u05bd' | '\\u05bf' | '\\u05c1' .. '\\u05c2' | '\\u05c4' .. '\\u05c4' | '\\u05d0' .. '\\u05ea' | '\\u05f0' .. '\\u05f2' | '\\u060e' .. '\\u0615' | '\\u0621' .. '\\u063a' | '\\u0640' .. '\\u0658' | '\\u0660' .. '\\u0669' | '\\u066e' .. '\\u06d3' | '\\u06d5' .. '\\u06dc' | '\\u06de' .. '\\u06ff' | '\\u0710' .. '\\u074a' | '\\u074d' .. '\\u074f' | '\\u0780' .. '\\u07b1' | '\\u0901' .. '\\u0939' | '\\u093c' .. '\\u094d' | '\\u0950' .. '\\u0954' | '\\u0958' .. '\\u0963' | '\\u0966' .. '\\u096f' | '\\u0981' .. '\\u0983' | '\\u0985' .. '\\u098c' | '\\u098f' .. '\\u0990' | '\\u0993' .. '\\u09a8' | '\\u09aa' .. '\\u09b0' | '\\u09b2' .. '\\u09b2' | '\\u09b6' .. '\\u09b9' | '\\u09bc' .. '\\u09c4' | '\\u09c7' .. '\\u09c8' | '\\u09cb' .. '\\u09cd' | '\\u09d7' .. '\\u09d7' | '\\u09dc' .. '\\u09dd' | '\\u09df' .. '\\u09e3' | '\\u09e6' .. '\\u09fa' | '\\u0a01' .. '\\u0a03' | '\\u0a05' .. '\\u0a0a' | '\\u0a0f' .. '\\u0a10' | '\\u0a13' .. '\\u0a28'
-            // | '\\u0a2a' .. '\\u0a30' | '\\u0a32' .. '\\u0a33' | '\\u0a35' .. '\\u0a36' | '\\u0a38' .. '\\u0a39' | '\\u0a3c' .. '\\u0a3c' | '\\u0a3e' .. '\\u0a42' | '\\u0a47' .. '\\u0a48' | '\\u0a4b' .. '\\u0a4d' | '\\u0a59' .. '\\u0a5c' | '\\u0a5e' .. '\\u0a5e' | '\\u0a66' .. '\\u0a74' | '\\u0a81' .. '\\u0a83' | '\\u0a85' .. '\\u0a8d' | '\\u0a8f' .. '\\u0a91' | '\\u0a93' .. '\\u0aa8' | '\\u0aaa' .. '\\u0ab0' | '\\u0ab2' .. '\\u0ab3' | '\\u0ab5' .. '\\u0ab9' | '\\u0abc' .. '\\u0ac5' | '\\u0ac7' .. '\\u0ac9' | '\\u0acb' .. '\\u0acd' | '\\u0ad0' .. '\\u0ad0' | '\\u0ae0' .. '\\u0ae3' | '\\u0ae6' .. '\\u0aef' | '\\u0af1' .. '\\u0af1' | '\\u0b01' .. '\\u0b03' | '\\u0b05' .. '\\u0b0c' | '\\u0b0f' .. '\\u0b10' | '\\u0b13' .. '\\u0b28' | '\\u0b2a' .. '\\u0b30' | '\\u0b32' .. '\\u0b33' | '\\u0b35' .. '\\u0b39' | '\\u0b3c' .. '\\u0b43' | '\\u0b47' .. '\\u0b48' | '\\u0b4b' .. '\\u0b4d' | '\\u0b56' .. '\\u0b57' | '\\u0b5c' .. '\\u0b5d' | '\\u0b5f' .. '\\u0b61' | '\\u0b66' .. '\\u0b71' |
-            // '\\u0b82' .. '\\u0b83' | '\\u0b85' .. '\\u0b8a' | '\\u0b8e' .. '\\u0b90' | '\\u0b92' .. '\\u0b95' | '\\u0b99' .. '\\u0b9a' | '\\u0b9c' .. '\\u0b9c' | '\\u0b9e' .. '\\u0b9f' | '\\u0ba3' .. '\\u0ba4' | '\\u0ba8' .. '\\u0baa' | '\\u0bae' .. '\\u0bb5' | '\\u0bb7' .. '\\u0bb9' | '\\u0bbe' .. '\\u0bc2' | '\\u0bc6' .. '\\u0bc8' | '\\u0bca' .. '\\u0bcd' | '\\u0bd7' .. '\\u0bd7' | '\\u0be7' .. '\\u0bfa' | '\\u0c01' .. '\\u0c03' | '\\u0c05' .. '\\u0c0c' | '\\u0c0e' .. '\\u0c10' | '\\u0c12' .. '\\u0c28' | '\\u0c2a' .. '\\u0c33' | '\\u0c35' .. '\\u0c39' | '\\u0c3e' .. '\\u0c44' | '\\u0c46' .. '\\u0c48' | '\\u0c4a' .. '\\u0c4d' | '\\u0c55' .. '\\u0c56' | '\\u0c60' .. '\\u0c61' | '\\u0c66' .. '\\u0c6f' | '\\u0c82' .. '\\u0c83' | '\\u0c85' .. '\\u0c8c' | '\\u0c8e' .. '\\u0c90' | '\\u0c92' .. '\\u0ca8' | '\\u0caa' .. '\\u0cb3' | '\\u0cb5' .. '\\u0cb9' | '\\u0cbc' .. '\\u0cc4' | '\\u0cc6' .. '\\u0cc8' | '\\u0cca' .. '\\u0ccd' | '\\u0cd5' .. '\\u0cd6' | '\\u0cde' .. '\\u0cde' | '\\u0ce0'
-            // .. '\\u0ce1' | '\\u0ce6' .. '\\u0cef' | '\\u0d02' .. '\\u0d03' | '\\u0d05' .. '\\u0d0c' | '\\u0d0e' .. '\\u0d10' | '\\u0d12' .. '\\u0d28' | '\\u0d2a' .. '\\u0d39' | '\\u0d3e' .. '\\u0d43' | '\\u0d46' .. '\\u0d48' | '\\u0d4a' .. '\\u0d4d' | '\\u0d57' .. '\\u0d57' | '\\u0d60' .. '\\u0d61' | '\\u0d66' .. '\\u0d6f' | '\\u0d82' .. '\\u0d83' | '\\u0d85' .. '\\u0d96' | '\\u0d9a' .. '\\u0db1' | '\\u0db3' .. '\\u0dbb' | '\\u0dbd' .. '\\u0dbd' | '\\u0dc0' .. '\\u0dc6' | '\\u0dca' .. '\\u0dca' | '\\u0dcf' .. '\\u0dd4' | '\\u0dd6' .. '\\u0dd6' | '\\u0dd8' .. '\\u0ddf' | '\\u0df2' .. '\\u0df3' | '\\u0e01' .. '\\u0e3a' | '\\u0e3f' .. '\\u0e4e' | '\\u0e50' .. '\\u0e59' | '\\u0e81' .. '\\u0e82' | '\\u0e84' .. '\\u0e84' | '\\u0e87' .. '\\u0e88' | '\\u0e8a' .. '\\u0e8a' | '\\u0e8d' .. '\\u0e8d' | '\\u0e94' .. '\\u0e97' | '\\u0e99' .. '\\u0e9f' | '\\u0ea1' .. '\\u0ea3' | '\\u0ea5' .. '\\u0ea5' | '\\u0ea7' .. '\\u0ea7' | '\\u0eaa' .. '\\u0eab' | '\\u0ead' .. '\\u0eb9' | '\\u0ebb' ..
-            // '\\u0ebd' | '\\u0ec0' .. '\\u0ec4' | '\\u0ec6' .. '\\u0ec6' | '\\u0ec8' .. '\\u0ecd' | '\\u0ed0' .. '\\u0ed9' | '\\u0edc' .. '\\u0edd' | '\\u0f00' .. '\\u0f03' | '\\u0f13' .. '\\u0f39' | '\\u0f3e' .. '\\u0f47' | '\\u0f49' .. '\\u0f6a' | '\\u0f71' .. '\\u0f84' | '\\u0f86' .. '\\u0f8b' | '\\u0f90' .. '\\u0f97' | '\\u0f99' .. '\\u0fbc' | '\\u0fbe' .. '\\u0fcc' | '\\u0fcf' .. '\\u0fcf' | '\\u1000' .. '\\u1021' | '\\u1023' .. '\\u1027' | '\\u1029' .. '\\u102a' | '\\u102c' .. '\\u1032' | '\\u1036' .. '\\u1039' | '\\u1040' .. '\\u1049' | '\\u1050' .. '\\u1059' | '\\u10a0' .. '\\u10c5' | '\\u10d0' .. '\\u10f8' | '\\u1100' .. '\\u1159' | '\\u115f' .. '\\u11a2' | '\\u11a8' .. '\\u11f9' | '\\u1200' .. '\\u1206' | '\\u1208' .. '\\u1246' | '\\u1248' .. '\\u1248' | '\\u124a' .. '\\u124d' | '\\u1250' .. '\\u1256' | '\\u1258' .. '\\u1258' | '\\u125a' .. '\\u125d' | '\\u1260' .. '\\u1286' | '\\u1288' .. '\\u1288' | '\\u128a' .. '\\u128d' | '\\u1290' .. '\\u12ae' | '\\u12b0' .. '\\u12b0'
-            // | '\\u12b2' .. '\\u12b5' | '\\u12b8' .. '\\u12be' | '\\u12c0' .. '\\u12c0' | '\\u12c2' .. '\\u12c5' | '\\u12c8' .. '\\u12ce' | '\\u12d0' .. '\\u12d6' | '\\u12d8' .. '\\u12ee' | '\\u12f0' .. '\\u130e' | '\\u1310' .. '\\u1310' | '\\u1312' .. '\\u1315' | '\\u1318' .. '\\u131e' | '\\u1320' .. '\\u1346' | '\\u1348' .. '\\u135a' | '\\u1369' .. '\\u137c' | '\\u13a0' .. '\\u13f4' | '\\u1401' .. '\\u166c' | '\\u166f' .. '\\u1676' | '\\u1681' .. '\\u169a' | '\\u16a0' .. '\\u16ea' | '\\u16ee' .. '\\u16f0' | '\\u1700' .. '\\u170c' | '\\u170e' .. '\\u1714' | '\\u1720' .. '\\u1734' | '\\u1740' .. '\\u1753' | '\\u1760' .. '\\u176c' | '\\u176e' .. '\\u1770' | '\\u1772' .. '\\u1773' | '\\u1780' .. '\\u17b3' | '\\u17b6' .. '\\u17d3' | '\\u17d7' | '\\u17db' .. '\\u17dd' | '\\u17e0' .. '\\u17e9' | '\\u17f0' .. '\\u17f9' | '\\u180b' .. '\\u180d' | '\\u1810' .. '\\u1819' | '\\u1820' .. '\\u1877' | '\\u1880' .. '\\u18a9' | '\\u1900' .. '\\u191c' | '\\u1920' .. '\\u192b' | '\\u1930' ..
-            // '\\u193b' | '\\u1940' .. '\\u1940' | '\\u1946' .. '\\u196d' | '\\u1970' .. '\\u1974' | '\\u19e0' .. '\\u19ff' | '\\u1d00' .. '\\u1d6b' | '\\u1e00' .. '\\u1e9b' | '\\u1ea0' .. '\\u1ef9' | '\\u1f00' .. '\\u1f15' | '\\u1f18' .. '\\u1f1d' | '\\u1f20' .. '\\u1f45' | '\\u1f48' .. '\\u1f4d' | '\\u1f50' .. '\\u1f57' | '\\u1f59' .. '\\u1f59' | '\\u1f5b' .. '\\u1f5b' | '\\u1f5d' .. '\\u1f5d' | '\\u1f5f' .. '\\u1f7d' | '\\u1f80' .. '\\u1fb4' | '\\u1fb6' .. '\\u1fbc' | '\\u1fbe' | '\\u1fc2' .. '\\u1fc4' | '\\u1fc6' .. '\\u1fcc' | '\\u1fd0' .. '\\u1fd3' | '\\u1fd6' .. '\\u1fdb' | '\\u1fe0' .. '\\u1fec' | '\\u1ff2' .. '\\u1ff4' | '\\u1ff6' .. '\\u1ffc' | '\\u2070' .. '\\u2071' | '\\u2074' .. '\\u2079' | '\\u207f' .. '\\u2089' | '\\u20a0' .. '\\u20b1' | '\\u20d0' .. '\\u20ea' | '\\u2100' .. '\\u213b' | '\\u213d' .. '\\u213f' | '\\u2145' .. '\\u214a' | '\\u2153' .. '\\u2183' | '\\u2195' .. '\\u2199' | '\\u219c' .. '\\u219f' | '\\u21a1' .. '\\u21a2' | '\\u21a4' .. '\\u21a5' | '\\u21a7'
-            // .. '\\u21ad' | '\\u21af' .. '\\u21cd' | '\\u21d0' .. '\\u21d1' | '\\u21d3' | '\\u21d5' .. '\\u21f3' | '\\u2300' .. '\\u2307' | '\\u230c' .. '\\u231f' | '\\u2322' .. '\\u2328' | '\\u232b' .. '\\u237b' | '\\u237d' .. '\\u239a' | '\\u23b7' .. '\\u23d0' | '\\u2400' .. '\\u2426' | '\\u2440' .. '\\u244a' | '\\u2460' .. '\\u25b6' | '\\u25b8' .. '\\u25c0' | '\\u25c2' .. '\\u25f7' | '\\u2600' .. '\\u2617' | '\\u2619' .. '\\u266e' | '\\u2670' .. '\\u267d' | '\\u2680' .. '\\u2691' | '\\u26a0' .. '\\u26a1' | '\\u2701' .. '\\u2704' | '\\u2706' .. '\\u2709' | '\\u270c' .. '\\u2727' | '\\u2729' .. '\\u274b' | '\\u274d' .. '\\u274d' | '\\u274f' .. '\\u2752' | '\\u2756' .. '\\u2756' | '\\u2758' .. '\\u275e' | '\\u2761' .. '\\u2767' | '\\u2776' .. '\\u2794' | '\\u2798' .. '\\u27af' | '\\u27b1' .. '\\u27be' | '\\u2800' .. '\\u28ff' | '\\u2b00' .. '\\u2b0d' | '\\u2e80' .. '\\u2e99' | '\\u2e9b' .. '\\u2ef3' | '\\u2f00' .. '\\u2fd5' | '\\u2ff0' .. '\\u2ffb' | '\\u3004' .. '\\u3007' |
-            // '\\u3012' .. '\\u3013' | '\\u3020' .. '\\u302f' | '\\u3031' .. '\\u303c' | '\\u303e' .. '\\u303f' | '\\u3041' .. '\\u3096' | '\\u3099' .. '\\u309a' | '\\u309d' .. '\\u309f' | '\\u30a1' .. '\\u30fa' | '\\u30fc' .. '\\u30ff' | '\\u3105' .. '\\u312c' | '\\u3131' .. '\\u318e' | '\\u3190' .. '\\u31b7' | '\\u31f0' .. '\\u321e' | '\\u3220' .. '\\u3243' | '\\u3250' .. '\\u327d' | '\\u327f' .. '\\u32fe' | '\\u3300' .. '\\u4db5' | '\\u4dc0' .. '\\u9fa5' | '\\ua000' .. '\\ua48c' | '\\ua490' .. '\\ua4c6' | '\\uac00' .. '\\ud7a3' | '\\uf900' .. '\\ufa2d' | '\\ufa30' .. '\\ufa6a' | '\\ufb00' .. '\\ufb06' | '\\ufb13' .. '\\ufb17' | '\\ufb1d' .. '\\ufb28' | '\\ufb2a' .. '\\ufb36' | '\\ufb38' .. '\\ufb3c' | '\\ufb3e' .. '\\ufb3e' | '\\ufb40' .. '\\ufb41' | '\\ufb43' .. '\\ufb44' | '\\ufb46' .. '\\ufbb1' | '\\ufbd3' .. '\\ufd3d' | '\\ufd50' .. '\\ufd8f' | '\\ufd92' .. '\\ufdc7' | '\\ufdf0' .. '\\ufdfd' | '\\ufe00' .. '\\ufe0f' | '\\ufe20' .. '\\ufe23' | '\\ufe69' | '\\ufe70' .. '\\ufe74'
-            // | '\\ufe76' .. '\\ufefc' | '\\uff04' | '\\uff10' .. '\\uff19' | '\\uff21' .. '\\uff3a' | '\\uff41' .. '\\uff5a' | '\\uff66' .. '\\uffbe' | '\\uffc2' .. '\\uffc7' | '\\uffca' .. '\\uffcf' | '\\uffd2' .. '\\uffd7' | '\\uffda' .. '\\uffdc' | '\\uffe0' .. '\\uffe1' | '\\uffe4' .. '\\uffe6' | '\\uffe8' | '\\uffed' .. '\\uffee' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+            // FTS.g:1617:9: ( '\\u0024' | '\\u0030' .. '\\u0039' | '\\u0041' .. '\\u005a' | '\\u0061' .. '\\u007a' | '\\u00a2' .. '\\u00a7' | '\\u00a9' .. '\\u00aa' | '\\u00ae' | '\\u00b0' | '\\u00b2' .. '\\u00b3' | '\\u00b5' .. '\\u00b6' | '\\u00b9' .. '\\u00ba' | '\\u00bc' .. '\\u00be' | '\\u00c0' .. '\\u00d6' | '\\u00d8' .. '\\u00f6' | '\\u00f8' .. '\\u0236' | '\\u0250' .. '\\u02c1' | '\\u02c6' .. '\\u02d1' | '\\u02e0' .. '\\u02e4' | '\\u02ee' | '\\u0300' .. '\\u0357' | '\\u035d' .. '\\u036f' | '\\u037a' .. '\\u037a' | '\\u0386' | '\\u0388' .. '\\u038a' | '\\u038c' .. '\\u038c' | '\\u038e' .. '\\u03a1' | '\\u03a3' .. '\\u03ce' | '\\u03d0' .. '\\u03f5' | '\\u03f7' .. '\\u03fb' | '\\u0400' .. '\\u0486' | '\\u0488' .. '\\u04ce' | '\\u04d0' .. '\\u04f5' | '\\u04f8' .. '\\u04f9' | '\\u0500' .. '\\u050f' | '\\u0531' .. '\\u0556' | '\\u0559' | '\\u0561' .. '\\u0587' | '\\u0591' .. '\\u05a1' | '\\u05a3' .. '\\u05b9' | '\\u05bb' .. '\\u05bd' | '\\u05bf' | '\\u05c1' .. '\\u05c2' | '\\u05c4'
+            // .. '\\u05c4' | '\\u05d0' .. '\\u05ea' | '\\u05f0' .. '\\u05f2' | '\\u060e' .. '\\u0615' | '\\u0621' .. '\\u063a' | '\\u0640' .. '\\u0658' | '\\u0660' .. '\\u0669' | '\\u066e' .. '\\u06d3' | '\\u06d5' .. '\\u06dc' | '\\u06de' .. '\\u06ff' | '\\u0710' .. '\\u074a' | '\\u074d' .. '\\u074f' | '\\u0780' .. '\\u07b1' | '\\u0901' .. '\\u0939' | '\\u093c' .. '\\u094d' | '\\u0950' .. '\\u0954' | '\\u0958' .. '\\u0963' | '\\u0966' .. '\\u096f' | '\\u0981' .. '\\u0983' | '\\u0985' .. '\\u098c' | '\\u098f' .. '\\u0990' | '\\u0993' .. '\\u09a8' | '\\u09aa' .. '\\u09b0' | '\\u09b2' .. '\\u09b2' | '\\u09b6' .. '\\u09b9' | '\\u09bc' .. '\\u09c4' | '\\u09c7' .. '\\u09c8' | '\\u09cb' .. '\\u09cd' | '\\u09d7' .. '\\u09d7' | '\\u09dc' .. '\\u09dd' | '\\u09df' .. '\\u09e3' | '\\u09e6' .. '\\u09fa' | '\\u0a01' .. '\\u0a03' | '\\u0a05' .. '\\u0a0a' | '\\u0a0f' .. '\\u0a10' | '\\u0a13' .. '\\u0a28' | '\\u0a2a' .. '\\u0a30' | '\\u0a32' .. '\\u0a33' | '\\u0a35' .. '\\u0a36' | '\\u0a38' ..
+            // '\\u0a39' | '\\u0a3c' .. '\\u0a3c' | '\\u0a3e' .. '\\u0a42' | '\\u0a47' .. '\\u0a48' | '\\u0a4b' .. '\\u0a4d' | '\\u0a59' .. '\\u0a5c' | '\\u0a5e' .. '\\u0a5e' | '\\u0a66' .. '\\u0a74' | '\\u0a81' .. '\\u0a83' | '\\u0a85' .. '\\u0a8d' | '\\u0a8f' .. '\\u0a91' | '\\u0a93' .. '\\u0aa8' | '\\u0aaa' .. '\\u0ab0' | '\\u0ab2' .. '\\u0ab3' | '\\u0ab5' .. '\\u0ab9' | '\\u0abc' .. '\\u0ac5' | '\\u0ac7' .. '\\u0ac9' | '\\u0acb' .. '\\u0acd' | '\\u0ad0' .. '\\u0ad0' | '\\u0ae0' .. '\\u0ae3' | '\\u0ae6' .. '\\u0aef' | '\\u0af1' .. '\\u0af1' | '\\u0b01' .. '\\u0b03' | '\\u0b05' .. '\\u0b0c' | '\\u0b0f' .. '\\u0b10' | '\\u0b13' .. '\\u0b28' | '\\u0b2a' .. '\\u0b30' | '\\u0b32' .. '\\u0b33' | '\\u0b35' .. '\\u0b39' | '\\u0b3c' .. '\\u0b43' | '\\u0b47' .. '\\u0b48' | '\\u0b4b' .. '\\u0b4d' | '\\u0b56' .. '\\u0b57' | '\\u0b5c' .. '\\u0b5d' | '\\u0b5f' .. '\\u0b61' | '\\u0b66' .. '\\u0b71' | '\\u0b82' .. '\\u0b83' | '\\u0b85' .. '\\u0b8a' | '\\u0b8e' .. '\\u0b90' | '\\u0b92' .. '\\u0b95'
+            // | '\\u0b99' .. '\\u0b9a' | '\\u0b9c' .. '\\u0b9c' | '\\u0b9e' .. '\\u0b9f' | '\\u0ba3' .. '\\u0ba4' | '\\u0ba8' .. '\\u0baa' | '\\u0bae' .. '\\u0bb5' | '\\u0bb7' .. '\\u0bb9' | '\\u0bbe' .. '\\u0bc2' | '\\u0bc6' .. '\\u0bc8' | '\\u0bca' .. '\\u0bcd' | '\\u0bd7' .. '\\u0bd7' | '\\u0be7' .. '\\u0bfa' | '\\u0c01' .. '\\u0c03' | '\\u0c05' .. '\\u0c0c' | '\\u0c0e' .. '\\u0c10' | '\\u0c12' .. '\\u0c28' | '\\u0c2a' .. '\\u0c33' | '\\u0c35' .. '\\u0c39' | '\\u0c3e' .. '\\u0c44' | '\\u0c46' .. '\\u0c48' | '\\u0c4a' .. '\\u0c4d' | '\\u0c55' .. '\\u0c56' | '\\u0c60' .. '\\u0c61' | '\\u0c66' .. '\\u0c6f' | '\\u0c82' .. '\\u0c83' | '\\u0c85' .. '\\u0c8c' | '\\u0c8e' .. '\\u0c90' | '\\u0c92' .. '\\u0ca8' | '\\u0caa' .. '\\u0cb3' | '\\u0cb5' .. '\\u0cb9' | '\\u0cbc' .. '\\u0cc4' | '\\u0cc6' .. '\\u0cc8' | '\\u0cca' .. '\\u0ccd' | '\\u0cd5' .. '\\u0cd6' | '\\u0cde' .. '\\u0cde' | '\\u0ce0' .. '\\u0ce1' | '\\u0ce6' .. '\\u0cef' | '\\u0d02' .. '\\u0d03' | '\\u0d05' .. '\\u0d0c' |
+            // '\\u0d0e' .. '\\u0d10' | '\\u0d12' .. '\\u0d28' | '\\u0d2a' .. '\\u0d39' | '\\u0d3e' .. '\\u0d43' | '\\u0d46' .. '\\u0d48' | '\\u0d4a' .. '\\u0d4d' | '\\u0d57' .. '\\u0d57' | '\\u0d60' .. '\\u0d61' | '\\u0d66' .. '\\u0d6f' | '\\u0d82' .. '\\u0d83' | '\\u0d85' .. '\\u0d96' | '\\u0d9a' .. '\\u0db1' | '\\u0db3' .. '\\u0dbb' | '\\u0dbd' .. '\\u0dbd' | '\\u0dc0' .. '\\u0dc6' | '\\u0dca' .. '\\u0dca' | '\\u0dcf' .. '\\u0dd4' | '\\u0dd6' .. '\\u0dd6' | '\\u0dd8' .. '\\u0ddf' | '\\u0df2' .. '\\u0df3' | '\\u0e01' .. '\\u0e3a' | '\\u0e3f' .. '\\u0e4e' | '\\u0e50' .. '\\u0e59' | '\\u0e81' .. '\\u0e82' | '\\u0e84' .. '\\u0e84' | '\\u0e87' .. '\\u0e88' | '\\u0e8a' .. '\\u0e8a' | '\\u0e8d' .. '\\u0e8d' | '\\u0e94' .. '\\u0e97' | '\\u0e99' .. '\\u0e9f' | '\\u0ea1' .. '\\u0ea3' | '\\u0ea5' .. '\\u0ea5' | '\\u0ea7' .. '\\u0ea7' | '\\u0eaa' .. '\\u0eab' | '\\u0ead' .. '\\u0eb9' | '\\u0ebb' .. '\\u0ebd' | '\\u0ec0' .. '\\u0ec4' | '\\u0ec6' .. '\\u0ec6' | '\\u0ec8' .. '\\u0ecd' | '\\u0ed0'
+            // .. '\\u0ed9' | '\\u0edc' .. '\\u0edd' | '\\u0f00' .. '\\u0f03' | '\\u0f13' .. '\\u0f39' | '\\u0f3e' .. '\\u0f47' | '\\u0f49' .. '\\u0f6a' | '\\u0f71' .. '\\u0f84' | '\\u0f86' .. '\\u0f8b' | '\\u0f90' .. '\\u0f97' | '\\u0f99' .. '\\u0fbc' | '\\u0fbe' .. '\\u0fcc' | '\\u0fcf' .. '\\u0fcf' | '\\u1000' .. '\\u1021' | '\\u1023' .. '\\u1027' | '\\u1029' .. '\\u102a' | '\\u102c' .. '\\u1032' | '\\u1036' .. '\\u1039' | '\\u1040' .. '\\u1049' | '\\u1050' .. '\\u1059' | '\\u10a0' .. '\\u10c5' | '\\u10d0' .. '\\u10f8' | '\\u1100' .. '\\u1159' | '\\u115f' .. '\\u11a2' | '\\u11a8' .. '\\u11f9' | '\\u1200' .. '\\u1206' | '\\u1208' .. '\\u1246' | '\\u1248' .. '\\u1248' | '\\u124a' .. '\\u124d' | '\\u1250' .. '\\u1256' | '\\u1258' .. '\\u1258' | '\\u125a' .. '\\u125d' | '\\u1260' .. '\\u1286' | '\\u1288' .. '\\u1288' | '\\u128a' .. '\\u128d' | '\\u1290' .. '\\u12ae' | '\\u12b0' .. '\\u12b0' | '\\u12b2' .. '\\u12b5' | '\\u12b8' .. '\\u12be' | '\\u12c0' .. '\\u12c0' | '\\u12c2' ..
+            // '\\u12c5' | '\\u12c8' .. '\\u12ce' | '\\u12d0' .. '\\u12d6' | '\\u12d8' .. '\\u12ee' | '\\u12f0' .. '\\u130e' | '\\u1310' .. '\\u1310' | '\\u1312' .. '\\u1315' | '\\u1318' .. '\\u131e' | '\\u1320' .. '\\u1346' | '\\u1348' .. '\\u135a' | '\\u1369' .. '\\u137c' | '\\u13a0' .. '\\u13f4' | '\\u1401' .. '\\u166c' | '\\u166f' .. '\\u1676' | '\\u1681' .. '\\u169a' | '\\u16a0' .. '\\u16ea' | '\\u16ee' .. '\\u16f0' | '\\u1700' .. '\\u170c' | '\\u170e' .. '\\u1714' | '\\u1720' .. '\\u1734' | '\\u1740' .. '\\u1753' | '\\u1760' .. '\\u176c' | '\\u176e' .. '\\u1770' | '\\u1772' .. '\\u1773' | '\\u1780' .. '\\u17b3' | '\\u17b6' .. '\\u17d3' | '\\u17d7' | '\\u17db' .. '\\u17dd' | '\\u17e0' .. '\\u17e9' | '\\u17f0' .. '\\u17f9' | '\\u180b' .. '\\u180d' | '\\u1810' .. '\\u1819' | '\\u1820' .. '\\u1877' | '\\u1880' .. '\\u18a9' | '\\u1900' .. '\\u191c' | '\\u1920' .. '\\u192b' | '\\u1930' .. '\\u193b' | '\\u1940' .. '\\u1940' | '\\u1946' .. '\\u196d' | '\\u1970' .. '\\u1974' | '\\u19e0'
+            // .. '\\u19ff' | '\\u1d00' .. '\\u1d6b' | '\\u1e00' .. '\\u1e9b' | '\\u1ea0' .. '\\u1ef9' | '\\u1f00' .. '\\u1f15' | '\\u1f18' .. '\\u1f1d' | '\\u1f20' .. '\\u1f45' | '\\u1f48' .. '\\u1f4d' | '\\u1f50' .. '\\u1f57' | '\\u1f59' .. '\\u1f59' | '\\u1f5b' .. '\\u1f5b' | '\\u1f5d' .. '\\u1f5d' | '\\u1f5f' .. '\\u1f7d' | '\\u1f80' .. '\\u1fb4' | '\\u1fb6' .. '\\u1fbc' | '\\u1fbe' | '\\u1fc2' .. '\\u1fc4' | '\\u1fc6' .. '\\u1fcc' | '\\u1fd0' .. '\\u1fd3' | '\\u1fd6' .. '\\u1fdb' | '\\u1fe0' .. '\\u1fec' | '\\u1ff2' .. '\\u1ff4' | '\\u1ff6' .. '\\u1ffc' | '\\u2070' .. '\\u2071' | '\\u2074' .. '\\u2079' | '\\u207f' .. '\\u2089' | '\\u20a0' .. '\\u20b1' | '\\u20d0' .. '\\u20ea' | '\\u2100' .. '\\u213b' | '\\u213d' .. '\\u213f' | '\\u2145' .. '\\u214a' | '\\u2153' .. '\\u2183' | '\\u2195' .. '\\u2199' | '\\u219c' .. '\\u219f' | '\\u21a1' .. '\\u21a2' | '\\u21a4' .. '\\u21a5' | '\\u21a7' .. '\\u21ad' | '\\u21af' .. '\\u21cd' | '\\u21d0' .. '\\u21d1' | '\\u21d3' | '\\u21d5' ..
+            // '\\u21f3' | '\\u2300' .. '\\u2307' | '\\u230c' .. '\\u231f' | '\\u2322' .. '\\u2328' | '\\u232b' .. '\\u237b' | '\\u237d' .. '\\u239a' | '\\u23b7' .. '\\u23d0' | '\\u2400' .. '\\u2426' | '\\u2440' .. '\\u244a' | '\\u2460' .. '\\u25b6' | '\\u25b8' .. '\\u25c0' | '\\u25c2' .. '\\u25f7' | '\\u2600' .. '\\u2617' | '\\u2619' .. '\\u266e' | '\\u2670' .. '\\u267d' | '\\u2680' .. '\\u2691' | '\\u26a0' .. '\\u26a1' | '\\u2701' .. '\\u2704' | '\\u2706' .. '\\u2709' | '\\u270c' .. '\\u2727' | '\\u2729' .. '\\u274b' | '\\u274d' .. '\\u274d' | '\\u274f' .. '\\u2752' | '\\u2756' .. '\\u2756' | '\\u2758' .. '\\u275e' | '\\u2761' .. '\\u2767' | '\\u2776' .. '\\u2794' | '\\u2798' .. '\\u27af' | '\\u27b1' .. '\\u27be' | '\\u2800' .. '\\u28ff' | '\\u2b00' .. '\\u2b0d' | '\\u2e80' .. '\\u2e99' | '\\u2e9b' .. '\\u2ef3' | '\\u2f00' .. '\\u2fd5' | '\\u2ff0' .. '\\u2ffb' | '\\u3004' .. '\\u3007' | '\\u3012' .. '\\u3013' | '\\u3020' .. '\\u302f' | '\\u3031' .. '\\u303c' | '\\u303e' .. '\\u303f'
+            // | '\\u3041' .. '\\u3096' | '\\u3099' .. '\\u309a' | '\\u309d' .. '\\u309f' | '\\u30a1' .. '\\u30fa' | '\\u30fc' .. '\\u30ff' | '\\u3105' .. '\\u312c' | '\\u3131' .. '\\u318e' | '\\u3190' .. '\\u31b7' | '\\u31f0' .. '\\u321e' | '\\u3220' .. '\\u3243' | '\\u3250' .. '\\u327d' | '\\u327f' .. '\\u32fe' | '\\u3300' .. '\\u4db5' | '\\u4dc0' .. '\\u9fa5' | '\\ua000' .. '\\ua48c' | '\\ua490' .. '\\ua4c6' | '\\uac00' .. '\\ud7a3' | '\\uf900' .. '\\ufa2d' | '\\ufa30' .. '\\ufa6a' | '\\ufb00' .. '\\ufb06' | '\\ufb13' .. '\\ufb17' | '\\ufb1d' .. '\\ufb28' | '\\ufb2a' .. '\\ufb36' | '\\ufb38' .. '\\ufb3c' | '\\ufb3e' .. '\\ufb3e' | '\\ufb40' .. '\\ufb41' | '\\ufb43' .. '\\ufb44' | '\\ufb46' .. '\\ufbb1' | '\\ufbd3' .. '\\ufd3d' | '\\ufd50' .. '\\ufd8f' | '\\ufd92' .. '\\ufdc7' | '\\ufdf0' .. '\\ufdfd' | '\\ufe00' .. '\\ufe0f' | '\\ufe20' .. '\\ufe23' | '\\ufe69' | '\\ufe70' .. '\\ufe74' | '\\ufe76' .. '\\ufefc' | '\\uff04' | '\\uff10' .. '\\uff19' | '\\uff21' .. '\\uff3a' |
+            // '\\uff41' .. '\\uff5a' | '\\uff66' .. '\\uffbe' | '\\uffc2' .. '\\uffc7' | '\\uffca' .. '\\uffcf' | '\\uffd2' .. '\\uffd7' | '\\uffda' .. '\\uffdc' | '\\uffe0' .. '\\uffe1' | '\\uffe4' .. '\\uffe6' | '\\uffe8' | '\\uffed' .. '\\uffee' )
+            // FTS.g:
             {
                 if (input.LA(1) == '$' || (input.LA(1) >= '0' && input.LA(1) <= '9') || (input.LA(1) >= 'A' && input.LA(1) <= 'Z') || (input.LA(1) >= 'a' && input.LA(1) <= 'z') || (input.LA(1) >= '\u00A2' && input.LA(1) <= '\u00A7') || (input.LA(1) >= '\u00A9' && input.LA(1) <= '\u00AA') || input.LA(1) == '\u00AE' || input.LA(1) == '\u00B0' || (input.LA(1) >= '\u00B2' && input.LA(1) <= '\u00B3') || (input.LA(1) >= '\u00B5' && input.LA(1) <= '\u00B6') || (input.LA(1) >= '\u00B9' && input.LA(1) <= '\u00BA') || (input.LA(1) >= '\u00BC' && input.LA(1) <= '\u00BE') || (input.LA(1) >= '\u00C0' && input.LA(1) <= '\u00D6') || (input.LA(1) >= '\u00D8' && input.LA(1) <= '\u00F6') || (input.LA(1) >= '\u00F8' && input.LA(1) <= '\u0236') || (input.LA(1) >= '\u0250' && input.LA(1) <= '\u02C1') || (input.LA(1) >= '\u02C6' && input.LA(1) <= '\u02D1') || (input.LA(1) >= '\u02E0' && input.LA(1) <= '\u02E4') || input.LA(1) == '\u02EE' || (input.LA(1) >= '\u0300' && input.LA(1) <= '\u0357')
                         || (input.LA(1) >= '\u035D' && input.LA(1) <= '\u036F') || input.LA(1) == '\u037A' || input.LA(1) == '\u0386' || (input.LA(1) >= '\u0388' && input.LA(1) <= '\u038A') || input.LA(1) == '\u038C' || (input.LA(1) >= '\u038E' && input.LA(1) <= '\u03A1') || (input.LA(1) >= '\u03A3' && input.LA(1) <= '\u03CE') || (input.LA(1) >= '\u03D0' && input.LA(1) <= '\u03F5') || (input.LA(1) >= '\u03F7' && input.LA(1) <= '\u03FB') || (input.LA(1) >= '\u0400' && input.LA(1) <= '\u0486') || (input.LA(1) >= '\u0488' && input.LA(1) <= '\u04CE') || (input.LA(1) >= '\u04D0' && input.LA(1) <= '\u04F5') || (input.LA(1) >= '\u04F8' && input.LA(1) <= '\u04F9') || (input.LA(1) >= '\u0500' && input.LA(1) <= '\u050F') || (input.LA(1) >= '\u0531' && input.LA(1) <= '\u0556') || input.LA(1) == '\u0559' || (input.LA(1) >= '\u0561' && input.LA(1) <= '\u0587') || (input.LA(1) >= '\u0591' && input.LA(1) <= '\u05A1') || (input.LA(1) >= '\u05A3' && input.LA(1) <= '\u05B9')
@@ -5823,17 +5891,17 @@ public class FTSLexer extends Lexer
     {
         try
         {
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:2030:9: ( '\\u0021' .. '\\u0027' | '\\u002b' | '\\u002d' | '\\u002f' .. '\\u0039' | '\\u003b' | '\\u003d' | '\\u0040' .. '\\u005a' | '\\u005f' | '\\u0061' .. '\\u007a' | '\\u007c' | '\\u00a1' .. '\\u00a7' | '\\u00a9' .. '\\u00aa' | '\\u00ac' | '\\u00ae' | '\\u00b0' .. '\\u00b3' | '\\u00b5' .. '\\u00b7' | '\\u00b9' .. '\\u00ba' | '\\u00bc' .. '\\u0236' | '\\u0250' .. '\\u02c1' | '\\u02c6' .. '\\u02d1' | '\\u02e0' .. '\\u02e4' | '\\u02ee' | '\\u0300' .. '\\u0357' | '\\u035d' .. '\\u036f' | '\\u037a' .. '\\u037a' | '\\u037e' .. '\\u037e' | '\\u0386' .. '\\u038a' | '\\u038c' .. '\\u038c' | '\\u038e' .. '\\u03a1' | '\\u03a3' .. '\\u03ce' | '\\u03d0' .. '\\u03fb' | '\\u0400' .. '\\u0486' | '\\u0488' .. '\\u04ce' | '\\u04d0' .. '\\u04f5' | '\\u04f8' .. '\\u04f9' | '\\u0500' .. '\\u050f' | '\\u0531' .. '\\u0556' | '\\u0559' .. '\\u055f' | '\\u0561' .. '\\u0587' | '\\u0589' ..
-            // '\\u058a' | '\\u0591' .. '\\u05a1' | '\\u05a3' .. '\\u05b9' | '\\u05bb' .. '\\u05c4' | '\\u05d0' .. '\\u05ea' | '\\u05f0' .. '\\u05f4' | '\\u060c' .. '\\u0615' | '\\u061b' .. '\\u061b' | '\\u061f' .. '\\u061f' | '\\u0621' .. '\\u063a' | '\\u0640' .. '\\u0658' | '\\u0660' .. '\\u06dc' | '\\u06de' .. '\\u070d' | '\\u0710' .. '\\u074a' | '\\u074d' .. '\\u074f' | '\\u0780' .. '\\u07b1' | '\\u0901' .. '\\u0939' | '\\u093c' .. '\\u094d' | '\\u0950' .. '\\u0954' | '\\u0958' .. '\\u0970' | '\\u0981' .. '\\u0983' | '\\u0985' .. '\\u098c' | '\\u098f' .. '\\u0990' | '\\u0993' .. '\\u09a8' | '\\u09aa' .. '\\u09b0' | '\\u09b2' .. '\\u09b2' | '\\u09b6' .. '\\u09b9' | '\\u09bc' .. '\\u09c4' | '\\u09c7' .. '\\u09c8' | '\\u09cb' .. '\\u09cd' | '\\u09d7' .. '\\u09d7' | '\\u09dc' .. '\\u09dd' | '\\u09df' .. '\\u09e3' | '\\u09e6' .. '\\u09fa' | '\\u0a01' .. '\\u0a03' | '\\u0a05' .. '\\u0a0a' | '\\u0a0f' .. '\\u0a10' | '\\u0a13' .. '\\u0a28' | '\\u0a2a' .. '\\u0a30' | '\\u0a32' .. '\\u0a33'
-            // | '\\u0a35' .. '\\u0a36' | '\\u0a38' .. '\\u0a39' | '\\u0a3c' .. '\\u0a3c' | '\\u0a3e' .. '\\u0a42' | '\\u0a47' .. '\\u0a48' | '\\u0a4b' .. '\\u0a4d' | '\\u0a59' .. '\\u0a5c' | '\\u0a5e' .. '\\u0a5e' | '\\u0a66' .. '\\u0a74' | '\\u0a81' .. '\\u0a83' | '\\u0a85' .. '\\u0a8d' | '\\u0a8f' .. '\\u0a91' | '\\u0a93' .. '\\u0aa8' | '\\u0aaa' .. '\\u0ab0' | '\\u0ab2' .. '\\u0ab3' | '\\u0ab5' .. '\\u0ab9' | '\\u0abc' .. '\\u0ac5' | '\\u0ac7' .. '\\u0ac9' | '\\u0acb' .. '\\u0acd' | '\\u0ad0' .. '\\u0ad0' | '\\u0ae0' .. '\\u0ae3' | '\\u0ae6' .. '\\u0aef' | '\\u0af1' .. '\\u0af1' | '\\u0b01' .. '\\u0b03' | '\\u0b05' .. '\\u0b0c' | '\\u0b0f' .. '\\u0b10' | '\\u0b13' .. '\\u0b28' | '\\u0b2a' .. '\\u0b30' | '\\u0b32' .. '\\u0b33' | '\\u0b35' .. '\\u0b39' | '\\u0b3c' .. '\\u0b43' | '\\u0b47' .. '\\u0b48' | '\\u0b4b' .. '\\u0b4d' | '\\u0b56' .. '\\u0b57' | '\\u0b5c' .. '\\u0b5d' | '\\u0b5f' .. '\\u0b61' | '\\u0b66' .. '\\u0b71' | '\\u0b82' .. '\\u0b83' | '\\u0b85' .. '\\u0b8a' |
-            // '\\u0b8e' .. '\\u0b90' | '\\u0b92' .. '\\u0b95' | '\\u0b99' .. '\\u0b9a' | '\\u0b9c' .. '\\u0b9c' | '\\u0b9e' .. '\\u0b9f' | '\\u0ba3' .. '\\u0ba4' | '\\u0ba8' .. '\\u0baa' | '\\u0bae' .. '\\u0bb5' | '\\u0bb7' .. '\\u0bb9' | '\\u0bbe' .. '\\u0bc2' | '\\u0bc6' .. '\\u0bc8' | '\\u0bca' .. '\\u0bcd' | '\\u0bd7' .. '\\u0bd7' | '\\u0be7' .. '\\u0bfa' | '\\u0c01' .. '\\u0c03' | '\\u0c05' .. '\\u0c0c' | '\\u0c0e' .. '\\u0c10' | '\\u0c12' .. '\\u0c28' | '\\u0c2a' .. '\\u0c33' | '\\u0c35' .. '\\u0c39' | '\\u0c3e' .. '\\u0c44' | '\\u0c46' .. '\\u0c48' | '\\u0c4a' .. '\\u0c4d' | '\\u0c55' .. '\\u0c56' | '\\u0c60' .. '\\u0c61' | '\\u0c66' .. '\\u0c6f' | '\\u0c82' .. '\\u0c83' | '\\u0c85' .. '\\u0c8c' | '\\u0c8e' .. '\\u0c90' | '\\u0c92' .. '\\u0ca8' | '\\u0caa' .. '\\u0cb3' | '\\u0cb5' .. '\\u0cb9' | '\\u0cbc' .. '\\u0cc4' | '\\u0cc6' .. '\\u0cc8' | '\\u0cca' .. '\\u0ccd' | '\\u0cd5' .. '\\u0cd6' | '\\u0cde' .. '\\u0cde' | '\\u0ce0' .. '\\u0ce1' | '\\u0ce6' .. '\\u0cef' | '\\u0d02'
-            // .. '\\u0d03' | '\\u0d05' .. '\\u0d0c' | '\\u0d0e' .. '\\u0d10' | '\\u0d12' .. '\\u0d28' | '\\u0d2a' .. '\\u0d39' | '\\u0d3e' .. '\\u0d43' | '\\u0d46' .. '\\u0d48' | '\\u0d4a' .. '\\u0d4d' | '\\u0d57' .. '\\u0d57' | '\\u0d60' .. '\\u0d61' | '\\u0d66' .. '\\u0d6f' | '\\u0d82' .. '\\u0d83' | '\\u0d85' .. '\\u0d96' | '\\u0d9a' .. '\\u0db1' | '\\u0db3' .. '\\u0dbb' | '\\u0dbd' .. '\\u0dbd' | '\\u0dc0' .. '\\u0dc6' | '\\u0dca' .. '\\u0dca' | '\\u0dcf' .. '\\u0dd4' | '\\u0dd6' .. '\\u0dd6' | '\\u0dd8' .. '\\u0ddf' | '\\u0df2' .. '\\u0df4' | '\\u0e01' .. '\\u0e3a' | '\\u0e3f' .. '\\u0e5b' | '\\u0e81' .. '\\u0e82' | '\\u0e84' .. '\\u0e84' | '\\u0e87' .. '\\u0e88' | '\\u0e8a' .. '\\u0e8a' | '\\u0e8d' .. '\\u0e8d' | '\\u0e94' .. '\\u0e97' | '\\u0e99' .. '\\u0e9f' | '\\u0ea1' .. '\\u0ea3' | '\\u0ea5' .. '\\u0ea5' | '\\u0ea7' .. '\\u0ea7' | '\\u0eaa' .. '\\u0eab' | '\\u0ead' .. '\\u0eb9' | '\\u0ebb' .. '\\u0ebd' | '\\u0ec0' .. '\\u0ec4' | '\\u0ec6' .. '\\u0ec6' | '\\u0ec8' ..
-            // '\\u0ecd' | '\\u0ed0' .. '\\u0ed9' | '\\u0edc' .. '\\u0edd' | '\\u0f00' .. '\\u0f39' | '\\u0f3e' .. '\\u0f47' | '\\u0f49' .. '\\u0f6a' | '\\u0f71' .. '\\u0f8b' | '\\u0f90' .. '\\u0f97' | '\\u0f99' .. '\\u0fbc' | '\\u0fbe' .. '\\u0fcc' | '\\u0fcf' .. '\\u0fcf' | '\\u1000' .. '\\u1021' | '\\u1023' .. '\\u1027' | '\\u1029' .. '\\u102a' | '\\u102c' .. '\\u1032' | '\\u1036' .. '\\u1039' | '\\u1040' .. '\\u1059' | '\\u10a0' .. '\\u10c5' | '\\u10d0' .. '\\u10f8' | '\\u10fb' .. '\\u10fb' | '\\u1100' .. '\\u1159' | '\\u115f' .. '\\u11a2' | '\\u11a8' .. '\\u11f9' | '\\u1200' .. '\\u1206' | '\\u1208' .. '\\u1246' | '\\u1248' .. '\\u1248' | '\\u124a' .. '\\u124d' | '\\u1250' .. '\\u1256' | '\\u1258' .. '\\u1258' | '\\u125a' .. '\\u125d' | '\\u1260' .. '\\u1286' | '\\u1288' .. '\\u1288' | '\\u128a' .. '\\u128d' | '\\u1290' .. '\\u12ae' | '\\u12b0' .. '\\u12b0' | '\\u12b2' .. '\\u12b5' | '\\u12b8' .. '\\u12be' | '\\u12c0' .. '\\u12c0' | '\\u12c2' .. '\\u12c5' | '\\u12c8' .. '\\u12ce'
-            // | '\\u12d0' .. '\\u12d6' | '\\u12d8' .. '\\u12ee' | '\\u12f0' .. '\\u130e' | '\\u1310' .. '\\u1310' | '\\u1312' .. '\\u1315' | '\\u1318' .. '\\u131e' | '\\u1320' .. '\\u1346' | '\\u1348' .. '\\u135a' | '\\u1361' .. '\\u137c' | '\\u13a0' .. '\\u13f4' | '\\u1401' .. '\\u1676' | '\\u1681' .. '\\u169a' | '\\u16a0' .. '\\u16f0' | '\\u1700' .. '\\u170c' | '\\u170e' .. '\\u1714' | '\\u1720' .. '\\u1736' | '\\u1740' .. '\\u1753' | '\\u1760' .. '\\u176c' | '\\u176e' .. '\\u1770' | '\\u1772' .. '\\u1773' | '\\u1780' .. '\\u17b3' | '\\u17b6' .. '\\u17dd' | '\\u17e0' .. '\\u17e9' | '\\u17f0' .. '\\u17f9' | '\\u1800' .. '\\u180d' | '\\u1810' .. '\\u1819' | '\\u1820' .. '\\u1877' | '\\u1880' .. '\\u18a9' | '\\u1900' .. '\\u191c' | '\\u1920' .. '\\u192b' | '\\u1930' .. '\\u193b' | '\\u1940' .. '\\u1940' | '\\u1944' .. '\\u196d' | '\\u1970' .. '\\u1974' | '\\u19e0' .. '\\u19ff' | '\\u1d00' .. '\\u1d6b' | '\\u1e00' .. '\\u1e9b' | '\\u1ea0' .. '\\u1ef9' | '\\u1f00' .. '\\u1f15' |
-            // '\\u1f18' .. '\\u1f1d' | '\\u1f20' .. '\\u1f45' | '\\u1f48' .. '\\u1f4d' | '\\u1f50' .. '\\u1f57' | '\\u1f59' .. '\\u1f59' | '\\u1f5b' .. '\\u1f5b' | '\\u1f5d' .. '\\u1f5d' | '\\u1f5f' .. '\\u1f7d' | '\\u1f80' .. '\\u1fb4' | '\\u1fb6' .. '\\u1fbc' | '\\u1fbe' | '\\u1fc2' .. '\\u1fc4' | '\\u1fc6' .. '\\u1fcc' | '\\u1fd0' .. '\\u1fd3' | '\\u1fd6' .. '\\u1fdb' | '\\u1fe0' .. '\\u1fec' | '\\u1ff2' .. '\\u1ff4' | '\\u1ff6' .. '\\u1ffc' | '\\u2010' .. '\\u2017' | '\\u2020' .. '\\u2027' | '\\u2030' .. '\\u2038' | '\\u203b' .. '\\u2044' | '\\u2047' .. '\\u2054' | '\\u2057' .. '\\u2057' | '\\u2070' .. '\\u2071' | '\\u2074' .. '\\u207c' | '\\u207f' .. '\\u208c' | '\\u20a0' .. '\\u20b1' | '\\u20d0' .. '\\u20ea' | '\\u2100' .. '\\u213b' | '\\u213d' .. '\\u214b' | '\\u2153' .. '\\u2183' | '\\u2190' .. '\\u2328' | '\\u232b' .. '\\u23b3' | '\\u23b6' .. '\\u23d0' | '\\u2400' .. '\\u2426' | '\\u2440' .. '\\u244a' | '\\u2460' .. '\\u2617' | '\\u2619' .. '\\u267d' | '\\u2680' .. '\\u2691'
-            // | '\\u26a0' .. '\\u26a1' | '\\u2701' .. '\\u2704' | '\\u2706' .. '\\u2709' | '\\u270c' .. '\\u2727' | '\\u2729' .. '\\u274b' | '\\u274d' .. '\\u274d' | '\\u274f' .. '\\u2752' | '\\u2756' .. '\\u2756' | '\\u2758' .. '\\u275e' | '\\u2761' .. '\\u2767' | '\\u2776' .. '\\u2794' | '\\u2798' .. '\\u27af' | '\\u27b1' .. '\\u27be' | '\\u27d0' .. '\\u27e5' | '\\u27f0' .. '\\u2982' | '\\u2999' .. '\\u29d7' | '\\u29dc' .. '\\u29fb' | '\\u29fe' .. '\\u2b0d' | '\\u2e80' .. '\\u2e99' | '\\u2e9b' .. '\\u2ef3' | '\\u2f00' .. '\\u2fd5' | '\\u2ff0' .. '\\u2ffb' | '\\u3001' .. '\\u3007' | '\\u3012' .. '\\u3013' | '\\u301c' | '\\u3020' .. '\\u303f' | '\\u3041' .. '\\u3096' | '\\u3099' .. '\\u309a' | '\\u309d' .. '\\u30ff' | '\\u3105' .. '\\u312c' | '\\u3131' .. '\\u318e' | '\\u3190' .. '\\u31b7' | '\\u31f0' .. '\\u321e' | '\\u3220' .. '\\u3243' | '\\u3250' .. '\\u327d' | '\\u327f' .. '\\u32fe' | '\\u3300' .. '\\u4db5' | '\\u4dc0' .. '\\u9fa5' | '\\ua000' .. '\\ua48c' | '\\ua490' ..
-            // '\\ua4c6' | '\\uac00' .. '\\ud7a3' | '\\uf900' .. '\\ufa2d' | '\\ufa30' .. '\\ufa6a' | '\\ufb00' .. '\\ufb06' | '\\ufb13' .. '\\ufb17' | '\\ufb1d' .. '\\ufb36' | '\\ufb38' .. '\\ufb3c' | '\\ufb3e' .. '\\ufb3e' | '\\ufb40' .. '\\ufb41' | '\\ufb43' .. '\\ufb44' | '\\ufb46' .. '\\ufbb1' | '\\ufbd3' .. '\\ufd3d' | '\\ufd50' .. '\\ufd8f' | '\\ufd92' .. '\\ufdc7' | '\\ufdf0' .. '\\ufdfd' | '\\ufe00' .. '\\ufe0f' | '\\ufe20' .. '\\ufe23' | '\\ufe30' .. '\\ufe34' | '\\ufe45' .. '\\ufe46' | '\\ufe49' .. '\\ufe52' | '\\ufe54' .. '\\ufe58' | '\\ufe5f' .. '\\ufe66' | '\\ufe68' .. '\\ufe6b' | '\\ufe70' .. '\\ufe74' | '\\ufe76' .. '\\ufefc' | '\\uff01' .. '\\uff07' | '\\uff0a' .. '\\uff3a' | '\\uff3c' | '\\uff3f' | '\\uff41' .. '\\uff5a' | '\\uff5c' | '\\uff5e' | '\\uff61' | '\\uff64' .. '\\uffbe' | '\\uffc2' .. '\\uffc7' | '\\uffca' .. '\\uffcf' | '\\uffd2' .. '\\uffd7' | '\\uffda' .. '\\uffdc' | '\\uffe0' .. '\\uffe2' | '\\uffe4' .. '\\uffe6' | '\\uffe8' .. '\\uffee' )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+            // FTS.g:2040:9: ( '\\u0021' .. '\\u0027' | '\\u002b' | '\\u002d' | '\\u002f' .. '\\u0039' | '\\u003b' | '\\u003d' | '\\u0040' .. '\\u005a' | '\\u005f' | '\\u0061' .. '\\u007a' | '\\u007c' | '\\u00a1' .. '\\u00a7' | '\\u00a9' .. '\\u00aa' | '\\u00ac' | '\\u00ae' | '\\u00b0' .. '\\u00b3' | '\\u00b5' .. '\\u00b7' | '\\u00b9' .. '\\u00ba' | '\\u00bc' .. '\\u0236' | '\\u0250' .. '\\u02c1' | '\\u02c6' .. '\\u02d1' | '\\u02e0' .. '\\u02e4' | '\\u02ee' | '\\u0300' .. '\\u0357' | '\\u035d' .. '\\u036f' | '\\u037a' .. '\\u037a' | '\\u037e' .. '\\u037e' | '\\u0386' .. '\\u038a' | '\\u038c' .. '\\u038c' | '\\u038e' .. '\\u03a1' | '\\u03a3' .. '\\u03ce' | '\\u03d0' .. '\\u03fb' | '\\u0400' .. '\\u0486' | '\\u0488' .. '\\u04ce' | '\\u04d0' .. '\\u04f5' | '\\u04f8' .. '\\u04f9' | '\\u0500' .. '\\u050f' | '\\u0531' .. '\\u0556' | '\\u0559' .. '\\u055f' | '\\u0561' .. '\\u0587' | '\\u0589' .. '\\u058a' | '\\u0591' .. '\\u05a1' | '\\u05a3' .. '\\u05b9' | '\\u05bb' .. '\\u05c4' | '\\u05d0'
+            // .. '\\u05ea' | '\\u05f0' .. '\\u05f4' | '\\u060c' .. '\\u0615' | '\\u061b' .. '\\u061b' | '\\u061f' .. '\\u061f' | '\\u0621' .. '\\u063a' | '\\u0640' .. '\\u0658' | '\\u0660' .. '\\u06dc' | '\\u06de' .. '\\u070d' | '\\u0710' .. '\\u074a' | '\\u074d' .. '\\u074f' | '\\u0780' .. '\\u07b1' | '\\u0901' .. '\\u0939' | '\\u093c' .. '\\u094d' | '\\u0950' .. '\\u0954' | '\\u0958' .. '\\u0970' | '\\u0981' .. '\\u0983' | '\\u0985' .. '\\u098c' | '\\u098f' .. '\\u0990' | '\\u0993' .. '\\u09a8' | '\\u09aa' .. '\\u09b0' | '\\u09b2' .. '\\u09b2' | '\\u09b6' .. '\\u09b9' | '\\u09bc' .. '\\u09c4' | '\\u09c7' .. '\\u09c8' | '\\u09cb' .. '\\u09cd' | '\\u09d7' .. '\\u09d7' | '\\u09dc' .. '\\u09dd' | '\\u09df' .. '\\u09e3' | '\\u09e6' .. '\\u09fa' | '\\u0a01' .. '\\u0a03' | '\\u0a05' .. '\\u0a0a' | '\\u0a0f' .. '\\u0a10' | '\\u0a13' .. '\\u0a28' | '\\u0a2a' .. '\\u0a30' | '\\u0a32' .. '\\u0a33' | '\\u0a35' .. '\\u0a36' | '\\u0a38' .. '\\u0a39' | '\\u0a3c' .. '\\u0a3c' | '\\u0a3e' ..
+            // '\\u0a42' | '\\u0a47' .. '\\u0a48' | '\\u0a4b' .. '\\u0a4d' | '\\u0a59' .. '\\u0a5c' | '\\u0a5e' .. '\\u0a5e' | '\\u0a66' .. '\\u0a74' | '\\u0a81' .. '\\u0a83' | '\\u0a85' .. '\\u0a8d' | '\\u0a8f' .. '\\u0a91' | '\\u0a93' .. '\\u0aa8' | '\\u0aaa' .. '\\u0ab0' | '\\u0ab2' .. '\\u0ab3' | '\\u0ab5' .. '\\u0ab9' | '\\u0abc' .. '\\u0ac5' | '\\u0ac7' .. '\\u0ac9' | '\\u0acb' .. '\\u0acd' | '\\u0ad0' .. '\\u0ad0' | '\\u0ae0' .. '\\u0ae3' | '\\u0ae6' .. '\\u0aef' | '\\u0af1' .. '\\u0af1' | '\\u0b01' .. '\\u0b03' | '\\u0b05' .. '\\u0b0c' | '\\u0b0f' .. '\\u0b10' | '\\u0b13' .. '\\u0b28' | '\\u0b2a' .. '\\u0b30' | '\\u0b32' .. '\\u0b33' | '\\u0b35' .. '\\u0b39' | '\\u0b3c' .. '\\u0b43' | '\\u0b47' .. '\\u0b48' | '\\u0b4b' .. '\\u0b4d' | '\\u0b56' .. '\\u0b57' | '\\u0b5c' .. '\\u0b5d' | '\\u0b5f' .. '\\u0b61' | '\\u0b66' .. '\\u0b71' | '\\u0b82' .. '\\u0b83' | '\\u0b85' .. '\\u0b8a' | '\\u0b8e' .. '\\u0b90' | '\\u0b92' .. '\\u0b95' | '\\u0b99' .. '\\u0b9a' | '\\u0b9c' .. '\\u0b9c'
+            // | '\\u0b9e' .. '\\u0b9f' | '\\u0ba3' .. '\\u0ba4' | '\\u0ba8' .. '\\u0baa' | '\\u0bae' .. '\\u0bb5' | '\\u0bb7' .. '\\u0bb9' | '\\u0bbe' .. '\\u0bc2' | '\\u0bc6' .. '\\u0bc8' | '\\u0bca' .. '\\u0bcd' | '\\u0bd7' .. '\\u0bd7' | '\\u0be7' .. '\\u0bfa' | '\\u0c01' .. '\\u0c03' | '\\u0c05' .. '\\u0c0c' | '\\u0c0e' .. '\\u0c10' | '\\u0c12' .. '\\u0c28' | '\\u0c2a' .. '\\u0c33' | '\\u0c35' .. '\\u0c39' | '\\u0c3e' .. '\\u0c44' | '\\u0c46' .. '\\u0c48' | '\\u0c4a' .. '\\u0c4d' | '\\u0c55' .. '\\u0c56' | '\\u0c60' .. '\\u0c61' | '\\u0c66' .. '\\u0c6f' | '\\u0c82' .. '\\u0c83' | '\\u0c85' .. '\\u0c8c' | '\\u0c8e' .. '\\u0c90' | '\\u0c92' .. '\\u0ca8' | '\\u0caa' .. '\\u0cb3' | '\\u0cb5' .. '\\u0cb9' | '\\u0cbc' .. '\\u0cc4' | '\\u0cc6' .. '\\u0cc8' | '\\u0cca' .. '\\u0ccd' | '\\u0cd5' .. '\\u0cd6' | '\\u0cde' .. '\\u0cde' | '\\u0ce0' .. '\\u0ce1' | '\\u0ce6' .. '\\u0cef' | '\\u0d02' .. '\\u0d03' | '\\u0d05' .. '\\u0d0c' | '\\u0d0e' .. '\\u0d10' | '\\u0d12' .. '\\u0d28' |
+            // '\\u0d2a' .. '\\u0d39' | '\\u0d3e' .. '\\u0d43' | '\\u0d46' .. '\\u0d48' | '\\u0d4a' .. '\\u0d4d' | '\\u0d57' .. '\\u0d57' | '\\u0d60' .. '\\u0d61' | '\\u0d66' .. '\\u0d6f' | '\\u0d82' .. '\\u0d83' | '\\u0d85' .. '\\u0d96' | '\\u0d9a' .. '\\u0db1' | '\\u0db3' .. '\\u0dbb' | '\\u0dbd' .. '\\u0dbd' | '\\u0dc0' .. '\\u0dc6' | '\\u0dca' .. '\\u0dca' | '\\u0dcf' .. '\\u0dd4' | '\\u0dd6' .. '\\u0dd6' | '\\u0dd8' .. '\\u0ddf' | '\\u0df2' .. '\\u0df4' | '\\u0e01' .. '\\u0e3a' | '\\u0e3f' .. '\\u0e5b' | '\\u0e81' .. '\\u0e82' | '\\u0e84' .. '\\u0e84' | '\\u0e87' .. '\\u0e88' | '\\u0e8a' .. '\\u0e8a' | '\\u0e8d' .. '\\u0e8d' | '\\u0e94' .. '\\u0e97' | '\\u0e99' .. '\\u0e9f' | '\\u0ea1' .. '\\u0ea3' | '\\u0ea5' .. '\\u0ea5' | '\\u0ea7' .. '\\u0ea7' | '\\u0eaa' .. '\\u0eab' | '\\u0ead' .. '\\u0eb9' | '\\u0ebb' .. '\\u0ebd' | '\\u0ec0' .. '\\u0ec4' | '\\u0ec6' .. '\\u0ec6' | '\\u0ec8' .. '\\u0ecd' | '\\u0ed0' .. '\\u0ed9' | '\\u0edc' .. '\\u0edd' | '\\u0f00' .. '\\u0f39' | '\\u0f3e'
+            // .. '\\u0f47' | '\\u0f49' .. '\\u0f6a' | '\\u0f71' .. '\\u0f8b' | '\\u0f90' .. '\\u0f97' | '\\u0f99' .. '\\u0fbc' | '\\u0fbe' .. '\\u0fcc' | '\\u0fcf' .. '\\u0fcf' | '\\u1000' .. '\\u1021' | '\\u1023' .. '\\u1027' | '\\u1029' .. '\\u102a' | '\\u102c' .. '\\u1032' | '\\u1036' .. '\\u1039' | '\\u1040' .. '\\u1059' | '\\u10a0' .. '\\u10c5' | '\\u10d0' .. '\\u10f8' | '\\u10fb' .. '\\u10fb' | '\\u1100' .. '\\u1159' | '\\u115f' .. '\\u11a2' | '\\u11a8' .. '\\u11f9' | '\\u1200' .. '\\u1206' | '\\u1208' .. '\\u1246' | '\\u1248' .. '\\u1248' | '\\u124a' .. '\\u124d' | '\\u1250' .. '\\u1256' | '\\u1258' .. '\\u1258' | '\\u125a' .. '\\u125d' | '\\u1260' .. '\\u1286' | '\\u1288' .. '\\u1288' | '\\u128a' .. '\\u128d' | '\\u1290' .. '\\u12ae' | '\\u12b0' .. '\\u12b0' | '\\u12b2' .. '\\u12b5' | '\\u12b8' .. '\\u12be' | '\\u12c0' .. '\\u12c0' | '\\u12c2' .. '\\u12c5' | '\\u12c8' .. '\\u12ce' | '\\u12d0' .. '\\u12d6' | '\\u12d8' .. '\\u12ee' | '\\u12f0' .. '\\u130e' | '\\u1310' ..
+            // '\\u1310' | '\\u1312' .. '\\u1315' | '\\u1318' .. '\\u131e' | '\\u1320' .. '\\u1346' | '\\u1348' .. '\\u135a' | '\\u1361' .. '\\u137c' | '\\u13a0' .. '\\u13f4' | '\\u1401' .. '\\u1676' | '\\u1681' .. '\\u169a' | '\\u16a0' .. '\\u16f0' | '\\u1700' .. '\\u170c' | '\\u170e' .. '\\u1714' | '\\u1720' .. '\\u1736' | '\\u1740' .. '\\u1753' | '\\u1760' .. '\\u176c' | '\\u176e' .. '\\u1770' | '\\u1772' .. '\\u1773' | '\\u1780' .. '\\u17b3' | '\\u17b6' .. '\\u17dd' | '\\u17e0' .. '\\u17e9' | '\\u17f0' .. '\\u17f9' | '\\u1800' .. '\\u180d' | '\\u1810' .. '\\u1819' | '\\u1820' .. '\\u1877' | '\\u1880' .. '\\u18a9' | '\\u1900' .. '\\u191c' | '\\u1920' .. '\\u192b' | '\\u1930' .. '\\u193b' | '\\u1940' .. '\\u1940' | '\\u1944' .. '\\u196d' | '\\u1970' .. '\\u1974' | '\\u19e0' .. '\\u19ff' | '\\u1d00' .. '\\u1d6b' | '\\u1e00' .. '\\u1e9b' | '\\u1ea0' .. '\\u1ef9' | '\\u1f00' .. '\\u1f15' | '\\u1f18' .. '\\u1f1d' | '\\u1f20' .. '\\u1f45' | '\\u1f48' .. '\\u1f4d' | '\\u1f50' .. '\\u1f57'
+            // | '\\u1f59' .. '\\u1f59' | '\\u1f5b' .. '\\u1f5b' | '\\u1f5d' .. '\\u1f5d' | '\\u1f5f' .. '\\u1f7d' | '\\u1f80' .. '\\u1fb4' | '\\u1fb6' .. '\\u1fbc' | '\\u1fbe' | '\\u1fc2' .. '\\u1fc4' | '\\u1fc6' .. '\\u1fcc' | '\\u1fd0' .. '\\u1fd3' | '\\u1fd6' .. '\\u1fdb' | '\\u1fe0' .. '\\u1fec' | '\\u1ff2' .. '\\u1ff4' | '\\u1ff6' .. '\\u1ffc' | '\\u2010' .. '\\u2017' | '\\u2020' .. '\\u2027' | '\\u2030' .. '\\u2038' | '\\u203b' .. '\\u2044' | '\\u2047' .. '\\u2054' | '\\u2057' .. '\\u2057' | '\\u2070' .. '\\u2071' | '\\u2074' .. '\\u207c' | '\\u207f' .. '\\u208c' | '\\u20a0' .. '\\u20b1' | '\\u20d0' .. '\\u20ea' | '\\u2100' .. '\\u213b' | '\\u213d' .. '\\u214b' | '\\u2153' .. '\\u2183' | '\\u2190' .. '\\u2328' | '\\u232b' .. '\\u23b3' | '\\u23b6' .. '\\u23d0' | '\\u2400' .. '\\u2426' | '\\u2440' .. '\\u244a' | '\\u2460' .. '\\u2617' | '\\u2619' .. '\\u267d' | '\\u2680' .. '\\u2691' | '\\u26a0' .. '\\u26a1' | '\\u2701' .. '\\u2704' | '\\u2706' .. '\\u2709' | '\\u270c' ..
+            // '\\u2727' | '\\u2729' .. '\\u274b' | '\\u274d' .. '\\u274d' | '\\u274f' .. '\\u2752' | '\\u2756' .. '\\u2756' | '\\u2758' .. '\\u275e' | '\\u2761' .. '\\u2767' | '\\u2776' .. '\\u2794' | '\\u2798' .. '\\u27af' | '\\u27b1' .. '\\u27be' | '\\u27d0' .. '\\u27e5' | '\\u27f0' .. '\\u2982' | '\\u2999' .. '\\u29d7' | '\\u29dc' .. '\\u29fb' | '\\u29fe' .. '\\u2b0d' | '\\u2e80' .. '\\u2e99' | '\\u2e9b' .. '\\u2ef3' | '\\u2f00' .. '\\u2fd5' | '\\u2ff0' .. '\\u2ffb' | '\\u3001' .. '\\u3007' | '\\u3012' .. '\\u3013' | '\\u301c' | '\\u3020' .. '\\u303f' | '\\u3041' .. '\\u3096' | '\\u3099' .. '\\u309a' | '\\u309d' .. '\\u30ff' | '\\u3105' .. '\\u312c' | '\\u3131' .. '\\u318e' | '\\u3190' .. '\\u31b7' | '\\u31f0' .. '\\u321e' | '\\u3220' .. '\\u3243' | '\\u3250' .. '\\u327d' | '\\u327f' .. '\\u32fe' | '\\u3300' .. '\\u4db5' | '\\u4dc0' .. '\\u9fa5' | '\\ua000' .. '\\ua48c' | '\\ua490' .. '\\ua4c6' | '\\uac00' .. '\\ud7a3' | '\\uf900' .. '\\ufa2d' | '\\ufa30' .. '\\ufa6a' | '\\ufb00'
+            // .. '\\ufb06' | '\\ufb13' .. '\\ufb17' | '\\ufb1d' .. '\\ufb36' | '\\ufb38' .. '\\ufb3c' | '\\ufb3e' .. '\\ufb3e' | '\\ufb40' .. '\\ufb41' | '\\ufb43' .. '\\ufb44' | '\\ufb46' .. '\\ufbb1' | '\\ufbd3' .. '\\ufd3d' | '\\ufd50' .. '\\ufd8f' | '\\ufd92' .. '\\ufdc7' | '\\ufdf0' .. '\\ufdfd' | '\\ufe00' .. '\\ufe0f' | '\\ufe20' .. '\\ufe23' | '\\ufe30' .. '\\ufe34' | '\\ufe45' .. '\\ufe46' | '\\ufe49' .. '\\ufe52' | '\\ufe54' .. '\\ufe58' | '\\ufe5f' .. '\\ufe66' | '\\ufe68' .. '\\ufe6b' | '\\ufe70' .. '\\ufe74' | '\\ufe76' .. '\\ufefc' | '\\uff01' .. '\\uff07' | '\\uff0a' .. '\\uff3a' | '\\uff3c' | '\\uff3f' | '\\uff41' .. '\\uff5a' | '\\uff5c' | '\\uff5e' | '\\uff61' | '\\uff64' .. '\\uffbe' | '\\uffc2' .. '\\uffc7' | '\\uffca' .. '\\uffcf' | '\\uffd2' .. '\\uffd7' | '\\uffda' .. '\\uffdc' | '\\uffe0' .. '\\uffe2' | '\\uffe4' .. '\\uffe6' | '\\uffe8' .. '\\uffee' )
+            // FTS.g:
             {
                 if ((input.LA(1) >= '!' && input.LA(1) <= '\'') || input.LA(1) == '+' || input.LA(1) == '-' || (input.LA(1) >= '/' && input.LA(1) <= '9') || input.LA(1) == ';' || input.LA(1) == '=' || (input.LA(1) >= '@' && input.LA(1) <= 'Z') || input.LA(1) == '_' || (input.LA(1) >= 'a' && input.LA(1) <= 'z') || input.LA(1) == '|' || (input.LA(1) >= '\u00A1' && input.LA(1) <= '\u00A7') || (input.LA(1) >= '\u00A9' && input.LA(1) <= '\u00AA') || input.LA(1) == '\u00AC' || input.LA(1) == '\u00AE' || (input.LA(1) >= '\u00B0' && input.LA(1) <= '\u00B3') || (input.LA(1) >= '\u00B5' && input.LA(1) <= '\u00B7') || (input.LA(1) >= '\u00B9' && input.LA(1) <= '\u00BA') || (input.LA(1) >= '\u00BC' && input.LA(1) <= '\u0236') || (input.LA(1) >= '\u0250' && input.LA(1) <= '\u02C1') || (input.LA(1) >= '\u02C6' && input.LA(1) <= '\u02D1') || (input.LA(1) >= '\u02E0' && input.LA(1) <= '\u02E4') || input.LA(1) == '\u02EE' || (input.LA(1) >= '\u0300' && input.LA(1) <= '\u0357')
                         || (input.LA(1) >= '\u035D' && input.LA(1) <= '\u036F') || input.LA(1) == '\u037A' || input.LA(1) == '\u037E' || (input.LA(1) >= '\u0386' && input.LA(1) <= '\u038A') || input.LA(1) == '\u038C' || (input.LA(1) >= '\u038E' && input.LA(1) <= '\u03A1') || (input.LA(1) >= '\u03A3' && input.LA(1) <= '\u03CE') || (input.LA(1) >= '\u03D0' && input.LA(1) <= '\u03FB') || (input.LA(1) >= '\u0400' && input.LA(1) <= '\u0486') || (input.LA(1) >= '\u0488' && input.LA(1) <= '\u04CE') || (input.LA(1) >= '\u04D0' && input.LA(1) <= '\u04F5') || (input.LA(1) >= '\u04F8' && input.LA(1) <= '\u04F9') || (input.LA(1) >= '\u0500' && input.LA(1) <= '\u050F') || (input.LA(1) >= '\u0531' && input.LA(1) <= '\u0556') || (input.LA(1) >= '\u0559' && input.LA(1) <= '\u055F') || (input.LA(1) >= '\u0561' && input.LA(1) <= '\u0587') || (input.LA(1) >= '\u0589' && input.LA(1) <= '\u058A') || (input.LA(1) >= '\u0591' && input.LA(1) <= '\u05A1')
@@ -5889,24 +5957,24 @@ public class FTSLexer extends Lexer
         {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:2436:9: ( ( ' ' | '\\t' | '\\r' | '\\n' | '\\u000C' | '\\u00a0' | '\\u1680' | '\\u180e' | '\\u2000' .. '\\u200b' | '\\u2028' .. '\\u2029' | '\\u202f' | '\\u205f' | '\\u3000' )+ )
-            // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:2437:9: ( ' ' | '\\t' | '\\r' | '\\n' | '\\u000C' | '\\u00a0' | '\\u1680' | '\\u180e' | '\\u2000' .. '\\u200b' | '\\u2028' .. '\\u2029' | '\\u202f' | '\\u205f' | '\\u3000' )+
+            // FTS.g:2446:9: ( ( ' ' | '\\t' | '\\r' | '\\n' | '\\u000C' | '\\u00a0' | '\\u1680' | '\\u180e' | '\\u2000' .. '\\u200b' | '\\u2028' .. '\\u2029' | '\\u202f' | '\\u205f' | '\\u3000' )+ )
+            // FTS.g:2447:9: ( ' ' | '\\t' | '\\r' | '\\n' | '\\u000C' | '\\u00a0' | '\\u1680' | '\\u180e' | '\\u2000' .. '\\u200b' | '\\u2028' .. '\\u2029' | '\\u202f' | '\\u205f' | '\\u3000' )+
             {
-                // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:2437:9: ( ' ' | '\\t' | '\\r' | '\\n' | '\\u000C' | '\\u00a0' | '\\u1680' | '\\u180e' | '\\u2000' .. '\\u200b' | '\\u2028' .. '\\u2029' | '\\u202f' | '\\u205f' | '\\u3000' )+
-                int cnt62 = 0;
-                loop62: while (true)
+                // FTS.g:2447:9: ( ' ' | '\\t' | '\\r' | '\\n' | '\\u000C' | '\\u00a0' | '\\u1680' | '\\u180e' | '\\u2000' .. '\\u200b' | '\\u2028' .. '\\u2029' | '\\u202f' | '\\u205f' | '\\u3000' )+
+                int cnt63 = 0;
+                loop63: while (true)
                 {
-                    int alt62 = 2;
-                    int LA62_0 = input.LA(1);
-                    if (((LA62_0 >= '\t' && LA62_0 <= '\n') || (LA62_0 >= '\f' && LA62_0 <= '\r') || LA62_0 == ' ' || LA62_0 == '\u00A0' || LA62_0 == '\u1680' || LA62_0 == '\u180E' || (LA62_0 >= '\u2000' && LA62_0 <= '\u200B') || (LA62_0 >= '\u2028' && LA62_0 <= '\u2029') || LA62_0 == '\u202F' || LA62_0 == '\u205F' || LA62_0 == '\u3000'))
+                    int alt63 = 2;
+                    int LA63_0 = input.LA(1);
+                    if (((LA63_0 >= '\t' && LA63_0 <= '\n') || (LA63_0 >= '\f' && LA63_0 <= '\r') || LA63_0 == ' ' || LA63_0 == '\u00A0' || LA63_0 == '\u1680' || LA63_0 == '\u180E' || (LA63_0 >= '\u2000' && LA63_0 <= '\u200B') || (LA63_0 >= '\u2028' && LA63_0 <= '\u2029') || LA63_0 == '\u202F' || LA63_0 == '\u205F' || LA63_0 == '\u3000'))
                     {
-                        alt62 = 1;
+                        alt63 = 1;
                     }
 
-                    switch (alt62)
+                    switch (alt63)
                     {
                     case 1:
-                    // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+                    // FTS.g:
                     {
                         if ((input.LA(1) >= '\t' && input.LA(1) <= '\n') || (input.LA(1) >= '\f' && input.LA(1) <= '\r') || input.LA(1) == ' ' || input.LA(1) == '\u00A0' || input.LA(1) == '\u1680' || input.LA(1) == '\u180E' || (input.LA(1) >= '\u2000' && input.LA(1) <= '\u200B') || (input.LA(1) >= '\u2028' && input.LA(1) <= '\u2029') || input.LA(1) == '\u202F' || input.LA(1) == '\u205F' || input.LA(1) == '\u3000')
                         {
@@ -5928,17 +5996,17 @@ public class FTSLexer extends Lexer
                         break;
 
                     default:
-                        if (cnt62 >= 1)
-                            break loop62;
+                        if (cnt63 >= 1)
+                            break loop63;
                         if (state.backtracking > 0)
                         {
                             state.failed = true;
                             return;
                         }
-                        EarlyExitException eee = new EarlyExitException(62, input);
+                        EarlyExitException eee = new EarlyExitException(63, input);
                         throw eee;
                     }
-                    cnt62++;
+                    cnt63++;
                 }
 
                 if (state.backtracking == 0)
@@ -5960,13 +6028,13 @@ public class FTSLexer extends Lexer
     @Override
     public void mTokens() throws RecognitionException
     {
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:8: ( FTSPHRASE | URI | DATETIME | OR | AND | NOT | TILDA | LPAREN | RPAREN | PLUS | MINUS | COLON | STAR | AMP | EXCLAMATION | BAR | EQUALS | QUESTION_MARK | LCURL | RCURL | LSQUARE | RSQUARE | TO | COMMA | CARAT | DOLLAR | GT | LT | AT | PERCENT | ID | FLOATING_POINT_LITERAL | FTSWORD | FTSPRE | FTSWILD | WS )
-        int alt63 = 36;
-        alt63 = dfa63.predict(input);
-        switch (alt63)
+        // FTS.g:1:8: ( FTSPHRASE | URI | DATETIME | OR | AND | NOT | TILDA | LPAREN | RPAREN | PLUS | MINUS | COLON | STAR | AMP | EXCLAMATION | BAR | EQUALS | QUESTION_MARK | LCURL | RCURL | LSQUARE | RSQUARE | TO | COMMA | CARAT | DOLLAR | GT | LT | AT | PERCENT | ID | FLOATING_POINT_LITERAL | FTSWORD | FTSPRE | FTSWILD | WS )
+        int alt64 = 36;
+        alt64 = dfa64.predict(input);
+        switch (alt64)
         {
         case 1:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:10: FTSPHRASE
+        // FTS.g:1:10: FTSPHRASE
         {
             mFTSPHRASE();
             if (state.failed)
@@ -5975,7 +6043,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 2:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:20: URI
+        // FTS.g:1:20: URI
         {
             mURI();
             if (state.failed)
@@ -5984,7 +6052,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 3:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:24: DATETIME
+        // FTS.g:1:24: DATETIME
         {
             mDATETIME();
             if (state.failed)
@@ -5993,7 +6061,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 4:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:33: OR
+        // FTS.g:1:33: OR
         {
             mOR();
             if (state.failed)
@@ -6002,7 +6070,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 5:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:36: AND
+        // FTS.g:1:36: AND
         {
             mAND();
             if (state.failed)
@@ -6011,7 +6079,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 6:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:40: NOT
+        // FTS.g:1:40: NOT
         {
             mNOT();
             if (state.failed)
@@ -6020,7 +6088,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 7:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:44: TILDA
+        // FTS.g:1:44: TILDA
         {
             mTILDA();
             if (state.failed)
@@ -6029,7 +6097,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 8:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:50: LPAREN
+        // FTS.g:1:50: LPAREN
         {
             mLPAREN();
             if (state.failed)
@@ -6038,7 +6106,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 9:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:57: RPAREN
+        // FTS.g:1:57: RPAREN
         {
             mRPAREN();
             if (state.failed)
@@ -6047,7 +6115,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 10:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:64: PLUS
+        // FTS.g:1:64: PLUS
         {
             mPLUS();
             if (state.failed)
@@ -6056,7 +6124,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 11:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:69: MINUS
+        // FTS.g:1:69: MINUS
         {
             mMINUS();
             if (state.failed)
@@ -6065,7 +6133,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 12:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:75: COLON
+        // FTS.g:1:75: COLON
         {
             mCOLON();
             if (state.failed)
@@ -6074,7 +6142,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 13:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:81: STAR
+        // FTS.g:1:81: STAR
         {
             mSTAR();
             if (state.failed)
@@ -6083,7 +6151,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 14:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:86: AMP
+        // FTS.g:1:86: AMP
         {
             mAMP();
             if (state.failed)
@@ -6092,7 +6160,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 15:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:90: EXCLAMATION
+        // FTS.g:1:90: EXCLAMATION
         {
             mEXCLAMATION();
             if (state.failed)
@@ -6101,7 +6169,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 16:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:102: BAR
+        // FTS.g:1:102: BAR
         {
             mBAR();
             if (state.failed)
@@ -6110,7 +6178,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 17:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:106: EQUALS
+        // FTS.g:1:106: EQUALS
         {
             mEQUALS();
             if (state.failed)
@@ -6119,7 +6187,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 18:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:113: QUESTION_MARK
+        // FTS.g:1:113: QUESTION_MARK
         {
             mQUESTION_MARK();
             if (state.failed)
@@ -6128,7 +6196,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 19:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:127: LCURL
+        // FTS.g:1:127: LCURL
         {
             mLCURL();
             if (state.failed)
@@ -6137,7 +6205,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 20:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:133: RCURL
+        // FTS.g:1:133: RCURL
         {
             mRCURL();
             if (state.failed)
@@ -6146,7 +6214,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 21:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:139: LSQUARE
+        // FTS.g:1:139: LSQUARE
         {
             mLSQUARE();
             if (state.failed)
@@ -6155,7 +6223,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 22:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:147: RSQUARE
+        // FTS.g:1:147: RSQUARE
         {
             mRSQUARE();
             if (state.failed)
@@ -6164,7 +6232,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 23:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:155: TO
+        // FTS.g:1:155: TO
         {
             mTO();
             if (state.failed)
@@ -6173,7 +6241,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 24:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:158: COMMA
+        // FTS.g:1:158: COMMA
         {
             mCOMMA();
             if (state.failed)
@@ -6182,7 +6250,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 25:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:164: CARAT
+        // FTS.g:1:164: CARAT
         {
             mCARAT();
             if (state.failed)
@@ -6191,7 +6259,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 26:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:170: DOLLAR
+        // FTS.g:1:170: DOLLAR
         {
             mDOLLAR();
             if (state.failed)
@@ -6200,7 +6268,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 27:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:177: GT
+        // FTS.g:1:177: GT
         {
             mGT();
             if (state.failed)
@@ -6209,7 +6277,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 28:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:180: LT
+        // FTS.g:1:180: LT
         {
             mLT();
             if (state.failed)
@@ -6218,7 +6286,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 29:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:183: AT
+        // FTS.g:1:183: AT
         {
             mAT();
             if (state.failed)
@@ -6227,7 +6295,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 30:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:186: PERCENT
+        // FTS.g:1:186: PERCENT
         {
             mPERCENT();
             if (state.failed)
@@ -6236,7 +6304,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 31:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:194: ID
+        // FTS.g:1:194: ID
         {
             mID();
             if (state.failed)
@@ -6245,7 +6313,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 32:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:197: FLOATING_POINT_LITERAL
+        // FTS.g:1:197: FLOATING_POINT_LITERAL
         {
             mFLOATING_POINT_LITERAL();
             if (state.failed)
@@ -6254,7 +6322,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 33:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:220: FTSWORD
+        // FTS.g:1:220: FTSWORD
         {
             mFTSWORD();
             if (state.failed)
@@ -6263,7 +6331,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 34:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:228: FTSPRE
+        // FTS.g:1:228: FTSPRE
         {
             mFTSPRE();
             if (state.failed)
@@ -6272,7 +6340,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 35:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:235: FTSWILD
+        // FTS.g:1:235: FTSWILD
         {
             mFTSWILD();
             if (state.failed)
@@ -6281,7 +6349,7 @@ public class FTSLexer extends Lexer
         }
             break;
         case 36:
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:243: WS
+        // FTS.g:1:243: WS
         {
             mWS();
             if (state.failed)
@@ -6296,8 +6364,8 @@ public class FTSLexer extends Lexer
     // $ANTLR start synpred1_FTS
     public final void synpred1_FTS_fragment() throws RecognitionException
     {
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1002:17: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+        // FTS.g:1012:17: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )
+        // FTS.g:
         {
             if (input.LA(1) == '!' || input.LA(1) == '$' || (input.LA(1) >= '&' && input.LA(1) <= '.') || (input.LA(1) >= '0' && input.LA(1) <= '9') || input.LA(1) == ';' || input.LA(1) == '=' || (input.LA(1) >= '@' && input.LA(1) <= '[') || input.LA(1) == ']' || input.LA(1) == '_' || (input.LA(1) >= 'a' && input.LA(1) <= 'z') || input.LA(1) == '~')
             {
@@ -6323,8 +6391,8 @@ public class FTSLexer extends Lexer
     // $ANTLR start synpred2_FTS
     public final void synpred2_FTS_fragment() throws RecognitionException
     {
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1016:19: ( '//' )
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1016:20: '//'
+        // FTS.g:1026:19: ( '//' )
+        // FTS.g:1026:20: '//'
         {
             match("//");
             if (state.failed)
@@ -6338,8 +6406,8 @@ public class FTSLexer extends Lexer
     // $ANTLR start synpred3_FTS
     public final void synpred3_FTS_fragment() throws RecognitionException
     {
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1018:25: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )
-        // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+        // FTS.g:1028:25: ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER | COLON )
+        // FTS.g:
         {
             if (input.LA(1) == '!' || input.LA(1) == '$' || (input.LA(1) >= '&' && input.LA(1) <= '.') || (input.LA(1) >= '0' && input.LA(1) <= ';') || input.LA(1) == '=' || (input.LA(1) >= '@' && input.LA(1) <= '[') || input.LA(1) == ']' || input.LA(1) == '_' || (input.LA(1) >= 'a' && input.LA(1) <= 'z') || input.LA(1) == '~')
             {
@@ -6419,15 +6487,15 @@ public class FTSLexer extends Lexer
         return success;
     }
 
-    protected DFA5 dfa5 = new DFA5(this);
-    protected DFA63 dfa63 = new DFA63(this);
-    static final String DFA5_eotS = "\5\uffff";
-    static final String DFA5_eofS = "\5\uffff";
-    static final String DFA5_minS = "\2\41\1\uffff\1\0\1\uffff";
-    static final String DFA5_maxS = "\2\176\1\uffff\1\0\1\uffff";
-    static final String DFA5_acceptS = "\2\uffff\1\2\1\uffff\1\1";
-    static final String DFA5_specialS = "\3\uffff\1\0\1\uffff}>";
-    static final String[] DFA5_transitionS = {
+    protected DFA6 dfa6 = new DFA6(this);
+    protected DFA64 dfa64 = new DFA64(this);
+    static final String DFA6_eotS = "\5\uffff";
+    static final String DFA6_eofS = "\5\uffff";
+    static final String DFA6_minS = "\2\41\1\uffff\1\0\1\uffff";
+    static final String DFA6_maxS = "\2\176\1\uffff\1\0\1\uffff";
+    static final String DFA6_acceptS = "\2\uffff\1\2\1\uffff\1\1";
+    static final String DFA6_specialS = "\3\uffff\1\0\1\uffff}>";
+    static final String[] DFA6_transitionS = {
             "\1\1\1\uffff\1\2\1\1\1\uffff\11\1\1\2\12\1\1\2\1\1\1\uffff\1\1\1\uffff" +
                     "\1\2\34\1\1\uffff\1\1\1\uffff\1\1\1\uffff\32\1\2\uffff\1\2\1\1",
             "\1\1\1\uffff\1\2\1\1\1\uffff\11\1\1\2\12\1\1\3\1\1\1\uffff\1\1\1\uffff" +
@@ -6437,44 +6505,44 @@ public class FTSLexer extends Lexer
             ""
     };
 
-    static final short[] DFA5_eot = DFA.unpackEncodedString(DFA5_eotS);
-    static final short[] DFA5_eof = DFA.unpackEncodedString(DFA5_eofS);
-    static final char[] DFA5_min = DFA.unpackEncodedStringToUnsignedChars(DFA5_minS);
-    static final char[] DFA5_max = DFA.unpackEncodedStringToUnsignedChars(DFA5_maxS);
-    static final short[] DFA5_accept = DFA.unpackEncodedString(DFA5_acceptS);
-    static final short[] DFA5_special = DFA.unpackEncodedString(DFA5_specialS);
-    static final short[][] DFA5_transition;
+    static final short[] DFA6_eot = DFA.unpackEncodedString(DFA6_eotS);
+    static final short[] DFA6_eof = DFA.unpackEncodedString(DFA6_eofS);
+    static final char[] DFA6_min = DFA.unpackEncodedStringToUnsignedChars(DFA6_minS);
+    static final char[] DFA6_max = DFA.unpackEncodedStringToUnsignedChars(DFA6_maxS);
+    static final short[] DFA6_accept = DFA.unpackEncodedString(DFA6_acceptS);
+    static final short[] DFA6_special = DFA.unpackEncodedString(DFA6_specialS);
+    static final short[][] DFA6_transition;
 
     static
     {
-        int numStates = DFA5_transitionS.length;
-        DFA5_transition = new short[numStates][];
+        int numStates = DFA6_transitionS.length;
+        DFA6_transition = new short[numStates][];
         for (int i = 0; i < numStates; i++)
         {
-            DFA5_transition[i] = DFA.unpackEncodedString(DFA5_transitionS[i]);
+            DFA6_transition[i] = DFA.unpackEncodedString(DFA6_transitionS[i]);
         }
     }
 
-    protected class DFA5 extends DFA
+    protected class DFA6 extends DFA
     {
 
-        public DFA5(BaseRecognizer recognizer)
+        public DFA6(BaseRecognizer recognizer)
         {
             this.recognizer = recognizer;
-            this.decisionNumber = 5;
-            this.eot = DFA5_eot;
-            this.eof = DFA5_eof;
-            this.min = DFA5_min;
-            this.max = DFA5_max;
-            this.accept = DFA5_accept;
-            this.special = DFA5_special;
-            this.transition = DFA5_transition;
+            this.decisionNumber = 6;
+            this.eot = DFA6_eot;
+            this.eof = DFA6_eof;
+            this.min = DFA6_min;
+            this.max = DFA6_max;
+            this.accept = DFA6_accept;
+            this.special = DFA6_special;
+            this.transition = DFA6_transition;
         }
 
         @Override
         public String getDescription()
         {
-            return "1001:9: ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+ COLON )?";
+            return "1011:9: ( ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )=> ( F_URI_ALPHA | F_URI_DIGIT | F_URI_OTHER )+ COLON )?";
         }
 
         @Override
@@ -6485,9 +6553,9 @@ public class FTSLexer extends Lexer
             switch (s)
             {
             case 0:
-                int LA5_3 = input.LA(1);
+                int LA6_3 = input.LA(1);
 
-                int index5_3 = input.index();
+                int index6_3 = input.index();
                 input.rewind();
                 s = -1;
                 if ((synpred1_FTS()))
@@ -6499,7 +6567,7 @@ public class FTSLexer extends Lexer
                     s = 2;
                 }
 
-                input.seek(index5_3);
+                input.seek(index6_3);
                 if (s >= 0)
                     return s;
                 break;
@@ -6509,13 +6577,13 @@ public class FTSLexer extends Lexer
                 state.failed = true;
                 return -1;
             }
-            NoViableAltException nvae = new NoViableAltException(getDescription(), 5, _s, input);
+            NoViableAltException nvae = new NoViableAltException(getDescription(), 6, _s, input);
             error(nvae);
             throw nvae;
         }
     }
 
-    static final String DFA63_eotS = "\2\uffff\1\45\1\37\3\41\3\uffff\1\75\1\76\1\uffff\1\77\4\uffff\1\100\3" +
+    static final String DFA64_eotS = "\2\uffff\1\45\1\37\3\41\3\uffff\1\75\1\76\1\uffff\1\77\4\uffff\1\100\3" +
             "\uffff\1\41\2\uffff\1\103\4\uffff\1\41\3\uffff\1\107\3\uffff\1\37\2\107" +
             "\1\uffff\2\41\1\107\1\117\1\uffff\11\41\1\uffff\2\126\2\41\4\uffff\2\131" +
             "\2\uffff\2\107\1\uffff\1\37\3\107\2\41\1\107\1\uffff\1\141\1\145\1\141" +
@@ -6528,26 +6596,26 @@ public class FTSLexer extends Lexer
             "\2\41\4\141\2\41\2\141\1\107\2\141\1\107\1\141\6\41\1\141\1\107\15\141" +
             "\1\107\6\41\1\107\2\141\2\41\3\141\1\107\2\141\6\41\1\107\2\41\2\107\2" +
             "\41\1\107\1\141\2\41\1\107\7\141";
-    static final String DFA63_eofS = "\u0167\uffff";
-    static final String DFA63_minS = "\1\11\1\uffff\5\41\3\uffff\2\56\1\uffff\1\41\4\uffff\1\41\3\uffff\1\41" +
+    static final String DFA64_eofS = "\u0167\uffff";
+    static final String DFA64_minS = "\1\11\1\uffff\5\41\3\uffff\2\56\1\uffff\1\41\4\uffff\1\41\3\uffff\1\41" +
             "\2\uffff\1\41\4\uffff\1\41\1\uffff\1\0\1\uffff\1\41\3\uffff\3\41\1\0\4" +
             "\41\1\uffff\11\41\1\0\4\41\4\uffff\2\41\1\uffff\1\0\2\41\1\uffff\7\41" +
             "\1\uffff\6\41\1\uffff\2\41\1\uffff\7\41\1\uffff\3\41\1\uffff\3\41\1\uffff" +
             "\136\41\1\0\u009e\41";
-    static final String DFA63_maxS = "\1\uffee\1\uffff\1\176\4\uffee\3\uffff\2\71\1\uffff\1\uffee\4\uffff\1" +
+    static final String DFA64_maxS = "\1\uffee\1\uffff\1\176\4\uffee\3\uffff\2\71\1\uffff\1\uffee\4\uffff\1" +
             "\uffee\3\uffff\1\uffee\2\uffff\1\uffee\4\uffff\1\uffee\1\uffff\1\uffff" +
             "\1\uffff\1\uffee\3\uffff\3\uffee\1\uffff\4\uffee\1\uffff\11\uffee\1\uffff" +
             "\4\uffee\4\uffff\2\uffee\1\uffff\1\uffff\2\uffee\1\uffff\7\uffee\1\uffff" +
             "\6\uffee\1\uffff\2\uffee\1\uffff\7\uffee\1\uffff\3\uffee\1\uffff\3\uffee" +
             "\1\uffff\136\uffee\1\uffff\u009e\uffee";
-    static final String DFA63_acceptS = "\1\uffff\1\1\5\uffff\1\7\1\10\1\11\2\uffff\1\14\1\uffff\1\16\1\17\1\20" +
+    static final String DFA64_acceptS = "\1\uffff\1\1\5\uffff\1\7\1\10\1\11\2\uffff\1\14\1\uffff\1\16\1\17\1\20" +
             "\1\21\1\uffff\1\24\1\25\1\26\1\uffff\1\30\1\31\1\uffff\1\33\1\34\1\35" +
             "\1\36\1\uffff\1\40\1\uffff\1\37\1\uffff\1\44\1\2\1\23\10\uffff\1\43\16" +
             "\uffff\1\12\1\13\1\15\1\22\2\uffff\1\32\3\uffff\1\41\7\uffff\1\42\6\uffff" +
             "\1\4\2\uffff\1\27\7\uffff\1\3\3\uffff\1\6\3\uffff\1\5\u00fd\uffff";
-    static final String DFA63_specialS = "\40\uffff\1\0\10\uffff\1\2\16\uffff\1\3\13\uffff\1\1\u0083\uffff\1\4\u009e" +
+    static final String DFA64_specialS = "\40\uffff\1\1\10\uffff\1\3\16\uffff\1\4\13\uffff\1\2\u0083\uffff\1\0\u009e" +
             "\uffff}>";
-    static final String[] DFA63_transitionS = {
+    static final String[] DFA64_transitionS = {
             "\2\43\1\uffff\2\43\22\uffff\1\43\1\17\1\1\1\uffff\1\31\1\35\1\16\1\1" +
                     "\1\10\1\11\1\15\1\12\1\27\1\13\1\37\1\uffff\12\3\1\14\1\uffff\1\33\1" +
                     "\21\1\32\1\22\1\34\1\6\14\36\1\4\1\5\4\36\1\26\6\36\1\24\1\40\1\25\1" +
@@ -6611,30 +6679,30 @@ public class FTSLexer extends Lexer
                     "\42\2\uffff\10\42\1\uffff\1\42\1\uffff\1\42\1\uffff\1\42\1\uffff\37\42" +
                     "\2\uffff\65\42\1\uffff\7\42\1\uffff\1\42\3\uffff\3\42\1\uffff\7\42\3" +
                     "\uffff\4\42\2\uffff\6\42\4\uffff\15\42\5\uffff\3\42\1\uffff\7\42\3\uffff" +
-                    "\14\43\34\uffff\2\43\5\uffff\1\43\57\uffff\1\43\20\uffff\2\42\2\uffff" +
-                    "\6\42\5\uffff\13\42\26\uffff\22\42\36\uffff\33\42\25\uffff\74\42\1\uffff" +
-                    "\3\42\5\uffff\6\42\10\uffff\61\42\21\uffff\5\42\2\uffff\4\42\1\uffff" +
-                    "\2\42\1\uffff\2\42\1\uffff\7\42\1\uffff\37\42\2\uffff\2\42\1\uffff\1" +
-                    "\42\1\uffff\37\42\u010c\uffff\10\42\4\uffff\24\42\2\uffff\7\42\2\uffff" +
-                    "\121\42\1\uffff\36\42\34\uffff\32\42\57\uffff\47\42\31\uffff\13\42\25" +
-                    "\uffff\u0157\42\1\uffff\11\42\1\uffff\66\42\10\uffff\30\42\1\uffff\126" +
-                    "\42\1\uffff\16\42\2\uffff\22\42\16\uffff\2\42\137\uffff\4\42\1\uffff" +
-                    "\4\42\2\uffff\34\42\1\uffff\43\42\1\uffff\1\42\1\uffff\4\42\3\uffff\1" +
-                    "\42\1\uffff\7\42\2\uffff\7\42\16\uffff\37\42\3\uffff\30\42\1\uffff\16" +
-                    "\42\101\uffff\u0100\42\u0200\uffff\16\42\u0372\uffff\32\42\1\uffff\131" +
-                    "\42\14\uffff\u00d6\42\32\uffff\14\42\4\uffff\1\43\3\uffff\4\42\12\uffff" +
-                    "\2\42\14\uffff\20\42\1\uffff\14\42\1\uffff\2\42\1\uffff\126\42\2\uffff" +
-                    "\2\42\2\uffff\3\42\1\uffff\132\42\1\uffff\4\42\5\uffff\50\42\4\uffff" +
-                    "\136\42\1\uffff\50\42\70\uffff\57\42\1\uffff\44\42\14\uffff\56\42\1\uffff" +
-                    "\u0080\42\1\uffff\u1ab6\42\12\uffff\u51e6\42\132\uffff\u048d\42\3\uffff" +
-                    "\67\42\u0739\uffff\u2ba4\42\u215c\uffff\u012e\42\2\uffff\73\42\u0095" +
-                    "\uffff\7\42\14\uffff\5\42\5\uffff\14\42\1\uffff\15\42\1\uffff\5\42\1" +
-                    "\uffff\1\42\1\uffff\2\42\1\uffff\2\42\1\uffff\154\42\41\uffff\u016b\42" +
-                    "\22\uffff\100\42\2\uffff\66\42\50\uffff\16\42\2\uffff\20\42\20\uffff" +
-                    "\4\42\105\uffff\1\42\6\uffff\5\42\1\uffff\u0087\42\7\uffff\1\42\13\uffff" +
-                    "\12\42\7\uffff\32\42\6\uffff\32\42\13\uffff\131\42\3\uffff\6\42\2\uffff" +
-                    "\6\42\2\uffff\6\42\2\uffff\3\42\3\uffff\2\42\2\uffff\3\42\1\uffff\1\42" +
-                    "\4\uffff\2\42",
+                    "\14\43\21\uffff\1\1\12\uffff\2\43\5\uffff\1\43\57\uffff\1\43\20\uffff" +
+                    "\2\42\2\uffff\6\42\5\uffff\13\42\26\uffff\22\42\36\uffff\33\42\25\uffff" +
+                    "\74\42\1\uffff\3\42\5\uffff\6\42\10\uffff\61\42\21\uffff\5\42\2\uffff" +
+                    "\4\42\1\uffff\2\42\1\uffff\2\42\1\uffff\7\42\1\uffff\37\42\2\uffff\2" +
+                    "\42\1\uffff\1\42\1\uffff\37\42\u010c\uffff\10\42\4\uffff\24\42\2\uffff" +
+                    "\7\42\2\uffff\121\42\1\uffff\36\42\34\uffff\32\42\57\uffff\47\42\31\uffff" +
+                    "\13\42\25\uffff\u0157\42\1\uffff\11\42\1\uffff\66\42\10\uffff\30\42\1" +
+                    "\uffff\126\42\1\uffff\16\42\2\uffff\22\42\16\uffff\2\42\137\uffff\4\42" +
+                    "\1\uffff\4\42\2\uffff\34\42\1\uffff\43\42\1\uffff\1\42\1\uffff\4\42\3" +
+                    "\uffff\1\42\1\uffff\7\42\2\uffff\7\42\16\uffff\37\42\3\uffff\30\42\1" +
+                    "\uffff\16\42\101\uffff\u0100\42\u0200\uffff\16\42\u0372\uffff\32\42\1" +
+                    "\uffff\131\42\14\uffff\u00d6\42\32\uffff\14\42\4\uffff\1\43\3\uffff\4" +
+                    "\42\12\uffff\2\42\14\uffff\20\42\1\uffff\14\42\1\uffff\2\42\1\uffff\126" +
+                    "\42\2\uffff\2\42\2\uffff\3\42\1\uffff\132\42\1\uffff\4\42\5\uffff\50" +
+                    "\42\4\uffff\136\42\1\uffff\50\42\70\uffff\57\42\1\uffff\44\42\14\uffff" +
+                    "\56\42\1\uffff\u0080\42\1\uffff\u1ab6\42\12\uffff\u51e6\42\132\uffff" +
+                    "\u048d\42\3\uffff\67\42\u0739\uffff\u2ba4\42\u215c\uffff\u012e\42\2\uffff" +
+                    "\73\42\u0095\uffff\7\42\14\uffff\5\42\5\uffff\14\42\1\uffff\15\42\1\uffff" +
+                    "\5\42\1\uffff\1\42\1\uffff\2\42\1\uffff\2\42\1\uffff\154\42\41\uffff" +
+                    "\u016b\42\22\uffff\100\42\2\uffff\66\42\50\uffff\16\42\2\uffff\20\42" +
+                    "\20\uffff\4\42\105\uffff\1\42\6\uffff\5\42\1\uffff\u0087\42\7\uffff\1" +
+                    "\42\13\uffff\12\42\7\uffff\32\42\6\uffff\32\42\13\uffff\131\42\3\uffff" +
+                    "\6\42\2\uffff\6\42\2\uffff\6\42\2\uffff\3\42\3\uffff\2\42\2\uffff\3\42" +
+                    "\1\uffff\1\42\4\uffff\2\42",
             "",
             "\1\44\1\uffff\2\44\1\uffff\26\44\1\uffff\1\44\1\uffff\35\44\1\uffff" +
                     "\1\44\1\uffff\1\44\1\uffff\32\44\2\uffff\2\44",
@@ -31985,38 +32053,38 @@ public class FTSLexer extends Lexer
                     "\3\54\1\uffff\3\54\1\uffff\7\54"
     };
 
-    static final short[] DFA63_eot = DFA.unpackEncodedString(DFA63_eotS);
-    static final short[] DFA63_eof = DFA.unpackEncodedString(DFA63_eofS);
-    static final char[] DFA63_min = DFA.unpackEncodedStringToUnsignedChars(DFA63_minS);
-    static final char[] DFA63_max = DFA.unpackEncodedStringToUnsignedChars(DFA63_maxS);
-    static final short[] DFA63_accept = DFA.unpackEncodedString(DFA63_acceptS);
-    static final short[] DFA63_special = DFA.unpackEncodedString(DFA63_specialS);
-    static final short[][] DFA63_transition;
+    static final short[] DFA64_eot = DFA.unpackEncodedString(DFA64_eotS);
+    static final short[] DFA64_eof = DFA.unpackEncodedString(DFA64_eofS);
+    static final char[] DFA64_min = DFA.unpackEncodedStringToUnsignedChars(DFA64_minS);
+    static final char[] DFA64_max = DFA.unpackEncodedStringToUnsignedChars(DFA64_maxS);
+    static final short[] DFA64_accept = DFA.unpackEncodedString(DFA64_acceptS);
+    static final short[] DFA64_special = DFA.unpackEncodedString(DFA64_specialS);
+    static final short[][] DFA64_transition;
 
     static
     {
-        int numStates = DFA63_transitionS.length;
-        DFA63_transition = new short[numStates][];
+        int numStates = DFA64_transitionS.length;
+        DFA64_transition = new short[numStates][];
         for (int i = 0; i < numStates; i++)
         {
-            DFA63_transition[i] = DFA.unpackEncodedString(DFA63_transitionS[i]);
+            DFA64_transition[i] = DFA.unpackEncodedString(DFA64_transitionS[i]);
         }
     }
 
-    protected class DFA63 extends DFA
+    protected class DFA64 extends DFA
     {
 
-        public DFA63(BaseRecognizer recognizer)
+        public DFA64(BaseRecognizer recognizer)
         {
             this.recognizer = recognizer;
-            this.decisionNumber = 63;
-            this.eot = DFA63_eot;
-            this.eof = DFA63_eof;
-            this.min = DFA63_min;
-            this.max = DFA63_max;
-            this.accept = DFA63_accept;
-            this.special = DFA63_special;
-            this.transition = DFA63_transition;
+            this.decisionNumber = 64;
+            this.eot = DFA64_eot;
+            this.eof = DFA64_eof;
+            this.min = DFA64_min;
+            this.max = DFA64_max;
+            this.accept = DFA64_accept;
+            this.special = DFA64_special;
+            this.transition = DFA64_transition;
         }
 
         @Override
@@ -32033,75 +32101,71 @@ public class FTSLexer extends Lexer
             switch (s)
             {
             case 0:
-                int LA63_32 = input.LA(1);
+                int LA64_200 = input.LA(1);
                 s = -1;
-                if ((LA63_32 == 'u'))
+                if ((LA64_200 == 'u'))
+                {
+                    s = 236;
+                }
+                else if (((LA64_200 >= '\u0000' && LA64_200 <= 't') || (LA64_200 >= 'v' && LA64_200 <= '\uFFFF')))
+                {
+                    s = 237;
+                }
+                if (s >= 0)
+                    return s;
+                break;
+            case 1:
+                int LA64_32 = input.LA(1);
+                s = -1;
+                if ((LA64_32 == 'u'))
                 {
                     s = 69;
                 }
-                else if (((LA63_32 >= '\u0000' && LA63_32 <= 't') || (LA63_32 >= 'v' && LA63_32 <= '\uFFFF')))
+                else if (((LA64_32 >= '\u0000' && LA64_32 <= 't') || (LA64_32 >= 'v' && LA64_32 <= '\uFFFF')))
                 {
                     s = 70;
                 }
                 if (s >= 0)
                     return s;
                 break;
-
-            case 1:
-                int LA63_68 = input.LA(1);
+            case 2:
+                int LA64_68 = input.LA(1);
                 s = -1;
-                if ((LA63_68 == 'u'))
+                if ((LA64_68 == 'u'))
                 {
                     s = 90;
                 }
-                else if (((LA63_68 >= '\u0000' && LA63_68 <= 't') || (LA63_68 >= 'v' && LA63_68 <= '\uFFFF')))
+                else if (((LA64_68 >= '\u0000' && LA64_68 <= 't') || (LA64_68 >= 'v' && LA64_68 <= '\uFFFF')))
                 {
                     s = 91;
                 }
                 if (s >= 0)
                     return s;
                 break;
-
-            case 2:
-                int LA63_41 = input.LA(1);
+            case 3:
+                int LA64_41 = input.LA(1);
                 s = -1;
-                if ((LA63_41 == 'u'))
+                if ((LA64_41 == 'u'))
                 {
                     s = 74;
                 }
-                else if (((LA63_41 >= '\u0000' && LA63_41 <= 't') || (LA63_41 >= 'v' && LA63_41 <= '\uFFFF')))
+                else if (((LA64_41 >= '\u0000' && LA64_41 <= 't') || (LA64_41 >= 'v' && LA64_41 <= '\uFFFF')))
                 {
                     s = 75;
                 }
                 if (s >= 0)
                     return s;
                 break;
-
-            case 3:
-                int LA63_56 = input.LA(1);
+            case 4:
+                int LA64_56 = input.LA(1);
                 s = -1;
-                if ((LA63_56 == 'u'))
+                if ((LA64_56 == 'u'))
                 {
                     s = 84;
                 }
-                else if (((LA63_56 >= '\u0000' && LA63_56 <= 't') || (LA63_56 >= 'v' && LA63_56 <= '\uFFFF')))
+                else if (((LA64_56 >= '\u0000' && LA64_56 <= 't') || (LA64_56 >= 'v' && LA64_56 <= '\uFFFF')))
                 {
                     s = 85;
-                }
-                if (s >= 0)
-                    return s;
-                break;
-
-            case 4:
-                int LA63_200 = input.LA(1);
-                s = -1;
-                if ((LA63_200 == 'u'))
-                {
-                    s = 236;
-                }
-                else if (((LA63_200 >= '\u0000' && LA63_200 <= 't') || (LA63_200 >= 'v' && LA63_200 <= '\uFFFF')))
-                {
-                    s = 237;
                 }
                 if (s >= 0)
                     return s;
@@ -32112,7 +32176,7 @@ public class FTSLexer extends Lexer
                 state.failed = true;
                 return -1;
             }
-            NoViableAltException nvae = new NoViableAltException(getDescription(), 63, _s, input);
+            NoViableAltException nvae = new NoViableAltException(getDescription(), 64, _s, input);
             error(nvae);
             throw nvae;
         }

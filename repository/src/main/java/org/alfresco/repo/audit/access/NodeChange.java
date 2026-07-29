@@ -814,7 +814,6 @@ import org.alfresco.service.namespace.QName;
     @Override
     public void onContentDownload(NodeRef nodeRef)
     {
-        // sanitizeSubList();
         appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(DOWNLOAD_CONTENT));
         runAsUser = AuthenticationUtil.getRunAsUser();
     }

@@ -26,7 +26,12 @@
 package org.alfresco.repo.audit.access;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -182,7 +187,7 @@ public class AccessAuditor implements InitializingBean,
     private static final String TRANSACTION = "transaction";
     private static final String AUDIT_SUB_ACTIONS = "audit.alfresco-access.sub-actions.enabled";
     private static final String ACTION = "action";
-    private static final String READ_ACTION = "read";
+    private static final String READ_ACTION = "READ";
 
     private Properties properties;
     private PolicyComponent policyComponent;
@@ -614,7 +619,7 @@ public class AccessAuditor implements InitializingBean,
             Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
             if (nodeChange.hasReadAndDownloadActions())
             {
-                Map<String, Serializable> readAuditMap = new HashMap<>(auditMap); // This Must Come will Download as higher precedence
+                Map<String, Serializable> readAuditMap = new HashMap<>(auditMap); // This Must Come Download as higher precedence
                 readAuditMap.put(ACTION, READ_ACTION);
                 recordAuditValues(TRANSACTION, readAuditMap);
             }

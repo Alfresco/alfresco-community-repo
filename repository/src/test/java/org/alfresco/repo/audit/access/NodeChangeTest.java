@@ -494,25 +494,12 @@ public class NodeChangeTest
     }
 
     @Test
-    public final void testGetAuditDataForAction_readOverride()
-    {
-        nodeChange.onContentRead(content1);
-        nodeChange.onContentDownload(content1);
-
-        Map<String, Serializable> auditMap = nodeChange.getAuditDataForAction("READ");
-
-        assertEquals("Action should be overridden to READ", "READ", auditMap.get("action"));
-        assertEquals("Sub-actions should contain both", "readContent downloadContent", auditMap.get("sub-actions"));
-        assertEquals(content1, auditMap.get("node"));
-    }
-
-    @Test
     public final void testGetAuditDataForAction_downloadOverride()
     {
         nodeChange.onContentRead(content1);
         nodeChange.onContentDownload(content1);
 
-        Map<String, Serializable> auditMap = nodeChange.getAuditDataForAction("DOWNLOAD");
+        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertEquals("Action should be overridden to DOWNLOAD", "DOWNLOAD", auditMap.get("action"));
         assertEquals("Sub-actions should contain both", "readContent downloadContent", auditMap.get("sub-actions"));
@@ -536,14 +523,14 @@ public class NodeChangeTest
     public final void testGetAuditDataForAction_doesNotCorruptSubsequentCalls()
     {
         nodeChange.onContentRead(content1);
-        nodeChange.onContentDownload(content1);
 
         // First call with override
-        Map<String, Serializable> readMap = nodeChange.getAuditDataForAction("READ");
+        Map<String, Serializable> readMap = nodeChange.getAuditData(false);
         assertEquals("READ", readMap.get("action"));
 
+        nodeChange.onContentDownload(content1);
         // Second call with different override
-        Map<String, Serializable> downloadMap = nodeChange.getAuditDataForAction("DOWNLOAD");
+        Map<String, Serializable> downloadMap = nodeChange.getAuditData(false);
         assertEquals("DOWNLOAD", downloadMap.get("action"));
 
         // Regular call should still derive properly

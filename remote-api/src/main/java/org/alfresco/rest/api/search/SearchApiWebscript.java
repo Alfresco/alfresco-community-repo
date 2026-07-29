@@ -152,7 +152,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
 
     protected void applySearchAfter(SearchParameters searchParams, SearchQuery searchQuery)
     {
-        String cursor = searchQuery.getSearchAfter();
+        String cursor = searchQuery.getSearchAfterToken();
         boolean hasSearchAfter = cursor != null;
         if (!hasSearchAfter)
         {
@@ -168,7 +168,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
                     "skipCount (offset paging) cannot be combined with searchAfter (cursor paging); use one paging mode.");
         }
 
-        searchParams.setSearchAfter(cursor);
+        searchParams.setSearchAfterToken(cursor);
     }
 
     public void setSearchMapper(SearchMapper searchMapper)

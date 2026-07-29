@@ -603,14 +603,14 @@ public class SearchParameters implements BasicSearchParameters
         this.limit = limit;
     }
 
-    public String getSearchAfter()
+    public String getSearchAfterToken()
     {
         return searchAfterToken;
     }
 
-    public void setSearchAfter(String searchAfter)
+    public void setSearchAfterToken(String searchAfterToken)
     {
-        this.searchAfterToken = searchAfter;
+        this.searchAfterToken = searchAfterToken;
     }
 
     /**
@@ -1427,7 +1427,7 @@ public class SearchParameters implements BasicSearchParameters
                 .append(", range=").append(this.ranges)
                 .append(", timezone=").append(this.timezone)
                 .append(", spellCheck=").append(this.spellCheck)
-                .append(", searchAfter=").append(this.searchAfterToken).append("]");
+                .append(", searchAfterToken=").append(this.searchAfterToken).append("]");
         return builder.toString();
     }
 

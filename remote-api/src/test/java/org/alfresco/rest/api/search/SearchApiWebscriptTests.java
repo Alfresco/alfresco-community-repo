@@ -118,7 +118,7 @@ public class SearchApiWebscriptTests
 
         webscript.applySearchAfter(sp, searchQuery(Paging.valueOf(10, 100), null));
 
-        assertNull(sp.getSearchAfter());
+        assertNull(sp.getSearchAfterToken());
     }
 
     @Test
@@ -128,7 +128,7 @@ public class SearchApiWebscriptTests
 
         webscript.applySearchAfter(sp, searchQuery(null, "SEARCH_AFTER_TOKEN"));
 
-        assertEquals("SEARCH_AFTER_TOKEN", sp.getSearchAfter());
+        assertEquals("SEARCH_AFTER_TOKEN", sp.getSearchAfterToken());
     }
 
     @Test
@@ -139,7 +139,7 @@ public class SearchApiWebscriptTests
         // An explicit empty searchAfter starts a new cursor-paging session (first page).
         webscript.applySearchAfter(sp, searchQuery(null, ""));
 
-        assertEquals("", sp.getSearchAfter());
+        assertEquals("", sp.getSearchAfterToken());
     }
 
     @Test(expected = InvalidArgumentException.class)

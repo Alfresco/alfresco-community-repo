@@ -75,7 +75,7 @@ public class SearchStrategySelector implements SearchStrategy
      */
     private boolean searchAfterNeeded(SearchParameters searchParameters)
     {
-        return searchParameters.getSearchAfter() != null;
+        return searchParameters.getSearchAfterToken() != null;
     }
 
     /**

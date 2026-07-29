@@ -66,7 +66,7 @@ public class SearchQuery
     private final List<RangeParameters> ranges;
     private final Localization localization;
     private final FacetFormat facetFormat;
-    private final String searchAfter;
+    private final String searchAfterToken;
 
     public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,
             null, null, null, null, null, null, null, null, null,
@@ -94,7 +94,7 @@ public class SearchQuery
             @JsonProperty("ranges") List<RangeParameters> ranges,
             @JsonProperty("localization") Localization localization,
             @JsonProperty("facetFormat") FacetFormat facetFormat,
-            @JsonProperty("searchAfter") String searchAfter)
+            @JsonProperty("searchAfterToken") String searchAfterToken)
     {
         this.query = query;
         this.includeRequest = includeRequest == null ? false : includeRequest;
@@ -117,7 +117,7 @@ public class SearchQuery
         this.ranges = ranges;
         this.localization = localization;
         this.facetFormat = facetFormat;
-        this.searchAfter = searchAfter;
+        this.searchAfterToken = searchAfterToken;
     }
 
     public Query getQuery()
@@ -225,9 +225,9 @@ public class SearchQuery
         return facetFormat;
     }
 
-    public String getSearchAfter()
+    public String getSearchAfterToken()
     {
-        return searchAfter;
+        return searchAfterToken;
     }
 
 }

@@ -42,7 +42,7 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResult
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 
-// Deep-pagination strategy based on Elasticsearch search_after over a Point-In-Time (PIT). The opaque cursor carried on SearchParameters.getSearchAfter() holds the pagination session's PIT id and the previous page's last sort values. On the first page (empty cursor) a PIT is opened on every page the query runs with from=0, the search_after clause and a sort that ends with the _shard_doc tiebreaker, so pages contain no gaps or duplicates and the view stays consistent for the whole session.
+// Deep-pagination strategy based on Elasticsearch search_after over a Point-In-Time (PIT). The opaque cursor carried on SearchParameters.getSearchAfterToken() holds the pagination session's PIT id and the previous page's last sort values. On the first page (empty cursor) a PIT is opened on every page the query runs with from=0, the search_after clause and a sort that ends with the _shard_doc tiebreaker, so pages contain no gaps or duplicates and the view stays consistent for the whole session.
 // Each response returns a (possibly rotated) PIT id which is folded into the next cursor. The PIT is closed on the last page (fewer hits than requested) and abandoned PITs expire via their keep_alive. Because it never asks Elasticsearch to skip documents, it is not bound by {@code index.max_result_window} and never loads-and-skips results in memory.
 @SuppressWarnings("PMD.GuardLogStatement")
 public class SearchAfterSearchStrategy extends SearchExecutionStrategy
@@ -88,7 +88,7 @@ public class SearchAfterSearchStrategy extends SearchExecutionStrategy
     {
         int limit = searchParameters.getLimit();
         int size = limit < 0 ? maxResultWindow : limit;
-        SearchAfterCursor.Decoded cursor = SearchAfterCursor.decode(searchParameters.getSearchAfter());
+        SearchAfterCursor.Decoded cursor = SearchAfterCursor.decode(searchParameters.getSearchAfterToken());
         String indexName = requestBuilderService.getElasticIndex(searchParameters.getStores());
 
         String pitId = cursor.pitId();

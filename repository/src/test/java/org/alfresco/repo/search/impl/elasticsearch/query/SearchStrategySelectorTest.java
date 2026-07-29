@@ -76,7 +76,7 @@ public class SearchStrategySelectorTest
     @Test
     public void executeSearch_searchAfterStrategy_whenCursorPresent() throws IOException
     {
-        when(searchParameters.getSearchAfter()).thenReturn("");
+        when(searchParameters.getSearchAfterToken()).thenReturn("");
         when(searchAfterStrategy.executeSearch(eq(searchParameters), eq(queryWithPermissions))).thenReturn(searchAfterResultSet);
 
         ResultSet rs = selector.executeSearch(searchParameters, queryWithPermissions);

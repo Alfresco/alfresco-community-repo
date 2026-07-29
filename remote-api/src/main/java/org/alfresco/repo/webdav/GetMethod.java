@@ -262,7 +262,7 @@ public class GetMethod extends WebDAVMethod
 
             m_response.setHeader("Content-Disposition", getContentDispositionHeader(nodeInfo));
 
-            ContentReader reader = fileFolderService.getReader(realNodeInfo.getNodeRef());
+            ContentReader reader = getContentService().getReader(realNodeInfo.getNodeRef(),ContentModel.PROP_CONTENT,true);
             // ensure that we generate something, even if the content is missing
             reader = FileContentReader.getSafeContentReader(
                     (ContentReader) reader,

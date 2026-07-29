@@ -181,6 +181,8 @@ public class AccessAuditor implements InitializingBean,
     private static final String ROOT_PATH = "/alfresco-access";
     private static final String TRANSACTION = "transaction";
     private static final String AUDIT_SUB_ACTIONS = "audit.alfresco-access.sub-actions.enabled";
+    private static final String ACTION = "action";
+    private static final String READ_ACTION =  "read";
 
     private Properties properties;
     private PolicyComponent policyComponent;
@@ -586,49 +588,32 @@ public class AccessAuditor implements InitializingBean,
     /**
      * Listen for commit to audit gathered audit activity for the current user transaction.
      */
-    private class AccessTransactionListener extends TransactionListenerAdapter
-    {
+    private class AccessTransactionListener extends TransactionListenerAdapter {
         @Override
-        public void afterCommit()
-        {
+        public void afterCommit() {
             // Note: auditComponent.recordAuditValues(...) creates a transaction to record
             // audit messages, so there is no need to create our own. dod5015 still
             // does (not sure why).
             final Map<NodeRef, NodeChange> changedNodes = TransactionalResourceHelper.getMap(this);
-            for (Map.Entry<NodeRef, NodeChange> entry : changedNodes.entrySet())
-            {
+            for (Map.Entry<NodeRef, NodeChange> entry : changedNodes.entrySet()) {
                 NodeChange nodeChange = entry.getValue();
-                if (!nodeChange.isTemporaryNode())
-                {
+                if (!nodeChange.isTemporaryNode()) {
                     publishAuditForTheTransaction(nodeChange);
                 }
             }
         }
 
-        private void publishAuditForTheTransaction(NodeChange nodeChange)
-        {
+        private void publishAuditForTheTransaction(NodeChange nodeChange) {
             // When both READ and DOWNLOAD sub-actions are present (i.e., the
             // contentDownloadsAsRead flag is enabled), emit two separate audit entries.
-            if (nodeChange.hasReadAndDownloadActions())
-            {
-                List<Map<String, Serializable>> auditMaps = List.of(
-                        Collections.unmodifiableMap(nodeChange.getAuditDataForAction("READ")),
-                        Collections.unmodifiableMap(nodeChange.getAuditDataForAction("DOWNLOAD")));
-                recordAudits(TRANSACTION, auditMaps);
+            Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+            if (nodeChange.hasReadAndDownloadActions()) {
+                Map<String, Serializable> readAuditMap = new HashMap<>(auditMap); // This Must Come will Download as higher precedence
+                readAuditMap.put(ACTION, READ_ACTION);
+                recordAuditValues(TRANSACTION, readAuditMap);
             }
-            else
-            {
-                Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
-                recordAuditValues(TRANSACTION, auditMap);
-            }
-        }
-
-        private void recordAudits(String transaction, final Collection<Map<String, Serializable>> auditMaps)
-        {
-            for (Map<String, Serializable> auditMap : auditMaps)
-            {
-                recordAuditValues(transaction, auditMap);
-            }
+            recordAuditValues(TRANSACTION, auditMap);
         }
     }
+
 }

@@ -202,6 +202,7 @@ public class FTSLexer extends Lexer
     }
 
     // $ANTLR start "FTSPHRASE"
+    // Currently handled for ” ,there exists a lot more quotes ( e.g ‟ , ‟ , ‶ , “ , ‴ , ⁗ etc) and they can be used with different combination, code will get lot bigger
     public final void mFTSPHRASE() throws RecognitionException
     {
         try
@@ -209,7 +210,7 @@ public class FTSLexer extends Lexer
             int _type = FTSPHRASE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:970:9: ( '\"' ( F_ESC |~ ( '\\\\' | '\"' ) )* '\"' | '\\'' ( F_ESC |~ ( '\\\\' | '\\'' ) )* '\\'' )
-            int alt3 = 2;
+            int alt3 = 0;
             int LA3_0 = input.LA(1);
             if ((LA3_0 == '\"'))
             {
@@ -218,6 +219,10 @@ public class FTSLexer extends Lexer
             else if ((LA3_0 == '\''))
             {
                 alt3 = 2;
+            }
+            else if ((LA3_0 == '\u201D'))
+            {
+                alt3 = 3;
             }
 
             else
@@ -359,7 +364,61 @@ public class FTSLexer extends Lexer
                     return;
             }
                 break;
-
+            case 3:
+            {
+                match('\u201D');
+                if (state.failed)
+                    return;
+                loop201d: while (true)
+                {
+                    int altSQ3 = 3;
+                    int LASQ3_0 = input.LA(1);
+                    if ((LASQ3_0 == '\\'))
+                    {
+                        altSQ3 = 1;
+                    }
+                    else if (((LASQ3_0 >= '\u0000' && LASQ3_0 <= '[') || (LASQ3_0 >= ']' && LASQ3_0 <= '\u201C') || (LASQ3_0 >= '\u201E' && LASQ3_0 <= '\uFFFF')))
+                    {
+                        altSQ3 = 2;
+                    }
+                    switch (altSQ3)
+                    {
+                    case 1:
+                    {
+                        mF_ESC();
+                        if (state.failed)
+                            return;
+                    }
+                        break;
+                    case 2:
+                    {
+                        if ((input.LA(1) >= '\u0000' && input.LA(1) <= '[') || (input.LA(1) >= ']' && input.LA(1) <= '\u201C') || (input.LA(1) >= '\u201E' && input.LA(1) <= '\uFFFF'))
+                        {
+                            input.consume();
+                            state.failed = false;
+                        }
+                        else
+                        {
+                            if (state.backtracking > 0)
+                            {
+                                state.failed = true;
+                                return;
+                            }
+                            MismatchedSetException mse = new MismatchedSetException(null, input);
+                            recover(mse);
+                            throw mse;
+                        }
+                    }
+                        break;
+                    default:
+                        break loop201d;
+                    }
+                }
+                match('\u201D');
+                if (state.failed)
+                    return;
+            }
+                break;
             }
             state.type = _type;
             state.channel = _channel;
@@ -5960,6 +6019,13 @@ public class FTSLexer extends Lexer
     @Override
     public void mTokens() throws RecognitionException
     {
+        // The DFA63 transition tables were generated without smart quote support, so DFA63.predict() cannot route \u201D to FTSPHRASE, handling it here before the DFA runs to avoid NoViableAltException.
+        int laForSmartQuoteCheck = input.LA(1);
+        if (laForSmartQuoteCheck == '\u201D')
+        {
+            mFTSPHRASE();
+            return;
+        }
         // /home/elia/dev/Alfresco/alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:1:8: ( FTSPHRASE | URI | DATETIME | OR | AND | NOT | TILDA | LPAREN | RPAREN | PLUS | MINUS | COLON | STAR | AMP | EXCLAMATION | BAR | EQUALS | QUESTION_MARK | LCURL | RCURL | LSQUARE | RSQUARE | TO | COMMA | CARAT | DOLLAR | GT | LT | AT | PERCENT | ID | FLOATING_POINT_LITERAL | FTSWORD | FTSPRE | FTSWILD | WS )
         int alt63 = 36;
         alt63 = dfa63.predict(input);

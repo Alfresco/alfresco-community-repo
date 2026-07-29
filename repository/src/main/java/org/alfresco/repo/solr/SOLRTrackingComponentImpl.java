@@ -909,38 +909,11 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
             if (!ignoreLargeMetadata && (typeIndexFilter.isIgnorePathsForSpecificTypes() || aspectIndexFilter.isIgnorePathsForSpecificAspects() || includeParentAssociations))
             {
-                // check if parent should be ignored
-                final List<Long> parentIds = new LinkedList<Long>();
-                final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
-                nodeDAO.getParentAssocs(nodeId, null, null, true, new ChildAssocRefQueryCallback() {
-                    @Override
-                    public boolean preLoadNodes()
-                    {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean orderResults()
-                    {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
-                    {
-                        parentIds.add(parentNodePair.getFirst());
-                        parentAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
-                        return false;
-                    }
-
-                    @Override
-                    public void done()
-                    {}
-                });
-
-                if (!parentIds.isEmpty())
+                // check if parent should be ignored - only the primary parent's type/aspects are relevant here
+                Pair<Long, ChildAssociationRef> primaryParentAssoc = nodeDAO.getPrimaryParentAssoc(nodeId);
+                if (primaryParentAssoc != null)
                 {
-                    Long parentId = parentIds.iterator().next();
+                    Long parentId = primaryParentAssoc.getFirst();
                     if (typeIndexFilter.isIgnorePathsForSpecificTypes())
                     {
                         QName parentType = getNodeType(parentId);
@@ -954,6 +927,39 @@ public class SOLRTrackingComponentImpl implements SearchTrackingComponent
 
                 if (includeParentAssociations)
                 {
+                    // Fetch all parent associations (primary and non-primary, e.g. group membership) for indexing.
+                    // Do not filter by isPrimary here: doing so causes AbstractNodeDAOImpl.getParentAssocs to run a
+                    // DB query restricted to the primary parent once a node's total parent-assoc count exceeds
+                    // PARENT_ASSOCS_CACHE_FILTER_THRESHOLD, silently dropping non-primary parents (e.g. group
+                    // memberships) from what gets indexed.
+                    final List<ChildAssociationRef> parentAssocs = new ArrayList<>(100);
+                    nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback() {
+                        @Override
+                        public boolean preLoadNodes()
+                        {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean orderResults()
+                        {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                        {
+                            parentAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
+                            return true;
+                        }
+
+                        @Override
+                        public void done()
+                        {
+                            // No action required once all parent associations have been handled.
+                        }
+                    });
+
                     for (ChildAssociationRef ref : categoryPaths.getCategoryParents())
                     {
                         parentAssocs.add(tenantService.getBaseName(ref, true));

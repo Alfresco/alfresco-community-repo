@@ -3,8 +3,12 @@ name: CI with BATS 🦇
 on:
   push:
     branches: [ master ]
+    paths:
+      - '.github/actions/**'
   pull_request:
     branches: [ master ]
+    paths:
+      - '.github/actions/**'
 
 jobs:
   test:

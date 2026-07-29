@@ -97,7 +97,7 @@ public interface ContentServicePolicies
     @FunctionalInterface
     interface OnContentDownloadPolicy extends ClassPolicy
     {
-        final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentDownload");
+        QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentDownload");
 
         /**
          * @param nodeRef

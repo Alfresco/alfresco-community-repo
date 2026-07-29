@@ -745,6 +745,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
         sp.setQuery(query.toString());
         sp.setMaxItems(findAuthoritiesLimit);
+        sp.setLimit(findAuthoritiesLimit);
         ResultSet rs = null;
         try
         {

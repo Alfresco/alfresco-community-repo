@@ -10,6 +10,8 @@ setup() {
     export COMMIT_TITLE="ACS-123: some regular change"
     export VERSION="1.2.3"
     export DOWNSTREAM_REPO="community-repo"
+    export PENDING_DOWNSTREAM=""
+    export BRANCH_NAME=""
 }
 
 teardown() {
@@ -17,8 +19,15 @@ teardown() {
 }
 
 # helper: read a named output from $GITHUB_OUTPUT
+# handles both key=value and heredoc (key<<EOF / value lines / EOF) formats
 get_output() {
-    grep "^$1=" "$GITHUB_OUTPUT" | cut -d= -f2-
+    local key="$1"
+    # heredoc format: key<<EOF\n...\nEOF
+    if grep -q "^${key}<<EOF" "$GITHUB_OUTPUT"; then
+        awk "/^${key}<<EOF/{found=1; next} found && /^EOF/{exit} found{print}" "$GITHUB_OUTPUT"
+    else
+        grep "^${key}=" "$GITHUB_OUTPUT" | cut -d= -f2-
+    fi
 }
 
 @test "plain commit produces version-bump message" {
@@ -97,4 +106,77 @@ get_output() {
     [ "$status" -eq 0 ]
     [ "$(get_output message)" = "[force] Update community-repo version to 1.2.3" ]
     [ "$(get_output allow-empty-commit)" = "true" ]
+}
+
+# pending-downstream tests
+
+@test "pending-downstream appends skip docker_release directive on non-master branch" {
+    export PENDING_DOWNSTREAM="alfresco-enterprise-share"
+    export BRANCH_NAME="feature/ACS-123"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    expected="Update community-repo version to 1.2.3
+
+[skip docker_release] until alfresco-enterprise-share triggers the build or it is built manually"
+    [ "$(get_output message)" = "$expected" ]
+}
+
+@test "pending-downstream appends skip docker_latest directive on master branch" {
+    export PENDING_DOWNSTREAM="alfresco-enterprise-share"
+    export BRANCH_NAME="master"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    expected="Update community-repo version to 1.2.3
+
+[skip docker_latest] until alfresco-enterprise-share triggers the build or it is built manually"
+    [ "$(get_output message)" = "$expected" ]
+}
+
+@test "pending-downstream embeds the correct repo name in directive" {
+    export PENDING_DOWNSTREAM="some-other-repo"
+    export BRANCH_NAME="feature/ACS-123"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [[ "$(get_output message)" == *"until some-other-repo triggers the build"* ]]
+}
+
+@test "pending-downstream does not affect allow-empty-commit" {
+    export PENDING_DOWNSTREAM="alfresco-enterprise-share"
+    export BRANCH_NAME="feature/ACS-123"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output allow-empty-commit)" = "false" ]
+}
+
+@test "[force] token combined with pending-downstream prepends force and appends directive" {
+    export COMMIT_TITLE="[force] ACS-123: trigger downstream CI"
+    export PENDING_DOWNSTREAM="alfresco-enterprise-share"
+    export BRANCH_NAME="feature/ACS-123"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    expected="[force] Update community-repo version to 1.2.3
+
+[skip docker_release] until alfresco-enterprise-share triggers the build or it is built manually"
+    [ "$(get_output message)" = "$expected" ]
+    [ "$(get_output allow-empty-commit)" = "true" ]
+}
+
+@test "empty pending-downstream produces plain version-bump message" {
+    export PENDING_DOWNSTREAM=""
+    export BRANCH_NAME="feature/ACS-123"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "Update community-repo version to 1.2.3" ]
 }

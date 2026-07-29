@@ -1,5 +1,8 @@
 name: CI with BATS 🦇
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ master ]

@@ -1741,7 +1741,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         // get the stream now
         try
         {
-            ContentReader contentReader = contentService.getReader(streamNodeRef, ContentModel.PROP_CONTENT,true);
+            ContentReader contentReader = contentService.getReader(streamNodeRef, ContentModel.PROP_CONTENT, true);
             if (contentReader == null)
             {
                 throw new CmisConstraintException("Document has no content!");

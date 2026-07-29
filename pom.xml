@@ -80,6 +80,17 @@
         <dependency.httpcomponents-httpcore5-h2.version>5.3.4</dependency.httpcomponents-httpcore5-h2.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
+
+        <!-- Google Cloud client libraries shipped in the content-services WARs so cloud AMPs (the Google
+             Drive integration and the GCS connector) can declare them 'provided' and add no third-party
+             jars of their own. The libraries BOM aligns the shared Google HTTP/API/auth/grpc plumbing. -->
+        <dependency.google-cloud-libraries-bom.version>26.84.0</dependency.google-cloud-libraries-bom.version>
+        <!-- Drive API model jars are not managed by libraries-bom, so they are pinned explicitly. -->
+        <dependency.google-api-services-drive.version>v3-rev20250511-2.0.0</dependency.google-api-services-drive.version>
+        <dependency.google-api-services-oauth2.version>v2-rev20200213-2.0.0</dependency.google-api-services-oauth2.version>
+        <!-- opencensus is not managed by libraries-bom; pinned to the version the Google SDKs expect so
+             the platform (not the AMP) owns it. -->
+        <dependency.opencensus.version>0.31.1</dependency.opencensus.version>
         <dependency.slf4j.version>2.0.16</dependency.slf4j.version>
         <dependency.log4j.version>2.25.4</dependency.log4j.version>
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
@@ -615,6 +626,38 @@
                 <version>${dependency.jackson.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- Google Cloud client libraries BOM - declared AFTER jackson-bom so the platform jackson
+                 (governed by jackson-bom above) wins over the newer jackson the Google SDKs would pull in.
+                 Aligns the shared Google HTTP/API/auth/grpc plumbing bundled in the content-services WARs. -->
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>${dependency.google-cloud-libraries-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Google Drive API model jars - not managed by libraries-bom, pinned explicitly. -->
+            <dependency>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-drive</artifactId>
+                <version>${dependency.google-api-services-drive.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-oauth2</artifactId>
+                <version>${dependency.google-api-services-oauth2.version}</version>
+            </dependency>
+            <!-- opencensus is not managed by libraries-bom; pinned so the platform (not the AMP) owns it. -->
+            <dependency>
+                <groupId>io.opencensus</groupId>
+                <artifactId>opencensus-api</artifactId>
+                <version>${dependency.opencensus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opencensus</groupId>
+                <artifactId>opencensus-contrib-http-util</artifactId>
+                <version>${dependency.opencensus.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.yaml</groupId>

@@ -30,6 +30,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.search.FacetFormat;
@@ -66,10 +68,11 @@ public class SearchQuery
     private final List<RangeParameters> ranges;
     private final Localization localization;
     private final FacetFormat facetFormat;
+    private final String searchAfterToken;
 
     public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,
             null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null);
+            null, null, null, null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -92,7 +95,9 @@ public class SearchQuery
             @JsonProperty("stats") List<StatsRequestParameters> stats,
             @JsonProperty("ranges") List<RangeParameters> ranges,
             @JsonProperty("localization") Localization localization,
-            @JsonProperty("facetFormat") FacetFormat facetFormat)
+            @JsonProperty("facetFormat") FacetFormat facetFormat,
+            // Empty string means start searchAfter pagination and preserve it instead of converting it to null.
+            @JsonProperty("searchAfterToken") @JsonDeserialize(using = StringDeserializer.class) String searchAfterToken)
     {
         this.query = query;
         this.includeRequest = includeRequest == null ? false : includeRequest;
@@ -115,6 +120,7 @@ public class SearchQuery
         this.ranges = ranges;
         this.localization = localization;
         this.facetFormat = facetFormat;
+        this.searchAfterToken = searchAfterToken;
     }
 
     public Query getQuery()
@@ -220,6 +226,11 @@ public class SearchQuery
     public FacetFormat getFacetFormat()
     {
         return facetFormat;
+    }
+
+    public String getSearchAfterToken()
+    {
+        return searchAfterToken;
     }
 
 }

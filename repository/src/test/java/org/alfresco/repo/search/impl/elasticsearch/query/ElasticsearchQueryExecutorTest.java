@@ -28,6 +28,7 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 import static com.ibm.icu.impl.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -112,17 +113,17 @@ public class ElasticsearchQueryExecutorTest
     }
 
     @Test
-    public void executeQuery_unsupportedOperationException_isRethrown() throws ParseException
+    public void executeQuery_searchStrategyException_isRethrown() throws ParseException
     {
-        given(languageQueryBuilder.getQuery(searchParameters)).willThrow(new UnsupportedOperationException("not supported"));
+        given(languageQueryBuilder.getQuery(searchParameters)).willThrow(new UnsupportedSearchAfterException());
         try
         {
             elasticsearchQueryExecutor.executeQuery(searchParameters);
-            fail("Expected UnsupportedOperationException");
+            fail("Expected SearchStrategyException");
         }
-        catch (UnsupportedOperationException e)
+        catch (SearchStrategyException e)
         {
-            assertEquals("not supported", e.getMessage());
+            assertTrue(e.getMessage().endsWith("The searchAfterToken parameter requires Alfresco Enterprise Edition."));
         }
     }
 

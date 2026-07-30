@@ -1,0 +1,52 @@
+name: "Get downstream commit message"
+description: >
+  Computes the commit message and allow-empty-commit flag for a downstream version-bump commit.
+
+  If the upstream commit title contains a [force...] token (e.g. [force] or [force ci]),
+  that token is prepended to the message and allow-empty-commit is set to true, so the downstream
+  commit is created even when no files changed.
+
+  If pending-downstream is provided, a directive is appended indicating that the build should be
+  skipped until that downstream repo triggers it: "[skip docker_latest/docker_release] until
+  <pending-downstream> triggers the build or it is built manually".
+
+inputs:
+  commit-title:
+    description: "Upstream commit title to inspect for a [force...] token"
+    required: true
+  version:
+    description: "Version string to embed in the commit message"
+    required: true
+  downstream-repo:
+    description: "Short name of the downstream repository, used in the commit message (e.g. enterprise-repo)"
+    required: true
+  pending-downstream:
+    description: "Name of the downstream repo that will trigger the real build (e.g. alfresco-enterprise-share). When set, a skip directive is appended."
+    required: false
+    default: ""
+  branch-name:
+    description: "Current branch name, used to pick the correct skip directive (master → skip docker_latest, else → skip docker_release). Only used when pending-downstream is set."
+    required: false
+    default: ""
+
+outputs:
+  message:
+    description: "Commit message to use for the downstream version-bump commit"
+    value: ${{ steps.compute.outputs.message }}
+  allow-empty-commit:
+    description: "Whether to allow an empty commit (true when a [force...] token was detected)"
+    value: ${{ steps.compute.outputs.allow-empty-commit }}
+
+runs:
+  using: composite
+  steps:
+    - name: Compute downstream commit message
+      id: compute
+      env:
+        COMMIT_TITLE: ${{ inputs.commit-title }}
+        VERSION: ${{ inputs.version }}
+        DOWNSTREAM_REPO: ${{ inputs.downstream-repo }}
+        PENDING_DOWNSTREAM: ${{ inputs.pending-downstream }}
+        BRANCH_NAME: ${{ inputs.branch-name }}
+      shell: bash
+      run: ${{ github.action_path }}/action.sh

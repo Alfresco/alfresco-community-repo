@@ -39,13 +39,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -102,7 +101,6 @@ public class NodeChangeTest
         // AuthenticationUtil.runAs()/setRunAsUser() need this static init, normally done by Spring.
         new AuthenticationUtil().afterPropertiesSet();
     }
-
 
     private NodeRef newFolder(Path path)
     {

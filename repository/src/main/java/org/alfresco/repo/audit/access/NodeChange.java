@@ -191,6 +191,7 @@ import org.alfresco.service.namespace.QName;
         else if (subActions.contains(DOWNLOAD_CONTENT))
         {
             action = "DOWNLOAD";
+            keepRunAsUser = true;
         }
         else if (subActions.size() == 1 && subActions.contains(READ_CONTENT))
         {

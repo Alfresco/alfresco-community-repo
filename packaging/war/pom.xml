@@ -57,10 +57,7 @@
             <groupId>jakarta.xml.soap</groupId>
             <artifactId>jakarta.xml.soap-api</artifactId>
         </dependency>
-        <!-- Google Drive SDK bundled in the community WAR so the Google Drive AMP adds no third-party
-             jars. Declaring these three top-level Drive artifacts drags in the shared Google
-             HTTP/API/auth/gson/opencensus plumbing transitively. Versions are managed by the
-             alfresco-community-repo parent (libraries-bom + explicit Drive pins). -->
+        <!-- Google drive AMP -->
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-drive</artifactId>

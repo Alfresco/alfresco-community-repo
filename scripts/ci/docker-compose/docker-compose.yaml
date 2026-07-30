@@ -10,7 +10,7 @@ services:
       - "8090:8090"
   postgres:
     image: postgres:17.9
-    profiles: ["default", "with-transform-core-aio", "postgres", "with-mtls-transform-core-aio", "with-sso", "with-elasticsearch"]
+    profiles: ["default", "with-transform-core-aio", "postgres", "with-mtls-transform-core-aio", "with-sso", "with-elasticsearch", "with-opensearch"]
     environment:
       POSTGRES_PASSWORD: alfresco #pragma: allowlist secret
       POSTGRES_USER: alfresco
@@ -19,7 +19,7 @@ services:
     ports:
       - "5433:5432"
   activemq:
-    profiles: ["default", "with-transform-core-aio", "activemq", "activemq6", "with-mtls-transform-core-aio", "with-sso", "with-elasticsearch"]
+    profiles: ["default", "with-transform-core-aio", "activemq", "activemq6", "with-mtls-transform-core-aio", "with-sso", "with-elasticsearch", "with-opensearch"]
     image: alfresco/alfresco-activemq:6.2-jre17-rockylinux8
     environment:
       ACTIVEMQ_ADMIN_LOGIN: admin
@@ -38,6 +38,18 @@ services:
       - "xpack.security.enabled=false"
       - "xpack.security.transport.ssl.enabled=false"
       - "xpack.security.http.ssl.enabled=false"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+  opensearch:
+    # search_after's _shard_doc tiebreaker sort needs OpenSearch >= 3.3.0 (server-side only requirement).
+    profiles: [ "with-opensearch" ]
+    image: opensearchproject/opensearch:3.3.0
+    environment:
+      - "discovery.type=single-node"
+      - "plugins.security.disabled=true"
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "9200:9200"
       - "9300:9300"

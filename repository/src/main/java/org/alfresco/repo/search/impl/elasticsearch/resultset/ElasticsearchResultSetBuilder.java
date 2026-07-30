@@ -65,6 +65,11 @@ public class ElasticsearchResultSetBuilder
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse)
     {
+        return build(searchParameters, searchResponse, null);
+    }
+
+    public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, String nextSearchAfterToken)
+    {
         var hits = ofNullable(searchResponse.hits()).map(HitsMetadata::hits).orElse(List.of());
         List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters.isBulkFetchEnabled());
 
@@ -79,7 +84,7 @@ public class ElasticsearchResultSetBuilder
         Map<String, Integer> facetQueries = aggregation.facetQueries();
         Map<String, List<Pair<String, Integer>>> fieldFacets = aggregation.fieldFacets();
         Map<NodeRef, List<Pair<String, List<String>>>> highlights = highlightsHandler.handle(searchParameters, searchResponse);
-        return new ElasticsearchResultSet(
+        ElasticsearchResultSet resultSet = new ElasticsearchResultSet(
                 nodeService,
                 nodeRefAndScores,
                 resultSetMetaData,
@@ -90,6 +95,8 @@ public class ElasticsearchResultSetBuilder
                 facetQueries,
                 fieldFacets,
                 highlights);
+        resultSet.setNextSearchAfterToken(nextSearchAfterToken);
+        return resultSet;
     }
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, List<Hit<Object>> hits, long totalHits, long queryTime)

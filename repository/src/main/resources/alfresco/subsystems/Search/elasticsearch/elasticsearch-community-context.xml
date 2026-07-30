@@ -60,6 +60,7 @@
         <property name="host" value="${elasticsearch.host}" />
         <property name="port" value="${elasticsearch.port}" />
         <property name="baseUrl" value="${elasticsearch.baseUrl}" />
+        <property name="engine" value="${elasticsearch.engine}" />
         <property name="secureComms" value="${elasticsearch.secureComms}" />
         <property name="user" value="${elasticsearch.user}" />
         <property name="password" value="${elasticsearch.password}" />
@@ -126,9 +127,25 @@
         <constructor-arg name="batchSize" value="${elasticsearch.scroll.batch_size}" />
     </bean>
 
+    <bean id="elasticsearchPitService"
+          class="org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchPitService">
+        <constructor-arg ref="elasticsearchHttpClientFactory"/>
+    </bean>
+
+    <bean id="searchAfterSearchStrategy"
+          class="org.alfresco.repo.search.impl.elasticsearch.query.SearchAfterSearchStrategy">
+        <constructor-arg ref="searchRequestBuilderService"/>
+        <constructor-arg ref="elasticsearchHttpClientFactory"/>
+        <constructor-arg ref="elasticsearchResultSetBuilder"/>
+        <constructor-arg ref="elasticsearchPitService"/>
+        <constructor-arg name="keepAlive" value="${elasticsearch.searchafter.keep_alive}"/>
+        <constructor-arg name="maxResultWindow" value="${elasticsearch.index.max_result_window}"/>
+    </bean>
+
     <bean id="strategySelector" class="org.alfresco.repo.search.impl.elasticsearch.query.SearchStrategySelector">
         <constructor-arg ref="standardSearchStrategy"/>
         <constructor-arg ref="scrollSearchStrategy"/>
+        <constructor-arg ref="searchAfterSearchStrategy"/>
         <constructor-arg name="maxResultWindow" value="${elasticsearch.index.max_result_window}" />
     </bean>
 

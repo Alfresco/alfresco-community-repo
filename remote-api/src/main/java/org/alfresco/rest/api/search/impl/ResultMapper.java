@@ -549,6 +549,7 @@ public class ResultMapper
 
         // Put it all together
         context = new SearchContext(resultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest() ? searchQuery : null);
+        context.setNextSearchAfterToken(resultSet.getNextSearchAfterToken());
         return isNullContext(context) ? null : context;
     }
 

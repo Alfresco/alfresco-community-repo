@@ -150,7 +150,7 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
             return;
         }
 
-        bindClassPolicy(ContentServicePolicies.OnContentDownloadPolicy.QNAME, NodeContentPutEvent.EVENT_TYPE);
+        bindClassPolicy(ContentServicePolicies.OnContentDownloadPolicy.QNAME, NodeContentGetEvent.EVENT_TYPE);
 
         bindClassPolicy(ContentServicePolicies.OnContentPropertyUpdatePolicy.QNAME, NodeContentPutEvent.EVENT_TYPE);
 

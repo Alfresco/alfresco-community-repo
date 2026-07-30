@@ -39,8 +39,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
@@ -97,7 +99,10 @@ public class NodeChangeTest
 
         nodeInfoFactory = new NodeInfoFactory(nodeService, namespaceService);
         nodeChange = new NodeChange(nodeInfoFactory, namespaceService, content1);
+        // AuthenticationUtil.runAs()/setRunAsUser() need this static init, normally done by Spring.
+        new AuthenticationUtil().afterPropertiesSet();
     }
+
 
     private NodeRef newFolder(Path path)
     {
@@ -583,4 +588,31 @@ public class NodeChangeTest
 
         assertStandardData(auditMap, "CANCEL CHECK OUT", "cancelCheckOut");
     }
+
+    @Test
+    public final void testOnContentReadAndDownload_runAsUserAttributionLostForSplitReadEntry()
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser("bob");
+        try
+        {
+            AuthenticationUtil.runAs(() -> {
+                nodeChange.onContentRead(content1);
+                nodeChange.onContentDownload(content1);
+                return null;
+            }, "alice");
+
+            assertTrue("Precondition: both sub-actions must be present", nodeChange.hasReadAndDownloadActions());
+
+            Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+
+            assertEquals("DOWNLOAD", auditMap.get("action"));
+            assertEquals("MNT-8810: the actual reader should be attributed, not the ambient user",
+                    "alice", auditMap.get("user"));
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
+    }
+
 }

@@ -403,10 +403,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     @Override
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean attachment)
     {
-        return getReaderImpl(nodeRef, propertyQName, true, attachment);
+        return getReaderImpl(nodeRef, propertyQName, !attachment || isDownloadAsRead, attachment);
     }
 
-    @SuppressWarnings("unchecked")
     private ContentReader getReaderImpl(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy, boolean fireContentDownloadPolicy)
     {
         ContentData contentData = getContentData(nodeRef, propertyQName);
@@ -431,20 +430,17 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         reader.setEncoding(contentData.getEncoding());
         reader.setLocale(contentData.getLocale());
 
-        boolean shouldFireRead = fireContentReadPolicy && (!fireContentDownloadPolicy || isDownloadAsRead);
-        boolean shouldFireDownload = fireContentDownloadPolicy;
-
-        if (shouldFireRead || shouldFireDownload)
+        if (fireContentReadPolicy || fireContentDownloadPolicy)
         {
             Set<QName> types = new HashSet<>(this.nodeService.getAspects(nodeRef));
             types.add(this.nodeService.getType(nodeRef));
 
-            if (shouldFireRead)
+            if (fireContentReadPolicy)
             {
                 OnContentReadPolicy readPolicy = this.onContentReadDelegate.get(nodeRef, types);
                 readPolicy.onContentRead(nodeRef);
             }
-            if (shouldFireDownload)
+            if (fireContentDownloadPolicy)
             {
                 OnContentDownloadPolicy downloadPolicy = this.onContentDownloadDelegate.get(nodeRef, types);
                 downloadPolicy.onContentDownload(nodeRef);

@@ -92,7 +92,7 @@ public class ElasticsearchQueryExecutor extends AbstractLuceneQueryLanguage
 
             return strategySelector.executeSearch(searchParameters, queryWithPermissions);
         }
-        catch (SearchStrategyException exception)
+        catch (UnsupportedOperationException | SearchStrategyException exception)
         {
             throw exception;
         }

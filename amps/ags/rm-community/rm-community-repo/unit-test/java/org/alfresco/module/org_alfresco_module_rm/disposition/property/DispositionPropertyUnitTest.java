@@ -27,6 +27,7 @@
 package org.alfresco.module.org_alfresco_module_rm.disposition.property;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -73,16 +74,22 @@ public class DispositionPropertyUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void cutOffDateClearedDuringUndoCutOffDoesNotThrow() throws Exception
+    public void cutOffDateClearedDuringUndoCutOffDoesNotThrow() throws ReflectiveOperationException
     {
         NodeRef nodeRef = markUndoCutOffInProgress();
 
-        // should not throw
-        dispositionProperty.onUpdateProperties(nodeRef, cutOffDateProperties(new Date()), cutOffDateProperties(null));
+        try
+        {
+            dispositionProperty.onUpdateProperties(nodeRef, cutOffDateProperties(new Date()), cutOffDateProperties(null));
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            fail("Clearing the cut off date during an undo cut off should not throw, but threw: " + e.getMessage());
+        }
     }
 
     @Test(expected = AlfrescoRuntimeException.class)
-    public void clearingADifferentPropertyStillThrowsDuringUndoCutOff() throws Exception
+    public void clearingADifferentPropertyStillThrowsDuringUndoCutOff() throws ReflectiveOperationException
     {
         NodeRef nodeRef = markUndoCutOffInProgress();
         dispositionProperty.setName("rma:dispositionAsOf");
@@ -95,7 +102,7 @@ public class DispositionPropertyUnitTest extends BaseUnitTest
         dispositionProperty.onUpdateProperties(nodeRef, before, after);
     }
 
-    private NodeRef markUndoCutOffInProgress() throws Exception
+    private NodeRef markUndoCutOffInProgress() throws ReflectiveOperationException
     {
         NodeRef nodeRef = generateNodeRef();
         doReturn(true).when(mockedNodeService).hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE);

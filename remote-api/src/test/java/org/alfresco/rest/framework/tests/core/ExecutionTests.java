@@ -309,8 +309,6 @@ public class ExecutionTests extends AbstractContextTest implements ResponseWrite
     @Test
     public void testRenderError() throws IOException
     {
-        AbstractResourceWebScript executor = getExecutor();
-
         ErrorResponse defaultError = new DefaultExceptionResolver().resolveException(new NullPointerException());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         renderErrorResponse(defaultError, mockResponse(out), apiAssistant.getJsonHelper());

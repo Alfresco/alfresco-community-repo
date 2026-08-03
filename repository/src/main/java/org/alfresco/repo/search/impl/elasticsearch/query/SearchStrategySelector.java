@@ -37,26 +37,20 @@ public class SearchStrategySelector implements SearchStrategy
 
     private final SearchStrategy standardStrategy;
     private final SearchStrategy scrollStrategy;
-    private final SearchStrategy searchAfterStrategy;
     private final int maxResultWindow;
 
     public SearchStrategySelector(SearchExecutionStrategy standardStrategy, SearchExecutionStrategy scrollStrategy,
-            SearchExecutionStrategy searchAfterStrategy, int maxResultWindow)
+            int maxResultWindow)
     {
         this.standardStrategy = standardStrategy;
         this.scrollStrategy = scrollStrategy;
-        this.searchAfterStrategy = searchAfterStrategy;
         this.maxResultWindow = maxResultWindow;
     }
 
     @Override
     public ResultSet executeSearch(SearchParameters searchParameters, Query queryWithPermissions) throws IOException
     {
-        if (searchAfterNeeded(searchParameters))
-        {
-            return searchAfterStrategy.executeSearch(searchParameters, queryWithPermissions);
-        }
-        else if (scrollNeeded(searchParameters))
+        if (scrollNeeded(searchParameters))
         {
             return scrollStrategy.executeSearch(searchParameters, queryWithPermissions);
         }
@@ -64,18 +58,6 @@ public class SearchStrategySelector implements SearchStrategy
         {
             return standardStrategy.executeSearch(searchParameters, queryWithPermissions);
         }
-    }
-
-    /**
-     * Use {@code search_after} whenever a cursor is present. An empty cursor means the first page, which routes here too so every page shares the same tiebreaker sort.
-     *
-     * @param searchParameters
-     *            Search parameters.
-     * @return true if {@code search_after} paging is requested.
-     */
-    private boolean searchAfterNeeded(SearchParameters searchParameters)
-    {
-        return searchParameters.getSearchAfterToken() != null;
     }
 
     /**

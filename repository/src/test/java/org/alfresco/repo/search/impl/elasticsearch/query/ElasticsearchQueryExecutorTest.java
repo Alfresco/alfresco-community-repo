@@ -127,22 +127,6 @@ public class ElasticsearchQueryExecutorTest
     }
 
     @Test
-    public void executeQuery_unsupportedSearchAfterException_isRethrown() throws ParseException
-    {
-        UnsupportedSearchAfterException exception = mock(UnsupportedSearchAfterException.class);
-        given(languageQueryBuilder.getQuery(searchParameters)).willThrow(exception);
-        try
-        {
-            elasticsearchQueryExecutor.executeQuery(searchParameters);
-            fail("Expected UnsupportedSearchAfterException");
-        }
-        catch (UnsupportedOperationException e)
-        {
-            assertEquals(exception, e);
-        }
-    }
-
-    @Test
     public void executeQuery_highlightError_retriesWithoutHighlight() throws ParseException, IOException
     {
         GeneralHighlightParameters highlightParams = mock(GeneralHighlightParameters.class);

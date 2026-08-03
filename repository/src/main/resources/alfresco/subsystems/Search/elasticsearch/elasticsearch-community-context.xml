@@ -127,15 +127,9 @@
         <constructor-arg name="batchSize" value="${elasticsearch.scroll.batch_size}" />
     </bean>
 
-    <!-- Default strategy that throws when search_after is used in Community Edition. -->
-    <bean id="searchAfterSearchStrategy"
-          class="org.alfresco.repo.search.impl.elasticsearch.query.UnsupportedSearchAfterStrategy">
-    </bean>
-
     <bean id="strategySelector" class="org.alfresco.repo.search.impl.elasticsearch.query.SearchStrategySelector">
         <constructor-arg ref="standardSearchStrategy"/>
         <constructor-arg ref="scrollSearchStrategy"/>
-        <constructor-arg ref="searchAfterSearchStrategy"/>
         <constructor-arg name="maxResultWindow" value="${elasticsearch.index.max_result_window}" />
     </bean>
 

@@ -65,10 +65,16 @@ public class ElasticsearchResultSetBuilder
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse)
     {
-        return build(searchParameters, searchResponse, null);
+        return build(searchParameters, searchResponse, null, false);
     }
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, String nextSearchAfterToken)
+    {
+        return build(searchParameters, searchResponse, nextSearchAfterToken, true);
+    }
+
+    private ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, String nextSearchAfterToken,
+            boolean searchAfterRequested)
     {
         var hits = ofNullable(searchResponse.hits()).map(HitsMetadata::hits).orElse(List.of());
         List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters.isBulkFetchEnabled());
@@ -96,6 +102,7 @@ public class ElasticsearchResultSetBuilder
                 fieldFacets,
                 highlights);
         resultSet.setNextSearchAfterToken(nextSearchAfterToken);
+        resultSet.setSearchAfterRequested(searchAfterRequested);
         return resultSet;
     }
 

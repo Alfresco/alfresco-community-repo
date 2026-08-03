@@ -55,6 +55,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.alfresco.repo.search.SearchEngineResultSet;
+import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
@@ -231,7 +232,11 @@ public class ResultMapper
                 .map(resultSet -> toSearchContext(resultSet, searchRequestContext, searchQuery))
                 .orElse(null);
 
-        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), setTotal(results), null, context);
+        String nextSearchAfterToken = toSearchEngineResultSet(results)
+                .map(SearchEngineResultSet::getNextSearchAfterToken)
+                .orElse(null);
+
+        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), setTotal(results), null, context, nextSearchAfterToken);
     }
 
     /**
@@ -549,7 +554,6 @@ public class ResultMapper
 
         // Put it all together
         context = new SearchContext(resultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest() ? searchQuery : null);
-        context.setNextSearchAfterToken(resultSet.getNextSearchAfterToken());
         return isNullContext(context) ? null : context;
     }
 
@@ -819,6 +823,11 @@ public class ResultMapper
      */
     protected Optional<SearchEngineResultSet> toSearchEngineResultSet(ResultSet results)
     {
+        if (results instanceof PagingLuceneResultSet)
+        {
+            results = ((PagingLuceneResultSet) results).getWrapped();
+        }
+
         if (results instanceof FilteringResultSet)
         {
             // 1st level

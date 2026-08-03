@@ -33,7 +33,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.framework.resource.SerializablePagedCollection;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 
@@ -104,10 +103,9 @@ public class SerializerOfCollectionWithPaging extends StdSerializer<Serializable
             jgen.writeNumberField(RecognizedParamsExtractor.PARAM_PAGING_SKIP, pagedCol.getPaging().getSkipCount());
             jgen.writeNumberField(RecognizedParamsExtractor.PARAM_PAGING_MAX, pagedCol.getPaging().getMaxItems());
         }
-        SearchContext context = pagedCol.getContext();
-        if (context != null && context.getNextSearchAfterToken() != null)
+        if (pagedCol.getNextSearchAfterToken() != null)
         {
-            jgen.writeStringField("nextSearchAfterToken", context.getNextSearchAfterToken());
+            jgen.writeStringField("nextSearchAfterToken", pagedCol.getNextSearchAfterToken());
         }
         jgen.writeEndObject();
     }

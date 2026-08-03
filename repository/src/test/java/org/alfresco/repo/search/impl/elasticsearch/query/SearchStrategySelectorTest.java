@@ -52,8 +52,6 @@ public class SearchStrategySelectorTest
     @Mock
     private SearchExecutionStrategy scrollStrategy;
     @Mock
-    private SearchExecutionStrategy searchAfterStrategy;
-    @Mock
     private SearchParameters searchParameters;
     @Mock
     private Query queryWithPermissions;
@@ -61,8 +59,6 @@ public class SearchStrategySelectorTest
     private ResultSet scrollResultSet;
     @Mock
     private ResultSet standardResultSet;
-    @Mock
-    private ResultSet searchAfterResultSet;
 
     private SearchStrategySelector selector;
 
@@ -70,27 +66,7 @@ public class SearchStrategySelectorTest
     public void setUp()
     {
         MockitoAnnotations.openMocks(this);
-        selector = new SearchStrategySelector(standardStrategy, scrollStrategy, searchAfterStrategy, MAX_RESULT_WINDOW);
-    }
-
-    @Test
-    public void executeSearch_searchAfterStrategy_whenCursorPresent() throws IOException
-    {
-        when(searchParameters.getSearchAfterToken()).thenReturn("");
-        when(searchAfterStrategy.executeSearch(eq(searchParameters), eq(queryWithPermissions))).thenReturn(searchAfterResultSet);
-
-        ResultSet rs = selector.executeSearch(searchParameters, queryWithPermissions);
-        try
-        {
-            assertSame(searchAfterResultSet, rs);
-            verify(searchAfterStrategy).executeSearch(eq(searchParameters), eq(queryWithPermissions));
-            verifyNoInteractions(standardStrategy);
-            verifyNoInteractions(scrollStrategy);
-        }
-        finally
-        {
-            rs.close();
-        }
+        selector = new SearchStrategySelector(standardStrategy, scrollStrategy, MAX_RESULT_WINDOW);
     }
 
     @Test

@@ -280,6 +280,64 @@ public class ElasticsearchResultSetBuilderTest
     }
 
     @Test
+    public void testBuild_searchAfterNotLastPage_hasMoreIsTrue()
+    {
+        // Given: a search_after page with a non-null nextSearchAfterToken (more pages remain),
+        // and skipCount is 0 as always the case for search_after cursor paging.
+        List<Hit<Object>> hits = createHitsList(
+                createHit(TEST_NODE_ID_1, TEST_SCORE_1),
+                createHit(TEST_NODE_ID_2, TEST_SCORE_2));
+        setupSearchResponse(hits);
+        setupNodeExistence(true, true);
+        setupAggregationAndHighlights();
+
+        // When
+        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse, "opaque-cursor-token");
+
+        // Then
+        assertTrue("hasMore should be true when a nextSearchAfterToken is present", result.hasMore());
+    }
+
+    @Test
+    public void testBuild_searchAfterLastPage_hasMoreIsFalse()
+    {
+        // Given: a search_after page with a null nextSearchAfterToken (last page).
+        // Without the fix, hasMore() would incorrectly return true here because
+        // getNumberFound() (TEST_TOTAL_HITS=3) > getStart()+length() (0+1) for search_after,
+        // since skipCount always stays 0 across search_after pages.
+        List<Hit<Object>> hits = createHitsList(createHit(TEST_NODE_ID_1, TEST_SCORE_1));
+        setupSearchResponse(hits);
+        setupNodeExistence(true);
+        setupAggregationAndHighlights();
+
+        // When
+        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse, null);
+
+        // Then
+        assertTrue("hasMore should be false on the last search_after page", !result.hasMore());
+    }
+
+    @Test
+    public void testBuild_standardSearch_hasMoreUsesStartPlusLength()
+    {
+        // Given: a standard (non search_after) search where all TEST_TOTAL_HITS (3) results
+        // are returned in one page starting at skipCount 0, so there is nothing more to fetch.
+        List<Hit<Object>> hits = createHitsList(
+                createHit(TEST_NODE_ID_1, TEST_SCORE_1),
+                createHit(TEST_NODE_ID_2, TEST_SCORE_2),
+                createHit(TEST_NODE_ID_3, TEST_SCORE_3));
+        setupSearchResponse(hits);
+        setupNodeExistence(true, true, true);
+        setupAggregationAndHighlights();
+
+        // When
+        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse);
+
+        // Then
+        assertTrue("hasMore should be false when all results were returned in this page", !result.hasMore());
+    }
+
+    @Test
     public void testBuildWithHitsList_doesNotIncludeAggregationsOrHighlights()
     {
         // Given

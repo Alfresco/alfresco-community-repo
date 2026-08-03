@@ -220,18 +220,23 @@ public interface ResponseWriter
                 : "unauthenticated user";
 
         // If internal server error or class in debug then print the stack trace
-        if (Status.STATUS_INTERNAL_SERVER_ERROR == errorResponse.getStatusCode() || resWriterLogger().isDebugEnabled())
+        boolean includeStackTrace = Status.STATUS_INTERNAL_SERVER_ERROR == errorResponse.getStatusCode()
+                || resWriterLogger().isDebugEnabled();
+
+        String message = "Exception " + errorToWrite.getLogId() + ". Request " + reqUrl + " executed by user " + userName
+                + " returned status code " + errorResponse.getStatusCode() + " with message: "
+                + errorResponse.getBriefSummary()
+                + (includeStackTrace
+                        ? " - Stack Trace: " + errorResponse.getStackTrace()
+                        : " - Increase logging on " + this.getClass().getName() + " for stack trace.");
+
+        if (Status.STATUS_NOT_FOUND == errorResponse.getStatusCode())
         {
-            resWriterLogger().error("Exception " + errorToWrite.getLogId() + ". Request " + reqUrl + " executed by " + userName
-                    + " returned status code " + errorResponse.getStatusCode() + " with message: "
-                    + errorResponse.getBriefSummary() + " - Stack Trace: " + errorResponse.getStackTrace());
+            resWriterLogger().warn(message);
         }
         else
         {
-            resWriterLogger().error("Exception " + errorToWrite.getLogId() + ". Request " + reqUrl + " executed by user "
-                    + userName + " returned status code " + errorResponse.getStatusCode() + " with message: "
-                    + errorResponse.getBriefSummary() + " - Increase logging on " + this.getClass().getName()
-                    + " for stack trace.");
+            resWriterLogger().error(message);
         }
 
         setContentInfoOnResponse(res, DEFAULT_JSON_CONTENT);

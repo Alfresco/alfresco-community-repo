@@ -219,9 +219,11 @@ public interface ResponseWriter
         String userName = AuthenticationUtil.getFullyAuthenticatedUser() != null ? AuthenticationUtil.getFullyAuthenticatedUser()
                 : "unauthenticated user";
 
+        final Log logger = resWriterLogger();
+
         // If internal server error or class in debug then print the stack trace
         boolean includeStackTrace = Status.STATUS_INTERNAL_SERVER_ERROR == errorResponse.getStatusCode()
-                || resWriterLogger().isDebugEnabled();
+                || logger.isDebugEnabled();
 
         String message = "Exception " + errorToWrite.getLogId() + ". Request " + reqUrl + " executed by user " + userName
                 + " returned status code " + errorResponse.getStatusCode() + " with message: "
@@ -232,11 +234,11 @@ public interface ResponseWriter
 
         if (Status.STATUS_NOT_FOUND == errorResponse.getStatusCode())
         {
-            resWriterLogger().warn(message);
+            logger.warn(message);
         }
         else
         {
-            resWriterLogger().error(message);
+            logger.error(message);
         }
 
         setContentInfoOnResponse(res, DEFAULT_JSON_CONTENT);

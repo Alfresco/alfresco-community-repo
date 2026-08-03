@@ -28,12 +28,12 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 /**
  * Raised when a request uses {@code searchAfterToken} but no Enterprise-only {@code search_after} strategy is registered.
  */
-public class UnsupportedSearchAfterException extends SearchStrategyException
+public class UnsupportedSearchAfterException extends UnsupportedOperationException
 {
     private static final long serialVersionUID = 1L;
 
     public UnsupportedSearchAfterException()
     {
-        super("The searchAfterToken parameter requires Alfresco Enterprise Edition.", null);
+        super("The searchAfterToken parameter requires Alfresco Enterprise Edition.");
     }
 }

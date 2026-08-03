@@ -39,7 +39,6 @@ import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.SearchQuery;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -152,22 +151,11 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
 
     protected void applySearchAfter(SearchParameters searchParams, SearchQuery searchQuery)
     {
-        String cursor = searchQuery.getSearchAfterToken();
-        if (cursor == null)
+        String searchAfterToken = searchQuery.getSearchAfterToken();
+        if (searchAfterToken != null)
         {
-            // Offset paging (default) is already applied by the SearchMapper.
-            return;
+            searchParams.setSearchAfterToken(searchAfterToken);
         }
-
-        Paging paging = searchQuery.getPaging();
-        boolean hasSkipCount = paging != null && paging.getSkipCount() > 0;
-        if (hasSkipCount)
-        {
-            throw new InvalidArgumentException(
-                    "skipCount (offset paging) cannot be combined with searchAfter (cursor paging); use one paging mode.");
-        }
-
-        searchParams.setSearchAfterToken(cursor);
     }
 
     public void setSearchMapper(SearchMapper searchMapper)

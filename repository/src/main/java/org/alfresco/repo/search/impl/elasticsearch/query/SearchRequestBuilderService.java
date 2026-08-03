@@ -28,13 +28,11 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 import java.util.List;
 import java.util.Map;
 
-import org.opensearch.client.opensearch._types.SortOptions;
 import org.opensearch.client.opensearch._types.Time;
 import org.opensearch.client.opensearch._types.aggregations.Aggregation;
 import org.opensearch.client.opensearch._types.aggregations.TermsAggregation;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.SearchRequest;
-import org.opensearch.client.opensearch.core.search.Pit;
 import org.opensearch.client.opensearch.core.search.SourceConfig;
 import org.opensearch.client.opensearch.core.search.TrackHits;
 
@@ -134,39 +132,6 @@ public class SearchRequestBuilderService
 
     // Previous unified method with boolean flag removed. Update callers accordingly.
 
-    /**
-     * Build a {@code search_after} deep-pagination request over a Point-In-Time (PIT). It pins {@code from=0}, applies the requested page size, pins the request to the session's PIT (refreshing its {@code keep_alive}), adds the (optional) {@code search_after} cursor values, and uses a sort that always ends with the {@code _shard_doc} tiebreaker so ordering is a strict total order. The index is carried by the PIT, so it must NOT be set on the request body.
-     *
-     * @param searchParameters
-     *            Alfresco search configuration.
-     * @param queryWithPermissions
-     *            Query including permissions.
-     * @param size
-     *            Number of results to return for this page.
-     * @param context
-     *            The PIT id, its {@code keep_alive}, and the previous page's sort values.
-     */
-    public SearchRequest buildSearchAfterRequest(
-            SearchParameters searchParameters,
-            Query queryWithPermissions,
-            int size,
-            SearchAfterContext context)
-    {
-        SearchRequest.Builder builder = baseBuilder(queryWithPermissions)
-                .trackTotalHits(new TrackHits.Builder().count(resolveTrackTotalHitsLimit(searchParameters)).build())
-                .from(0)
-                .size(size)
-                .pit(new Pit.Builder().id(context.getPitId()).keepAlive(context.getKeepAlive()).build());
-
-        if (!context.getSearchAfter().isEmpty())
-        {
-            builder.searchAfterVals(context.getSearchAfter());
-        }
-
-        applyCommonWithoutIndex(searchParameters, builder, elasticsearchSortBuilder.getSortBuildersWithTiebreaker(searchParameters));
-        return builder.build();
-    }
-
     private int resolveTrackTotalHitsLimit(SearchParameters searchParameters)
     {
         if (searchParameters.getTrackTotalHits() == -1)
@@ -189,19 +154,9 @@ public class SearchRequestBuilderService
 
     private void applyCommon(SearchParameters searchParameters, String indexName, SearchRequest.Builder builder)
     {
-        applyCommon(searchParameters, indexName, builder, elasticsearchSortBuilder.getSortBuilders(searchParameters));
-    }
-
-    private void applyCommon(SearchParameters searchParameters, String indexName, SearchRequest.Builder builder, List<SortOptions> sortOptions)
-    {
-        applyCommonWithoutIndex(searchParameters, builder, sortOptions);
-        builder.index(indexName);
-    }
-
-    private void applyCommonWithoutIndex(SearchParameters searchParameters, SearchRequest.Builder builder, List<SortOptions> sortOptions)
-    {
         builder.trackScores(searchParameters.isTrackScore());
-        sortOptions.forEach(builder::sort);
+        elasticsearchSortBuilder.getSortBuilders(searchParameters)
+                .forEach(builder::sort);
 
         elasticsearchAggregationBuilder.filterAggregation(searchParameters, languageQueryBuilder)
                 .entrySet()
@@ -222,6 +177,7 @@ public class SearchRequestBuilderService
                 .forEach(builder::aggregations);
 
         builder.highlight(elasticsearchHighlightBuilder.getHighlightBuilder(searchParameters));
+        builder.index(indexName);
     }
 
     /**

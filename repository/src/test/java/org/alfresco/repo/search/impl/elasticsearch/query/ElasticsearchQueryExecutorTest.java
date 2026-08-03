@@ -127,16 +127,16 @@ public class ElasticsearchQueryExecutorTest
     }
 
     @Test
-    public void executeQuery_searchStrategyException_isRethrown() throws ParseException
+    public void executeQuery_unsupportedSearchAfterException_isRethrown() throws ParseException
     {
         UnsupportedSearchAfterException exception = mock(UnsupportedSearchAfterException.class);
         given(languageQueryBuilder.getQuery(searchParameters)).willThrow(exception);
         try
         {
             elasticsearchQueryExecutor.executeQuery(searchParameters);
-            fail("Expected SearchStrategyException");
+            fail("Expected UnsupportedSearchAfterException");
         }
-        catch (SearchStrategyException e)
+        catch (UnsupportedOperationException e)
         {
             assertEquals(exception, e);
         }

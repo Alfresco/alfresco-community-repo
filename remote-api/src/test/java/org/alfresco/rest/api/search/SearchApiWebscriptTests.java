@@ -37,7 +37,6 @@ import org.junit.Test;
 
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -140,11 +139,5 @@ public class SearchApiWebscriptTests
         webscript.applySearchAfter(sp, searchQuery(null, ""));
 
         assertEquals("", sp.getSearchAfterToken());
-    }
-
-    @Test(expected = InvalidArgumentException.class)
-    public void skipCountCombinedWithSearchAfterIsRejected()
-    {
-        webscript.applySearchAfter(new SearchParameters(), searchQuery(Paging.valueOf(10, 100), "SEARCH_AFTER_TOKEN"));
     }
 }

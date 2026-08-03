@@ -78,7 +78,7 @@ public class ElasticsearchHttpClientFactory
     private int port;
 
     // Search engine implementation (elasticsearch, opensearch)
-    private String engine = "elasticsearch";
+    private String engine;
 
     // SSL parameters for Elasticsearch server endpoint
     private String secureComms;

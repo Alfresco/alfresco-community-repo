@@ -76,7 +76,7 @@ public class AlfrescoX509ServletFilter extends X509ServletFilterBase
         {
             if (sharedSecret == null || sharedSecret.length() == 0)
             {
-                logger.fatal("Missing value for solr.sharedSecret configuration property. If solr.secureComms is set to \"secret\", a value for solr.sharedSecret is required. See https://docs.alfresco.com/search-services/latest/install/options/");
+                logger.fatal("Missing value for solr.sharedSecret configuration property. If solr.secureComms is set to \"secret\", a value for solr.sharedSecret is required. See https://docs.hyland.com/r/Alfresco/Alfresco-Search-Services/2.0/Alfresco-Search-Services/Install/Installation-options/Install-without-mutual-TLS-HTTP-with-secret-word-in-request-header");
                 throw new AlfrescoRuntimeException("Missing value for solr.sharedSecret configuration property");
             }
             if (sharedSecretHeader == null || sharedSecretHeader.length() == 0)

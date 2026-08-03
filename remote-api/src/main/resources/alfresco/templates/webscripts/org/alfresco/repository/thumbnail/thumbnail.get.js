@@ -71,7 +71,26 @@ function main()
       // Queue the creation of the thumbnail if appropriate
       if (fc)
       {
-        model.contentNode = node.createThumbnail(thumbnailName, false, true);
+         var createdThumbnail = node.createThumbnail(thumbnailName, false, true);
+         if (createdThumbnail != null)
+         {
+            model.contentNode = createdThumbnail;
+         }
+         else if (ph == true)
+         {
+            var phPath = thumbnailService.getMimeAwarePlaceHolderResourcePath(thumbnailName, node.mimetype);
+            if (phPath == null)
+            {
+               status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found and no place holder resource set for '" + thumbnailName + "'");
+               return;
+            }
+            model.contentPath = phPath;
+         }
+         else
+         {
+            status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found");
+            return;
+         }
       }
       else
       {
@@ -91,11 +110,8 @@ function main()
                status.setCode(status.STATUS_NOT_FOUND, "Thumbnail was not found and no place holder resource set for '" + thumbnailName + "'");
                return;
             }
-            else
-            {
-               // Set the resouce path in the model ready for the content stream to send back to the client
-               model.contentPath = phPath;
-            }
+            // Set the resouce path in the model ready for the content stream to send back to the client
+            model.contentPath = phPath;
          }
          else
          {

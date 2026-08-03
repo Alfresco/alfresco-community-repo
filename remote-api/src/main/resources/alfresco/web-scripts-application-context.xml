@@ -1254,6 +1254,13 @@
       <property name="delegate" ref="webscript.content.streamer" />
    </bean>
 
+   <!-- ACS-12299: namespace URI->prefix map for the Search Enterprise Re-Indexer (sourced from NamespaceService) -->
+   <bean id="webscript.org.alfresco.repository.model.namespace-prefix.get"
+         class="org.alfresco.repo.web.scripts.model.NamespacePrefixGet"
+         parent="webscript">
+      <property name="namespaceService" ref="namespaceService"/>
+   </bean>
+
    <bean id="webscript.org.alfresco.repository.solr.model.get"
          class="org.alfresco.repo.web.scripts.solr.AlfrescoModelGet"
          parent="webscript">

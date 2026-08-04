@@ -109,6 +109,7 @@ public class Paging
     }
 
     @Override
+    @SuppressWarnings("PMD.ConsecutiveAppendsShouldReuse")
     public String toString()
     {
         StringBuilder builder = new StringBuilder();

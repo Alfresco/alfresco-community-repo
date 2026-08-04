@@ -210,6 +210,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
      *            - The search_after token for fetching the next page
      * @return CollectionWithPagingInfo
      */
+    @SuppressWarnings("PMD.UseDiamondOperator")
     public static <T> CollectionWithPagingInfo<T> asPaged(Paging paging, Collection<T> aCollection, boolean hasMoreItems, Integer totalItems, Object sourceEntity, SearchContext context, String nextSearchAfterToken)
     {
         return new CollectionWithPagingInfo<T>(aCollection, paging, hasMoreItems, totalItems, sourceEntity, context, nextSearchAfterToken);

@@ -27,7 +27,6 @@ package org.alfresco.rest.api.search;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
 
@@ -35,11 +34,8 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import org.alfresco.rest.api.search.model.Query;
-import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
-import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
  * Tests the SearchApiWebscript class
@@ -100,44 +96,5 @@ public class SearchApiWebscriptTests
         params = webscript.getParams(null, null, Arrays.asList("name", "size"), null);
         assertNotNull(params.getInclude());
         assertEquals(2, params.getInclude().size());
-    }
-
-    private static SearchQuery searchQuery(Paging paging, String searchAfter)
-    {
-        return new SearchQuery(new Query("afts", "a*", ""), paging,
-                null, null, null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null,
-                searchAfter);
-    }
-
-    @Test
-    public void offsetPagingLeavesSearchAfterNull()
-    {
-        SearchParameters sp = new SearchParameters();
-
-        webscript.applySearchAfter(sp, searchQuery(Paging.valueOf(10, 100), null));
-
-        assertNull(sp.getSearchAfterToken());
-    }
-
-    @Test
-    public void searchAfterMapsToSearchParameters()
-    {
-        SearchParameters sp = new SearchParameters();
-
-        webscript.applySearchAfter(sp, searchQuery(null, "SEARCH_AFTER_TOKEN"));
-
-        assertEquals("SEARCH_AFTER_TOKEN", sp.getSearchAfterToken());
-    }
-
-    @Test
-    public void firstPageUsesEmptySearchAfterPosition()
-    {
-        SearchParameters sp = new SearchParameters();
-
-        // An explicit empty searchAfter starts a new cursor-paging session (first page).
-        webscript.applySearchAfter(sp, searchQuery(null, ""));
-
-        assertEquals("", sp.getSearchAfterToken());
     }
 }

@@ -195,6 +195,21 @@ public class SearchMapperTests
     }
 
     @Test
+    public void fromSearchAfter() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchMapper.fromPaging(searchParameters, Paging.valueOf(0, 100));
+        assertNull(searchParameters.getSearchAfterToken());
+
+        searchMapper.fromPaging(searchParameters, Paging.valueOf(0, 100, "SEARCH_AFTER_TOKEN"));
+        assertEquals("SEARCH_AFTER_TOKEN", searchParameters.getSearchAfterToken());
+
+        // An explicit empty searchAfter starts a new cursor-paging session (first page).
+        searchMapper.fromPaging(searchParameters, Paging.valueOf(0, 100, ""));
+        assertEquals("", searchParameters.getSearchAfterToken());
+    }
+
+    @Test
     public void fromSort() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
@@ -1110,7 +1125,7 @@ public class SearchMapperTests
         Query query = new Query("afts", "a*", "");
         SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null,
-                null, null, null, null, FacetFormat.V2, null);
+                null, null, null, null, FacetFormat.V2);
 
         SearchRequestContext searchRequestContext = SearchRequestContext.from(sq);
         SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, sq, searchRequestContext);
@@ -1166,7 +1181,7 @@ public class SearchMapperTests
         Query query = new Query("cmis", "foo", "");
         SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null,
-                null, null, null, null, null, null);
+                null, null, null, null, null);
         return sq;
     }
 

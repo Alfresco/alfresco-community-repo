@@ -55,7 +55,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.alfresco.repo.search.SearchEngineResultSet;
-import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
@@ -823,11 +822,6 @@ public class ResultMapper
      */
     protected Optional<SearchEngineResultSet> toSearchEngineResultSet(ResultSet results)
     {
-        if (results instanceof PagingLuceneResultSet)
-        {
-            results = ((PagingLuceneResultSet) results).getWrapped();
-        }
-
         if (results instanceof FilteringResultSet)
         {
             // 1st level

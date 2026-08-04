@@ -97,8 +97,6 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             // Turn the SearchQuery json into the Java SearchParameters object
             SearchParameters searchParams = searchMapper.toSearchParameters(params, searchQuery, searchRequestContext);
 
-            applySearchAfter(searchParams, searchQuery);
-
             // Call searchService
             ResultSet results = searchService.query(searchParams);
 
@@ -147,15 +145,6 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
 
         Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, paging, filter, null, include, null, null, null, false);
         return Params.valueOf(null, recognizedParams, null, webScriptRequest);
-    }
-
-    protected void applySearchAfter(SearchParameters searchParams, SearchQuery searchQuery)
-    {
-        String searchAfterToken = searchQuery.getSearchAfterToken();
-        if (searchAfterToken != null)
-        {
-            searchParams.setSearchAfterToken(searchAfterToken);
-        }
     }
 
     public void setSearchMapper(SearchMapper searchMapper)

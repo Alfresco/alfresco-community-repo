@@ -31,7 +31,7 @@ RUN mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/mimetypes && \
 # Copy the alfresco-mmt.jar
 # Copy Licenses to the root of the Docker image
 # Copy default keystore
-COPY ${resource_path}/war ${TOMCAT_DIR}/webapps/
+COPY ${resource_path}/war ${TOMCAT_DIR}/webapps
 COPY ${resource_path}/connector/* ${TOMCAT_DIR}/lib/
 COPY ${resource_path}/alfresco-mmt/* ${TOMCAT_DIR}/alfresco-mmt/
 COPY ${resource_path}/dependency/licenses/ /licenses/

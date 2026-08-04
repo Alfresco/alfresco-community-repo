@@ -15,7 +15,6 @@
             <package name="org.alfresco.rest.people.*"/>
             <package name="org.alfresco.rest.queries.*"/>
             <package name="org.alfresco.rest.ratings.*"/>
-            <package name="org.alfresco.rest.search.*"/>
         </packages>
 
         <!--

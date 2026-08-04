@@ -76,11 +76,6 @@
         <property name="keyResourceLoader" ref="springKeyResourceLoader" />
     </bean>
 
-    <bean id="search.searchEngineInfo"
-          class="org.alfresco.repo.search.impl.elasticsearch.SearchEngineInfoImpl">
-        <constructor-arg ref="elasticsearchHttpClientFactory" />
-    </bean>
-
     <bean id="elasticsearchInitialiser"
           destroy-method="stop"
           class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiser"
@@ -94,7 +89,6 @@
         <constructor-arg value="${elasticsearch.lockRetryAttempts}" />
         <constructor-arg value="${elasticsearch.lockRetryPeriodSeconds}" />
         <constructor-arg value="${elasticsearch.createIndexIfNotExists}" />
-        <property name="searchEngineInfo" ref="search.searchEngineInfo" />
     </bean>
 
     <bean id="elasticsearchIndexService"

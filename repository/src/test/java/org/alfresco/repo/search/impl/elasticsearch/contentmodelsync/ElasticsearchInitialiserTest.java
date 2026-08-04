@@ -62,7 +62,6 @@ import org.alfresco.repo.dictionary.CompiledModel;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
-import org.alfresco.repo.search.impl.elasticsearch.SearchEngineInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
@@ -96,8 +95,6 @@ public class ElasticsearchInitialiserTest
     private CompiledModel mockCompiledModel;
     @Mock
     private ContentModelSynchronizer.IndexMappingResult indexMappingResult;
-    @Mock
-    private SearchEngineInfo searchEngineInfo;
 
     @InjectMocks
     private ElasticsearchInitialiser toTest;
@@ -127,22 +124,6 @@ public class ElasticsearchInitialiserTest
         verify(mockContentModelSynchronizer, never()).loadSupportedAnalyzersOnStartup();
         verify(mockElasticSearchIndexService, never()).createIndex();
         verify(mockContentModelSynchronizer).loadBasicIndexMappingsOnStartup();
-    }
-
-    /**
-     * Check that the search engine provider and version are detected once a connection has been established.
-     */
-    @Test
-    public void shouldDetectSearchEngineAfterConnecting()
-    {
-        toTest.setCreateIndexIfNotExists(false);
-        when(mockElasticSearchIndexService.indexExists()).thenReturn(true);
-        when(mockElasticSearchIndexService.isMappingLoaded()).thenReturn(false);
-        when(mockContentModelSynchronizer.loadBasicIndexMappingsOnStartup()).thenReturn(true);
-
-        toTest.init();
-
-        verify(searchEngineInfo).detect();
     }
 
     /**

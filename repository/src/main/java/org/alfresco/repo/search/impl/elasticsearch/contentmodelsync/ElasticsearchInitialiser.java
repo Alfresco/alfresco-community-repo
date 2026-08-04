@@ -46,7 +46,6 @@ import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
-import org.alfresco.repo.search.impl.elasticsearch.SearchEngineInfo;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -86,7 +85,6 @@ public class ElasticsearchInitialiser implements DictionaryListener
     private int lockRetryPeriodSeconds;
     private int retryPeriodSeconds;
     private JobLockService jobLockService;
-    private SearchEngineInfo searchEngineInfo;
     private Thread thread;
     private AtomicBoolean isTerminated = new AtomicBoolean(false);
 
@@ -265,11 +263,6 @@ public class ElasticsearchInitialiser implements DictionaryListener
             }
         }
         LOGGER.info("Successfully connected to Elasticsearch index.");
-        // Now that a connection has been established, detect the search engine provider and version.
-        if (searchEngineInfo != null)
-        {
-            searchEngineInfo.detect();
-        }
         // Attempt to map the models.
         mapModels();
     }
@@ -364,7 +357,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
 
     /**
      * This method will be invoked at startup and every time a afterDictionaryInit event is triggered.
-     * 
+     *
      * @return true if new models were mapped during the method execution, false otherwise.
      */
     private boolean mapModels()
@@ -515,11 +508,6 @@ public class ElasticsearchInitialiser implements DictionaryListener
     public void setElasticsearchIndexService(ElasticsearchIndexService elasticsearchIndexService)
     {
         this.elasticsearchIndexService = elasticsearchIndexService;
-    }
-
-    public void setSearchEngineInfo(SearchEngineInfo searchEngineInfo)
-    {
-        this.searchEngineInfo = searchEngineInfo;
     }
 
     public void setCreateIndexIfNotExists(boolean createIndexIfNotExists)

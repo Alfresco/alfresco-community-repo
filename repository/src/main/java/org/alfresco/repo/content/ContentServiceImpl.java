@@ -54,6 +54,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -85,6 +86,7 @@ import org.alfresco.util.TempFileProvider;
  */
 public class ContentServiceImpl implements ContentService, ApplicationContextAware
 {
+    private static final String KEY_CONTENT_ATTACHMENT = "contentService.attachment";
     private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
     private DictionaryService dictionaryService;
     private NodeService nodeService;
@@ -397,12 +399,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName)
     {
-        return getReaderImpl(nodeRef, propertyQName, true, false);
-    }
-
-    @Override
-    public ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean attachment)
-    {
+        Boolean attachmentResource = (Boolean) AlfrescoTransactionSupport.getResource(KEY_CONTENT_ATTACHMENT);
+        boolean attachment = attachmentResource != null && attachmentResource;
         return getReaderImpl(nodeRef, propertyQName, !attachment || isDownloadAsRead, attachment);
     }
 

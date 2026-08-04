@@ -392,24 +392,24 @@ public class ContentServiceImplUnitTest
     }
 
     @Test
-    public void testGetReader_attachmentTrue_flagDisabled_firesOnlyDownloadPolicy()
+    public void testGetReader_attachmentTrue_policyReadOnly_firesOnlyReadPolicy()
     {
         setupReaderMocks();
-        contentService.setDownloadAsRead(false);
+        contentService.setAuditPolicy("READ_ONLY");
 
         AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
 
         assertNotNull(reader);
-        verify(contentService.onContentReadDelegate, never()).get(any(NodeRef.class), any(Set.class));
-        verify(contentService.onContentDownloadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
     }
 
     @Test
-    public void testGetReader_attachmentTrue_flagEnabled_firesBothPolicies()
+    public void testGetReader_attachmentTrue_policyReadAndDownload_firesBothPolicies()
     {
         setupReaderMocks();
-        contentService.setDownloadAsRead(true);
+        contentService.setAuditPolicy("READ_AND_DOWNLOAD");
 
         AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
@@ -432,6 +432,36 @@ public class ContentServiceImplUnitTest
 
         assertNull(reader);
         verify(contentService.onContentReadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+    }
+
+    @Test
+    public void testGetReader_noAttachment_unknownReadAsDownloadTrue_firesBothPolicies()
+    {
+        setupReaderMocks();
+        contentService.setAuditPolicy("READ_AND_DOWNLOAD");
+        contentService.setUnknownReadAsDownload(true);
+
+        // No attachment resource bound — simulates CMIS/WebDAV
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+    }
+
+    @Test
+    public void testGetReader_noAttachment_unknownReadAsDownloadFalse_firesOnlyReadPolicy()
+    {
+        setupReaderMocks();
+        contentService.setAuditPolicy("READ_AND_DOWNLOAD");
+        contentService.setUnknownReadAsDownload(false);
+
+        // No attachment resource bound — simulates CMIS/WebDAV
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
         verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
     }
 }

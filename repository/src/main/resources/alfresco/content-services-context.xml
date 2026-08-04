@@ -140,7 +140,8 @@
    
    <!-- Abstract bean definition defining base definition for content service -->
    <bean id="baseContentService" class="org.alfresco.repo.content.ContentServiceImpl" abstract="true" init-method="init">
-      <property name="downloadAsRead" value="${audit.enabled.contentDownloadsAsRead}" />
+      <property name="auditPolicy" value="${audit.content.policy}" />
+      <property name="unknownReadAsDownload" value="${audit.content.unknownReadAsDownload}" />
       <property name="retryingTransactionHelper">
           <ref bean="retryingTransactionHelper"/>
       </property>

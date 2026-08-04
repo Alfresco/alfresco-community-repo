@@ -188,18 +188,14 @@ import org.alfresco.service.namespace.QName;
         {
             action = "CREATE";
         }
-        else if (subActions.contains(DOWNLOAD_CONTENT))
-        {
-            action = "DOWNLOAD";
-            keepRunAsUser = true;
-        }
-        else if (subActions.size() == 1 && subActions.contains(READ_CONTENT))
+        else if ((subActions.size() == 1 || subActions.contains(DOWNLOAD_CONTENT)) && subActions.contains(READ_CONTENT))
         {
             // Reads in combinations with other actions tend to only facilitate the other action.
             action = "READ";
             // MNT-8810 fix, action is considered as READ -> so let's keep actual user who performed readContent
             keepRunAsUser = true;
         }
+
         else if (subActions.contains(DELETE_NODE))
         {
             action = "DELETE";

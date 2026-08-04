@@ -53,6 +53,7 @@ import org.springframework.util.FileCopyUtils;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.web.scripts.MimeTypeUtil;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
@@ -275,8 +276,9 @@ public class ContentStreamer implements ResourceLoaderAware
             }
         }
 
-        // get the content reader (fires OnContentDownloadPolicy if attach=true)
-        ContentReader reader = contentService.getReader(nodeRef, propertyQName, attach);
+        // Signal to ContentServiceImpl that this is a download (attachment) or preview
+        AlfrescoTransactionSupport.bindResource("contentService.attachment", attach);
+        ContentReader reader = contentService.getReader(nodeRef, propertyQName);
         if (reader == null || !reader.exists())
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for node ref " + nodeRef + " (property: " + propertyQName.toString() + ")");

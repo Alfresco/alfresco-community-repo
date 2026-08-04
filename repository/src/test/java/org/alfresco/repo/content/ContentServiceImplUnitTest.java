@@ -59,6 +59,7 @@ import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -382,7 +383,8 @@ public class ContentServiceImplUnitTest
     {
         setupReaderMocks();
 
-        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME, false);
+        AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.FALSE);
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
 
         assertNotNull(reader);
         verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
@@ -395,7 +397,8 @@ public class ContentServiceImplUnitTest
         setupReaderMocks();
         contentService.setDownloadAsRead(false);
 
-        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME, true);
+        AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
 
         assertNotNull(reader);
         verify(contentService.onContentReadDelegate, never()).get(any(NodeRef.class), any(Set.class));
@@ -408,7 +411,8 @@ public class ContentServiceImplUnitTest
         setupReaderMocks();
         contentService.setDownloadAsRead(true);
 
-        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME, true);
+        AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
 
         assertNotNull(reader);
         verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
@@ -423,7 +427,8 @@ public class ContentServiceImplUnitTest
         when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
         setupReaderMocks();
 
-        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME, true);
+        AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
 
         assertNull(reader);
         verify(contentService.onContentReadDelegate, never()).get(any(NodeRef.class), any(Set.class));

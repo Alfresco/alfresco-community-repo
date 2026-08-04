@@ -60,6 +60,7 @@ import org.alfresco.repo.content.ContentServiceImpl;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -598,7 +599,8 @@ public class AccessAuditorTest
     @Test
     public final void test15OnContentReadWithAttachmentFalse() throws Exception
     {
-        serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT, false);
+        AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.FALSE);
+        serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
 
         txn.commit();
         txn = null;
@@ -622,7 +624,8 @@ public class AccessAuditorTest
         contentServiceImpl.setDownloadAsRead(false);
         try
         {
-            serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT, true);
+            AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
+            serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
 
             txn.commit();
             txn = null;
@@ -651,7 +654,8 @@ public class AccessAuditorTest
         contentServiceImpl.setDownloadAsRead(true);
         try
         {
-            serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT, true);
+            AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
+            serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
 
             txn.commit();
             txn = null;

@@ -607,23 +607,10 @@ public class AccessAuditor implements InitializingBean,
                 NodeChange nodeChange = entry.getValue();
                 if (!nodeChange.isTemporaryNode())
                 {
-                    publishAuditForTheTransaction(nodeChange);
+                    Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+                    recordAuditValues(TRANSACTION, auditMap);
                 }
             }
-        }
-
-        private void publishAuditForTheTransaction(NodeChange nodeChange)
-        {
-            // When both READ and DOWNLOAD sub-actions are present (i.e., the
-            // contentDownloadsAsRead flag is enabled), emit two separate audit entries.
-            Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
-            if (nodeChange.hasReadAndDownloadActions())
-            {
-                Map<String, Serializable> readAuditMap = new HashMap<>(auditMap); // This Must Come Download as higher precedence
-                readAuditMap.put(ACTION, READ_ACTION);
-                recordAuditValues(TRANSACTION, readAuditMap);
-            }
-            recordAuditValues(TRANSACTION, auditMap);
         }
     }
 

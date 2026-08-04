@@ -535,7 +535,7 @@ jobs:
       - name: "Run tests"
         id: tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B verify -pl packaging/tests/${{ matrix.pom-dir }} -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+        run: mvn -B verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
       - name: "Print output after success"
         if: ${{ always() && steps.tests.outcome == 'success' }}
         run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"

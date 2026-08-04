@@ -5,6 +5,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <bean id="detectSearchEngine" class="org.alfresco.rest.api.search.DetectSearchEngine" />
     <bean id="publicapi.webscripts.store" parent="webscripts.repoclasspathstore">
         <property name="mustExist"><value>true</value></property>
         <property name="classPath"><value>alfresco/templates/publicapi</value></property>
@@ -17,9 +18,9 @@
             </list>
         </property>
     </bean>
-      
+
     <bean id="publicapi.index" class="org.springframework.extensions.webscripts.JaxRSUriIndex"/>
-   
+
     <bean id="publicapi.index.prototype" class="org.springframework.extensions.webscripts.JaxRSUriIndex" scope="prototype"/>
 
     <bean id="publicapi.registry" class="org.alfresco.rest.api.PublicApiDeclarativeRegistry">
@@ -34,7 +35,7 @@
         <property name="locator" ref="apiLookup" />
 
     </bean>
-   
+
     <bean id="publicapi.registry.prototype" parent="publicapi.registry" scope="prototype">
         <property name="uriIndex" ref="publicapi.index.prototype" />
     </bean>
@@ -68,15 +69,15 @@
         <property name="maxContentSize" value="${webscripts.setMaxContentSize}"/>
         <property name="preserveHeadersPattern" value="${webscripts.transaction.preserveHeadersPattern}"/>
     </bean>
-   
+
     <!--  Public Api Authenticator -->
 
     <bean id="webScriptAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
-   
+
     <bean id="publicapi.tenantAuthenticator" class="org.alfresco.rest.api.PublicApiTenantAuthentication">
         <property name="tenantAdminService" ref="tenantAdminService"/>
     </bean>
-   
+
     <bean id="publicapi.authenticator" class="org.alfresco.rest.api.PublicApiAuthenticatorFactory">
         <property name="authenticationService" ref="AuthenticationService" />
         <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
@@ -86,7 +87,7 @@
         <property name="validAuthentictorKeys">
             <bean class="org.springframework.util.StringUtils" factory-method="commaDelimitedListToSet">
                 <constructor-arg type="java.lang.String" value="${alfresco.authentication.validAuthenticatorKeys}"/>
-         </bean>   
+         </bean>
         </property>
         <property name="outboundHeaders">
             <bean class="org.springframework.util.StringUtils" factory-method="commaDelimitedListToSet">
@@ -112,7 +113,7 @@
             </list>
         </property>
     </bean>
-   
+
     <bean id="restJsonModule" class="org.alfresco.rest.framework.jacksonextensions.RestJsonModule">
         <property name="jsonSerializers">
             <list>
@@ -183,7 +184,7 @@
         </property>
     </bean>
     <bean id="simpleMappingExceptionResolver" parent="simpleMappingExceptionResolverParent" />
-    
+
     <bean id="apiAssistant" class="org.alfresco.rest.framework.tools.ApiAssistant">
         <property name="jsonHelper" ref="jsonHelper" />
         <property name="resolver" ref="simpleMappingExceptionResolver" />
@@ -191,11 +192,11 @@
         <property name="restMetricsReporter" ref="restMetricsReporter"/>
         <property name="queryParserExceptionResolver" ref="queryParserExceptionResolver" />
     </bean>
-    
-	<!-- Using annotation-config=false means AutowiredAnnotationBeanPostProcessor 
+
+	<!-- Using annotation-config=false means AutowiredAnnotationBeanPostProcessor
         and CommonAnnotationBeanPostProcessor are both NOT included implicitly -->
-	<!-- context:component-scan base-package="org.alfresco.deleteme" annotation-config="false" 
-		/> <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" 
+	<!-- context:component-scan base-package="org.alfresco.deleteme" annotation-config="false"
+		/> <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"
         /> -->
 
     <context:component-scan base-package="org.alfresco.rest.api.modules"/>
@@ -208,37 +209,37 @@
         <property name="maxContentSize" value="${webscripts.setMaxContentSize}"/>
         <property name="transactionService" ref="transactionService" />
     </bean>
- 
+
     <alias name="webscript.org.alfresco.api.ResourceWebScript.get" alias="executorForHttpGet"/>
-    
+
     <bean id="webscriptHelper" class="org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper">
         <property name="locator" ref="apiLookup" />
         <property name="executor" ref="executorForHttpGet" />
     </bean>
 
     <!-- Webscripts -->
-	<bean   id="webscript.org.alfresco.api.ResourceWebScript.get" 
-	        class="org.alfresco.rest.framework.webscripts.ResourceWebScriptGet" parent="apiWebScriptParent">              
+	<bean   id="webscript.org.alfresco.api.ResourceWebScript.get"
+	        class="org.alfresco.rest.framework.webscripts.ResourceWebScriptGet" parent="apiWebScriptParent">
         <property name="helper" ref="webscriptHelper" />
         <property name="locator" ref="apiLookup" />
-        <property name="streamer" ref="webscript.content.streamer" />   
-    </bean>
-	
-    <bean   id="webscript.org.alfresco.api.ResourceWebScript.post" 
-            class="org.alfresco.rest.framework.webscripts.ResourceWebScriptPost" parent="apiWebScriptParent">
-        <property name="helper" ref="webscriptHelper" />
-        <property name="locator" ref="apiLookup" />        
         <property name="streamer" ref="webscript.content.streamer" />
     </bean>
- 
-    <bean   id="webscript.org.alfresco.api.ResourceWebScript.put" 
+
+    <bean   id="webscript.org.alfresco.api.ResourceWebScript.post"
+            class="org.alfresco.rest.framework.webscripts.ResourceWebScriptPost" parent="apiWebScriptParent">
+        <property name="helper" ref="webscriptHelper" />
+        <property name="locator" ref="apiLookup" />
+        <property name="streamer" ref="webscript.content.streamer" />
+    </bean>
+
+    <bean   id="webscript.org.alfresco.api.ResourceWebScript.put"
             class="org.alfresco.rest.framework.webscripts.ResourceWebScriptPut" parent="apiWebScriptParent">
         <property name="helper" ref="webscriptHelper" />
         <property name="locator" ref="apiLookup" />
         <property name="streamer" ref="webscript.content.streamer" />
     </bean>
-    
-    <bean   id="webscript.org.alfresco.api.ResourceWebScript.delete" 
+
+    <bean   id="webscript.org.alfresco.api.ResourceWebScript.delete"
             class="org.alfresco.rest.framework.webscripts.ResourceWebScriptDelete" parent="apiWebScriptParent">
         <property name="helper" ref="webscriptHelper" />
         <property name="locator" ref="apiLookup" />
@@ -253,9 +254,9 @@
     <bean id="webscript.org.alfresco.api.MetaDataWebScript.options"
           class="org.alfresco.rest.framework.webscripts.metadata.WebScriptOptionsMetaData" parent="apiWebScriptParent">
         <property name="lookupDictionary" ref="apiLookup" />
-    </bean>  
+    </bean>
 
-	<!-- Bean defintions, hopefully later we can replace them with autowired 
+	<!-- Bean defintions, hopefully later we can replace them with autowired
         beans -->
 
     <bean id="defaultExceptionInterceptor" class="org.alfresco.rest.api.impl.ExceptionInterceptor">
@@ -285,7 +286,7 @@
     <bean id="activitySummaryProcessorRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
         <property name="storageType" value="org.alfresco.rest.api.impl.activities.ActivitySummaryProcessor"/>
     </bean>
-    
+
     <bean id="activitySummaryParser" class="org.alfresco.rest.api.impl.activities.ActivitySummaryParser">
         <property name="processors" ref="activitySummaryProcessorRegistry" />
     </bean>
@@ -356,7 +357,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="wikiActivitySummaryProcessor" class="org.alfresco.rest.api.impl.activities.BaseActivitySummaryProcessor">
         <property name="registry" ref="activitySummaryParser" />
         <property name="eventTypes">
@@ -412,7 +413,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="nodeTypeConstraint" class="org.alfresco.util.TypeConstraint" init-method="init">
         <property name="nodeService" ref="NodeService" />
         <property name="dictionaryService" ref="dictionaryService" />
@@ -780,12 +781,12 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="preferences" class="org.alfresco.rest.api.impl.PreferencesImpl">
         <property name="people" ref="people" />
         <property name="preferenceService" ref="PreferenceService" />
     </bean>
-    
+
     <bean id="Preferences" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.rest.api.Preferences</value>
@@ -799,7 +800,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="sites" class="org.alfresco.rest.api.impl.SitesImpl">
         <property name="dictionaryService" ref="DictionaryService" />
         <property name="nodes" ref="Nodes" />
@@ -1083,7 +1084,7 @@
     <bean class="org.alfresco.rest.api.audit.AuditApplicationsEntityResource">
         <property name="audit" ref="AuditApi" />
     </bean>
-    
+
     <bean class="org.alfresco.rest.api.audit.AuditApplicationsAuditEntriesRelation">
         <property name="audit" ref="AuditApi" />
     </bean>
@@ -1139,7 +1140,7 @@
     <bean class="org.alfresco.rest.api.tags.TagsEntityResource">
         <property name="tags" ref="Tags" />
     </bean>
-	
+
     <bean class="org.alfresco.rest.api.people.PersonSitesRelation">
         <property name="sites" ref="Sites" />
     </bean>
@@ -1151,11 +1152,11 @@
     <bean class="org.alfresco.rest.api.people.PersonActivitiesRelation">
         <property name="activities" ref="Activities" />
     </bean>
-    
+
     <bean class="org.alfresco.rest.api.people.PersonPreferencesRelation">
         <property name="preferences" ref="Preferences" />
     </bean>
-    
+
     <bean class="org.alfresco.rest.api.people.PersonFavouriteSitesRelation">
         <property name="sites" ref="Sites" />
     </bean>
@@ -1168,7 +1169,7 @@
         <property name="nodes" ref="Nodes" />
         <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
-	
+
     <bean class="org.alfresco.rest.api.nodes.NodeCommentsRelation">
         <property name="comments" ref="Comments" />
     </bean>
@@ -1176,15 +1177,15 @@
     <bean class="org.alfresco.rest.api.nodes.NodeRatingsRelation">
         <property name="nodeRatings" ref="NodeRatings" />
     </bean>
-    
+
     <bean class="org.alfresco.rest.api.nodes.NodeChildrenRelation">
         <property name="nodes" ref="Nodes" />
     </bean>
-    
+
     <bean class="org.alfresco.rest.api.nodes.NodeAuditEntriesRelation">
         <property name="audit" ref="AuditApi" />
     </bean>
-    
+
     <bean id="baseNodeRelation" class="org.alfresco.rest.api.nodes.AbstractNodeRelation" abstract="true">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="nodes" ref="Nodes" />
@@ -1207,7 +1208,7 @@
     <bean class="org.alfresco.rest.api.nodes.NodeSecondaryChildrenRelation" parent="baseNodeRelation"/>
 
     <bean class="org.alfresco.rest.api.nodes.NodeParentsRelation" parent="baseNodeRelation"/>
-    
+
     <bean class="org.alfresco.rest.api.nodes.NodeTargetsRelation" parent="baseNodeRelation"/>
 
     <bean class="org.alfresco.rest.api.nodes.NodeSourcesRelation" parent="baseNodeRelation"/>
@@ -1241,13 +1242,13 @@
         <property name="siteMembershipRequests" ref="SiteMembershipRequests" />
     </bean>
 
-    <bean id="getNetworksWebScript" 
+    <bean id="getNetworksWebScript"
           class="org.alfresco.rest.api.NetworksWebScriptGet" parent="apiWebScriptParent">
         <property name="networks" ref="Networks" />
         <property name="helper" ref="webscriptHelper" />
     </bean>
 
-    <bean id="getNetworkWebScript" 
+    <bean id="getNetworkWebScript"
           class="org.alfresco.rest.api.NetworkWebScriptGet" parent="apiWebScriptParent">
         <property name="networks" ref="Networks" />
         <property name="helper" ref="webscriptHelper" />
@@ -1261,7 +1262,7 @@
         <property name="resultMapper" ref="searchapiResultMapper" />
         <property name="searchMapper" ref="searchapiSearchMapper" />
     </bean>
-    
+
     <bean id="webscript.org.alfresco.api.SearchSQLApiWebscript.post"
           class="org.alfresco.rest.api.search.SearchSQLApiWebscript" parent="webscript">
         <property name="serviceRegistry" ref="ServiceRegistry" />
@@ -1369,32 +1370,32 @@
         <property name="allowUnsecureCallbackJSONP" value="${allow.unsecure.callback.jsonp}"/>
     </bean>
 
-    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.get" 
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.get"
             class="org.alfresco.opencmis.CMISWebScript">
         <property name="registry"           ref="cmisDispatcherRegistry" />
     </bean>
 
-    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.post" 
-            class="org.alfresco.opencmis.CMISWebScript">
-        <property name="registry"           ref="cmisDispatcherRegistry" />
-    </bean>
- 
-    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.put" 
-            class="org.alfresco.opencmis.CMISWebScript">
-        <property name="registry"           ref="cmisDispatcherRegistry" />
-    </bean>
-    
-    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.delete" 
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.post"
             class="org.alfresco.opencmis.CMISWebScript">
         <property name="registry"           ref="cmisDispatcherRegistry" />
     </bean>
 
-    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.options" 
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.put"
             class="org.alfresco.opencmis.CMISWebScript">
         <property name="registry"           ref="cmisDispatcherRegistry" />
     </bean>
 
-    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.head" 
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.delete"
+            class="org.alfresco.opencmis.CMISWebScript">
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+    </bean>
+
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.options"
+            class="org.alfresco.opencmis.CMISWebScript">
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+    </bean>
+
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.head"
             class="org.alfresco.opencmis.CMISWebScript">
         <property name="registry"           ref="cmisDispatcherRegistry" />
     </bean>
@@ -1411,14 +1412,14 @@
         <property name="serverOverride" value="${opencmis.server.value}" />
         <property name="pathGenerator" ref="cmisPathGenerator" />
     </bean>
-    
+
     <!-- Workflow REST API -->
     <bean id="restVariableHelper" class="org.alfresco.rest.workflow.api.impl.RestVariableHelper">
         <property name="nodeService" ref="nodeService" />
         <property name="namespaceService" ref="namespaceService" />
         <property name="dictionaryService" ref="DictionaryService" />
     </bean>
-   
+
     <bean id="baseWorkflowRest" class="org.alfresco.rest.workflow.api.impl.WorkflowRestImpl" abstract="true">
         <property name="activitiProcessEngine" ref="activitiProcessEngine" />
         <property name="authorityService" ref="authorityService" />
@@ -1429,7 +1430,7 @@
         <property name="nodeService" ref="nodeService"/>
         <property name="activitiWorkflowEngine" ref="activitiWorkflowEngine" />
     </bean>
-   
+
     <bean id="deployments" class="org.alfresco.rest.workflow.api.impl.DeploymentsImpl" parent="baseWorkflowRest">
     </bean>
 
@@ -1446,7 +1447,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="processDefinitions" class="org.alfresco.rest.workflow.api.impl.ProcessDefinitionsImpl" parent="baseWorkflowRest">
         <property name="messageService" ref="messageService" />
         <property name="engineId" value="activiti" />
@@ -1466,7 +1467,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="processes" class="org.alfresco.rest.workflow.api.impl.ProcessesImpl" parent="baseWorkflowRest">
         <property name="workflowPackageComponent" ref="workflowPackageImpl"/>
         <property name="serviceRegistry" ref="ServiceRegistry" />
@@ -1491,7 +1492,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="tasks" class="org.alfresco.rest.workflow.api.impl.TasksImpl" parent="baseWorkflowRest">
         <property name="restVariableHelper" ref="restVariableHelper" />
         <property name="messageService" ref="messageService" />
@@ -1513,7 +1514,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="workflowActivities" class="org.alfresco.rest.workflow.api.impl.ActivitiesImpl" parent="baseWorkflowRest" />
 
     <bean id="WorkflowActivities" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1533,19 +1534,19 @@
     <bean class="org.alfresco.rest.workflow.api.deployments.DeploymentsRestEntityResource">
         <property name="deployments" ref="Deployments"/>
     </bean>
-    
+
     <bean class="org.alfresco.rest.workflow.api.processdefinitions.ProcessDefinitionsRestEntityResource">
         <property name="processDefinitions" ref="ProcessDefinitions"/>
     </bean>
-	
+
     <bean class="org.alfresco.rest.workflow.api.processdefinitions.StartFormModelRelation">
         <property name="processDefinitions" ref="ProcessDefinitions"/>
     </bean>
-    
+
     <bean class="org.alfresco.rest.workflow.api.processes.ProcessesRestEntityResource">
         <property name="processes" ref="Processes"/>
     </bean>
-	
+
     <bean class="org.alfresco.rest.workflow.api.processes.ProcessTasksRelation">
         <property name="tasks" ref="Tasks"/>
     </bean>
@@ -1558,23 +1559,23 @@
     <bean class="org.alfresco.rest.workflow.api.processes.ProcessVariablesRelation">
         <property name="processes" ref="Processes"/>
     </bean>
-	
+
     <bean class="org.alfresco.rest.workflow.api.tasks.TasksRestEntityResource">
         <property name="tasks" ref="Tasks"/>
     </bean>
-	
+
     <bean class="org.alfresco.rest.workflow.api.tasks.TaskCandidatesRelation">
         <property name="tasks" ref="Tasks"/>
     </bean>
-   
+
     <bean class="org.alfresco.rest.workflow.api.tasks.TaskVariablesRelation">
         <property name="tasks" ref="Tasks"/>
     </bean>
-   
+
     <bean class="org.alfresco.rest.workflow.api.tasks.TaskFormModelRelation">
         <property name="tasks" ref="Tasks"/>
     </bean>
-   
+
     <bean class="org.alfresco.rest.workflow.api.tasks.TaskItemsRelation">
         <property name="tasks" ref="Tasks"/>
     </bean>

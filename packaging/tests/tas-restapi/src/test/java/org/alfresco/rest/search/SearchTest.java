@@ -53,6 +53,7 @@ import org.alfresco.utility.model.FileType;
 /**
  * Search end point Public API test.
  */
+@SuppressWarnings({"PMD.MethodNamingConventions", "PMD.LongVariable"})
 public class SearchTest extends AbstractSearchServicesE2ETest
 {
     @BeforeClass(alwaysRun = true)

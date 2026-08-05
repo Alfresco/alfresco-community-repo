@@ -56,6 +56,7 @@ import org.alfresco.utility.model.FolderModel;
 /**
  * Base corpus for Exact Term tests. Creates 5 documents with known name/title/description/content values used to verify exact term search behavior against standard cm:* properties.
  */
+@SuppressWarnings("PMD.SimpleDateFormatNeedsLocale")
 public abstract class AbstractSearchExactTermTest extends AbstractSearchServicesE2ETest
 {
     @Autowired

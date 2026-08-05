@@ -39,6 +39,7 @@ import org.alfresco.utility.model.FolderModel;
 /**
  * Test class tests content in the secondary parent is found too Created for Search-1313
  */
+@SuppressWarnings("PMD.OneDeclarationPerLine")
 public class SearchSecondaryAssociationTest extends AbstractSearchServicesE2ETest
 {
     private FolderModel testFolder1, testFolder2;

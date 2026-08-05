@@ -44,6 +44,7 @@ public class ExplicitRoutingTest extends AbstractE2EFunctionalTest
      * Checks indexing still works after sharding model used for explicit routing has been disabled
      */
     @Test(priority = 1)
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     public void testIndexingStillWorkingAfterShardModelIsDeactivated()
     {
 

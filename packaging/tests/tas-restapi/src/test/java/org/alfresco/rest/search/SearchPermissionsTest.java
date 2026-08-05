@@ -45,6 +45,7 @@ import org.alfresco.utility.model.UserModel;
 /**
  * Search end point Public API test with Permission checks
  */
+@SuppressWarnings({"PMD.SingularField", "PMD.OneDeclarationPerLine"})
 public class SearchPermissionsTest extends AbstractSearchServicesE2ETest
 {
     private FileModel file1, file2;

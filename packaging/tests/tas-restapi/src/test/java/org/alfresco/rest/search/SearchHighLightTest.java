@@ -42,6 +42,7 @@ import org.alfresco.utility.report.Bug;
 /**
  * Search high lighting test.
  */
+@SuppressWarnings("PMD.UselessParentheses")
 public class SearchHighLightTest extends AbstractSearchServicesE2ETest
 {
     @BeforeClass(alwaysRun = true)

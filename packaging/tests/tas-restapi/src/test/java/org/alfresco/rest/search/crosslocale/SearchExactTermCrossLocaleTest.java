@@ -33,6 +33,7 @@ import org.alfresco.rest.search.AbstractSearchExactTermTest;
 /**
  * Tests including all different tokenization (false, true, both) modes with Exact Term queries. Search Services must be configured with Cross Locale enabled in order to run these tests. These tests are based in AFTSDefaultTextQueryIT class, but an additional type of property has been added (tok:true) in order to provide full coverage for the available options.
  */
+@SuppressWarnings("PMD.MethodNamingConventions")
 public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
 {
 

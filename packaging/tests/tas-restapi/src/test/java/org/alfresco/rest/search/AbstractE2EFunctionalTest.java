@@ -68,6 +68,7 @@ import org.alfresco.utility.network.ServerHealth;
  * Mirrors the structure of {@code AbstractE2EFunctionalTest} from the InsightEngine repo, which is the source of truth for these tests.
  */
 @ContextConfiguration("classpath:alfresco-restapi-context.xml")
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.GodClass", "PMD.TooManyMethods"})
 public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringContextTests
 {
     private static final Logger LOGGER = LogFactory.getLogger();
@@ -104,6 +105,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected SiteModel testSite2;
 
     /** Random unique string derived from the test site name; used to build unique file titles. */
+    @SuppressWarnings({"PMD.MutableStaticState", "PMD.FieldNamingConventions"})
     protected static String unique_searchString;
 
     /** Search query language. {@link #toString()} returns the lower-case identifier expected by Search API. */
@@ -112,6 +114,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         CMIS, AFTS;
 
         @Override
+        @SuppressWarnings("PMD.UseLocaleWithCaseConversions")
         public String toString()
         {
             return name().toLowerCase();
@@ -205,6 +208,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     /**
      * Converts a model file name like {@code "sharding-content-model.xml"} (or {@code "model/sharding-content-model.xml"}) into its CamelCase local name {@code "ShardingContentModel"} as expected by the private CMM REST API.
      */
+    @SuppressWarnings({"PMD.UseIndexOfChar", "PMD.UseLocaleWithCaseConversions"})
     private String fileNameToModelLocalName(String modelFileName)
     {
         String base = modelFileName.contains("/")
@@ -362,6 +366,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         return false;
     }
 
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     private boolean isContentFoundWithRequest(SearchRequest searchRequest, String contentName)
     {
         SearchResponse response = query(searchRequest);
@@ -454,6 +459,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     }
 
     /** Builds a pagination object from optional {@code skipCount} / {@code maxItems}. */
+    @SuppressWarnings("PMD.LinguisticNaming")
     protected Pagination setPaging(Integer skipCount, Integer maxItems)
     {
         Pagination paging = new Pagination();
@@ -511,6 +517,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      * 
      * If {@code user} is {@code null}, {@link #testUser} is used.
      */
+    @SuppressWarnings("PMD.MethodNamingConventions")
     protected SearchResponse SearchSpellcheckQuery(UserModel user, String query, String userQuery)
     {
         RestRequestSpellcheckModel spellCheck = new RestRequestSpellcheckModel();
@@ -531,6 +538,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      * <li>If {@code spellCheckSuggestion} is non-null, asserts it appears in {@code suggestions}.</li>
      * </ul>
      */
+    @SuppressWarnings("PMD.UnitTestShouldUseTestAnnotation")
     public void testSearchSpellcheckResponse(SearchResponse response, String spellCheckType, String spellCheckSuggestion)
     {
         if (spellCheckType != null)

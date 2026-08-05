@@ -40,6 +40,7 @@ import org.alfresco.utility.model.FileModel;
 /**
  * A test for fields defined in the solr schema Based on <a href="https://issues.alfresco.com/jira/browse/SEARCH-2139">...</a>
  */
+@SuppressWarnings({"PMD.SingularField", "PMD.FieldNamingConventions", "PMD.OneDeclarationPerLine", "PMD.UseDiamondOperator"})
 public class FieldDefinitionTest extends AbstractSearchServicesE2ETest
 {
 

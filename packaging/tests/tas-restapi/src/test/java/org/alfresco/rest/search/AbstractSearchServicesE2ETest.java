@@ -47,6 +47,7 @@ import org.alfresco.utility.model.UserModel;
  * <p>
  * Mirrors the InsightEngine {@code AbstractSearchServicesE2ETest}: a thin specialisation of {@link AbstractE2EFunctionalTest} that adds the standard "search services" sample data set. All Spring context, autowires, common test user/site setup and generic search/query/wait/ spellcheck helpers are inherited from {@link AbstractE2EFunctionalTest}.
  */
+@SuppressWarnings({"PMD.LongVariable", "PMD.OneDeclarationPerLine"})
 public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctionalTest
 {
     private static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";

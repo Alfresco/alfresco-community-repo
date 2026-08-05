@@ -46,6 +46,7 @@ import org.alfresco.utility.model.UserModel;
 /**
  * Faceted search test with FacetFields
  */
+@SuppressWarnings("PMD.OneDeclarationPerLine")
 public class FacetFieldsSearchTest extends AbstractSearchServicesE2ETest
 {
     private UserModel userWithNoAccess, userCanAccessTextFile;

@@ -31,6 +31,7 @@ import org.testng.annotations.Test;
 /**
  * Tests Exact Term queries against standard properties (cm:name, cm:title, cm:description, cm:content). These tests are engine-agnostic and do not require Cross Locale or Solr-specific tokenisation configuration.
  */
+@SuppressWarnings("PMD.MethodNamingConventions")
 public class SearchExactTermTest extends AbstractSearchExactTermTest
 {
     /**

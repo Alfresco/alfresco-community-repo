@@ -45,6 +45,7 @@ import org.alfresco.utility.report.Bug;
 /**
  * Search end point Public API test with fingerprint.
  */
+@SuppressWarnings({"PMD.PackageCase", "PMD.OneDeclarationPerLine", "PMD.SingularField"})
 public class FingerPrintTest extends AbstractE2EFunctionalTest
 {
     private FolderModel folder;

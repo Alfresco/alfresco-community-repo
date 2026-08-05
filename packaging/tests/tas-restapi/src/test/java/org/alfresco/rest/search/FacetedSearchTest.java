@@ -97,6 +97,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
      * Verify this query is returning the same results for both single server and shard environments.
      */
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     public void searchWithQueryFacetingCluster()
     {
         searchWithQueryFaceting();

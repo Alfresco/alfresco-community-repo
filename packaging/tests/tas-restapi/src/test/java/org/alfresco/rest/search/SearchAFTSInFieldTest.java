@@ -49,6 +49,7 @@ import org.alfresco.utility.model.FolderModel;
 /**
  * Test class tests AFTS Search In Field works Created for Search-840
  */
+@SuppressWarnings({"PMD.OneDeclarationPerLine", "PMD.UnitTestShouldIncludeAssert"})
 public class SearchAFTSInFieldTest extends AbstractSearchServicesE2ETest
 {
     private FolderModel folder1, folder2;

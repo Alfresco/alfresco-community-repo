@@ -47,6 +47,7 @@ import org.alfresco.utility.LogFactory;
 /**
  * Shard info end point REST API test.
  */
+@SuppressWarnings({"PMD.LinguisticNaming", "PMD.UselessParentheses"})
 public class ShardInfoTest extends AbstractSearchServicesE2ETest
 {
     private static final Logger LOGGER = LogFactory.getLogger();

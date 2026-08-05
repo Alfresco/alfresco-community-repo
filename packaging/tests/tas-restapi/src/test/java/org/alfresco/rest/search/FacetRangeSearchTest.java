@@ -226,6 +226,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     public void searchDateAndSizeRanges()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");

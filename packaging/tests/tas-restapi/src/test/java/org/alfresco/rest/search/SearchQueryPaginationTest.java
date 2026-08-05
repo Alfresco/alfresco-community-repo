@@ -38,6 +38,7 @@ import org.alfresco.utility.model.UserModel;
 /**
  * The purpose of this test is to test search query pagination using cmis and afts query
  */
+@SuppressWarnings({"PMD.SingularField", "PMD.UselessParentheses"})
 public class SearchQueryPaginationTest extends AbstractSearchServicesE2ETest
 {
     private UserModel testUser2;

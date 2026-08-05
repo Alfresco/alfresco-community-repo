@@ -5,7 +5,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <bean id="detectSearchEngine" class="org.alfresco.rest.api.search.DetectSearchEngine" />
     <bean id="publicapi.webscripts.store" parent="webscripts.repoclasspathstore">
         <property name="mustExist"><value>true</value></property>
         <property name="classPath"><value>alfresco/templates/publicapi</value></property>

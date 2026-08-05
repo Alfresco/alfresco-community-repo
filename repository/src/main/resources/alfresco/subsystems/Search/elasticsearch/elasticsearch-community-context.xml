@@ -91,6 +91,17 @@
         <constructor-arg value="${elasticsearch.createIndexIfNotExists}" />
     </bean>
 
+    <!-- ACS-12415: detect the search engine (Elasticsearch vs OpenSearch) and its version at -->
+    <!-- subsystem start-up by reusing this subsystem's OpenSearch REST client (a single GET /). -->
+    <!-- The result is stored in the parent-context searchEngineInfo bean so that other components -->
+    <!-- (for example the pagination API) can inject it. -->
+    <bean id="searchEngineInfoDetector"
+          class="org.alfresco.repo.search.impl.elasticsearch.SearchEngineInfoDetector"
+          init-method="detect">
+        <constructor-arg ref="elasticsearchHttpClientFactory" />
+        <constructor-arg ref="searchEngineInfo" />
+    </bean>
+
     <bean id="elasticsearchIndexService"
           class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchIndexService">
         <constructor-arg ref="elasticsearchHttpClientFactory" />

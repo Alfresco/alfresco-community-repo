@@ -321,7 +321,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             properties.put(AUDIT_PROPERTY_AUDIT_ENABLED, false);
             properties.put(AUDIT_PROPERTY_AUDIT_ENABLED + AUDITING_TO_DATABASE, true);
             properties.put(AUDIT_PROPERTY_AUDIT_ENABLED + AUDITING_TO_AUDIT_STORAGE, false);
-
             // Let's search for config files in the appropriate places. The individual applications they contain can still
             // be enabled/disabled by the bean properties
             ResourceFinder resourceFinder = new ResourceFinder(getParent());

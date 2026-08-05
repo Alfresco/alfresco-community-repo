@@ -43,7 +43,6 @@ import org.springframework.extensions.surf.util.URLEncoder;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
-import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -173,7 +172,6 @@ public class GetMethod extends WebDAVMethod
      */
     protected void executeImpl() throws WebDAVServerException, Exception
     {
-        FileFolderService fileFolderService = getFileFolderService();
         NodeRef rootNodeRef = getRootNodeRef();
         String path = getPath();
 
@@ -262,7 +260,7 @@ public class GetMethod extends WebDAVMethod
 
             m_response.setHeader("Content-Disposition", getContentDispositionHeader(nodeInfo));
 
-            ContentReader reader = fileFolderService.getReader(realNodeInfo.getNodeRef());
+            ContentReader reader = getContentService().getReader(realNodeInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
             // ensure that we generate something, even if the content is missing
             reader = FileContentReader.getSafeContentReader(
                     (ContentReader) reader,

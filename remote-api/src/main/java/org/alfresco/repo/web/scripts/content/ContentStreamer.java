@@ -275,8 +275,8 @@ public class ContentStreamer implements ResourceLoaderAware
             }
         }
 
-        // get the content reader
-        ContentReader reader = contentService.getReader(nodeRef, propertyQName);
+        // get the content reader (fires OnContentDownloadPolicy if attach=true)
+        ContentReader reader = contentService.getReader(nodeRef, propertyQName, attach);
         if (reader == null || !reader.exists())
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for node ref " + nodeRef + " (property: " + propertyQName.toString() + ")");

@@ -128,7 +128,7 @@
 
             <!-- 14) SearchCasesTest:
                   - testSearchPDFFile: PDF no longer parsed as PDF (pending decision)
-                  - testSearchExactTermQueries: '=' exact-term operator not supported by ES -->
+                  - testSearchExactTermQueries: '=' exact-term operator is disabled by default on Search Enterprise; enable in follow-up PR -->
             <class name="org.alfresco.rest.search.SearchCasesTest">
                 <methods>
                     <exclude name="testSearchPDFFile"/>

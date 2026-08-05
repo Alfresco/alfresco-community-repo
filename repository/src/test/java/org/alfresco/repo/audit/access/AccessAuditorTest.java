@@ -56,12 +56,11 @@ import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.AuditComponent;
-import org.alfresco.repo.content.ContentAuditPolicy;
 import org.alfresco.repo.content.ContentServiceImpl;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.content.ContentDownloadContext;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -600,8 +599,9 @@ public class AccessAuditorTest
     @Test
     public final void test15OnContentReadWithAttachmentFalse() throws Exception
     {
-        AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.FALSE);
+        ContentDownloadContext.setAttachment(false);
         serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
+        ContentDownloadContext.clear();
 
         txn.commit();
         txn = null;
@@ -615,48 +615,48 @@ public class AccessAuditorTest
     }
 
     /**
-     * Test that downloading content (attachment=true) with policy=READ_ONLY produces a single READ audit entry (download treated as read).
+     * Test that downloading content (attachment=true) with readAsDownload=false produces a single DOWNLOAD audit entry (no READ).
      */
     @Test
-    public final void test16OnContentDownloadWithReadOnlyPolicy() throws Exception
+    public final void test16OnContentDownloadOnly() throws Exception
     {
-        // Set policy to READ_ONLY so download fires only READ, not DOWNLOAD
-        ContentAuditPolicy originalPolicy = contentServiceImpl.getAuditPolicy();
-        contentServiceImpl.setAuditPolicy("READ_ONLY");
+        boolean originalFlag = contentServiceImpl.getEnableContentDownload();
+        contentServiceImpl.setReadAsDownload(false);
         try
         {
-            AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
+            ContentDownloadContext.setAttachment(true);
             serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
+            ContentDownloadContext.clear();
 
             txn.commit();
             txn = null;
 
             assertEquals(1, auditMapList.size());
             Map<String, Serializable> auditMap = auditMapList.get(0);
-            assertEquals("READ", auditMap.get("action"));
-            assertContains("readContent", auditMap.get("sub-actions"));
+            assertEquals("DOWNLOAD", auditMap.get("action"));
+            assertContains("downloadContent", auditMap.get("sub-actions"));
             assertEquals("/cm:homeFolder/cm:folder1/cm:content1", auditMap.get("path"));
             assertEquals("cm:content", auditMap.get("type"));
         }
         finally
         {
-            contentServiceImpl.setAuditPolicy(originalPolicy.name());
+            contentServiceImpl.setReadAsDownload(originalFlag);
         }
     }
 
     /**
-     * Test that downloading content (attachment=true) with policy=READ_AND_DOWNLOAD produces two separate audit entries: READ and DOWNLOAD.
+     * Test that downloading content (attachment=true) with readAsDownload=true produces two separate audit entries: READ and DOWNLOAD.
      */
     @Test
-    public final void test17OnContentDownloadWithReadAndDownloadPolicy() throws Exception
+    public final void test17OnContentDownloadWithReadFlag() throws Exception
     {
-        // Set policy to READ_AND_DOWNLOAD so download fires both
-        ContentAuditPolicy originalPolicy = contentServiceImpl.getAuditPolicy();
-        contentServiceImpl.setAuditPolicy("READ_AND_DOWNLOAD");
+        boolean originalFlag = contentServiceImpl.getEnableContentDownload();
+        contentServiceImpl.setReadAsDownload(true);
         try
         {
-            AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
+            ContentDownloadContext.setAttachment(true);
             serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
+            ContentDownloadContext.clear();
 
             txn.commit();
             txn = null;
@@ -693,23 +693,19 @@ public class AccessAuditorTest
         }
         finally
         {
-            contentServiceImpl.setAuditPolicy(originalPolicy.name());
+            contentServiceImpl.setReadAsDownload(originalFlag);
         }
     }
 
     /**
-     * Test that default getReader (no attachment parameter) still produces READ only,
-     * regardless of audit policy, when unknownReadAsDownload is false.
+     * Test that default getReader (no attachment parameter bound) still produces READ only,
+     * regardless of readAsDownload flag.
      */
     @Test
     public final void test18OnContentReadDefault() throws Exception
     {
-        // Set policy to READ_AND_DOWNLOAD - should have no effect on default getReader()
-        // when unknownReadAsDownload is false
-        ContentAuditPolicy originalPolicy = contentServiceImpl.getAuditPolicy();
-        boolean originalUnknown = contentServiceImpl.isUnknownReadAsDownload();
-        contentServiceImpl.setAuditPolicy("READ_AND_DOWNLOAD");
-        contentServiceImpl.setUnknownReadAsDownload(false);
+        boolean originalFlag = contentServiceImpl.getEnableContentDownload();
+        contentServiceImpl.setReadAsDownload(true);
         try
         {
             serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
@@ -726,56 +722,7 @@ public class AccessAuditorTest
         }
         finally
         {
-            contentServiceImpl.setAuditPolicy(originalPolicy.name());
-            contentServiceImpl.setUnknownReadAsDownload(originalUnknown);
-        }
-    }
-
-    /**
-     * Test that when unknownReadAsDownload=true, unidentified reads (no attachment bound)
-     * are treated as downloads and follow the audit policy.
-     */
-    @Test
-    public final void test19OnContentReadWithUnknownAsDownload() throws Exception
-    {
-        ContentAuditPolicy originalPolicy = contentServiceImpl.getAuditPolicy();
-        boolean originalUnknown = contentServiceImpl.isUnknownReadAsDownload();
-        contentServiceImpl.setAuditPolicy("READ_AND_DOWNLOAD");
-        contentServiceImpl.setUnknownReadAsDownload(true);
-        try
-        {
-            // No attachment resource bound — simulates CMIS/WebDAV access
-            serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
-
-            txn.commit();
-            txn = null;
-
-            // Should produce two audit entries because unknownReadAsDownload=true + policy=READ_AND_DOWNLOAD
-            assertEquals(2, auditMapList.size());
-
-            Map<String, Serializable> readMap = null;
-            Map<String, Serializable> downloadMap = null;
-            for (Map<String, Serializable> auditMap : auditMapList)
-            {
-                if ("READ".equals(auditMap.get("action")))
-                {
-                    readMap = auditMap;
-                }
-                else if ("DOWNLOAD".equals(auditMap.get("action")))
-                {
-                    downloadMap = auditMap;
-                }
-            }
-
-            assertTrue("Expected READ audit entry", readMap != null);
-            assertTrue("Expected DOWNLOAD audit entry", downloadMap != null);
-            assertEquals("/cm:homeFolder/cm:folder1/cm:content1", readMap.get("path"));
-            assertEquals("/cm:homeFolder/cm:folder1/cm:content1", downloadMap.get("path"));
-        }
-        finally
-        {
-            contentServiceImpl.setAuditPolicy(originalPolicy.name());
-            contentServiceImpl.setUnknownReadAsDownload(originalUnknown);
+            contentServiceImpl.setReadAsDownload(originalFlag);
         }
     }
 }

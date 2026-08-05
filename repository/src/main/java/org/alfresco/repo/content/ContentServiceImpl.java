@@ -54,7 +54,6 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -86,13 +85,11 @@ import org.alfresco.util.TempFileProvider;
  */
 public class ContentServiceImpl implements ContentService, ApplicationContextAware
 {
-    private static final String KEY_CONTENT_ATTACHMENT = "contentService.attachment";
     private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
     private DictionaryService dictionaryService;
     private NodeService nodeService;
-    private ContentAuditPolicy auditPolicy = ContentAuditPolicy.READ_AND_DOWNLOAD;
-    /** When true, unidentified content access (e.g. CMIS, WebDAV) is treated as a download. */
-    private boolean unknownReadAsDownload;
+    /** When true, a download also fires the onContentRead policy (in addition to onContentDownload). */
+    private boolean enableContentDownload = true;
     private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
@@ -123,41 +120,17 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     ClassPolicyDelegate<ContentServicePolicies.OnContentDownloadPolicy> onContentDownloadDelegate;
 
     /**
-     * Set the unified audit policy for all content access.
-     * Accepts values: READ_ONLY, DOWNLOAD_ONLY, READ_AND_DOWNLOAD
+     * When true, a download event also fires the onContentRead policy (backward-compatible behavior).
+     * When false, a download fires only onContentDownload.
      */
-    public void setAuditPolicy(String auditPolicyStr)
+    public void setEnableContentDownload(boolean readAsDownload)
     {
-        ContentAuditPolicy parsed = ContentAuditPolicy.fromString(auditPolicyStr);
-        if (parsed != null)
-        {
-            this.auditPolicy = parsed;
-        }
-        else
-        {
-            logger.warn("Invalid audit.content.policy value: '" + auditPolicyStr + "'. Using default READ_AND_DOWNLOAD.");
-            this.auditPolicy = ContentAuditPolicy.READ_AND_DOWNLOAD;
-        }
+        this.enableContentDownload = readAsDownload;
     }
 
-    public ContentAuditPolicy getAuditPolicy()
+    public boolean getEnableContentDownload()
     {
-        return auditPolicy;
-    }
-
-    /**
-     * When true, content access from unknown callers (CMIS, WebDAV, or any caller that does not
-     * explicitly bind the attachment flag) will be treated as a download.
-     * When false (default), unknown reads fire only the READ policy.
-     */
-    public void setUnknownReadAsDownload(boolean unknownReadAsDownload)
-    {
-        this.unknownReadAsDownload = unknownReadAsDownload;
-    }
-
-    public boolean isUnknownReadAsDownload()
-    {
-        return unknownReadAsDownload;
+        return enableContentDownload;
     }
 
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
@@ -434,29 +407,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName)
     {
-        Boolean attachmentResource = AlfrescoTransactionSupport.getResource(KEY_CONTENT_ATTACHMENT);
+        boolean isDownload = ContentDownloadContext.isDownload();
 
-        // Determine if this is a download:
-        // - If caller explicitly bound attachment=true/false (e.g. REST ContentStreamer), use that.
-        // - If no flag is bound (CMIS, WebDAV, internal), use the unknownReadAsDownload setting.
-        boolean isDownload;
-        if (attachmentResource != null)
-        {
-            isDownload = attachmentResource;
-        }
-        else
-        {
-            isDownload = unknownReadAsDownload;
-        }
-
-        if (isDownload)
-        {
-            return getReaderImpl(nodeRef, propertyQName, auditPolicy.isFireRead(), auditPolicy.isFireDownload());
-        }
-        else
-        {
-            return getReaderImpl(nodeRef, propertyQName, true, false);
-        }
+        return getReaderImpl(nodeRef,propertyQName,true,isDownload && enableContentDownload);
     }
 
     private ContentReader getReaderImpl(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy, boolean fireContentDownloadPolicy)

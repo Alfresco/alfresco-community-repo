@@ -59,7 +59,7 @@ import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.content.ContentDownloadContext;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -383,40 +383,43 @@ public class ContentServiceImplUnitTest
     {
         setupReaderMocks();
 
-        AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.FALSE);
+        ContentDownloadContext.setAttachment(false);
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
 
         assertNotNull(reader);
         verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
         verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+        ContentDownloadContext.clear();
     }
 
     @Test
-    public void testGetReader_attachmentTrue_policyReadOnly_firesOnlyReadPolicy()
+    public void testGetReader_attachmentTrue_readAsDownloadFalse_firesOnlyDownloadPolicy()
     {
         setupReaderMocks();
-        contentService.setAuditPolicy("READ_ONLY");
+        contentService.setReadAsDownload(false);
 
-        AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
+        ContentDownloadContext.setAttachment(true);
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
 
         assertNotNull(reader);
-        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
-        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentReadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        ContentDownloadContext.clear();
     }
 
     @Test
-    public void testGetReader_attachmentTrue_policyReadAndDownload_firesBothPolicies()
+    public void testGetReader_attachmentTrue_readAsDownloadTrue_firesBothPolicies()
     {
         setupReaderMocks();
-        contentService.setAuditPolicy("READ_AND_DOWNLOAD");
+        contentService.setReadAsDownload(true);
 
-        AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
+        ContentDownloadContext.setAttachment(true);
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
 
         assertNotNull(reader);
         verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
         verify(contentService.onContentDownloadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        ContentDownloadContext.clear();
     }
 
     @Test
@@ -427,41 +430,12 @@ public class ContentServiceImplUnitTest
         when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
         setupReaderMocks();
 
-        AlfrescoTransactionSupport.bindResource("contentService.attachment", Boolean.TRUE);
+        ContentDownloadContext.setAttachment(true);
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
 
         assertNull(reader);
         verify(contentService.onContentReadDelegate, never()).get(any(NodeRef.class), any(Set.class));
         verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
-    }
-
-    @Test
-    public void testGetReader_noAttachment_unknownReadAsDownloadTrue_firesBothPolicies()
-    {
-        setupReaderMocks();
-        contentService.setAuditPolicy("READ_AND_DOWNLOAD");
-        contentService.setUnknownReadAsDownload(true);
-
-        // No attachment resource bound — simulates CMIS/WebDAV
-        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
-
-        assertNotNull(reader);
-        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
-        verify(contentService.onContentDownloadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
-    }
-
-    @Test
-    public void testGetReader_noAttachment_unknownReadAsDownloadFalse_firesOnlyReadPolicy()
-    {
-        setupReaderMocks();
-        contentService.setAuditPolicy("READ_AND_DOWNLOAD");
-        contentService.setUnknownReadAsDownload(false);
-
-        // No attachment resource bound — simulates CMIS/WebDAV
-        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
-
-        assertNotNull(reader);
-        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
-        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+        ContentDownloadContext.clear();
     }
 }

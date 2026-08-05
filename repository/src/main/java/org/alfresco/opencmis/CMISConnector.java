@@ -179,6 +179,7 @@ import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
+import org.alfresco.repo.content.ContentDownloadContext;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.repo.version.VersionModel;
@@ -352,6 +353,9 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private String proxyUser;
     private boolean openHttpSession = false;
 
+    /** When true, CMIS content reads are treated as downloads. When false, treated as plain reads. */
+    private boolean unknownReadAsDownload;
+
     // OpenCMIS objects
     private BigInteger typesDefaultMaxItems = TYPES_DEFAULT_MAX_ITEMS;
     private BigInteger typesDefaultDepth = TYPES_DEFAULT_DEPTH;
@@ -514,6 +518,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public boolean openHttpSession()
     {
         return openHttpSession;
+    }
+
+    public void setUnknownReadAsDownload(boolean unknownReadAsDownload)
+    {
+        this.unknownReadAsDownload = unknownReadAsDownload;
     }
 
     /**
@@ -1741,6 +1750,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         // get the stream now
         try
         {
+            ContentDownloadContext.setAttachment(unknownReadAsDownload);
             ContentReader contentReader = contentService.getReader(streamNodeRef, ContentModel.PROP_CONTENT);
             if (contentReader == null)
             {
@@ -1788,6 +1798,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 }
                 throw new CmisRuntimeException(msg.toString(), e);
             }
+        }
+        finally
+        {
+            ContentDownloadContext.clear();
         }
 
         return result;

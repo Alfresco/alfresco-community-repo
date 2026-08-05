@@ -621,7 +621,7 @@ public class AccessAuditorTest
     public final void test16OnContentDownloadOnly() throws Exception
     {
         boolean originalFlag = contentServiceImpl.getEnableContentDownload();
-        contentServiceImpl.setReadAsDownload(false);
+        contentServiceImpl.setEnableContentDownload(false);
         try
         {
             ContentDownloadContext.setAttachment(true);
@@ -640,7 +640,7 @@ public class AccessAuditorTest
         }
         finally
         {
-            contentServiceImpl.setReadAsDownload(originalFlag);
+            contentServiceImpl.setEnableContentDownload(originalFlag);
         }
     }
 
@@ -651,7 +651,7 @@ public class AccessAuditorTest
     public final void test17OnContentDownloadWithReadFlag() throws Exception
     {
         boolean originalFlag = contentServiceImpl.getEnableContentDownload();
-        contentServiceImpl.setReadAsDownload(true);
+        contentServiceImpl.setEnableContentDownload(true);
         try
         {
             ContentDownloadContext.setAttachment(true);
@@ -693,7 +693,7 @@ public class AccessAuditorTest
         }
         finally
         {
-            contentServiceImpl.setReadAsDownload(originalFlag);
+            contentServiceImpl.setEnableContentDownload(originalFlag);
         }
     }
 
@@ -705,7 +705,7 @@ public class AccessAuditorTest
     public final void test18OnContentReadDefault() throws Exception
     {
         boolean originalFlag = contentServiceImpl.getEnableContentDownload();
-        contentServiceImpl.setReadAsDownload(true);
+        contentServiceImpl.setEnableContentDownload(true);
         try
         {
             serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
@@ -722,7 +722,7 @@ public class AccessAuditorTest
         }
         finally
         {
-            contentServiceImpl.setReadAsDownload(originalFlag);
+            contentServiceImpl.setEnableContentDownload(originalFlag);
         }
     }
 }

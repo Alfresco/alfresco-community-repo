@@ -43,7 +43,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.GUID;
 
 /**
- * Helper class to manage transaction synchronization. This provides helpers to ensure that the necessary <code>TransactionSynchronization</code> instances are registered on behalf of the application code.
+ * Helper class to manage transaction synchronization.
+ * This provides helpers to ensure that the necessary <code>TransactionSynchronization</code> instances are registered on behalf of the application code.
  * 
  * @author mrogers
  */

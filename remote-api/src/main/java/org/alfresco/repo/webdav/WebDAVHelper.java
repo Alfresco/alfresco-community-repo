@@ -120,6 +120,9 @@ public class WebDAVHelper
     private EventPublisher eventPublisher;
     private ActivityPoster poster;
 
+    /** When true, WebDAV content reads are treated as downloads. When false, treated as plain reads. */
+    private boolean unknownReadAsDownload;
+
     // pattern is tested against full path after it has been lower cased.
     private Pattern m_renameShufflePattern = Pattern.compile("(.*/\\..*)|(.*[a-f0-9]{8}+$)|(.*\\.tmp$)|(.*atmp[0-9]+$)|(.*\\.wbk$)|(.*\\.bak$)|(.*\\~$)|(.*backup.*\\.do[ct]{1}[x]?[m]?$)|(.*\\.sb\\-\\w{8}\\-\\w{6}$)");
 
@@ -346,6 +349,16 @@ public class WebDAVHelper
     public void setEventPublisher(EventPublisher eventPublisher)
     {
         this.eventPublisher = eventPublisher;
+    }
+
+    public void setUnknownReadAsDownload(boolean unknownReadAsDownload)
+    {
+        this.unknownReadAsDownload = unknownReadAsDownload;
+    }
+
+    public boolean isUnknownReadAsDownload()
+    {
+        return unknownReadAsDownload;
     }
 
     /**

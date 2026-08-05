@@ -588,7 +588,7 @@ public class NodeChangeTest
     }
 
     @Test
-    public final void testOnContentReadAndDownload_runAsUserAttributionLostForSplitReadEntry()
+    public final void testOnContentDownload_runAsUserAttributionLostForSplitReadEntry()
     {
         AuthenticationUtil.setFullyAuthenticatedUser("bob");
         try

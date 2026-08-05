@@ -396,7 +396,7 @@ public class ContentServiceImplUnitTest
     public void testGetReader_attachmentTrue_readAsDownloadFalse_firesOnlyDownloadPolicy()
     {
         setupReaderMocks();
-        contentService.setReadAsDownload(false);
+        contentService.setEnableContentDownload(false);
 
         ContentDownloadContext.setAttachment(true);
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
@@ -411,7 +411,7 @@ public class ContentServiceImplUnitTest
     public void testGetReader_attachmentTrue_readAsDownloadTrue_firesBothPolicies()
     {
         setupReaderMocks();
-        contentService.setReadAsDownload(true);
+        contentService.setEnableContentDownload(true);
 
         ContentDownloadContext.setAttachment(true);
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);

@@ -10,7 +10,7 @@
     <test name="SearchTests">
         <packages>
             <package name="org.alfresco.rest.search.*">
-                <exclude name="org.alfresco.rest.search.fingerPrint"/>
+                <exclude name="org.alfresco.rest.search.fingerprint"/>
                 <exclude name="org.alfresco.rest.search.crosslocale"/>
             </package>
         </packages>

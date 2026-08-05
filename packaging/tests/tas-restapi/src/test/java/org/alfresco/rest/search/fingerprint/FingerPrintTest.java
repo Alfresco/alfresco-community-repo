@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.search.fingerPrint;
+package org.alfresco.rest.search.fingerprint;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static org.testng.Assert.assertTrue;
@@ -45,7 +45,7 @@ import org.alfresco.utility.report.Bug;
 /**
  * Search end point Public API test with fingerprint.
  */
-@SuppressWarnings({"PMD.PackageCase", "PMD.OneDeclarationPerLine", "PMD.SingularField"})
+@SuppressWarnings({"PMD.OneDeclarationPerLine", "PMD.SingularField"})
 public class FingerPrintTest extends AbstractE2EFunctionalTest
 {
     private FolderModel folder;

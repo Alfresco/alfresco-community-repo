@@ -42,6 +42,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -102,7 +103,7 @@ public class ElasticsearchInitialiserIT extends ElasticsearchSpringTest
                 fieldMappingBuilder, elasticsearchHttpClientFactory, Locale.ENGLISH.getLanguage(), indexConfigurationInitializer);
 
         toTest = new ElasticsearchInitialiser(dictionaryDAOImpl, elasticSearchIndexServiceSpy, contentModelSynchronizer,
-                jobLockService, 1, 1, 1, 1, true);
+                jobLockService, 1, 1, 1, 1, true, new SearchEngineDetector());
         client = elasticsearchHttpClientFactory.getElasticsearchClient();
         this.indicesSpy = spy(client.indices());
     }

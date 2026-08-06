@@ -10,7 +10,6 @@ on:
     branches:
       - master
       - release/**
-
 env:
   JAVA_VERSION: '21'
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
@@ -38,9 +37,14 @@ jobs:
       security-events: write
     uses: ./.github/workflows/ci.yml
     secrets:
-      BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+      AGS_AWS_ACCESS_KEY_ID: ${{ secrets.AGS_AWS_ACCESS_KEY_ID }}
+      AGS_AWS_SECRET_ACCESS_KEY: ${{ secrets.AGS_AWS_SECRET_ACCESS_KEY }}
+      AUTH0_OIDC_ADMIN_CLIENT_ID: ${{ secrets.AUTH0_OIDC_ADMIN_CLIENT_ID }}
+      AUTH0_OIDC_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
+      AUTH0_OIDC_CLIENT_SECRET: ${{ secrets.AUTH0_OIDC_CLIENT_SECRET }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
       NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
@@ -87,9 +91,6 @@ jobs:
       - name: "Verify release version"
         run: bash scripts/ci/verify_release_tag.sh
       - name: "Release"
-        env:
-          GIT_USERNAME: ${{ vars.BOT_GITHUB_USERNAME }}
-          GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@v18.20.0
         with:

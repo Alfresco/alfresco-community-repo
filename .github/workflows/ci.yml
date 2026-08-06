@@ -26,11 +26,11 @@ on:
         required: false
       AUTH0_OIDC_CLIENT_SECRET:
         required: false
-      BOT_GITHUB_TOKEN:
-        required: false
       DOCKER_PASSWORD:
         required: false
       DOCKER_USERNAME:
+        required: false
+      GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY:
         required: false
       NEXUS_PASSWORD:
         required: false

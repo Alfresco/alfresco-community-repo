@@ -180,6 +180,7 @@ import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.content.ContentDownloadContext;
+import org.alfresco.repo.content.ContentDownloadPolicy;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.repo.version.VersionModel;
@@ -353,8 +354,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private String proxyUser;
     private boolean openHttpSession = false;
 
-    /** When true, CMIS content reads are treated as downloads. When false, treated as plain reads. */
-    private boolean unknownReadAsDownload;
+    /** The download auditing policy – determines whether CMIS reads are treated as downloads. */
+    private ContentDownloadPolicy downloadPolicy = ContentDownloadPolicy.STANDARD;
 
     // OpenCMIS objects
     private BigInteger typesDefaultMaxItems = TYPES_DEFAULT_MAX_ITEMS;
@@ -520,9 +521,9 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return openHttpSession;
     }
 
-    public void setUnknownReadAsDownload(boolean unknownReadAsDownload)
+    public void setDownloadPolicy(String downloadPolicy)
     {
-        this.unknownReadAsDownload = unknownReadAsDownload;
+        this.downloadPolicy = ContentDownloadPolicy.valueOf(downloadPolicy.trim().toUpperCase());
     }
 
     /**
@@ -1750,7 +1751,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         // get the stream now
         try
         {
-            ContentDownloadContext.setAttachment(unknownReadAsDownload);
+            // CMIS content reads: treat as download only in EXTENDED mode
+            ContentDownloadContext.setAttachment(downloadPolicy == ContentDownloadPolicy.EXTENDED);
             ContentReader contentReader = contentService.getReader(streamNodeRef, ContentModel.PROP_CONTENT);
             if (contentReader == null)
             {
@@ -1802,9 +1804,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         finally
         {
             ContentDownloadContext.clear();
-        }
-
-        return result;
+        }        return result;
     }
 
     /**

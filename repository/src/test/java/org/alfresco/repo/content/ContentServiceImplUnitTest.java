@@ -393,25 +393,25 @@ public class ContentServiceImplUnitTest
     }
 
     @Test
-    public void testGetReader_attachmentTrue_readAsDownloadFalse_firesOnlyDownloadPolicy()
+    public void testGetReader_attachmentTrue_policyNone_firesOnlyReadPolicy()
     {
         setupReaderMocks();
-        contentService.setEnableContentDownload(false);
+        contentService.setDownloadPolicy("NONE");
 
         ContentDownloadContext.setAttachment(true);
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
 
         assertNotNull(reader);
-        verify(contentService.onContentReadDelegate, never()).get(any(NodeRef.class), any(Set.class));
-        verify(contentService.onContentDownloadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
         ContentDownloadContext.clear();
     }
 
     @Test
-    public void testGetReader_attachmentTrue_readAsDownloadTrue_firesBothPolicies()
+    public void testGetReader_attachmentTrue_policyStandard_firesBothPolicies()
     {
         setupReaderMocks();
-        contentService.setEnableContentDownload(true);
+        contentService.setDownloadPolicy("STANDARD");
 
         ContentDownloadContext.setAttachment(true);
         ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
@@ -420,6 +420,51 @@ public class ContentServiceImplUnitTest
         verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
         verify(contentService.onContentDownloadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
         ContentDownloadContext.clear();
+    }
+
+    @Test
+    public void testGetReader_noAttachment_policyExtended_firesOnlyReadPolicy()
+    {
+        setupReaderMocks();
+        contentService.setDownloadPolicy("EXTENDED");
+
+        // No attachment set – ContentServiceImpl treats this as a plain read.
+        // CMIS/WebDAV are responsible for setting attachment=true in EXTENDED mode.
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+    }
+
+    @Test
+    public void testGetReader_attachmentTrue_policyExtended_firesBothPolicies()
+    {
+        setupReaderMocks();
+        contentService.setDownloadPolicy("EXTENDED");
+
+        // Simulates CMIS/WebDAV explicitly setting attachment=true in EXTENDED mode
+        ContentDownloadContext.setAttachment(true);
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        ContentDownloadContext.clear();
+    }
+
+    @Test
+    public void testGetReader_noAttachment_policyStandard_firesOnlyReadPolicy()
+    {
+        setupReaderMocks();
+        contentService.setDownloadPolicy("STANDARD");
+
+        // No attachment set (simulates unknown caller like CMIS/WebDAV)
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
     }
 
     @Test

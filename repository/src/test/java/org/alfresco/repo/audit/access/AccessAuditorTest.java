@@ -57,6 +57,7 @@ import org.springframework.context.ApplicationContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.content.ContentServiceImpl;
+import org.alfresco.repo.content.ContentDownloadPolicy;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -615,13 +616,13 @@ public class AccessAuditorTest
     }
 
     /**
-     * Test that downloading content (attachment=true) with readAsDownload=false produces a single DOWNLOAD audit entry (no READ).
+     * Test that downloading content (attachment=true) with downloadPolicy=STANDARD produces both READ and DOWNLOAD audit entries.
      */
     @Test
-    public final void test16OnContentDownloadOnly() throws Exception
+    public final void test16OnContentDownloadStandard() throws Exception
     {
-        boolean originalFlag = contentServiceImpl.getEnableContentDownload();
-        contentServiceImpl.setEnableContentDownload(false);
+        ContentDownloadPolicy originalPolicy = contentServiceImpl.getDownloadPolicy();
+        contentServiceImpl.setDownloadPolicy("STANDARD");
         try
         {
             ContentDownloadContext.setAttachment(true);
@@ -631,40 +632,9 @@ public class AccessAuditorTest
             txn.commit();
             txn = null;
 
-            assertEquals(1, auditMapList.size());
-            Map<String, Serializable> auditMap = auditMapList.get(0);
-            assertEquals("DOWNLOAD", auditMap.get("action"));
-            assertContains("downloadContent", auditMap.get("sub-actions"));
-            assertEquals("/cm:homeFolder/cm:folder1/cm:content1", auditMap.get("path"));
-            assertEquals("cm:content", auditMap.get("type"));
-        }
-        finally
-        {
-            contentServiceImpl.setEnableContentDownload(originalFlag);
-        }
-    }
-
-    /**
-     * Test that downloading content (attachment=true) with readAsDownload=true produces two separate audit entries: READ and DOWNLOAD.
-     */
-    @Test
-    public final void test17OnContentDownloadWithReadFlag() throws Exception
-    {
-        boolean originalFlag = contentServiceImpl.getEnableContentDownload();
-        contentServiceImpl.setEnableContentDownload(true);
-        try
-        {
-            ContentDownloadContext.setAttachment(true);
-            serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
-            ContentDownloadContext.clear();
-
-            txn.commit();
-            txn = null;
-
-            // Two audit entries should be produced: one READ and one DOWNLOAD
+            // STANDARD fires both read + download policies
             assertEquals(2, auditMapList.size());
 
-            // Find which is READ and which is DOWNLOAD
             Map<String, Serializable> readMap = null;
             Map<String, Serializable> downloadMap = null;
             for (Map<String, Serializable> auditMap : auditMapList)
@@ -679,13 +649,11 @@ public class AccessAuditorTest
                 }
             }
 
-            // Verify READ audit entry
             assertTrue("Expected READ audit entry", readMap != null);
             assertContains("readContent", readMap.get("sub-actions"));
             assertEquals("/cm:homeFolder/cm:folder1/cm:content1", readMap.get("path"));
             assertEquals("cm:content", readMap.get("type"));
 
-            // Verify DOWNLOAD audit entry
             assertTrue("Expected DOWNLOAD audit entry", downloadMap != null);
             assertContains("downloadContent", downloadMap.get("sub-actions"));
             assertEquals("/cm:homeFolder/cm:folder1/cm:content1", downloadMap.get("path"));
@@ -693,19 +661,50 @@ public class AccessAuditorTest
         }
         finally
         {
-            contentServiceImpl.setEnableContentDownload(originalFlag);
+            contentServiceImpl.setDownloadPolicy(originalPolicy.name());
         }
     }
 
     /**
-     * Test that default getReader (no attachment parameter bound) still produces READ only,
-     * regardless of readAsDownload flag.
+     * Test that downloading content (attachment=true) with downloadPolicy=NONE produces only READ audit entry.
+     */
+    @Test
+    public final void test17OnContentDownloadNone() throws Exception
+    {
+        ContentDownloadPolicy originalPolicy = contentServiceImpl.getDownloadPolicy();
+        contentServiceImpl.setDownloadPolicy("NONE");
+        try
+        {
+            ContentDownloadContext.setAttachment(true);
+            serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
+            ContentDownloadContext.clear();
+
+            txn.commit();
+            txn = null;
+
+            // NONE means download auditing disabled, only READ fires
+            assertEquals(1, auditMapList.size());
+            Map<String, Serializable> auditMap = auditMapList.get(0);
+            assertEquals("READ", auditMap.get("action"));
+            assertContains("readContent", auditMap.get("sub-actions"));
+            assertEquals("/cm:homeFolder/cm:folder1/cm:content1", auditMap.get("path"));
+            assertEquals("cm:content", auditMap.get("type"));
+        }
+        finally
+        {
+            contentServiceImpl.setDownloadPolicy(originalPolicy.name());
+        }
+    }
+
+    /**
+     * Test that default getReader (no attachment parameter bound) still produces READ only
+     * with STANDARD policy.
      */
     @Test
     public final void test18OnContentReadDefault() throws Exception
     {
-        boolean originalFlag = contentServiceImpl.getEnableContentDownload();
-        contentServiceImpl.setEnableContentDownload(true);
+        ContentDownloadPolicy originalPolicy = contentServiceImpl.getDownloadPolicy();
+        contentServiceImpl.setDownloadPolicy("STANDARD");
         try
         {
             serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
@@ -722,7 +721,7 @@ public class AccessAuditorTest
         }
         finally
         {
-            contentServiceImpl.setEnableContentDownload(originalFlag);
+            contentServiceImpl.setDownloadPolicy(originalPolicy.name());
         }
     }
 }

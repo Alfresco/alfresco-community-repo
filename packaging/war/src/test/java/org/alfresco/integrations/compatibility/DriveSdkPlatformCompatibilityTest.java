@@ -28,6 +28,7 @@ package org.alfresco.integrations.compatibility;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.fasterxml.jackson.core.Version;
@@ -70,40 +71,42 @@ public class DriveSdkPlatformCompatibilityTest
     @Test
     public void buildsDriveClientAgainstPlatformDependencies()
     {
-        Drive drive = new Drive.Builder(new NetHttpTransport(), JacksonFactory.getDefaultInstance(), null)
+        Drive drive = new Drive.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance(), null)
                 .setApplicationName("smoke-test")
                 .build();
         assertNotNull(drive);
     }
 
     @Test
-    public void serialisesDriveRestModelWithPlatformJackson() throws Exception
+    public void serialisesDriveRestModelWithPlatformJackson() throws IOException
     {
         File file = new File()
                 .setName("smoke.txt")
                 .setMimeType("text/plain")
                 .setParents(List.of("root"));
-        JsonFactory factory = JacksonFactory.getDefaultInstance();
+        JsonFactory factory = GsonFactory.getDefaultInstance();
         File parsed = factory.fromString(factory.toString(file), File.class);
         assertEquals("smoke.txt", parsed.getName());
         assertEquals("text/plain", parsed.getMimeType());
     }
 
     @Test
-    public void exercisesSdkJsonTransportAgainstPlatformJacksonAndGson() throws Exception
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert") // assertions live in the roundTripJson helper
+    public void exercisesSdkJsonTransportAgainstPlatformJacksonAndGson() throws IOException
     {
         roundTripJson(JacksonFactory.getDefaultInstance());
         roundTripJson(GsonFactory.getDefaultInstance());
     }
 
     @Test
-    public void buildsApacheHttpTransportFromPlatformHttpClient() throws Exception
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert") // the test is that constructing/shutting down the transport does not throw
+    public void buildsApacheHttpTransportFromPlatformHttpClient() throws IOException
     {
         HttpTransport transport = new ApacheHttpTransport();
         transport.shutdown();
     }
 
-    private static void roundTripJson(JsonFactory factory) throws Exception
+    private static void roundTripJson(JsonFactory factory) throws IOException
     {
         GenericJson object = new GenericJson();
         object.set("name", "smoke.txt");

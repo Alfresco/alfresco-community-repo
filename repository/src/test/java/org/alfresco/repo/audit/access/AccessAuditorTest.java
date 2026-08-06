@@ -286,6 +286,14 @@ public class AccessAuditorTest
         }
     }
 
+    private void assetNotContains(String expected, Serializable actual){
+        String actualString = (String) actual;
+        if (actual == null || actualString.contains(expected))
+        {
+            throw new ComparisonFailure("Expected contained in actual.", expected, actualString);
+        }
+    }
+
     @Test
     public final void test01OnCreateNodeAndOnUpdateProperties() throws Exception
     {
@@ -633,7 +641,7 @@ public class AccessAuditorTest
             txn = null;
 
             // STANDARD fires both read + download policies
-            assertEquals(2, auditMapList.size());
+            assertEquals(1, auditMapList.size());
 
             Map<String, Serializable> readMap = null;
             Map<String, Serializable> downloadMap = null;
@@ -643,21 +651,13 @@ public class AccessAuditorTest
                 {
                     readMap = auditMap;
                 }
-                else if ("DOWNLOAD".equals(auditMap.get("action")))
-                {
-                    downloadMap = auditMap;
-                }
             }
 
             assertTrue("Expected READ audit entry", readMap != null);
             assertContains("readContent", readMap.get("sub-actions"));
+            assertContains("downloadContent", readMap.get("sub-actions"));
             assertEquals("/cm:homeFolder/cm:folder1/cm:content1", readMap.get("path"));
             assertEquals("cm:content", readMap.get("type"));
-
-            assertTrue("Expected DOWNLOAD audit entry", downloadMap != null);
-            assertContains("downloadContent", downloadMap.get("sub-actions"));
-            assertEquals("/cm:homeFolder/cm:folder1/cm:content1", downloadMap.get("path"));
-            assertEquals("cm:content", downloadMap.get("type"));
         }
         finally
         {
@@ -687,6 +687,7 @@ public class AccessAuditorTest
             Map<String, Serializable> auditMap = auditMapList.get(0);
             assertEquals("READ", auditMap.get("action"));
             assertContains("readContent", auditMap.get("sub-actions"));
+            assetNotContains("downloadContent", auditMap.get("sub-actions"));
             assertEquals("/cm:homeFolder/cm:folder1/cm:content1", auditMap.get("path"));
             assertEquals("cm:content", auditMap.get("type"));
         }

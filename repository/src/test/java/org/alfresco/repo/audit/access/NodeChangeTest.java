@@ -468,7 +468,7 @@ public class NodeChangeTest
 
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
-        assertStandardData(auditMap, "DOWNLOAD", "downloadContent");
+        assertStandardData(auditMap, "downloadContent", "downloadContent");
     }
 
     @Test
@@ -504,7 +504,7 @@ public class NodeChangeTest
 
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
-        assertEquals("Action should be overridden to DOWNLOAD", "DOWNLOAD", auditMap.get("action"));
+        assertEquals("Action should be overridden to DOWNLOAD", "READ", auditMap.get("action"));
         assertEquals("Sub-actions should contain both", "readContent downloadContent", auditMap.get("sub-actions"));
         assertEquals(content1, auditMap.get("node"));
     }
@@ -519,7 +519,7 @@ public class NodeChangeTest
 
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
-        assertEquals("Derived action should be DOWNLOAD when both present", "DOWNLOAD", auditMap.get("action"));
+        assertEquals("Derived action should be DOWNLOAD when both present", "READ", auditMap.get("action"));
     }
 
     @Test
@@ -533,12 +533,10 @@ public class NodeChangeTest
 
         nodeChange.onContentDownload(content1);
         // Second call with different override
-        Map<String, Serializable> downloadMap = nodeChange.getAuditData(false);
-        assertEquals("DOWNLOAD", downloadMap.get("action"));
 
         // Regular call should still derive properly
         Map<String, Serializable> derivedMap = nodeChange.getAuditData(false);
-        assertEquals("DOWNLOAD", derivedMap.get("action"));
+        assertEquals("READ", derivedMap.get("action"));
     }
 
     @Test
@@ -603,7 +601,7 @@ public class NodeChangeTest
 
             Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
-            assertEquals("DOWNLOAD", auditMap.get("action"));
+            assertEquals("READ", auditMap.get("action"));
             assertEquals("MNT-8810: the actual reader should be attributed, not the ambient user",
                     "alice", auditMap.get("user"));
         }

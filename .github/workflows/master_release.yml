@@ -13,12 +13,6 @@ on:
 
 env:
   JAVA_VERSION: '21'
-  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
 
 jobs:
@@ -43,8 +37,14 @@ jobs:
       contents: read
       security-events: write
     uses: ./.github/workflows/ci.yml
-    secrets: inherit
-
+    secrets:
+      BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   push_to_nexus:
     name: "Push to Nexus"
     runs-on: ubuntu-latest
@@ -53,6 +53,9 @@ jobs:
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no release]') &&
       github.event_name != 'pull_request'
+    env:
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - name: "Generate GitHub App token"
         id: app-token
@@ -72,6 +75,11 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
+        env:
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
       - name: "Compute release and next development versions"
         id: versions
@@ -79,6 +87,9 @@ jobs:
       - name: "Verify release version"
         run: bash scripts/ci/verify_release_tag.sh
       - name: "Release"
+        env:
+          GIT_USERNAME: ${{ vars.BOT_GITHUB_USERNAME }}
+          GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@v18.20.0
         with:
@@ -98,6 +109,9 @@ jobs:
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no downstream]') &&
       github.event_name != 'pull_request'
+    env:
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - name: "Generate GitHub App token"
         id: app-token
@@ -119,6 +133,11 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
+        env:
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
       - name: "Update downstream"
         id: update-downstream

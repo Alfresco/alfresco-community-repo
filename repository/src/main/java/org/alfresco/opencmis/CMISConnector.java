@@ -164,6 +164,8 @@ import org.alfresco.opencmis.search.CMISResultSetRow;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.coci.CheckOutCheckInServiceImpl;
+import org.alfresco.repo.content.ContentDownloadContext;
+import org.alfresco.repo.content.ContentDownloadPolicy;
 import org.alfresco.repo.model.filefolder.GetChildrenCannedQuery;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
@@ -179,8 +181,6 @@ import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
-import org.alfresco.repo.content.ContentDownloadContext;
-import org.alfresco.repo.content.ContentDownloadPolicy;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.repo.version.VersionModel;
@@ -1804,7 +1804,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         finally
         {
             ContentDownloadContext.clear();
-        }        return result;
+        }
+        return result;
     }
 
     /**

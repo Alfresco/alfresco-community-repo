@@ -28,16 +28,12 @@ package org.alfresco.repo.content;
 /**
  * Defines the download auditing policy for content access.
  * <p>
- * This enum merges the former {@code audit.content.enableContentDownload} and
- * {@code audit.content.unknownReadAsDownload} flags into a single configuration:
- * {@code audit.content.downloadPolicy}.
+ * This enum merges the former {@code audit.content.enableContentDownload} and {@code audit.content.unknownReadAsDownload} flags into a single configuration: {@code audit.content.downloadPolicy}.
  *
  * <ul>
- *   <li><b>NONE</b> – Download auditing is disabled. All content reads fire only the onContentRead policy.</li>
- *   <li><b>STANDARD</b> – Audit only explicit downloads (attachment=true). Unknown reads (CMIS, WebDAV)
- *       are treated as plain reads.</li>
- *   <li><b>EXTENDED</b> – Audit explicit downloads <em>and</em> treat unknown reads (CMIS, WebDAV)
- *       as downloads.</li>
+ * <li><b>NONE</b> – Download auditing is disabled. All content reads fire only the onContentRead policy.</li>
+ * <li><b>STANDARD</b> – Audit only explicit downloads (attachment=true). Unknown reads (CMIS, WebDAV) are treated as plain reads.</li>
+ * <li><b>EXTENDED</b> – Audit explicit downloads <em>and</em> treat unknown reads (CMIS, WebDAV) as downloads.</li>
  * </ul>
  *
  * @since 26.3
@@ -50,8 +46,7 @@ public enum ContentDownloadPolicy
     NONE,
 
     /**
-     * Audit only explicit downloads (where the caller sets attachment=true).
-     * Unknown reads (CMIS, WebDAV) fire only onContentRead.
+     * Audit only explicit downloads (where the caller sets attachment=true). Unknown reads (CMIS, WebDAV) fire only onContentRead.
      */
     STANDARD,
 
@@ -60,4 +55,3 @@ public enum ContentDownloadPolicy
      */
     EXTENDED
 }
-

@@ -26,19 +26,20 @@
 package org.alfresco.repo.content;
 
 /**
- * Thread-local context for propagating the content attachment (download vs. preview) flag
- * from the web layer (ContentStreamer, CMISConnector, WebDAV) to {@link ContentServiceImpl}.
+ * Thread-local context for propagating the content attachment (download vs. preview) flag from the web layer (ContentStreamer, CMISConnector, WebDAV) to {@link ContentServiceImpl}.
  * <p>
- * This replaces the previous approach of using {@code AlfrescoTransactionSupport.bindResource}
- * with the key {@code "contentService.attachment"}, which was unreliable because the value
- * was not always available in the transaction context.
+ * This replaces the previous approach of using {@code AlfrescoTransactionSupport.bindResource} with the key {@code "contentService.attachment"}, which was unreliable because the value was not always available in the transaction context.
  * <p>
  * Usage pattern:
+ * 
  * <pre>
  * ContentDownloadContext.setAttachment(true);
- * try {
+ * try
+ * {
  *     contentService.getReader(nodeRef, propertyQName);
- * } finally {
+ * }
+ * finally
+ * {
  *     ContentDownloadContext.clear();
  * }
  * </pre>
@@ -57,8 +58,8 @@ public final class ContentDownloadContext
     /**
      * Set the attachment flag for the current thread.
      *
-     * @param attachment {@code true} if the content access is a download (attachment),
-     *                   {@code false} if it is a preview / inline read.
+     * @param attachment
+     *            {@code true} if the content access is a download (attachment), {@code false} if it is a preview / inline read.
      */
     public static void setAttachment(boolean attachment)
     {
@@ -76,8 +77,7 @@ public final class ContentDownloadContext
     }
 
     /**
-     * Return whether the current request is a download (attachment).
-     * If the flag has not been set, this returns {@code false}.
+     * Return whether the current request is a download (attachment). If the flag has not been set, this returns {@code false}.
      *
      * @return {@code true} if the current request is a download.
      */
@@ -88,12 +88,10 @@ public final class ContentDownloadContext
     }
 
     /**
-     * Clear the attachment flag for the current thread.
-     * Must be called in a {@code finally} block to prevent thread-local leaks.
+     * Clear the attachment flag for the current thread. Must be called in a {@code finally} block to prevent thread-local leaks.
      */
     public static void clear()
     {
         ATTACHMENT.remove();
     }
 }
-

@@ -52,8 +52,8 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.util.FileCopyUtils;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.ContentDownloadContext;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.web.scripts.MimeTypeUtil;
 import org.alfresco.repo.web.util.HttpRangeProcessor;

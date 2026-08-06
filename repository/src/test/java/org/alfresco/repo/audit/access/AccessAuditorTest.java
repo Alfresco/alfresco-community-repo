@@ -56,12 +56,12 @@ import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.AuditComponent;
-import org.alfresco.repo.content.ContentServiceImpl;
+import org.alfresco.repo.content.ContentDownloadContext;
 import org.alfresco.repo.content.ContentDownloadPolicy;
+import org.alfresco.repo.content.ContentServiceImpl;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.content.ContentDownloadContext;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -697,8 +697,7 @@ public class AccessAuditorTest
     }
 
     /**
-     * Test that default getReader (no attachment parameter bound) still produces READ only
-     * with STANDARD policy.
+     * Test that default getReader (no attachment parameter bound) still produces READ only with STANDARD policy.
      */
     @Test
     public final void test18OnContentReadDefault() throws Exception

@@ -286,7 +286,8 @@ public class AccessAuditorTest
         }
     }
 
-    private void assetNotContains(String expected, Serializable actual){
+    private void assetNotContains(String expected, Serializable actual)
+    {
         String actualString = (String) actual;
         if (actual == null || actualString.contains(expected))
         {

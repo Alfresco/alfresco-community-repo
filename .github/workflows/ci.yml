@@ -626,6 +626,10 @@ jobs:
             pom-dir: tas-webdav
           - test-name: "Integration TAS tests"
             pom-dir: tas-integration
+    env:
+      REQUIRES_LOCAL_IMAGES: true
+      REQUIRES_TAS_TESTS: true
+      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
@@ -648,9 +652,6 @@ jobs:
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      - name: "Build TAS integration tests"
-        if: ${{ matrix.test-name }} == 'Integration TAS tests'
-        run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       - name: "Run tests"
         id: tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}

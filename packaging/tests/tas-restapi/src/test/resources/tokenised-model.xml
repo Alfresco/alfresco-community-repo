@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="tok:tok">
+    <imports>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/tokenised/1.0" prefix="tok"/>
+    </namespaces>
+    <types>
+        <type name="tok:document">
+            <parent>cm:content</parent>
+            <properties>
+                <property name="tok:true">
+                    <type>d:text</type>
+                    <index enabled="true">
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="tok:false">
+                    <type>d:text</type>
+                    <index enabled="true">
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="tok:both">
+                    <type>d:text</type>
+                    <index enabled="true">
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </type>
+    </types>
+    <aspects/>
+</model>

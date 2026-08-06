@@ -10,10 +10,10 @@
     </parent>
 
     <modules>
-        <module>tas-restapi</module>
         <module>tas-cmis</module>
         <module>tas-email</module>
         <module>tas-webdav</module>
+        <module>tas-restapi</module>
         <module>tas-integration</module>
     </modules>
 

@@ -41,6 +41,12 @@
                 <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/part3-suite.xml</suiteXmlFile>
             </properties>
         </profile>
+        <profile>
+            <id>elasticsearch-e2e-tests</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/elasticsearch-e2e-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
     </profiles>
 
     <dependencies>
@@ -178,6 +184,13 @@
         <dependency>
             <groupId>org.eclipse.parsson</groupId>
             <artifactId>parsson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>cmis</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

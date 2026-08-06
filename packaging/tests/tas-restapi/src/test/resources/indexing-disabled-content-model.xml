@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="index:IndexingDisabledContentModel">
+    <description>Indexing Disabled Content Model for Non-Indexed Fields E2E Tests</description>
+    <author>Alfresco</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/index/1.0" prefix="index"/>
+    </namespaces>
+    <types>
+        <type name="index:sample">
+            <title>Sample</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="index:indexed">
+                    <title>Indexed Field</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true"><tokenised>true</tokenised></index>
+                </property>
+                <property name="index:nonIndexed">
+                    <title>Non-Indexed Field</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+            </properties>
+        </type>
+    </types>
+</model>

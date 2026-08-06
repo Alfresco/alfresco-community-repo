@@ -8,7 +8,7 @@ if [[ "${COMMIT_TITLE}" =~ (\[force[^]]*\]) ]]; then
     if [[ "${TRIGGER_RELEASE_ON_FORCE:-false}" == "true" ]]; then
         force_prefix="${force_prefix}[release][skip tests]"
     fi
-    force_prefix="${force_prefix} "
+    force_prefix="${force_prefix}"
     allow_empty_commit="true"
 fi
 
@@ -18,18 +18,26 @@ if [[ -n "${DIRECTIVES:-}" ]]; then
     if [[ "${COMMIT_TITLE}" =~ \[publish\] ]] && [[ "${directives}" != *"[publish]"* ]]; then
         directives="${directives}[publish]"
     fi
-    directives_prefix="${directives} "
+    directives_prefix="${directives}"
+fi
+
+# Build the message: tokens are concatenated without spaces; a single trailing
+# space separates the token block from the message body.
+if [[ -n "${force_prefix}${directives_prefix}" ]]; then
+    token_block="${force_prefix}${directives_prefix} "
+else
+    token_block=""
 fi
 
 if [[ -z "${DOWNSTREAM_REPO:-}" ]]; then
-    message="${force_prefix}${directives_prefix}${VERSION}"
+    message="${token_block}${VERSION}"
 else
-    message="${force_prefix}${directives_prefix}Update ${DOWNSTREAM_REPO} version to ${VERSION}"
+    message="${token_block}Update ${DOWNSTREAM_REPO} version to ${VERSION}"
 fi
 message="${message//$'\n'/ }"
 message="${message//$'\r'/ }"
 
-if [[ -n "${PENDING_DOWNSTREAM}" ]]; then
+if [[ -n "${PENDING_DOWNSTREAM:-}" ]]; then
     if [[ "${BRANCH_NAME}" == "master" ]]; then
         directive="[skip docker_latest]"
     else

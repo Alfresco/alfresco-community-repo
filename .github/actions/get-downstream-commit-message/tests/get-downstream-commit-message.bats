@@ -391,7 +391,7 @@ get_output() {
     [[ "$(get_output message)" != *"[publish]"* ]]
 }
 
-@test "directives=[release] combined with [force] prefixes force before directives" {
+@test "directives=[release] combined with [force] prefixes force before directives without space" {
     export DIRECTIVES="[release]"
     export COMMIT_TITLE="[force] ACS-123: force and release"
     export VERSION="26.3.0-A.4"
@@ -399,7 +399,7 @@ get_output() {
     run bash "$ACTION_SCRIPT"
 
     [ "$status" -eq 0 ]
-    [ "$(get_output message)" = "[force] [release] Update community-repo version to 26.3.0-A.4" ]
+    [ "$(get_output message)" = "[force][release] Update community-repo version to 26.3.0-A.4" ]
     [ "$(get_output allow-empty-commit)" = "true" ]
 }
 
@@ -411,7 +411,7 @@ get_output() {
     run bash "$ACTION_SCRIPT"
 
     [ "$status" -eq 0 ]
-    [ "$(get_output message)" = "[force] [release][publish] Update community-repo version to 26.3.0-A.4" ]
+    [ "$(get_output message)" = "[force][release][publish] Update community-repo version to 26.3.0-A.4" ]
     [ "$(get_output allow-empty-commit)" = "true" ]
 }
 

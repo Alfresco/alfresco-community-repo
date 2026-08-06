@@ -6,6 +6,16 @@ description: >
   that token is prepended to the message and allow-empty-commit is set to true, so the downstream
   commit is created even when no files changed.
 
+  If trigger-release-on-force is set to 'true' and a [force...] token is present, [release][skip
+  tests] is appended directly after the force token so the downstream repo triggers its own release.
+
+  If directives is set (e.g. '[release]'), those tokens are prepended to the message body.
+  '[publish]' is appended to directives automatically when the upstream commit title contains a
+  [publish] token (producing e.g. '[release][publish]').
+
+  If downstream-repo is omitted the message body is the bare version string (e.g. '[release]
+  26.3.0-A.4') instead of 'Update <repo> version to <version>'.
+
   If pending-downstream is provided, a directive is appended indicating that the build should be
   skipped until that downstream repo triggers it: "[skip docker_latest/docker_release] until
   <pending-downstream> triggers the build or it is built manually".
@@ -30,7 +40,7 @@ inputs:
     required: false
     default: ""
   trigger-release-on-force:
-    description: "When true and a [force...] token is present, appends [release][skip tests] after the force token so the downstream repo triggers its own release. Defaults to false for backward compatibility."
+    description: "Set to 'true' (string) to append [release][skip tests] directly after the [force...] token when one is present, so the downstream repo triggers its own release. Defaults to 'false' for backward compatibility."
     required: false
     default: "false"
   directives:

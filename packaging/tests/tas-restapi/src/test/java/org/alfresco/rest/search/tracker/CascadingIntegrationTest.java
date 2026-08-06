@@ -173,7 +173,7 @@ public class CascadingIntegrationTest extends AbstractE2EFunctionalTest
         String childrenQueryAfterRename = "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +
                 "/cm:documentLibrary/cm:" + grandParentNewName + "/*\"";
 
-        String grandChildrenQueryAfterRename = "PATH:\"app:company_home/st:sites/cm:" + testSite.getTitle() +
+        String grandChildrenQueryAfterRename = "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +
                 "/cm:documentLibrary/cm:" + grandParentNewName + "/cm:" + childFolder.getName() + "/*\"";
 
         boolean indexingInProgress = !isContentInSearchResults(grandChildrenQueryAfterRename, grandChildFile.getName(), true);

@@ -88,7 +88,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority = 6)
     public void testSearchODTFile()
     {
-        SearchResponse response6 = queryAsUser(testUser, "cm:name:" + file4.getName() + "'");
+        SearchResponse response6 = queryAsUser(testUser, "cm:name:" + file4.getName());
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response6.assertThat().entriesListIsNotEmpty();
     }

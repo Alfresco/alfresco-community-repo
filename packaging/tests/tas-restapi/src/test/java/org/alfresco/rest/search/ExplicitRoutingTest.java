@@ -44,7 +44,6 @@ public class ExplicitRoutingTest extends AbstractE2EFunctionalTest
      * Checks indexing still works after sharding model used for explicit routing has been disabled
      */
     @Test(priority = 1)
-    @SuppressWarnings("PMD.UnusedLocalVariable")
     public void testIndexingStillWorkingAfterShardModelIsDeactivated()
     {
 
@@ -59,12 +58,9 @@ public class ExplicitRoutingTest extends AbstractE2EFunctionalTest
                 "cmis:secondaryObjectTypeIds", List.of("P:shard:sharding"),
                 "shard:shardId", "0");
 
-        // Create file using shard:shardId
+        // Create file using shard:shardId (explicit routing)
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-                .createFile(file,
-                        Map.of(PropertyIds.NAME, file.getName(),
-                                PropertyIds.OBJECT_TYPE_ID, "cmis:document"),
-                        VersioningState.MAJOR)
+                .createFile(file, propertiesFirstChild, VersioningState.MAJOR)
                 .assertThat().existsInRepo();
 
         // Wait for file to be indexed

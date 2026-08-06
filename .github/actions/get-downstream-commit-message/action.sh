@@ -15,7 +15,7 @@ fi
 directives_prefix=""
 if [[ -n "${DIRECTIVES:-}" ]]; then
     directives="${DIRECTIVES}"
-    if [[ "${COMMIT_TITLE}" =~ \[publish\] ]]; then
+    if [[ "${COMMIT_TITLE}" =~ \[publish\] ]] && [[ "${directives}" != *"[publish]"* ]]; then
         directives="${directives}[publish]"
     fi
     directives_prefix="${directives} "

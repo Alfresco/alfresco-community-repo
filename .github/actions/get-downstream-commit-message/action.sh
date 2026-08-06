@@ -4,11 +4,28 @@ set -euo pipefail
 force_prefix=""
 allow_empty_commit="false"
 if [[ "${COMMIT_TITLE}" =~ (\[force[^]]*\]) ]]; then
-    force_prefix="${BASH_REMATCH[1]} "
+    force_prefix="${BASH_REMATCH[1]}"
+    if [[ "${TRIGGER_RELEASE_ON_FORCE:-false}" == "true" ]]; then
+        force_prefix="${force_prefix}[release][skip tests]"
+    fi
+    force_prefix="${force_prefix} "
     allow_empty_commit="true"
 fi
 
-message="${force_prefix}Update ${DOWNSTREAM_REPO} version to ${VERSION}"
+directives_prefix=""
+if [[ -n "${DIRECTIVES:-}" ]]; then
+    directives="${DIRECTIVES}"
+    if [[ "${COMMIT_TITLE}" =~ \[publish\] ]]; then
+        directives="${directives}[publish]"
+    fi
+    directives_prefix="${directives} "
+fi
+
+if [[ -z "${DOWNSTREAM_REPO:-}" ]]; then
+    message="${force_prefix}${directives_prefix}${VERSION}"
+else
+    message="${force_prefix}${directives_prefix}Update ${DOWNSTREAM_REPO} version to ${VERSION}"
+fi
 message="${message//$'\n'/ }"
 message="${message//$'\r'/ }"
 

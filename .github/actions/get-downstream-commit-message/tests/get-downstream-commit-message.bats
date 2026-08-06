@@ -12,6 +12,8 @@ setup() {
     export DOWNSTREAM_REPO="community-repo"
     export PENDING_DOWNSTREAM=""
     export BRANCH_NAME=""
+    export TRIGGER_RELEASE_ON_FORCE="false"
+    export DIRECTIVES=""
 }
 
 teardown() {
@@ -108,6 +110,74 @@ get_output() {
     [ "$(get_output allow-empty-commit)" = "true" ]
 }
 
+# downstream-repo omitted → bare version body
+
+@test "downstream-repo omitted produces bare version as message body" {
+    unset DOWNSTREAM_REPO
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "26.3.0-A.4" ]
+}
+
+@test "downstream-repo empty produces bare version as message body" {
+    export DOWNSTREAM_REPO=""
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "26.3.0-A.4" ]
+}
+
+@test "downstream-repo omitted with directives=[release] produces '[release] <version>'" {
+    unset DOWNSTREAM_REPO
+    export DIRECTIVES="[release]"
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[release] 26.3.0-A.4" ]
+}
+
+@test "downstream-repo omitted with directives=[release] and [publish] produces '[release][publish] <version>'" {
+    unset DOWNSTREAM_REPO
+    export DIRECTIVES="[release]"
+    export COMMIT_TITLE="ACS-123: publish this [publish]"
+    export VERSION="26.2.0"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[release][publish] 26.2.0" ]
+}
+
+@test "downstream-repo omitted with [force] prefixes force token before version" {
+    unset DOWNSTREAM_REPO
+    export COMMIT_TITLE="[force] ACS-123: force release"
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[force] 26.3.0-A.4" ]
+    [ "$(get_output allow-empty-commit)" = "true" ]
+}
+
+@test "downstream-repo omitted does not include repo name in message" {
+    unset DOWNSTREAM_REPO
+    export DIRECTIVES="[release]"
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [[ "$(get_output message)" != *"version to"* ]]
+}
+
 # pending-downstream tests
 
 @test "pending-downstream appends skip docker_release directive on non-master branch" {
@@ -179,4 +249,199 @@ get_output() {
 
     [ "$status" -eq 0 ]
     [ "$(get_output message)" = "Update community-repo version to 1.2.3" ]
+}
+
+# trigger-release-on-force tests
+
+@test "trigger-release-on-force=false with [force] does not add [release][skip tests]" {
+    export COMMIT_TITLE="[force] ACS-123: trigger downstream CI"
+    export TRIGGER_RELEASE_ON_FORCE="false"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[force] Update community-repo version to 1.2.3" ]
+}
+
+@test "trigger-release-on-force omitted with [force] does not add [release][skip tests]" {
+    export COMMIT_TITLE="[force] ACS-123: trigger downstream CI"
+    unset TRIGGER_RELEASE_ON_FORCE
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[force] Update community-repo version to 1.2.3" ]
+}
+
+@test "trigger-release-on-force=true with [force] appends [release][skip tests] after force token" {
+    export COMMIT_TITLE="[force] ACS-123: trigger downstream CI"
+    export TRIGGER_RELEASE_ON_FORCE="true"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[force][release][skip tests] Update community-repo version to 1.2.3" ]
+}
+
+@test "trigger-release-on-force=true with [force] still sets allow-empty-commit=true" {
+    export COMMIT_TITLE="[force] ACS-123: trigger downstream CI"
+    export TRIGGER_RELEASE_ON_FORCE="true"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output allow-empty-commit)" = "true" ]
+}
+
+@test "trigger-release-on-force=true with versioned [force 26.3.0-A.7] appends [release][skip tests]" {
+    export COMMIT_TITLE="ACS-123 bump [force 26.3.0-A.7]"
+    export TRIGGER_RELEASE_ON_FORCE="true"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[force 26.3.0-A.7][release][skip tests] Update community-repo version to 1.2.3" ]
+}
+
+@test "trigger-release-on-force=true without [force] produces plain message" {
+    export COMMIT_TITLE="ACS-123: regular change"
+    export TRIGGER_RELEASE_ON_FORCE="true"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "Update community-repo version to 1.2.3" ]
+    [ "$(get_output allow-empty-commit)" = "false" ]
+}
+
+@test "trigger-release-on-force=true combined with pending-downstream produces correct message" {
+    export COMMIT_TITLE="[force] ACS-123: trigger downstream CI"
+    export TRIGGER_RELEASE_ON_FORCE="true"
+    export PENDING_DOWNSTREAM="alfresco-enterprise-share"
+    export BRANCH_NAME="master"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    expected="[force][release][skip tests] Update community-repo version to 1.2.3
+
+[skip docker_latest] until alfresco-enterprise-share triggers the build or it is built manually"
+    [ "$(get_output message)" = "$expected" ]
+}
+
+# directives tests
+
+@test "directives empty produces no directives prefix" {
+    export DIRECTIVES=""
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "Update community-repo version to 1.2.3" ]
+}
+
+@test "directives omitted produces no directives prefix" {
+    unset DIRECTIVES
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "Update community-repo version to 1.2.3" ]
+}
+
+@test "directives=[release] without [publish] produces '[release] Update...' message" {
+    export DIRECTIVES="[release]"
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[release] Update community-repo version to 26.3.0-A.4" ]
+}
+
+@test "directives=[release] with [publish] in title produces '[release][publish] Update...' message" {
+    export DIRECTIVES="[release]"
+    export COMMIT_TITLE="ACS-123: release [publish]"
+    export VERSION="26.2.0"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[release][publish] Update community-repo version to 26.2.0" ]
+}
+
+@test "directives=[release] with [publish] at start of title is detected" {
+    export DIRECTIVES="[release]"
+    export COMMIT_TITLE="[publish] ACS-123: release at start"
+    export VERSION="26.2.0"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[release][publish] Update community-repo version to 26.2.0" ]
+}
+
+@test "directives without [publish] in title does not append [publish]" {
+    export DIRECTIVES="[release]"
+    export COMMIT_TITLE="ACS-123: regular release, no publish"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [[ "$(get_output message)" != *"[publish]"* ]]
+}
+
+@test "directives=[release] combined with [force] prefixes force before directives" {
+    export DIRECTIVES="[release]"
+    export COMMIT_TITLE="[force] ACS-123: force and release"
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[force] [release] Update community-repo version to 26.3.0-A.4" ]
+    [ "$(get_output allow-empty-commit)" = "true" ]
+}
+
+@test "directives=[release] with [publish] combined with [force] produces correct message" {
+    export DIRECTIVES="[release]"
+    export COMMIT_TITLE="[force] ACS-123: force and publish [publish]"
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "[force] [release][publish] Update community-repo version to 26.3.0-A.4" ]
+    [ "$(get_output allow-empty-commit)" = "true" ]
+}
+
+@test "directives=[release] combined with pending-downstream appends skip directive" {
+    export DIRECTIVES="[release]"
+    export VERSION="26.3.0-A.4"
+    export PENDING_DOWNSTREAM="alfresco-enterprise-share"
+    export BRANCH_NAME="feature/ACS-123"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    expected="[release] Update community-repo version to 26.3.0-A.4
+
+[skip docker_release] until alfresco-enterprise-share triggers the build or it is built manually"
+    [ "$(get_output message)" = "$expected" ]
+}
+
+@test "directives=[release] combined with downstream-repo omitted and pending-downstream appends skip directive" {
+    unset DOWNSTREAM_REPO
+    export DIRECTIVES="[release]"
+    export VERSION="26.3.0-A.4"
+    export PENDING_DOWNSTREAM="acs-community-packaging"
+    export BRANCH_NAME="master"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    expected="[release] 26.3.0-A.4
+
+[skip docker_latest] until acs-community-packaging triggers the build or it is built manually"
+    [ "$(get_output message)" = "$expected" ]
 }

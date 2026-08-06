@@ -18,14 +18,26 @@ inputs:
     description: "Version string to embed in the commit message"
     required: true
   downstream-repo:
-    description: "Short name of the downstream repository, used in the commit message (e.g. enterprise-repo)"
-    required: true
+    description: "Short name of the downstream repository (e.g. 'enterprise-repo'). When provided, the message body is 'Update <downstream-repo> version to <version>'. When omitted, the body is just the bare version string (e.g. '[release] 26.3.0-A.4')."
+    required: false
+    default: ""
   pending-downstream:
     description: "Name of the downstream repo that will trigger the real build (e.g. alfresco-enterprise-share). When set, a skip directive is appended."
     required: false
     default: ""
   branch-name:
     description: "Current branch name, used to pick the correct skip directive (master → skip docker_latest, else → skip docker_release). Only used when pending-downstream is set."
+    required: false
+    default: ""
+  trigger-release-on-force:
+    description: "When true and a [force...] token is present, appends [release][skip tests] after the force token so the downstream repo triggers its own release. Defaults to false for backward compatibility."
+    required: false
+    default: "false"
+  directives:
+    description: >
+      Base directives to prepend to the message (e.g. '[release]'). When set, '[publish]' is
+      appended automatically if the upstream commit title contains a [publish] token
+      (producing e.g. '[release][publish]'). Defaults to empty for backward compatibility.
     required: false
     default: ""
 
@@ -48,5 +60,7 @@ runs:
         DOWNSTREAM_REPO: ${{ inputs.downstream-repo }}
         PENDING_DOWNSTREAM: ${{ inputs.pending-downstream }}
         BRANCH_NAME: ${{ inputs.branch-name }}
+        TRIGGER_RELEASE_ON_FORCE: ${{ inputs.trigger-release-on-force }}
+        DIRECTIVES: ${{ inputs.directives }}
       shell: bash
       run: ${{ github.action_path }}/action.sh

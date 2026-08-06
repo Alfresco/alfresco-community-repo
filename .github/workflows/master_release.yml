@@ -10,8 +10,6 @@ on:
     branches:
       - master
       - release/**
-      - fix/workflow-secret-envs-fix
-
 env:
   JAVA_VERSION: '21'
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60

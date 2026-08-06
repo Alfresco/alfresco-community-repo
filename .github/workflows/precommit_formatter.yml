@@ -8,6 +8,12 @@ on:
   push:
     branches:
       - precommit/**
+  workflow_dispatch:
+    inputs:
+      python-version:
+        description: "Python version used to run the pre-commit formatter"
+        required: false
+        default: "3.9"
 
 jobs:
   format-code:

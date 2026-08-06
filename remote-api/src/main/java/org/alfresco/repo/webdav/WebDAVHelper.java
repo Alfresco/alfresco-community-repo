@@ -47,6 +47,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentDownloadPolicy;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.tenant.TenantService;
@@ -120,8 +121,8 @@ public class WebDAVHelper
     private EventPublisher eventPublisher;
     private ActivityPoster poster;
 
-    /** When true, WebDAV content reads are treated as downloads. When false, treated as plain reads. */
-    private boolean unknownReadAsDownload;
+    /** The download auditing policy – determines whether WebDAV reads are treated as downloads. */
+    private ContentDownloadPolicy downloadPolicy = ContentDownloadPolicy.STANDARD;
 
     // pattern is tested against full path after it has been lower cased.
     private Pattern m_renameShufflePattern = Pattern.compile("(.*/\\..*)|(.*[a-f0-9]{8}+$)|(.*\\.tmp$)|(.*atmp[0-9]+$)|(.*\\.wbk$)|(.*\\.bak$)|(.*\\~$)|(.*backup.*\\.do[ct]{1}[x]?[m]?$)|(.*\\.sb\\-\\w{8}\\-\\w{6}$)");
@@ -351,14 +352,14 @@ public class WebDAVHelper
         this.eventPublisher = eventPublisher;
     }
 
-    public void setUnknownReadAsDownload(boolean unknownReadAsDownload)
+    public void setDownloadPolicy(String downloadPolicy)
     {
-        this.unknownReadAsDownload = unknownReadAsDownload;
+        this.downloadPolicy = ContentDownloadPolicy.valueOf(downloadPolicy.trim().toUpperCase());
     }
 
-    public boolean isUnknownReadAsDownload()
+    public ContentDownloadPolicy getDownloadPolicy()
     {
-        return unknownReadAsDownload;
+        return downloadPolicy;
     }
 
     /**

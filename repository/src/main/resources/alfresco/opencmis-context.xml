@@ -195,7 +195,7 @@
         <property name="dictionaryService"      ref="DictionaryService" />
         <property name="behaviourFilter"        ref="policyBehaviourFilter" />
         <property name="eventPublisher"         ref="eventPublisher" />
-        <property name="unknownReadAsDownload" value="${audit.content.unknownReadAsDownload}" />
+        <property name="downloadPolicy"         value="${audit.content.downloadPolicy}" />
 
         <property name="bulkMaxItems"           value="${opencmis.bulkUpdateProperties.maxItemsSize}" />
         <property name="bulkBatchSize"          value="${opencmis.bulkUpdateProperties.batchSize}" />

@@ -88,8 +88,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
     private DictionaryService dictionaryService;
     private NodeService nodeService;
-    /** When true, a download also fires the onContentRead policy (in addition to onContentDownload). */
-    private boolean enableContentDownload = true;
+    /** Controls download auditing behavior. */
+    private ContentDownloadPolicy downloadPolicy = ContentDownloadPolicy.STANDARD;
     private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
@@ -120,17 +120,18 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     ClassPolicyDelegate<ContentServicePolicies.OnContentDownloadPolicy> onContentDownloadDelegate;
 
     /**
-     * When true, a download event also fires the onContentRead policy (backward-compatible behavior).
-     * When false, a download fires only onContentDownload.
+     * Sets the download auditing policy.
+     *
+     * @param downloadPolicy the policy value (NONE, STANDARD, EXTENDED)
      */
-    public void setEnableContentDownload(boolean readAsDownload)
+    public void setDownloadPolicy(String downloadPolicy)
     {
-        this.enableContentDownload = readAsDownload;
+        this.downloadPolicy = ContentDownloadPolicy.valueOf(downloadPolicy.trim().toUpperCase());
     }
 
-    public boolean getEnableContentDownload()
+    public ContentDownloadPolicy getDownloadPolicy()
     {
-        return enableContentDownload;
+        return downloadPolicy;
     }
 
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
@@ -407,9 +408,16 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName)
     {
-        boolean isDownload = ContentDownloadContext.isDownload();
+        if (downloadPolicy == ContentDownloadPolicy.NONE)
+        {
+            // Download auditing disabled – always fire only the read policy
+            return getReaderImpl(nodeRef, propertyQName, true, false);
+        }
 
-        return getReaderImpl(nodeRef,propertyQName,true,isDownload && enableContentDownload);
+        // Callers must explicitly set the attachment flag via ContentDownloadContext.
+        // If not set (null), this is an internal/unknown read – fire only the read policy.
+        Boolean attachment = ContentDownloadContext.getAttachment();
+        return getReaderImpl(nodeRef, propertyQName, true, attachment != null && attachment);
     }
 
     private ContentReader getReaderImpl(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy, boolean fireContentDownloadPolicy)

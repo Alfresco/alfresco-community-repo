@@ -79,7 +79,7 @@
          <value>${system.webdav.url.path.prefix}</value>
       </property>
       <property name="eventPublisher" ref="eventPublisher" />
-      <property name="unknownReadAsDownload" value="${audit.content.unknownReadAsDownload}" />
+      <property name="downloadPolicy" value="${audit.content.downloadPolicy}" />
     </bean>
    
     <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper" parent="baseWebDAVHelper" />

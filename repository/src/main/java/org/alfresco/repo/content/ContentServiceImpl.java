@@ -122,7 +122,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     /**
      * Sets the download auditing policy.
      *
-     * @param downloadPolicy the policy value (NONE, STANDARD, EXTENDED)
+     * @param downloadPolicy
+     *            the policy value (NONE, STANDARD, EXTENDED)
      */
     public void setDownloadPolicy(String downloadPolicy)
     {
@@ -731,7 +732,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         final ContentData contentData = getContentDataOrThrowError(nodeRef, propertyQName);
         return store.requestRestoreContentFromArchive(contentData.getContentUrl(), restoreParams);
     }
-
 
     protected String getFileName(NodeRef nodeRef)
     {

@@ -36,7 +36,6 @@ import java.util.Map;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.content.ContentDownloadContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -45,6 +44,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.web.context.ServletContextAware;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentDownloadContext;
 import org.alfresco.repo.web.scripts.MimeTypeUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentReader;

@@ -104,8 +104,6 @@ public interface ContentService
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName)
             throws InvalidNodeRefException, InvalidTypeException;
 
-
-
     /**
      * Get a content writer for the given node property, choosing to optionally have the node property updated automatically when the content stream closes.
      * <p>

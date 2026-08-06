@@ -17,6 +17,24 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- Google Drive SDK -->
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-drive</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-oauth2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-jackson2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-apache-v2</artifactId>
+        </dependency>
+
         <!-- Elasticsearch / OpenSearch search support -->
         <dependency>
             <groupId>org.opensearch.client</groupId>

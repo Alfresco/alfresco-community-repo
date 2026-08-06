@@ -35,7 +35,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.UnCutoffAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -79,6 +83,8 @@ public class DispositionProperty extends BaseBehaviourBean
 
     /** Set of disposition actions this property does not apply to */
     private Set<String> excludedDispositionActions;
+
+    private static final Log LOGGER = LogFactory.getLog(DispositionProperty.class);
 
     /**
      * @param namespaceService
@@ -234,15 +240,16 @@ public class DispositionProperty extends BaseBehaviourBean
                                 }
                             }
                         }
+                        else if (shouldThrowError(nodeRef, before))
+                        {
+                            throw new AlfrescoRuntimeException(
+                                    "Error updating property " + propertyName.toPrefixString(namespaceService) +
+                                            " to null, because property is being used to determine a disposition date.");
+                        }
                         else
                         {
-                            // throw an exception if the property is being 'cleared'
-                            if (before.get(propertyName) != null)
-                            {
-                                throw new AlfrescoRuntimeException(
-                                        "Error updating property " + propertyName.toPrefixString(namespaceService) +
-                                                " to null, because property is being used to determine a disposition date.");
-                            }
+                            LOGGER.debug("Property " + propertyName.toPrefixString(namespaceService) +
+                                    " is being cleared, but this is allowed because the node is being uncutoff.");
                         }
 
                         return null;
@@ -266,5 +273,33 @@ public class DispositionProperty extends BaseBehaviourBean
         Serializable afterValue = after.get(propertyName);
 
         return !Objects.equals(beforeValue, afterValue);
+    }
+
+    /**
+     * Indicates whether this property is the cut off date being legitimately cleared as part of an {@link UnCutoffAction} action in the current transaction.
+     *
+     * @param nodeRef
+     *            the node whose property is being cleared
+     *
+     * @return true if this is the cut off date being cleared by an {@link UnCutoffAction} action, false otherwise
+     */
+    private boolean isUnCutOff(NodeRef nodeRef)
+    {
+        return PROP_CUT_OFF_DATE.equals(propertyName) && UnCutoffAction.isUndoCutOffInProgress(nodeRef);
+    }
+
+    /**
+     * Indicates whether an exception should be thrown in case the property is being 'cleared'
+     *
+     * @param nodeRef
+     *            the node whose property is being cleared
+     * @param before
+     *            the property values before the update
+     *
+     * @return true if an exception should be thrown, false otherwise
+     */
+    private boolean shouldThrowError(NodeRef nodeRef, Map<QName, Serializable> before)
+    {
+        return before.get(propertyName) != null && !isUnCutOff(nodeRef);
     }
 }

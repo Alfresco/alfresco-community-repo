@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
@@ -33,6 +34,7 @@ import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_S
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +45,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -107,6 +110,19 @@ public class NodesImplTest
     }
 
     @Test
+    public void testMultiValuedNodeRef_nonListCollection_convertedToNodeRefList()
+    {
+        Map<String, Object> props = new LinkedHashMap<>();
+        props.put(MULTI_NODE_REF_PROP, new LinkedHashSet<>(Arrays.asList(REF_1_UUID, REF_2_UUID)));
+
+        Map<QName, Serializable> result = nodesImpl.mapToNodeProperties(props);
+
+        assertThat((List<NodeRef>) result.get(MULTI_NODE_REF_QNAME)).containsExactly(
+                new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, REF_1_UUID),
+                new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, REF_2_UUID));
+    }
+
+    @Test
     public void testMultiValuedNodeRef_fullNodeRefStrings_convertedToNodeRefList()
     {
         String fullRef1 = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, REF_1_UUID).toString();
@@ -158,5 +174,35 @@ public class NodesImplTest
 
         assertThat(result.get(SINGLE_NODE_REF_QNAME))
                 .isEqualTo(new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, REF_1_UUID));
+    }
+
+    @Test
+    public void testMultiValuedNodeRef_listContainsNullElement_throwsInvalidArgumentException()
+    {
+        Map<String, Object> props = new LinkedHashMap<>();
+        props.put(MULTI_NODE_REF_PROP, Arrays.asList(REF_1_UUID, null));
+
+        assertThatThrownBy(() -> nodesImpl.mapToNodeProperties(props))
+                .isInstanceOf(InvalidArgumentException.class);
+    }
+
+    @Test
+    public void testMultiValuedNodeRef_listContainsNonStringElement_throwsInvalidArgumentException()
+    {
+        Map<String, Object> props = new LinkedHashMap<>();
+        props.put(MULTI_NODE_REF_PROP, Arrays.asList(REF_1_UUID, 123));
+
+        assertThatThrownBy(() -> nodesImpl.mapToNodeProperties(props))
+                .isInstanceOf(InvalidArgumentException.class);
+    }
+
+    @Test
+    public void testSingleValuedNodeRef_nonStringValue_throwsInvalidArgumentException()
+    {
+        Map<String, Object> props = new LinkedHashMap<>();
+        props.put(SINGLE_NODE_REF_PROP, 123);
+
+        assertThatThrownBy(() -> nodesImpl.mapToNodeProperties(props))
+                .isInstanceOf(InvalidArgumentException.class);
     }
 }

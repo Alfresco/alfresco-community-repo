@@ -1581,15 +1581,15 @@ public class NodesImpl implements Nodes
                 {
                     if (pd.getDataType().getName().equals(DataTypeDefinition.NODE_REF))
                     {
-                        if (pd.isMultiValued() && entry.getValue() instanceof List<?> nodeRefStrings)
+                        if (pd.isMultiValued() && entry.getValue() instanceof Collection<?> nodeRefValues)
                         {
-                            ArrayList<NodeRef> nodeRefs = new ArrayList<>(nodeRefStrings.size());
-                            nodeRefStrings.stream().forEach(nodeRefString -> nodeRefs.add(toNodeRef((String) nodeRefString)));
+                            ArrayList<NodeRef> nodeRefs = new ArrayList<>(nodeRefValues.size());
+                            nodeRefValues.forEach(nodeRefValue -> nodeRefs.add(toNodeRef(nodeRefValue)));
                             value = nodeRefs;
                         }
                         else
                         {
-                            value = toNodeRef((String) entry.getValue());
+                            value = toNodeRef(entry.getValue());
                         }
                     }
                     else
@@ -1607,8 +1607,12 @@ public class NodesImpl implements Nodes
         return nodeProps;
     }
 
-    private NodeRef toNodeRef(String nodeRefString)
+    private NodeRef toNodeRef(Object nodeRefValue)
     {
+        if (!(nodeRefValue instanceof String nodeRefString))
+        {
+            throw new InvalidArgumentException("Invalid node reference value: " + nodeRefValue);
+        }
         if (!NodeRef.isNodeRef(nodeRefString))
         {
             return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeRefString);

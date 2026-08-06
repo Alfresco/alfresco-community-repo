@@ -27,13 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -46,6 +49,9 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
 {
     /** I18N */
     private static final String MSG_UNDO_NOT_LAST = "rm.action.undo-not-last";
+
+    /** Transaction resource key used to track nodes whose cut off is being undone in the current transaction */
+    private static final String KEY_UNDO_CUT_OFF_NODE_REFS = "UnCutoffAction.undoCutOffNodeRefs";
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -67,6 +73,7 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
             }
 
             // Remove the cutoff aspect and add the uncutoff aspect
+            markUndoCutOffInProgress(actionedUponNodeRef);
             getNodeService().removeAspect(actionedUponNodeRef, ASPECT_CUT_OFF);
             getNodeService().addAspect(actionedUponNodeRef, ASPECT_UNCUT_OFF, null);
             if (getRecordFolderService().isRecordFolder(actionedUponNodeRef))
@@ -74,6 +81,7 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
                 List<NodeRef> records = getRecordService().getRecords(actionedUponNodeRef);
                 for (NodeRef record : records)
                 {
+                    markUndoCutOffInProgress(record);
                     getNodeService().removeAspect(record, ASPECT_CUT_OFF);
                     getNodeService().addAspect(record, ASPECT_UNCUT_OFF, null);
                 }
@@ -95,5 +103,38 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
             getNodeService().setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_AT, null);
             getNodeService().setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_BY, null);
         }
+    }
+
+    /**
+     * Marks the given node as having its cut off undone in the current transaction, so that {@link #isUndoCutOffInProgress(NodeRef)} can identify the resulting property change as legitimate.
+     *
+     * @param nodeRef
+     *            the node whose cut off is being undone
+     */
+    @SuppressWarnings("unchecked")
+    private static void markUndoCutOffInProgress(NodeRef nodeRef)
+    {
+        Set<NodeRef> nodeRefs = (Set<NodeRef>) AlfrescoTransactionSupport.getResource(KEY_UNDO_CUT_OFF_NODE_REFS);
+        if (nodeRefs == null)
+        {
+            nodeRefs = new HashSet<>();
+            AlfrescoTransactionSupport.bindResource(KEY_UNDO_CUT_OFF_NODE_REFS, nodeRefs);
+        }
+        nodeRefs.add(nodeRef);
+    }
+
+    /**
+     * Indicates whether the given node's cut off is currently being undone by this action, in the current transaction. Unlike checking for the presence of the uncut off aspect, this is only true for the exact operation that clears the cut off date, and not for any node that has been undone in the past.
+     *
+     * @param nodeRef
+     *            the node to check
+     *
+     * @return true if the node's cut off is being undone in the current transaction, false otherwise
+     */
+    @SuppressWarnings("unchecked")
+    public static boolean isUndoCutOffInProgress(NodeRef nodeRef)
+    {
+        Set<NodeRef> nodeRefs = (Set<NodeRef>) AlfrescoTransactionSupport.getResource(KEY_UNDO_CUT_OFF_NODE_REFS);
+        return nodeRefs != null && nodeRefs.contains(nodeRef);
     }
 }

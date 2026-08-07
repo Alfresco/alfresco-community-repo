@@ -62,7 +62,6 @@
         <dependency.micrometer.version>1.15.12</dependency.micrometer.version> <!-- should be in sync with micrometer-observation transitive dependency from spring-context -->
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.22.1</dependency.jackson.version>
-        <dependency.jackson.annotations.version>2.22</dependency.jackson.annotations.version>
         <dependency.cxf.version>4.1.7</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
@@ -80,6 +79,10 @@
         <dependency.httpcomponents-httpcore5.version>5.4.3</dependency.httpcomponents-httpcore5.version> <!-- should be in sync with httpclient5 -->
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
+        <dependency.google-cloud-libraries-bom.version>26.84.0</dependency.google-cloud-libraries-bom.version>
+        <dependency.google-api-services-drive.version>v3-rev20250511-2.0.0</dependency.google-api-services-drive.version>
+        <dependency.google-api-services-oauth2.version>v2-rev20200213-2.0.0</dependency.google-api-services-oauth2.version>
+        <dependency.opencensus.version>0.31.1</dependency.opencensus.version>
         <dependency.slf4j.version>2.0.16</dependency.slf4j.version>
         <dependency.log4j.version>2.26.1</dependency.log4j.version>
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
@@ -118,7 +121,7 @@
         <dependency.jakarta-ee-json-impl.version>1.1.8</dependency.jakarta-ee-json-impl.version>
         <dependency.jakarta-json-path.version>2.9.0</dependency.jakarta-json-path.version>
         <dependency.json-smart.version>2.5.2</dependency.json-smart.version>
-        <alfresco.googledrive.version>4.1.0</alfresco.googledrive.version>
+        <alfresco.googledrive.version>5.0.0-A1</alfresco.googledrive.version>
         <alfresco.aos-module.version>3.4.2-A.3</alfresco.aos-module.version>
         <alfresco.api-explorer.version>25.4.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
@@ -585,40 +588,43 @@
                 <version>${dependency.spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
                 <version>${dependency.jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${dependency.jackson.version}</version>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>${dependency.google-cloud-libraries-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-joda</artifactId>
-                <version>${dependency.jackson.version}</version>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-drive</artifactId>
+                <version>${dependency.google-api-services-drive.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-yaml</artifactId>
-                <version>${dependency.jackson.version}</version>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-oauth2</artifactId>
+                <version>${dependency.google-api-services-oauth2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opencensus</groupId>
+                <artifactId>opencensus-api</artifactId>
+                <version>${dependency.opencensus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opencensus</groupId>
+                <artifactId>opencensus-contrib-http-util</artifactId>
+                <version>${dependency.opencensus.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>2.3</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${dependency.jackson.annotations.version}</version>
-            </dependency>
-            <!-- newer dependency from camel-jackson -->
-            <dependency>
-                <groupId>com.fasterxml.jackson.module</groupId>
-                <artifactId>jackson-module-jaxb-annotations</artifactId>
-                <version>${dependency.jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.woodstox</groupId>

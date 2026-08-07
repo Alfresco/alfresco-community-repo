@@ -59,6 +59,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.filesys.repo.rules.ShuffleTest.class,
         org.alfresco.opencmis.AlfrescoCmisExceptionInterceptorTest.class,
         org.alfresco.opencmis.mapping.RuntimeSwitchingCMISFacadeTest.class,
+        org.alfresco.integrations.compatibility.DriveSdkPlatformCompatibilityTest.class,
         org.alfresco.repo.admin.Log4JHierarchyInitTest.class,
         org.alfresco.repo.attributes.PropTablesCleanupJobTest.class,
         org.alfresco.repo.cache.AbstractCacheFactoryTest.class,

@@ -65,7 +65,8 @@ public class SearchEngineDetector
     {
         try
         {
-            String[] info = detect();               // [provider, version]
+            String[] info = detect();// [provider, version]
+            LOGGER.info("Search engine is: " + info[0] + " " + info[1]);
             store(info[0], info[1]);
             LOGGER.info("Detected search engine: {} {}", info[0], info[1]);
         }
@@ -78,22 +79,26 @@ public class SearchEngineDetector
     private String[] detect() throws IOException
     {
         Request request = Requests.builder().method("GET").endpoint("/").build();
+        LOGGER.info("Detect search engine called");
+        LOGGER.info(httpClientFactory.getElasticsearchClient().toString());
         try (var response = httpClientFactory.getElasticsearchClient().generic().execute(request))
         {
-            JSONObject root = response.getBody()
-                    .map(Body::body)
-                    .map(Json::createReader)
-                    .map(JsonReader::readObject)
-                    .map(JSONObject::new)
-                    .orElseThrow(() -> new IOException("Empty response from search engine root endpoint"));
+            String raw  = response.getBody()
+                    .map(Body::bodyAsString)
+                    .orElseThrow(() -> new IOException("Empty response from root endpoint"));
 
-            JSONObject version  = root.getJSONObject("version");
-            String number       = version.getString("number");
-            String distribution = version.optString("distribution", null); // OpenSearch only
+            JSONObject root = new JSONObject(raw);
+            String versionNumber = root.getJSONObject("version").getString("number");
 
-            String provider = (distribution != null && distribution.equalsIgnoreCase("opensearch"))
-                    ? "OpenSearch" : "Elasticsearch";
-            return new String[]{ provider, number };
+            String provider;
+            if(root.getString("tagline").equalsIgnoreCase("You Know, for Search")) {
+                provider = "elasticsearch";
+            } else if(root.getString("tagline").equalsIgnoreCase("The OpenSearch Project: https://opensearch.org/")) {
+                provider = "opensearch";
+            } else {
+                provider = "unknown";
+            }
+            return new String[]{ provider, versionNumber };
         }
     }
 

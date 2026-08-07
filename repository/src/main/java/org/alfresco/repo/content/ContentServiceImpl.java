@@ -26,11 +26,7 @@
 package org.alfresco.repo.content;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -42,6 +38,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
@@ -85,9 +82,10 @@ import org.alfresco.util.TempFileProvider;
 public class ContentServiceImpl implements ContentService, ApplicationContextAware
 {
     private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
-
     private DictionaryService dictionaryService;
     private NodeService nodeService;
+    /** Controls download auditing behavior. */
+    private ContentDownloadPolicy downloadPolicy = ContentDownloadPolicy.STANDARD;
     private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
@@ -115,6 +113,23 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     ClassPolicyDelegate<ContentServicePolicies.OnContentUpdatePolicy> onContentUpdateDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentPropertyUpdatePolicy> onContentPropertyUpdateDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
+    ClassPolicyDelegate<ContentServicePolicies.OnContentDownloadPolicy> onContentDownloadDelegate;
+
+    /**
+     * Sets the download auditing policy.
+     *
+     * @param downloadPolicy
+     *            the policy value (NONE, STANDARD, EXTENDED)
+     */
+    public void setDownloadPolicy(String downloadPolicy)
+    {
+        this.downloadPolicy = ContentDownloadPolicy.valueOf(downloadPolicy.trim().toUpperCase(Locale.ROOT));
+    }
+
+    public ContentDownloadPolicy getDownloadPolicy()
+    {
+        return downloadPolicy;
+    }
 
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
     {
@@ -198,6 +213,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         this.onContentUpdateDelegate = this.policyComponent.registerClassPolicy(OnContentUpdatePolicy.class);
         this.onContentPropertyUpdateDelegate = this.policyComponent.registerClassPolicy(OnContentPropertyUpdatePolicy.class);
         this.onContentReadDelegate = this.policyComponent.registerClassPolicy(OnContentReadPolicy.class);
+        this.onContentDownloadDelegate = this.policyComponent.registerClassPolicy(OnContentDownloadPolicy.class);
     }
 
     /**
@@ -389,11 +405,19 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     public ContentReader getReader(NodeRef nodeRef, QName propertyQName)
     {
-        return getReader(nodeRef, propertyQName, true);
+        if (downloadPolicy == ContentDownloadPolicy.NONE)
+        {
+            // Download auditing disabled – always fire only the read policy
+            return getReaderImpl(nodeRef, propertyQName, true, false);
+        }
+
+        // Callers must explicitly set the attachment flag via ContentDownloadContext.
+        // If not set (null), this is an internal/unknown read – fire only the read policy.
+        Boolean attachment = ContentDownloadContext.isAttachment();
+        return getReaderImpl(nodeRef, propertyQName, true, attachment != null && attachment);
     }
 
-    @SuppressWarnings("unchecked")
-    private ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy)
+    private ContentReader getReaderImpl(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy, boolean fireContentDownloadPolicy)
     {
         ContentData contentData = getContentData(nodeRef, propertyQName);
 
@@ -417,14 +441,21 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         reader.setEncoding(contentData.getEncoding());
         reader.setLocale(contentData.getLocale());
 
-        // Fire the content read policy
-        if (reader != null && fireContentReadPolicy == true)
+        if (fireContentReadPolicy || fireContentDownloadPolicy)
         {
-            // Fire the content update policy
-            Set<QName> types = new HashSet<QName>(this.nodeService.getAspects(nodeRef));
+            Set<QName> types = new HashSet<>(this.nodeService.getAspects(nodeRef));
             types.add(this.nodeService.getType(nodeRef));
-            OnContentReadPolicy policy = this.onContentReadDelegate.get(nodeRef, types);
-            policy.onContentRead(nodeRef);
+
+            if (fireContentReadPolicy)
+            {
+                OnContentReadPolicy readPolicy = this.onContentReadDelegate.get(nodeRef, types);
+                readPolicy.onContentRead(nodeRef);
+            }
+            if (fireContentDownloadPolicy)
+            {
+                OnContentDownloadPolicy downloadPolicy = this.onContentDownloadDelegate.get(nodeRef, types);
+                downloadPolicy.onContentDownload(nodeRef);
+            }
         }
 
         // we don't listen for anything
@@ -483,7 +514,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         }
 
         // check for an existing URL - the get of the reader will perform type checking
-        ContentReader existingContentReader = getReader(nodeRef, propertyQName, false);
+        ContentReader existingContentReader = getReaderImpl(nodeRef, propertyQName, false, false);
 
         // get the content using the (potentially) existing content - the new content
         // can be wherever the store decides.

@@ -44,6 +44,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.web.context.ServletContextAware;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentDownloadContext;
 import org.alfresco.repo.web.scripts.MimeTypeUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -162,6 +163,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
         }
         // determine attachment and force download for specific mimetypes - see PRODSEC-5862
         boolean attach = Boolean.valueOf(req.getParameter("a"));
+        ContentDownloadContext.setAttachment(attach);
         ContentReader reader = contentService.getReader(nodeRef, propertyQName);
         String mimetype = MimeTypeUtil.determineMimetype(reader, req, mimetypeService);
 

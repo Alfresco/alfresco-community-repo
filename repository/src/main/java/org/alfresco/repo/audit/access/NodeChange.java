@@ -42,6 +42,7 @@ import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCancelCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
@@ -77,7 +78,7 @@ import org.alfresco.service.namespace.QName;
 
         OnCopyCompletePolicy,
 
-        OnCheckOut, OnCheckIn, OnCancelCheckOut
+        OnCheckOut, OnCheckIn, OnCancelCheckOut, OnContentDownloadPolicy
 {
     private static final String USER = "user";
     private static final String ACTION = "action";
@@ -106,6 +107,7 @@ import org.alfresco.service.namespace.QName;
     private static final String CREATE_CONTENT = "createContent";
     private static final String UPDATE_CONTENT = "updateContent";
     private static final String READ_CONTENT = "readContent";
+    private static final String DOWNLOAD_CONTENT = "downloadContent";
     private static final String CREATE_VERSION = "createVersion";
     private static final String COPY_NODE = "copyNode";
     private static final String CHECK_IN = "checkIn";
@@ -186,13 +188,14 @@ import org.alfresco.service.namespace.QName;
         {
             action = "CREATE";
         }
-        else if (subActions.size() == 1 && subActions.contains(READ_CONTENT))
+        else if ((subActions.size() == 1 || subActions.contains(DOWNLOAD_CONTENT)) && subActions.contains(READ_CONTENT))
         {
             // Reads in combinations with other actions tend to only facilitate the other action.
             action = "READ";
             // MNT-8810 fix, action is considered as READ -> so let's keep actual user who performed readContent
             keepRunAsUser = true;
         }
+
         else if (subActions.contains(DELETE_NODE))
         {
             action = "DELETE";
@@ -489,6 +492,15 @@ import org.alfresco.service.namespace.QName;
         appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(CANCEL_CHECK_OUT));
     }
 
+    /**
+     * @return {@code true} if both readContent and downloadContent sub-actions are present, indicating that two separate audit entries (READ and DOWNLOAD) should be emitted.
+     */
+    public boolean hasReadAndDownloadActions()
+    {
+        return subActions.contains(READ_CONTENT) && subActions.contains(DOWNLOAD_CONTENT);
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public Map<String, Serializable> getAuditData(boolean subAction)
     {
         Map<String, Serializable> auditMap = new HashMap<String, Serializable>(
@@ -507,7 +519,6 @@ import org.alfresco.service.namespace.QName;
                                 (versionProperties != null ? versionProperties.size() + 1 : 0) +
                                 getSubAuditDataSize()));
 
-        // For a transaction, set the action
         if (!subAction)
         {
             setAction(getDerivedAction());
@@ -791,5 +802,16 @@ import org.alfresco.service.namespace.QName;
     private String replaceInvalidPathChars(String path)
     {
         return AuditApplication.AUDIT_INVALID_PATH_COMP_CHAR_PATTERN.matcher(path).replaceAll(INVALID_PATH_CHAR_REPLACEMENT);
+    }
+
+    /**
+     * @param nodeRef
+     *            the node reference
+     */
+    @Override
+    public void onContentDownload(NodeRef nodeRef)
+    {
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(DOWNLOAD_CONTENT));
+        runAsUser = AuthenticationUtil.getRunAsUser();
     }
 }

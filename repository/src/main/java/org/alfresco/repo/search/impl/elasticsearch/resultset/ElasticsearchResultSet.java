@@ -65,6 +65,8 @@ public class ElasticsearchResultSet implements SearchEngineResultSet
     private final Map<String, Integer> facetQueries;
     private final Map<String, List<Pair<String, Integer>>> fieldFacets;
     private final Map<NodeRef, List<Pair<String, List<String>>>> highlights;
+    private String nextSearchAfterToken;
+    private boolean searchAfterRequested;
 
     public ElasticsearchResultSet(NodeService nodeService, List<NodeRefAndScore> nodeRefAndScores, SimpleResultSetMetaData resultSetMetaData,
             SpellCheckResult spellCheckResult, long queryTime, long numFound, int start,
@@ -155,8 +157,31 @@ public class ElasticsearchResultSet implements SearchEngineResultSet
     }
 
     @Override
+    public String getNextSearchAfterToken()
+    {
+        return nextSearchAfterToken;
+    }
+
+    public void setNextSearchAfterToken(String nextSearchAfterToken)
+    {
+        this.nextSearchAfterToken = nextSearchAfterToken;
+    }
+
+    public void setSearchAfterRequested(boolean searchAfterRequested)
+    {
+        this.searchAfterRequested = searchAfterRequested;
+    }
+
+    @Override
     public boolean hasMore()
     {
+        // search_after cursor paging does not use skipCount, so the generic start+length
+        // comparison cannot detect the last page reliably. The presence of a
+        // nextSearchAfterToken is the authoritative signal in that mode.
+        if (searchAfterRequested)
+        {
+            return nextSearchAfterToken != null;
+        }
         return getNumberFound() > (getStart() + length());
     }
 

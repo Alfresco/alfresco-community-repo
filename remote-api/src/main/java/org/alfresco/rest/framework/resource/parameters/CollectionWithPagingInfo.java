@@ -50,6 +50,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
     private final Paging paging;
     private final Object sourceEntity;
     private final SearchContext context;
+    private final String nextSearchAfterToken;
 
     /**
      * Constructs a new CollectionWithPagingInfo.
@@ -64,6 +65,11 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
      *            - The total number of items available.
      */
     protected CollectionWithPagingInfo(Collection<T> collection, Paging paging, boolean hasMoreItems, Integer totalItems, Object sourceEntity, SearchContext context)
+    {
+        this(collection, paging, hasMoreItems, totalItems, sourceEntity, context, null);
+    }
+
+    protected CollectionWithPagingInfo(Collection<T> collection, Paging paging, boolean hasMoreItems, Integer totalItems, Object sourceEntity, SearchContext context, String nextSearchAfterToken)
     {
         super();
         this.hasMoreItems = hasMoreItems;
@@ -81,6 +87,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
         }
         this.sourceEntity = sourceEntity;
         this.context = context;
+        this.nextSearchAfterToken = nextSearchAfterToken;
     }
 
     /**
@@ -93,7 +100,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
     public static <T> CollectionWithPagingInfo<T> from(SerializablePagedCollection<T> pagedCollection)
     {
         return new CollectionWithPagingInfo<>(pagedCollection.getCollection(), pagedCollection.getPaging(), pagedCollection.hasMoreItems(), pagedCollection.getTotalItems(),
-                pagedCollection.getSourceEntity(), pagedCollection.getContext());
+                pagedCollection.getSourceEntity(), pagedCollection.getContext(), pagedCollection.getNextSearchAfterToken());
     }
 
     /**
@@ -185,6 +192,31 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
     }
 
     /**
+     * Constructs a new CollectionWithPagingInfo carrying a search_after token. Not for public use.
+     *
+     * @param paging
+     *            - Paging request info
+     * @param aCollection
+     *            - the collection that needs to be paged.
+     * @param hasMoreItems
+     *            - Are there more items after this Collection?
+     * @param totalItems
+     *            - The total number of items available.
+     * @param sourceEntity
+     *            - The parent/source entity responsible for the collection
+     * @param context
+     *            - The search context
+     * @param nextSearchAfterToken
+     *            - The search_after token for fetching the next page
+     * @return CollectionWithPagingInfo
+     */
+    @SuppressWarnings("PMD.UseDiamondOperator")
+    public static <T> CollectionWithPagingInfo<T> asPaged(Paging paging, Collection<T> aCollection, boolean hasMoreItems, Integer totalItems, Object sourceEntity, SearchContext context, String nextSearchAfterToken)
+    {
+        return new CollectionWithPagingInfo<T>(aCollection, paging, hasMoreItems, totalItems, sourceEntity, context, nextSearchAfterToken);
+    }
+
+    /**
      * Returns the Collection object
      * 
      * @return Collection
@@ -238,6 +270,12 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
     public SearchContext getContext()
     {
         return context;
+    }
+
+    @Override
+    public String getNextSearchAfterToken()
+    {
+        return nextSearchAfterToken;
     }
 
 }

@@ -27,6 +27,8 @@ package org.alfresco.rest.framework.resource.parameters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 
@@ -46,8 +48,9 @@ public class Paging
 
     private final int skipCount;
     private final int maxItems;
+    private final String searchAfterToken;
 
-    private Paging(int skipCount, int maxItems)
+    private Paging(int skipCount, int maxItems, String searchAfterToken)
     {
         super();
         if (skipCount < 0)
@@ -60,6 +63,7 @@ public class Paging
         }
         this.skipCount = skipCount;
         this.maxItems = maxItems;
+        this.searchAfterToken = searchAfterToken;
     }
 
     /**
@@ -82,13 +86,30 @@ public class Paging
         return this.maxItems;
     }
 
-    @JsonCreator
-    public static Paging valueOf(@JsonProperty("skipCount") int skipCount, @JsonProperty("maxItems") int maxItems)
+    /**
+     * The opaque search_after cursor for the next page, or null if not using cursor-based paging.
+     *
+     * @return String
+     */
+    public String getSearchAfterToken()
     {
-        return new Paging(skipCount, maxItems);
+        return this.searchAfterToken;
+    }
+
+    public static Paging valueOf(int skipCount, int maxItems)
+    {
+        return new Paging(skipCount, maxItems, null);
+    }
+
+    @JsonCreator
+    public static Paging valueOf(@JsonProperty("skipCount") int skipCount, @JsonProperty("maxItems") int maxItems,
+            @JsonProperty("searchAfterToken") @JsonDeserialize(using = StringDeserializer.class) String searchAfterToken)
+    {
+        return new Paging(skipCount, maxItems, searchAfterToken);
     }
 
     @Override
+    @SuppressWarnings("PMD.ConsecutiveAppendsShouldReuse")
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
@@ -96,6 +117,8 @@ public class Paging
         builder.append(this.skipCount);
         builder.append(", maxItems=");
         builder.append(this.maxItems);
+        builder.append(", searchAfterToken=");
+        builder.append(this.searchAfterToken);
         builder.append("]");
         return builder.toString();
     }

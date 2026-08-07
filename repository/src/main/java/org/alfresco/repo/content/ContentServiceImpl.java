@@ -26,11 +26,7 @@
 package org.alfresco.repo.content;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -127,7 +123,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      */
     public void setDownloadPolicy(String downloadPolicy)
     {
-        this.downloadPolicy = ContentDownloadPolicy.valueOf(downloadPolicy.trim().toUpperCase());
+        this.downloadPolicy = ContentDownloadPolicy.valueOf(downloadPolicy.trim().toUpperCase(Locale.ROOT));
     }
 
     public ContentDownloadPolicy getDownloadPolicy()
@@ -417,7 +413,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
         // Callers must explicitly set the attachment flag via ContentDownloadContext.
         // If not set (null), this is an internal/unknown read – fire only the read policy.
-        Boolean attachment = ContentDownloadContext.getAttachment();
+        Boolean attachment = ContentDownloadContext.isAttachment();
         return getReaderImpl(nodeRef, propertyQName, true, attachment != null && attachment);
     }
 

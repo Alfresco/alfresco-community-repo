@@ -645,7 +645,6 @@ public class AccessAuditorTest
             assertEquals(1, auditMapList.size());
 
             Map<String, Serializable> readMap = null;
-            Map<String, Serializable> downloadMap = null;
             for (Map<String, Serializable> auditMap : auditMapList)
             {
                 if ("READ".equals(auditMap.get("action")))

@@ -1038,6 +1038,12 @@
             </list>
         </property>
     </bean>
+
+    <!-- ACS-12415: holder for the search engine details detected at subsystem start-up. -->
+    <!-- It is populated by searchEngineInfoDetector, which lives in the elasticsearch subsystem -->
+    <!-- (child) context, and is declared here in the parent context so that remote-api components -->
+    <!-- (for example the pagination API) can inject it directly. -->
+    <bean id="searchEngineInfo" class="org.alfresco.repo.search.SearchEngineInfo" />
     
     <bean id="solr" class="org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">

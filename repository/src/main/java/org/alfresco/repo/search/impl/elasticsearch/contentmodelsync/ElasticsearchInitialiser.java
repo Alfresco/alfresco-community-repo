@@ -357,7 +357,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
 
     /**
      * This method will be invoked at startup and every time a afterDictionaryInit event is triggered.
-     * 
+     *
      * @return true if new models were mapped during the method execution, false otherwise.
      */
     private boolean mapModels()

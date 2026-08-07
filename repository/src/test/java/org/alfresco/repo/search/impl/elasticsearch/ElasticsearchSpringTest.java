@@ -28,6 +28,7 @@ package org.alfresco.repo.search.impl.elasticsearch;
 import java.io.IOException;
 import java.util.Locale;
 
+import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.junit.Before;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch.indices.DeleteIndexRequest;
@@ -78,7 +79,7 @@ public abstract class ElasticsearchSpringTest extends BaseSpringTest
         baseElasticsearchIndexService = new ElasticsearchIndexService(elasticsearchHttpClientFactory, 2000, 10000);
 
         baseElasticsearchInitialiser = new ElasticsearchInitialiser(dictionaryDAOImpl, baseElasticsearchIndexService, contentModelSynchronizer,
-                jobLockService, 1, 1, 1, 1, true);
+                jobLockService, 1, 1, 1, 1, true, new SearchEngineDetector());
     }
 
     /** Get the name of the index. */

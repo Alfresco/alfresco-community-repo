@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 
+import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -386,10 +387,10 @@ public class ElasticsearchInitialiserTest
         when(secondElasticsearchIndexService.createIndex()).thenReturn(true);
 
         ElasticsearchInitialiser elasticsearchInitialiser = new ElasticsearchInitialiser(mockDictionary,
-                mockElasticSearchIndexService, mockContentModelSynchronizer, jobLockService, 0, 0, 3, 0, true);
+                mockElasticSearchIndexService, mockContentModelSynchronizer, jobLockService, 0, 0, 3, 0, true, new SearchEngineDetector());
 
         ElasticsearchInitialiser secondElasticsearchInitialiser = new ElasticsearchInitialiser(mockDictionary,
-                secondElasticsearchIndexService, secondContentModelSynchronizer, jobLockService, 0, 0, 3, 0, true);
+                secondElasticsearchIndexService, secondContentModelSynchronizer, jobLockService, 0, 0, 3, 0, true, new SearchEngineDetector());
 
         Thread thread1 = new Thread(() -> elasticsearchInitialiser.initWithLock());
         thread1.start();

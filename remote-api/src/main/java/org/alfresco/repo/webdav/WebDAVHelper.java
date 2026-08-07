@@ -30,10 +30,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.regex.Pattern;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -354,7 +351,7 @@ public class WebDAVHelper
 
     public void setDownloadPolicy(String downloadPolicy)
     {
-        this.downloadPolicy = ContentDownloadPolicy.valueOf(downloadPolicy.trim().toUpperCase());
+        this.downloadPolicy = ContentDownloadPolicy.valueOf(downloadPolicy.trim().toUpperCase(Locale.ROOT));
     }
 
     public ContentDownloadPolicy getDownloadPolicy()

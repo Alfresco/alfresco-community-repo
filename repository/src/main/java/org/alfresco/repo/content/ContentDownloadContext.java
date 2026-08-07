@@ -71,7 +71,7 @@ public final class ContentDownloadContext
      *
      * @return {@link Boolean#TRUE} for download, {@link Boolean#FALSE} for preview, or {@code null} if unset.
      */
-    public static Boolean getAttachment()
+    public static Boolean isAttachment()
     {
         return ATTACHMENT.get();
     }

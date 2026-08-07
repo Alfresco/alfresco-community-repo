@@ -185,8 +185,6 @@ public class AccessAuditor implements InitializingBean,
     private static final String ROOT_PATH = "/alfresco-access";
     private static final String TRANSACTION = "transaction";
     private static final String AUDIT_SUB_ACTIONS = "audit.alfresco-access.sub-actions.enabled";
-    private static final String ACTION = "action";
-    private static final String READ_ACTION = "READ";
 
     private Properties properties;
     private PolicyComponent policyComponent;

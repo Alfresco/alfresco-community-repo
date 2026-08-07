@@ -1,6 +1,6 @@
 /*
  * #%L
- * Alfresco Content Services Community WAR
+ * Alfresco Repository
  * %%
  * Copyright (C) 2026 Alfresco Software Limited
  * %%
@@ -44,10 +44,10 @@ import com.google.api.services.drive.model.File;
 import org.junit.Test;
 
 /**
- * Guards the compatibility contract the community content-services WAR owns for the Google Drive SDK it ships (so the Google Drive AMPs can stay zero-dependency): the bundled Drive SDK must be binary-compatible with the platform libraries it now runs against (jackson, guava, httpclient), and jackson must resolve to a single platform-aligned version.
+ * Guards the compatibility contract the platform owns for the Google Drive SDK it ships (so the Google Drive AMPs can stay zero-dependency): the Drive SDK must be binary-compatible with the platform libraries it now runs against (jackson, guava, httpclient), and jackson must resolve to a single platform-aligned version.
  *
  * <p>
- * The Drive SDK jars (google-api-services-drive, google-api-services-oauth2, google-http-client-jackson2 and their transitives) are compile dependencies of this module, so they are on the test classpath at exactly the versions {@code WEB-INF/lib} ships - resolved through the alfresco-community-repo dependency management, where the jackson BOM is imported ahead of the Google libraries BOM. A downgraded or SDK-driven library surfaces here as a {@code NoSuchMethodError} / {@code NoClassDefFoundError} on the build instead of in a deployed repository.
+ * The Drive SDK jars (google-api-services-drive, google-api-services-oauth2, google-http-client-jackson2 and their transitives) are compile dependencies of this module, so they are on the test classpath at exactly the versions the WAR ships in {@code WEB-INF/lib} - resolved through the alfresco-community-repo dependency management, where the jackson BOM is imported ahead of the Google libraries BOM. A downgraded or SDK-driven library surfaces here as a {@code NoSuchMethodError} / {@code NoClassDefFoundError} on the build instead of in a deployed repository.
  * </p>
  *
  * <p>

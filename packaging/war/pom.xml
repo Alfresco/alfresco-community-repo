@@ -64,11 +64,6 @@
         </dependency>
         <!-- Test dependencies -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
             <version>${project.version}</version>

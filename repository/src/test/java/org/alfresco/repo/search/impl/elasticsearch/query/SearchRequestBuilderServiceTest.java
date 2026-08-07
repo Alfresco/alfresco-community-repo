@@ -28,21 +28,36 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.opensearch.client.opensearch._types.aggregations.AggregationBuilders;
+import org.opensearch.client.opensearch._types.aggregations.TermsAggregation;
+import org.opensearch.client.opensearch._types.query_dsl.Query;
+import org.opensearch.client.opensearch.core.search.Highlight;
 
 import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilder;
+import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.TermsAggregationWrapper;
+import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.TermsAggregationWrapper.ComplementaryAggregation;
 import org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.LanguageQueryBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.query.sort.ElasticsearchSortBuilder;
+import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtil;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.util.Pair;
 
 public class SearchRequestBuilderServiceTest
 {
@@ -70,6 +85,43 @@ public class SearchRequestBuilderServiceTest
                 elasticsearchSortBuilder,
                 elasticsearchAggregationBuilder,
                 elasticsearchHighlightBuilder);
+    }
+
+    /**
+     * A Lucene-syntax SITE facet name ("@SITE") requires URL-encoding when used as an ES aggregation name ('@' -> "%40"). AggregationHandler stores field facets keyed by the 'decoded' terms aggregation name, so the complementary buckets translator must point back to that same decoded name, not a re-encoded one.
+     */
+    @Test
+    public void buildSearchRequest_withComplementaryAggregation_translatorKeysOwnerByDecodedName()
+    {
+        String aggName = "@SITE";
+        String complementaryAggName = aggName + "__REPOSITORY__";
+
+        TermsAggregation termsAggregation = AggregationBuilders.terms()
+                .name(aggName)
+                .field("primaryHierarchy")
+                .build();
+        ComplementaryAggregation complementaryAggregation = new ComplementaryAggregation(
+                complementaryAggName,
+                Query.of(q -> q.matchAll(m -> m)),
+                "_REPOSITORY_");
+        TermsAggregationWrapper wrapper = new TermsAggregationWrapper(
+                aggName, termsAggregation, Collections.emptyMap(), Optional.of(complementaryAggregation));
+
+        when(elasticsearchAggregationBuilder.filterAggregation(any(), any())).thenReturn(Collections.emptyMap());
+        when(elasticsearchAggregationBuilder.termsAggregations(any(), any())).thenReturn(Stream.of(wrapper));
+        when(elasticsearchSortBuilder.getSortBuilders(any())).thenReturn(List.of());
+        when(elasticsearchHighlightBuilder.getHighlightBuilder(any())).thenReturn(mock(Highlight.class));
+
+        SearchParameters searchParameters = new SearchParameters();
+        Query queryWithPermissions = Query.of(q -> q.matchAll(m -> m));
+
+        SearchRequestWrapper result = service.buildSearchRequest(searchParameters, queryWithPermissions, 0, 10, "alfresco");
+
+        Map<String, Pair<String, String>> complementaryBucketsTranslator = result.complementaryBucketsTranslator();
+        Pair<String, String> pair = complementaryBucketsTranslator.get(AggregationNameUtil.encode(complementaryAggName));
+
+        assertEquals("Complementary bucket must be attributed to the plain (decoded) terms aggregation name",
+                aggName, pair.getFirst());
     }
 
     @Test

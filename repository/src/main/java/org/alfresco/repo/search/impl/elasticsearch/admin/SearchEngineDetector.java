@@ -39,7 +39,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineInfo;
 
 /**
  * Detects the search engine provider (OpenSearch vs Elasticsearch) and version,
@@ -58,7 +57,6 @@ public class SearchEngineDetector
     private AttributeService attributeService;
     private TransactionService transactionService;
 
-    /** Probe the engine, resolve provider + version, and persist. Never throws. */
     public void detectAndStore()
     {
         try
@@ -107,7 +105,7 @@ public class SearchEngineDetector
                 attributeService.setAttribute(searchEngineInfo.getSearchEngineName(), ATTR_ROOT, ATTR_PROVIDER);
                 attributeService.setAttribute(searchEngineInfo.getSearchEngineVersion(),  ATTR_ROOT, ATTR_VERSION);
                 return null;
-            }, false, true); // readOnly=false, requiresNew=true
+            }, false, true);
         }, AuthenticationUtil.getSystemUserName());
     }
 

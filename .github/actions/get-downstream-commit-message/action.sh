@@ -8,7 +8,6 @@ if [[ "${COMMIT_TITLE}" =~ (\[force[^]]*\]) ]]; then
     if [[ "${TRIGGER_RELEASE_ON_FORCE:-false}" == "true" ]]; then
         force_prefix="${force_prefix}[release][skip tests]"
     fi
-    force_prefix="${force_prefix}"
     allow_empty_commit="true"
 fi
 

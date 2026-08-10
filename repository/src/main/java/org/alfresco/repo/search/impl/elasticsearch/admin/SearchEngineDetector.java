@@ -61,7 +61,7 @@ public class SearchEngineDetector
         {
             SearchEngineInfo searchEngineInfo = detect();// [provider, version]
             store(searchEngineInfo);
-            LOGGER.info("Detected search engine: {} {}", attributeService.getAttribute(ATTR_ROOT, ATTR_PROVIDER), attributeService.getAttribute(ATTR_ROOT, ATTR_VERSION));
+            LOGGER.info("Detected search engine: {} {}", searchEngineInfo.getSearchEngineName(), searchEngineInfo.getSearchEngineVersion());
         }
         catch (Exception e)
         {

@@ -1219,7 +1219,7 @@
                     <configuration>
                         <java>
                             <eclipse>
-                                <file>file:///C:/Users/vikumar/ACS/ACS-12415/alfresco-formatter.xml</file>
+                                <file>https://raw.githubusercontent.com/Alfresco/alfresco-community-repo/refs/heads/master/alfresco-formatter.xml</file>
                             </eclipse>
                             <importOrder>
                                 <order>\#java|\#javax|\#jakarta,\#,\#org.alfresco,java|javax|jakarta,,org.alfresco</order>

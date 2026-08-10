@@ -163,7 +163,6 @@ public class ContentGet extends StreamContent implements ServletContextAware
         }
         // determine attachment and force download for specific mimetypes - see PRODSEC-5862
         boolean attach = Boolean.valueOf(req.getParameter("a"));
-        ContentDownloadContext.setAttachment(attach);
         ContentReader reader = contentService.getReader(nodeRef, propertyQName);
         String mimetype = MimeTypeUtil.determineMimetype(reader, req, mimetypeService);
 
@@ -175,7 +174,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
                 logger.warn("Ignored a=false for " + nodeRef.getId() + " since " + mimetype + " is not in the whitelist for non-attach content types");
             }
         }
-
+        ContentDownloadContext.setAttachment(attach);
         // Stream the content
         streamContentLocal(req, res, nodeRef, attach, propertyQName, null);
     }

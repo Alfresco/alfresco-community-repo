@@ -286,7 +286,7 @@ public class AccessAuditorTest
         }
     }
 
-    private void assetNotContains(String expected, Serializable actual)
+    private void assertNotContains(String expected, Serializable actual)
     {
         String actualString = (String) actual;
         if (actual == null || actualString.contains(expected))
@@ -687,7 +687,7 @@ public class AccessAuditorTest
             Map<String, Serializable> auditMap = auditMapList.get(0);
             assertEquals("READ", auditMap.get("action"));
             assertContains("readContent", auditMap.get("sub-actions"));
-            assetNotContains("downloadContent", auditMap.get("sub-actions"));
+            assertNotContains("downloadContent", auditMap.get("sub-actions"));
             assertEquals("/cm:homeFolder/cm:folder1/cm:content1", auditMap.get("path"));
             assertEquals("cm:content", auditMap.get("type"));
         }

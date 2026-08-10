@@ -493,7 +493,7 @@ import org.alfresco.service.namespace.QName;
     }
 
     /**
-     * @return {@code true} if both readContent and downloadContent sub-actions are present, indicating that two separate audit entries (READ and DOWNLOAD) should be emitted.
+     * @return {@code true} if both readContent and downloadContent sub-actions are present
      */
     public boolean hasReadAndDownloadActions()
     {

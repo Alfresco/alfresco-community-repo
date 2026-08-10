@@ -504,7 +504,7 @@ public class NodeChangeTest
 
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
-        assertEquals("Action should be overridden to DOWNLOAD", "READ", auditMap.get("action"));
+        assertEquals("Action should be READ when both readContent and downloadContent are present", "READ", auditMap.get("action"));
         assertEquals("Sub-actions should contain both", "readContent downloadContent", auditMap.get("sub-actions"));
         assertEquals(content1, auditMap.get("node"));
     }

@@ -176,7 +176,12 @@ public class ContentGet extends StreamContent implements ServletContextAware
         }
         ContentDownloadContext.setAttachment(attach);
         // Stream the content
-        streamContentLocal(req, res, nodeRef, attach, propertyQName, null);
+        try {
+            streamContentLocal(req, res, nodeRef, attach, propertyQName, null);
+        }
+        finally {
+            ContentDownloadContext.clear();
+        }
     }
 
     protected void streamContentLocal(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, boolean attach, QName propertyQName, Map<String, Object> model) throws IOException

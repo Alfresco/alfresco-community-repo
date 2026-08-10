@@ -28,7 +28,6 @@ package org.alfresco.repo.search.impl.elasticsearch;
 import java.io.IOException;
 import java.util.Locale;
 
-import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.junit.Before;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch.indices.DeleteIndexRequest;
@@ -38,6 +37,7 @@ import org.springframework.context.ApplicationContext;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
+import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ContentModelSynchronizer;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchIndexService;

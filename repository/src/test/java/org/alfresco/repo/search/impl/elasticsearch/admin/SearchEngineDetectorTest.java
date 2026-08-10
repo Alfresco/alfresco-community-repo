@@ -64,9 +64,7 @@ import org.alfresco.service.transaction.TransactionService;
 /**
  * Unit tests for {@link SearchEngineDetector}.
  * <p>
- * The search engine root endpoint ({@code GET /}) is mocked at the OpenSearch generic-client level so
- * the provider/version detection and the {@link AttributeService} persistence can be verified without a
- * running Elasticsearch/OpenSearch instance.
+ * The search engine root endpoint ({@code GET /}) is mocked at the OpenSearch generic-client level so the provider/version detection and the {@link AttributeService} persistence can be verified without a running Elasticsearch/OpenSearch instance.
  */
 public class SearchEngineDetectorTest
 {

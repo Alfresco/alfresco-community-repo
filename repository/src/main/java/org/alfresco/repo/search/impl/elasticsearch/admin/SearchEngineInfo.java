@@ -25,20 +25,24 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.admin;
 
-public class SearchEngineInfo {
+public class SearchEngineInfo
+{
     private String searchEngineName;
     private String searchEngineVersion;
 
-    public SearchEngineInfo(String searchEngineName, String searchEngineVersion) {
+    public SearchEngineInfo(String searchEngineName, String searchEngineVersion)
+    {
         this.searchEngineName = searchEngineName;
         this.searchEngineVersion = searchEngineVersion;
     }
 
-    public String getSearchEngineName() {
+    public String getSearchEngineName()
+    {
         return searchEngineName;
     }
 
-    public String getSearchEngineVersion() {
+    public String getSearchEngineVersion()
+    {
         return searchEngineVersion;
     }
 }

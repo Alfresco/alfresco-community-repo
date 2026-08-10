@@ -41,17 +41,15 @@ import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
- * Detects the search engine provider (OpenSearch vs Elasticsearch) and version,
- * and persists it via {@link AttributeService}. Invoked by {@link org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiser}
- * once the engine is confirmed reachable.
+ * Detects the search engine provider (OpenSearch vs Elasticsearch) and version, and persists it via {@link AttributeService}. Invoked by {@link org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiser} once the engine is confirmed reachable.
  */
 public class SearchEngineDetector
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineDetector.class);
 
-    public static final String ATTR_ROOT     = ".searchEngine";
-    public static final String ATTR_PROVIDER = "provider";   // "OpenSearch" | "Elasticsearch"
-    public static final String ATTR_VERSION  = "version";    // e.g. "2.13.0"
+    public static final String ATTR_ROOT = ".searchEngine";
+    public static final String ATTR_PROVIDER = "provider"; // "OpenSearch" | "Elasticsearch"
+    public static final String ATTR_VERSION = "version"; // e.g. "2.13.0"
 
     private ElasticsearchHttpClientFactory httpClientFactory;
     private AttributeService attributeService;
@@ -77,7 +75,7 @@ public class SearchEngineDetector
         LOGGER.info(httpClientFactory.getElasticsearchClient().toString());
         try (var response = httpClientFactory.getElasticsearchClient().generic().execute(request))
         {
-            String raw  = response.getBody()
+            String raw = response.getBody()
                     .map(Body::bodyAsString)
                     .orElseThrow(() -> new IOException("Empty response from root endpoint"));
 
@@ -85,11 +83,16 @@ public class SearchEngineDetector
             String versionNumber = root.getJSONObject("version").getString("number");
 
             String provider;
-            if(root.getString("tagline").equalsIgnoreCase("You Know, for Search")) {
+            if (root.getString("tagline").equalsIgnoreCase("You Know, for Search"))
+            {
                 provider = "elasticsearch";
-            } else if(root.getString("tagline").equalsIgnoreCase("The OpenSearch Project: https://opensearch.org/")) {
+            }
+            else if (root.getString("tagline").equalsIgnoreCase("The OpenSearch Project: https://opensearch.org/"))
+            {
                 provider = "opensearch";
-            } else {
+            }
+            else
+            {
                 provider = "unknown";
             }
             return new SearchEngineInfo(provider, versionNumber);
@@ -103,13 +106,24 @@ public class SearchEngineDetector
             txnHelper.setForceWritable(true);
             return txnHelper.doInTransaction(() -> {
                 attributeService.setAttribute(searchEngineInfo.getSearchEngineName(), ATTR_ROOT, ATTR_PROVIDER);
-                attributeService.setAttribute(searchEngineInfo.getSearchEngineVersion(),  ATTR_ROOT, ATTR_VERSION);
+                attributeService.setAttribute(searchEngineInfo.getSearchEngineVersion(), ATTR_ROOT, ATTR_VERSION);
                 return null;
             }, false, true);
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    public void setHttpClientFactory(ElasticsearchHttpClientFactory httpClientFactory) { this.httpClientFactory = httpClientFactory; }
-    public void setAttributeService(AttributeService attributeService) { this.attributeService = attributeService; }
-    public void setTransactionService(TransactionService transactionService) { this.transactionService = transactionService; }
+    public void setHttpClientFactory(ElasticsearchHttpClientFactory httpClientFactory)
+    {
+        this.httpClientFactory = httpClientFactory;
+    }
+
+    public void setAttributeService(AttributeService attributeService)
+    {
+        this.attributeService = attributeService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
 }

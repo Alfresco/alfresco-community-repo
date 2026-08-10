@@ -37,7 +37,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +46,7 @@ import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -267,7 +267,8 @@ public class ElasticsearchInitialiser implements DictionaryListener
         }
         LOGGER.info("Successfully connected to Elasticsearch index.");
 
-        if(!isTerminated.get() && searchEngineDetector != null){
+        if (!isTerminated.get() && searchEngineDetector != null)
+        {
             searchEngineDetector.detectAndStore();
         }
         // Attempt to map the models.

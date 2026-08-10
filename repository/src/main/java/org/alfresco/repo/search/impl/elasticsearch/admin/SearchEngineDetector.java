@@ -27,9 +27,6 @@ package org.alfresco.repo.search.impl.elasticsearch.admin;
 
 import java.io.IOException;
 
-import jakarta.json.Json;
-import jakarta.json.JsonReader;
-
 import org.json.JSONObject;
 import org.opensearch.client.opensearch.generic.Body;
 import org.opensearch.client.opensearch.generic.Request;
@@ -42,6 +39,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineInfo;
 
 /**
  * Detects the search engine provider (OpenSearch vs Elasticsearch) and version,
@@ -65,10 +63,9 @@ public class SearchEngineDetector
     {
         try
         {
-            String[] info = detect();// [provider, version]
-            LOGGER.info("Search engine is: " + info[0] + " " + info[1]);
-            store(info[0], info[1]);
-            LOGGER.info("Detected search engine: {} {}", info[0], info[1]);
+            SearchEngineInfo searchEngineInfo = detect();// [provider, version]
+            store(searchEngineInfo);
+            LOGGER.info("Detected search engine: {} {}", attributeService.getAttribute(ATTR_ROOT, ATTR_PROVIDER), attributeService.getAttribute(ATTR_ROOT, ATTR_VERSION));
         }
         catch (Exception e)
         {
@@ -76,10 +73,9 @@ public class SearchEngineDetector
         }
     }
 
-    private String[] detect() throws IOException
+    private SearchEngineInfo detect() throws IOException
     {
         Request request = Requests.builder().method("GET").endpoint("/").build();
-        LOGGER.info("Detect search engine called");
         LOGGER.info(httpClientFactory.getElasticsearchClient().toString());
         try (var response = httpClientFactory.getElasticsearchClient().generic().execute(request))
         {
@@ -98,18 +94,18 @@ public class SearchEngineDetector
             } else {
                 provider = "unknown";
             }
-            return new String[]{ provider, versionNumber };
+            return new SearchEngineInfo(provider, versionNumber);
         }
     }
 
-    private void store(String provider, String version)
+    private void store(SearchEngineInfo searchEngineInfo)
     {
         AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () -> {
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setForceWritable(true);
             return txnHelper.doInTransaction(() -> {
-                attributeService.setAttribute(provider, ATTR_ROOT, ATTR_PROVIDER);
-                attributeService.setAttribute(version,  ATTR_ROOT, ATTR_VERSION);
+                attributeService.setAttribute(searchEngineInfo.getSearchEngineName(), ATTR_ROOT, ATTR_PROVIDER);
+                attributeService.setAttribute(searchEngineInfo.getSearchEngineVersion(),  ATTR_ROOT, ATTR_VERSION);
                 return null;
             }, false, true); // readOnly=false, requiresNew=true
         }, AuthenticationUtil.getSystemUserName());

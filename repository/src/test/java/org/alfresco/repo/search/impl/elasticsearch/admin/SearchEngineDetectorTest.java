@@ -248,7 +248,7 @@ public class SearchEngineDetectorTest
         when(openSearchClient.generic()).thenReturn(genericClient);
     }
 
-    private void givenRootBody(String rawJson) throws Exception
+    private void givenRootBody(String rawJson) throws IOException
     {
         givenClientChain();
         when(genericClient.execute(any(Request.class))).thenReturn(response);

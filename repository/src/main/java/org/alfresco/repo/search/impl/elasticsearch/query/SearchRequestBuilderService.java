@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.opensearch.client.opensearch._types.Time;
 import org.opensearch.client.opensearch._types.aggregations.Aggregation;
@@ -38,12 +39,15 @@ import org.opensearch.client.opensearch.core.search.TrackHits;
 
 import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilder;
+import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.TermsAggregationWrapper;
+import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.TermsAggregationWrapper.ComplementaryAggregation;
 import org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.LanguageQueryBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.query.sort.ElasticsearchSortBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtil;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.util.Pair;
 
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class SearchRequestBuilderService
@@ -84,7 +88,7 @@ public class SearchRequestBuilderService
      * @param indexName
      *            Target index name.
      */
-    public SearchRequest buildSearchRequest(
+    public SearchRequestWrapper buildSearchRequest(
             SearchParameters searchParameters,
             Query queryWithPermissions,
             int from,
@@ -101,13 +105,14 @@ public class SearchRequestBuilderService
             trackTotalHitsLimit = searchParameters.getTrackTotalHits();
         }
 
+        SearchRequestWrapper.Builder wrapperBuilder = SearchRequestWrapper.builder();
         SearchRequest.Builder builder = baseBuilder(queryWithPermissions)
                 .trackTotalHits(new TrackHits.Builder().count(trackTotalHitsLimit).build())
                 .from(from)
                 .size(size);
 
-        applyCommon(searchParameters, indexName, builder);
-        return builder.build();
+        applyCommon(searchParameters, indexName, builder, wrapperBuilder);
+        return wrapperBuilder.build();
     }
 
     /**
@@ -124,20 +129,21 @@ public class SearchRequestBuilderService
      * @param indexName
      *            Target index name.
      */
-    public SearchRequest buildSearchRequest(
+    public SearchRequestWrapper buildSearchRequest(
             SearchParameters searchParameters,
             Query queryWithPermissions,
             int size,
             Time scrollTime,
             String indexName)
     {
+        SearchRequestWrapper.Builder wrapperBuilder = SearchRequestWrapper.builder();
         SearchRequest.Builder builder = baseBuilder(queryWithPermissions)
                 .trackTotalHits(new TrackHits.Builder().count(TRACK_TOTAL_HITS_ACCURATE).build())
                 .size(size)
                 .scroll(scrollTime);
 
-        applyCommon(searchParameters, indexName, builder);
-        return builder.build();
+        applyCommon(searchParameters, indexName, builder, wrapperBuilder);
+        return wrapperBuilder.build();
     }
 
     // Previous unified method with boolean flag removed. Update callers accordingly.
@@ -149,7 +155,7 @@ public class SearchRequestBuilderService
                 .source(new SourceConfig.Builder().fetch(false).build());
     }
 
-    private void applyCommon(SearchParameters searchParameters, String indexName, SearchRequest.Builder builder)
+    private void applyCommon(SearchParameters searchParameters, String indexName, SearchRequest.Builder builder, SearchRequestWrapper.Builder wrapperBuilder)
     {
         builder.trackScores(searchParameters.isTrackScore());
         elasticsearchSortBuilder.getSortBuilders(searchParameters)
@@ -162,19 +168,47 @@ public class SearchRequestBuilderService
                         Aggregation.of(agg -> agg.filter(res.getValue()))))
                 .forEach(builder::aggregations);
 
-        elasticsearchAggregationBuilder.termsAggregations(searchParameters, languageQueryBuilder)
-                .map(res -> Map.of(AggregationNameUtil.encode(res.name()), Aggregation.of(agg -> agg.terms(
-                        new TermsAggregation.Builder().field(res.field())
-                                .order(res.order())
-                                .include(res.include())
-                                .size(res.size())
-                                .minDocCount(res.minDocCount())
-                                .missing(res.missing())
-                                .build()))))
+        List<TermsAggregationWrapper> termsAggs = elasticsearchAggregationBuilder
+                .termsAggregations(searchParameters, languageQueryBuilder)
+                .collect(Collectors.toList());
+
+        termsAggs.stream()
+                .map(termAgg -> {
+                    TermsAggregation ta = termAgg.termsAggregation();
+                    return Map.of(AggregationNameUtil.encode(ta.name()), Aggregation.of(agg -> agg.terms(
+                            new TermsAggregation.Builder().field(ta.field())
+                                    .order(ta.order())
+                                    .include(ta.include())
+                                    .size(ta.size())
+                                    .minDocCount(ta.minDocCount())
+                                    .missing(ta.missing())
+                                    .build())));
+                })
                 .forEach(builder::aggregations);
+
+        termsAggs.stream()
+                .filter(ta -> ta.complementaryAggregation().isPresent())
+                .forEach(ta -> {
+                    ComplementaryAggregation ca = ta.complementaryAggregation().get();
+                    builder.aggregations(Map.of(AggregationNameUtil.encode(ca.aggregationName()), Aggregation.of(agg -> agg.filter(ca.filterQuery()))));
+                });
+
+        Map<String, String> bucketsTranslator = termsAggs.stream()
+                .flatMap(ta -> ta.postProcessingData().entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a));
+
+        Map<String, Pair<String, String>> complementaryBucketsTranslator = termsAggs.stream()
+                .filter(ta -> ta.complementaryAggregation().isPresent())
+                .collect(Collectors.toMap(
+                        ta -> AggregationNameUtil.encode(ta.complementaryAggregation().get().aggregationName()),
+                        ta -> new Pair<>(ta.name(), ta.complementaryAggregation().get().displayLabel())));
 
         builder.highlight(elasticsearchHighlightBuilder.getHighlightBuilder(searchParameters));
         builder.index(indexName);
+
+        wrapperBuilder.bucketsTranslator(bucketsTranslator);
+        wrapperBuilder.complementaryBucketsTranslator(complementaryBucketsTranslator);
+        wrapperBuilder.searchRequest(builder.build());
     }
 
     /**

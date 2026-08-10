@@ -74,7 +74,7 @@ public class ElasticsearchResultSetBuilder
     }
 
     private ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, String nextSearchAfterToken,
-            boolean searchAfterRequested)
+            boolean searchAfterMode)
     {
         var hits = ofNullable(searchResponse.hits()).map(HitsMetadata::hits).orElse(List.of());
         List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters.isBulkFetchEnabled());
@@ -90,7 +90,12 @@ public class ElasticsearchResultSetBuilder
         Map<String, Integer> facetQueries = aggregation.facetQueries();
         Map<String, List<Pair<String, Integer>>> fieldFacets = aggregation.fieldFacets();
         Map<NodeRef, List<Pair<String, List<String>>>> highlights = highlightsHandler.handle(searchParameters, searchResponse);
-        ElasticsearchResultSet resultSet = new ElasticsearchResultSet(
+        Boolean explicitHasMore = null;
+        if (searchAfterMode)
+        {
+            explicitHasMore = nextSearchAfterToken != null;
+        }
+        return new ElasticsearchResultSet(
                 nodeService,
                 nodeRefAndScores,
                 resultSetMetaData,
@@ -100,10 +105,9 @@ public class ElasticsearchResultSetBuilder
                 start,
                 facetQueries,
                 fieldFacets,
-                highlights);
-        resultSet.setNextSearchAfterToken(nextSearchAfterToken);
-        resultSet.setSearchAfterRequested(searchAfterRequested);
-        return resultSet;
+                highlights,
+                nextSearchAfterToken,
+                explicitHasMore);
     }
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, List<Hit<Object>> hits, long totalHits, long queryTime)
@@ -125,7 +129,9 @@ public class ElasticsearchResultSetBuilder
                 start,
                 Map.of(),
                 Map.of(),
-                Map.of());
+                Map.of(),
+                null,
+                null);
     }
 
     private List<NodeRefAndScore> mapNodeRefsAndScores(List<Hit<Object>> hits, boolean isBulkFetchEnabled)

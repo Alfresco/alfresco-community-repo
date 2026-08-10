@@ -65,13 +65,13 @@ public class ElasticsearchResultSet implements SearchEngineResultSet
     private final Map<String, Integer> facetQueries;
     private final Map<String, List<Pair<String, Integer>>> fieldFacets;
     private final Map<NodeRef, List<Pair<String, List<String>>>> highlights;
-    private String nextSearchAfterToken;
-    private boolean searchAfterRequested;
+    private final String nextSearchAfterToken;
+    private final Boolean explicitHasMore;
 
     public ElasticsearchResultSet(NodeService nodeService, List<NodeRefAndScore> nodeRefAndScores, SimpleResultSetMetaData resultSetMetaData,
             SpellCheckResult spellCheckResult, long queryTime, long numFound, int start,
             Map<String, Integer> facetQueries, Map<String, List<Pair<String, Integer>>> fieldFacets,
-            Map<NodeRef, List<Pair<String, List<String>>>> highlights)
+            Map<NodeRef, List<Pair<String, List<String>>>> highlights, String nextSearchAfterToken, Boolean explicitHasMore)
     {
         this.nodeService = nodeService;
         this.nodeRefAndScores = nodeRefAndScores;
@@ -83,6 +83,8 @@ public class ElasticsearchResultSet implements SearchEngineResultSet
         this.facetQueries = facetQueries;
         this.fieldFacets = fieldFacets;
         this.highlights = highlights;
+        this.nextSearchAfterToken = nextSearchAfterToken;
+        this.explicitHasMore = explicitHasMore;
     }
 
     @Override
@@ -162,25 +164,12 @@ public class ElasticsearchResultSet implements SearchEngineResultSet
         return nextSearchAfterToken;
     }
 
-    public void setNextSearchAfterToken(String nextSearchAfterToken)
-    {
-        this.nextSearchAfterToken = nextSearchAfterToken;
-    }
-
-    public void setSearchAfterRequested(boolean searchAfterRequested)
-    {
-        this.searchAfterRequested = searchAfterRequested;
-    }
-
     @Override
     public boolean hasMore()
     {
-        // search_after cursor paging does not use skipCount, so the generic start+length
-        // comparison cannot detect the last page reliably. The presence of a
-        // nextSearchAfterToken is the authoritative signal in that mode.
-        if (searchAfterRequested)
+        if (explicitHasMore != null)
         {
-            return nextSearchAfterToken != null;
+            return explicitHasMore;
         }
         return getNumberFound() > (getStart() + length());
     }

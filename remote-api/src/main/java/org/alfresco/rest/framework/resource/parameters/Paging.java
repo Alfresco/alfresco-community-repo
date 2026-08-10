@@ -109,17 +109,16 @@ public class Paging
     }
 
     @Override
-    @SuppressWarnings("PMD.ConsecutiveAppendsShouldReuse")
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("Paging [skipCount=");
-        builder.append(this.skipCount);
-        builder.append(", maxItems=");
-        builder.append(this.maxItems);
-        builder.append(", searchAfterToken=");
-        builder.append(this.searchAfterToken);
-        builder.append("]");
+        builder.append("Paging [skipCount=")
+                .append(this.skipCount)
+                .append(", maxItems=")
+                .append(this.maxItems)
+                .append(", searchAfterToken=")
+                .append(this.searchAfterToken)
+                .append("]");
         return builder.toString();
     }
 

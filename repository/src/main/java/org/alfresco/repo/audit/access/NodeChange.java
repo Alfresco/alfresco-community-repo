@@ -190,7 +190,7 @@ import org.alfresco.service.namespace.QName;
         }
         else if ((subActions.size() == 1 || (subActions.size() == 2 && subActions.contains(DOWNLOAD_CONTENT))) && subActions.contains(READ_CONTENT))
         {
-            // Reads in combinations with other actions tend to only facilitate the other action.
+            // Reads in combinations with other actions except Download tend to only facilitate the other action.
             action = "READ";
             // MNT-8810 fix, action is considered as READ -> so let's keep actual user who performed readContent
             keepRunAsUser = true;

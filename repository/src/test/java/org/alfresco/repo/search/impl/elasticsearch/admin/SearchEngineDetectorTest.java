@@ -35,7 +35,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import static org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector.*;
+import static org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector.ATTR_ROOT;
+import static org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector.ATTR_SEARCH_ENGINE_NAME;
+import static org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector.ATTR_SEARCH_ENGINE_VERSION;
 
 import java.io.IOException;
 import java.util.Optional;

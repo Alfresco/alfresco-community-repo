@@ -77,6 +77,9 @@ public class ElasticsearchHttpClientFactory
     private String baseUrl;
     private int port;
 
+    // Search engine implementation (elasticsearch, opensearch)
+    private String engine;
+
     // SSL parameters for Elasticsearch server endpoint
     private String secureComms;
     private AlfrescoKeyStore sslTrustStore;
@@ -233,6 +236,16 @@ public class ElasticsearchHttpClientFactory
     public String getElasticsearchServerUrl()
     {
         return (secureComms.equals("https") ? "https" : "http") + "://" + host + ":" + port + baseUrl;
+    }
+
+    /**
+     * Gets the configured search engine implementation (elasticsearch, opensearch).
+     *
+     * @return the search engine implementation name
+     */
+    public String getEngine()
+    {
+        return engine;
     }
 
     /**
@@ -458,6 +471,11 @@ public class ElasticsearchHttpClientFactory
     public void setHost(String host)
     {
         this.host = host;
+    }
+
+    public void setEngine(String engine)
+    {
+        this.engine = engine;
     }
 
     public void setBaseUrl(String baseUrl)

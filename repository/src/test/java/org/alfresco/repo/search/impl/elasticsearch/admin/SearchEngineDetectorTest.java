@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.admin;
 
-import static org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -35,6 +34,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+
+import static org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector.*;
 
 import java.io.IOException;
 import java.util.Optional;

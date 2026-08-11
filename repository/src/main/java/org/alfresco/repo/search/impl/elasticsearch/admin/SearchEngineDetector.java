@@ -50,9 +50,9 @@ public class SearchEngineDetector
     public static final String ATTR_ROOT = ".searchEngine";
     public static final String ATTR_SEARCH_ENGINE_NAME = "name"; // "OpenSearch" | "Elasticsearch"
     public static final String ATTR_SEARCH_ENGINE_VERSION = "version"; // e.g. "2.13.0"
-//  Access the search engine info using something like:
-//  Search engine name: attributeService.getAttribute(ATTR_ROOT, ATTR_SEARCH_ENGINE_NAME)
-//  Search engine version: attributeService.getAttribute(ATTR_ROOT, ATTR_SEARCH_ENGINE_VERSION)
+    // Access the search engine info using something like:
+    // Search engine name: attributeService.getAttribute(ATTR_ROOT, ATTR_SEARCH_ENGINE_NAME)
+    // Search engine version: attributeService.getAttribute(ATTR_ROOT, ATTR_SEARCH_ENGINE_VERSION)
 
     private ElasticsearchHttpClientFactory httpClientFactory;
     private AttributeService attributeService;

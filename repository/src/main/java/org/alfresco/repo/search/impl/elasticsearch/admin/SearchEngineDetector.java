@@ -86,12 +86,13 @@ public class SearchEngineDetector
             JSONObject root = new JSONObject(raw);
             String versionNumber = root.getJSONObject("version").getString("number");
 
-            String provider = switch (root.getString("tagline").toLowerCase(Locale.ROOT))
+            SearchEngine searchEngine = switch (root.getString("tagline").toLowerCase(Locale.ROOT))
             {
-            case "you know, for search" -> String.valueOf(SearchEngine.ELASTICSEARCH);
-            case "the opensearch project: https://opensearch.org/" -> String.valueOf(SearchEngine.OPENSEARCH);
-            default -> String.valueOf(SearchEngine.UNKNOWN);
+            case "you know, for search" -> SearchEngine.ELASTICSEARCH;
+            case "the opensearch project: https://opensearch.org/" -> SearchEngine.OPENSEARCH;
+            default -> SearchEngine.UNKNOWN;
             };
+            String provider = searchEngine.name().toLowerCase(Locale.ROOT);
             return new SearchEngineInfo(provider, versionNumber);
         }
     }

@@ -150,7 +150,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
     }
 
     /**
-     * Constructs a new CollectionWithPagingInfo. Not for public use.
+     * Constructs a new CollectionWithPagingInfo.
      *
      * @param paging
      *            - Paging request info
@@ -170,7 +170,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
     }
 
     /**
-     * Constructs a new CollectionWithPagingInfo. Not for public use.
+     * Constructs a new CollectionWithPagingInfo.
      * 
      * @param paging
      *            - Paging request info
@@ -192,7 +192,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
     }
 
     /**
-     * Constructs a new CollectionWithPagingInfo carrying a search_after token. Not for public use.
+     * Constructs a new CollectionWithPagingInfo carrying a search_after token.
      *
      * @param paging
      *            - Paging request info

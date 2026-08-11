@@ -76,7 +76,6 @@ public class SearchEngineDetector
     private SearchEngineInfo detect() throws IOException
     {
         Request request = Requests.builder().method("GET").endpoint("/").build();
-        LOGGER.info(httpClientFactory.getElasticsearchClient().toString());
         try (var response = httpClientFactory.getElasticsearchClient().generic().execute(request))
         {
             String raw = response.getBody()

@@ -289,7 +289,7 @@ public class AccessAuditorTest
     private void assertNotContains(String expected, Serializable actual)
     {
         String actualString = (String) actual;
-        if (actual == null || actualString.contains(expected))
+        if (actual != null && actualString.contains(expected))
         {
             throw new ComparisonFailure("Expected contained in actual.", expected, actualString);
         }

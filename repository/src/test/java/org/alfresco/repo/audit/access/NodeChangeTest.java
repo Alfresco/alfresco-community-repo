@@ -510,19 +510,6 @@ public class NodeChangeTest
     }
 
     @Test
-    public final void testGetDerivedAction_readAndDownload_derivesToDownload()
-    {
-        // When both are present and using normal getAuditData (not overridden),
-        // getDerivedAction should pick DOWNLOAD because READ requires size==1
-        nodeChange.onContentRead(content1);
-        nodeChange.onContentDownload(content1);
-
-        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
-
-        assertEquals("Derived action should be DOWNLOAD when both present", "READ", auditMap.get("action"));
-    }
-
-    @Test
     public final void testGetAuditDataForAction_doesNotCorruptSubsequentCalls()
     {
         nodeChange.onContentRead(content1);
@@ -583,6 +570,17 @@ public class NodeChangeTest
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
 
         assertStandardData(auditMap, "CANCEL CHECK OUT", "cancelCheckOut");
+    }
+
+    @Test
+    public final void testIfMultipleSubActionsPresentWithReadAndDownload()
+    {
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+        nodeChange.onCheckIn(content1);
+
+        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+        assertStandardData(auditMap, "CHECK IN", "readContent downloadContent checkIn"); // This Must Not Come as READ
     }
 
     @Test

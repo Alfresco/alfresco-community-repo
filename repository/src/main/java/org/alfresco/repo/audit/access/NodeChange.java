@@ -188,7 +188,7 @@ import org.alfresco.service.namespace.QName;
         {
             action = "CREATE";
         }
-        else if ((subActions.size() == 1 || subActions.contains(DOWNLOAD_CONTENT)) && subActions.contains(READ_CONTENT))
+        else if ((subActions.size() == 1 || (subActions.size() == 2 && subActions.contains(DOWNLOAD_CONTENT))) && subActions.contains(READ_CONTENT))
         {
             // Reads in combinations with other actions tend to only facilitate the other action.
             action = "READ";

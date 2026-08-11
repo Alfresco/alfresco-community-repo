@@ -553,12 +553,14 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     }
 
     /**
+     * No-op: the read event is already emitted by {@link #onContentRead(NodeRef)}, which always fires alongside this policy. Emitting {@code contentGet} here as well would produce a duplicate {@code NodeContentGetEvent}.
+     *
      * @param nodeRef
      *            the node reference
      */
     @Override
     public void onContentDownload(NodeRef nodeRef)
     {
-        eventsService.contentGet(nodeRef);
+        // Intentionally empty – see onContentRead
     }
 }

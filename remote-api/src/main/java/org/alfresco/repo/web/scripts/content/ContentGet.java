@@ -176,10 +176,12 @@ public class ContentGet extends StreamContent implements ServletContextAware
         }
         ContentDownloadContext.setAttachment(attach);
         // Stream the content
-        try {
+        try
+        {
             streamContentLocal(req, res, nodeRef, attach, propertyQName, null);
         }
-        finally {
+        finally
+        {
             ContentDownloadContext.clear();
         }
     }

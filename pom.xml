@@ -60,7 +60,7 @@
         <dependency.spring.version>7.0.8</dependency.spring.version>
         <dependency.spring-security.version>7.0.6</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.22.0</dependency.jackson.version>
+        <dependency.jackson.version>2.22.1</dependency.jackson.version>
         <dependency.cxf.version>4.1.7</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
@@ -85,14 +85,14 @@
         <dependency.google-api-services-oauth2.version>v2-rev20200213-2.0.0</dependency.google-api-services-oauth2.version>
         <dependency.opencensus.version>0.31.1</dependency.opencensus.version>
         <dependency.slf4j.version>2.0.16</dependency.slf4j.version>
-        <dependency.log4j.version>2.25.4</dependency.log4j.version>
+        <dependency.log4j.version>2.26.1</dependency.log4j.version>
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
         <dependency.tika.version>3.2.3</dependency.tika.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.4.0</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>4.18.2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
-        <dependency.netty.version>4.1.135.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
+        <dependency.netty.version>4.1.137.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>6.2.4</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>

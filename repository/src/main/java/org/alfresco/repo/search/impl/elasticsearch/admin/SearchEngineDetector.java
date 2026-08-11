@@ -48,8 +48,11 @@ public class SearchEngineDetector
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineDetector.class);
 
     public static final String ATTR_ROOT = ".searchEngine";
-    public static final String ATTR_PROVIDER = "provider"; // "OpenSearch" | "Elasticsearch"
-    public static final String ATTR_VERSION = "version"; // e.g. "2.13.0"
+    public static final String ATTR_SEARCH_ENGINE_NAME = "name"; // "OpenSearch" | "Elasticsearch"
+    public static final String ATTR_SEARCH_ENGINE_VERSION = "version"; // e.g. "2.13.0"
+//  Access the search engine info using something like:
+//  Search engine name: attributeService.getAttribute(ATTR_ROOT, ATTR_SEARCH_ENGINE_NAME)
+//  Search engine version: attributeService.getAttribute(ATTR_ROOT, ATTR_SEARCH_ENGINE_VERSION)
 
     private ElasticsearchHttpClientFactory httpClientFactory;
     private AttributeService attributeService;
@@ -105,8 +108,8 @@ public class SearchEngineDetector
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setForceWritable(true);
             return txnHelper.doInTransaction(() -> {
-                attributeService.setAttribute(searchEngineInfo.getSearchEngineName(), ATTR_ROOT, ATTR_PROVIDER);
-                attributeService.setAttribute(searchEngineInfo.getSearchEngineVersion(), ATTR_ROOT, ATTR_VERSION);
+                attributeService.setAttribute(searchEngineInfo.getSearchEngineName(), ATTR_ROOT, ATTR_SEARCH_ENGINE_NAME);
+                attributeService.setAttribute(searchEngineInfo.getSearchEngineVersion(), ATTR_ROOT, ATTR_SEARCH_ENGINE_VERSION);
                 return null;
             }, false, true);
         }, AuthenticationUtil.getSystemUserName());

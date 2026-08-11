@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.admin;
 
+import static org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -34,10 +35,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-
-import static org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector.ATTR_PROVIDER;
-import static org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector.ATTR_ROOT;
-import static org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector.ATTR_VERSION;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -141,8 +138,8 @@ public class SearchEngineDetectorTest
 
         detector.detectAndStore();
 
-        verify(attributeService).setAttribute(eq("elasticsearch"), eq(ATTR_ROOT), eq(ATTR_PROVIDER));
-        verify(attributeService).setAttribute(eq("8.17.0"), eq(ATTR_ROOT), eq(ATTR_VERSION));
+        verify(attributeService).setAttribute(eq("elasticsearch"), eq(ATTR_ROOT), eq(ATTR_SEARCH_ENGINE_NAME));
+        verify(attributeService).setAttribute(eq("8.17.0"), eq(ATTR_ROOT), eq(ATTR_SEARCH_ENGINE_VERSION));
     }
 
     @Test
@@ -152,8 +149,8 @@ public class SearchEngineDetectorTest
 
         detector.detectAndStore();
 
-        verify(attributeService).setAttribute(eq("opensearch"), eq(ATTR_ROOT), eq(ATTR_PROVIDER));
-        verify(attributeService).setAttribute(eq("2.17.0"), eq(ATTR_ROOT), eq(ATTR_VERSION));
+        verify(attributeService).setAttribute(eq("opensearch"), eq(ATTR_ROOT), eq(ATTR_SEARCH_ENGINE_NAME));
+        verify(attributeService).setAttribute(eq("2.17.0"), eq(ATTR_ROOT), eq(ATTR_SEARCH_ENGINE_VERSION));
     }
 
     @Test
@@ -163,8 +160,8 @@ public class SearchEngineDetectorTest
 
         detector.detectAndStore();
 
-        verify(attributeService).setAttribute(eq("unknown"), eq(ATTR_ROOT), eq(ATTR_PROVIDER));
-        verify(attributeService).setAttribute(eq("1.2.3"), eq(ATTR_ROOT), eq(ATTR_VERSION));
+        verify(attributeService).setAttribute(eq("unknown"), eq(ATTR_ROOT), eq(ATTR_SEARCH_ENGINE_NAME));
+        verify(attributeService).setAttribute(eq("1.2.3"), eq(ATTR_ROOT), eq(ATTR_SEARCH_ENGINE_VERSION));
     }
 
     @Test
@@ -174,7 +171,7 @@ public class SearchEngineDetectorTest
 
         detector.detectAndStore();
 
-        verify(attributeService).setAttribute(eq("elasticsearch"), eq(ATTR_ROOT), eq(ATTR_PROVIDER));
+        verify(attributeService).setAttribute(eq("elasticsearch"), eq(ATTR_ROOT), eq(ATTR_SEARCH_ENGINE_NAME));
     }
 
     @Test

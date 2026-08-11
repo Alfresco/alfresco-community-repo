@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.elasticsearch.admin;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import org.json.JSONObject;
 import org.opensearch.client.opensearch.generic.Body;
@@ -85,19 +86,12 @@ public class SearchEngineDetector
             JSONObject root = new JSONObject(raw);
             String versionNumber = root.getJSONObject("version").getString("number");
 
-            String provider;
-            if (root.getString("tagline").equalsIgnoreCase("You Know, for Search"))
+            String provider = switch (root.getString("tagline").toLowerCase(Locale.ROOT))
             {
-                provider = "elasticsearch";
-            }
-            else if (root.getString("tagline").equalsIgnoreCase("The OpenSearch Project: https://opensearch.org/"))
-            {
-                provider = "opensearch";
-            }
-            else
-            {
-                provider = "unknown";
-            }
+            case "you know, for search" -> String.valueOf(SearchEngine.ELASTICSEARCH);
+            case "the opensearch project: https://opensearch.org/" -> String.valueOf(SearchEngine.OPENSEARCH);
+            default -> String.valueOf(SearchEngine.UNKNOWN);
+            };
             return new SearchEngineInfo(provider, versionNumber);
         }
     }

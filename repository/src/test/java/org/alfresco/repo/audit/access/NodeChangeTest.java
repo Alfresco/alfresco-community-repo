@@ -573,7 +573,7 @@ public class NodeChangeTest
     }
 
     @Test
-    public final void testIfMultipleSubActionsPresentWithReadAndDownload()
+    public final void testIfMultipleSubActionsPresentWithReadAndDownloadHigherPrecedence()
     {
         nodeChange.onContentRead(content1);
         nodeChange.onContentDownload(content1);
@@ -581,6 +581,18 @@ public class NodeChangeTest
 
         Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
         assertStandardData(auditMap, "CHECK IN", "readContent downloadContent checkIn"); // This Must Not Come as READ
+    }
+
+    @Test
+    public final void testIfMultipleSubActionsPresentWithReadAndDownloadLowerPrecedence()
+    {
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+        nodeChange.onContentUpdate(content1, false);
+
+        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+        assertStandardData(auditMap, "UPDATE CONTENT", "readContent downloadContent updateContent"); // This Must Not Come as READ
+
     }
 
     @Test

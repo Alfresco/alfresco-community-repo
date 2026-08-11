@@ -30,6 +30,8 @@ if (filename == undefined || content == undefined)
 }
 else
 {
+  filename = filename.trim()
+
   // create document in company home for uploaded file
   upload = companyhome.createFile("upload" + companyhome.children.length + "_" + filename) ;
   upload.properties.content.write(content);

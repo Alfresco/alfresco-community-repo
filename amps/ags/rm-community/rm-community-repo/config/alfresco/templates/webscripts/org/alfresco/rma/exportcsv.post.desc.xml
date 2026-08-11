@@ -1,0 +1,20 @@
+<webscript>
+  <shortname>Records Management Search Results CSV Export</shortname>
+  <description><![CDATA[
+  Exports the tabular data of a records search result as a CSV file and streams it back to the client.<br/>
+  Only the metadata displayed in the search results is exported; no node content is included.<br/>
+  The body of the post should be in the form<br/>
+  {<br/>
+  &nbsp;&nbsp;&nbsp;"items" : {<br/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"headers" : array of column labels,<br/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rows" : array of rows, each an array of cell values<br/>
+  &nbsp;&nbsp;&nbsp;}<br/>
+  }<br/>
+  ]]>
+  </description>
+  <url>/api/rma/admin/exportcsv</url>
+  <format default="html">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

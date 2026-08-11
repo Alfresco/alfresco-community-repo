@@ -944,6 +944,59 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
         assertEquals("application/zip", rsp.getContentType());
     }
 
+    public void testExportCsv() throws Exception
+    {
+        String exportCsvUrl = "/api/rma/admin/exportcsv";
+
+        // define JSON POST body carrying the displayed search-result table
+        JSONArray headers = new JSONArray();
+        headers.put("ID");
+        headers.put("Name");
+        headers.put("Author");
+
+        JSONArray row = new JSONArray();
+        row.put("2026-1786010896169");
+        row.put("Observation_Nitrogen (2026-1786010896169).docx");
+        row.put("Swarnajit Adhikary");
+
+        JSONArray rows = new JSONArray();
+        rows.put(row);
+
+        JSONObject items = new JSONObject();
+        items.put("headers", headers);
+        items.put("rows", rows);
+
+        JSONObject jsonPostData = new JSONObject();
+        jsonPostData.put("items", items);
+        String jsonPostString = jsonPostData.toString();
+
+        // make the export request
+        Response rsp = sendRequest(new PostRequest(exportCsvUrl, jsonPostString, APPLICATION_JSON), 200);
+        assertTrue("Unexpected content type: " + rsp.getContentType(),
+                rsp.getContentType().startsWith("text/csv"));
+
+        String content = rsp.getContentAsString();
+        assertTrue("CSV is missing the header row", content.contains("ID,Name,Author"));
+        assertTrue("CSV is missing the data row", content.contains("2026-1786010896169"));
+        assertTrue("CSV is missing the data row", content.contains("Swarnajit Adhikary"));
+    }
+
+    public void testExportCsvMissingHeaders() throws Exception
+    {
+        String exportCsvUrl = "/api/rma/admin/exportcsv";
+
+        // an 'items' object without headers is invalid
+        JSONObject items = new JSONObject();
+        items.put("rows", new JSONArray());
+
+        JSONObject jsonPostData = new JSONObject();
+        jsonPostData.put("items", items);
+        String jsonPostString = jsonPostData.toString();
+
+        // expect a bad request response
+        sendRequest(new PostRequest(exportCsvUrl, jsonPostString, APPLICATION_JSON), 400);
+    }
+
     public void testAudit() throws Exception
     {
         // call the list service to get audit events

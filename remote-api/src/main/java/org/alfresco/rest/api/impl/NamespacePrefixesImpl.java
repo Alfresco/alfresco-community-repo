@@ -56,6 +56,7 @@ public class NamespacePrefixesImpl implements NamespacePrefixes
     }
 
     @Override
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     public CollectionWithPagingInfo<NamespacePrefixEntry> getNamespacePrefixes(Parameters parameters)
     {
         try
@@ -75,13 +76,15 @@ public class NamespacePrefixesImpl implements NamespacePrefixes
                 String existing = prefixUriMap.put(uri, prefix);
                 if (existing != null && !existing.equals(prefix))
                 {
-                    LOGGER.debug("Duplicate namespace URI '{}': " +
-                            "existing prefix '{}' replaced by '{}'",
+                    LOGGER.debug("Duplicate namespace URI '{}': existing prefix '{}' replaced by '{}'",
                             uri, existing, prefix);
                 }
             }
 
-            LOGGER.debug("Namespace-prefix mapping built: {} unique URIs", prefixUriMap.size());
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Namespace-prefix mapping built: {} unique URIs", prefixUriMap.size());
+            }
 
             List<NamespacePrefixEntry> entries = new ArrayList<>();
             entries.add(new NamespacePrefixEntry(prefixUriMap));

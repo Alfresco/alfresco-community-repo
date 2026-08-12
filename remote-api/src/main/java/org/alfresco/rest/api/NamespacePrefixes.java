@@ -33,6 +33,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 /**
  * Namespace Prefixes API
  */
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface NamespacePrefixes
 {
     /**

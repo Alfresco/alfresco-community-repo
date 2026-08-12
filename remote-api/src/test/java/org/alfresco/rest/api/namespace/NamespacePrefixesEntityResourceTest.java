@@ -48,14 +48,13 @@ import org.alfresco.service.namespace.NamespaceService;
 public class NamespacePrefixesEntityResourceTest
 {
     private NamespacePrefixesEntityResource resource;
-    private NamespacePrefixesImpl implementation;
     private NamespaceService mockNamespaceService;
     private Parameters mockParameters;
 
     @Before
     public void setUp()
     {
-        implementation = new NamespacePrefixesImpl();
+        NamespacePrefixesImpl implementation = new NamespacePrefixesImpl();
         mockNamespaceService = mock(NamespaceService.class);
         mockParameters = mock(Parameters.class);
         implementation.setNamespaceService(mockNamespaceService);

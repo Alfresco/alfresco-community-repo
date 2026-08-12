@@ -63,7 +63,7 @@ public class TempOutputStreamTest
 
         File file = createTextFileWithRandomContent(MEMORY_THRESHOLD - 1024L);
         TempOutputStream outputStream = streamFactory.get();
-        try
+        try (TempOutputStream closeableStream = outputStream)
         {
             long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
@@ -92,7 +92,7 @@ public class TempOutputStreamTest
         Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
         TempOutputStream outputStream = streamFactory.get();
 
-        try
+        try (TempOutputStream closeableStream = outputStream)
         {
             try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
             {
@@ -133,7 +133,7 @@ public class TempOutputStreamTest
 
         long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
-        try
+        try (TempOutputStream closeableStream = outputStream)
         {
             try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
             {
@@ -165,7 +165,7 @@ public class TempOutputStreamTest
 
         long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
-        try
+        try (TempOutputStream closeableStream = outputStream)
         {
             try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
             {
@@ -193,7 +193,7 @@ public class TempOutputStreamTest
                 maxContentSize, false);
         TempOutputStream outputStream = streamFactory.get();
 
-        try
+        try (TempOutputStream closeableStream = outputStream)
         {
             try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
             {
@@ -227,7 +227,7 @@ public class TempOutputStreamTest
         TempOutputStream outputStream = streamFactory.get();
         long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
-        try
+        try (TempOutputStream closeableStream = outputStream)
         {
             try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
             {

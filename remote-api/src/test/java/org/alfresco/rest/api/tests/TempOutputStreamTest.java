@@ -28,10 +28,10 @@ package org.alfresco.rest.api.tests;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -62,13 +62,12 @@ public class TempOutputStreamTest
                 MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
 
         File file = createTextFileWithRandomContent(MEMORY_THRESHOLD - 1024L);
+        TempOutputStream outputStream = streamFactory.get();
+        try
         {
-            TempOutputStream outputStream = streamFactory.get();
-
             long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
-            // Copy the stream
-            try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
+            try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
             {
                 StreamUtils.copy(inputStream, outputStream);
             }
@@ -76,24 +75,161 @@ public class TempOutputStreamTest
             long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
             Assert.assertEquals(countBefore, countAfter);
-            outputStream.destroy();
         }
-        file.delete();
+        finally
+        {
+            outputStream.destroy();
+            Files.deleteIfExists(file.toPath());
+        }
     }
 
     @Test
     public void testFileBackedStream() throws IOException
     {
         File file = createTextFileWithRandomContent(MEMORY_THRESHOLD + 1024L);
+        long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
+        // Create stream factory that doesn't delete temp file on stream close
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
+        TempOutputStream outputStream = streamFactory.get();
 
+        try
         {
-            // Create stream factory that doesn't delete temp file on stream close
-            Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
-            TempOutputStream outputStream = streamFactory.get();
+            try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
+            {
+                StreamUtils.copy(inputStream, outputStream);
+            }
 
-            long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
+            // Check that temp file was created
+            long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
+            Assert.assertEquals(countBefore + 1, countAfter);
 
-            try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
+            outputStream.close();
+
+            // Check that file wasn't deleted on output stream close
+            countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
+            Assert.assertEquals(countBefore + 1, countAfter);
+        }
+        finally
+        {
+            outputStream.destroy();
+            Files.deleteIfExists(file.toPath());
+        }
+
+        long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
+        Assert.assertEquals(countBefore, countAfter);
+    }
+
+    @Test(expected = ContentLimitViolationException.class)
+    public void testMaxContentSizeInMemoryStream() throws IOException
+    {
+        long contentSize = MEMORY_THRESHOLD - 512;
+        long maxContentSize = MEMORY_THRESHOLD - 1024;
+
+        File file = createTextFileWithRandomContent(contentSize);
+
+        // Create stream factory that deletes the temp file when the max Size is reached
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, maxContentSize, false);
+        TempOutputStream outputStream = streamFactory.get();
+
+        long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
+
+        try
+        {
+            try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
+            {
+                StreamUtils.copy(inputStream, outputStream);
+            }
+        }
+        finally
+        {
+            // Check that file was already deleted on error
+            long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
+            Assert.assertEquals(countBefore, countAfter);
+
+            outputStream.destroy();
+            Files.deleteIfExists(file.toPath());
+        }
+    }
+
+    @Test(expected = ContentLimitViolationException.class)
+    public void testMaxContentSizeFileBackedStream() throws IOException
+    {
+        long contentSize = MEMORY_THRESHOLD + 1024;
+        long maxContentSize = MEMORY_THRESHOLD + 512;
+
+        File file = createTextFileWithRandomContent(contentSize);
+
+        // Create stream factory that deletes the temp file when the max Size is reached
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, maxContentSize, false);
+        TempOutputStream outputStream = streamFactory.get();
+
+        long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
+
+        try
+        {
+            try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
+            {
+                StreamUtils.copy(inputStream, outputStream);
+            }
+        }
+        finally
+        {
+            // Check that file was already deleted on error
+            long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
+            Assert.assertEquals(countBefore, countAfter);
+
+            outputStream.destroy();
+            Files.deleteIfExists(file.toPath());
+        }
+    }
+
+    @Test(expected = ContentLimitViolationException.class)
+    public void testToNewInputStreamAfterMaxContentSizeExceededForFileBackedStream() throws IOException
+    {
+        long maxContentSize = MEMORY_THRESHOLD + 512;
+        File file = createTextFileWithRandomContent(MEMORY_THRESHOLD + 1024L);
+
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD,
+                maxContentSize, false);
+        TempOutputStream outputStream = streamFactory.get();
+
+        try
+        {
+            try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
+            {
+                StreamUtils.copy(inputStream, outputStream);
+            }
+        }
+        catch (ContentLimitViolationException e)
+        {
+            // Expected during setup.
+        }
+
+        try
+        {
+            outputStream.toNewInputStream();
+        }
+        finally
+        {
+            outputStream.destroy();
+            Files.deleteIfExists(file.toPath());
+        }
+    }
+
+    @Test
+    public void testEncryptContent() throws IOException
+    {
+        File file = createTextFileWithRandomContent(MEMORY_THRESHOLD + 1024L);
+
+        // Create stream factory that doesn't delete temp file on stream close
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, true);
+
+        TempOutputStream outputStream = streamFactory.get();
+        long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
+
+        try
+        {
+            try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
             {
                 StreamUtils.copy(inputStream, outputStream);
             }
@@ -108,164 +244,28 @@ public class TempOutputStreamTest
             countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
             Assert.assertEquals(countBefore + 1, countAfter);
 
-            outputStream.destroy();
-
-            // Check that file was deleted
-            countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-            Assert.assertEquals(countBefore, countAfter);
-        }
-
-        file.delete();
-    }
-
-    @Test
-    public void testMaxContentSize() throws IOException
-    {
-        // In memory stream
-        {
-            long contentSize = MEMORY_THRESHOLD - 512;
-            long maxContentSize = MEMORY_THRESHOLD - 1024;
-
-            File file = createTextFileWithRandomContent(contentSize);
-
-            // Create stream factory that deletes the temp file when the max Size is reached
-            Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, maxContentSize, false);
-            TempOutputStream outputStream = streamFactory.get();
-
-            long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-
-            try
+            // Compare content
+            String contentWriten;
+            try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath())))
             {
-                try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
-                {
-                    StreamUtils.copy(inputStream, outputStream);
-                }
-                Assert.fail("Content size limit violation exception was expected");
-            }
-            catch (ContentLimitViolationException e)
-            {
-                // Expected
+                contentWriten = StreamUtils.copyToString(inputStream, Charset.defaultCharset());
             }
 
-            // Check that file was already deleted on error
-            long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-            Assert.assertEquals(countBefore, countAfter);
-
-            file.delete();
-        }
-
-        // File backed stream
-        {
-            long contentSize = MEMORY_THRESHOLD + 1024;
-            long maxContentSize = MEMORY_THRESHOLD + 512;
-
-            File file = createTextFileWithRandomContent(contentSize);
-
-            // Create stream factory that deletes the temp file when the max Size is reached
-            Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, maxContentSize, false);
-            TempOutputStream outputStream = streamFactory.get();
-
-            long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-
-            try
+            String contentRead;
+            try (BufferedInputStream inputStream = new BufferedInputStream(outputStream.toNewInputStream()))
             {
-                try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
-                {
-                    StreamUtils.copy(inputStream, outputStream);
-                }
-                Assert.fail("Content size limit violation exception was expected");
+                contentRead = StreamUtils.copyToString(inputStream, Charset.defaultCharset());
             }
-            catch (ContentLimitViolationException e)
-            {
-                // Expected
-            }
-
-            // Check that file was already deleted on error
-            long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-            Assert.assertEquals(countBefore, countAfter);
-
-            file.delete();
-        }
-    }
-
-    @Test
-    public void testToNewInputStreamAfterMaxContentSizeExceededForFileBackedStream() throws IOException
-    {
-        long maxContentSize = MEMORY_THRESHOLD + 512;
-        File file = createTextFileWithRandomContent(MEMORY_THRESHOLD + 1024L);
-
-        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD,
-                maxContentSize, false);
-        TempOutputStream outputStream = streamFactory.get();
-
-        try
-        {
-            try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
-            {
-                StreamUtils.copy(inputStream, outputStream);
-            }
-            Assert.fail("Content size limit violation exception was expected");
-        }
-        catch (ContentLimitViolationException e)
-        {
-            // Expected.
-        }
-
-        try
-        {
-            outputStream.toNewInputStream();
-            Assert.fail("Content size limit violation exception was expected");
-        }
-        catch (ContentLimitViolationException e)
-        {
-            // Expected and should not be ClassCastException.
+            Assert.assertEquals(contentWriten, contentRead);
         }
         finally
         {
             outputStream.destroy();
-            file.delete();
-        }
-    }
-
-    @Test
-    public void testEncryptContent() throws IOException
-    {
-        File file = createTextFileWithRandomContent(MEMORY_THRESHOLD + 1024L);
-
-        // Create stream factory that doesn't delete temp file on stream close
-        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, true);
-
-        TempOutputStream outputStream = streamFactory.get();
-
-        long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-
-        try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
-        {
-            StreamUtils.copy(inputStream, outputStream);
+            Files.deleteIfExists(file.toPath());
         }
 
-        // Check that temp file was created
         long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-        Assert.assertEquals(countBefore + 1, countAfter);
-
-        outputStream.close();
-
-        // Check that file wasn't deleted on output stream close
-        countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-        Assert.assertEquals(countBefore + 1, countAfter);
-
-        // Compare content
-        String contentWriten = StreamUtils.copyToString(new BufferedInputStream(new FileInputStream(file)), Charset.defaultCharset());
-        String contentRead = StreamUtils.copyToString(outputStream.toNewInputStream(), Charset.defaultCharset());
-        Assert.assertEquals(contentWriten, contentRead);
-
-        outputStream.destroy();
-
-        // Check that file was deleted
-        countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
         Assert.assertEquals(countBefore, countAfter);
-
-        file.delete();
     }
 
     private File createTextFileWithRandomContent(long contentSize) throws IOException
@@ -273,9 +273,10 @@ public class TempOutputStreamTest
         File txtFile = TempFileProvider.createTempFile(getClass().getSimpleName(), ".txt");
         txtFile.deleteOnExit();
 
-        RandomAccessFile file = new RandomAccessFile(txtFile.getPath(), "rw");
-        file.setLength(contentSize);
-        file.close();
+        try (RandomAccessFile file = new RandomAccessFile(txtFile.getPath(), "rw"))
+        {
+            file.setLength(contentSize);
+        }
 
         return txtFile;
     }

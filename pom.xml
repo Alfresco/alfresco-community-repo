@@ -64,7 +64,7 @@
         <dependency.cxf.version>4.0.5</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>9.3</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.78.1</dependency.bouncycastle.version>
+        <dependency.bouncycastle.version>1.85</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.12.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.26.3</dependency.assertj.version>
         <dependency.org-json.version>20231013</dependency.org-json.version>
@@ -1137,10 +1137,10 @@
                                             <exclude>com.sun.xml.bind</exclude>
                                         </excludes>
                                         <includes>
-                                            <include>org.bouncycastle:bcprov-jdk18on:[1.78.1,)</include>
-                                            <include>org.bouncycastle:bcmail-jdk18on:[1.78.1,)</include>
-                                            <include>org.bouncycastle:bcpkix-jdk18on:[1.78.1,)</include>
-                                            <include>org.bouncycastle:bcutil-jdk18on:[1.78.1,)</include>
+                                            <include>org.bouncycastle:bcprov-jdk18on:[1.85,)</include>
+                                            <include>org.bouncycastle:bcmail-jdk18on:[1.85,)</include>
+                                            <include>org.bouncycastle:bcpkix-jdk18on:[1.85,)</include>
+                                            <include>org.bouncycastle:bcutil-jdk18on:[1.85,)</include>
                                         </includes>
                                     </bannedDependencies>
                                 </rules>

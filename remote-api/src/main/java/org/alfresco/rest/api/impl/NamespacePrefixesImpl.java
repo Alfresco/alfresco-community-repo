@@ -34,6 +34,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.NamespacePrefixes;
 import org.alfresco.rest.api.model.NamespacePrefixEntry;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -41,7 +42,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.namespace.NamespaceService;
 
 /**
- * v1 REST API implementation for namespace-prefix mapping. Returns complete namespace URI ↔ prefix mapping from NamespaceService. ACS-12299
+ * v1 REST API implementation for namespace-prefix mapping. Returns complete namespace URI ↔ prefix mapping from NamespaceService.
  */
 public class NamespacePrefixesImpl implements NamespacePrefixes
 {
@@ -57,13 +58,10 @@ public class NamespacePrefixesImpl implements NamespacePrefixes
     @Override
     public CollectionWithPagingInfo<NamespacePrefixEntry> getNamespacePrefixes(Parameters parameters)
     {
-        LOGGER.debug("Building namespace-prefix mapping from NamespaceService");
-
-        Map<String, String> prefixUriMap = new HashMap<>();
-        int prefixCount = 0;
-
         try
         {
+            Map<String, String> prefixUriMap = new HashMap<>();
+
             for (String prefix : namespaceService.getPrefixes())
             {
                 String uri = namespaceService.getNamespaceURI(prefix);
@@ -77,25 +75,21 @@ public class NamespacePrefixesImpl implements NamespacePrefixes
                 String existing = prefixUriMap.put(uri, prefix);
                 if (existing != null && !existing.equals(prefix))
                 {
-                    LOGGER.warn("Duplicate namespace URI '{}': " +
+                    LOGGER.debug("Duplicate namespace URI '{}': " +
                             "existing prefix '{}' replaced by '{}'",
                             uri, existing, prefix);
                 }
-                prefixCount++;
             }
 
-            LOGGER.info("Namespace-prefix mapping built: {} prefixes, {} unique URIs",
-                    prefixCount, prefixUriMap.size());
+            LOGGER.debug("Namespace-prefix mapping built: {} unique URIs", prefixUriMap.size());
+
+            List<NamespacePrefixEntry> entries = new ArrayList<>();
+            entries.add(new NamespacePrefixEntry(prefixUriMap));
+            return CollectionWithPagingInfo.asPaged(parameters.getPaging(), entries);
         }
         catch (Exception e)
         {
-            String msg = "Failed to build namespace-prefix mapping from NamespaceService";
-            LOGGER.error(msg, e);
-            throw new RuntimeException(msg + ": " + e.getMessage(), e);
+            throw new AlfrescoRuntimeException("Failed to build namespace-prefix mapping", e);
         }
-
-        List<NamespacePrefixEntry> entries = new ArrayList<>();
-        entries.add(new NamespacePrefixEntry(prefixUriMap));
-        return CollectionWithPagingInfo.asPaged(null, entries);
     }
 }

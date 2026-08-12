@@ -1784,8 +1784,22 @@
         <property name="namespaceService" ref="namespaceService"/>
     </bean>
 
+    <bean id="NamespacePrefixes" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.NamespacePrefixes</value>
+        </property>
+        <property name="target">
+            <ref bean="namespacePrefixes" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
     <bean class="org.alfresco.rest.api.namespace.NamespacePrefixesEntityResource">
-        <property name="namespacePrefixes" ref="namespacePrefixes"/>
+        <property name="namespacePrefixes" ref="NamespacePrefixes"/>
     </bean>
 
     <bean id="Types" class="org.springframework.aop.framework.ProxyFactoryBean">

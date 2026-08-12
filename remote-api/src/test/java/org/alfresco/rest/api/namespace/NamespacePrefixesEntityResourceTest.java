@@ -35,6 +35,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.impl.NamespacePrefixesImpl;
 import org.alfresco.rest.api.model.NamespacePrefixEntry;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -42,10 +43,11 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.namespace.NamespaceService;
 
 /**
- * Unit tests for NamespacePrefixesImpl REST endpoint (ACS-12299). Tests v1 REST API returning complete namespace-prefix mapping.
+ * Unit tests for NamespacePrefixesEntityResource v1 REST endpoint. Verifies EntityResource properly delegates to NamespacePrefixesImpl and returns complete namespace-prefix mapping.
  */
 public class NamespacePrefixesEntityResourceTest
 {
+    private NamespacePrefixesEntityResource resource;
     private NamespacePrefixesImpl implementation;
     private NamespaceService mockNamespaceService;
     private Parameters mockParameters;
@@ -57,6 +59,9 @@ public class NamespacePrefixesEntityResourceTest
         mockNamespaceService = mock(NamespaceService.class);
         mockParameters = mock(Parameters.class);
         implementation.setNamespaceService(mockNamespaceService);
+
+        resource = new NamespacePrefixesEntityResource();
+        resource.setNamespacePrefixes(implementation);
     }
 
     @Test
@@ -72,7 +77,7 @@ public class NamespacePrefixesEntityResourceTest
         when(mockNamespaceService.getNamespaceURI("sys"))
                 .thenReturn("http://www.alfresco.org/model/system/1.0");
 
-        CollectionWithPagingInfo<NamespacePrefixEntry> result = implementation.getNamespacePrefixes(mockParameters);
+        CollectionWithPagingInfo<NamespacePrefixEntry> result = resource.readAll(mockParameters);
 
         assertNotNull("Result should not be null", result);
         assertEquals("Result should contain 1 entry", (long) 1, (long) result.getTotalItems());
@@ -100,7 +105,7 @@ public class NamespacePrefixesEntityResourceTest
         when(mockNamespaceService.getNamespaceURI("invalid"))
                 .thenReturn(null);
 
-        CollectionWithPagingInfo<NamespacePrefixEntry> result = implementation.getNamespacePrefixes(mockParameters);
+        CollectionWithPagingInfo<NamespacePrefixEntry> result = resource.readAll(mockParameters);
 
         assertNotNull("Result should not be null", result);
         NamespacePrefixEntry entry = result.getCollection().iterator().next();
@@ -112,8 +117,8 @@ public class NamespacePrefixesEntityResourceTest
     {
         when(mockNamespaceService.getPrefixes()).thenThrow(new RuntimeException("Service error"));
 
-        assertThrows("Should throw RuntimeException on service failure",
-                RuntimeException.class,
-                () -> implementation.getNamespacePrefixes(mockParameters));
+        assertThrows("Should throw AlfrescoRuntimeException on service failure",
+                AlfrescoRuntimeException.class,
+                () -> resource.readAll(mockParameters));
     }
 }

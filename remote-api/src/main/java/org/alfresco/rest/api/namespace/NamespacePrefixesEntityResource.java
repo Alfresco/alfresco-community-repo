@@ -37,7 +37,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 
 /**
- * REST API v1 endpoint for namespace-prefix mapping. ACS-12299
+ * REST API v1 endpoint for namespace-prefix mapping.
  */
 @EntityResource(name = "namespace-prefix", title = "Namespace Prefixes")
 public class NamespacePrefixesEntityResource implements EntityResourceAction.Read<NamespacePrefixEntry>, InitializingBean

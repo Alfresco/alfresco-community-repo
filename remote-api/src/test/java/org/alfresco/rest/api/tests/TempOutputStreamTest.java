@@ -68,7 +68,10 @@ public class TempOutputStreamTest
             long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
             // Copy the stream
-            StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), outputStream);
+            try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
+            {
+                StreamUtils.copy(inputStream, outputStream);
+            }
 
             long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
@@ -90,7 +93,10 @@ public class TempOutputStreamTest
 
             long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
-            StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), outputStream);
+            try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
+            {
+                StreamUtils.copy(inputStream, outputStream);
+            }
 
             // Check that temp file was created
             long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
@@ -130,7 +136,10 @@ public class TempOutputStreamTest
 
             try
             {
-                StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), outputStream);
+                try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
+                {
+                    StreamUtils.copy(inputStream, outputStream);
+                }
                 Assert.fail("Content size limit violation exception was expected");
             }
             catch (ContentLimitViolationException e)
@@ -160,7 +169,10 @@ public class TempOutputStreamTest
 
             try
             {
-                StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), outputStream);
+                try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
+                {
+                    StreamUtils.copy(inputStream, outputStream);
+                }
                 Assert.fail("Content size limit violation exception was expected");
             }
             catch (ContentLimitViolationException e)
@@ -188,7 +200,10 @@ public class TempOutputStreamTest
 
         try
         {
-            StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), outputStream);
+            try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
+            {
+                StreamUtils.copy(inputStream, outputStream);
+            }
             Assert.fail("Content size limit violation exception was expected");
         }
         catch (ContentLimitViolationException e)
@@ -224,7 +239,10 @@ public class TempOutputStreamTest
 
         long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
-        StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), outputStream);
+        try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file)))
+        {
+            StreamUtils.copy(inputStream, outputStream);
+        }
 
         // Check that temp file was created
         long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);

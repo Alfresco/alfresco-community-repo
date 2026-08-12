@@ -134,7 +134,7 @@ public class TempOutputStream extends OutputStream
         {
             if (!(outputStream instanceof ByteArrayOutputStream))
             {
-                throw new IOException("Temporary response buffer is in an invalid state");
+                throw new IOException("Temporary response buffer is in an invalid state: expected ByteArrayOutputStream but was " + outputStream.getClass().getName());
             }
             return new ByteArrayInputStream(((ByteArrayOutputStream) outputStream).toByteArray());
         }

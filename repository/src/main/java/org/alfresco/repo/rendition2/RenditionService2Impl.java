@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -46,6 +45,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -112,6 +112,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
     private TransactionService transactionService;
     private NodeService nodeService;
+    private NodeDAO nodeDAO;
     private ContentService contentService;
     private RenditionPreventionRegistry renditionPreventionRegistry;
     private RenditionDefinitionRegistry2 renditionDefinitionRegistry2;
@@ -133,6 +134,11 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
     }
 
     public void setContentService(ContentService contentService)
@@ -350,7 +356,31 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
                     if (sourceContentHashCode != SOURCE_HAS_NO_CONTENT)
                     {
-                        transformClient.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
+                        ContentData contentDataForTransform = DefaultTypeConverter.INSTANCE.convert(
+                                ContentData.class, nodeService.getProperty(sourceNodeRef, PROP_CONTENT));
+                        if (contentDataForTransform != null && contentDataForTransform.getSize() == 0)
+                        {
+                            // In a cluster with invalidating cache, the shared cache may hold stale
+                            // ContentData (size=0) from initial node creation because cache invalidation from the
+                            // uploading node hasn't propagated yet. Bypass the shared cache to read directly from DB.
+                            nodeDAO.setCheckNodeConsistency();
+                            contentDataForTransform = DefaultTypeConverter.INSTANCE.convert(
+                                    ContentData.class, nodeService.getProperty(sourceNodeRef, PROP_CONTENT));
+                        }
+                        if (contentDataForTransform == null || contentDataForTransform.getSize() == 0)
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Content size is 0 for " + sourceNodeRef +
+                                        " after bypassing shared cache. Genuine empty content.");
+                            }
+                            failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
+                        }
+                        else
+                        {
+                            sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
+                            transformClient.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
+                        }
                     }
                     else
                     {

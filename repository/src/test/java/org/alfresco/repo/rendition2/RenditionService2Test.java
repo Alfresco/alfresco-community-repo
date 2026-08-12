@@ -39,7 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -310,13 +310,13 @@ public class RenditionService2Test
         ContentData staleContentData = new ContentData("store://stale-url", "application/pdf", 0L, "UTF-8");
         ContentData freshContentData = new ContentData("store://fresh-url", "application/pdf", 4726L, "UTF-8");
 
-        AtomicInteger getPropertyCallCount = new AtomicInteger(0);
-        when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenAnswer(invocation -> {
-            int call = getPropertyCallCount.incrementAndGet();
-            // First 2 calls return stale: initial checkSupported read + getSourceContentHashCode + first re-read in callback
-            // After setCheckNodeConsistency() is called, subsequent reads return fresh data from DB
-            return call <= 3 ? staleContentData : freshContentData;
-        });
+        AtomicBoolean cacheBypassEnabled = new AtomicBoolean(false);
+        doAnswer(inv -> {
+            cacheBypassEnabled.set(true);
+            return null;
+        }).when(nodeDAO).setCheckNodeConsistency();
+
+        when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenAnswer(invocation -> cacheBypassEnabled.get() ? freshContentData : staleContentData);
 
         renditionService2.render(nodeRef, TEST_RENDITION);
 

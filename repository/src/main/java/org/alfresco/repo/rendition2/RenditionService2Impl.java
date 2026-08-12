@@ -370,6 +370,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                             if (contentDataForTransform != null && contentDataForTransform.getSize() > 0)
                             {
                                 sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
+                                renderOrTransform.throwIllegalStateExceptionIfAlreadyDone(sourceContentHashCode);
                             }
                         }
                         transformClient.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);

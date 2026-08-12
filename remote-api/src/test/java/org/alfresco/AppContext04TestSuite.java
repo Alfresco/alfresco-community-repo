@@ -79,7 +79,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.rest.api.impl.DownloadsImplCheckArchiveStatusUnitTest.class,
         org.alfresco.rest.api.impl.RestApiDirectUrlConfigUnitTest.class,
         org.alfresco.rest.api.impl.SizeDetailsImplTest.class,
-        org.alfresco.repo.web.scripts.model.NamespacePrefixGetRestApiTest.class})
+        org.alfresco.rest.api.namespace.NamespacePrefixesEntityResourceTest.class})
 public class AppContext04TestSuite
 {
     public AppContext04TestSuite()

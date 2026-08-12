@@ -90,6 +90,14 @@
         <constructor-arg value="${elasticsearch.lockRetryAttempts}" />
         <constructor-arg value="${elasticsearch.lockRetryPeriodSeconds}" />
         <constructor-arg value="${elasticsearch.createIndexIfNotExists}" />
+        <constructor-arg ref="searchEngineDetector"/>
+    </bean>
+
+    <bean id="searchEngineDetector"
+          class="org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector">
+        <property name="httpClientFactory"  ref="elasticsearchHttpClientFactory"/>
+        <property name="attributeService"   ref="AttributeService"/>
+        <property name="transactionService" ref="TransactionService"/>
     </bean>
 
     <bean id="elasticsearchIndexService"

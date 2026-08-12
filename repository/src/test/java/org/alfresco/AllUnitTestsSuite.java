@@ -291,6 +291,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
 
         // Elasticsearch unit tests
         org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsServiceTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetectorTest.class,
         org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactoryTest.class,
         org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSearchServiceTest.class,
         org.alfresco.repo.search.impl.elasticsearch.ElasticsearchCategoryServiceTest.class,

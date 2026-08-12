@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -45,9 +46,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.ContentServicePolicies;
-import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition.RenditionPreventionRegistry;

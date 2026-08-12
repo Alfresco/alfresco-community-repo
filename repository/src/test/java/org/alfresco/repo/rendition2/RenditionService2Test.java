@@ -302,10 +302,7 @@ public class RenditionService2Test
     }
 
     /**
-     * MNT-25665 / ACS-6670: In a cluster with invalidating cache, the rendition callback reads stale
-     * ContentData (size=0) because cache invalidation hasn't propagated. The fix detects size=0,
-     * calls nodeDAO.setCheckNodeConsistency() to bypass the shared cache, and re-reads from DB.
-     * This test simulates the stale cache scenario where the re-read after bypass returns fresh data.
+     * MNT-25665 / ACS-6670: In a cluster with invalidating cache, the rendition callback reads stale ContentData (size=0) because cache invalidation hasn't propagated. The fix detects size=0, calls nodeDAO.setCheckNodeConsistency() to bypass the shared cache, and re-reads from DB. This test simulates the stale cache scenario where the re-read after bypass returns fresh data.
      */
     @Test
     public void staleCacheBypassSucceedsWithFreshDataFromDB()
@@ -329,8 +326,7 @@ public class RenditionService2Test
     }
 
     /**
-     * When content is genuinely 0 bytes (not a stale cache issue), the rendition should be
-     * marked as failed even after bypassing the shared cache and re-reading from DB.
+     * When content is genuinely 0 bytes (not a stale cache issue), the rendition should be marked as failed even after bypassing the shared cache and re-reading from DB.
      */
     @Test
     public void genuinelyEmptyContentCallsFailure()

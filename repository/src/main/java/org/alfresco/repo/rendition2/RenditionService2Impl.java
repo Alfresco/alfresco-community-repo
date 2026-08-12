@@ -367,21 +367,12 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                             nodeDAO.setCheckNodeConsistency();
                             contentDataForTransform = DefaultTypeConverter.INSTANCE.convert(
                                     ContentData.class, nodeService.getProperty(sourceNodeRef, PROP_CONTENT));
-                        }
-                        if (contentDataForTransform == null || contentDataForTransform.getSize() == 0)
-                        {
-                            if (logger.isDebugEnabled())
+                            if (contentDataForTransform != null && contentDataForTransform.getSize() > 0)
                             {
-                                logger.debug("Content size is 0 for " + sourceNodeRef +
-                                        " after bypassing shared cache. Genuine empty content.");
+                                sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
                             }
-                            failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
                         }
-                        else
-                        {
-                            sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
-                            transformClient.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
-                        }
+                        transformClient.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
                     }
                     else
                     {

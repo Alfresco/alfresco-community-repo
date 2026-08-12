@@ -326,10 +326,10 @@ public class RenditionService2Test
     }
 
     /**
-     * When content is genuinely 0 bytes (not a stale cache issue), the rendition should be marked as failed even after bypassing the shared cache and re-reading from DB.
+     * When content is genuinely 0 bytes (not a stale cache issue), the transform is still attempted (preserving original behavior — downstream validation handles the rejection).
      */
     @Test
-    public void genuinelyEmptyContentCallsFailure()
+    public void genuineEmptyContentStillAttemptsTransform()
     {
         ContentData emptyContentData = new ContentData("store://empty-url", "application/pdf", 0L, "UTF-8");
 
@@ -339,7 +339,6 @@ public class RenditionService2Test
         renditionService2.render(nodeRef, TEST_RENDITION);
 
         verify(nodeDAO).setCheckNodeConsistency();
-        verify(transformClient, never()).transform(any(), any(), nullable(String.class), anyInt());
-        assertTrue("failure() should be called when content is genuinely 0 bytes", failureCalled);
+        verify(transformClient, times(1)).transform(any(), any(), nullable(String.class), anyInt());
     }
 }

@@ -177,6 +177,42 @@ public class TempOutputStreamTest
     }
 
     @Test
+    public void testToNewInputStreamAfterMaxContentSizeExceededForFileBackedStream() throws IOException
+    {
+        long maxContentSize = MEMORY_THRESHOLD + 512;
+        File file = createTextFileWithRandomContent(MEMORY_THRESHOLD + 1024L);
+
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD,
+                maxContentSize, false);
+        TempOutputStream outputStream = streamFactory.get();
+
+        try
+        {
+            StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), outputStream);
+            Assert.fail("Content size limit violation exception was expected");
+        }
+        catch (ContentLimitViolationException e)
+        {
+            // Expected.
+        }
+
+        try
+        {
+            outputStream.toNewInputStream();
+            Assert.fail("Content size limit violation exception was expected");
+        }
+        catch (ContentLimitViolationException e)
+        {
+            // Expected and should not be ClassCastException.
+        }
+        finally
+        {
+            outputStream.destroy();
+            file.delete();
+        }
+    }
+
+    @Test
     public void testEncryptContent() throws IOException
     {
         File file = createTextFileWithRandomContent(MEMORY_THRESHOLD + 1024L);

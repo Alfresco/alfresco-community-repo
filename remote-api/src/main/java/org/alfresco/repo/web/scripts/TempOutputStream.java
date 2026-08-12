@@ -91,6 +91,7 @@ public class TempOutputStream extends OutputStream
     private long length = 0;
     private OutputStream outputStream;
     private File tempFile;
+    private boolean maxContentSizeExceeded;
 
     private Key symKey;
     private byte[] iv;
@@ -124,8 +125,17 @@ public class TempOutputStream extends OutputStream
     {
         closeOutputStream();
 
+        if (maxContentSizeExceeded)
+        {
+            throw new ContentLimitViolationException("Content size violation, limit = " + maxContentSize);
+        }
+
         if (tempFile == null)
         {
+            if (!(outputStream instanceof ByteArrayOutputStream))
+            {
+                throw new IOException("Temporary response buffer is in an invalid state");
+            }
             return new ByteArrayInputStream(((ByteArrayOutputStream) outputStream).toByteArray());
         }
         if (!encrypt)
@@ -303,6 +313,7 @@ public class TempOutputStream extends OutputStream
     {
         if (surpassesMaxContentSize(len))
         {
+            maxContentSizeExceeded = true;
             destroy();
             throw new ContentLimitViolationException("Content size violation, limit = " + maxContentSize);
         }

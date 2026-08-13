@@ -88,9 +88,10 @@ public class SearchResultsCSVWriter
         JSONArray headers = getHeaders(items);
         JSONArray rows = items.optJSONArray(PARAM_ROWS);
 
+        File csvFile = null;
         try
         {
-            File csvFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, "." + CSV_EXTENSION);
+            csvFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, "." + CSV_EXTENSION);
             writeCsv(csvFile, headers, rows);
 
             if (LOG.isDebugEnabled())
@@ -102,11 +103,27 @@ public class SearchResultsCSVWriter
         }
         catch (JSONException je)
         {
+            deleteTempFile(csvFile);
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse CSV data from request body.", je);
         }
         catch (IOException ioe)
         {
+            deleteTempFile(csvFile);
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Failed to create CSV file.", ioe);
+        }
+    }
+
+    /**
+     * Deletes the given temporary file if it exists, ignoring any failure. Prevents partially written CSV files from accumulating on disk when the CSV cannot be created successfully.
+     *
+     * @param file
+     *            the file to delete
+     */
+    private void deleteTempFile(File file)
+    {
+        if (file != null && file.exists() && !file.delete() && LOG.isDebugEnabled())
+        {
+            LOG.debug("Could not delete temporary CSV file: " + file.getAbsolutePath());
         }
     }
 

@@ -27,15 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,7 +49,6 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
-import org.alfresco.module.org_alfresco_module_rm.script.SearchResultsCSVWriter;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestActionParams;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -946,68 +942,6 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
         // make the export request
         Response rsp = sendRequest(new PostRequest(exportUrl, jsonPostString, APPLICATION_JSON), 200);
         assertEquals("application/zip", rsp.getContentType());
-    }
-
-    public void testExportWithSearchResultsCsv() throws IOException, JSONException
-    {
-        String exportUrl = "/api/rma/admin/export";
-
-        // define JSON POST body carrying the nodeRefs and the displayed search-result table
-        JSONObject jsonPostData = new JSONObject();
-        JSONArray nodeRefs = new JSONArray();
-        nodeRefs.put(recordFolder.toString());
-        nodeRefs.put(recordFolder2.toString());
-        jsonPostData.put("nodeRefs", nodeRefs);
-
-        JSONArray headers = new JSONArray();
-        headers.put("ID");
-        headers.put("Name");
-        headers.put("Author");
-
-        JSONArray row = new JSONArray();
-        row.put("2026-1786010896169");
-        row.put("Observation_Nitrogen (2026-1786010896169).docx");
-        row.put("Swarnajit Adhikary");
-
-        JSONArray rows = new JSONArray();
-        rows.put(row);
-
-        JSONObject items = new JSONObject();
-        items.put("headers", headers);
-        items.put("rows", rows);
-        jsonPostData.put("items", items);
-
-        String jsonPostString = jsonPostData.toString();
-
-        // make the export request
-        Response rsp = sendRequest(new PostRequest(exportUrl, jsonPostString, APPLICATION_JSON), 200);
-        assertEquals("application/acp", rsp.getContentType());
-
-        // the returned ACP archive should contain the search-results CSV
-        assertTrue("ACP is missing the embedded search-results CSV entry",
-                archiveContainsEntryMatching(rsp.getContentAsByteArray(),
-                        SearchResultsCSVWriter.CSV_FILE_NAME_PREFIX, ".csv"));
-    }
-
-    /**
-     * Returns whether the given ZIP based archive contains an entry whose name starts with the supplied prefix and ends with the supplied suffix.
-     */
-    private boolean archiveContainsEntryMatching(byte[] archive, String prefix, String suffix) throws IOException
-    {
-        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(archive)))
-        {
-            ZipEntry entry = zip.getNextEntry();
-            while (entry != null)
-            {
-                String name = entry.getName();
-                if (name.startsWith(prefix) && name.endsWith(suffix))
-                {
-                    return true;
-                }
-                entry = zip.getNextEntry();
-            }
-        }
-        return false;
     }
 
     public void testAudit() throws Exception

@@ -183,7 +183,16 @@ public class ExportPost extends StreamACP
             // if the displayed search-result table was supplied, embed it as a CSV inside the archive
             if (csvItems != null)
             {
-                addSearchResultsCsv(tempACPFile, csvItems);
+                try
+                {
+                    addSearchResultsCsv(tempACPFile, csvItems);
+                }
+                catch (IOException ioe)
+                {
+                    // failing to write the CSV into the archive is a server-side error, not a bad request
+                    throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+                            "Failed to embed search results CSV into the export archive.", ioe);
+                }
             }
 
             // stream the ACP back to the client as an attachment (forcing save as)

@@ -948,7 +948,7 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
         assertEquals("application/zip", rsp.getContentType());
     }
 
-    public void testExportWithSearchResultsCsv() throws Exception
+    public void testExportWithSearchResultsCsv() throws IOException, JSONException
     {
         String exportUrl = "/api/rma/admin/export";
 
@@ -996,14 +996,15 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
     {
         try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(archive)))
         {
-            ZipEntry entry;
-            while ((entry = zip.getNextEntry()) != null)
+            ZipEntry entry = zip.getNextEntry();
+            while (entry != null)
             {
                 String name = entry.getName();
                 if (name.startsWith(prefix) && name.endsWith(suffix))
                 {
                     return true;
                 }
+                entry = zip.getNextEntry();
             }
         }
         return false;

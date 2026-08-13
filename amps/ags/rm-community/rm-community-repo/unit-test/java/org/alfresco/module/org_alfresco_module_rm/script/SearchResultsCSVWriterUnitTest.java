@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
@@ -70,7 +71,7 @@ public class SearchResultsCSVWriterUnitTest
         }
     }
 
-    private String csvContent(JSONObject items) throws Exception
+    private String csvContent(JSONObject items) throws IOException
     {
         generated = writer.createCSVFile(items);
         String content = new String(Files.readAllBytes(generated.toPath()), StandardCharsets.UTF_8);
@@ -83,7 +84,7 @@ public class SearchResultsCSVWriterUnitTest
     }
 
     @Test
-    public void headersAndRowsAreWritten() throws Exception
+    public void headersAndRowsAreWritten() throws IOException
     {
         JSONObject items = new JSONObject();
         items.put("headers", new JSONArray().put("ID").put("Name"));
@@ -124,7 +125,7 @@ public class SearchResultsCSVWriterUnitTest
     }
 
     @Test
-    public void formulaValuesAreSanitised() throws Exception
+    public void formulaValuesAreSanitised() throws IOException
     {
         JSONObject items = new JSONObject();
         items.put("headers", new JSONArray().put("Value"));
@@ -135,7 +136,7 @@ public class SearchResultsCSVWriterUnitTest
     }
 
     @Test
-    public void raggedRowsArePaddedAndTruncatedToColumnCount() throws Exception
+    public void raggedRowsArePaddedAndTruncatedToColumnCount() throws IOException
     {
         JSONObject items = new JSONObject();
         items.put("headers", new JSONArray().put("A").put("B").put("C"));
@@ -149,7 +150,7 @@ public class SearchResultsCSVWriterUnitTest
     }
 
     @Test
-    public void nullCellsAreRenderedAsEmpty() throws Exception
+    public void nullCellsAreRenderedAsEmpty() throws IOException
     {
         JSONObject items = new JSONObject();
         items.put("headers", new JSONArray().put("A").put("B"));

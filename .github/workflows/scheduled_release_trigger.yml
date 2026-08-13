@@ -24,7 +24,7 @@ jobs:
           private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
           permission-contents: write
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.app-token.outputs.token }}
           ref: master
@@ -34,7 +34,7 @@ jobs:
         run: echo "value=$(date --iso-8601)" >> "$GITHUB_OUTPUT"
 
       - name: "Create empty force-release commit"
-        uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
+        uses: iarekylew00t/verified-bot-commit@1ccc6afd0f789e8442cff7deec3e9856a693cc7e # v2.3.4
         with:
           token: ${{ steps.app-token.outputs.token }}
           message: "[force] Force release for ${{ steps.date.outputs.value }}"

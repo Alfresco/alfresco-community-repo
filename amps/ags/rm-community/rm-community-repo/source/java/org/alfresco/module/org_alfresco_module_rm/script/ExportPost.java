@@ -183,16 +183,7 @@ public class ExportPost extends StreamACP
             // if the displayed search-result table was supplied, embed it as a CSV inside the archive
             if (csvItems != null)
             {
-                try
-                {
-                    addSearchResultsCsv(tempACPFile, csvItems);
-                }
-                catch (IOException ioe)
-                {
-                    // failing to write the CSV into the archive is a server-side error, not a bad request
-                    throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                            "Failed to embed search results CSV into the export archive.", ioe);
-                }
+                addSearchResultsCsv(tempACPFile, csvItems);
             }
 
             // stream the ACP back to the client as an attachment (forcing save as)
@@ -241,16 +232,19 @@ public class ExportPost extends StreamACP
      *            the ACP (or transfer ZIP) archive to add the CSV to
      * @param csvItems
      *            the object holding the {@code headers} and {@code rows} of the displayed table
-     * @throws IOException
-     *             if the CSV cannot be written into the archive
      */
-    protected void addSearchResultsCsv(File archive, JSONObject csvItems) throws IOException
+    protected void addSearchResultsCsv(File archive, JSONObject csvItems)
     {
         File tempCSVFile = null;
         try
         {
             tempCSVFile = searchResultsCSVWriter.createCSVFile(csvItems);
             addFileToArchive(archive, tempCSVFile, SearchResultsCSVWriter.buildCsvFileName());
+        }
+        catch (IOException ioe)
+        {
+            // failing to write the CSV into the archive is a server-side error, not a bad request
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Failed to embed search results CSV into the export archive.", ioe);
         }
         finally
         {

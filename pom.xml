@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>25.5.0.20-SNAPSHOT</version>
+    <version>25.5.0.22-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -57,15 +57,15 @@
         <dependency.acs-event-model.version>1.0.11</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
-        <dependency.spring.version>6.2.18</dependency.spring.version>
+        <dependency.spring.version>6.2.19</dependency.spring.version>
         <dependency.spring-security.version>6.5.11</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.22.0</dependency.jackson.version>
+        <dependency.jackson.version>2.22.1</dependency.jackson.version>
         <dependency.jackson.annotations.version>2.22</dependency.jackson.annotations.version>
         <dependency.cxf.version>4.1.7</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.84</dependency.bouncycastle.version>
+        <dependency.bouncycastle.version>1.85</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.18.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.27.3</dependency.assertj.version>
         <dependency.org-json.version>20250517</dependency.org-json.version>
@@ -81,9 +81,11 @@
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.16</dependency.slf4j.version>
-        <dependency.log4j.version>2.25.4</dependency.log4j.version>
+        <dependency.log4j.version>2.26.1</dependency.log4j.version>
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
-        <dependency.tika.version>3.2.3</dependency.tika.version>
+        <dependency.tika.version>3.3.2</dependency.tika.version>
+        <dependency.json-schema-validator.version>1.5.9</dependency.json-schema-validator.version>
+        <dependency.jsoup.version>1.23.1</dependency.jsoup.version>
         <dependency.junrar.version>7.5.10</dependency.junrar.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.4.0</dependency.poi.version>
@@ -92,12 +94,12 @@
         <dependency.netty.version>4.1.135.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.18.6</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
+        <dependency.apache-csv.version>1.14.1</dependency.apache-csv.version>
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>
         <dependency.swagger-ui.version>4.1.3</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.73</dependency.swagger-parser.version>
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
         <dependency.maven-artifact.version>3.8.6</dependency.maven-artifact.version>
-        <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
         <dependency.pooled-jms.version>3.1.6</dependency.pooled-jms.version>
         <dependency.kxml2.version>2.3.0</dependency.kxml2.version>
 
@@ -717,30 +719,16 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <!-- Newer metadata-extractor, used in TIKA, see ACS-370 -->
-            <dependency>
-                <groupId>com.drewnoakes</groupId>
-                <artifactId>metadata-extractor</artifactId>
-                <version>2.19.0</version>
-            </dependency>
-            <!-- upgrade dependency from TIKA -->
-            <dependency>
-                <groupId>com.github.junrar</groupId>
-                <artifactId>junrar</artifactId>
-                <version>${dependency.junrar.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
-                <version>1.5.8</version>
+                <version>${dependency.json-schema-validator.version}</version>
             </dependency>
-            <!-- upgrade dependency from TIKA -->
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
-                <version>1.21.1</version>
+                <version>${dependency.jsoup.version}</version>
             </dependency>
-            <!-- upgrade dependency from TIKA -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
@@ -749,15 +737,8 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-csv</artifactId>
-                <version>1.9.0</version>
+                <version>${dependency.apache-csv.version}</version>
             </dependency>
-            <!-- upgrade dependency from TIKA -->
-            <dependency>
-                <groupId>org.jdom</groupId>
-                <artifactId>jdom2</artifactId>
-                <version>${dependency.jdom2.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>

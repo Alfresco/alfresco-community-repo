@@ -58,19 +58,10 @@ import org.alfresco.util.TempFileProvider;
  * Builds a CSV file from the tabular data of a records search result.
  * <p>
  * Only the metadata that is displayed in the search results is exported; no node content is included. The caller supplies the already rendered table (column headers and row values) so that the generated CSV matches exactly what the user sees on screen. The expected shape of the {@code items} object is:
- *
- * <pre>
- * {
- *    "headers": ["ID", "Name", ...],
- *    "rows": [["2026-1", "record.docx", ...], ...]
- * }
- * </pre>
- *
- * @author Alfresco
  */
 public class SearchResultsCSVWriter
 {
-    private static final Log LOGGER = LogFactory.getLog(SearchResultsCSVWriter.class);
+    private static final Log LOG = LogFactory.getLog(SearchResultsCSVWriter.class);
 
     protected static final String TEMP_FILE_PREFIX = "export_";
     protected static final String CSV_EXTENSION = "csv";
@@ -102,9 +93,9 @@ public class SearchResultsCSVWriter
             File csvFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, "." + CSV_EXTENSION);
             writeCsv(csvFile, headers, rows);
 
-            if (LOGGER.isDebugEnabled())
+            if (LOG.isDebugEnabled())
             {
-                LOGGER.debug("Created temporary CSV file: " + csvFile.getAbsolutePath());
+                LOG.debug("Created temporary CSV file: " + csvFile.getAbsolutePath());
             }
 
             return csvFile;

@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.resultset;
 
+import static java.util.Collections.emptyMap;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -130,7 +132,7 @@ public class ElasticsearchResultSetBuilderTest
         setupAggregationAndHighlights();
 
         // When
-        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse);
+        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse, emptyMap(), emptyMap());
 
         // Then
         assertNotNull("Result set should not be null", result);
@@ -155,7 +157,7 @@ public class ElasticsearchResultSetBuilderTest
         setupAggregationAndHighlights();
 
         // When
-        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse);
+        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse, emptyMap(), emptyMap());
 
         // Then
         assertEquals("Result set should only include existing nodes", 2, result.length());
@@ -172,7 +174,7 @@ public class ElasticsearchResultSetBuilderTest
         setupAggregationAndHighlights();
 
         // When
-        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse);
+        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse, emptyMap(), emptyMap());
 
         // Then
         assertNotNull("Result set should not be null", result);
@@ -194,7 +196,7 @@ public class ElasticsearchResultSetBuilderTest
         when(searchParameters.isBulkFetchEnabled()).thenReturn(true);
 
         // When
-        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse);
+        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse, emptyMap(), emptyMap());
 
         // Then
         assertNotNull("Result set should not be null", result);
@@ -216,7 +218,7 @@ public class ElasticsearchResultSetBuilderTest
         when(searchParameters.isBulkFetchEnabled()).thenReturn(false);
 
         // When
-        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse);
+        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse, emptyMap(), emptyMap());
 
         // Then
         assertNotNull("Result set should not be null", result);
@@ -236,13 +238,13 @@ public class ElasticsearchResultSetBuilderTest
         Map<String, List<Pair<String, Integer>>> fieldFacets = Map.of(
                 "field1", List.of(new Pair<>("value1", 5)));
         Aggregation aggregation = new Aggregation(facetQueries, fieldFacets);
-        when(aggregationHandler.handle(searchResponse)).thenReturn(aggregation);
+        when(aggregationHandler.handle(searchResponse, emptyMap(), emptyMap())).thenReturn(aggregation);
 
-        Map<NodeRef, List<Pair<String, List<String>>>> highlights = Collections.emptyMap();
+        Map<NodeRef, List<Pair<String, List<String>>>> highlights = emptyMap();
         when(highlightsHandler.handle(searchParameters, searchResponse)).thenReturn(highlights);
 
         // When
-        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse);
+        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse, emptyMap(), emptyMap());
 
         // Then
         assertNotNull("Result set should not be null", result);
@@ -262,11 +264,11 @@ public class ElasticsearchResultSetBuilderTest
                 nodeRef1, List.of(new Pair<>("field1", List.of("highlight1"))));
         when(highlightsHandler.handle(searchParameters, searchResponse)).thenReturn(highlights);
 
-        Aggregation aggregation = new Aggregation(Collections.emptyMap(), Collections.emptyMap());
-        when(aggregationHandler.handle(searchResponse)).thenReturn(aggregation);
+        Aggregation aggregation = new Aggregation(emptyMap(), emptyMap());
+        when(aggregationHandler.handle(searchResponse, emptyMap(), emptyMap())).thenReturn(aggregation);
 
         // When
-        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse);
+        ElasticsearchResultSet result = builder.build(searchParameters, searchResponse, emptyMap(), emptyMap());
 
         // Then
         assertNotNull("Result set should not be null", result);
@@ -421,9 +423,9 @@ public class ElasticsearchResultSetBuilderTest
 
     private void setupAggregationAndHighlights()
     {
-        Aggregation emptyAggregation = new Aggregation(Collections.emptyMap(), Collections.emptyMap());
-        when(aggregationHandler.handle(searchResponse)).thenReturn(emptyAggregation);
-        when(highlightsHandler.handle(searchParameters, searchResponse)).thenReturn(Collections.emptyMap());
+        Aggregation emptyAggregation = new Aggregation(emptyMap(), emptyMap());
+        when(aggregationHandler.handle(searchResponse, emptyMap(), emptyMap())).thenReturn(emptyAggregation);
+        when(highlightsHandler.handle(searchParameters, searchResponse)).thenReturn(emptyMap());
     }
 
     @SafeVarargs

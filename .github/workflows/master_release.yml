@@ -10,15 +10,8 @@ on:
     branches:
       - master
       - release/**
-
 env:
   JAVA_VERSION: '21'
-  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
 
 jobs:
@@ -43,8 +36,19 @@ jobs:
       contents: read
       security-events: write
     uses: ./.github/workflows/ci.yml
-    secrets: inherit
-
+    secrets:
+      AGS_AWS_ACCESS_KEY_ID: ${{ secrets.AGS_AWS_ACCESS_KEY_ID }}
+      AGS_AWS_SECRET_ACCESS_KEY: ${{ secrets.AGS_AWS_SECRET_ACCESS_KEY }}
+      AUTH0_OIDC_ADMIN_CLIENT_ID: ${{ secrets.AUTH0_OIDC_ADMIN_CLIENT_ID }}
+      AUTH0_OIDC_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
+      AUTH0_OIDC_CLIENT_SECRET: ${{ secrets.AUTH0_OIDC_CLIENT_SECRET }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   push_to_nexus:
     name: "Push to Nexus"
     runs-on: ubuntu-latest
@@ -53,6 +57,9 @@ jobs:
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no release]') &&
       github.event_name != 'pull_request'
+    env:
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - name: "Generate GitHub App token"
         id: app-token
@@ -72,6 +79,11 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
+        env:
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
       - name: "Compute release and next development versions"
         id: versions
@@ -98,6 +110,9 @@ jobs:
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no downstream]') &&
       github.event_name != 'pull_request'
+    env:
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - name: "Generate GitHub App token"
         id: app-token
@@ -119,6 +134,11 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
+        env:
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
       - name: "Update downstream"
         id: update-downstream
@@ -127,18 +147,11 @@ jobs:
           APP_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: "Compute downstream commit message"
         id: commit-meta
-        env:
-          COMMIT_TITLE: ${{ needs.commit_parser.outputs.title }}
-          VERSION: ${{ steps.update-downstream.outputs.version }}
-        run: |
-          if [[ "${COMMIT_TITLE}" =~ \[force[^]]*\] ]]; then
-            FORCE_TOKEN=$(echo "${COMMIT_TITLE}" | sed "s|^.*\(\[force[^]]*\]\).*$|\1|g")
-            echo "message=${FORCE_TOKEN} Update community-repo version to ${VERSION}" >> "$GITHUB_OUTPUT"
-            echo "allow-empty=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "message=Update community-repo version to ${VERSION}" >> "$GITHUB_OUTPUT"
-            echo "allow-empty=false" >> "$GITHUB_OUTPUT"
-          fi
+        uses: ./.github/actions/get-downstream-commit-message
+        with:
+          commit-title: ${{ needs.commit_parser.outputs.title }}
+          version: ${{ steps.update-downstream.outputs.version }}
+          downstream-repo: community-repo
       - name: "Commit downstream version update"
         uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
         with:
@@ -148,7 +161,7 @@ jobs:
           workspace: ${{ github.workspace }}/../alfresco-enterprise-repo
           files: pom.xml
           message: ${{ steps.commit-meta.outputs.message }}
-          allow-empty-commit: ${{ steps.commit-meta.outputs.allow-empty }}
+          allow-empty-commit: ${{ steps.commit-meta.outputs.allow-empty-commit }}
           if-no-commit: info
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

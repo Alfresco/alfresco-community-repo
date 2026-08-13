@@ -63,7 +63,8 @@ public class ElasticsearchResultSetBuilder
         this.aggregationHandler = aggregationHandler;
     }
 
-    public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse)
+    public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, Map<String, String> bucketsTranslator,
+            Map<String, Pair<String, String>> complementaryBucketsTranslator)
     {
         return build(searchParameters, searchResponse, null, false);
     }
@@ -86,7 +87,7 @@ public class ElasticsearchResultSetBuilder
                 .total()
                 .value();
         int start = searchParameters.getSkipCount();
-        Aggregation aggregation = aggregationHandler.handle(searchResponse);
+        Aggregation aggregation = aggregationHandler.handle(searchResponse, bucketsTranslator, complementaryBucketsTranslator);
         Map<String, Integer> facetQueries = aggregation.facetQueries();
         Map<String, List<Pair<String, Integer>>> fieldFacets = aggregation.fieldFacets();
         Map<NodeRef, List<Pair<String, List<String>>>> highlights = highlightsHandler.handle(searchParameters, searchResponse);

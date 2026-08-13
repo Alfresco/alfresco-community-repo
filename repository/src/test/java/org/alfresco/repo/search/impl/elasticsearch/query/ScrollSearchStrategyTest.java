@@ -78,6 +78,8 @@ public class ScrollSearchStrategyTest
     private SearchParameters searchParameters;
     @Mock
     private Query queryWithPermissions;
+    @Mock
+    private SearchRequest searchRequest;
 
     private ScrollSearchStrategy strategy;
 
@@ -102,7 +104,7 @@ public class ScrollSearchStrategyTest
         when(searchParameters.getSkipCount()).thenReturn(0);
         when(searchParameters.getLimit()).thenReturn(2);
 
-        SearchRequest built = new SearchRequest.Builder().build();
+        SearchRequestWrapper built = new SearchRequestWrapper.Builder().searchRequest(searchRequest).build();
         when(requestBuilderService.buildSearchRequest(any(), any(), anyInt(), any(Time.class), anyString()))
                 .thenReturn(built);
 
@@ -144,7 +146,7 @@ public class ScrollSearchStrategyTest
         when(searchParameters.getLimit()).thenReturn(3);
 
         when(requestBuilderService.buildSearchRequest(any(), any(), anyInt(), any(Time.class), anyString()))
-                .thenReturn(new SearchRequest.Builder().build());
+                .thenReturn(new SearchRequestWrapper.Builder().searchRequest(searchRequest).build());
 
         List<Hit<Object>> batch1 = List.of(new Hit.Builder<>().id("1").build());
         List<Hit<Object>> batch2 = List.of(new Hit.Builder<>().id("2").build(), new Hit.Builder<>().id("3").build());
@@ -193,7 +195,7 @@ public class ScrollSearchStrategyTest
         when(searchParameters.getLimit()).thenReturn(1);
 
         when(requestBuilderService.buildSearchRequest(any(), any(), anyInt(), any(Time.class), anyString()))
-                .thenReturn(new SearchRequest.Builder().build());
+                .thenReturn(new SearchRequestWrapper.Builder().searchRequest(searchRequest).build());
 
         List<Hit<Object>> hits = List.of(
                 new Hit.Builder<>().id("skip1").build(),
@@ -235,9 +237,9 @@ public class ScrollSearchStrategyTest
         when(searchParameters.getStores()).thenReturn(new ArrayList<>());
         when(searchParameters.getSkipCount()).thenReturn(0);
         when(searchParameters.getLimit()).thenReturn(10);
-        SearchRequest searchRequest = new SearchRequest.Builder().build();
+        SearchRequestWrapper searchRequestWrapper = new SearchRequestWrapper.Builder().searchRequest(searchRequest).build();
         when(requestBuilderService.buildSearchRequest(any(), any(), anyInt(), any(Time.class), anyString()))
-                .thenReturn(searchRequest);
+                .thenReturn(searchRequestWrapper);
 
         List<Hit<Object>> hits = List.of();
         SearchResponse<Object> searchResponse = new SearchResponse.Builder<Object>()

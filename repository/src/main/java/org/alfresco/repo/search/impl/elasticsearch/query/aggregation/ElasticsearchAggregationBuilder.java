@@ -25,10 +25,13 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query.aggregation;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_SITE;
 import static org.alfresco.repo.search.adaptor.QueryConstants.PROPERTY_FIELD_PREFIX;
 import static org.alfresco.repo.search.impl.elasticsearch.util.CollectionUtils.safe;
 
@@ -76,12 +79,14 @@ public class ElasticsearchAggregationBuilder
 
     private final NamespacePrefixResolver namespaceDAO;
     private final DictionaryService dictionaryService;
+    private final SiteTermsAggregationBuilder siteTermsAggregationBuilder;
     private int defaultFacetLimit;
 
-    public ElasticsearchAggregationBuilder(NamespaceDAO namespaceDAO, DictionaryService dictionaryService)
+    public ElasticsearchAggregationBuilder(NamespaceDAO namespaceDAO, DictionaryService dictionaryService, SiteTermsAggregationBuilder siteTermsAggregationBuilder)
     {
         this.namespaceDAO = namespaceDAO;
         this.dictionaryService = dictionaryService;
+        this.siteTermsAggregationBuilder = siteTermsAggregationBuilder;
     }
 
     /**
@@ -109,17 +114,28 @@ public class ElasticsearchAggregationBuilder
     }
 
     /**
-     * 
+     * Builds terms aggregations from the given search parameters. SITE facets are handled specially by {@link SiteTermsAggregationBuilder}: they are translated to <code>primaryHierarchy</code> aggregations with an <code>include</code> list of site node UUIDs (visible to the currently authenticated user) plus the Shared Files folder UUID. See {@link SiteTermsAggregationBuilder#build(SearchParameters.FieldFacet)} for details on the returned {@link TermsAggregationWrapper}.
+     *
      * @param parameters
+     *            search parameters containing field facet specs
      * @param languageQueryBuilder
      *            the language query builder used to build the terms aggregations query
-     * @return the term aggregations stream
+     * @return stream of Alfresco terms aggregations
      */
-    public Stream<TermsAggregation> termsAggregations(SearchParameters parameters,
+    public Stream<TermsAggregationWrapper> termsAggregations(SearchParameters parameters,
             LanguageQueryBuilder languageQueryBuilder)
     {
-        return safe(parameters.getFieldFacets()).stream().map(specs -> {
-            final TermsAggregation.Builder termsBuilder = AggregationBuilders.terms().name(ofNullable(specs.getLabel()).orElse(specs.getField()))
+        return safe(parameters.getFieldFacets()).stream().flatMap(specs -> {
+
+            if (isSiteFacet(specs))
+            {
+                return siteTermsAggregationBuilder.build(specs).stream();
+            }
+
+            String aggregationName = ofNullable(specs.getLabel()).orElse(specs.getField());
+
+            final TermsAggregation.Builder termsBuilder = AggregationBuilders.terms()
+                    .name(aggregationName)
                     .field(fieldNameFrom(specs, parameters))
                     .minDocCount(specs.getMinCount())
                     .size(defaultFacetLimit);
@@ -138,7 +154,7 @@ public class ElasticsearchAggregationBuilder
 
             ofNullable(specs.getLimitOrNull()).ifPresent(termsBuilder::size);
 
-            return termsBuilder.build();
+            return Stream.of(new TermsAggregationWrapper(aggregationName, termsBuilder.build(), emptyMap(), empty()));
         });
     }
 
@@ -150,6 +166,14 @@ public class ElasticsearchAggregationBuilder
     public int getDefaultFacetLimit()
     {
         return defaultFacetLimit;
+    }
+
+    /**
+     * Detects whether the given facet spec targets the SITE field.
+     */
+    private boolean isSiteFacet(SearchParameters.FieldFacet facet)
+    {
+        return FIELD_SITE.equals(asPropertyName(facet.getField()));
     }
 
     /**

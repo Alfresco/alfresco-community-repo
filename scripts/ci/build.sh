@@ -14,6 +14,10 @@ else
   PROFILES="-Pags"
 fi
 
+if [[ "${REQUIRES_TAS_TESTS}" == "true" ]]; then
+  PROFILES="${PROFILES} -Pall-tas-tests"
+fi
+
 if [[ "${REQUIRES_INSTALLED_ARTIFACTS}" == "true" ]]; then
   PHASE="install"
 else

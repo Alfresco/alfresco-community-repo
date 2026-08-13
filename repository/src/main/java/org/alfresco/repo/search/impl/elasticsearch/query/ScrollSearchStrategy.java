@@ -93,12 +93,13 @@ public class ScrollSearchStrategy extends SearchExecutionStrategy
         int limit = searchParameters.getLimit();
         String indexName = requestBuilderService.getElasticIndex(searchParameters.getStores());
 
-        SearchRequest searchRequest = requestBuilderService.buildSearchRequest(
+        SearchRequestWrapper searchRequestWrapper = requestBuilderService.buildSearchRequest(
                 searchParameters,
                 queryWithPermissions,
                 batchSize,
                 scrollTime,
                 indexName);
+        SearchRequest searchRequest = searchRequestWrapper.searchRequest();
         LOGGER.debug("Execute standard query request: {}", searchRequest.toJsonString());
         OpenSearchClient client = httpClientFactory.getElasticsearchClient();
         SearchResponse<Object> searchResponse = client.search(searchRequest, Object.class);

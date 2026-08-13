@@ -15,7 +15,15 @@
             <package name="org.alfresco.rest.people.*"/>
             <package name="org.alfresco.rest.queries.*"/>
             <package name="org.alfresco.rest.ratings.*"/>
-            <package name="org.alfresco.rest.search.*"/>
         </packages>
+
+        <!--
+        Including the full "org.alfresco.rest.search.*" package pushes Part2
+        over the 60-min CI limit after the recent test migration. Those tests
+        already run in a dedicated CI profile, so only NodeContentTest is
+        kept here to preserve the original Part2 coverage.  -->
+        <classes>
+            <class name="org.alfresco.rest.search.NodeContentTest"/>
+        </classes>
     </test>
 </suite>

@@ -343,7 +343,11 @@
         <property name="registry" ref="activitySummaryParser" />
         <property name="eventTypes">
             <list>
+                <value>org.alfresco.discussions.post-created</value>
+                <value>org.alfresco.discussions.post-updated</value>
+                <value>org.alfresco.discussions.post-deleted</value>
                 <value>org.alfresco.discussions.reply-created</value>
+                <value>org.alfresco.discussions.reply-updated</value>
             </list>
         </property>
     </bean>

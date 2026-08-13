@@ -1581,14 +1581,15 @@ public class NodesImpl implements Nodes
                 {
                     if (pd.getDataType().getName().equals(DataTypeDefinition.NODE_REF))
                     {
-                        String nodeRefString = (String) entry.getValue();
-                        if (!NodeRef.isNodeRef(nodeRefString))
+                        if (pd.isMultiValued() && entry.getValue() instanceof Collection<?> nodeRefValues)
                         {
-                            value = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeRefString);
+                            ArrayList<NodeRef> nodeRefs = new ArrayList<>(nodeRefValues.size());
+                            nodeRefValues.forEach(nodeRefValue -> nodeRefs.add(toNodeRef(nodeRefValue)));
+                            value = nodeRefs;
                         }
                         else
                         {
-                            value = new NodeRef(nodeRefString);
+                            value = toNodeRef(entry.getValue());
                         }
                     }
                     else
@@ -1604,6 +1605,22 @@ public class NodesImpl implements Nodes
             }
         }
         return nodeProps;
+    }
+
+    private NodeRef toNodeRef(Object nodeRefValue)
+    {
+        if (!(nodeRefValue instanceof String nodeRefString))
+        {
+            throw new InvalidArgumentException("Invalid node reference value: " + nodeRefValue);
+        }
+        if (!NodeRef.isNodeRef(nodeRefString))
+        {
+            return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeRefString);
+        }
+        else
+        {
+            return new NodeRef(nodeRefString);
+        }
     }
 
     public Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String, UserInfo> mapUserInfo, List<String> excludedNS, List<QName> excludedProps)

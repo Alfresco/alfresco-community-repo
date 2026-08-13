@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="shard:ShardingContentModel">
+    <description>Sharding Content Model for Explicit Routing E2E Tests</description>
+    <author>Alfresco</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/shard/1.0" prefix="shard"/>
+    </namespaces>
+    <aspects>
+        <aspect name="shard:sharding">
+            <title>Sharding</title>
+            <properties>
+                <property name="shard:shardId">
+                    <title>Shard ID</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+</model>

@@ -27,12 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,6 +52,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
+import org.alfresco.module.org_alfresco_module_rm.script.SearchResultsCSVWriter;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestActionParams;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -944,11 +948,17 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
         assertEquals("application/zip", rsp.getContentType());
     }
 
-    public void testExportCsv() throws Exception
+    public void testExportWithSearchResultsCsv() throws Exception
     {
-        String exportCsvUrl = "/api/rma/admin/exportcsv";
+        String exportUrl = "/api/rma/admin/export";
 
-        // define JSON POST body carrying the displayed search-result table
+        // define JSON POST body carrying the nodeRefs and the displayed search-result table
+        JSONObject jsonPostData = new JSONObject();
+        JSONArray nodeRefs = new JSONArray();
+        nodeRefs.put(recordFolder.toString());
+        nodeRefs.put(recordFolder2.toString());
+        jsonPostData.put("nodeRefs", nodeRefs);
+
         JSONArray headers = new JSONArray();
         headers.put("ID");
         headers.put("Name");
@@ -965,36 +975,38 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
         JSONObject items = new JSONObject();
         items.put("headers", headers);
         items.put("rows", rows);
-
-        JSONObject jsonPostData = new JSONObject();
         jsonPostData.put("items", items);
+
         String jsonPostString = jsonPostData.toString();
 
         // make the export request
-        Response rsp = sendRequest(new PostRequest(exportCsvUrl, jsonPostString, APPLICATION_JSON), 200);
-        assertTrue("Unexpected content type: " + rsp.getContentType(),
-                rsp.getContentType().startsWith("text/csv"));
+        Response rsp = sendRequest(new PostRequest(exportUrl, jsonPostString, APPLICATION_JSON), 200);
+        assertEquals("application/acp", rsp.getContentType());
 
-        String content = rsp.getContentAsString();
-        assertTrue("CSV is missing the header row", content.contains("ID,Name,Author"));
-        assertTrue("CSV is missing the data row", content.contains("2026-1786010896169"));
-        assertTrue("CSV is missing the data row", content.contains("Swarnajit Adhikary"));
+        // the returned ACP archive should contain the search-results CSV
+        assertTrue("ACP is missing the embedded search-results CSV entry",
+                archiveContainsEntryMatching(rsp.getContentAsByteArray(),
+                        SearchResultsCSVWriter.CSV_FILE_NAME_PREFIX, ".csv"));
     }
 
-    public void testExportCsvMissingHeaders() throws Exception
+    /**
+     * Returns whether the given ZIP based archive contains an entry whose name starts with the supplied prefix and ends with the supplied suffix.
+     */
+    private boolean archiveContainsEntryMatching(byte[] archive, String prefix, String suffix) throws IOException
     {
-        String exportCsvUrl = "/api/rma/admin/exportcsv";
-
-        // an 'items' object without headers is invalid
-        JSONObject items = new JSONObject();
-        items.put("rows", new JSONArray());
-
-        JSONObject jsonPostData = new JSONObject();
-        jsonPostData.put("items", items);
-        String jsonPostString = jsonPostData.toString();
-
-        // expect a bad request response
-        sendRequest(new PostRequest(exportCsvUrl, jsonPostString, APPLICATION_JSON), 400);
+        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(archive)))
+        {
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null)
+            {
+                String name = entry.getName();
+                if (name.startsWith(prefix) && name.endsWith(suffix))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void testAudit() throws Exception

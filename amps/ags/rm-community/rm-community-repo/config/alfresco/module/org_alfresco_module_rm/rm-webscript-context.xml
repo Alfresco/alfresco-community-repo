@@ -217,13 +217,6 @@
       <property name="contentStreamer" ref="webscript.content.streamer" />
    </bean>
 
-   <!-- REST impl for POST CSV export of search results -->
-   <bean id="webscript.org.alfresco.rma.exportcsv.post"
-      class="org.alfresco.module.org_alfresco_module_rm.script.ExportCSVPost"
-      parent="webscript">
-      <property name="contentStreamer" ref="webscript.content.streamer" />
-   </bean>
-
    <!-- REST impl for POST import -->
    <bean id="webscript.org.alfresco.rma.import.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.ImportPost"

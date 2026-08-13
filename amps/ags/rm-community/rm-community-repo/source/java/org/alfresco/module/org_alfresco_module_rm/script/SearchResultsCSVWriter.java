@@ -31,11 +31,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
@@ -45,130 +45,70 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
-import org.alfresco.repo.web.scripts.content.ContentStreamer;
 import org.alfresco.util.TempFileProvider;
 
 /**
- * Exports the tabular data of a records search result as a CSV file and streams it back to the client.
+ * Builds a CSV file from the tabular data of a records search result.
  * <p>
- * Only the metadata that is displayed in the search results is exported; no node content is included. The caller supplies the already rendered table (column headers and row values) so that the generated CSV matches exactly what the user sees on screen. The body of the POST should be in the form:
+ * Only the metadata that is displayed in the search results is exported; no node content is included. The caller supplies the already rendered table (column headers and row values) so that the generated CSV matches exactly what the user sees on screen. The expected shape of the {@code items} object is:
  *
  * <pre>
  * {
- *    "items": {
- *       "headers": ["ID", "Name", ...],
- *       "rows": [["2026-1", "record.docx", ...], ...]
- *    }
+ *    "headers": ["ID", "Name", ...],
+ *    "rows": [["2026-1", "record.docx", ...], ...]
  * }
  * </pre>
  *
  * @author Alfresco
  */
-public class ExportCSVPost extends AbstractWebScript
+public class SearchResultsCSVWriter
 {
     /** Logger */
-    private static final Log logger = LogFactory.getLog(ExportCSVPost.class);
+    private static final Log logger = LogFactory.getLog(SearchResultsCSVWriter.class);
 
     protected static final String TEMP_FILE_PREFIX = "export_";
     protected static final String CSV_EXTENSION = "csv";
 
-    /** Friendly download name used for the CSV attachment. */
-    protected static final String CSV_FILE_NAME = "search-results.csv";
+    /** Prefix used for the CSV entry embedded in the export archive. */
+    public static final String CSV_FILE_NAME_PREFIX = "AGS_Search_Results_";
+
+    /** Timestamp pattern appended to the CSV file name. */
+    private static final String CSV_FILE_TIMESTAMP_FORMAT = "yyyyMMddHHmmss";
 
     /** Body elements holding the tabular data for the CSV export. */
-    protected static final String PARAM_ITEMS = "items";
-    protected static final String PARAM_HEADERS = "headers";
-    protected static final String PARAM_ROWS = "rows";
-
-    /** Content Streamer */
-    private ContentStreamer contentStreamer;
+    public static final String PARAM_HEADERS = "headers";
+    public static final String PARAM_ROWS = "rows";
 
     /**
-     * @param contentStreamer
-     *            the content streamer used to stream the generated CSV back to the client
-     */
-    public void setContentStreamer(ContentStreamer contentStreamer)
-    {
-        this.contentStreamer = contentStreamer;
-    }
-
-    /**
-     * @see org.springframework.extensions.webscripts.WebScript#execute(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.WebScriptResponse)
-     */
-    @Override
-    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
-    {
-        File tempCSVFile = null;
-        try
-        {
-            JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-
-            // create a CSV of the supplied search result table
-            tempCSVFile = createCSVFile(json);
-
-            // stream the CSV back to the client as an attachment (forcing save as)
-            contentStreamer.streamContent(req, res, tempCSVFile, null, true, CSV_FILE_NAME, null);
-        }
-        catch (IOException ioe)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", ioe);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not parse JSON from req.", je);
-        }
-        catch (Exception e)
-        {
-            if (logger.isDebugEnabled())
-            {
-                StringWriter stack = new StringWriter();
-                e.printStackTrace(new PrintWriter(stack));
-                logger.debug("Caught exception; decorating with appropriate status template : " + stack.toString());
-            }
-
-            throw createStatusException(e, req, res);
-        }
-        finally
-        {
-            // try and delete the temporary file
-            if (tempCSVFile != null)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Deleting temporary CSV file: " + tempCSVFile.getAbsolutePath());
-                }
-
-                tempCSVFile.delete();
-            }
-        }
-    }
-
-    /**
-     * Builds a CSV file from the tabular search-result data supplied in the request body and returns it as a temporary file.
+     * Builds the timestamped CSV file name, e.g. {@code AGS_Search_Results_20260812220255.csv}.
      *
-     * @param json
-     *            the parsed request body
+     * @return the CSV file name
+     */
+    public static String buildCsvFileName()
+    {
+        return CSV_FILE_NAME_PREFIX + new SimpleDateFormat(CSV_FILE_TIMESTAMP_FORMAT).format(new Date())
+                + "." + CSV_EXTENSION;
+    }
+
+    /**
+     * Builds a CSV file from the supplied tabular search-result data and returns it as a temporary file.
+     *
+     * @param items
+     *            the object holding the {@code headers} and {@code rows} of the displayed table
      * @return a temporary CSV file (the caller is responsible for deleting it)
      */
-    protected File createCSVFile(JSONObject json)
+    public File createCSVFile(JSONObject items)
     {
-        if (!json.has(PARAM_ITEMS))
+        if (items == null)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Mandatory 'items' parameter was not provided in request body");
         }
 
         try
         {
-            JSONObject items = json.getJSONObject(PARAM_ITEMS);
             JSONArray headers = items.optJSONArray(PARAM_HEADERS);
             if (headers == null || headers.length() == 0)
             {

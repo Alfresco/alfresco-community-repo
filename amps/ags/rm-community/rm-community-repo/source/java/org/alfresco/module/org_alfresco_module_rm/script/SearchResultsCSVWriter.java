@@ -28,15 +28,19 @@
 package org.alfresco.module.org_alfresco_module_rm.script;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -66,21 +70,17 @@ import org.alfresco.util.TempFileProvider;
  */
 public class SearchResultsCSVWriter
 {
-    /** Logger */
-    private static final Log logger = LogFactory.getLog(SearchResultsCSVWriter.class);
+    private static final Log LOGGER = LogFactory.getLog(SearchResultsCSVWriter.class);
 
     protected static final String TEMP_FILE_PREFIX = "export_";
     protected static final String CSV_EXTENSION = "csv";
-
-    /** Prefix used for the CSV entry embedded in the export archive. */
     public static final String CSV_FILE_NAME_PREFIX = "AGS_Search_Results_";
-
-    /** Timestamp pattern appended to the CSV file name. */
     private static final String CSV_FILE_TIMESTAMP_FORMAT = "yyyyMMddHHmmss";
-
-    /** Body elements holding the tabular data for the CSV export. */
     public static final String PARAM_HEADERS = "headers";
     public static final String PARAM_ROWS = "rows";
+
+    /** Leading characters that a spreadsheet application could interpret as the start of a formula. */
+    private static final Set<Character> CSV_INJECTION_CHARS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList('=', '+', '-', '@', '\t', '\r', '\n')));
 
     /**
      * Builds the timestamped CSV file name, e.g. {@code AGS_Search_Results_20260812220255.csv}.
@@ -89,72 +89,105 @@ public class SearchResultsCSVWriter
      */
     public static String buildCsvFileName()
     {
-        return CSV_FILE_NAME_PREFIX + new SimpleDateFormat(CSV_FILE_TIMESTAMP_FORMAT).format(new Date())
-                + "." + CSV_EXTENSION;
+        return CSV_FILE_NAME_PREFIX + new SimpleDateFormat(CSV_FILE_TIMESTAMP_FORMAT, Locale.ROOT).format(new Date()) + "." + CSV_EXTENSION;
     }
 
-    /**
-     * Builds a CSV file from the supplied tabular search-result data and returns it as a temporary file.
-     *
-     * @param items
-     *            the object holding the {@code headers} and {@code rows} of the displayed table
-     * @return a temporary CSV file (the caller is responsible for deleting it)
-     */
     public File createCSVFile(JSONObject items)
     {
-        if (items == null)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Mandatory 'items' parameter was not provided in request body");
-        }
+        JSONArray headers = getHeaders(items);
+        JSONArray rows = items.optJSONArray(PARAM_ROWS);
 
         try
         {
-            JSONArray headers = items.optJSONArray(PARAM_HEADERS);
-            if (headers == null || headers.length() == 0)
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Mandatory 'headers' were not provided for CSV export");
-            }
-
-            int columnCount = headers.length();
-            JSONArray rows = items.optJSONArray(PARAM_ROWS);
-
             File csvFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, "." + CSV_EXTENSION);
+            writeCsv(csvFile, headers, rows);
 
-            try (Writer writer = new OutputStreamWriter(new FileOutputStream(csvFile), StandardCharsets.UTF_8);
-                    CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withRecordSeparator("\r\n")))
+            if (LOGGER.isDebugEnabled())
             {
-                // UTF-8 BOM so spreadsheet applications correctly detect the encoding
-                writer.write('\uFEFF');
-
-                printer.printRecord(toSanitisedList(headers, columnCount));
-
-                if (rows != null)
-                {
-                    for (int i = 0; i < rows.length(); i++)
-                    {
-                        printer.printRecord(toSanitisedList(rows.getJSONArray(i), columnCount));
-                    }
-                }
-
-                printer.flush();
-            }
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Created temporary CSV file: " + csvFile.getAbsolutePath());
+                LOGGER.debug("Created temporary CSV file: " + csvFile.getAbsolutePath());
             }
 
             return csvFile;
         }
         catch (JSONException je)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not parse CSV data from request body.", je);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse CSV data from request body.", je);
         }
         catch (IOException ioe)
         {
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "Failed to create CSV file.", ioe);
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Failed to create CSV file.", ioe);
+        }
+    }
+
+    /**
+     * Validates the request body and returns the mandatory, non-empty {@code headers} array.
+     *
+     * @param items
+     *            the object holding the tabular data
+     * @return the headers array
+     */
+    private JSONArray getHeaders(JSONObject items)
+    {
+        if (items == null)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Mandatory 'items' parameter was not provided in request body");
+        }
+
+        JSONArray headers = items.optJSONArray(PARAM_HEADERS);
+        if (headers == null || headers.length() == 0)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Mandatory 'headers' were not provided for CSV export");
+        }
+        return headers;
+    }
+
+    /**
+     * Writes the header row and all data rows to the given CSV file.
+     *
+     * @param csvFile
+     *            the destination file
+     * @param headers
+     *            the column headers
+     * @param rows
+     *            the data rows (may be {@code null})
+     */
+    private void writeCsv(File csvFile, JSONArray headers, JSONArray rows) throws IOException, JSONException
+    {
+        int columnCount = headers.length();
+
+        try (Writer writer = Files.newBufferedWriter(csvFile.toPath(), StandardCharsets.UTF_8);
+                CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withRecordSeparator("\r\n")))
+        {
+            // UTF-8 BOM so spreadsheet applications correctly detect the encoding
+            writer.write('\uFEFF');
+
+            printer.printRecord(toSanitisedList(headers, columnCount));
+            writeRows(printer, rows, columnCount);
+
+            printer.flush();
+        }
+    }
+
+    /**
+     * Writes each supplied data row to the CSV printer.
+     *
+     * @param printer
+     *            the CSV printer
+     * @param rows
+     *            the data rows (may be {@code null})
+     * @param columnCount
+     *            the number of columns to produce per row
+     */
+    private void writeRows(CSVPrinter printer, JSONArray rows, int columnCount) throws IOException, JSONException
+    {
+        if (rows == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < rows.length(); i++)
+        {
+            printer.printRecord(toSanitisedList(rows.getJSONArray(i), columnCount));
         }
     }
 
@@ -187,13 +220,9 @@ public class SearchResultsCSVWriter
      */
     private String sanitiseForCsv(String value)
     {
-        if (value != null && !value.isEmpty())
+        if (value != null && !value.isEmpty() && CSV_INJECTION_CHARS.contains(value.charAt(0)))
         {
-            char first = value.charAt(0);
-            if (first == '=' || first == '+' || first == '-' || first == '@' || first == '\t' || first == '\r')
-            {
-                return "'" + value;
-            }
+            return "'" + value;
         }
         return value;
     }

@@ -33,6 +33,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -307,8 +309,6 @@ public class ExecutionTests extends AbstractContextTest implements ResponseWrite
     @Test
     public void testRenderError() throws IOException
     {
-        AbstractResourceWebScript executor = getExecutor();
-
         ErrorResponse defaultError = new DefaultExceptionResolver().resolveException(new NullPointerException());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         renderErrorResponse(defaultError, mockResponse(out), apiAssistant.getJsonHelper());
@@ -338,6 +338,59 @@ public class ExecutionTests extends AbstractContextTest implements ResponseWrite
         assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.EntityNotFound\""));
         assertTrue(errorMessage.contains("\"statusCode\":404"));
         assertFalse("Only 500 errors should have a logId", errorMessage.contains("\"logId\":\" \""));
+    }
+
+    @Test
+    public void testNotFoundIsLoggedAsWarnNotError() throws IOException
+    {
+        final Log mockLogger = mock(Log.class);
+        // Debug disabled so the production (non stack-trace) logging branch is exercised.
+        when(mockLogger.isDebugEnabled()).thenReturn(false);
+
+        // ResponseWriter using the mock logger so we can assert on the log level used.
+        ResponseWriter writer = new ResponseWriter() {
+            @Override
+            public Log resWriterLogger()
+            {
+                return mockLogger;
+            }
+        };
+
+        ErrorResponse notFoundError = simpleMappingExceptionResolver.resolveException(new EntityNotFoundException("2"));
+        ErrorResponse serverError = new DefaultExceptionResolver().resolveException(new NullPointerException());
+
+        // A 404 must be logged at WARN level, not ERROR.
+        writer.renderErrorResponse(notFoundError, mockResponse(new ByteArrayOutputStream()), apiAssistant.getJsonHelper());
+        verify(mockLogger, times(1)).warn(anyString());
+        verify(mockLogger, never()).error(anyString());
+
+        // A server error (500) must still be logged at ERROR level, not WARN.
+        writer.renderErrorResponse(serverError, mockResponse(new ByteArrayOutputStream()), apiAssistant.getJsonHelper());
+        verify(mockLogger, times(1)).error(anyString());
+        verify(mockLogger, times(1)).warn(anyString());
+    }
+
+    @Test
+    public void testNotFoundIsLoggedAsWarnEvenWithDebugEnabled() throws IOException
+    {
+        final Log mockLogger = mock(Log.class);
+        // Debug enabled: the stack trace is included, but the log level must still be WARN for a 404.
+        when(mockLogger.isDebugEnabled()).thenReturn(true);
+
+        ResponseWriter writer = new ResponseWriter() {
+            @Override
+            public Log resWriterLogger()
+            {
+                return mockLogger;
+            }
+        };
+
+        ErrorResponse notFoundError = simpleMappingExceptionResolver.resolveException(new EntityNotFoundException("2"));
+
+        // Even with DEBUG on, a 404 must be logged at WARN, not ERROR.
+        writer.renderErrorResponse(notFoundError, mockResponse(new ByteArrayOutputStream()), apiAssistant.getJsonHelper());
+        verify(mockLogger, times(1)).warn(anyString());
+        verify(mockLogger, never()).error(anyString());
     }
 
     @Test

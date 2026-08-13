@@ -63,19 +63,24 @@ public class ElasticsearchResultSetBuilder
         this.aggregationHandler = aggregationHandler;
     }
 
+    public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse)
+    {
+        return build(searchParameters, searchResponse, null, false, Map.of(), Map.of());
+    }
+
     public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, Map<String, String> bucketsTranslator,
             Map<String, Pair<String, String>> complementaryBucketsTranslator)
     {
-        return build(searchParameters, searchResponse, null, false);
+        return build(searchParameters, searchResponse, null, false, bucketsTranslator, complementaryBucketsTranslator);
     }
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, String nextSearchAfterToken)
     {
-        return build(searchParameters, searchResponse, nextSearchAfterToken, true);
+        return build(searchParameters, searchResponse, nextSearchAfterToken, true, Map.of(), Map.of());
     }
 
     private ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, String nextSearchAfterToken,
-            boolean searchAfterMode)
+            boolean searchAfterMode, Map<String, String> bucketsTranslator, Map<String, Pair<String, String>> complementaryBucketsTranslator)
     {
         var hits = ofNullable(searchResponse.hits()).map(HitsMetadata::hits).orElse(List.of());
         List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters.isBulkFetchEnabled());

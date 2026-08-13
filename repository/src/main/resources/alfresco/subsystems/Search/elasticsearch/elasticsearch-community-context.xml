@@ -60,7 +60,6 @@
         <property name="host" value="${elasticsearch.host}" />
         <property name="port" value="${elasticsearch.port}" />
         <property name="baseUrl" value="${elasticsearch.baseUrl}" />
-        <property name="engine" value="${elasticsearch.engine}" />
         <property name="secureComms" value="${elasticsearch.secureComms}" />
         <property name="user" value="${elasticsearch.user}" />
         <property name="password" value="${elasticsearch.password}" />

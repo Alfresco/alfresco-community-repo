@@ -30,11 +30,10 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.security.Key;
 import java.util.function.Supplier;
 import javax.crypto.Cipher;
@@ -61,7 +60,7 @@ import org.alfresco.util.TempFileProvider;
  * <pre>
  *   <code>try
  *   {
- *      StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), tempOutputStream);
+ *      StreamUtils.copy(new BufferedInputStream(Files.newInputStream(file.toPath())), tempOutputStream);
  *      tempOutputStream.close();
  *   }
  *   finally
@@ -91,6 +90,7 @@ public class TempOutputStream extends OutputStream
     private long length = 0;
     private OutputStream outputStream;
     private File tempFile;
+    private boolean maxContentSizeExceeded;
 
     private Key symKey;
     private byte[] iv;
@@ -124,20 +124,29 @@ public class TempOutputStream extends OutputStream
     {
         closeOutputStream();
 
+        if (maxContentSizeExceeded)
+        {
+            throw new ContentLimitViolationException("Content size violation, limit = " + maxContentSize);
+        }
+
         if (tempFile == null)
         {
+            if (!(outputStream instanceof ByteArrayOutputStream))
+            {
+                throw new IOException("Temporary response buffer is in an invalid state: expected ByteArrayOutputStream but was " + outputStream.getClass().getName());
+            }
             return new ByteArrayInputStream(((ByteArrayOutputStream) outputStream).toByteArray());
         }
         if (!encrypt)
         {
-            return new BufferedInputStream(new FileInputStream(tempFile));
+            return new BufferedInputStream(Files.newInputStream(tempFile.toPath()));
         }
         try
         {
             final Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE, symKey, new IvParameterSpec(iv));
 
-            return new BufferedInputStream(new CipherInputStream(new FileInputStream(tempFile), cipher));
+            return new BufferedInputStream(new CipherInputStream(Files.newInputStream(tempFile.toPath()), cipher));
         }
         catch (Exception e)
         {
@@ -187,7 +196,7 @@ public class TempOutputStream extends OutputStream
      * <pre>
      *   <code>try
      *   {
-     *      StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), tempOutputStream);
+     *      StreamUtils.copy(new BufferedInputStream(Files.newInputStream(file.toPath())), tempOutputStream);
      *      tempOutputStream.close();
      *   }
      *   finally
@@ -272,7 +281,7 @@ public class TempOutputStream extends OutputStream
     {
         if (!encrypt)
         {
-            return new BufferedOutputStream(new FileOutputStream(file));
+            return new BufferedOutputStream(Files.newOutputStream(file.toPath()));
         }
         try
         {
@@ -286,7 +295,7 @@ public class TempOutputStream extends OutputStream
 
             iv = cipher.getIV();
 
-            return new BufferedOutputStream(new CipherOutputStream(new FileOutputStream(file), cipher));
+            return new BufferedOutputStream(new CipherOutputStream(Files.newOutputStream(file.toPath()), cipher));
         }
         catch (Exception e)
         {
@@ -303,6 +312,7 @@ public class TempOutputStream extends OutputStream
     {
         if (surpassesMaxContentSize(len))
         {
+            maxContentSizeExceeded = true;
             destroy();
             throw new ContentLimitViolationException("Content size violation, limit = " + maxContentSize);
         }
@@ -319,9 +329,12 @@ public class TempOutputStream extends OutputStream
             {
                 outputStream.close();
             }
-            catch (IOException ignore)
+            catch (IOException e)
             {
-                // Ignore exception
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Closing in-memory output stream during threshold switch failed", e);
+                }
             }
 
             outputStream = fileOutputStream;

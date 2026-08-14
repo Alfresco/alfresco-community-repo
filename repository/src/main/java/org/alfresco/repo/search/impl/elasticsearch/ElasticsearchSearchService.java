@@ -61,7 +61,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Query executor for Elasticsearch servers.
  */
-@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.CallSuperInConstructor", "PMD.UseLocaleWithCaseConversions"})
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.CallSuperInConstructor", "PMD.UseLocaleWithCaseConversions", "PMD.GodClass"})
 public class ElasticsearchSearchService extends AbstractSearcherComponent
 {
 

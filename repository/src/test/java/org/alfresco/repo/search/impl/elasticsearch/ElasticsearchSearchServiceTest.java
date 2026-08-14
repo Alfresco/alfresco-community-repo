@@ -169,6 +169,7 @@ public class ElasticsearchSearchServiceTest
         QName sharedBy = QName.createQName(qshareUri, "sharedBy");
         QueryParameterDefinition qpd = mock(QueryParameterDefinition.class);
         when(qpd.getQName()).thenReturn(sharedBy);
+        when(qpd.hasDefaultValue()).thenReturn(true);
         when(qpd.getDefault()).thenReturn("admin");
 
         when(searchParameters.getQuery()).thenReturn("ASPECT:\"qshare:shared\" +@qshare:sharedBy:\"${qshare:sharedBy}\"");

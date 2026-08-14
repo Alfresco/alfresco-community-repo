@@ -152,11 +152,12 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
         searchParameters.setQuery(parameterisedQueryString);
     }
 
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.AssignmentInOperand"})
     private String parameterise(String unparameterised, Map<QName, QueryParameterDefinition> map, QueryParameter[] queryParameters, NamespacePrefixResolver nspr)
             throws QueryParameterisationException
     {
 
-        Map<QName, List<Serializable>> valueMap = new HashMap<QName, List<Serializable>>();
+        Map<QName, List<Serializable>> valueMap = new HashMap<>();
 
         if (queryParameters != null)
         {
@@ -165,16 +166,16 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
                 List<Serializable> list = valueMap.get(parameter.getQName());
                 if (list == null)
                 {
-                    list = new ArrayList<Serializable>();
+                    list = new ArrayList<>();
                     valueMap.put(parameter.getQName(), list);
                 }
                 list.add(parameter.getValue());
             }
         }
 
-        Map<QName, ListIterator<Serializable>> iteratorMap = new HashMap<QName, ListIterator<Serializable>>();
+        Map<QName, ListIterator<Serializable>> iteratorMap = new HashMap<>();
 
-        List<QName> missing = new ArrayList<QName>(1);
+        List<QName> missing = new ArrayList<>(1);
         StringBuilder buffer = new StringBuilder(unparameterised);
         int index = 0;
         while ((index = buffer.indexOf("${", index)) != -1)
@@ -198,7 +199,7 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
                 if ((it == null) || (!it.hasNext()))
                 {
                     List<Serializable> list = valueMap.get(key);
-                    if ((list != null) && (list.size() > 0))
+                    if ((list != null) && (!list.isEmpty()))
                     {
                         it = list.listIterator();
                     }
@@ -223,14 +224,13 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
                 buffer.replace(index, endIndex + 1, value);
             }
         }
-        if (missing.size() > 0)
+        if (!missing.isEmpty())
         {
             StringBuilder error = new StringBuilder();
             error.append("The query uses the following parameters which are not defined: ");
             for (QName qName : missing)
             {
-                error.append(qName);
-                error.append(", ");
+                error.append(qName).append(", ");
             }
             error.delete(error.length() - 2, error.length());
             throw new QueryParameterisationException(error.toString());

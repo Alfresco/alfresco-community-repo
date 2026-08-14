@@ -28,7 +28,10 @@ package org.alfresco.repo.search.impl.elasticsearch;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TAG;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +41,7 @@ import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
+import org.alfresco.repo.search.impl.QueryParameterisationException;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -45,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.XPathException;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.QueryParameter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -66,16 +71,19 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
     private final Map<String, LuceneQueryLanguageSPI> queryLanguages;
     private NodeService nodeService;
     private DictionaryService dictionaryService;
+    private NamespacePrefixResolver namespacePrefixResolver;
 
     public ElasticsearchSearchService(QueryRegisterComponent queryRegister,
             Map<String, LuceneQueryLanguageSPI> queryLanguages,
             NodeService nodeService,
-            DictionaryService dictionaryService)
+            DictionaryService dictionaryService,
+            NamespacePrefixResolver namespacePrefixResolver)
     {
         this.queryRegister = queryRegister;
         this.queryLanguages = queryLanguages;
         this.nodeService = nodeService;
         this.dictionaryService = dictionaryService;
+        this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
     @Override
@@ -115,6 +123,7 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
     public ResultSet query(SearchParameters searchParameters)
     {
         adjustSearchParameters(searchParameters);
+        parameteriseQuery(searchParameters);
         LuceneQueryLanguageSPI language = queryLanguages.get(searchParameters.getLanguage().toLowerCase());
         if (language != null)
         {
@@ -124,6 +133,102 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
         {
             throw new SearcherException("Unknown query language: " + searchParameters.getLanguage());
         }
+    }
+
+    private void parameteriseQuery(final SearchParameters searchParameters)
+    {
+        if (searchParameters.getQuery() == null || searchParameters.getQueryParameterDefinitions().isEmpty())
+        {
+            return;
+        }
+
+        Map<QName, QueryParameterDefinition> map = new HashMap<>();
+        for (QueryParameterDefinition qpd : searchParameters.getQueryParameterDefinitions())
+        {
+            map.put(qpd.getQName(), qpd);
+        }
+
+        String parameterisedQueryString = parameterise(searchParameters.getQuery(), map, null, namespacePrefixResolver);
+        searchParameters.setQuery(parameterisedQueryString);
+    }
+
+    private String parameterise(String unparameterised, Map<QName, QueryParameterDefinition> map, QueryParameter[] queryParameters, NamespacePrefixResolver nspr)
+            throws QueryParameterisationException
+    {
+
+        Map<QName, List<Serializable>> valueMap = new HashMap<QName, List<Serializable>>();
+
+        if (queryParameters != null)
+        {
+            for (QueryParameter parameter : queryParameters)
+            {
+                List<Serializable> list = valueMap.get(parameter.getQName());
+                if (list == null)
+                {
+                    list = new ArrayList<Serializable>();
+                    valueMap.put(parameter.getQName(), list);
+                }
+                list.add(parameter.getValue());
+            }
+        }
+
+        Map<QName, ListIterator<Serializable>> iteratorMap = new HashMap<QName, ListIterator<Serializable>>();
+
+        List<QName> missing = new ArrayList<QName>(1);
+        StringBuilder buffer = new StringBuilder(unparameterised);
+        int index = 0;
+        while ((index = buffer.indexOf("${", index)) != -1)
+        {
+            int endIndex = buffer.indexOf("}", index);
+            String qNameString = buffer.substring(index + 2, endIndex);
+            QName key = QName.createQName(qNameString, nspr);
+            QueryParameterDefinition parameterDefinition = map.get(key);
+            if (parameterDefinition == null)
+            {
+                missing.add(key);
+                buffer.replace(index, endIndex + 1, "");
+            }
+            else
+            {
+                ListIterator<Serializable> it = iteratorMap.get(key);
+                if ((it == null) || (!it.hasNext()))
+                {
+                    List<Serializable> list = valueMap.get(key);
+                    if ((list != null) && (list.size() > 0))
+                    {
+                        it = list.listIterator();
+                    }
+                    if (it != null)
+                    {
+                        iteratorMap.put(key, it);
+                    }
+                }
+                String value;
+                if (it == null)
+                {
+                    value = parameterDefinition.getDefault();
+                }
+                else
+                {
+                    value = DefaultTypeConverter.INSTANCE.convert(String.class, it.next());
+                }
+                buffer.replace(index, endIndex + 1, value);
+            }
+        }
+        if (missing.size() > 0)
+        {
+            StringBuilder error = new StringBuilder();
+            error.append("The query uses the following parameters which are not defined: ");
+            for (QName qName : missing)
+            {
+                error.append(qName);
+                error.append(", ");
+            }
+            error.delete(error.length() - 1, error.length() - 1);
+            error.delete(error.length() - 1, error.length() - 1);
+            throw new QueryParameterisationException(error.toString());
+        }
+        return buffer.toString();
     }
 
     @Override

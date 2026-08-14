@@ -135,7 +135,7 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
         }
     }
 
-    private void parameteriseQuery(final SearchParameters searchParameters)
+    private void parameteriseQuery(SearchParameters searchParameters)
     {
         if (searchParameters.getQuery() == null || searchParameters.getQueryParameterDefinitions().isEmpty())
         {

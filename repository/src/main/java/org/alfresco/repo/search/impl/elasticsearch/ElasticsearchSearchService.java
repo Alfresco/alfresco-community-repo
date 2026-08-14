@@ -180,6 +180,10 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
         while ((index = buffer.indexOf("${", index)) != -1)
         {
             int endIndex = buffer.indexOf("}", index);
+            if (endIndex == -1)
+            {
+                throw new QueryParameterisationException("Unclosed query parameter placeholder starting at index " + index);
+            }
             String qNameString = buffer.substring(index + 2, endIndex);
             QName key = QName.createQName(qNameString, nspr);
             QueryParameterDefinition parameterDefinition = map.get(key);
@@ -206,6 +210,10 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
                 String value;
                 if (it == null)
                 {
+                    if (!parameterDefinition.hasDefaultValue())
+                    {
+                        throw new QueryParameterisationException("No value provided for query parameter: " + key);
+                    }
                     value = parameterDefinition.getDefault();
                 }
                 else
@@ -224,8 +232,7 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
                 error.append(qName);
                 error.append(", ");
             }
-            error.delete(error.length() - 1, error.length() - 1);
-            error.delete(error.length() - 1, error.length() - 1);
+            error.delete(error.length() - 2, error.length());
             throw new QueryParameterisationException(error.toString());
         }
         return buffer.toString();

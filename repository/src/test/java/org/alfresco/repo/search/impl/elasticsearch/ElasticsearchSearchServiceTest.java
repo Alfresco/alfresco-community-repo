@@ -93,6 +93,7 @@ public class ElasticsearchSearchServiceTest
         searchService = new ElasticsearchSearchService(queryRegister, languages, nodeService, dictionaryService, namespacePrefixResolver);
 
         when(searchParameters.getLanguage()).thenReturn(LANGUAGE);
+        when(searchParameters.getQueryParameterDefinitions()).thenReturn(new ArrayList<>());
         when(queryLanguage.executeQuery(any(SearchParameters.class))).thenReturn(resultSet);
     }
 

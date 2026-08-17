@@ -8,7 +8,7 @@
 #   kept for secure-comms with content transformation. The shared secret must
 #   match ALFRESCO_CONTENT_TRANSFORM_SHAREDSECRET on the batch-indexing service.
 # - Ports mirror the minimal+transforms file so the existing TAS scripts
-#   (wait-for-alfresco-start.sh on http://localhost:8080/alfresco) keep working.
+#   (wait-for-alfresco-start.sh on http://localhost:8082/alfresco) keep working.
 
 services:
   alfresco:
@@ -58,7 +58,7 @@ services:
       retries: 10
       start_period: 3m
     ports:
-      - 8080:8080
+      - 8082:8080
       - 8000:8000
 
   postgres:

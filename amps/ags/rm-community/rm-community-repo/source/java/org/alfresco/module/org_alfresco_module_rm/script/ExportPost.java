@@ -129,7 +129,7 @@ public class ExportPost extends StreamACP
                 String itemsParam = req.getParameter(PARAM_ITEMS);
                 if (itemsParam != null && itemsParam.length() > 0)
                 {
-                    csvItems = new JSONObject(new JSONTokener(itemsParam));
+                    csvItems = parseItems(itemsParam);
                 }
             }
             else
@@ -146,7 +146,7 @@ public class ExportPost extends StreamACP
                 // look for the optional displayed search-result table
                 if (json.has(PARAM_ITEMS))
                 {
-                    csvItems = json.getJSONObject(PARAM_ITEMS);
+                    csvItems = parseItems(json);
                 }
             }
 
@@ -222,6 +222,44 @@ public class ExportPost extends StreamACP
 
                 tempACPFile.delete();
             }
+        }
+    }
+
+    /**
+     * Parses the optional {@code items} parameter supplied as a JSON string (multipart form submission), calling out any failure as specific to that parameter rather than to the request body.
+     *
+     * @param itemsParam
+     *            the raw JSON string holding the displayed search-result table
+     * @return the parsed {@code items} object
+     */
+    protected JSONObject parseItems(String itemsParam)
+    {
+        try
+        {
+            return new JSONObject(new JSONTokener(itemsParam));
+        }
+        catch (JSONException je)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse '" + PARAM_ITEMS + "' parameter as JSON.", je);
+        }
+    }
+
+    /**
+     * Extracts the optional {@code items} object from the JSON request body, calling out any failure as specific to that parameter rather than to the request body as a whole.
+     *
+     * @param json
+     *            the parsed JSON request body
+     * @return the {@code items} object
+     */
+    protected JSONObject parseItems(JSONObject json)
+    {
+        try
+        {
+            return json.getJSONObject(PARAM_ITEMS);
+        }
+        catch (JSONException je)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse '" + PARAM_ITEMS + "' parameter as JSON.", je);
         }
     }
 

@@ -123,7 +123,7 @@ public class SearchResultsCSVWriter
     {
         if (file != null && file.exists() && !file.delete() && LOG.isDebugEnabled())
         {
-            LOG.debug("Could not delete temporary CSV file: " + file.getAbsolutePath());
+            LOG.warn("Could not delete temporary CSV file: " + file.getAbsolutePath());
         }
     }
 

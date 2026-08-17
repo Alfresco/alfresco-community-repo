@@ -32,17 +32,18 @@
                     <exclude name=".*"/>
                 </methods>
             </class>
-            <!-- 2) ShardInfoTest: /private/search/versions/1/info depends on Solr-only shardRegistry bean.
-                    Keep getShardInfoWithoutAdminAuthority() which only asserts 500 and passes on ES. -->
+            <!-- 2) ShardInfoTest: Solr-only API (shardRegistry bean); skip entire class on ES. -->
             <class name="org.alfresco.rest.search.ShardInfoTest">
                 <methods>
-                    <exclude name="getShardInfoWithAdminAuthority"/>
+                    <exclude name=".*"/>
                 </methods>
             </class>
-            <!-- 3) SearchNonIndexedFields.testNonIndexedDoesNotExist:uses Solr-only Luke admin endpoint /solr/alfresco/admin/luke -->
+            <!-- 3) SearchNonIndexedFields.testNonIndexedDoesNotExist:uses Solr-only Luke admin endpoint /solr/alfresco/admin/luke
+                    SearchNonIndexedFields.testIndexedAndNonIndexedField():Batch Indexing custom model deployment at runtime gap
+                    (https://hyland.atlassian.net/browse/ACS-12502) -->
             <class name="org.alfresco.rest.search.SearchNonIndexedFields">
                 <methods>
-                    <exclude name="testNonIndexedDoesNotExist"/>
+                    <exclude name=".*"/>
                 </methods>
             </class>
             <!-- 4) SearchHighLightTest.searchNonIndexedData:AFTS bare-property-name parsing gap on ES (returns HTTP 500) -->
@@ -72,16 +73,16 @@
                     <exclude name=".*"/>
                 </methods>
             </class>
-
-            <!-- 8) FieldDefinitionTest: unknown-property error handling & mltext stemming gaps -->
+            <!-- 8) FieldDefinitionTest: excluded entirely.
+                        - testTextFieldNotDefined, testmlTextFieldNotDefined, testmlTextFieldMuliple:
+                          unknown-property error handling & mltext stemming gaps on ES.
+                        - Remaining tests: Batch Indexing custom model deployment at runtime gap
+                          (https://hyland.atlassian.net/browse/ACS-12502). -->
             <class name="org.alfresco.rest.search.FieldDefinitionTest">
                 <methods>
-                    <exclude name="testTextFieldNotDefined"/>
-                    <exclude name="testmlTextFieldNotDefined"/>
-                    <exclude name="testmlTextFieldMuliple"/>
+                    <exclude name=".*"/>
                 </methods>
             </class>
-
             <!-- 9) FacetRangeSearchTest: range facet gaps on ES -->
             <class name="org.alfresco.rest.search.FacetRangeSearchTest">
                 <methods>
@@ -90,7 +91,6 @@
                     <exclude name="searchWithRangeAndIncludeUpperBound"/>
                 </methods>
             </class>
-
             <!-- 10) FacetIntervalSearchTest: interval facet gaps on ES -->
             <class name="org.alfresco.rest.search.FacetIntervalSearchTest">
                 <methods>
@@ -98,39 +98,52 @@
                     <exclude name="searchWithDates"/>
                 </methods>
             </class>
-
             <!-- 11) FacetFieldsSearchTest: mincount / SITE facet gaps on ES -->
             <class name="org.alfresco.rest.search.FacetFieldsSearchTest">
                 <methods>
-                    <exclude name="testSearchFacetFieldsBucketExcludedWhenMinCount2"/>
-                    <exclude name="testSearchWithFacetFieldsMinCountChecks"/>
+<!--                    <exclude name="testSearchFacetFieldsBucketExcludedWhenMinCount2"/>-->
+<!--                    <exclude name="testSearchWithFacetFieldsMinCountChecks"/>-->
                     <exclude name="testSearchWithFacetFieldsOnlyFacetsWhereAccess"/>
                 </methods>
             </class>
-
             <!-- 12) FacetedSearchTest: not supported by ES -->
             <class name="org.alfresco.rest.search.FacetedSearchTest">
                 <methods>
                     <exclude name=".*"/>
                 </methods>
             </class>
-
-            <!-- 13) SearchExactTermTest: ES exact-term validation & cm:name over-match gaps -->
+            <!-- 13) SearchExactTermTest(Other mentioned tests): ES exact-term validation & cm:name over-match gaps
+                    - exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch,
+                    - exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch: Batch Indexing custom model deployment
+                    at runtime gap (tokenised-model.xml 'tok' prefix), https://hyland.atlassian.net/browse/ACS-12502 -->
             <class name="org.alfresco.rest.search.SearchExactTermTest">
                 <methods>
-                    <exclude name="exactSearch_singleTermConjunction_shouldReturnException"/>
+<!--                    <exclude name="exactSearch_singleTermConjunction_shouldReturnException"/>-->
                     <exclude name="exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch"/> <!-- pragma: allowlist secret -->
                     <exclude name="exactSearch_singleTerm_shouldReturnResultsContainingExactTermInName"/>
                     <exclude name="exactSearch_multiTerm_shouldReturnResultsContainingExactTerm"/>
                     <exclude name="exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase"/>
+                    <exclude name="exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch"/>
+                    <exclude name="exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch"/>
                 </methods>
             </class>
-
             <!-- 14) SearchCasesTest:
                   - testSearchExactTermQueries: '=' exact-term operator is disabled by default on Search Enterprise; enable in follow-up PR -->
             <class name="org.alfresco.rest.search.SearchCasesTest">
                 <methods>
                     <exclude name="testSearchExactTermQueries"/>
+                </methods>
+            </class>
+            <!-- 15) SearchWithCustomModelTest: Batch Indexing custom model deployment at runtime gap, https://hyland.atlassian.net/browse/ACS-12502 -->
+            <class name="org.alfresco.rest.search.SearchWithCustomModelTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 16) SearchAspectTest.testAspectIsRemovedWithItsProperties: Batch Indexing custom model deployment at runtime gap (https://hyland.atlassian.net/browse/ACS-12502) -->
+            <class name="org.alfresco.rest.search.SearchAspectTest">
+                <methods>
+                    <exclude name="testAspectIsRemovedWithItsProperties"/>
                 </methods>
             </class>
         </classes>

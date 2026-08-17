@@ -97,20 +97,6 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
     private static Log logger = LogFactory.getLog(RenditionService2Impl.class);
 
-    // As Async transforms and renditions are so similar, this class provides a way to provide the code that is different.
-    private abstract static class RenderOrTransformCallBack
-    {
-        abstract String getName();
-
-        abstract RenditionDefinition2 getRenditionDefinition();
-
-        void handleUnsupported(UnsupportedOperationException e)
-        {}
-
-        void throwIllegalStateExceptionIfAlreadyDone(int sourceContentHashCode)
-        {}
-    }
-
     private TransactionService transactionService;
     private NodeService nodeService;
     private NodeDAO nodeDAO;
@@ -126,6 +112,20 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     private AsynchronousExtractor asynchronousExtractor;
     private boolean enabled;
     private boolean thumbnailsEnabled;
+
+    // As Async transforms and renditions are so similar, this class provides a way to provide the code that is different.
+    private abstract static class RenderOrTransformCallBack
+    {
+        abstract String getName();
+
+        abstract RenditionDefinition2 getRenditionDefinition();
+
+        void handleUnsupported(UnsupportedOperationException e)
+        {}
+
+        void throwIllegalStateExceptionIfAlreadyDone(int sourceContentHashCode)
+        {}
+    }
 
     public void setTransactionService(TransactionService transactionService)
     {

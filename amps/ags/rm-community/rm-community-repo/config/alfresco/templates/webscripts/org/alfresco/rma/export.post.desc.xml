@@ -5,7 +5,7 @@
   The body of the post should be in the form<br/>
   {<br/>
   &nbsp;&nbsp;&nbsp;"nodeRefs" : array of nodeRefs to export,<br/>
-  &nbsp;&nbsp;&nbsp;"items" : { (optional) displayed search-result table embedded as a timestamped AGS_Search_Results_&lt;timestamp&gt;.csv inside the archive<br/>
+  &nbsp;&nbsp;&nbsp;"items" : { displayed search-result table embedded as a timestamped AGS_Search_Results_&lt;timestamp&gt;.csv inside the archive<br/>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"headers" : array of column labels,<br/>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rows" : array of rows, each an array of cell values<br/>
   &nbsp;&nbsp;&nbsp;}<br/>

@@ -128,7 +128,7 @@ public class SearchResultsCSVWriter
     }
 
     /**
-     * Validates the request body and returns the mandatory, non-empty {@code headers} array.
+     * Validates the request body and returns the , non-empty {@code headers} array.
      *
      * @param items
      *            the object holding the tabular data
@@ -138,13 +138,13 @@ public class SearchResultsCSVWriter
     {
         if (items == null)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Mandatory 'items' parameter was not provided in request body");
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "items parameter was not provided in request body");
         }
 
         JSONArray headers = items.optJSONArray(PARAM_HEADERS);
         if (headers == null || headers.length() == 0)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Mandatory 'headers' were not provided for CSV export");
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "headers were not provided for CSV export");
         }
         return headers;
     }

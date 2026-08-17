@@ -80,7 +80,7 @@
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.16</dependency.slf4j.version>
-        <dependency.log4j.version>2.25.4</dependency.log4j.version>
+        <dependency.log4j.version>2.26.1</dependency.log4j.version>
         <dependency.groovy.version>3.0.22</dependency.groovy.version>
         <dependency.tika.version>3.2.3</dependency.tika.version>
         <dependency.junrar.version>7.5.10</dependency.junrar.version>
@@ -88,7 +88,7 @@
         <dependency.poi.version>5.4.1</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>4.18.2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
-        <dependency.netty.version>4.1.135.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
+        <dependency.netty.version>4.1.137.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.18.3</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>
@@ -729,7 +729,7 @@
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
-                <version>1.18.1</version>
+                <version>1.23.1</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>

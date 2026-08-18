@@ -36,7 +36,7 @@
                     at runtime gap (tokenised-model.xml 'tok' prefix), https://hyland.atlassian.net/browse/ACS-12502 -->
             <class name="org.alfresco.rest.search.SearchExactTermTest">
                 <methods>
-                    <exclude name="exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch"/>
+                    <exclude name="exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch"/> <!-- pragma: allowlist secret -->
                     <exclude name="exactSearch_singleTerm_shouldReturnResultsContainingExactTermInName"/>
                     <exclude name="exactSearch_multiTerm_shouldReturnResultsContainingExactTerm"/>
                     <exclude name="exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase"/>

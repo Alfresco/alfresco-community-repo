@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -342,7 +342,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
             String user = AuthenticationUtil.getRunAsUser();
             RetryingTransactionHelper.RetryingTransactionCallback callback = () -> {
-                int sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
+                ContentData sourceContentData = getSourceContentData(sourceNodeRef);
+                int sourceContentHashCode = getSourceContentHashCode(sourceContentData);
                 if (!supported.get())
                 {
                     if (logger.isDebugEnabled())
@@ -358,19 +359,16 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
                     if (sourceContentHashCode != SOURCE_HAS_NO_CONTENT)
                     {
-                        ContentData contentDataForTransform = DefaultTypeConverter.INSTANCE.convert(
-                                ContentData.class, nodeService.getProperty(sourceNodeRef, PROP_CONTENT));
-                        if (contentDataForTransform != null && contentDataForTransform.getSize() == 0)
+                        if (sourceContentData.getSize() == 0)
                         {
                             // In a cluster with invalidating cache, the shared cache may hold stale
-                            // ContentData (size=0) from initial node creation because cache invalidation from the
-                            // uploading node hasn't propagated yet. Bypass the shared cache to read directly from DB.
+                            // ContentData (size=0) because cache invalidation from the uploading node
+                            // hasn't propagated yet. Bypass the shared cache to read directly from DB.
                             nodeDAO.setCheckNodeConsistency();
-                            contentDataForTransform = DefaultTypeConverter.INSTANCE.convert(
-                                    ContentData.class, nodeService.getProperty(sourceNodeRef, PROP_CONTENT));
-                            if (contentDataForTransform != null && contentDataForTransform.getSize() > 0)
+                            sourceContentData = getSourceContentData(sourceNodeRef);
+                            if (sourceContentData != null && sourceContentData.getSize() > 0)
                             {
-                                sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
+                                sourceContentHashCode = getSourceContentHashCode(sourceContentData);
                                 renderOrTransform.throwIllegalStateExceptionIfAlreadyDone(sourceContentHashCode);
                             }
                         }
@@ -687,13 +685,15 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }
     }
 
-    /**
-     * Returns the hash code of the source node's content url. As transformations may be returned in a different sequences to which they were requested, this is used work out if a rendition should be replaced.
-     */
-    private int getSourceContentHashCode(NodeRef sourceNodeRef)
+    private ContentData getSourceContentData(NodeRef sourceNodeRef)
+    {
+        return DefaultTypeConverter.INSTANCE.convert(ContentData.class,
+                nodeService.getProperty(sourceNodeRef, PROP_CONTENT));
+    }
+
+    private int getSourceContentHashCode(ContentData contentData)
     {
         int hashCode = SOURCE_HAS_NO_CONTENT;
-        ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(sourceNodeRef, PROP_CONTENT));
         if (contentData != null)
         {
             // Originally we used the contentData URL, but that is not enough if the mimetype changes.
@@ -704,6 +704,11 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             }
         }
         return hashCode;
+    }
+
+    private int getSourceContentHashCode(NodeRef sourceNodeRef)
+    {
+        return getSourceContentHashCode(getSourceContentData(sourceNodeRef));
     }
 
     /**

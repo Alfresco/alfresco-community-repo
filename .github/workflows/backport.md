@@ -32,6 +32,8 @@ tools:
 safe-outputs:
   create-pull-request:
     max: 1
+    allowed-base-branches:
+        - "release/*"
   noop:
 ---
 

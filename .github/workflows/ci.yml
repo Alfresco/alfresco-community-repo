@@ -683,9 +683,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - test-name: "Elasticsearch E2E Tests"
+          - test-name: "Elasticsearch E2E Tests - part1"
             pom-dir: tas-restapi
-            test-profile: elasticsearch-e2e-tests
+            test-profile: elasticsearch-e2e-tests-part1
+            compose-file: docker-compose-minimal+batch-indexing.yml
+          - test-name: "Elasticsearch E2E Tests - part2"
+            pom-dir: tas-restapi
+            test-profile: elasticsearch-e2e-tests-part2
             compose-file: docker-compose-minimal+batch-indexing.yml
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0

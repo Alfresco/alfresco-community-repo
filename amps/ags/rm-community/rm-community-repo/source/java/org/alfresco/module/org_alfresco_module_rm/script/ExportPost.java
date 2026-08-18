@@ -31,6 +31,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -66,8 +73,14 @@ public class ExportPost extends StreamACP
 
     protected static final String PARAM_TRANSFER_FORMAT = "transferFormat";
 
+    /** Optional tabular search-result data to embed as a CSV file inside the exported archive. */
+    protected static final String PARAM_ITEMS = "items";
+
     /** Content Streamer */
     private ContentStreamer contentStreamer;
+
+    /** Writes the displayed search-result table to a CSV file. */
+    private SearchResultsCSVWriter searchResultsCSVWriter = new SearchResultsCSVWriter();
 
     /**
      * @param contentStreamer
@@ -75,6 +88,15 @@ public class ExportPost extends StreamACP
     public void setContentStreamer(ContentStreamer contentStreamer)
     {
         this.contentStreamer = contentStreamer;
+    }
+
+    /**
+     * @param searchResultsCSVWriter
+     *            the writer used to build the CSV embedded in the export archive
+     */
+    public void setSearchResultsCSVWriter(SearchResultsCSVWriter searchResultsCSVWriter)
+    {
+        this.searchResultsCSVWriter = searchResultsCSVWriter;
     }
 
     /**
@@ -89,6 +111,7 @@ public class ExportPost extends StreamACP
         {
             NodeRef[] nodeRefs = null;
             boolean transferFormat = false;
+            JSONObject csvItems = null;
             String contentType = req.getContentType();
             if (MULTIPART_FORMDATA.equals(contentType))
             {
@@ -101,6 +124,13 @@ public class ExportPost extends StreamACP
                 {
                     transferFormat = Boolean.parseBoolean(transferFormatParam);
                 }
+
+                // look for the optional displayed search-result table (sent as a JSON string)
+                String itemsParam = req.getParameter(PARAM_ITEMS);
+                if (itemsParam != null && itemsParam.length() > 0)
+                {
+                    csvItems = parseItems(itemsParam);
+                }
             }
             else
             {
@@ -111,6 +141,12 @@ public class ExportPost extends StreamACP
                 if (json.has(PARAM_TRANSFER_FORMAT))
                 {
                     transferFormat = json.getBoolean(PARAM_TRANSFER_FORMAT);
+                }
+
+                // look for the optional displayed search-result table
+                if (json.has(PARAM_ITEMS))
+                {
+                    csvItems = parseItems(json);
                 }
             }
 
@@ -143,6 +179,12 @@ public class ExportPost extends StreamACP
             tempACPFile = createACP(params,
                     transferFormat ? ZIP_EXTENSION : ACPExportPackageHandler.ACP_EXTENSION,
                     transferFormat);
+
+            // if the displayed search-result table was supplied, embed it as a CSV inside the archive
+            if (csvItems != null)
+            {
+                addSearchResultsCsv(tempACPFile, csvItems);
+            }
 
             // stream the ACP back to the client as an attachment (forcing save as)
             contentStreamer.streamContent(req, res, tempACPFile, null, true, tempACPFile.getName(), null);
@@ -180,6 +222,101 @@ public class ExportPost extends StreamACP
 
                 tempACPFile.delete();
             }
+        }
+    }
+
+    /**
+     * Parses the optional {@code items} parameter supplied as a JSON string (multipart form submission), calling out any failure as specific to that parameter rather than to the request body.
+     *
+     * @param itemsParam
+     *            the raw JSON string holding the displayed search-result table
+     * @return the parsed {@code items} object
+     */
+    protected JSONObject parseItems(String itemsParam)
+    {
+        try
+        {
+            return new JSONObject(new JSONTokener(itemsParam));
+        }
+        catch (JSONException je)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse '" + PARAM_ITEMS + "' parameter as JSON.", je);
+        }
+    }
+
+    /**
+     * Extracts the optional {@code items} object from the JSON request body, calling out any failure as specific to that parameter rather than to the request body as a whole.
+     *
+     * @param json
+     *            the parsed JSON request body
+     * @return the {@code items} object
+     */
+    protected JSONObject parseItems(JSONObject json)
+    {
+        try
+        {
+            return json.getJSONObject(PARAM_ITEMS);
+        }
+        catch (JSONException je)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse '" + PARAM_ITEMS + "' parameter as JSON.", je);
+        }
+    }
+
+    /**
+     * Builds a CSV of the displayed search-result table and adds it as an entry inside the given export archive.
+     *
+     * @param archive
+     *            the ACP (or transfer ZIP) archive to add the CSV to
+     * @param csvItems
+     *            the object holding the {@code headers} and {@code rows} of the displayed table
+     */
+    protected void addSearchResultsCsv(File archive, JSONObject csvItems)
+    {
+        File tempCSVFile = null;
+        try
+        {
+            tempCSVFile = searchResultsCSVWriter.createCSVFile(csvItems);
+            addFileToArchive(archive, tempCSVFile, SearchResultsCSVWriter.buildCsvFileName());
+        }
+        catch (IOException ioe)
+        {
+            // failing to write the CSV into the archive is a server-side error, not a bad request
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Failed to embed search results CSV into the export archive.", ioe);
+        }
+        finally
+        {
+            if (tempCSVFile != null)
+            {
+                tempCSVFile.delete();
+            }
+        }
+    }
+
+    /**
+     * Adds the given file as a new entry at the root of an existing ZIP based archive.
+     *
+     * @param archive
+     *            the existing archive to add to
+     * @param file
+     *            the file whose contents become the archive entry
+     * @param entryName
+     *            the name of the entry to create inside the archive
+     * @throws IOException
+     *             if the entry cannot be written
+     */
+    protected void addFileToArchive(File archive, File file, String entryName) throws IOException
+    {
+        URI uri = URI.create("jar:" + archive.toURI());
+        try (FileSystem zipfs = FileSystems.newFileSystem(uri, Collections.<String, Object> emptyMap()))
+        {
+            Path target = zipfs.getPath("/" + entryName);
+            Files.copy(file.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Added entry '" + entryName + "' to archive: " + archive.getAbsolutePath());
         }
     }
 }

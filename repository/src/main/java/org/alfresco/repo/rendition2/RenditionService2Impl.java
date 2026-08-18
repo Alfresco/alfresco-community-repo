@@ -706,6 +706,9 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         return hashCode;
     }
 
+    /**
+     * Returns the hash code of the source node's content url. As transformations may be returned in a different sequences to which they were requested, this is used work out if a rendition should be replaced.
+     */
     private int getSourceContentHashCode(NodeRef sourceNodeRef)
     {
         return getSourceContentHashCode(getSourceContentData(sourceNodeRef));

@@ -35,6 +35,9 @@ safe-outputs:
     allowed-base-branches:
         - "release/*"
   noop:
+runtimes:
+  python:
+    version: 3.11
 ---
 
 # Backport to Release Branch

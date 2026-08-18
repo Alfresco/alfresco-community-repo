@@ -140,6 +140,56 @@
          <artifactId>jackson-dataformat-yaml</artifactId>
          <scope>provided</scope>
       </dependency>
+      <!-- Netty is already shipped in the platform WAR (via camel-amqp/qpid-jms-client, Netty 4.2.x).
+           Declare it provided so these transitively-runtime jars are not bundled into the AMP; otherwise
+           they clash with the identically-named jars already in the WAR and fail MMT install with an overwrite error. -->
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-buffer</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-common</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-resolver</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-transport</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-transport-native-unix-common</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-transport-classes-epoll</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-transport-classes-kqueue</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-transport-native-epoll</artifactId>
+         <classifier>linux-x86_64</classifier>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-transport-native-kqueue</artifactId>
+         <classifier>osx-x86_64</classifier>
+         <scope>provided</scope>
+      </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
          <artifactId>spring-test</artifactId>

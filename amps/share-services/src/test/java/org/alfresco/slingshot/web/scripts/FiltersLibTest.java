@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -41,7 +42,7 @@ import org.mozilla.javascript.Undefined;
  * <p>
  * The test loads the <em>actual</em> {@code filters.lib.js} resource and executes {@code Filters.getFilterParams("tag", ...)} directly in the embedded Rhino JavaScript engine, injecting lightweight mock collaborators for the {@code args}, {@code search} and {@code logger} root objects. It therefore isolates and asserts the exact query string produced for a tag, with no database, Spring context or search index required.
  * <p>
- * Covers MNT-25799: a tag whose value contains a space (e.g. {@code "long tag"}) must be ISO9075-encoded when locating the tag node, and the resulting query must be a well-formed {@code +=cm:taggable:"<nodeRef>"} membership query rather than a broken multi-word query.
+ * a tag whose value contains a space (e.g. {@code "long tag"}) must be ISO9075-encoded when locating the tag node, and the resulting query must be a well-formed {@code +=cm:taggable:"<nodeRef>"} membership query rather than a broken multi-word query.
  *
  * @author GitHub Copilot
  */
@@ -107,7 +108,7 @@ public class FiltersLibTest
     }
 
     /**
-     * MNT-25799: a tag containing a space must be ISO9075-encoded (space -> _x0020_) when the tag node is located, and must still yield a valid membership query.
+     * when a tag containing a space must be ISO9075-encoded (space -> _x0020_) when the tag node is located, and must still yield a valid membership query.
      */
     @Test
     public void tagQueryForTagWithSpaceIsEncoded()

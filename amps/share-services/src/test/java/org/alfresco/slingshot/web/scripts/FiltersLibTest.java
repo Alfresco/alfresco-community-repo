@@ -37,18 +37,11 @@ import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
 
 /**
- * Unit tests for the "tag" filter query building logic in the slingshot doclist v2
- * web script library ({@code documentlibrary-v2/filters.lib.js}).
+ * Unit tests for the "tag" filter query building logic in the slingshot doclist v2 web script library ({@code documentlibrary-v2/filters.lib.js}).
  * <p>
- * The test loads the <em>actual</em> {@code filters.lib.js} resource and executes
- * {@code Filters.getFilterParams("tag", ...)} directly in the embedded Rhino JavaScript engine,
- * injecting lightweight mock collaborators for the {@code args}, {@code search} and
- * {@code logger} root objects. It therefore isolates and asserts the exact query string produced
- * for a tag, with no database, Spring context or search index required.
+ * The test loads the <em>actual</em> {@code filters.lib.js} resource and executes {@code Filters.getFilterParams("tag", ...)} directly in the embedded Rhino JavaScript engine, injecting lightweight mock collaborators for the {@code args}, {@code search} and {@code logger} root objects. It therefore isolates and asserts the exact query string produced for a tag, with no database, Spring context or search index required.
  * <p>
- * Covers MNT-25799: a tag whose value contains a space (e.g. {@code "long tag"}) must be
- * ISO9075-encoded when locating the tag node, and the resulting query must be a well-formed
- * {@code +=cm:taggable:"<nodeRef>"} membership query rather than a broken multi-word query.
+ * Covers MNT-25799: a tag whose value contains a space (e.g. {@code "long tag"}) must be ISO9075-encoded when locating the tag node, and the resulting query must be a well-formed {@code +=cm:taggable:"<nodeRef>"} membership query rather than a broken multi-word query.
  *
  * @author GitHub Copilot
  */
@@ -61,13 +54,9 @@ public class FiltersLibTest
     private static final String TAG_NODEREF = "workspace://SpacesStore/00000000-0000-0000-0000-000000000001";
 
     /**
-     * Mock root objects and capture hooks, evaluated before the library so that the JavaScript
-     * globals referenced by {@code getFilterParams} (args, search, logger) are available.
-     * {@code __lastLuceneQuery} captures the path query passed to the tag lookup so the test can
-     * assert the tag value was correctly ISO9075-encoded.
+     * Mock root objects and capture hooks, evaluated before the library so that the JavaScript globals referenced by {@code getFilterParams} (args, search, logger) are available. {@code __lastLuceneQuery} captures the path query passed to the tag lookup so the test can assert the tag value was correctly ISO9075-encoded.
      */
-    private static final String MOCKS =
-            "var __lastLuceneQuery = null;\n"
+    private static final String MOCKS = "var __lastLuceneQuery = null;\n"
             + "var __returnEmpty = false;\n"
             + "var search = {\n"
             + "   ISO9075Encode: function(s) { return String(s).replace(/ /g, '_x0020_'); },\n"
@@ -104,8 +93,7 @@ public class FiltersLibTest
     }
 
     /**
-     * Baseline: a single-word tag resolves the tag node and produces a well-formed
-     * {@code +=cm:taggable:"<nodeRef>"} membership query using the fts-alfresco language.
+     * Baseline: a single-word tag resolves the tag node and produces a well-formed {@code +=cm:taggable:"<nodeRef>"} membership query using the fts-alfresco language.
      */
     @Test
     public void tagQueryForSingleWordTag()
@@ -119,8 +107,7 @@ public class FiltersLibTest
     }
 
     /**
-     * MNT-25799: a tag containing a space must be ISO9075-encoded (space -> _x0020_) when the
-     * tag node is located, and must still yield a valid membership query.
+     * MNT-25799: a tag containing a space must be ISO9075-encoded (space -> _x0020_) when the tag node is located, and must still yield a valid membership query.
      */
     @Test
     public void tagQueryForTagWithSpaceIsEncoded()
@@ -134,8 +121,7 @@ public class FiltersLibTest
     }
 
     /**
-     * The tag value is normalised before lookup: a trailing slash is stripped and the value is
-     * lower-cased, so mixed-case / trailing-slash input resolves to the same encoded path.
+     * The tag value is normalised before lookup: a trailing slash is stripped and the value is lower-cased, so mixed-case / trailing-slash input resolves to the same encoded path.
      */
     @Test
     public void tagValueIsNormalisedBeforeLookup()
@@ -145,8 +131,7 @@ public class FiltersLibTest
     }
 
     /**
-     * Safety net: when the tag cannot be resolved to a node, the filter must return a null query
-     * (i.e. no results) rather than an unbounded query that would return every document.
+     * Safety net: when the tag cannot be resolved to a node, the filter must return a null query (i.e. no results) rather than an unbounded query that would return every document.
      */
     @Test
     public void unknownTagReturnsNoResults()
@@ -163,17 +148,17 @@ public class FiltersLibTest
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Invokes {@code Filters.getFilterParams("tag", parsedArgs, {})} with the given tag value and
-     * lookup behaviour, returning the resulting parameters object.
+     * Invokes {@code Filters.getFilterParams("tag", parsedArgs, {})} with the given tag value and lookup behaviour, returning the resulting parameters object.
      *
-     * @param filterData  the raw tag value supplied as the {@code filterData} argument
-     * @param returnEmpty when {@code true}, the mocked tag lookup returns no matching node
+     * @param filterData
+     *            the raw tag value supplied as the {@code filterData} argument
+     * @param returnEmpty
+     *            when {@code true}, the mocked tag lookup returns no matching node
      * @return the JavaScript filter parameters object produced by the library
      */
     private Scriptable runTagFilter(String filterData, boolean returnEmpty)
     {
-        String setup =
-                "args = { filterData: " + jsString(filterData) + ", sortAsc: null, sortField: null, max: null, days: null };\n"
+        String setup = "args = { filterData: " + jsString(filterData) + ", sortAsc: null, sortField: null, max: null, days: null };\n"
                 + "parsedArgs = { pathNode: { qnamePath: '/app:company_home' }, type: '' };\n"
                 + "__returnEmpty = " + returnEmpty + ";\n"
                 + "__result = Filters.getFilterParams('tag', parsedArgs, {});\n";
@@ -221,4 +206,3 @@ public class FiltersLibTest
         }
     }
 }
-

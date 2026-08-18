@@ -76,7 +76,7 @@ public class FiltersLibTest
     private Scriptable scope;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp() throws IOException
     {
         cx = Context.enter();
         // Interpretive mode - no bytecode generation required for a simple script evaluation
@@ -198,7 +198,7 @@ public class FiltersLibTest
         return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'";
     }
 
-    private String readResource(String path) throws Exception
+    private String readResource(String path) throws IOException
     {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(path))
         {

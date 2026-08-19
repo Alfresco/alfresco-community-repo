@@ -28,10 +28,8 @@ package org.alfresco.repo.search.impl.elasticsearch;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TAG;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,7 +39,6 @@ import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
-import org.alfresco.repo.search.impl.QueryParameterisationException;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -49,7 +46,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.XPathException;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.QueryParameter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -61,7 +57,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Query executor for Elasticsearch servers.
  */
-@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.CallSuperInConstructor", "PMD.UseLocaleWithCaseConversions", "PMD.GodClass"})
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.CallSuperInConstructor", "PMD.UseLocaleWithCaseConversions"})
 public class ElasticsearchSearchService extends AbstractSearcherComponent
 {
 
@@ -150,92 +146,6 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
 
         String parameterisedQueryString = parameterise(searchParameters.getQuery(), map, null, namespacePrefixResolver);
         searchParameters.setQuery(parameterisedQueryString);
-    }
-
-    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.AssignmentInOperand"})
-    private String parameterise(String unparameterised, Map<QName, QueryParameterDefinition> map, QueryParameter[] queryParameters, NamespacePrefixResolver nspr)
-            throws QueryParameterisationException
-    {
-
-        Map<QName, List<Serializable>> valueMap = new HashMap<>();
-
-        if (queryParameters != null)
-        {
-            for (QueryParameter parameter : queryParameters)
-            {
-                List<Serializable> list = valueMap.get(parameter.getQName());
-                if (list == null)
-                {
-                    list = new ArrayList<>();
-                    valueMap.put(parameter.getQName(), list);
-                }
-                list.add(parameter.getValue());
-            }
-        }
-
-        Map<QName, ListIterator<Serializable>> iteratorMap = new HashMap<>();
-
-        List<QName> missing = new ArrayList<>(1);
-        StringBuilder buffer = new StringBuilder(unparameterised);
-        int index = 0;
-        while ((index = buffer.indexOf("${", index)) != -1)
-        {
-            int endIndex = buffer.indexOf("}", index);
-            if (endIndex == -1)
-            {
-                throw new QueryParameterisationException("Unclosed query parameter placeholder starting at index " + index);
-            }
-            String qNameString = buffer.substring(index + 2, endIndex);
-            QName key = QName.createQName(qNameString, nspr);
-            QueryParameterDefinition parameterDefinition = map.get(key);
-            if (parameterDefinition == null)
-            {
-                missing.add(key);
-                buffer.replace(index, endIndex + 1, "");
-            }
-            else
-            {
-                ListIterator<Serializable> it = iteratorMap.get(key);
-                if ((it == null) || (!it.hasNext()))
-                {
-                    List<Serializable> list = valueMap.get(key);
-                    if ((list != null) && (!list.isEmpty()))
-                    {
-                        it = list.listIterator();
-                    }
-                    if (it != null)
-                    {
-                        iteratorMap.put(key, it);
-                    }
-                }
-                String value;
-                if (it == null)
-                {
-                    if (!parameterDefinition.hasDefaultValue())
-                    {
-                        throw new QueryParameterisationException("No value provided for query parameter: " + key);
-                    }
-                    value = parameterDefinition.getDefault();
-                }
-                else
-                {
-                    value = DefaultTypeConverter.INSTANCE.convert(String.class, it.next());
-                }
-                buffer.replace(index, endIndex + 1, value);
-            }
-        }
-        if (!missing.isEmpty())
-        {
-            StringBuilder error = new StringBuilder();
-            error.append("The query uses the following parameters which are not defined: ");
-            for (QName qName : missing)
-            {
-                error.append(qName).append(", ");
-            }
-            error.delete(error.length() - 2, error.length());
-            throw new QueryParameterisationException(error.toString());
-        }
-        return buffer.toString();
     }
 
     @Override

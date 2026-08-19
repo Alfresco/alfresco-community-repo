@@ -60,7 +60,7 @@ public class AbstractSearcherComponentTest
     private static final String TEST_URI = "http://www.alfresco.org/test/1.0";
     private static final String PREFIX = "test";
 
-    private final AbstractSearcherComponent searcher = new TestSearcherComponent();
+    private final AbstractSearcherComponent searcher = new StubSearcherComponent();
 
     @Mock
     private NamespacePrefixResolver namespacePrefixResolver;
@@ -165,7 +165,7 @@ public class AbstractSearcherComponentTest
     /**
      * Minimal concrete subclass so the shared {@code protected} parameterise implementation can be exercised in isolation. The remaining {@link org.alfresco.service.cmr.search.SearchService} operations are not needed here.
      */
-    private static final class TestSearcherComponent extends AbstractSearcherComponent
+    private static final class StubSearcherComponent extends AbstractSearcherComponent
     {
         @Override
         public ResultSet query(StoreRef store, String language, String query, QueryParameterDefinition[] queryParameterDefinitions)

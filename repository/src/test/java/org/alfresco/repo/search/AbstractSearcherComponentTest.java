@@ -163,8 +163,7 @@ public class AbstractSearcherComponentTest
     }
 
     /**
-     * Minimal concrete subclass so the shared {@code protected} parameterise implementation can be exercised in
-     * isolation. The remaining {@link org.alfresco.service.cmr.search.SearchService} operations are not needed here.
+     * Minimal concrete subclass so the shared {@code protected} parameterise implementation can be exercised in isolation. The remaining {@link org.alfresco.service.cmr.search.SearchService} operations are not needed here.
      */
     private static final class TestSearcherComponent extends AbstractSearcherComponent
     {

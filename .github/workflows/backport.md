@@ -82,11 +82,24 @@ create a branch from <target_branch> → apply the cherry-picked commits → res
 
 5. **Resolve conflicts.** If a cherry-pick reports a conflict: open every file `git diff --name-only --diff-filter=U` lists, read both sides of each conflict marker, and hand-edit the file with the `edit` tool so the result preserves the intent of the original commit while fitting the current state of the target branch. Do not blindly prefer "ours" or "theirs". After resolving, `git add` the files and run `git cherry-pick --continue` (set `GIT_EDITOR=true` so it doesn't wait on an interactive commit-message prompt). If a commit is a pure no-op on this branch (already present / empty diff), skip it with `git cherry-pick --skip` and note that in the PR body.
 
-6. **Open a PR to the target branch.** Once every commit has been applied (cleanly or with resolved conflicts), use the `create_pull_request` tool:
-   - `base`: `${{ github.event.inputs.target_branch }}`
-   - `title`: `"[${{ github.event.inputs.jira_ticket }}] Backport: <one-line summary> (master → ${{ github.event.inputs.target_branch }})"` — always start with the Jira ticket in brackets.
-   - `body`: list every SHA that was cherry-picked (short form, `git rev-parse --short`), in order; for any commit where you had to resolve a conflict, describe what the conflict was and how you resolved it; for any commit skipped as a no-op, say so explicitly.
+6. **Verify the final backport diff, then open a PR to the target branch.** Before calling `create_pull_request`, you must prove the branch is still a small backport branch based on the target branch.
 
+   Run all of the following checks:
+
+    - `git merge-base HEAD origin/${{ github.event.inputs.target_branch }}` must equal `git rev-parse origin/${{ github.event.inputs.target_branch }}`
+    - `git diff --name-only origin/${{ github.event.inputs.target_branch }}...HEAD` must list only files touched by the cherry-picked commits and any files unavoidably changed while resolving conflicts
+    - `git diff --name-only origin/${{ github.event.inputs.target_branch }}...HEAD | wc -l` must be **100 or less**
+
+   If any of these checks fail, call `noop` with a clear explanation including:
+    - the target branch
+    - the computed merge-base
+    - the changed file count
+    - the full changed file list
+
+   Only if all checks pass, use the `create_pull_request` tool:
+    - `base`: `${{ github.event.inputs.target_branch }}`
+    - `title`: `"[${{ github.event.inputs.jira_ticket }}] Backport: <one-line summary> (master → ${{ github.event.inputs.target_branch }})"`
+    - `body`: list every SHA that was cherry-picked (short form, `git rev-parse --short`), in order; for any commit where you had to resolve a conflict, describe what the conflict was and how you resolved it; include the final changed-file list and file count.
 7. **Do not push directly or call the GitHub API to open the PR yourself** — pushing the branch and opening the PR is handled automatically by the `create_pull_request` safe output once you call it; you are only responsible for the local git history on the backport branch.
 
 ## Guidelines
@@ -95,7 +108,19 @@ create a branch from <target_branch> → apply the cherry-picked commits → res
 - Preserve commit authorship and messages via `-x` (adds a `(cherry picked from commit ...)` trailer) — do not squash or reword unless resolving a conflict requires touching the same lines.
 - Be conservative when resolving conflicts: if you cannot confidently reconcile a conflict without changing behavior, leave the conflict markers in place, commit them as-is, and clearly flag in the PR body which files still need human review — do not guess silently.
 - Never modify files outside the ones touched by the cherry-picked commits.
+- Never modify files outside the ones touched by the cherry-picked commits, except when a conflict resolution makes a small adjacent edit unavoidable.
+- If the final diff against `origin/${{ github.event.inputs.target_branch }}` contains more than 100 files, do not open a PR. Call `noop` and report the full file list instead.
+- If the merge-base of `HEAD` and `origin/${{ github.event.inputs.target_branch }}` is not exactly `origin/${{ github.event.inputs.target_branch }}`, do not open a PR. Call `noop` because the branch is no longer a clean backport branch.
+  `master` is only where commit SHAs are validated. It must never be used as the PR base, diff base, merge base for patch generation, or fallback comparison branch at any later step.
 
+Before calling `create_pull_request`, record the exact output of:
+- `git rev-parse HEAD`
+- `git rev-parse origin/${{ github.event.inputs.target_branch }}`
+- `git merge-base HEAD origin/${{ github.event.inputs.target_branch }}`
+- `git diff --stat origin/${{ github.event.inputs.target_branch }}...HEAD`
+- `git diff --name-only origin/${{ github.event.inputs.target_branch }}...HEAD`
+
+If these outputs do not describe a small backport branch from the target branch, call `noop` and stop.
 ## Safe Outputs
 
 - **create_pull_request**: exactly one call, per the Task section above.

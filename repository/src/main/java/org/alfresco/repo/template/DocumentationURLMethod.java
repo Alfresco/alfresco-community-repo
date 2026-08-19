@@ -85,7 +85,7 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
      * c) Second argument(if required) is interpreted as an additional URL component, which will be appended to the URL to denote a specific component of Alfresco.
      * 
      * <pre>
-     *     ${documentationUrl("eeu1720075126296", "&component=Alfresco%20Content%20Services%20Community%20Edition"} -> https://docs.hyland.com/access?dita:id=eeu1720075126296&vrm_version=25.5&component=Alfresco%20Content%20Services%20Community%20Edition
+     *     ${documentationUrl("eeu1720075126296", "&component=Alfresco%20Content%20Services%20Community%20Edition"} -> https://docs.hyland.com/access?dita:id=eeu1720075126296&vrm_version=25.3&component=Alfresco%20Content%20Services%20Community%20Edition
      * </pre>
      *
      * d) Third argument (if required) is interpreted as the Alfresco component (e.g., "solr", "elasticsearch", or empty) to determine which version to use in the URL.

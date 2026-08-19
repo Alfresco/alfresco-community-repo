@@ -42,9 +42,15 @@
             </properties>
         </profile>
         <profile>
-            <id>elasticsearch-e2e-tests</id>
+            <id>elasticsearch-e2e-tests-part1</id>
             <properties>
-                <suiteXmlFile>${project.basedir}/src/test/resources/elasticsearch-e2e-suite.xml</suiteXmlFile>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/elasticsearch-e2e-part1-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <profile>
+            <id>elasticsearch-e2e-tests-part2</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/elasticsearch-e2e-part2-suite.xml</suiteXmlFile>
             </properties>
         </profile>
     </profiles>

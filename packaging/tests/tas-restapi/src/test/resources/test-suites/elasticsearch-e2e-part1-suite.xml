@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="ElasticSearchE2ETests-part1" verbose="1" preserve-order="true">
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+    </listeners>
+    <test name="SearchTests-Part1">
+        <classes>
+            <!-- 1) SearchCasesTest.testSearchExactTermQueries: '=' exact-term operator is disabled by default on Search Enterprise; enable in follow-up PR -->
+            <class name="org.alfresco.rest.search.SearchCasesTest">
+                <methods>
+                    <exclude name="testSearchExactTermQueries"/>
+                </methods>
+            </class>
+            <!-- 2) SearchAspectTest.testAspectIsRemovedWithItsProperties: Batch Indexing custom model deployment at runtime gap (https://hyland.atlassian.net/browse/ACS-12502) -->
+            <class name="org.alfresco.rest.search.SearchAspectTest">
+                <methods>
+                    <exclude name="testAspectIsRemovedWithItsProperties"/>
+                </methods>
+            </class>
+            <!-- 3) SearchTest: will include all the tests-->
+            <class name="org.alfresco.rest.search.SearchTest"/>
+            <!-- 4) SearchSimpleCasesTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SearchSimpleCasesTest"/>
+            <!-- 5) SearchHighLightTest.searchNonIndexedData:AFTS bare-property-name parsing gap on ES (returns HTTP 500) -->
+            <class name="org.alfresco.rest.search.SearchHighLightTest">
+                <methods>
+                    <exclude name="searchNonIndexedData"/>
+                </methods>
+            </class>
+            <!-- 6) SearchExactTermTest(Other mentioned tests): ES exact-term validation & cm:name over-match gaps
+                    - exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch,
+                    - exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch: Batch Indexing custom model deployment
+                    at runtime gap (tokenised-model.xml 'tok' prefix), https://hyland.atlassian.net/browse/ACS-12502 -->
+            <class name="org.alfresco.rest.search.SearchExactTermTest">
+                <methods>
+                    <exclude name="exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch"/> <!-- pragma: allowlist secret -->
+                    <exclude name="exactSearch_singleTerm_shouldReturnResultsContainingExactTermInName"/>
+                    <exclude name="exactSearch_multiTerm_shouldReturnResultsContainingExactTerm"/>
+                    <exclude name="exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase"/>
+                    <exclude name="exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch"/>
+                    <exclude name="exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch"/>
+                </methods>
+            </class>
+            <!-- 7) SearchSpellCheckTest: need separate profile and Solr specific tests -->
+            <class name="org.alfresco.rest.search.SearchSpellCheckTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 8) NodeContentTest: excluded as not part of migrated tests for Search API -->
+            <class name="org.alfresco.rest.search.NodeContentTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 9) SearchNonIndexedFields.testNonIndexedDoesNotExist:uses Solr-only Luke admin endpoint /solr/alfresco/admin/luke
+                    SearchNonIndexedFields.testIndexedAndNonIndexedField():Batch Indexing custom model deployment at runtime gap
+                    (https://hyland.atlassian.net/browse/ACS-12502) -->
+            <class name="org.alfresco.rest.search.SearchNonIndexedFields">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 10) SearchAPATHTest: APATH is a Solr-only indexed field -->
+            <class name="org.alfresco.rest.search.SearchAPATHTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 11) SearchWithCustomModelTest: Batch Indexing custom model deployment at runtime gap, https://hyland.atlassian.net/browse/ACS-12502 -->
+            <class name="org.alfresco.rest.search.SearchWithCustomModelTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

@@ -663,6 +663,74 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
+  tas_tests_elasticsearch:
+    name: "${{ matrix.test-name }}"
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      REQUIRES_LOCAL_IMAGES: true
+      REQUIRES_TAS_TESTS: true
+      REQUIRES_INSTALLED_ARTIFACTS: true
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      TRANSFORM_CORE_TAG: "5.4.3"
+      ELASTICSEARCH_TAG: "8.17.10"
+      BATCH_INDEXING_TAG: "5.7.0"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - test-name: "Elasticsearch E2E Tests - part1"
+            pom-dir: tas-restapi
+            test-profile: elasticsearch-e2e-tests-part1
+            compose-file: docker-compose-minimal+batch-indexing.yml
+          - test-name: "Elasticsearch E2E Tests - part2"
+            pom-dir: tas-restapi
+            test-profile: elasticsearch-e2e-tests-part2
+            compose-file: docker-compose-minimal+batch-indexing.yml
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: "Build"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        env:
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+        run: |
+          bash ./scripts/ci/init.sh
+          bash ./scripts/ci/build.sh
+      - name: "Set up the environment"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: |
+          ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/${{ matrix.compose-file }}
+          ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      - name: "Read DB port from compose"
+        run: |
+          COMPOSE_FILE="${{ env.TAS_ENVIRONMENT }}/${{ matrix.compose-file }}"
+          DB_PORT=$(docker compose -f "$COMPOSE_FILE" port postgres 5432 | awk -F: '{print $NF}')
+          echo "DB_PORT=${DB_PORT}" >> "$GITHUB_ENV"
+      - name: "Run tests"
+        id: tests
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: mvn -B verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false -Ddb.url=jdbc:postgresql://localhost:${{ env.DB_PORT }}/alfresco
+      - name: "Print output after success"
+        if: ${{ always() && steps.tests.outcome == 'success' }}
+        run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"
+      - name: "Print output after failure"
+        if: ${{ always() && steps.tests.outcome == 'failure' }}
+        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
   share_services_test_suite:
     name: Share Services - ShareServicesTestSuite
     runs-on: ubuntu-latest

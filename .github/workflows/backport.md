@@ -97,7 +97,9 @@ create a branch from <target_branch> → apply the cherry-picked commits → res
      3. Run `git status --porcelain -- .secrets.baseline`. If it reports a change, `git add .secrets.baseline` and fold it into the commit you just made with `git commit --amend --no-edit` (never leave it as a separate trailing commit).
    - Do not describe `.secrets.baseline` conflicts or diffs in the PR body beyond noting that it was regenerated — it's routine bookkeeping, not a real conflict resolution worth reviewer attention.
 
-6. **Verify the final backport diff, then open a PR to the target branch.** Before calling `create_pull_request`, you must prove the branch is still a small backport branch based on the target branch.
+6. **Stop making changes once every commit has been applied.** As soon as the last SHA from step 1 has been cherry-picked (and its secrets-baseline regeneration in step 4c is done), your work on the branch content is finished. Do not build, run tests, run linters/formatters, refactor, or make any further edits beyond what steps 4–5 already produced — proceed straight to verifying the diff and opening the PR below.
+
+7. **Verify the final backport diff, then open a PR to the target branch.** Before calling `create_pull_request`, you must prove the branch is still a small backport branch based on the target branch.
 
    Run all of the following checks:
 
@@ -115,7 +117,10 @@ create a branch from <target_branch> → apply the cherry-picked commits → res
     - `base`: `${{ github.event.inputs.target_branch }}`
     - `title`: `"[${{ github.event.inputs.jira_ticket }}] Backport: <one-line summary> (master → ${{ github.event.inputs.target_branch }})"`
     - `body`: list every SHA that was cherry-picked (short form, `git rev-parse --short`), in order; for any commit where you had to resolve a conflict, describe what the conflict was and how you resolved it; include the final changed-file list and file count.
-7. **Do not push directly or call the GitHub API to open the PR yourself** — pushing the branch and opening the PR is handled automatically by the `create_pull_request` safe output once you call it; you are only responsible for the local git history on the backport branch.
+
+   Once `create_pull_request` has been called, you are done — stop.
+
+8. **Do not push directly or call the GitHub API to open the PR yourself** — pushing the branch and opening the PR is handled automatically by the `create_pull_request` safe output once you call it; you are only responsible for the local git history on the backport branch.
 
 ## Guidelines
 
@@ -124,6 +129,7 @@ create a branch from <target_branch> → apply the cherry-picked commits → res
 - Be conservative when resolving conflicts: if you cannot confidently reconcile a conflict without changing behavior, leave the conflict markers in place, commit them as-is, and clearly flag in the PR body which files still need human review — do not guess silently.
 - Never modify files outside the ones touched by the cherry-picked commits, except `.secrets.baseline` (regenerated after every cherry-pick, see step 5) and small adjacent edits unavoidable during conflict resolution.
 - Never modify files outside the ones touched by the cherry-picked commits, except when a conflict resolution makes a small adjacent edit unavoidable.
+- **Scope discipline**: your job ends the moment the last commit is cherry-picked. Do not build the project, run tests, run formatters/linters, or make any "while I'm here" improvements — go straight from the last cherry-pick to diff verification and `create_pull_request`, then stop.
 - If the final diff against `origin/${{ github.event.inputs.target_branch }}` contains more than 100 files, do not open a PR. Call `noop` and report the full file list instead.
 - If the merge-base of `HEAD` and `origin/${{ github.event.inputs.target_branch }}` is not exactly `origin/${{ github.event.inputs.target_branch }}`, do not open a PR. Call `noop` because the branch is no longer a clean backport branch.
   `master` is only where commit SHAs are validated. It must never be used as the PR base, diff base, merge base for patch generation, or fallback comparison branch at any later step.

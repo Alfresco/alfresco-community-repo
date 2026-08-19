@@ -26,8 +26,12 @@ permissions:
   issues: read
 strict: true
 timeout-minutes: 30
+network:
+  allowed:
+    - defaults
+    - python
 tools:
-  bash: ["git:*"]
+  bash: ["git:*", "pip:*", "detect-secrets:*"]
   edit:
   github:
     mode: gh-proxy
@@ -78,9 +82,20 @@ create a branch from <target_branch> → apply the cherry-picked commits → res
    ```
    Immediately after creating it, verify the branch point is correct: `git merge-base HEAD origin/${{ github.event.inputs.target_branch }}` must equal `git rev-parse origin/${{ github.event.inputs.target_branch }}`. If it does not, you branched from the wrong base — stop and call `noop` rather than proceeding.
 
-4. **Apply the cherry-picked commits.** On top of this new branch, cherry-pick each SHA resolved in step 1, in order, with `git cherry-pick -x <sha>`.
+4. **Apply the cherry-picked commits.** Before cherry-picking anything, run `git config core.editor true` on this checkout so no cherry-pick or continue ever blocks waiting on an interactive commit-message editor. Then, for each SHA resolved in step 1, in order:
+   a. Run `git cherry-pick -x <sha>`.
+   b. If it conflicts, resolve per step 5 below (note the special case for `.secrets.baseline`) and continue with `git cherry-pick --continue`. If it's a pure no-op on this branch, skip it with `git cherry-pick --skip` and note that in the PR body.
+   c. **Regardless of whether this commit applied cleanly or needed conflict resolution**, regenerate the secrets baseline immediately afterward — see "Secrets baseline (`.secrets.baseline`)" below — before moving on to the next SHA.
 
-5. **Resolve conflicts.** If a cherry-pick reports a conflict: open every file `git diff --name-only --diff-filter=U` lists, read both sides of each conflict marker, and hand-edit the file with the `edit` tool so the result preserves the intent of the original commit while fitting the current state of the target branch. Do not blindly prefer "ours" or "theirs". After resolving, `git add` the files and run `git cherry-pick --continue` (set `GIT_EDITOR=true` so it doesn't wait on an interactive commit-message prompt). If a commit is a pure no-op on this branch (already present / empty diff), skip it with `git cherry-pick --skip` and note that in the PR body.
+5. **Resolve conflicts.** If a cherry-pick reports a conflict: open every file `git diff --name-only --diff-filter=U` lists, read both sides of each conflict marker, and hand-edit the file with the `edit` tool so the result preserves the intent of the original commit while fitting the current state of the target branch. Do not blindly prefer "ours" or "theirs" — **except for `.secrets.baseline`, which is handled differently, see below.** After resolving, `git add` the files and run `git cherry-pick --continue`.
+
+   **Secrets baseline (`.secrets.baseline`)**: This repo maintains `.secrets.baseline` as a generated artifact of `detect-secrets` (used by the pre-commit secret-scanning hook) — it is never meant to be hand-edited or hand-merged.
+   - If `.secrets.baseline` shows up as conflicted in `git diff --name-only --diff-filter=U`, do not read or reconcile its conflict markers at all. Just pick either side arbitrarily to unblock the cherry-pick, e.g. `git checkout --ours .secrets.baseline && git add .secrets.baseline` (either `--ours` or `--theirs` is fine — the exact content doesn't matter because it's about to be regenerated).
+   - After **every** cherry-pick — clean or conflicted, whether or not `.secrets.baseline` was touched — regenerate it from scratch so it always reflects the branch's actual current content:
+     1. If the `detect-secrets` command is not already on `PATH`, install it once with `pip install --quiet detect-secrets`.
+     2. Run `detect-secrets scan > .secrets.baseline` from the repository root.
+     3. Run `git status --porcelain -- .secrets.baseline`. If it reports a change, `git add .secrets.baseline` and fold it into the commit you just made with `git commit --amend --no-edit` (never leave it as a separate trailing commit).
+   - Do not describe `.secrets.baseline` conflicts or diffs in the PR body beyond noting that it was regenerated — it's routine bookkeeping, not a real conflict resolution worth reviewer attention.
 
 6. **Verify the final backport diff, then open a PR to the target branch.** Before calling `create_pull_request`, you must prove the branch is still a small backport branch based on the target branch.
 
@@ -107,7 +122,7 @@ create a branch from <target_branch> → apply the cherry-picked commits → res
 - The backport branch must start from the target branch's tip (step 3). If you ever find yourself on `master` or on a branch whose merge-base with `origin/${{ github.event.inputs.target_branch }}` is not that branch's own tip, stop — do not attempt to fix it by merging or rebasing; call `noop` and explain what went wrong.
 - Preserve commit authorship and messages via `-x` (adds a `(cherry picked from commit ...)` trailer) — do not squash or reword unless resolving a conflict requires touching the same lines.
 - Be conservative when resolving conflicts: if you cannot confidently reconcile a conflict without changing behavior, leave the conflict markers in place, commit them as-is, and clearly flag in the PR body which files still need human review — do not guess silently.
-- Never modify files outside the ones touched by the cherry-picked commits.
+- Never modify files outside the ones touched by the cherry-picked commits, except `.secrets.baseline` (regenerated after every cherry-pick, see step 5) and small adjacent edits unavoidable during conflict resolution.
 - Never modify files outside the ones touched by the cherry-picked commits, except when a conflict resolution makes a small adjacent edit unavoidable.
 - If the final diff against `origin/${{ github.event.inputs.target_branch }}` contains more than 100 files, do not open a PR. Call `noop` and report the full file list instead.
 - If the merge-base of `HEAD` and `origin/${{ github.event.inputs.target_branch }}` is not exactly `origin/${{ github.event.inputs.target_branch }}`, do not open a PR. Call `noop` because the branch is no longer a clean backport branch.

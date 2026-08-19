@@ -59,6 +59,7 @@
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
         <dependency.spring.version>7.0.8</dependency.spring.version>
         <dependency.spring-security.version>7.0.6</dependency.spring-security.version>
+        <dependency.micrometer.version>1.16.6</dependency.micrometer.version> <!-- should be in sync with micrometer-observation transitive dependency from spring-context -->
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.22.1</dependency.jackson.version>
         <dependency.cxf.version>4.1.7</dependency.cxf.version>
@@ -1052,6 +1053,13 @@
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-bom</artifactId>
                 <version>${dependency.spring-security.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-bom</artifactId>
+                <version>${dependency.micrometer.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

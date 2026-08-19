@@ -52,6 +52,7 @@
     <bean id="renditionService2" class="org.alfresco.repo.rendition2.RenditionService2Impl">
         <property name="transactionService" ref="TransactionService" />
         <property name="nodeService" ref="NodeService" />
+        <property name="nodeDAO" ref="nodeDAO" />
         <property name="contentService" ref="ContentService" />
         <property name="renditionPreventionRegistry" ref="renditionPreventionRegistry" />
         <property name="transformClient" ref="transformClient" />

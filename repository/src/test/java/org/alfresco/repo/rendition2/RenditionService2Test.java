@@ -27,6 +27,7 @@ package org.alfresco.repo.rendition2;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -38,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -48,6 +50,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition.RenditionPreventionRegistry;
@@ -83,6 +86,8 @@ public class RenditionService2Test
     private TransactionService transactionService;
     @Mock
     private NodeService nodeService;
+    @Mock
+    private NodeDAO nodeDAO;
     @Mock
     private ContentService contentService;
     @Mock
@@ -135,6 +140,7 @@ public class RenditionService2Test
         when(nodeService.exists(nodeRefMissing)).thenReturn(false);
         when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(contentData);
         when(contentData.getContentUrl()).thenReturn(contentUrl);
+        when(contentData.getSize()).thenReturn(1024L);
 
         doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
@@ -151,6 +157,7 @@ public class RenditionService2Test
 
         renditionService2.setTransactionService(transactionService);
         renditionService2.setNodeService(nodeService);
+        renditionService2.setNodeDAO(nodeDAO);
         renditionService2.setContentService(contentService);
         renditionService2.setRenditionPreventionRegistry(renditionPreventionRegistry);
         renditionService2.setRenditionDefinitionRegistry2(renditionDefinitionRegistry2);
@@ -292,5 +299,46 @@ public class RenditionService2Test
         RenditionDefinition2 doclib = renditionDefinitionRegistry2.getRenditionDefinition("doclib");
         String resizeWidth = doclib.getTransformOptions().get("resizeWidth");
         assertEquals("doclib has not been overridden", "180", resizeWidth);
+    }
+
+    /**
+     * In a cluster with invalidating cache, the rendition callback reads stale ContentData (size=0) because cache invalidation hasn't propagated. The fix detects size=0, calls nodeDAO.setCheckNodeConsistency() to bypass the shared cache, and re-reads from DB. This test simulates the stale cache scenario where the re-read after bypass returns fresh data.
+     */
+    @Test
+    public void staleCacheBypassSucceedsWithFreshDataFromDB()
+    {
+        ContentData staleContentData = new ContentData("store://stale-url", "application/pdf", 0L, "UTF-8");
+        ContentData freshContentData = new ContentData("store://fresh-url", "application/pdf", 4726L, "UTF-8");
+
+        AtomicBoolean cacheBypassEnabled = new AtomicBoolean(false);
+        doAnswer(inv -> {
+            cacheBypassEnabled.set(true);
+            return null;
+        }).when(nodeDAO).setCheckNodeConsistency();
+
+        when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenAnswer(invocation -> cacheBypassEnabled.get() ? freshContentData : staleContentData);
+
+        renditionService2.render(nodeRef, TEST_RENDITION);
+
+        verify(nodeDAO).setCheckNodeConsistency();
+        verify(transformClient, times(1)).transform(any(), any(), nullable(String.class), anyInt());
+        assertFalse("failure() should NOT be called when DB re-read returns valid content", failureCalled);
+    }
+
+    /**
+     * When content is genuinely 0 bytes (not a stale cache issue), the transform is still attempted (preserving original behavior — downstream validation handles the rejection).
+     */
+    @Test
+    public void genuineEmptyContentStillAttemptsTransform()
+    {
+        ContentData emptyContentData = new ContentData("store://empty-url", "application/pdf", 0L, "UTF-8");
+
+        // Always return 0 size — this is genuinely empty content, not stale cache
+        when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(emptyContentData);
+
+        renditionService2.render(nodeRef, TEST_RENDITION);
+
+        verify(nodeDAO).setCheckNodeConsistency();
+        verify(transformClient, times(1)).transform(any(), any(), nullable(String.class), anyInt());
     }
 }

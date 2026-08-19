@@ -17,6 +17,9 @@ on:
         description: "Jira ticket ID to prefix the PR title with (e.g. ACS-1234)"
         type: string
         required: true
+checkout:
+  - fetch-depth: 0
+    fetch: ["release/*"]
 permissions:
   contents: read
   pull-requests: read
@@ -60,6 +63,8 @@ create a branch from <target_branch> → apply the cherry-picked commits → res
 
 `master` is only where the commit SHAs are looked up and validated in step 1 below. You must never check out `master`, merge it, rebase onto it, or otherwise bring its tree into the backport branch as a whole — the only content that may enter the backport branch from `master` is the diff introduced by each individual cherry-picked commit in step 4.
 
+0. **Confirm the checkout has full history before doing anything else.** Run `git rev-parse --is-shallow-repository`. It must print `false`. If it prints `true`, the repository is shallow-cloned and any diff you produce against `origin/${{ github.event.inputs.target_branch }}` will be meaningless (it will appear to touch every file in the repository). Do **not** attempt to work around this yourself with `git fetch --unshallow` or similar — git credentials are intentionally removed after checkout and that fetch will fail anyway. Instead call `noop` reporting that the checkout is shallow and that the workflow's `checkout:` frontmatter needs `fetch-depth: 0`, and stop.
+
 1. **Resolve and validate the commit list against `master`.**
    - Normalize the `commits` input into an ordered list: replace every comma and newline with a space, split on whitespace, and drop empty tokens. Keep the resulting tokens in the exact order they were supplied — this is the cherry-pick order.
    - For each token, resolve it to a full 40-character SHA with `git rev-parse --verify <token>^{commit}`, then confirm it is actually reachable from master with `git merge-base --is-ancestor <resolved-sha> origin/master`.
@@ -94,4 +99,4 @@ create a branch from <target_branch> → apply the cherry-picked commits → res
 ## Safe Outputs
 
 - **create_pull_request**: exactly one call, per the Task section above.
-- **noop**: use when the target branch doesn't exist, no commits were provided, a commit SHA fails to resolve or isn't an ancestor of master, or the backport branch was created from the wrong base — with a one-line reason.
+- **noop**: use when the checkout is shallow, the target branch doesn't exist, no commits were provided, a commit SHA fails to resolve or isn't an ancestor of master, or the backport branch was created from the wrong base — with a one-line reason.

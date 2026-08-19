@@ -713,10 +713,10 @@ jobs:
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/${{ matrix.compose-file }}
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      - name: "Read DB port from compose file"
+      - name: "Read DB port from compose"
         run: |
           COMPOSE_FILE="${{ env.TAS_ENVIRONMENT }}/${{ matrix.compose-file }}"
-          DB_PORT=$(yq '.services.postgres.ports[0]' "$COMPOSE_FILE" | tr -d '"' | cut -d: -f1)
+          DB_PORT=$(docker compose -f "$COMPOSE_FILE" port postgres 5432 | awk -F: '{print $NF}')
           echo "DB_PORT=${DB_PORT}" >> "$GITHUB_ENV"
       - name: "Run tests"
         id: tests

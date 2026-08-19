@@ -20,7 +20,7 @@
                     <exclude name="testAspectIsRemovedWithItsProperties"/>
                 </methods>
             </class>
-            <!-- 3) SearchFacetTest.testSearchWithFacets: will include all the tests-->
+            <!-- 3) SearchTest: will include all the tests-->
             <class name="org.alfresco.rest.search.SearchTest"/>
             <!-- 4) SearchSimpleCasesTest: will include all the tests -->
             <class name="org.alfresco.rest.search.SearchSimpleCasesTest"/>

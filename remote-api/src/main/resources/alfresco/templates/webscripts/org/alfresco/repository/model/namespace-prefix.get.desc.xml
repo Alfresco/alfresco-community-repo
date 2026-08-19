@@ -1,9 +1,0 @@
-<webscript>
-  <shortname>Namespace Prefix Map</shortname>
-  <description>Returns a map of namespace URI to prefix for every namespace registered in the repository.</description>
-  <url>/api/model/namespace-prefix</url>
-  <format default="json">argument</format>
-  <authentication>user</authentication>
-  <transaction allow="readonly">required</transaction>
-  <family>Model</family>
-</webscript>

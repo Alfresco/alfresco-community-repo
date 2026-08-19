@@ -27,12 +27,15 @@ package org.alfresco.repo.content;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -41,7 +44,9 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -49,10 +54,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
+import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -330,5 +339,147 @@ public class ContentServiceImplUnitTest
         sysConfig.setMaxExpiryTimeInSec(SYS_MAX_EXPIRY_TIME_IN_SECS);
         sysConfig.validate();
         contentService.setSystemWideDirectUrlConfig(sysConfig);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void setupReaderMocks()
+    {
+        ContentReader mockReader = mock(ContentReader.class);
+        when(mockContentStore.getReader(SOME_CONTENT_URL)).thenReturn(mockReader);
+
+        Set<QName> aspects = new HashSet<>();
+        when(mockNodeService.getAspects(NODE_REF)).thenReturn(aspects);
+        when(mockNodeService.getType(NODE_REF)).thenReturn(ContentModel.TYPE_CONTENT);
+
+        // Set up the policy delegates (package-private fields)
+        ClassPolicyDelegate<OnContentReadPolicy> readDelegate = mock(ClassPolicyDelegate.class);
+        ClassPolicyDelegate<OnContentDownloadPolicy> downloadDelegate = mock(ClassPolicyDelegate.class);
+
+        OnContentReadPolicy readPolicy = mock(OnContentReadPolicy.class);
+        OnContentDownloadPolicy downloadPolicy = mock(OnContentDownloadPolicy.class);
+
+        when(readDelegate.get(any(NodeRef.class), any(Set.class))).thenReturn(readPolicy);
+        when(downloadDelegate.get(any(NodeRef.class), any(Set.class))).thenReturn(downloadPolicy);
+
+        contentService.onContentReadDelegate = readDelegate;
+        contentService.onContentDownloadDelegate = downloadDelegate;
+    }
+
+    @Test
+    public void testGetReader_noAttachment_firesOnlyReadPolicy()
+    {
+        setupReaderMocks();
+
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+    }
+
+    @Test
+    public void testGetReader_attachmentFalse_firesOnlyReadPolicy()
+    {
+        setupReaderMocks();
+
+        ContentDownloadContext.setAttachment(false);
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+        ContentDownloadContext.clear();
+    }
+
+    @Test
+    public void testGetReader_attachmentTrue_policyNone_firesOnlyReadPolicy()
+    {
+        setupReaderMocks();
+        contentService.setDownloadPolicy("NONE");
+
+        ContentDownloadContext.setAttachment(true);
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+        ContentDownloadContext.clear();
+    }
+
+    @Test
+    public void testGetReader_attachmentTrue_policyStandard_firesBothPolicies()
+    {
+        setupReaderMocks();
+        contentService.setDownloadPolicy("STANDARD");
+
+        ContentDownloadContext.setAttachment(true);
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        ContentDownloadContext.clear();
+    }
+
+    @Test
+    public void testGetReader_noAttachment_policyExtended_firesOnlyReadPolicy()
+    {
+        setupReaderMocks();
+        contentService.setDownloadPolicy("EXTENDED");
+
+        // No attachment set – ContentServiceImpl treats this as a plain read.
+        // CMIS/WebDAV are responsible for setting attachment=true in EXTENDED mode.
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+    }
+
+    @Test
+    public void testGetReader_attachmentTrue_policyExtended_firesBothPolicies()
+    {
+        setupReaderMocks();
+        contentService.setDownloadPolicy("EXTENDED");
+
+        // Simulates CMIS/WebDAV explicitly setting attachment=true in EXTENDED mode
+        ContentDownloadContext.setAttachment(true);
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        ContentDownloadContext.clear();
+    }
+
+    @Test
+    public void testGetReader_noAttachment_policyStandard_firesOnlyReadPolicy()
+    {
+        setupReaderMocks();
+        contentService.setDownloadPolicy("STANDARD");
+
+        // No attachment set (simulates unknown caller like CMIS/WebDAV)
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNotNull(reader);
+        verify(contentService.onContentReadDelegate, times(1)).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+    }
+
+    @Test
+    public void testGetReader_noContent_noPoliciesFired()
+    {
+        // Node has no content
+        when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(null);
+        when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
+        setupReaderMocks();
+
+        ContentDownloadContext.setAttachment(true);
+        ContentReader reader = contentService.getReader(NODE_REF, PROP_CONTENT_QNAME);
+
+        assertNull(reader);
+        verify(contentService.onContentReadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+        verify(contentService.onContentDownloadDelegate, never()).get(any(NodeRef.class), any(Set.class));
+        ContentDownloadContext.clear();
     }
 }

@@ -44,6 +44,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.web.context.ServletContextAware;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentDownloadContext;
 import org.alfresco.repo.web.scripts.MimeTypeUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -173,9 +174,16 @@ public class ContentGet extends StreamContent implements ServletContextAware
                 logger.warn("Ignored a=false for " + nodeRef.getId() + " since " + mimetype + " is not in the whitelist for non-attach content types");
             }
         }
-
+        ContentDownloadContext.setAttachment(attach);
         // Stream the content
-        streamContentLocal(req, res, nodeRef, attach, propertyQName, null);
+        try
+        {
+            streamContentLocal(req, res, nodeRef, attach, propertyQName, null);
+        }
+        finally
+        {
+            ContentDownloadContext.clear();
+        }
     }
 
     protected void streamContentLocal(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, boolean attach, QName propertyQName, Map<String, Object> model) throws IOException

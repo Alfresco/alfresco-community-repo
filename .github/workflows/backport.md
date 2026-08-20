@@ -39,6 +39,7 @@ tools:
 safe-outputs:
   create-pull-request:
     max: 1
+    base-branch: "${{ github.event.inputs.target_branch }}"
     allowed-base-branches:
         - "release/*"
   noop:

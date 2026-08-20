@@ -73,25 +73,25 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
      * Returns documentation URL. You can specify property key which should hold value of topic uid and url component(if required). * a) If no arguments are provided, the default documentation URL is returned.
      * 
      * <pre>
-     *      ${documentationUrl() -> https://support.hyland.com/p/alfresco
+     *      ${documentationUrl() -> https://docs.hyland.com/p/alfresco
      * </pre>
      * 
      * b) First argument is interpreted as Topic UID of the URL. The value is retrieved and treated as Topic UID appended after baseURL and before version.
      * 
      * <pre>
-     *      ${documentationURL("eet567890373737")} -> https://support.hyland.com/access?dita:id=eet567890373737&vrm_version=25.1
+     *      ${documentationURL("eet567890373737")} -> https://docs.hyland.com/access?dita:id=eet567890373737&vrm_version=25.5
      * </pre>
      * 
      * c) Second argument(if required) is interpreted as an additional URL component, which will be appended to the URL to denote a specific component of Alfresco.
      * 
      * <pre>
-     *     ${documentationUrl("eeu1720075126296", "&component=Alfresco%20Content%20Services%20Community%20Edition"} -> https://support.hyland.com/access?dita:id=eeu1720075126296&vrm_version=25.1&component=Alfresco%20Content%20Services%20Community%20Edition
+     *     ${documentationUrl("eeu1720075126296", "&component=Alfresco%20Content%20Services%20Community%20Edition"} -> https://docs.hyland.com/access?dita:id=eeu1720075126296&vrm_version=25.3&component=Alfresco%20Content%20Services%20Community%20Edition
      * </pre>
      *
      * d) Third argument (if required) is interpreted as the Alfresco component (e.g., "solr", "elasticsearch", or empty) to determine which version to use in the URL.
      *
      * <pre>
-     *     ${documentationUrl("eeu1720075126296", "", "solr")} -> https://support.hyland.com/access?dita:id=eeu1720075126296&vrm_version=2.0
+     *     ${documentationUrl("eeu1720075126296", "", "solr")} -> https://docs.hyland.com/access?dita:id=eeu1720075126296&vrm_version=2.0
      * </pre>
      *
      * @param args

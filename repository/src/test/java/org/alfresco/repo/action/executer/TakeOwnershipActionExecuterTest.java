@@ -113,7 +113,7 @@ public class TakeOwnershipActionExecuterTest
                 assertEquals("Wrong owner at test start.", SITE_INFO.siteContributor, OWNABLE_SERVICE.getOwner(TEST_DOC));
 
                 // Then the site owner (user 1) takes ownership of the document.
-                // See e.g. https://docs.alfresco.com/4.1/concepts/cuh-user-roles-permissions.html
+                // See e.g. https://docs.hyland.com/4.1/concepts/cuh-user-roles-permissions.html
                 // for details on who has permission to take ownership.
                 assertEquals(TEST_USER1.getUsername(), AuthenticationUtil.getRunAsUser());
 

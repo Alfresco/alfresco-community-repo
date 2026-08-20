@@ -76,8 +76,8 @@
         <dependency.httpclient.version>4.5.14</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.16</dependency.httpcore.version>
         <dependency.httpcomponents-httpclient5.version>5.5</dependency.httpcomponents-httpclient5.version>
-        <dependency.httpcomponents-httpcore5.version>5.3.4</dependency.httpcomponents-httpcore5.version>
-        <dependency.httpcomponents-httpcore5-h2.version>5.3.4</dependency.httpcomponents-httpcore5-h2.version>
+        <dependency.httpcomponents-httpcore5.version>5.4.3</dependency.httpcomponents-httpcore5.version>
+        <dependency.httpcomponents-httpcore5-h2.version>5.4.3</dependency.httpcomponents-httpcore5-h2.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.google-cloud-libraries-bom.version>26.84.0</dependency.google-cloud-libraries-bom.version>
@@ -93,7 +93,7 @@
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>4.18.3</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.137.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
-        <dependency.activemq.version>6.2.4</dependency.activemq.version>
+        <dependency.activemq.version>6.2.7</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>
 

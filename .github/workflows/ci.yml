@@ -34,20 +34,6 @@ env:
   AUTH0_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
 
 jobs:
-  commit_parser:
-    name: "Parse commit metadata"
-    runs-on: ubuntu-latest
-    outputs:
-      title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 2
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v18.11.0
-        id: get-commit
-        with:
-          header-only: "true"
-
   prepare:
     name: "Prepare"
     runs-on: ubuntu-latest
@@ -69,24 +55,6 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  test_run_check:
-    name: "Test run check"
-    runs-on: ubuntu-latest
-    needs: [commit_parser]
-    outputs:
-      tests: ${{ steps.check.outputs.tests }}
-    steps:
-      - id: check
-        run: |
-          echo "tests=true" >> "$GITHUB_OUTPUT"
-        if: >
-          (
-            (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
-            !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
-            !contains(needs.commit_parser.outputs.title, '[force]')
-          ) ||
-          contains(needs.commit_parser.outputs.title, '[run tests]')
-
   pmd_scan:
     name: "PMD Scan"
     runs-on: ubuntu-latest
@@ -104,8 +72,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
       - uses: Alfresco/ya-pmd-scan@v4.4.1
         with:
           classpath-build-command: "mvn test-compile -ntp -Pags -pl \"-:alfresco-community-repo-docker\""
@@ -113,10 +79,11 @@ jobs:
   all_unit_tests_suite:
     name: ${{ matrix.testName }} - AllUnitTestsSuite - Build and test
     runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
+    needs: [prepare]
+    if: >
+      !contains(github.event.head_commit.message, '[skip repo]') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
     strategy:
       fail-fast: false
       matrix:
@@ -175,7 +142,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
-
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |

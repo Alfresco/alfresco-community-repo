@@ -29,7 +29,6 @@ jobs:
       security-events: write
     uses: ./.github/workflows/ci.yml
     secrets: inherit
-
   push_to_nexus:
     name: "Push to Nexus"
     runs-on: ubuntu-latest

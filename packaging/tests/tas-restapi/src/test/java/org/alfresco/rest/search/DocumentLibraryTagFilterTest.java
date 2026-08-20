@@ -48,7 +48,7 @@ import org.alfresco.utility.model.FileType;
 /**
  * End-to-end test for the Share Document Library "tag" filter (slingshot {@code doclist} webscript, driven by {@code filters.lib.js}) running against a real search server.
  * <p>
- * Reproduces and guards MNT-25799: clicking a tag that contains a space used to return either no documents or every document. This test tags documents through the public v1 REST API, waits for the live index to catch up, then calls the same {@code /slingshot/doclib2/doclist} endpoint the Share UI uses and asserts that the tag filter returns exactly the tagged document - for both a single-word tag and a tag containing a space.
+ * clicking a tag that contains a space used to return either no documents or every document. This test tags documents through the public v1 REST API, waits for the live index to catch up, then calls the same {@code /slingshot/doclib2/doclist} endpoint the Share UI uses and asserts that the tag filter returns exactly the tagged document - for both a single-word tag and a tag containing a space.
  * <p>
  * The test lives in {@code org.alfresco.rest.search} so it is picked up automatically by the Elasticsearch E2E suite ({@code elasticsearch-e2e-suite.xml}), proving the fix works against an Elasticsearch server.
  */
@@ -85,7 +85,7 @@ public class DocumentLibraryTagFilterTest extends AbstractE2EFunctionalTest
                 "Space-containing tag was not indexed/searchable in time: " + spaceTag);
     }
 
-    /** MNT-25799: a tag containing a space must return exactly the document it was applied to. */
+    /** A tag containing a space must return exactly the document it was applied to. */
     @Test
     public void tagFilterWithSpaceInTagNameReturnsOnlyTheTaggedDocument()
     {

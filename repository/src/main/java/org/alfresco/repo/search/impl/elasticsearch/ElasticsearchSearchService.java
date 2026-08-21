@@ -28,6 +28,7 @@ package org.alfresco.repo.search.impl.elasticsearch;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TAG;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -66,16 +67,19 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
     private final Map<String, LuceneQueryLanguageSPI> queryLanguages;
     private NodeService nodeService;
     private DictionaryService dictionaryService;
+    private NamespacePrefixResolver namespacePrefixResolver;
 
     public ElasticsearchSearchService(QueryRegisterComponent queryRegister,
             Map<String, LuceneQueryLanguageSPI> queryLanguages,
             NodeService nodeService,
-            DictionaryService dictionaryService)
+            DictionaryService dictionaryService,
+            NamespacePrefixResolver namespacePrefixResolver)
     {
         this.queryRegister = queryRegister;
         this.queryLanguages = queryLanguages;
         this.nodeService = nodeService;
         this.dictionaryService = dictionaryService;
+        this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
     @Override
@@ -115,6 +119,7 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
     public ResultSet query(SearchParameters searchParameters)
     {
         adjustSearchParameters(searchParameters);
+        parameteriseQuery(searchParameters);
         LuceneQueryLanguageSPI language = queryLanguages.get(searchParameters.getLanguage().toLowerCase());
         if (language != null)
         {
@@ -124,6 +129,23 @@ public class ElasticsearchSearchService extends AbstractSearcherComponent
         {
             throw new SearcherException("Unknown query language: " + searchParameters.getLanguage());
         }
+    }
+
+    private void parameteriseQuery(SearchParameters searchParameters)
+    {
+        if (searchParameters.getQuery() == null || searchParameters.getQueryParameterDefinitions().isEmpty())
+        {
+            return;
+        }
+
+        Map<QName, QueryParameterDefinition> map = new HashMap<>();
+        for (QueryParameterDefinition qpd : searchParameters.getQueryParameterDefinitions())
+        {
+            map.put(qpd.getQName(), qpd);
+        }
+
+        String parameterisedQueryString = parameterise(searchParameters.getQuery(), map, null, namespacePrefixResolver);
+        searchParameters.setQuery(parameterisedQueryString);
     }
 
     @Override

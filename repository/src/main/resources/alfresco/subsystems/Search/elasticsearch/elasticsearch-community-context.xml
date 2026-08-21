@@ -156,6 +156,7 @@
         <property name="queryRegister" ref="search.queryRegisterComponent" />
         <property name="nodeService" ref="nodeService" />
         <property name="dictionaryService" ref="DictionaryService" />
+        <property name="namespacePrefixResolver" ref="namespaceService" />
     </bean>
 
     <bean id="elasticsearchQueryExecutor" abstract="true" class="org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchQueryExecutor">

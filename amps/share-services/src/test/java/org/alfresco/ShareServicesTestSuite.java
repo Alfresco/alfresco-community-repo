@@ -41,6 +41,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.wiki.WikiServiceImplTest.class,
         org.alfresco.slingshot.documentlibrary.FolderTemplateTest.class,
         org.alfresco.slingshot.web.scripts.SlingshotContentGetTest.class,
+        org.alfresco.slingshot.web.scripts.FiltersLibTest.class,
 })
 public class ShareServicesTestSuite
 {}

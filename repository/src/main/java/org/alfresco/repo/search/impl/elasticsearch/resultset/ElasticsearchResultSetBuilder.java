@@ -63,8 +63,24 @@ public class ElasticsearchResultSetBuilder
         this.aggregationHandler = aggregationHandler;
     }
 
+    public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse)
+    {
+        return build(searchParameters, searchResponse, null, false, Map.of(), Map.of());
+    }
+
     public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, Map<String, String> bucketsTranslator,
             Map<String, Pair<String, String>> complementaryBucketsTranslator)
+    {
+        return build(searchParameters, searchResponse, null, false, bucketsTranslator, complementaryBucketsTranslator);
+    }
+
+    public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, String nextSearchAfterToken)
+    {
+        return build(searchParameters, searchResponse, nextSearchAfterToken, true, Map.of(), Map.of());
+    }
+
+    private ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse, String nextSearchAfterToken,
+            boolean searchAfterMode, Map<String, String> bucketsTranslator, Map<String, Pair<String, String>> complementaryBucketsTranslator)
     {
         var hits = ofNullable(searchResponse.hits()).map(HitsMetadata::hits).orElse(List.of());
         List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters.isBulkFetchEnabled());
@@ -80,6 +96,11 @@ public class ElasticsearchResultSetBuilder
         Map<String, Integer> facetQueries = aggregation.facetQueries();
         Map<String, List<Pair<String, Integer>>> fieldFacets = aggregation.fieldFacets();
         Map<NodeRef, List<Pair<String, List<String>>>> highlights = highlightsHandler.handle(searchParameters, searchResponse);
+        Boolean explicitHasMore = null;
+        if (searchAfterMode)
+        {
+            explicitHasMore = nextSearchAfterToken != null;
+        }
         return new ElasticsearchResultSet(
                 nodeService,
                 nodeRefAndScores,
@@ -90,7 +111,9 @@ public class ElasticsearchResultSetBuilder
                 start,
                 facetQueries,
                 fieldFacets,
-                highlights);
+                highlights,
+                nextSearchAfterToken,
+                explicitHasMore);
     }
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, List<Hit<Object>> hits, long totalHits, long queryTime)
@@ -112,7 +135,9 @@ public class ElasticsearchResultSetBuilder
                 start,
                 Map.of(),
                 Map.of(),
-                Map.of());
+                Map.of(),
+                null,
+                null);
     }
 
     private List<NodeRefAndScore> mapNodeRefsAndScores(List<Hit<Object>> hits, boolean isBulkFetchEnabled)

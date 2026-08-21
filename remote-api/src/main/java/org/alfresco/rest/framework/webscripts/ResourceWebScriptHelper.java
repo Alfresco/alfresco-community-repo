@@ -153,7 +153,7 @@ public class ResourceWebScriptHelper
                 }
             }
             return CollectionWithPagingInfo.asPaged(collectionToWrap.getPaging(), resultCollection, collectionToWrap.hasMoreItems(),
-                    collectionToWrap.getTotalItems(), sourceEntity, collectionToWrap.getContext());
+                    collectionToWrap.getTotalItems(), sourceEntity, collectionToWrap.getContext(), collectionToWrap.getNextSearchAfterToken());
         }
         else
         {

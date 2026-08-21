@@ -62,6 +62,7 @@ import org.alfresco.repo.dictionary.CompiledModel;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
@@ -386,10 +387,10 @@ public class ElasticsearchInitialiserTest
         when(secondElasticsearchIndexService.createIndex()).thenReturn(true);
 
         ElasticsearchInitialiser elasticsearchInitialiser = new ElasticsearchInitialiser(mockDictionary,
-                mockElasticSearchIndexService, mockContentModelSynchronizer, jobLockService, 0, 0, 3, 0, true);
+                mockElasticSearchIndexService, mockContentModelSynchronizer, jobLockService, 0, 0, 3, 0, true, new SearchEngineDetector());
 
         ElasticsearchInitialiser secondElasticsearchInitialiser = new ElasticsearchInitialiser(mockDictionary,
-                secondElasticsearchIndexService, secondContentModelSynchronizer, jobLockService, 0, 0, 3, 0, true);
+                secondElasticsearchIndexService, secondContentModelSynchronizer, jobLockService, 0, 0, 3, 0, true, new SearchEngineDetector());
 
         Thread thread1 = new Thread(() -> elasticsearchInitialiser.initWithLock());
         thread1.start();

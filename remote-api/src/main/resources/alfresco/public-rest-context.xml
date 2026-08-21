@@ -144,7 +144,6 @@
                 <entry key="java.lang.IllegalArgumentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.service.cmr.repository.CyclicChildRelationshipException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.InvalidArgumentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
-                <entry key="org.alfresco.repo.search.impl.elasticsearch.query.SearchStrategyException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.service.cmr.version.VersionServiceException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.service.cmr.repository.datatype.TypeConversionException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.NotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />

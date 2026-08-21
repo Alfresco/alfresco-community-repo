@@ -1,0 +1,42 @@
+name: Scheduled release trigger
+
+# Triggers a release on master every Sunday at midnight by creating an empty
+# [force] commit, which causes master_release.yml to run the release job.
+
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  trigger-release:
+    name: "Create force-release commit"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Generate GitHub App token"
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
+          permission-contents: write
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          ref: master
+
+      - name: "Compute release date"
+        id: date
+        run: echo "value=$(date --iso-8601)" >> "$GITHUB_OUTPUT"
+
+      - name: "Create empty force-release commit"
+        uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          message: "[force] Force release for ${{ steps.date.outputs.value }}"
+          allow-empty-commit: true
+          if-no-commit: error

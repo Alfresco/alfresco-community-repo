@@ -81,6 +81,9 @@ public class FiltersLibTest
         cx = Context.enter();
         // Interpretive mode - no bytecode generation required for a simple script evaluation
         cx.setOptimizationLevel(-1);
+        // filters.lib.js uses ES6 syntax (arrow functions in constructCategoryPathQuery),
+        // so the context must parse the script in ES6 mode, matching the repository's Rhino processor
+        cx.setLanguageVersion(Context.VERSION_ES6);
         scope = cx.initStandardObjects();
 
         cx.evaluateString(scope, MOCKS, "mocks", 1, null);

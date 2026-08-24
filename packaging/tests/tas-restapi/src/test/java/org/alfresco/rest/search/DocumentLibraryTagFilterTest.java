@@ -64,7 +64,7 @@ public class DocumentLibraryTagFilterTest extends RestTest
     private FileModel spaceTaggedFile;
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
+    public void dataPreparation()
     {
         // Own the site with a dedicated user so the same user can add both content and tags.
         testUser = dataUser.createRandomTestUser();
@@ -127,11 +127,18 @@ public class DocumentLibraryTagFilterTest extends RestTest
     }
 
     /** Polls the Search API until {@code expectedFileName} resolves for the tag (index catch-up). */
-    private void waitForTagIndexed(String tag, String expectedFileName) throws Exception
+    private void waitForTagIndexed(String tag, String expectedFileName)
     {
         RetryOperation op = () -> assertTrue(tagFilter(tag).contains(expectedFileName),
                 "Tag not searchable yet: " + tag);
-        Utility.sleep(300, 100000, op);
+        try
+        {
+            Utility.sleep(300, 100000, op);
+        }
+        catch (Exception e)
+        {
+            throw new AssertionError("Tag was not searchable in time: " + tag, e);
+        }
     }
 
     /** Runs an AFTS {@code TAG:'<tag>'} query and returns the names of the matching documents. */

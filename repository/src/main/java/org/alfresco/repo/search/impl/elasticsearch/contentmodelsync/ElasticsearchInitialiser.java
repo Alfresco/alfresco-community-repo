@@ -46,6 +46,7 @@ import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -92,10 +93,11 @@ public class ElasticsearchInitialiser implements DictionaryListener
     private final Set<QName> modelCache = new HashSet<>();
     // This counter will be used during the map model execution
     private final AtomicInteger globalModelInitialisedCounter = new AtomicInteger(0);
+    private SearchEngineDetector searchEngineDetector;
 
     public ElasticsearchInitialiser(DictionaryDAOImpl dictionary, ElasticsearchIndexService elasticsearchIndexService,
             ContentModelSynchronizer contentModelSynchronizer, JobLockService jobLockService, int retryAttempts, int retryPeriodSeconds,
-            int lockRetryAttempts, int lockRetryPeriodSeconds, boolean createIndexIfNotExists)
+            int lockRetryAttempts, int lockRetryPeriodSeconds, boolean createIndexIfNotExists, SearchEngineDetector searchEngineDetector)
     {
         this.dictionaryDAO = dictionary;
         this.dictionaryDAO.registerListener(this);
@@ -107,6 +109,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
         this.lockRetryPeriodSeconds = lockRetryPeriodSeconds;
         this.createIndexIfNotExists = createIndexIfNotExists;
         this.elasticsearchIndexService = elasticsearchIndexService;
+        this.searchEngineDetector = searchEngineDetector;
     }
 
     public ElasticsearchInitialiser()
@@ -263,6 +266,11 @@ public class ElasticsearchInitialiser implements DictionaryListener
             }
         }
         LOGGER.info("Successfully connected to Elasticsearch index.");
+
+        if (!isTerminated.get() && searchEngineDetector != null)
+        {
+            searchEngineDetector.detectAndStore();
+        }
         // Attempt to map the models.
         mapModels();
     }
@@ -357,7 +365,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
 
     /**
      * This method will be invoked at startup and every time a afterDictionaryInit event is triggered.
-     * 
+     *
      * @return true if new models were mapped during the method execution, false otherwise.
      */
     private boolean mapModels()

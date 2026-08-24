@@ -33,6 +33,7 @@ import static org.mockito.Mockito.*;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -49,8 +50,11 @@ import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.QName;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ElasticsearchSearchServiceTest
@@ -72,6 +76,9 @@ public class ElasticsearchSearchServiceTest
     private DictionaryService dictionaryService;
 
     @Mock
+    private NamespacePrefixResolver namespacePrefixResolver;
+
+    @Mock
     private SearchParameters searchParameters;
 
     @Mock
@@ -83,9 +90,10 @@ public class ElasticsearchSearchServiceTest
         Map<String, LuceneQueryLanguageSPI> languages = new HashMap<>();
         languages.put(LANGUAGE.toLowerCase(Locale.getDefault()), queryLanguage);
 
-        searchService = new ElasticsearchSearchService(queryRegister, languages, nodeService, dictionaryService);
+        searchService = new ElasticsearchSearchService(queryRegister, languages, nodeService, dictionaryService, namespacePrefixResolver);
 
         when(searchParameters.getLanguage()).thenReturn(LANGUAGE);
+        when(searchParameters.getQueryParameterDefinitions()).thenReturn(new ArrayList<>());
         when(queryLanguage.executeQuery(any(SearchParameters.class))).thenReturn(resultSet);
     }
 
@@ -150,6 +158,37 @@ public class ElasticsearchSearchServiceTest
 
         verify(searchParameters, times(1)).setQuery("FIELD:value AND (TAG:alfresco OR TAG:nuxeo)");
         verify(searchParameters, times(1)).setLanguage(LANGUAGE_FTS_ALFRESCO);
+    }
+
+    @Test
+    public void luceneQueryWithParameterDefinition_shouldSubstitutePlaceholderWithDefaultValue()
+    {
+        String qshareUri = "http://www.alfresco.org/model/qshare/1.0";
+        when(namespacePrefixResolver.getNamespaceURI("qshare")).thenReturn(qshareUri);
+
+        QName sharedBy = QName.createQName(qshareUri, "sharedBy");
+        QueryParameterDefinition qpd = mock(QueryParameterDefinition.class);
+        when(qpd.getQName()).thenReturn(sharedBy);
+        when(qpd.hasDefaultValue()).thenReturn(true);
+        when(qpd.getDefault()).thenReturn("admin");
+
+        when(searchParameters.getQuery()).thenReturn("ASPECT:\"qshare:shared\" +@qshare:sharedBy:\"${qshare:sharedBy}\"");
+        when(searchParameters.getQueryParameterDefinitions()).thenReturn(new ArrayList<>(List.of(qpd)));
+
+        searchService.query(searchParameters);
+
+        verify(searchParameters, times(1)).setQuery("ASPECT:\"qshare:shared\" +@qshare:sharedBy:\"admin\"");
+    }
+
+    @Test
+    public void luceneQueryWithoutParameterDefinitions_shouldNotSubstitute()
+    {
+        when(searchParameters.getQuery()).thenReturn("ASPECT:\"qshare:shared\"");
+        when(searchParameters.getQueryParameterDefinitions()).thenReturn(new ArrayList<>());
+
+        searchService.query(searchParameters);
+
+        verify(searchParameters, never()).setQuery(any());
     }
 
     @Test

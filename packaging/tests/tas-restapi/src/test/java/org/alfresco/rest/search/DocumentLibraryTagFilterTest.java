@@ -39,11 +39,13 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.UserModel;
 
 /**
  * End-to-end test for the Share Document Library "tag" filter (slingshot {@code doclist} webscript, driven by {@code filters.lib.js}) running against a real search server.
@@ -53,13 +55,18 @@ import org.alfresco.utility.model.FileType;
  * The test lives in {@code org.alfresco.rest.search} so it is picked up automatically by the Elasticsearch E2E suite ({@code elasticsearch-e2e-suite.xml}), proving the fix works against an Elasticsearch server.
  */
 @SuppressWarnings({"PMD.MethodNamingConventions", "PMD.LongVariable"})
-public class DocumentLibraryTagFilterTest extends AbstractE2EFunctionalTest
+public class DocumentLibraryTagFilterTest extends RestTest
 {
     /** Webscript service prefix for the slingshot doclist endpoint (equivalent to {@code /alfresco/s}). */
     private static final String DOCLIST_BASE_PATH = "alfresco/service/slingshot/doclib2/doclist";
 
     /** Default Share Document Library container name. */
     private static final String DOCUMENT_LIBRARY = "documentLibrary";
+
+    /** Maximum number of polling attempts while waiting for a tag to become searchable. */
+    private static final int SEARCH_MAX_ATTEMPTS = 30;
+
+    private UserModel testUser;
 
     private String singleWordTag;
     private String spaceTag;
@@ -70,6 +77,10 @@ public class DocumentLibraryTagFilterTest extends AbstractE2EFunctionalTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
+        // Own the site with a dedicated user so the same user can add both content and tags.
+        testUser = dataUser.createRandomTestUser();
+        testSite = dataSite.usingUser(testUser).createPublicRandomSite();
+
         // Unique suffix keeps the tags private to this test run (the tag filter is repo-wide, not site-scoped).
         String unique = RandomData.getRandomName("Tag").toLowerCase();
         singleWordTag = "single" + unique;

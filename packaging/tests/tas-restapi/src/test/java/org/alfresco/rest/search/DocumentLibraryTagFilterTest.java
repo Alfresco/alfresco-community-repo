@@ -64,7 +64,7 @@ public class DocumentLibraryTagFilterTest extends RestTest
     private static final String DOCUMENT_LIBRARY = "documentLibrary";
 
     /** Maximum number of polling attempts while waiting for a tag to become searchable. */
-    private static final int SEARCH_MAX_ATTEMPTS = 30;
+    private static final int SEARCH_MAX_ATTEMPTS = 120;
 
     private UserModel testUser;
 

@@ -28,19 +28,17 @@ package org.alfresco.rest.search;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import io.restassured.path.json.JsonPath;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.core.RestRequest;
+import org.alfresco.utility.RetryOperation;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
@@ -48,24 +46,15 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.UserModel;
 
 /**
- * End-to-end test for the Share Document Library "tag" filter (slingshot {@code doclist} webscript, driven by {@code filters.lib.js}) running against a real search server.
+ * End-to-end regression test for tag filtering (MNT-25799: a tag containing a space used to return no documents or every document).
  * <p>
- * clicking a tag that contains a space used to return either no documents or every document. This test tags documents through the public v1 REST API, waits for the live index to catch up, then calls the same {@code /slingshot/doclib2/doclist} endpoint the Share UI uses and asserts that the tag filter returns exactly the tagged document - for both a single-word tag and a tag containing a space.
+ * Tags two documents through the public v1 REST API, waits for the live index to catch up, then queries the public Search API with {@code TAG:'<tag>'} and asserts the filter returns exactly the tagged document - for both a single-word tag and a tag containing a space.
  * <p>
- * The test lives in {@code org.alfresco.rest.search} so it is picked up automatically by the Elasticsearch E2E suite ({@code elasticsearch-e2e-suite.xml}), proving the fix works against an Elasticsearch server.
+ * The test lives in {@code org.alfresco.rest.search} so it is picked up by the part2 suite ({@code part2-suite.xml} includes the whole package). The public Search API is available on both the Solr-backed community stack and Elasticsearch, unlike the Share slingshot doclist webscript ({@code share-services}), which is not present in the community image.
  */
 @SuppressWarnings({"PMD.MethodNamingConventions", "PMD.LongVariable"})
 public class DocumentLibraryTagFilterTest extends RestTest
 {
-    /** Webscript service prefix for the slingshot doclist endpoint (equivalent to {@code /alfresco/s}). */
-    private static final String DOCLIST_BASE_PATH = "alfresco/service/slingshot/doclib2/doclist";
-
-    /** Default Share Document Library container name. */
-    private static final String DOCUMENT_LIBRARY = "documentLibrary";
-
-    /** Maximum number of polling attempts while waiting for a tag to become searchable. */
-    private static final int SEARCH_MAX_ATTEMPTS = 120;
-
     private UserModel testUser;
 
     private String singleWordTag;
@@ -75,13 +64,13 @@ public class DocumentLibraryTagFilterTest extends RestTest
     private FileModel spaceTaggedFile;
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation()
+    public void dataPreparation() throws Exception
     {
         // Own the site with a dedicated user so the same user can add both content and tags.
         testUser = dataUser.createRandomTestUser();
         testSite = dataSite.usingUser(testUser).createPublicRandomSite();
 
-        // Unique suffix keeps the tags private to this test run (the tag filter is repo-wide, not site-scoped).
+        // Unique suffix keeps the tags private to this test run (tags are repo-wide, not site-scoped).
         String unique = RandomData.getRandomName("Tag").toLowerCase();
         singleWordTag = "single" + unique;
         spaceTag = "long " + unique; // contains a space - the scenario that used to fail
@@ -89,11 +78,9 @@ public class DocumentLibraryTagFilterTest extends RestTest
         singleWordTaggedFile = createTaggedFile(singleWordTag);
         spaceTaggedFile = createTaggedFile(spaceTag);
 
-        // Wait until both tags resolve through the doclist endpoint (category node + cm:taggable both indexed).
-        assertTrue(waitForTagFilter(singleWordTag, singleWordTaggedFile.getName()),
-                "Single-word tag was not indexed/searchable in time: " + singleWordTag);
-        assertTrue(waitForTagFilter(spaceTag, spaceTaggedFile.getName()),
-                "Space-containing tag was not indexed/searchable in time: " + spaceTag);
+        // Wait until both tags resolve through the Search API (cm:taggable indexed).
+        waitForTagIndexed(singleWordTag, singleWordTaggedFile.getName());
+        waitForTagIndexed(spaceTag, spaceTaggedFile.getName());
     }
 
     /** A tag containing a space must return exactly the document it was applied to. */
@@ -128,50 +115,41 @@ public class DocumentLibraryTagFilterTest extends RestTest
     /** Runs the tag filter and asserts it returns exactly the expected file and never the other (unrelated) file. */
     private void assertTagFilterReturnsExactly(String tag, String expectedFileName, String excludedFileName)
     {
-        JsonPath json = tagFilter(tag);
+        List<String> fileNames = tagFilter(tag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        List<String> fileNames = json.getList("items.location.file");
-        assertNotNull(fileNames, "Doclist response did not contain an items list for tag: " + tag);
         assertTrue(fileNames.contains(expectedFileName),
                 "Tag filter '" + tag + "' did not return the tagged document '" + expectedFileName + "'. Got: " + fileNames);
         assertFalse(fileNames.contains(excludedFileName),
                 "Tag filter '" + tag + "' incorrectly returned an unrelated document '" + excludedFileName + "'. Got: " + fileNames);
-        assertEquals(json.getInt("totalRecords"), 1,
+        assertEquals(fileNames.size(), 1,
                 "Tag filter '" + tag + "' returned an unexpected number of documents. Got: " + fileNames);
     }
 
-    /** Polls the doclist tag filter until {@code expectedFileName} appears or the retry budget is exhausted. */
-    private boolean waitForTagFilter(String tag, String expectedFileName)
+    /** Polls the Search API until {@code expectedFileName} resolves for the tag (index catch-up). */
+    private void waitForTagIndexed(String tag, String expectedFileName) throws Exception
     {
-        for (int attempt = 0; attempt < SEARCH_MAX_ATTEMPTS; attempt++)
-        {
-            JsonPath json = tagFilter(tag);
-            if (String.valueOf(HttpStatus.OK.value()).equals(restClient.getStatusCode()))
-            {
-                List<String> fileNames = json.getList("items.location.file");
-                if (fileNames != null && fileNames.contains(expectedFileName))
-                {
-                    return true;
-                }
-            }
-            Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(),
-                    "Waiting for tag to be indexed. Attempt: " + (attempt + 1));
-        }
-        return false;
+        RetryOperation op = () -> assertTrue(tagFilter(tag).contains(expectedFileName),
+                "Tag not searchable yet: " + tag);
+        Utility.sleep(300, 100000, op);
     }
 
-    /**
-     * Calls the slingshot doclist webscript with the tag filter, as the Share UI does: {@code GET /alfresco/s/slingshot/doclib2/doclist/all/site/{site}/documentLibrary?filter=tag&filterData=<tag>}.
-     */
-    private JsonPath tagFilter(String tag)
+    /** Runs an AFTS {@code TAG:'<tag>'} query and returns the names of the matching documents. */
+    private List<String> tagFilter(String tag)
     {
-        restClient.authenticateUser(testUser);
-        restClient.configureRequestSpec().setBasePath(DOCLIST_BASE_PATH);
+        SearchRequest query = new SearchRequest();
+        RestRequestQueryModel queryModel = new RestRequestQueryModel();
+        queryModel.setLanguage("afts");
+        queryModel.setQuery("TAG:'" + tag + "'");
+        query.setQuery(queryModel);
 
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET,
-                "all/site/{site}/{container}?filter=tag&filterData={filterData}",
-                testSite.getId(), DOCUMENT_LIBRARY, tag);
-        return restClient.process(request).getResponse().jsonPath();
+        return restClient.authenticateUser(testUser)
+                .withSearchAPI()
+                .search(query)
+                .getEntries()
+                .stream()
+                .map(SearchNodeModel::getModel)
+                .map(model -> model.getName())
+                .collect(Collectors.toList());
     }
 }

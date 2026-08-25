@@ -233,30 +233,15 @@ var Filters =
             filterParams.query = "+ID:\"" + parsedArgs.nodeRef + "\"";
             break;
 
-         case "tag":
-            // Remove any trailing "/" character
-            if (filterData.charAt(filterData.length - 1) == "/")
-            {
-               filterData = filterData.slice(0, -1);
-            }
-            filterParams.language = "fts-alfresco";
-            var encodedTag = search.ISO9075Encode(filterData.toLowerCase());
-            var tagNodes = search.luceneSearch('+PATH:"/cm:categoryRoot/cm:taggable//cm:' + encodedTag + '"');
-            if (tagNodes && tagNodes.length > 0)
-            {
-               filterParams.query = '+=cm\\:taggable:"' + tagNodes[0].nodeRef.toString() + '"';
-            }
-            else
-            {
-               // Unknown tag - return no results rather than every document
-               return {
-                  query: null,
-                  limitResults: 0,
-                  sort: [],
-                  language: "fts-alfresco"
-               };
-            }
-            break;
+          case "tag":
+              // Remove any trailing "/" character
+              if (filterData.charAt(filterData.length - 1) == "/")
+              {
+                  filterData = filterData.slice(0, -1);
+              }
+              filterQuery = this.constructPathQuery(parsedArgs);
+              filterParams.query = filterQuery + " +TAG:\"" + search.ISO9075Encode(filterData) + "\"";
+              break;
 
           case "category":
 

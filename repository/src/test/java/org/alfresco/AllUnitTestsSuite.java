@@ -243,6 +243,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.domain.schema.script.ScriptBundleExecutorImplTest.class,
         org.alfresco.repo.search.MLAnaysisModeExpansionTest.class,
         org.alfresco.repo.search.DocumentNavigatorTest.class,
+        org.alfresco.repo.search.AbstractSearcherComponentTest.class,
         org.alfresco.util.NumericEncodingTest.class,
         org.alfresco.repo.search.impl.parsers.CMIS_FTSTest.class,
         org.alfresco.repo.search.impl.parsers.CMISTest.class,
@@ -292,6 +293,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
 
         // Elasticsearch unit tests
         org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsServiceTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetectorTest.class,
         org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactoryTest.class,
         org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSearchServiceTest.class,
         org.alfresco.repo.search.impl.elasticsearch.ElasticsearchCategoryServiceTest.class,

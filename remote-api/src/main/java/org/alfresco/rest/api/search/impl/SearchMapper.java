@@ -199,6 +199,10 @@ public class SearchMapper
             sp.setLimitBy(LimitBy.FINAL_SIZE);
             sp.setLimit(paging.getMaxItems());
             sp.setSkipCount(paging.getSkipCount());
+            if (paging.getSearchAfterToken() != null)
+            {
+                sp.setSearchAfterToken(paging.getSearchAfterToken());
+            }
         }
     }
 

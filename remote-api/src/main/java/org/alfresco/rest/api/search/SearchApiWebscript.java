@@ -85,7 +85,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
     {
         try
         {
-            // Turn JSON into a Java object respresentation
+            // Turn JSON into a Java object representation
             SearchQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchQuery.class);
 
             // Parse the parameters

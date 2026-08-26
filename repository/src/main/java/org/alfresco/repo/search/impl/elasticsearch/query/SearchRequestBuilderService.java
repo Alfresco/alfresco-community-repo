@@ -95,19 +95,9 @@ public class SearchRequestBuilderService
             int size,
             String indexName)
     {
-        int trackTotalHitsLimit = DEFAULT_TRACK_TOTAL_HITS_UP_TO;
-        if (searchParameters.getTrackTotalHits() == -1 || searchParameters.getTrackTotalHits() >= TRACK_TOTAL_HITS_ACCURATE)
-        {
-            trackTotalHitsLimit = TRACK_TOTAL_HITS_ACCURATE;
-        }
-        else if (searchParameters.getTrackTotalHits() > 0)
-        {
-            trackTotalHitsLimit = searchParameters.getTrackTotalHits();
-        }
-
         SearchRequestWrapper.Builder wrapperBuilder = SearchRequestWrapper.builder();
         SearchRequest.Builder builder = baseBuilder(queryWithPermissions)
-                .trackTotalHits(new TrackHits.Builder().count(trackTotalHitsLimit).build())
+                .trackTotalHits(new TrackHits.Builder().count(resolveTrackTotalHitsLimit(searchParameters)).build())
                 .from(from)
                 .size(size);
 
@@ -147,6 +137,19 @@ public class SearchRequestBuilderService
     }
 
     // Previous unified method with boolean flag removed. Update callers accordingly.
+
+    private int resolveTrackTotalHitsLimit(SearchParameters searchParameters)
+    {
+        if (searchParameters.getTrackTotalHits() == -1)
+        {
+            return TRACK_TOTAL_HITS_ACCURATE;
+        }
+        if (searchParameters.getTrackTotalHits() > 0)
+        {
+            return searchParameters.getTrackTotalHits();
+        }
+        return DEFAULT_TRACK_TOTAL_HITS_UP_TO;
+    }
 
     private SearchRequest.Builder baseBuilder(Query queryWithPermissions)
     {

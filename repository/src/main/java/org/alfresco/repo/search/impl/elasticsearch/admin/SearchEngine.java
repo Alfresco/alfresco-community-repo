@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,25 +23,9 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco;
+package org.alfresco.repo.search.impl.elasticsearch.admin;
 
-import org.junit.experimental.categories.Categories;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
-import org.alfresco.util.testing.category.DBTests;
-import org.alfresco.util.testing.category.NonBuildTests;
-
-@RunWith(Categories.class)
-@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
-@Suite.SuiteClasses({
-        org.alfresco.repo.web.scripts.permission.PermissionServiceTest.class,
-        org.alfresco.repo.web.scripts.search.AdvancedSearchTest.class,
-        org.alfresco.repo.web.scripts.ReadOnlyTransactionInGetSlingshotApiTest.class,
-        org.alfresco.repo.wiki.WikiServiceImplTest.class,
-        org.alfresco.slingshot.documentlibrary.FolderTemplateTest.class,
-        org.alfresco.slingshot.web.scripts.SlingshotContentGetTest.class,
-        org.alfresco.slingshot.web.scripts.FiltersLibTest.class,
-})
-public class ShareServicesTestSuite
-{}
+public enum SearchEngine
+{
+    ELASTICSEARCH, OPENSEARCH, UNKNOWN
+}

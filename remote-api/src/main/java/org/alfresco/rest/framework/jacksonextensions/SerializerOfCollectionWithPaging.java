@@ -103,6 +103,10 @@ public class SerializerOfCollectionWithPaging extends StdSerializer<Serializable
             jgen.writeNumberField(RecognizedParamsExtractor.PARAM_PAGING_SKIP, pagedCol.getPaging().getSkipCount());
             jgen.writeNumberField(RecognizedParamsExtractor.PARAM_PAGING_MAX, pagedCol.getPaging().getMaxItems());
         }
+        if (pagedCol.getNextSearchAfterToken() != null)
+        {
+            jgen.writeStringField("nextSearchAfterToken", pagedCol.getNextSearchAfterToken());
+        }
         jgen.writeEndObject();
     }
 }

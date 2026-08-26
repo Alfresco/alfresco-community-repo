@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>26.3.0.32-SNAPSHOT</version>
+    <version>26.3.0.36-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -51,8 +51,8 @@
         <dependency.alfresco-server-root.version>8.0.1</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-core.version>5.4.3</dependency.alfresco-transform-core.version>
-        <dependency.alfresco-transform-service.version>4.4.3</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>5.4.4-A.6</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>4.4.4-A.7</dependency.alfresco-transform-service.version>
         <dependency.alfresco-greenmail.version>7.1</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>1.1.0-A.1</dependency.acs-event-model.version>
 
@@ -98,7 +98,7 @@
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>
 
         <!-- Elasticsearch / OpenSearch search support -->
-        <dependency.opensearch.version>2.21.0</dependency.opensearch.version>
+        <dependency.opensearch.version>2.26.0</dependency.opensearch.version>
         <dependency.lucene.version>9.7.0</dependency.lucene.version>
         <dependency.swagger-ui.version>4.1.3</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.73</dependency.swagger-parser.version>

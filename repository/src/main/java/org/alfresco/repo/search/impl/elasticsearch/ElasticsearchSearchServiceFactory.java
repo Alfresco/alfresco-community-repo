@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
 
 /**
  * Factory for Indexer and Searcher instances for Elasticsearch
@@ -44,6 +45,7 @@ public class ElasticsearchSearchServiceFactory extends AbstractIndexerAndSearche
     private QueryRegisterComponent queryRegister;
     private NodeService nodeService;
     private DictionaryService dictionaryService;
+    private NamespacePrefixResolver namespacePrefixResolver;
 
     /**
      * Elasticsearch is indexing the repository by polling database or listening queue messages from an external service, so no Indexer is available for the Repository.
@@ -57,7 +59,7 @@ public class ElasticsearchSearchServiceFactory extends AbstractIndexerAndSearche
     @Override
     public SearchService getSearcher(StoreRef storeRef, boolean searchDelta) throws SearcherException
     {
-        return new ElasticsearchSearchService(queryRegister, getQueryLanguages(), nodeService, dictionaryService);
+        return new ElasticsearchSearchService(queryRegister, getQueryLanguages(), nodeService, dictionaryService, namespacePrefixResolver);
     }
 
     @Override
@@ -79,5 +81,10 @@ public class ElasticsearchSearchServiceFactory extends AbstractIndexerAndSearche
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+
+    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
+    {
+        this.namespacePrefixResolver = namespacePrefixResolver;
     }
 }

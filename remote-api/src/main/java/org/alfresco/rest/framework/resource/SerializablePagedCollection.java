@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -70,4 +70,12 @@ public interface SerializablePagedCollection<T>
      * The search context for the collection
      */
     SearchContext getContext();
+
+    /**
+     * The search_after token for fetching the next page, or null if not applicable.
+     */
+    default String getNextSearchAfterToken()
+    {
+        return null;
+    }
 }

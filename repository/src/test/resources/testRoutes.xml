@@ -31,7 +31,7 @@
              </onException>
              <transacted />
             <loadBalance>        
-                <roundRobin/>
+                <roundRobinLoadBalancer/>
                 <to uri="bean:mockExceptionThrowingConsumer"/>
                 <to uri="bean:mockConsumer"/>
             </loadBalance>

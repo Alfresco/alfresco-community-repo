@@ -427,6 +427,11 @@ public class ElasticsearchHttpClientFactory
             LOGGER.debug("Using default ioThreadCount for Elasticsearch HTTP Client since the specified value was {}.", threadCount);
         }
 
+        // httpclient5 5.6 auto-negotiates gzip/x-gzip content encoding on the async transport, but the
+        // OpenSearch client manages compression itself (defaults to none), so transparent decompression
+        // makes responses hang/fail. Disable it to restore pre-5.6 behaviour.
+        httpClientBuilder.disableContentCompression();
+
         httpClientBuilder.setUserAgent(StringUtils.EMPTY).setConnectionManager(connectionBuilder.build());
 
         // Build and set the HTTP/2 response timeout using the configured responseTimeout property

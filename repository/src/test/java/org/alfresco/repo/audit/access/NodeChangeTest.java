@@ -44,6 +44,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -97,6 +98,8 @@ public class NodeChangeTest
 
         nodeInfoFactory = new NodeInfoFactory(nodeService, namespaceService);
         nodeChange = new NodeChange(nodeInfoFactory, namespaceService, content1);
+        // AuthenticationUtil.runAs()/setRunAsUser() need this static init, normally done by Spring.
+        new AuthenticationUtil().afterPropertiesSet();
     }
 
     private NodeRef newFolder(Path path)
@@ -459,6 +462,71 @@ public class NodeChangeTest
     }
 
     @Test
+    public final void testOnContentDownload()
+    {
+        nodeChange.onContentDownload(content1);
+
+        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+
+        assertStandardData(auditMap, "downloadContent", "downloadContent");
+    }
+
+    @Test
+    public final void testHasReadAndDownloadActions_onlyRead()
+    {
+        nodeChange.onContentRead(content1);
+        assertFalse("Should be false when only readContent is present",
+                nodeChange.hasReadAndDownloadActions());
+    }
+
+    @Test
+    public final void testHasReadAndDownloadActions_onlyDownload()
+    {
+        nodeChange.onContentDownload(content1);
+        assertFalse("Should be false when only downloadContent is present",
+                nodeChange.hasReadAndDownloadActions());
+    }
+
+    @Test
+    public final void testHasReadAndDownloadActions_bothPresent()
+    {
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+        assertTrue("Should be true when both readContent and downloadContent are present",
+                nodeChange.hasReadAndDownloadActions());
+    }
+
+    @Test
+    public final void testGetAuditDataForAction_downloadOverride()
+    {
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+
+        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+
+        assertEquals("Action should be READ when both readContent and downloadContent are present", "READ", auditMap.get("action"));
+        assertEquals("Sub-actions should contain both", "readContent downloadContent", auditMap.get("sub-actions"));
+        assertEquals(content1, auditMap.get("node"));
+    }
+
+    @Test
+    public final void testGetAuditDataForAction_doesNotCorruptSubsequentCalls()
+    {
+        nodeChange.onContentRead(content1);
+
+        // First call with override
+        Map<String, Serializable> readMap = nodeChange.getAuditData(false);
+        assertEquals("READ", readMap.get("action"));
+
+        nodeChange.onContentDownload(content1);
+        // Second call with different override
+
+        // Regular call should still derive properly
+        Map<String, Serializable> derivedMap = nodeChange.getAuditData(false);
+        assertEquals("READ", derivedMap.get("action"));
+    }
+
+    @Test
     public final void testOnCreateVersion()
     {
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
@@ -503,4 +571,54 @@ public class NodeChangeTest
 
         assertStandardData(auditMap, "CANCEL CHECK OUT", "cancelCheckOut");
     }
+
+    @Test
+    public final void testIfMultipleSubActionsPresentWithReadAndDownloadHigherPrecedence()
+    {
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+        nodeChange.onCheckIn(content1);
+
+        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+        assertStandardData(auditMap, "CHECK IN", "readContent downloadContent checkIn"); // This Must Not Come as READ
+    }
+
+    @Test
+    public final void testIfMultipleSubActionsPresentWithReadAndDownloadLowerPrecedence()
+    {
+        nodeChange.onContentRead(content1);
+        nodeChange.onContentDownload(content1);
+        nodeChange.onContentUpdate(content1, false);
+
+        Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+        assertStandardData(auditMap, "UPDATE CONTENT", "readContent downloadContent updateContent"); // This Must Not Come as READ
+
+    }
+
+    @Test
+    public final void testOnContentDownload_runAsUserAttributionLostForSplitReadEntry()
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser("bob");
+        try
+        {
+            AuthenticationUtil.runAs(() -> {
+                nodeChange.onContentRead(content1);
+                nodeChange.onContentDownload(content1);
+                return null;
+            }, "alice");
+
+            assertTrue("Precondition: both sub-actions must be present", nodeChange.hasReadAndDownloadActions());
+
+            Map<String, Serializable> auditMap = nodeChange.getAuditData(false);
+
+            assertEquals("READ", auditMap.get("action"));
+            assertEquals("MNT-8810: the actual reader should be attributed, not the ambient user",
+                    "alice", auditMap.get("user"));
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
+    }
+
 }

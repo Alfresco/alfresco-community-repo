@@ -77,6 +77,9 @@ public class ElasticsearchHttpClientFactory
     private String baseUrl;
     private int port;
 
+    // Search engine implementation (elasticsearch, opensearch)
+    private String engine;
+
     // SSL parameters for Elasticsearch server endpoint
     private String secureComms;
     private AlfrescoKeyStore sslTrustStore;
@@ -233,6 +236,16 @@ public class ElasticsearchHttpClientFactory
     public String getElasticsearchServerUrl()
     {
         return (secureComms.equals("https") ? "https" : "http") + "://" + host + ":" + port + baseUrl;
+    }
+
+    /**
+     * Gets the configured search engine implementation (elasticsearch, opensearch).
+     *
+     * @return the search engine implementation name
+     */
+    public String getEngine()
+    {
+        return engine;
     }
 
     /**
@@ -414,6 +427,11 @@ public class ElasticsearchHttpClientFactory
             LOGGER.debug("Using default ioThreadCount for Elasticsearch HTTP Client since the specified value was {}.", threadCount);
         }
 
+        // httpclient5 5.6 auto-negotiates gzip/x-gzip content encoding on the async transport, but the
+        // OpenSearch client manages compression itself (defaults to none), so transparent decompression
+        // makes responses hang/fail. Disable it to restore pre-5.6 behaviour.
+        httpClientBuilder.disableContentCompression();
+
         httpClientBuilder.setUserAgent(StringUtils.EMPTY).setConnectionManager(connectionBuilder.build());
 
         // Build and set the HTTP/2 response timeout using the configured responseTimeout property
@@ -458,6 +476,11 @@ public class ElasticsearchHttpClientFactory
     public void setHost(String host)
     {
         this.host = host;
+    }
+
+    public void setEngine(String engine)
+    {
+        this.engine = engine;
     }
 
     public void setBaseUrl(String baseUrl)

@@ -30,10 +30,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.search.AbstractSearcherComponent;
 import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
@@ -61,7 +61,7 @@ import org.alfresco.util.SearchLanguageConversion;
 /**
  * @author Andy
  */
-public class SolrSearchService implements SearchService
+public class SolrSearchService extends AbstractSearcherComponent
 {
     private NodeService nodeService;
 
@@ -225,86 +225,6 @@ public class SolrSearchService implements SearchService
             buffer.delete(buffer.length() - 1, buffer.length() - 1);
             throw new QueryParameterisationException(buffer.toString());
         }
-    }
-
-    /* Parameterise the query string - not sure if it is required to escape lucence spacials chars The parameters could be used to build the query - the contents of parameters should alread have been escaped if required. ... mush better to provide the parameters and work out what to do TODO: conditional query escapement - may be we should have a parameter type that is not escaped */
-    private String parameterise(String unparameterised, Map<QName, QueryParameterDefinition> map, QueryParameter[] queryParameters, NamespacePrefixResolver nspr)
-            throws QueryParameterisationException
-    {
-
-        Map<QName, List<Serializable>> valueMap = new HashMap<QName, List<Serializable>>();
-
-        if (queryParameters != null)
-        {
-            for (QueryParameter parameter : queryParameters)
-            {
-                List<Serializable> list = valueMap.get(parameter.getQName());
-                if (list == null)
-                {
-                    list = new ArrayList<Serializable>();
-                    valueMap.put(parameter.getQName(), list);
-                }
-                list.add(parameter.getValue());
-            }
-        }
-
-        Map<QName, ListIterator<Serializable>> iteratorMap = new HashMap<QName, ListIterator<Serializable>>();
-
-        List<QName> missing = new ArrayList<QName>(1);
-        StringBuilder buffer = new StringBuilder(unparameterised);
-        int index = 0;
-        while ((index = buffer.indexOf("${", index)) != -1)
-        {
-            int endIndex = buffer.indexOf("}", index);
-            String qNameString = buffer.substring(index + 2, endIndex);
-            QName key = QName.createQName(qNameString, nspr);
-            QueryParameterDefinition parameterDefinition = map.get(key);
-            if (parameterDefinition == null)
-            {
-                missing.add(key);
-                buffer.replace(index, endIndex + 1, "");
-            }
-            else
-            {
-                ListIterator<Serializable> it = iteratorMap.get(key);
-                if ((it == null) || (!it.hasNext()))
-                {
-                    List<Serializable> list = valueMap.get(key);
-                    if ((list != null) && (list.size() > 0))
-                    {
-                        it = list.listIterator();
-                    }
-                    if (it != null)
-                    {
-                        iteratorMap.put(key, it);
-                    }
-                }
-                String value;
-                if (it == null)
-                {
-                    value = parameterDefinition.getDefault();
-                }
-                else
-                {
-                    value = DefaultTypeConverter.INSTANCE.convert(String.class, it.next());
-                }
-                buffer.replace(index, endIndex + 1, value);
-            }
-        }
-        if (missing.size() > 0)
-        {
-            StringBuilder error = new StringBuilder();
-            error.append("The query uses the following parameters which are not defined: ");
-            for (QName qName : missing)
-            {
-                error.append(qName);
-                error.append(", ");
-            }
-            error.delete(error.length() - 1, error.length() - 1);
-            error.delete(error.length() - 1, error.length() - 1);
-            throw new QueryParameterisationException(error.toString());
-        }
-        return buffer.toString();
     }
 
     /* (non-Javadoc)

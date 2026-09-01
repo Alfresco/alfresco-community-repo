@@ -20,10 +20,11 @@
         <!--
         Including the full "org.alfresco.rest.search.*" package pushes Part2
         over the 60-min CI limit after the recent test migration. Those tests
-        already run in a dedicated CI profile, so only NodeContentTest is
+        already run in a dedicated CI profile, so only the classes below are
         kept here to preserve the original Part2 coverage.  -->
         <classes>
             <class name="org.alfresco.rest.search.NodeContentTest"/>
+            <class name="org.alfresco.rest.search.DocumentLibraryTagFilterTest"/>
         </classes>
     </test>
 </suite>

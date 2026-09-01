@@ -37,6 +37,7 @@ import org.springframework.context.ApplicationContext;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
+import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ContentModelSynchronizer;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchIndexService;
@@ -78,7 +79,7 @@ public abstract class ElasticsearchSpringTest extends BaseSpringTest
         baseElasticsearchIndexService = new ElasticsearchIndexService(elasticsearchHttpClientFactory, 2000, 10000);
 
         baseElasticsearchInitialiser = new ElasticsearchInitialiser(dictionaryDAOImpl, baseElasticsearchIndexService, contentModelSynchronizer,
-                jobLockService, 1, 1, 1, 1, true);
+                jobLockService, 1, 1, 1, 1, true, new SearchEngineDetector());
     }
 
     /** Get the name of the index. */

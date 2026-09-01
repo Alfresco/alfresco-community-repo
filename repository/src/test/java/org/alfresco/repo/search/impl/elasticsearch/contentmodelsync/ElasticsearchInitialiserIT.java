@@ -65,6 +65,7 @@ import org.opensearch.client.opensearch.indices.PutMappingRequest;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSpringTest;
+import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
 import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
 import org.alfresco.repo.search.impl.elasticsearch.util.LogListAppender;
 
@@ -102,7 +103,7 @@ public class ElasticsearchInitialiserIT extends ElasticsearchSpringTest
                 fieldMappingBuilder, elasticsearchHttpClientFactory, Locale.ENGLISH.getLanguage(), indexConfigurationInitializer);
 
         toTest = new ElasticsearchInitialiser(dictionaryDAOImpl, elasticSearchIndexServiceSpy, contentModelSynchronizer,
-                jobLockService, 1, 1, 1, 1, true);
+                jobLockService, 1, 1, 1, 1, true, new SearchEngineDetector());
         client = elasticsearchHttpClientFactory.getElasticsearchClient();
         this.indicesSpy = spy(client.indices());
     }

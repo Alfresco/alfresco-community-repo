@@ -42,6 +42,8 @@ import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCancelCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
+import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.content.ContentServicePolicies.OnContentDownloadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
@@ -175,7 +177,7 @@ public class AccessAuditor implements InitializingBean,
 
         OnCopyCompletePolicy,
 
-        OnCheckOut, OnCheckIn, OnCancelCheckOut
+        OnCheckOut, OnCheckIn, OnCancelCheckOut, ContentServicePolicies.OnContentDownloadPolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(AccessAuditor.class);
@@ -265,6 +267,7 @@ public class AccessAuditor implements InitializingBean,
         policyComponent.bindClassBehaviour(OnRemoveAspectPolicy.QNAME, this, new JavaBehaviour(this, "onRemoveAspect"));
 
         policyComponent.bindClassBehaviour(OnContentUpdatePolicy.QNAME, this, new JavaBehaviour(this, "onContentUpdate"));
+        policyComponent.bindClassBehaviour(OnContentDownloadPolicy.QNAME, this, new JavaBehaviour(this, "onContentDownload"));
         policyComponent.bindClassBehaviour(OnContentReadPolicy.QNAME, this, new JavaBehaviour(this, "onContentRead"));
 
         policyComponent.bindClassBehaviour(OnCreateVersionPolicy.QNAME, ContentModel.TYPE_CONTENT, new JavaBehaviour(this, "onCreateVersion"));
@@ -572,6 +575,19 @@ public class AccessAuditor implements InitializingBean,
     }
 
     /**
+     * @param nodeRef
+     *            the node reference
+     */
+    @Override
+    public void onContentDownload(NodeRef nodeRef)
+    {
+        if (auditEnabled())
+        {
+            getNodeChange(nodeRef).onContentDownload(nodeRef);
+        }
+    }
+
+    /**
      * Listen for commit to audit gathered audit activity for the current user transaction.
      */
     private class AccessTransactionListener extends TransactionListenerAdapter
@@ -582,7 +598,6 @@ public class AccessAuditor implements InitializingBean,
             // Note: auditComponent.recordAuditValues(...) creates a transaction to record
             // audit messages, so there is no need to create our own. dod5015 still
             // does (not sure why).
-
             final Map<NodeRef, NodeChange> changedNodes = TransactionalResourceHelper.getMap(this);
             for (Map.Entry<NodeRef, NodeChange> entry : changedNodes.entrySet())
             {
@@ -595,4 +610,5 @@ public class AccessAuditor implements InitializingBean,
             }
         }
     }
+
 }

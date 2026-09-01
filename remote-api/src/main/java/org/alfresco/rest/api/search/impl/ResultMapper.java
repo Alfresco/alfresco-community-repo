@@ -231,7 +231,11 @@ public class ResultMapper
                 .map(resultSet -> toSearchContext(resultSet, searchRequestContext, searchQuery))
                 .orElse(null);
 
-        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), setTotal(results), null, context);
+        String nextSearchAfterToken = toSearchEngineResultSet(results)
+                .map(SearchEngineResultSet::getNextSearchAfterToken)
+                .orElse(null);
+
+        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), setTotal(results), null, context, nextSearchAfterToken);
     }
 
     /**

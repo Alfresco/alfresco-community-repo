@@ -93,7 +93,8 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         CheckOutCheckInServicePolicies.OnCheckIn,
         CheckOutCheckInServicePolicies.OnCancelCheckOut,
         NodeServicePolicies.OnDeleteChildAssociationPolicy,
-        NodeServicePolicies.OnCreateChildAssociationPolicy
+        NodeServicePolicies.OnCreateChildAssociationPolicy,
+        ContentServicePolicies.OnContentDownloadPolicy
 {
     private static final QName POLICY_ON_GROUP_DELETED = QName.createQName(NamespaceService.ALFRESCO_URI, "onGroupDeleted");
     private static final QName POLICY_ON_AUTHORITY_REMOVED_FROM_GROUP = QName.createQName(NamespaceService.ALFRESCO_URI, "onAuthorityRemovedFromGroup");
@@ -148,6 +149,8 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         {
             return;
         }
+
+        bindClassPolicy(ContentServicePolicies.OnContentDownloadPolicy.QNAME, NodeContentGetEvent.EVENT_TYPE);
 
         bindClassPolicy(ContentServicePolicies.OnContentPropertyUpdatePolicy.QNAME, NodeContentPutEvent.EVENT_TYPE);
 
@@ -547,5 +550,17 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     public void beforeUnlock(NodeRef nodeRef)
     {
         eventsService.nodeUnlocked(nodeRef);
+    }
+
+    /**
+     * No-op: the read event is already emitted by {@link #onContentRead(NodeRef)}, which always fires alongside this policy. Emitting {@code contentGet} here as well would produce a duplicate {@code NodeContentGetEvent}.
+     *
+     * @param nodeRef
+     *            the node reference
+     */
+    @Override
+    public void onContentDownload(NodeRef nodeRef)
+    {
+        // Intentionally empty – see onContentRead
     }
 }

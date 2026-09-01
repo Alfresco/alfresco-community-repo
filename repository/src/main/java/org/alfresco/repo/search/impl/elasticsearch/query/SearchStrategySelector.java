@@ -39,7 +39,8 @@ public class SearchStrategySelector implements SearchStrategy
     private final SearchStrategy scrollStrategy;
     private final int maxResultWindow;
 
-    public SearchStrategySelector(SearchExecutionStrategy standardStrategy, SearchExecutionStrategy scrollStrategy, int maxResultWindow)
+    public SearchStrategySelector(SearchExecutionStrategy standardStrategy, SearchExecutionStrategy scrollStrategy,
+            int maxResultWindow)
     {
         this.standardStrategy = standardStrategy;
         this.scrollStrategy = scrollStrategy;

@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>26.3.0.29-SNAPSHOT</version>
+    <version>26.3.0.40-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -51,14 +51,15 @@
         <dependency.alfresco-server-root.version>8.0.1</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-core.version>5.4.3</dependency.alfresco-transform-core.version>
-        <dependency.alfresco-transform-service.version>4.4.3</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>5.4.4-A.6</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>4.4.4-A.7</dependency.alfresco-transform-service.version>
         <dependency.alfresco-greenmail.version>7.1</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>1.1.0-A.1</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
         <dependency.spring.version>7.0.8</dependency.spring.version>
         <dependency.spring-security.version>7.0.6</dependency.spring-security.version>
+        <dependency.micrometer.version>1.16.6</dependency.micrometer.version> <!-- should be in sync with micrometer-observation transitive dependency from spring-context -->
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.22.1</dependency.jackson.version>
         <dependency.cxf.version>4.1.7</dependency.cxf.version>
@@ -75,9 +76,9 @@
         <dependency.guava.version>33.3.1-jre</dependency.guava.version>
         <dependency.httpclient.version>4.5.14</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.16</dependency.httpcore.version>
-        <dependency.httpcomponents-httpclient5.version>5.5</dependency.httpcomponents-httpclient5.version>
-        <dependency.httpcomponents-httpcore5.version>5.3.4</dependency.httpcomponents-httpcore5.version>
-        <dependency.httpcomponents-httpcore5-h2.version>5.3.4</dependency.httpcomponents-httpcore5-h2.version>
+        <dependency.httpcomponents-httpclient5.version>5.6.4</dependency.httpcomponents-httpclient5.version>
+        <dependency.httpcomponents-httpcore5.version>5.4.3</dependency.httpcomponents-httpcore5.version>
+        <dependency.httpcomponents-httpcore5-h2.version>5.4.3</dependency.httpcomponents-httpcore5-h2.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.google-cloud-libraries-bom.version>26.84.0</dependency.google-cloud-libraries-bom.version>
@@ -93,12 +94,12 @@
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>4.18.3</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.137.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
-        <dependency.activemq.version>6.2.4</dependency.activemq.version>
+        <dependency.activemq.version>6.2.7</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>
 
         <!-- Elasticsearch / OpenSearch search support -->
-        <dependency.opensearch.version>2.21.0</dependency.opensearch.version>
+        <dependency.opensearch.version>2.26.0</dependency.opensearch.version>
         <dependency.lucene.version>9.7.0</dependency.lucene.version>
         <dependency.swagger-ui.version>4.1.3</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.73</dependency.swagger-parser.version>
@@ -1052,6 +1053,13 @@
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-bom</artifactId>
                 <version>${dependency.spring-security.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-bom</artifactId>
+                <version>${dependency.micrometer.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

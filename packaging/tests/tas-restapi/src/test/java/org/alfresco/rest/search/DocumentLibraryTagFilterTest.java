@@ -37,6 +37,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -44,7 +45,7 @@ import org.alfresco.utility.model.FileType;
 /**
  * End-to-end test for tag-based document filtering, verified through the public Search REST API ({@code /alfresco/api/-default-/public/search/versions/1/search}) running against a real search server.
  * <p>
- * Clicking a tag that contains a space used to return either no documents or every document. This test tags documents through the public v1 REST API, waits for the live index to catch up, then runs an AFTS {@code TAG:'...'} query and asserts that the tag filter returns exactly the tagged document - for both a single-word tag and a tag containing a space.
+ * Clicking a tag that contains a space used to return either no documents or every document. This test tags documents through the public v1 REST API (capturing each tag's category nodeRef from the response), waits for the live index to catch up, then runs an exact {@code =cm:taggable:"<tagNodeRef>"} membership query and asserts that the tag filter returns exactly the tagged document - for both a single-word tag and a tag containing a space. The exact-term match on the tag nodeRef is honoured by both Solr and Elasticsearch, mirroring the Share {@code filters.lib.js} tag filter.
  * <p>
  * The test lives in {@code org.alfresco.rest.search} so it is picked up automatically by the Elasticsearch E2E suite ({@code elasticsearch-e2e-suite.xml}), proving the behaviour works against an Elasticsearch server. Using the Search API (rather than the Share {@code slingshot/doclib2/doclist} webscript) keeps the test runnable on the community-repo stack, which does not deploy the share-services module.
  */
@@ -57,6 +58,9 @@ public class DocumentLibraryTagFilterTest extends AbstractE2EFunctionalTest
     private FileModel singleWordTaggedFile;
     private FileModel spaceTaggedFile;
 
+    private String singleWordTagNodeRef;
+    private String spaceTagNodeRef;
+
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
@@ -65,76 +69,88 @@ public class DocumentLibraryTagFilterTest extends AbstractE2EFunctionalTest
         singleWordTag = "single" + unique;
         spaceTag = "long " + unique; // contains a space - the scenario that used to fail
 
-        singleWordTaggedFile = createTaggedFile(singleWordTag);
-        spaceTaggedFile = createTaggedFile(spaceTag);
+        singleWordTaggedFile = createFile();
+        singleWordTagNodeRef = tagFileAndGetTagNodeRef(singleWordTaggedFile, singleWordTag);
+
+        spaceTaggedFile = createFile();
+        spaceTagNodeRef = tagFileAndGetTagNodeRef(spaceTaggedFile, spaceTag);
 
         // Wait until both tags resolve through the Search API (cm:taggable indexed for each document).
-        assertTrue(waitForTagFilter(singleWordTag, singleWordTaggedFile.getName()),
+        assertTrue(waitForTagFilter(singleWordTagNodeRef, singleWordTaggedFile.getName()),
                 "Single-word tag was not indexed/searchable in time: " + singleWordTag);
-        assertTrue(waitForTagFilter(spaceTag, spaceTaggedFile.getName()),
+        assertTrue(waitForTagFilter(spaceTagNodeRef, spaceTaggedFile.getName()),
                 "Space-containing tag was not indexed/searchable in time: " + spaceTag);
     }
 
-    /** disabled on ES (tag filter returns whole repo); Solr covered by FiltersLibTest. */
-    @Test(enabled = false)
+    /** A tag containing a space must return exactly the document it was applied to. */
+    @Test
     public void tagFilterWithSpaceInTagNameReturnsOnlyTheTaggedDocument()
     {
-        assertTagFilterReturnsExactly(spaceTag, spaceTaggedFile.getName(), singleWordTaggedFile.getName());
+        assertTagFilterReturnsExactly(spaceTagNodeRef, spaceTaggedFile.getName(), singleWordTaggedFile.getName());
     }
 
-    /** disabled on ES (see method above); re-enable once ES tag filtering is fixed. */
-    @Test(enabled = false)
+    /** Regression guard: single-word tags keep working exactly as before. */
+    @Test
     public void tagFilterWithSingleWordTagReturnsOnlyTheTaggedDocument()
     {
-        assertTagFilterReturnsExactly(singleWordTag, singleWordTaggedFile.getName(), spaceTaggedFile.getName());
+        assertTagFilterReturnsExactly(singleWordTagNodeRef, singleWordTaggedFile.getName(), spaceTaggedFile.getName());
     }
 
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
-    /** Creates a text document in the test site's document library and tags it via the public v1 REST API. */
-    private FileModel createTaggedFile(String tag)
+    /** Creates a text document in the test site's document library. */
+    private FileModel createFile()
     {
         FileModel file = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "MNT-25799 tag filter test content");
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
-
-        restClient.authenticateUser(testUser).withCoreAPI().usingResource(file).addTag(tag);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
         return file;
     }
 
-    /** Runs the tag filter and asserts it returns exactly the expected file and never the other (unrelated) file. */
-    private void assertTagFilterReturnsExactly(String tag, String expectedFileName, String excludedFileName)
+    /** Tags the file via the public v1 REST API and returns the created tag category nodeRef. */
+    private String tagFileAndGetTagNodeRef(FileModel file, String tag)
     {
-        SearchResponse response = tagFilter(tag);
+        RestTagModel tagModel = restClient.authenticateUser(testUser).withCoreAPI().usingResource(file).addTag(tag);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        return "workspace://SpacesStore/" + tagModel.getId();
+    }
+
+    /** Runs the tag filter and asserts it returns exactly the expected file and never the other (unrelated) file. */
+    private void assertTagFilterReturnsExactly(String tagNodeRef, String expectedFileName, String excludedFileName)
+    {
+        SearchResponse response = tagFilter(tagNodeRef);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         List<String> fileNames = resultFileNames(response);
         assertTrue(fileNames.contains(expectedFileName),
-                "Tag filter '" + tag + "' did not return the tagged document '" + expectedFileName + "'. Got: " + fileNames);
+                "Tag filter '" + tagNodeRef + "' did not return the tagged document '" + expectedFileName + "'. Got: " + fileNames);
         assertFalse(fileNames.contains(excludedFileName),
-                "Tag filter '" + tag + "' incorrectly returned an unrelated document '" + excludedFileName + "'. Got: " + fileNames);
+                "Tag filter '" + tagNodeRef + "' incorrectly returned an unrelated document '" + excludedFileName + "'. Got: " + fileNames);
         assertEquals(fileNames.size(), 1,
-                "Tag filter '" + tag + "' returned an unexpected number of documents. Got: " + fileNames);
+                "Tag filter '" + tagNodeRef + "' returned an unexpected number of documents. Got: " + fileNames);
     }
 
     /** Polls the Search API tag filter until {@code expectedFileName} appears or the retry budget is exhausted. */
-    private boolean waitForTagFilter(String tag, String expectedFileName)
+    private boolean waitForTagFilter(String tagNodeRef, String expectedFileName)
     {
-        return isContentInSearchResults(tagQuery(tag), expectedFileName, true);
+        return isContentInSearchResults(tagQuery(tagNodeRef), expectedFileName, true);
     }
 
-    /** Runs an AFTS {@code TAG:'...'} search for the given tag as {@link #testUser} and returns the response. */
-    private SearchResponse tagFilter(String tag)
+    /** Runs the exact {@code =cm:taggable} membership search for the given tag nodeRef as {@link #testUser}. */
+    private SearchResponse tagFilter(String tagNodeRef)
     {
-        return query(createQuery(tagQuery(tag)));
+        return query(createQuery(tagQuery(tagNodeRef)));
     }
 
-    /** Builds the AFTS query that matches documents carrying the given tag (quoted so tags with spaces are matched as a phrase). */
-    private String tagQuery(String tag)
+    /**
+     * Builds the AFTS query that matches documents carrying the given tag.
+     * <p>
+     * MNT-25799: uses an exact ({@code =}) membership match on the tag category nodeRef, mirroring the Share {@code filters.lib.js} tag filter. This form is honoured by both Solr and Elasticsearch and returns exactly the tagged document(s) - including for tags containing spaces, since the match is on the nodeRef rather than a tokenised tag phrase.
+     */
+    private String tagQuery(String tagNodeRef)
     {
-        return "TAG:'" + tag + "'";
+        return "=cm:taggable:\"" + tagNodeRef + "\"";
     }
 
     /** Extracts the {@code cm:name} of every document returned by a search response. */

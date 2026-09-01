@@ -18,4 +18,23 @@ include_list=${include_list:1}
 
 mvn spotless:apply validate -DlicenseUpdateHeaders=true -Pags,all-tas-tests -Dspotless-include-list="${include_list}" > /dev/null || true
 
+all_nonconformant_files=$(git diff --name-only --diff-filter=ACMR)
+
+for file in ${all_nonconformant_files}
+do
+  revert=1
+  for modified_file in ${modified_files}
+  do
+    if [[ "${modified_file}" == "${file}" ]]
+    then
+      revert=0
+      break
+    fi
+  done
+  if [[ ${revert} == 1 ]]
+  then
+    git checkout -- "${file}"
+  fi
+done
+
 set -x

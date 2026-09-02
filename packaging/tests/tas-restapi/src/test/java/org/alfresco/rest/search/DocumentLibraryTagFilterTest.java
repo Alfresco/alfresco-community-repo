@@ -52,9 +52,6 @@ import org.alfresco.utility.model.FileType;
 @SuppressWarnings({"PMD.MethodNamingConventions", "PMD.LongVariable"})
 public class DocumentLibraryTagFilterTest extends AbstractE2EFunctionalTest
 {
-    private String singleWordTag;
-    private String spaceTag;
-
     private FileModel singleWordTaggedFile;
     private FileModel spaceTaggedFile;
 
@@ -66,8 +63,8 @@ public class DocumentLibraryTagFilterTest extends AbstractE2EFunctionalTest
     {
         // Unique suffix keeps the tags private to this test run (the tag filter is repo-wide, not site-scoped).
         String unique = RandomData.getRandomName("Tag").toLowerCase();
-        singleWordTag = "single" + unique;
-        spaceTag = "long " + unique; // contains a space - the scenario that used to fail
+        String singleWordTag = "single" + unique;
+        String spaceTag = "long " + unique; // contains a space - the scenario that used to fail
 
         singleWordTaggedFile = createFile();
         singleWordTagNodeRef = tagFileAndGetTagNodeRef(singleWordTaggedFile, singleWordTag);

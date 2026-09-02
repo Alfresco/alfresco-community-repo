@@ -45,7 +45,7 @@ import org.alfresco.utility.model.FileType;
 /**
  * End-to-end test for tag-based document filtering, verified through the public Search REST API ({@code /alfresco/api/-default-/public/search/versions/1/search}) running against a real search server.
  * <p>
- * Clicking a tag that contains a space used to return either no documents or every document. This test tags documents through the public v1 REST API (capturing each tag's category nodeRef from the response), waits for the live index to catch up, then runs an exact {@code =cm:taggable:"<tagNodeRef>"} membership query and asserts that the tag filter returns exactly the tagged document - for both a single-word tag and a tag containing a space. The exact-term match on the tag nodeRef is honoured by both Solr and Elasticsearch, mirroring the Share {@code filters.lib.js} tag filter.
+ * Clicking a tag that contains a space used to return either no documents or every document. This test tags documents through the public v1 REST API (capturing each tag's category nodeRef from the response), waits for the live index to catch up, then runs an exact {@code +=cm\:taggable:"<tagNodeRef>"} membership query and asserts that the tag filter returns exactly the tagged document - for both a single-word tag and a tag containing a space. The exact-term match on the tag nodeRef is honoured by both Solr and Elasticsearch, mirroring the Share {@code filters.lib.js} tag filter.
  * <p>
  * The test lives in {@code org.alfresco.rest.search} so it is picked up automatically by the Elasticsearch E2E suite ({@code elasticsearch-e2e-suite.xml}), proving the behaviour works against an Elasticsearch server. Using the Search API (rather than the Share {@code slingshot/doclib2/doclist} webscript) keeps the test runnable on the community-repo stack, which does not deploy the share-services module.
  */
@@ -137,7 +137,7 @@ public class DocumentLibraryTagFilterTest extends AbstractE2EFunctionalTest
         return isContentInSearchResults(tagQuery(tagNodeRef), expectedFileName, true);
     }
 
-    /** Runs the exact {@code =cm:taggable} membership search for the given tag nodeRef as {@link #testUser}. */
+    /** Runs the exact {@code +=cm\:taggable} membership search for the given tag nodeRef as {@link #testUser}. */
     private SearchResponse tagFilter(String tagNodeRef)
     {
         return query(createQuery(tagQuery(tagNodeRef)));
@@ -150,7 +150,7 @@ public class DocumentLibraryTagFilterTest extends AbstractE2EFunctionalTest
      */
     private String tagQuery(String tagNodeRef)
     {
-        return "=cm:taggable:\"" + tagNodeRef + "\"";
+        return "+=cm\\:taggable:\"" + tagNodeRef + "\"";
     }
 
     /** Extracts the {@code cm:name} of every document returned by a search response. */

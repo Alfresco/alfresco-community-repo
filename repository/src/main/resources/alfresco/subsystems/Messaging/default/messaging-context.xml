@@ -29,6 +29,22 @@
         <property name="connectionFactory" ref="pooledConnectionFactory"/>
     </bean>
 
+    <bean id="queueJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="sessionTransacted" value="${messaging.transacted}" />
+    </bean>
+
+    <bean id="topicJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="sessionTransacted" value="${messaging.transacted}" />
+        <property name="pubSubDomain" value="true" />
+    </bean>
+
+    <bean id="messagePublisher" class="org.alfresco.messaging.SpringJmsMessagePublisher">
+        <constructor-arg ref="queueJmsTemplate" />
+        <constructor-arg ref="topicJmsTemplate" />
+    </bean>
+
     <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
         <property name="connectionFactory" ref="pooledConnectionFactory" />
         <property name="transacted" value="${messaging.transacted}" />

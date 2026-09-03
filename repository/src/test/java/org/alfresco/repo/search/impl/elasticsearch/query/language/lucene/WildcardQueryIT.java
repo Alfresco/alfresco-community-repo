@@ -349,4 +349,55 @@ public class WildcardQueryIT extends BaseWildcardQueryIT
         assertContainsOnly(aftsSearch("TEXT:\"supersizemy*\""), supersizemyrepoDocument);
         assertContainsOnly(aftsSearch("TEXT:\"supersize*\""), supersizemyrepoDocument);
     }
+
+    @Override
+    public void specialCharsUntokenisedFieldWildcardQuerySearch()
+    {
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractUntokenisedField:\"Tomorrow, and tomorrow, and tomorrow - creeps *\""),
+                specialCharUntokenizedFieldDocument);
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractUntokenisedField:\"Tomorrow, and tomorrow, and tomorrow - creeps in this petty pace. ( *\""),
+                specialCharUntokenizedFieldDocument);
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractUntokenisedField:\"Tomorrow, and tomorrow, and tomorrow *\""),
+                specialCharUntokenizedFieldDocument);
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractUntokenisedField:\"Tomorrow, * - creeps in this petty pace. ( Macbeth, Act 5, Scene 5 )\\\\*\""),
+                specialCharUntokenizedFieldDocument);
+    }
+
+    @Override
+    public void specialCharsTokenisedFieldWildcardQuerySearch()
+    {
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractTokenisedField:\"To be, or not to be - that *\""),
+                specialCharTokenizedFieldDocument);
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractTokenisedField:\"To be, or not to be - that is the question ( *\""),
+                specialCharTokenizedFieldDocument);
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractTokenisedField:\"To be, or not to be *\""),
+                specialCharTokenizedFieldDocument);
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractTokenisedField:\"To be, or not to be - that is the question ( Hamlet, Act 3\\\\*, Scene *\""),
+                specialCharTokenizedFieldDocument);
+    }
+
+    @Override
+    public void reservedWordsTokenisedFieldWildcardQuerySearch()
+    {
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractTokenisedField:\"Enter Romeo AND *\""),
+                reservedWordsFieldDocument);
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractTokenisedField:\"Enter Romeo AND Juliet NOT Hamlet OR *\""),
+                reservedWordsFieldDocument);
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractTokenisedField:\"Enter Romeo AND Juliet NOT Hamlet OR Macbeth + Othello *\""),
+                reservedWordsFieldDocument);
+        assertContainsOnly(aftsSearch(
+                "acme\\:contractTokenisedField:\"Enter * + Othello - Lear\""),
+                reservedWordsFieldDocument);
+    }
 }

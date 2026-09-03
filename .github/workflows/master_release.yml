@@ -21,10 +21,10 @@ jobs:
     outputs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v18.26.0
         id: get-commit
         with:
           header-only: "true"
@@ -68,14 +68,14 @@ jobs:
           client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
           private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
           permission-contents: write
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.app-token.outputs.token }}
       - name: "Create local release branch"
         run: git checkout -B "${{ github.ref_name }}"
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.26.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.26.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.26.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -87,12 +87,12 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Compute release and next development versions"
         id: versions
-        uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@v18.20.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@v18.26.0
       - name: "Verify release version"
         run: bash scripts/ci/verify_release_tag.sh
       - name: "Release"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@v18.20.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@v18.26.0
         with:
           token: ${{ steps.app-token.outputs.token }}
           release-version: ${{ steps.versions.outputs.release-version }}
@@ -125,12 +125,12 @@ jobs:
           repositories: |
             alfresco-community-repo
             alfresco-enterprise-repo
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.app-token.outputs.token }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.26.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.26.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.26.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -153,7 +153,7 @@ jobs:
           version: ${{ steps.update-downstream.outputs.version }}
           downstream-repo: community-repo
       - name: "Commit downstream version update"
-        uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
+        uses: iarekylew00t/verified-bot-commit@42a042b0407248f3c0acac00c389e729e3476e86 # v2.3.5
         with:
           token: ${{ steps.app-token.outputs.token }}
           repository: Alfresco/alfresco-enterprise-repo

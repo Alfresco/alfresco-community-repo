@@ -628,6 +628,14 @@ jobs:
             pom-dir: tas-webdav
           - test-name: "Integration TAS tests"
             pom-dir: tas-integration
+          - test-name: "Elasticsearch E2E Tests - part1"
+            pom-dir: tas-restapi
+            test-profile: elasticsearch-e2e-tests-part1
+            compose-file: docker-compose-minimal+batch-indexing.yml
+          - test-name: "Elasticsearch E2E Tests - part2"
+            pom-dir: tas-restapi
+            test-profile: elasticsearch-e2e-tests-part2
+            compose-file: docker-compose-minimal+batch-indexing.yml
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
@@ -645,10 +653,12 @@ jobs:
         run: |
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
+      - name: "Set transformers tag"
+        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
-          ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
+          ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/${{ matrix.compose-file || 'docker-compose-minimal+transforms.yml' }}
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       - name: "Run tests"
         id: tests

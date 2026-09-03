@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="ElasticSearchE2ETests-part2" verbose="1" preserve-order="true">
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+    </listeners>
+    <test name="SearchTests-Part2">
+        <packages>
+            <package name="org.alfresco.rest.search.*">
+                <exclude name="org.alfresco.rest.search.fingerprint"/>
+                <exclude name="org.alfresco.rest.search.crosslocale"/>
+            </package>
+        </packages>
+        <classes>
+            <!-- 1) FacetRangeSearchTest: range facet gaps on ES -->
+            <class name="org.alfresco.rest.search.FacetRangeSearchTest">
+                <methods>
+                    <exclude name="searchWithRange"/>
+                    <exclude name="searchWithRangeHardend"/>
+                    <exclude name="searchWithRangeAndIncludeUpperBound"/>
+                </methods>
+            </class>
+            <!-- 2) FacetIntervalSearchTest: interval facet gaps on ES -->
+            <class name="org.alfresco.rest.search.FacetIntervalSearchTest">
+                <methods>
+                    <exclude name="searchWithBasicInterval"/>
+                    <exclude name="searchWithDates"/>
+                </methods>
+            </class>
+            <!-- 3) FacetFieldsSearchTest: mincount / SITE facet gaps on ES -->
+            <class name="org.alfresco.rest.search.FacetFieldsSearchTest">
+                <methods>
+                    <exclude name="testSearchWithFacetFieldsOnlyFacetsWhereAccess"/>
+                </methods>
+            </class>
+            <!-- 4) StatsSearchTest: not supported by ES -->
+            <class name="org.alfresco.rest.search.StatsSearchTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 5) ShardInfoTest: Solr-only API (shardRegistry bean); skip entire class on ES. -->
+            <class name="org.alfresco.rest.search.ShardInfoTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 6) PivotFacetedSearchTest: not supported by ES -->
+            <class name="org.alfresco.rest.search.PivotFacetedSearchTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 7) FacetedSearchTest: not supported by ES -->
+            <class name="org.alfresco.rest.search.FacetedSearchTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 8) FieldDefinitionTest: excluded entirely.
+                        - testTextFieldNotDefined, testmlTextFieldNotDefined, testmlTextFieldMuliple:
+                          unknown-property error handling & mltext stemming gaps on ES.
+                        - Remaining tests: Batch Indexing custom model deployment at runtime gap
+                          (https://hyland.atlassian.net/browse/ACS-12502). -->
+            <class name="org.alfresco.rest.search.FieldDefinitionTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <!-- 9) SearchAFTSInFieldTest: ES tokenizer / cross-locale / ~ operator gaps -->
+            <class name="org.alfresco.rest.search.SearchAFTSInFieldTest">
+                <methods>
+                    <exclude name="testSearchInFieldName"/>
+                    <exclude name="testSearchInFieldNameQueryExpansion"/>
+                    <exclude name="testExactMatchWithoutCrossLocale"/>
+                    <exclude name="testWithConjunctionDisjunctionAndNegation"/>
+                </methods>
+            </class>
+
+            <!-- Suppress part1 classes so the package sweep doesn't re-run them -->
+            <class name="org.alfresco.rest.search.SearchCasesTest"><methods><exclude name=".*"/></methods></class>
+            <class name="org.alfresco.rest.search.SearchAspectTest"><methods><exclude name=".*"/></methods></class>
+            <class name="org.alfresco.rest.search.SearchTest"><methods><exclude name=".*"/></methods></class>
+            <class name="org.alfresco.rest.search.SearchSimpleCasesTest"><methods><exclude name=".*"/></methods></class>
+            <class name="org.alfresco.rest.search.SearchHighLightTest"><methods><exclude name=".*"/></methods></class>
+            <class name="org.alfresco.rest.search.SearchExactTermTest"><methods><exclude name=".*"/></methods></class>
+            <class name="org.alfresco.rest.search.SearchSpellCheckTest"><methods><exclude name=".*"/></methods></class>
+            <class name="org.alfresco.rest.search.NodeContentTest"><methods><exclude name=".*"/></methods></class>
+            <class name="org.alfresco.rest.search.SearchNonIndexedFields"><methods><exclude name=".*"/></methods></class>
+            <class name="org.alfresco.rest.search.SearchAPATHTest"><methods><exclude name=".*"/></methods></class>
+            <class name="org.alfresco.rest.search.SearchWithCustomModelTest"><methods><exclude name=".*"/></methods></class>
+        </classes>
+    </test>
+</suite>

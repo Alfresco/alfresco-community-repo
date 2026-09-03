@@ -166,6 +166,7 @@ public class LuceneQueryParser extends QueryParser
             FIELD_LOCALE_SUFFIX);
 
     private static final List<String> ES_RESERVED_WORDS = List.of("AND", "OR", "NOT");
+    private static final String WILDCARD_ONLY_TERM = "*";
 
     private final NamespacePrefixResolver namespaceResolver;
     private final DictionaryService dictionaryService;
@@ -356,6 +357,10 @@ public class LuceneQueryParser extends QueryParser
             // to split the terms to be able to use the wildcard in the term
             this.setDefaultOperator(Operator.AND);
             quoted = false;
+
+            // Since the phrase is no longer quoted, characters and words which are only special at the
+            // beginning of a term have to be escaped in every term and not just in the first one
+            queryText = sanitizeTerms(queryText);
         }
 
         return propertyFieldQuery(fieldName, queryText, quoted, exactTermSearch, untokenisedSearch);
@@ -1142,6 +1147,29 @@ public class LuceneQueryParser extends QueryParser
                 .replace("~", "\\~")
                 .replace(":", "\\:")
                 .replace("\"", "\\\"");
+    }
+
+    /**
+     * Prepares the individual terms of a phrase query text which has already been escaped as a whole. To be used when we split the phrase into individual terms for the purpose of building a boolean query. Of the remaining terms only the reserved words and the leading "-" and "+" are escaped here, as the rest have been already escaped in the phrase escape.
+     */
+    String sanitizeTerms(String queryText)
+    {
+        var terms = Stream.of(queryText.split(" ", -1))
+                .filter(not(WILDCARD_ONLY_TERM::equals))
+                .map(this::escapeTermPrefix)
+                .collect(toList());
+
+        return terms.isEmpty() ? WILDCARD_ONLY_TERM : String.join(" ", terms);
+    }
+
+    private String escapeTermPrefix(String term)
+    {
+        if (ES_RESERVED_WORDS.contains(term) || term.startsWith("-") || term.startsWith("+"))
+        {
+            return "\\" + term;
+        }
+
+        return term;
     }
 
     private Query unsupportedWithMessage(String message)

@@ -43,6 +43,7 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.security.permissions.ACEType;
+import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -262,7 +263,45 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
 
         long sharedAclToReplaceQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_SHARED_ACL_TO_REPLACE).getFirst();
         long inheritFromAclQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_INHERIT_FROM_ACL).getFirst();
-        return getUnusedAclEntityIds(afterAclId, sharedAclToReplaceQNameId, inheritFromAclQNameId, maxResults);
+        return getUnusedAclEntityIds(afterAclId, sharedAclToReplaceQNameId, inheritFromAclQNameId,
+                ACLType.FIXED.getId(), ACLType.GLOBAL.getId(), maxResults);
+    }
+
+    public boolean deleteUnusedAcl(long aclEntityId)
+    {
+        long sharedAclToReplaceQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_SHARED_ACL_TO_REPLACE).getFirst();
+        long inheritFromAclQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_INHERIT_FROM_ACL).getFirst();
+        if (!isAclEntityUnused(aclEntityId, sharedAclToReplaceQNameId, inheritFromAclQNameId,
+            ACLType.FIXED.getId(), ACLType.GLOBAL.getId()))
+        {
+            return false;
+        }
+
+        Acl acl = getAcl(aclEntityId);
+        if (acl == null)
+        {
+            return false;
+        }
+
+        List<AclMember> members = getAclMembersByAcl(aclEntityId);
+        List<Long> aceIds = new ArrayList<Long>(members.size());
+        for (AclMember member : members)
+        {
+            aceIds.add(member.getAceId());
+        }
+
+        deleteAclMembersByAcl(aclEntityId);
+        deleteAcl(aclEntityId);
+
+        for (Long aceId : aceIds)
+        {
+            deleteAceEntityIfUnused(aceId);
+        }
+        if (acl.getAclChangeSetId() != null)
+        {
+            deleteAclChangeSetEntityIfUnused(acl.getAclChangeSetId());
+        }
+        return true;
     }
 
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults)
@@ -386,13 +425,19 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
 
     protected abstract Long getLatestAclEntityByGuid(String aclGuid);
 
-    protected abstract List<Long> getUnusedAclEntityIds(long afterAclId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId, int maxResults);
+    protected abstract List<Long> getUnusedAclEntityIds(long afterAclId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId,
+            int fixedAclType, int globalAclType, int maxResults);
+
+    protected abstract boolean isAclEntityUnused(long aclEntityId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId,
+            int fixedAclType, int globalAclType);
 
     protected abstract int updateAclEntity(AclEntity entity);
 
     protected abstract int updateAceEntity(AceEntity updatedAceEntity);
 
     protected abstract int deleteAclEntity(long id);
+
+    protected abstract int deleteAclChangeSetEntityIfUnused(long aclChangeSetEntityId);
 
     protected abstract List<Long> getADMNodeEntityIdsByAcl(long aclEntityId, int maxResults);
 
@@ -695,6 +740,8 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     protected abstract List<Map<String, Object>> getAceAndAuthorityEntitiesByAcl(long idOfAcl);
 
     protected abstract int deleteAceEntities(List<Long> aceIds);
+
+    protected abstract int deleteAceEntityIfUnused(long aceId);
 
     //
     // Permission

@@ -27,6 +27,7 @@
                 <ref bean="upgradePasswordHashJobTrigger"/>
                 <ref bean="patchAddUnmovableAspectTrigger"/>
                 <ref bean="fixedAclUpdaterTrigger"/>
+                <ref bean="unusedAclCleanupTrigger"/>
             </list>
         </property>
     </bean>
@@ -221,6 +222,23 @@
                 <property name="jobDataAsMap">
                     <map>
                         <entry key="fixedAclUpdater" value-ref="fixedAclUpdater"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="unusedAclCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${system.aclCleanup.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+        <property name="jobDetail">
+            <bean id="unusedAclCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.domain.permissions.UnusedAclCleanupJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="unusedAclCleaner" value-ref="unusedAclCleaner"/>
+                        <entry key="jobLockService" value-ref="jobLockService"/>
+                        <entry key="name" value="unusedAclCleanupJob"/>
                     </map>
                 </property>
             </bean>

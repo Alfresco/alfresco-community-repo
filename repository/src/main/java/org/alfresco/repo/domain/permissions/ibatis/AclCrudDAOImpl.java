@@ -60,6 +60,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     private static final String SELECT_ACLS_THAT_INHERIT_FROM_ACL = "alfresco.permissions.select_AclsThatInheritFromAcl";
     private static final String SELECT_LATEST_ACL_BY_GUID = "alfresco.permissions.select_LatestAclByGuid";
     private static final String SELECT_UNUSED_ACL_IDS = "alfresco.permissions.select_UnusedAclIds";
+    private static final String SELECT_IS_ACL_UNUSED = "alfresco.permissions.select_IsAclUnused";
     private static final String SELECT_ADM_NODES_BY_ACL = "alfresco.permissions.select_ADMNodesByAclId";
     private static final String UPDATE_ACL = "alfresco.permissions.update_Acl";
     private static final String DELETE_ACL = "alfresco.permissions.delete_Acl";
@@ -76,6 +77,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     private static final String UPDATE_ACL_CHANGESET = "alfresco.permissions.update_AclChangeSet";
     private static final String SELECT_ACL_CHANGESET_BY_ID = "alfresco.permissions.select_AclChangeSetById";
     private static final String DELETE_ACL_CHANGESET = "alfresco.permissions.delete_AclChangeSet";
+    private static final String DELETE_UNUSED_ACL_CHANGESET = "alfresco.permissions.delete_UnusedAclChangeSet";
 
     private static final String INSERT_ACE = "alfresco.permissions.insert.insert_Ace";
     private static final String SELECT_ACE_BY_ID = "alfresco.permissions.select_AceById";
@@ -83,6 +85,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     private static final String SELECT_ACES_AND_AUTHORIES_BY_ACL = "alfresco.permissions.select_AcesAndAuthoritiesByAclId";
     private static final String SELECT_ACE_WITH_NO_CONTEXT = "alfresco.permissions.select_AceWithNoContext";
     private static final String DELETE_ACES_LIST = "alfresco.permissions.delete_AcesList";
+    private static final String DELETE_UNUSED_ACE = "alfresco.permissions.delete_UnusedAce";
     private static final String UPDATE_ACE = "alfresco.permissions.update_Ace";
 
     private static final String INSERT_ACE_CONTEXT = "alfresco.permissions.insert.insert_AceContext";
@@ -153,14 +156,30 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     }
 
     @Override
-    protected List<Long> getUnusedAclEntityIds(long afterAclId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId, int maxResults)
+    protected List<Long> getUnusedAclEntityIds(long afterAclId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId,
+            int fixedAclType, int globalAclType, int maxResults)
     {
-        Map<String, Object> params = new HashMap<String, Object>(3);
+        Map<String, Object> params = new HashMap<String, Object>(5);
         params.put("afterAclId", afterAclId);
         params.put("sharedAclToReplaceQNameId", sharedAclToReplaceQNameId);
         params.put("inheritFromAclQNameId", inheritFromAclQNameId);
+        params.put("fixedAclType", fixedAclType);
+        params.put("globalAclType", globalAclType);
 
         return template.selectList(SELECT_UNUSED_ACL_IDS, params, new RowBounds(0, maxResults));
+    }
+
+    @Override
+    protected boolean isAclEntityUnused(long aclEntityId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId,
+            int fixedAclType, int globalAclType)
+    {
+        Map<String, Object> params = new HashMap<String, Object>(5);
+        params.put("id", aclEntityId);
+        params.put("sharedAclToReplaceQNameId", sharedAclToReplaceQNameId);
+        params.put("inheritFromAclQNameId", inheritFromAclQNameId);
+        params.put("fixedAclType", fixedAclType);
+        params.put("globalAclType", globalAclType);
+        return template.selectOne(SELECT_IS_ACL_UNUSED, params) != null;
     }
 
     @SuppressWarnings("unchecked")
@@ -297,6 +316,14 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     }
 
     @Override
+    protected int deleteAclChangeSetEntityIfUnused(long aclChangeSetEntityId)
+    {
+        Map<String, Object> params = new HashMap<String, Object>(1);
+        params.put("id", aclChangeSetEntityId);
+        return template.delete(DELETE_UNUSED_ACL_CHANGESET, params);
+    }
+
+    @Override
     protected int updateChangeSetEntity(Long id, long commitTimeMs)
     {
         AclChangeSetEntity entity = new AclChangeSetEntity();
@@ -371,6 +398,14 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     protected int deleteAceEntities(List<Long> aceEntityIds)
     {
         return template.delete(DELETE_ACES_LIST, aceEntityIds);
+    }
+
+    @Override
+    protected int deleteAceEntityIfUnused(long aceEntityId)
+    {
+        Map<String, Object> params = new HashMap<String, Object>(1);
+        params.put("id", aceEntityId);
+        return template.delete(DELETE_UNUSED_ACE, params);
     }
 
     @Override

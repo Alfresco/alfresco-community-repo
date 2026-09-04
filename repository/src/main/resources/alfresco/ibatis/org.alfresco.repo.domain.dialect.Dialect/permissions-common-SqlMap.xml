@@ -392,6 +392,7 @@
             alf_access_control_list acl
         where
             acl.id &gt; #{afterAclId,jdbcType=BIGINT} and
+            acl.type not in (#{fixedAclType,jdbcType=INTEGER}, #{globalAclType,jdbcType=INTEGER}) and
             not exists (select 1 from alf_node node where node.acl_id = acl.id) and
             not exists (select 1 from alf_access_control_list inherited_acl where inherited_acl.inherited_acl = acl.id) and
             not exists (select 1 from alf_access_control_list parent_acl where parent_acl.inherits_from = acl.id) and
@@ -406,6 +407,28 @@
             )
         order by
             acl.id
+    </select>
+
+    <select id="select_IsAclUnused" parameterType="map" resultType="long">
+        select
+            acl.id
+        from
+            alf_access_control_list acl
+        where
+            acl.id = #{id,jdbcType=BIGINT} and
+            acl.type not in (#{fixedAclType,jdbcType=INTEGER}, #{globalAclType,jdbcType=INTEGER}) and
+            not exists (select 1 from alf_node node where node.acl_id = acl.id) and
+            not exists (select 1 from alf_access_control_list inherited_acl where inherited_acl.inherited_acl = acl.id) and
+            not exists (select 1 from alf_access_control_list parent_acl where parent_acl.inherits_from = acl.id) and
+            not exists (
+                select 1
+                from alf_node_properties node_property
+                where node_property.long_value = acl.id and
+                    node_property.qname_id in (
+                        #{sharedAclToReplaceQNameId,jdbcType=BIGINT},
+                        #{inheritFromAclQNameId,jdbcType=BIGINT}
+                    )
+            )
     </select>
     
     <select id="select_ADMNodesByAclId" parameterMap="parameter_IdMap" resultType="long">
@@ -600,6 +623,15 @@
             #{item}
         </foreach>
     </delete>
+
+    <delete id="delete_UnusedAce" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_access_control_entry
+        where
+            id = ? and
+            not exists (select 1 from alf_acl_member member where member.ace_id = alf_access_control_entry.id)
+    </delete>
     
     <!-- for patch -->
     <delete id="delete_UnusedAces">
@@ -653,6 +685,15 @@
             alf_acl_change_set
         where
             id = ?
+    </delete>
+
+    <delete id="delete_UnusedAclChangeSet" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_acl_change_set
+        where
+            id = ? and
+            not exists (select 1 from alf_access_control_list acl where acl.acl_change_set = alf_acl_change_set.id)
     </delete>
     
     <delete id="delete_AceContext" parameterMap="parameter_IdMap">

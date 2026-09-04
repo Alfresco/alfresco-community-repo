@@ -59,6 +59,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     private static final String SELECT_ACL_BY_ID = "alfresco.permissions.select_AclById";
     private static final String SELECT_ACLS_THAT_INHERIT_FROM_ACL = "alfresco.permissions.select_AclsThatInheritFromAcl";
     private static final String SELECT_LATEST_ACL_BY_GUID = "alfresco.permissions.select_LatestAclByGuid";
+    private static final String SELECT_UNUSED_ACL_IDS = "alfresco.permissions.select_UnusedAclIds";
     private static final String SELECT_ADM_NODES_BY_ACL = "alfresco.permissions.select_ADMNodesByAclId";
     private static final String UPDATE_ACL = "alfresco.permissions.update_Acl";
     private static final String DELETE_ACL = "alfresco.permissions.delete_Acl";
@@ -149,6 +150,17 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         params.put("bool", true);
 
         return template.selectOne(SELECT_LATEST_ACL_BY_GUID, params);
+    }
+
+    @Override
+    protected List<Long> getUnusedAclEntityIds(long afterAclId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId, int maxResults)
+    {
+        Map<String, Object> params = new HashMap<String, Object>(3);
+        params.put("afterAclId", afterAclId);
+        params.put("sharedAclToReplaceQNameId", sharedAclToReplaceQNameId);
+        params.put("inheritFromAclQNameId", inheritFromAclQNameId);
+
+        return template.selectList(SELECT_UNUSED_ACL_IDS, params, new RowBounds(0, maxResults));
     }
 
     @SuppressWarnings("unchecked")

@@ -35,6 +35,7 @@ import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
@@ -252,6 +253,18 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         return getLatestAclEntityByGuid(aclGuid);
     }
 
+    public List<Long> getUnusedAclIds(long afterAclId, int maxResults)
+    {
+        if (maxResults < 1)
+        {
+            throw new IllegalArgumentException("maxResults must be greater than zero");
+        }
+
+        long sharedAclToReplaceQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_SHARED_ACL_TO_REPLACE).getFirst();
+        long inheritFromAclQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_INHERIT_FROM_ACL).getFirst();
+        return getUnusedAclEntityIds(afterAclId, sharedAclToReplaceQNameId, inheritFromAclQNameId, maxResults);
+    }
+
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults)
     {
         return getADMNodeEntityIdsByAcl(aclEntityId, maxResults);
@@ -372,6 +385,8 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     protected abstract List<Long> getAclEntitiesThatInheritFromAcl(long idOfAcl);
 
     protected abstract Long getLatestAclEntityByGuid(String aclGuid);
+
+    protected abstract List<Long> getUnusedAclEntityIds(long afterAclId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId, int maxResults);
 
     protected abstract int updateAclEntity(AclEntity entity);
 

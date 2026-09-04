@@ -26,6 +26,7 @@
 package org.alfresco.repo.domain.permissions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -33,6 +34,8 @@ import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.security.permissions.ACLType;
+import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -57,6 +60,7 @@ public class AclCrudDAOTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private AclCrudDAO aclCrudDAO;
+    private AclDAO aclDAO;
 
     @Override
     public void setUp() throws Exception
@@ -66,6 +70,29 @@ public class AclCrudDAOTest extends TestCase
         txnHelper = transactionService.getRetryingTransactionHelper();
 
         aclCrudDAO = (AclCrudDAO) ctx.getBean("aclCrudDAO");
+        aclDAO = (AclDAO) ctx.getBean("aclDAO");
+    }
+
+    public void testGetUnusedAclIdsReturnsBoundedIsolatedAcls() throws Exception
+    {
+        List<Long> aclIds = txnHelper.doInTransaction(() -> {
+            SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+            properties.setAclType(ACLType.DEFINING);
+            properties.setInherits(true);
+            properties.setVersioned(false);
+
+            Long definingAclId = aclDAO.createAccessControlList(properties).getId();
+            Long sharedAclId = aclDAO.getInheritedAccessControlList(definingAclId);
+            Long firstUnusedAclId = aclDAO.createAccessControlList(properties).getId();
+            Long secondUnusedAclId = aclDAO.createAccessControlList(properties).getId();
+
+            return Arrays.asList(sharedAclId, firstUnusedAclId, secondUnusedAclId);
+        });
+
+        List<Long> unusedAclIds = txnHelper.doInTransaction(() -> aclCrudDAO.getUnusedAclIds(aclIds.get(0), 1), true);
+
+        assertEquals(1, unusedAclIds.size());
+        assertEquals(aclIds.get(1), unusedAclIds.get(0));
     }
 
     // TODO - alf_access_control_list, alf_acl_member, alf_access_control_entry

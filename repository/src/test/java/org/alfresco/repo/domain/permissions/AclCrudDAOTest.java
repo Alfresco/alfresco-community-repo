@@ -26,17 +26,23 @@
 package org.alfresco.repo.domain.permissions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
+import org.alfresco.repo.security.permissions.ACEType;
+import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -57,6 +63,7 @@ public class AclCrudDAOTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private AclCrudDAO aclCrudDAO;
+    private AclDAO aclDAO;
 
     @Override
     public void setUp() throws Exception
@@ -66,6 +73,73 @@ public class AclCrudDAOTest extends TestCase
         txnHelper = transactionService.getRetryingTransactionHelper();
 
         aclCrudDAO = (AclCrudDAO) ctx.getBean("aclCrudDAO");
+        aclDAO = (AclDAO) ctx.getBean("aclDAO");
+    }
+
+    public void testGetUnusedAclIdsReturnsBoundedIsolatedAcls() throws Exception
+    {
+        List<Long> aclIds = txnHelper.doInTransaction(() -> {
+            SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+            properties.setAclType(ACLType.DEFINING);
+            properties.setInherits(true);
+            properties.setVersioned(false);
+
+            Long definingAclId = aclDAO.createAccessControlList(properties).getId();
+            Long sharedAclId = aclDAO.getInheritedAccessControlList(definingAclId);
+            properties.setInherits(false);
+            properties.setAclType(ACLType.FIXED);
+            aclDAO.createAccessControlList(properties);
+            properties.setAclType(ACLType.GLOBAL);
+            aclDAO.createAccessControlList(properties);
+            properties.setAclType(ACLType.DEFINING);
+            Long firstUnusedAclId = aclDAO.createAccessControlList(properties).getId();
+            Long secondUnusedAclId = aclDAO.createAccessControlList(properties).getId();
+
+            return Arrays.asList(sharedAclId, firstUnusedAclId, secondUnusedAclId);
+        });
+
+        List<Long> unusedAclIds = txnHelper.doInTransaction(() -> aclCrudDAO.getUnusedAclIds(aclIds.get(0), 1), true);
+
+        assertEquals(1, unusedAclIds.size());
+        assertEquals(aclIds.get(1), unusedAclIds.get(0));
+    }
+
+    public void testDeleteUnusedAclPreservesSharedAceUntilLastReferenceIsRemoved() throws Exception
+    {
+        List<Long> ids = txnHelper.doInTransaction(() -> {
+            SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+            properties.setAclType(ACLType.DEFINING);
+            properties.setInherits(false);
+            properties.setVersioned(false);
+
+            Long firstAclId = aclDAO.createAccessControlList(properties).getId();
+            Long secondAclId = aclDAO.createAccessControlList(properties).getId();
+            Authority authority = aclCrudDAO.getOrCreateAuthority("acl-cleanup-test-user");
+            Permission permission = aclCrudDAO.getOrCreatePermission(
+                    SimplePermissionReference.getPermissionReference(
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "aclCleanupTest"), "Read"));
+            Ace ace = aclCrudDAO.getOrCreateAce(permission, authority, ACEType.ALL, AccessStatus.ALLOWED);
+            aclCrudDAO.addAclMembersToAcl(firstAclId, Arrays.asList(ace.getId()), 0);
+            aclCrudDAO.addAclMembersToAcl(secondAclId, Arrays.asList(ace.getId()), 0);
+
+            return Arrays.asList(firstAclId, secondAclId, ace.getId(), aclCrudDAO.getAcl(firstAclId).getAclChangeSetId());
+        });
+
+        assertTrue(txnHelper.doInTransaction(() -> aclCrudDAO.deleteUnusedAcl(ids.get(0))));
+        txnHelper.doInTransaction(() -> {
+            assertNull(aclCrudDAO.getAcl(ids.get(0)));
+            assertNotNull(aclCrudDAO.getAce(ids.get(2)));
+            assertNotNull(aclCrudDAO.getAclChangeSet(ids.get(3)));
+            return null;
+        }, true);
+
+        assertTrue(txnHelper.doInTransaction(() -> aclCrudDAO.deleteUnusedAcl(ids.get(1))));
+        txnHelper.doInTransaction(() -> {
+            assertNull(aclCrudDAO.getAcl(ids.get(1)));
+            assertNull(aclCrudDAO.getAce(ids.get(2)));
+            assertNull(aclCrudDAO.getAclChangeSet(ids.get(3)));
+            return null;
+        }, true);
     }
 
     // TODO - alf_access_control_list, alf_acl_member, alf_access_control_entry

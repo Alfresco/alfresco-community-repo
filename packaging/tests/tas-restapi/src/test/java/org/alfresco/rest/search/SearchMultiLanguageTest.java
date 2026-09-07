@@ -35,9 +35,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 
 /**
- * Migration test class for multi-language content search on Elasticsearch.
- * Uses only default ES analyzer behaviour — no cross-locale settings required.
- * Created for ACS-11964.
+ * Migration test class for multi-language content search on Elasticsearch. Uses only default ES analyzer behaviour — no cross-locale settings required.
  */
 public class SearchMultiLanguageTest extends AbstractSearchServicesE2ETest
 {

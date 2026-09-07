@@ -35,9 +35,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 
 /**
- * Migration test class for advanced AFTS query operators on Elasticsearch:
- * ISUNSET (property-not-set) and proximity ('wordA *(N) wordB').
- * Created for ACS-11964.
+ * Migration test class for advanced AFTS query operators on Elasticsearch: ISUNSET (property-not-set) and proximity ('wordA *(N) wordB'). Created for ACS-11964.
  */
 public class SearchAdvancedQueryOperatorsTest extends AbstractSearchServicesE2ETest
 {
@@ -95,9 +93,7 @@ public class SearchAdvancedQueryOperatorsTest extends AbstractSearchServicesE2ET
     }
 
     /**
-     * AFTS proximity syntax: 'wordA *(N) wordB' matches when at most N words separate the two.
-     * TOKEN_A (position 0) and TOKEN_D (position 3) have exactly 2 words between them (TOKEN_B, TOKEN_C),
-     * so *(2) must match.
+     * AFTS proximity syntax: 'wordA *(N) wordB' matches when at most N words separate the two. TOKEN_A (position 0) and TOKEN_D (position 3) have exactly 2 words between them (TOKEN_B, TOKEN_C), so *(2) must match.
      */
     @Test(priority = 2)
     public void testProximitySearchUsingAftsSyntax()

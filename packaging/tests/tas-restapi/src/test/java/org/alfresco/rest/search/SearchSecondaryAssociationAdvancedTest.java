@@ -26,11 +26,11 @@
 
 package org.alfresco.rest.search;
 
-import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeChildAssociationModel;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
@@ -39,7 +39,6 @@ import org.alfresco.utility.model.FolderModel;
 
 /**
  * Migration test class for advanced secondary parent/child association scenarios on Elasticsearch.
- * Created for ACS-11964.
  */
 public class SearchSecondaryAssociationAdvancedTest extends AbstractSearchServicesE2ETest
 {
@@ -104,7 +103,8 @@ public class SearchSecondaryAssociationAdvancedTest extends AbstractSearchServic
     }
 
     @Test(priority = 1)
-    public void testMultipleSecondaryAssociationsInSameSite() throws EmptyRestModelCollectionException {
+    public void testMultipleSecondaryAssociationsInSameSite() throws EmptyRestModelCollectionException
+    {
         RestNodeChildAssociationModel assocA = new RestNodeChildAssociationModel(file.getNodeRefWithoutVersion(), "cm:contains");
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(secondaryFolderA).addSecondaryChildren(assocA);
 
@@ -130,7 +130,8 @@ public class SearchSecondaryAssociationAdvancedTest extends AbstractSearchServic
     }
 
     @Test(priority = 2)
-    public void testNestedSecondaryPathQuery() throws EmptyRestModelCollectionException {
+    public void testNestedSecondaryPathQuery() throws EmptyRestModelCollectionException
+    {
         RestNodeChildAssociationModel assoc = new RestNodeChildAssociationModel(nestedTargetFile.getNodeRefWithoutVersion(), "cm:contains");
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(nestedChild).addSecondaryChildren(assoc);
 
@@ -147,7 +148,8 @@ public class SearchSecondaryAssociationAdvancedTest extends AbstractSearchServic
     }
 
     @Test(priority = 3)
-    public void testSecondaryAssociationRemovalUpdatesIndex() throws EmptyRestModelCollectionException {
+    public void testSecondaryAssociationRemovalUpdatesIndex() throws EmptyRestModelCollectionException
+    {
         RestNodeChildAssociationModel assoc = new RestNodeChildAssociationModel(file.getNodeRefWithoutVersion(), "cm:contains");
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(secondaryFolderA).addSecondaryChildren(assoc);
 
@@ -163,7 +165,8 @@ public class SearchSecondaryAssociationAdvancedTest extends AbstractSearchServic
     }
 
     @Test(priority = 4)
-    public void testFileFoundOnceGloballyDespiteMultipleAssociations() throws EmptyRestModelCollectionException {
+    public void testFileFoundOnceGloballyDespiteMultipleAssociations() throws EmptyRestModelCollectionException
+    {
         RestNodeChildAssociationModel assocA = new RestNodeChildAssociationModel(file.getNodeRefWithoutVersion(), "cm:contains");
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(secondaryFolderA).addSecondaryChildren(assocA);
         RestNodeChildAssociationModel assocB = new RestNodeChildAssociationModel(file.getNodeRefWithoutVersion(), "cm:contains");
@@ -180,7 +183,8 @@ public class SearchSecondaryAssociationAdvancedTest extends AbstractSearchServic
     }
 
     @Test(priority = 5)
-    public void testMultipleFilesInSameSecondaryFolder() throws EmptyRestModelCollectionException {
+    public void testMultipleFilesInSameSecondaryFolder() throws EmptyRestModelCollectionException
+    {
         RestNodeChildAssociationModel assoc1 = new RestNodeChildAssociationModel(siblingFileOne.getNodeRefWithoutVersion(), "cm:contains");
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(commonSecondaryFolder).addSecondaryChildren(assoc1);
         RestNodeChildAssociationModel assoc2 = new RestNodeChildAssociationModel(siblingFileTwo.getNodeRefWithoutVersion(), "cm:contains");
@@ -208,7 +212,8 @@ public class SearchSecondaryAssociationAdvancedTest extends AbstractSearchServic
     }
 
     @Test(priority = 6)
-    public void testPathViaPrimaryStillWorksAfterSecondaryAdded() throws EmptyRestModelCollectionException {
+    public void testPathViaPrimaryStillWorksAfterSecondaryAdded() throws EmptyRestModelCollectionException
+    {
         RestNodeChildAssociationModel assoc = new RestNodeChildAssociationModel(file.getNodeRefWithoutVersion(), "cm:contains");
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(secondaryFolderA).addSecondaryChildren(assoc);
 
@@ -221,7 +226,8 @@ public class SearchSecondaryAssociationAdvancedTest extends AbstractSearchServic
     }
 
     @Test(priority = 7)
-    public void testSecondaryAssociationOnDeeplyNestedFileFoundViaSecondaryPath() throws EmptyRestModelCollectionException {
+    public void testSecondaryAssociationOnDeeplyNestedFileFoundViaSecondaryPath() throws EmptyRestModelCollectionException
+    {
         RestNodeChildAssociationModel assoc = new RestNodeChildAssociationModel(nestedTargetFile.getNodeRefWithoutVersion(), "cm:contains");
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(nestedChild).addSecondaryChildren(assoc);
 

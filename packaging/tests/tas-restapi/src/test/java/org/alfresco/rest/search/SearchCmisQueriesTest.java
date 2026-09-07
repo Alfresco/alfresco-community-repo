@@ -36,7 +36,6 @@ import org.alfresco.utility.model.FolderModel;
 
 /**
  * Migration test class for CMIS-language queries on Elasticsearch.
- * Created for ACS-11964.
  */
 public class SearchCmisQueriesTest extends AbstractSearchServicesE2ETest
 {

@@ -38,8 +38,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 
 /**
- * Migration test class for category-based search scenarios on Elasticsearch.
- * Created for ACS-11964.
+ * Migration test class for category-based search scenarios on Elasticsearch. Created for ACS-11964.
  */
 public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
 {

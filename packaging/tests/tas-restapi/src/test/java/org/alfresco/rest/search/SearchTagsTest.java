@@ -36,7 +36,6 @@ import org.alfresco.utility.model.FolderModel;
 
 /**
  * Migration test class for tag-based search scenarios on Elasticsearch.
- * Created for ACS-11964.
  */
 public class SearchTagsTest extends AbstractSearchServicesE2ETest
 {

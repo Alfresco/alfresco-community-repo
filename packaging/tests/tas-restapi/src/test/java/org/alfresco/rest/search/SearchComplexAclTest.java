@@ -45,7 +45,6 @@ import org.alfresco.utility.model.UserModel;
 
 /**
  * Migration test class for complex ACL structures on Elasticsearch.
- * Created for ACS-11964.
  */
 public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
 {

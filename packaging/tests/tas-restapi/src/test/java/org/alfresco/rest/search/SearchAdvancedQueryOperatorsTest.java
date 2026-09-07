@@ -72,7 +72,7 @@ public class SearchAdvancedQueryOperatorsTest extends AbstractSearchServicesE2ET
 
         // Poll until the file's content is truly indexed on ES.
         Assert.assertTrue(isContentInSearchResults("cm:content:'" + TOKEN_A + "' AND cm:name:'" + proximityFile.getName() + "'",
-                        proximityFile.getName(), true), "Setup: proximity file's content should be indexed on ES before running tests");
+                proximityFile.getName(), true), "Setup: proximity file's content should be indexed on ES before running tests");
     }
 
     /**

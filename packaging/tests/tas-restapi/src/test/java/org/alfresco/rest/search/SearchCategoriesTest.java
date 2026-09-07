@@ -120,11 +120,9 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         waitForMetadataIndexing(isolationFileA.getName(), true);
         waitForMetadataIndexing(isolationFileB.getName(), true);
 
-        Assert.assertTrue(isContentInSearchResults("cm:categories:\"" + primaryCategoryNodeRef + "\"",
-                        fileWithPrimaryCategory.getName(), true),
+        Assert.assertTrue(isContentInSearchResults("cm:categories:\"" + primaryCategoryNodeRef + "\"", fileWithPrimaryCategory.getName(), true),
                 "Setup: primary-category association should be searchable after batch-indexing catches up");
-        Assert.assertTrue(isContentInSearchResults("cm:categories:\"" + secondaryCategoryNodeRef + "\"",
-                        isolationFileA.getName(), true),
+        Assert.assertTrue(isContentInSearchResults("cm:categories:\"" + secondaryCategoryNodeRef + "\"", isolationFileA.getName(), true),
                 "Setup: secondary-category association should be searchable after batch-indexing catches up");
         Assert.assertTrue(isContentInSearchResults("TAG:'" + COMBINED_TAG + "'", fileWithCategoryAndTag.getName(), true),
                 "Setup: combined tag should be searchable after batch-indexing catches up");

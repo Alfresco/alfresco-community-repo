@@ -39,7 +39,6 @@ import org.alfresco.utility.model.FolderModel;
  */
 public class SearchMultiLanguageTest extends AbstractSearchServicesE2ETest
 {
-    private FolderModel folder;
     private FileModel frenchContent;
     private FileModel spanishContent;
     private FileModel mixedLanguageContent;
@@ -49,7 +48,8 @@ public class SearchMultiLanguageTest extends AbstractSearchServicesE2ETest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
-        folder = dataContent.usingUser(testUser).usingSite(testSite).createFolderCmisApi(UNIQUE_PREFIX + "-folder");
+        FolderModel folder = dataContent.usingUser(testUser).usingSite(testSite)
+                .createFolderCmisApi(UNIQUE_PREFIX + "-folder");
 
         frenchContent = new FileModel(UNIQUE_PREFIX + "-french-menu.txt");
         frenchContent.setContent("Le café propose des croissants et des baguettes traditionnelles.");

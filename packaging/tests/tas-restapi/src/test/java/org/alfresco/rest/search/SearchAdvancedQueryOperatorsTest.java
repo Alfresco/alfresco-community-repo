@@ -35,11 +35,10 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 
 /**
- * Migration test class for advanced AFTS query operators on Elasticsearch: ISUNSET (property-not-set) and proximity ('wordA *(N) wordB'). Created for ACS-11964.
+ * Migration test class for advanced AFTS query operators on Elasticsearch.
  */
 public class SearchAdvancedQueryOperatorsTest extends AbstractSearchServicesE2ETest
 {
-    private FolderModel folder;
     private FileModel fileWithoutTitle;
     private FileModel proximityFile;
 
@@ -54,7 +53,8 @@ public class SearchAdvancedQueryOperatorsTest extends AbstractSearchServicesE2ET
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
-        folder = dataContent.usingUser(testUser).usingSite(testSite).createFolderCmisApi(UNIQUE_PREFIX + "-folder");
+        FolderModel folder = dataContent.usingUser(testUser).usingSite(testSite)
+                .createFolderCmisApi(UNIQUE_PREFIX + "-folder");
 
         // File created without setting cm:title — used for ISUNSET.
         fileWithoutTitle = new FileModel(UNIQUE_PREFIX + "-file-without-title.txt");
@@ -71,12 +71,8 @@ public class SearchAdvancedQueryOperatorsTest extends AbstractSearchServicesE2ET
         waitForMetadataIndexing(proximityFile.getName(), true);
 
         // Poll until the file's content is truly indexed on ES.
-        Assert.assertTrue(
-                isContentInSearchResults(
-                        "cm:content:'" + TOKEN_A + "' AND cm:name:'" + proximityFile.getName() + "'",
-                        proximityFile.getName(),
-                        true),
-                "Setup: proximity file's content should be indexed on ES before running tests");
+        Assert.assertTrue(isContentInSearchResults("cm:content:'" + TOKEN_A + "' AND cm:name:'" + proximityFile.getName() + "'",
+                        proximityFile.getName(), true), "Setup: proximity file's content should be indexed on ES before running tests");
     }
 
     /**
@@ -93,7 +89,7 @@ public class SearchAdvancedQueryOperatorsTest extends AbstractSearchServicesE2ET
     }
 
     /**
-     * AFTS proximity syntax: 'wordA *(N) wordB' matches when at most N words separate the two. TOKEN_A (position 0) and TOKEN_D (position 3) have exactly 2 words between them (TOKEN_B, TOKEN_C), so *(2) must match.
+     * AFTS proximity syntax: 'wordA *(N) wordB' matches when at most N words separate the two.TOKEN_A (position 0) and TOKEN_D (position 3) have exactly 2 words between them (TOKEN_B, TOKEN_C), so *(2) must match.
      */
     @Test(priority = 2)
     public void testProximitySearchUsingAftsSyntax()

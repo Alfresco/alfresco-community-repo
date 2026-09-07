@@ -38,13 +38,12 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 
 /**
- * Migration test class for category-based search scenarios on Elasticsearch. Created for ACS-11964.
+ * Migration test class for category-based search scenarios on Elasticsearch.
  */
 public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
 {
     private FolderModel folder;
     private FileModel fileWithPrimaryCategory;
-    private FileModel anotherFileWithPrimaryCategory;
     private FileModel fileWithCategoryAndTag;
     private FileModel fileWithBothCategories;
     private FileModel fileForCategoryRemoval;
@@ -82,24 +81,24 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
 
         fileWithPrimaryCategory = createFileClassifiedInto("file-with-primary-category.txt",
                 "File classified into primary category",
-                new String[]{primaryCategoryNodeRef});
+                primaryCategoryNodeRef);
 
-        anotherFileWithPrimaryCategory = createFileClassifiedInto("another-file-with-primary-category.txt",
+        FileModel anotherFileWithPrimaryCategory = createFileClassifiedInto("another-file-with-primary-category.txt",
                 "Second file classified into primary category",
-                new String[]{primaryCategoryNodeRef});
+                primaryCategoryNodeRef);
 
         fileWithCategoryAndTag = createFileClassifiedInto("file-with-category-and-tag.txt",
                 "File with both a category and a tag",
-                new String[]{primaryCategoryNodeRef});
+                primaryCategoryNodeRef);
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(fileWithCategoryAndTag).addTag(COMBINED_TAG);
 
         fileWithBothCategories = createFileClassifiedInto("file-with-both-categories.txt",
                 "File classified into two categories",
-                new String[]{primaryCategoryNodeRef, secondaryCategoryNodeRef});
+                primaryCategoryNodeRef, secondaryCategoryNodeRef);
 
         fileForCategoryRemoval = createFileClassifiedInto("file-for-category-removal.txt",
                 "File whose category will be removed to verify de-indexing",
-                new String[]{primaryCategoryNodeRef});
+                primaryCategoryNodeRef);
 
         fileForLateAssignment = new FileModel("file-for-late-category-assignment.txt");
         fileForLateAssignment.setContent("File that receives a category after creation");
@@ -107,10 +106,10 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
 
         isolationFileA = createFileClassifiedInto("isolation-file-a.txt",
                 "First isolation test file (category will be removed)",
-                new String[]{secondaryCategoryNodeRef});
+                secondaryCategoryNodeRef);
         isolationFileB = createFileClassifiedInto("isolation-file-b.txt",
                 "Second isolation test file (category must stay)",
-                new String[]{secondaryCategoryNodeRef});
+                secondaryCategoryNodeRef);
 
         waitForMetadataIndexing(fileWithPrimaryCategory.getName(), true);
         waitForMetadataIndexing(anotherFileWithPrimaryCategory.getName(), true);
@@ -121,20 +120,13 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         waitForMetadataIndexing(isolationFileA.getName(), true);
         waitForMetadataIndexing(isolationFileB.getName(), true);
 
-        Assert.assertTrue(
-                isContentInSearchResults(
-                        "cm:categories:\"" + primaryCategoryNodeRef + "\"",
-                        fileWithPrimaryCategory.getName(),
-                        true),
+        Assert.assertTrue(isContentInSearchResults("cm:categories:\"" + primaryCategoryNodeRef + "\"",
+                        fileWithPrimaryCategory.getName(), true),
                 "Setup: primary-category association should be searchable after batch-indexing catches up");
-        Assert.assertTrue(
-                isContentInSearchResults(
-                        "cm:categories:\"" + secondaryCategoryNodeRef + "\"",
-                        isolationFileA.getName(),
-                        true),
+        Assert.assertTrue(isContentInSearchResults("cm:categories:\"" + secondaryCategoryNodeRef + "\"",
+                        isolationFileA.getName(), true),
                 "Setup: secondary-category association should be searchable after batch-indexing catches up");
-        Assert.assertTrue(
-                isContentInSearchResults("TAG:'" + COMBINED_TAG + "'", fileWithCategoryAndTag.getName(), true),
+        Assert.assertTrue(isContentInSearchResults("TAG:'" + COMBINED_TAG + "'", fileWithCategoryAndTag.getName(), true),
                 "Setup: combined tag should be searchable after batch-indexing catches up");
     }
 
@@ -149,7 +141,7 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         return null;
     }
 
-    private FileModel createFileClassifiedInto(String name, String content, String[] categoryRefs)
+    private FileModel createFileClassifiedInto(String name, String content, String... categoryRefs)
     {
         FileModel file = new FileModel(name);
         file.setContent(content);

@@ -55,9 +55,7 @@ public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
     private UserModel secondGroupUser;
     private UserModel individualUser;
     private UserModel outsiderUser;
-    private GroupModel authorizedGroup;
     private FolderModel folderA;
-    private FolderModel folderB;
     private FileModel groupProtectedFile;
     private FileModel mixedPermsFile;
     private FileModel inheritedProtectedFile;
@@ -70,7 +68,7 @@ public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
         individualUser = dataUser.createRandomTestUser("IndividualUser");
         outsiderUser = dataUser.createRandomTestUser("OutsiderUser");
 
-        authorizedGroup = dataGroup.createRandomGroup();
+        GroupModel authorizedGroup = dataGroup.createRandomGroup();
         dataGroup.addListOfUsersToGroup(authorizedGroup, groupUser);
         dataGroup.addListOfUsersToGroup(authorizedGroup, secondGroupUser);
 
@@ -80,7 +78,7 @@ public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
         dataUser.addUserToSite(outsiderUser, testSite, UserRole.SiteContributor);
 
         folderA = dataContent.usingUser(testUser).usingSite(testSite).createFolderCmisApi("acl-folder-a");
-        folderB = dataContent.usingUser(testUser).usingSite(testSite).createFolderCmisApi("acl-folder-b");
+        FolderModel folderB = dataContent.usingUser(testUser).usingSite(testSite).createFolderCmisApi("acl-folder-b");
 
         groupProtectedFile = new FileModel("group-protected-file.txt", FileType.TEXT_PLAIN, "Group ACL protected");
         mixedPermsFile = new FileModel("mixed-perms-file.txt", FileType.TEXT_PLAIN, "Mixed ALLOW/DENY ACL");
@@ -195,7 +193,8 @@ public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
     @Test(priority = 6)
     public void testNewFileInProtectedFolderInheritsGroupAcl()
     {
-        FileModel newlyCreatedFile = new FileModel("newly-created-in-folder-a.txt", FileType.TEXT_PLAIN, "Created after ACL was applied");
+        FileModel newlyCreatedFile = new FileModel("newly-created-in-folder-a.txt", FileType.TEXT_PLAIN,
+                "Created after ACL was applied");
         dataContent.usingUser(testUser).usingResource(folderA).createContent(newlyCreatedFile);
         waitForMetadataIndexing(newlyCreatedFile.getName(), true);
 

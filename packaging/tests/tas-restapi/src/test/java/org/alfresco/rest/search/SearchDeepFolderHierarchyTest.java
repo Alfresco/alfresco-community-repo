@@ -4,23 +4,7 @@
  * %%
  * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software.
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail. Otherwise, the software is
- * provided under the following open source license terms:
- *
- * Alfresco is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Alfresco is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * License header — same as other tests in this package.
  * #L%
  */
 
@@ -46,8 +30,6 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
     private FolderModel levelFive;
     private FolderModel levelSix;
     private FileModel deepFile;
-    private FileModel additionalDeepFileOne;
-    private FileModel additionalDeepFileTwo;
 
     private String pathBase;
 
@@ -71,11 +53,11 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
         deepFile.setContent("content at the deepest level");
         dataContent.usingUser(testUser).usingResource(levelSix).createContent(deepFile);
 
-        additionalDeepFileOne = new FileModel("deep-nested-file-two.txt");
+        FileModel additionalDeepFileOne = new FileModel("deep-nested-file-two.txt");
         additionalDeepFileOne.setContent("second file in the same deepest folder");
         dataContent.usingUser(testUser).usingResource(levelSix).createContent(additionalDeepFileOne);
 
-        additionalDeepFileTwo = new FileModel("deep-nested-file-three.txt");
+        FileModel additionalDeepFileTwo = new FileModel("deep-nested-file-three.txt");
         additionalDeepFileTwo.setContent("third file in the same deepest folder");
         dataContent.usingUser(testUser).usingResource(levelSix).createContent(additionalDeepFileTwo);
 
@@ -143,7 +125,14 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
                 "/cm:" + levelFive.getName() +
                 "/cm:" + levelSix.getName();
 
+        // Poll until the deepest folder is indexed, so the lookup below can't hit an empty result.
+        Assert.assertTrue(isContentInSearchResults("PATH:\"" + deepestFolderPath + "\"", levelSix.getName(), true),
+                "Deepest folder should be findable via PATH before running the PARENT query");
+
         SearchResponse folderLookup = queryAsUser(testUser, "PATH:\"" + deepestFolderPath + "\"");
+        Assert.assertFalse(folderLookup.getEntries().isEmpty(),
+                "PATH lookup for the deepest folder returned no entries");
+
         String folderId = folderLookup.getEntries().getFirst().getModel().getId();
 
         String parentQuery = "PARENT:'workspace://SpacesStore/" + folderId +

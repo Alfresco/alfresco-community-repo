@@ -39,11 +39,7 @@ import org.alfresco.utility.model.FolderModel;
  */
 public class SearchTagsTest extends AbstractSearchServicesE2ETest
 {
-    private FolderModel folder;
     private FileModel fileWithSingleTag;
-    private FileModel fileWithMultipleTags;
-    private FileModel anotherFileWithTagOne;
-    private FileModel fileWithAllThreeTags;
 
     private static final String TAG_PREFIX = "acsmigrationtag";
     private static final String TAG_ONE = TAG_PREFIX + "one";
@@ -53,21 +49,21 @@ public class SearchTagsTest extends AbstractSearchServicesE2ETest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
-        folder = dataContent.usingUser(testUser).usingSite(testSite).createFolderCmisApi("tags-folder");
+        FolderModel folder = dataContent.usingUser(testUser).usingSite(testSite).createFolderCmisApi("tags-folder");
 
         fileWithSingleTag = new FileModel("file-with-single-tag.txt");
         fileWithSingleTag.setContent("File with a single tag");
         dataContent.usingUser(testUser).usingResource(folder).createContent(fileWithSingleTag);
 
-        fileWithMultipleTags = new FileModel("file-with-multiple-tags.txt");
+        FileModel fileWithMultipleTags = new FileModel("file-with-multiple-tags.txt");
         fileWithMultipleTags.setContent("File with multiple tags");
         dataContent.usingUser(testUser).usingResource(folder).createContent(fileWithMultipleTags);
 
-        anotherFileWithTagOne = new FileModel("another-file-with-tag-one.txt");
+        FileModel anotherFileWithTagOne = new FileModel("another-file-with-tag-one.txt");
         anotherFileWithTagOne.setContent("Second file also tagged with TAG_ONE");
         dataContent.usingUser(testUser).usingResource(folder).createContent(anotherFileWithTagOne);
 
-        fileWithAllThreeTags = new FileModel("file-with-all-three-tags.txt");
+        FileModel fileWithAllThreeTags = new FileModel("file-with-all-three-tags.txt");
         fileWithAllThreeTags.setContent("File tagged with all three migration tags");
         dataContent.usingUser(testUser).usingResource(folder).createContent(fileWithAllThreeTags);
 
@@ -86,14 +82,11 @@ public class SearchTagsTest extends AbstractSearchServicesE2ETest
 
         // Wait until the TAG index catches up — batch-indexing needs time after tag-aspect
         // and cm:categories property changes before TAG queries start returning results.
-        Assert.assertTrue(
-                isContentInSearchResults("TAG:'" + TAG_ONE + "'", fileWithSingleTag.getName(), true),
+        Assert.assertTrue(isContentInSearchResults("TAG:'" + TAG_ONE + "'", fileWithSingleTag.getName(), true),
                 "Setup: TAG_ONE should be searchable after batch-indexing catches up");
-        Assert.assertTrue(
-                isContentInSearchResults("TAG:'" + TAG_TWO + "'", fileWithMultipleTags.getName(), true),
+        Assert.assertTrue(isContentInSearchResults("TAG:'" + TAG_TWO + "'", fileWithMultipleTags.getName(), true),
                 "Setup: TAG_TWO should be searchable after batch-indexing catches up");
-        Assert.assertTrue(
-                isContentInSearchResults("TAG:'" + TAG_THREE + "'", fileWithMultipleTags.getName(), true),
+        Assert.assertTrue(isContentInSearchResults("TAG:'" + TAG_THREE + "'", fileWithMultipleTags.getName(), true),
                 "Setup: TAG_THREE should be searchable after batch-indexing catches up");
     }
 

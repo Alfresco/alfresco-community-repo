@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="ElasticSearchE2ETests-Part3" verbose="1" preserve-order="true">
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+    </listeners>
+
+    <test name="SearchMigrationAdvancedScenarios">
+        <classes>
+            <class name="org.alfresco.rest.search.SearchAdvancedQueryOperatorsTest"/>
+            <class name="org.alfresco.rest.search.SearchCategoriesTest"/>
+            <class name="org.alfresco.rest.search.SearchCmisQueriesTest"/>
+            <class name="org.alfresco.rest.search.SearchComplexAclTest"/>
+            <class name="org.alfresco.rest.search.SearchDeepFolderHierarchyTest"/>
+            <class name="org.alfresco.rest.search.SearchMultiLanguageTest"/>
+            <class name="org.alfresco.rest.search.SearchSecondaryAssociationAdvancedTest"/>
+            <class name="org.alfresco.rest.search.SearchTagsTest"/>
+        </classes>
+    </test>
+</suite>

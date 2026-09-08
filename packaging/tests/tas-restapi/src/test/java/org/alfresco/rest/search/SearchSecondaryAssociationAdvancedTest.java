@@ -26,11 +26,11 @@
 
 package org.alfresco.rest.search;
 
-import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeChildAssociationModel;
 import org.alfresco.utility.data.CustomObjectTypeProperties;

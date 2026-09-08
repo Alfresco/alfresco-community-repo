@@ -433,10 +433,10 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
 
     protected abstract Long getLatestAclEntityByGuid(String aclGuid);
 
-        protected abstract List<Long> getUnusedAclEntityIds(long afterAclId, Long sharedAclToReplaceQNameId, Long inheritFromAclQNameId,
+    protected abstract List<Long> getUnusedAclEntityIds(long afterAclId, Long sharedAclToReplaceQNameId, Long inheritFromAclQNameId,
             int fixedAclType, int globalAclType, int maxResults);
 
-        protected abstract boolean isAclEntityUnused(long aclEntityId, Long sharedAclToReplaceQNameId, Long inheritFromAclQNameId,
+    protected abstract boolean isAclEntityUnused(long aclEntityId, Long sharedAclToReplaceQNameId, Long inheritFromAclQNameId,
             int fixedAclType, int globalAclType);
 
     protected abstract int updateAclEntity(AclEntity entity);

@@ -272,7 +272,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         long sharedAclToReplaceQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_SHARED_ACL_TO_REPLACE).getFirst();
         long inheritFromAclQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_INHERIT_FROM_ACL).getFirst();
         if (!isAclEntityUnused(aclEntityId, sharedAclToReplaceQNameId, inheritFromAclQNameId,
-            ACLType.FIXED.getId(), ACLType.GLOBAL.getId()))
+                ACLType.FIXED.getId(), ACLType.GLOBAL.getId()))
         {
             return false;
         }

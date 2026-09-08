@@ -117,7 +117,7 @@ public class AclCrudDAOTest extends TestCase
             Authority authority = aclCrudDAO.getOrCreateAuthority("acl-cleanup-test-user");
             Permission permission = aclCrudDAO.getOrCreatePermission(
                     SimplePermissionReference.getPermissionReference(
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "aclCleanupTest"), "Read"));
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "aclCleanupTest"), "Read"));
             Ace ace = aclCrudDAO.getOrCreateAce(permission, authority, ACEType.ALL, AccessStatus.ALLOWED);
             aclCrudDAO.addAclMembersToAcl(firstAclId, Arrays.asList(ace.getId()), 0);
             aclCrudDAO.addAclMembersToAcl(secondAclId, Arrays.asList(ace.getId()), 0);

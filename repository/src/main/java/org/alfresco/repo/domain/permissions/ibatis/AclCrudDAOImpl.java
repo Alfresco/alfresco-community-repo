@@ -156,7 +156,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     }
 
     @Override
-    protected List<Long> getUnusedAclEntityIds(long afterAclId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId,
+    protected List<Long> getUnusedAclEntityIds(long afterAclId, Long sharedAclToReplaceQNameId, Long inheritFromAclQNameId,
             int fixedAclType, int globalAclType, int maxResults)
     {
         Map<String, Object> params = new HashMap<>(5);
@@ -170,7 +170,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     }
 
     @Override
-    protected boolean isAclEntityUnused(long aclEntityId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId,
+    protected boolean isAclEntityUnused(long aclEntityId, Long sharedAclToReplaceQNameId, Long inheritFromAclQNameId,
             int fixedAclType, int globalAclType)
     {
         Map<String, Object> params = new HashMap<>(5);

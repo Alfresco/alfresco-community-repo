@@ -262,8 +262,8 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             throw new IllegalArgumentException("maxResults must be greater than zero");
         }
 
-        long sharedAclToReplaceQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_SHARED_ACL_TO_REPLACE).getFirst();
-        long inheritFromAclQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_INHERIT_FROM_ACL).getFirst();
+        Long sharedAclToReplaceQNameId = getQNameId(ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+        Long inheritFromAclQNameId = getQNameId(ContentModel.PROP_INHERIT_FROM_ACL);
         return getUnusedAclEntityIds(afterAclId, sharedAclToReplaceQNameId, inheritFromAclQNameId,
                 ACLType.FIXED.getId(), ACLType.GLOBAL.getId(), maxResults);
     }
@@ -271,8 +271,8 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     @Override
     public boolean deleteUnusedAcl(long aclEntityId)
     {
-        long sharedAclToReplaceQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_SHARED_ACL_TO_REPLACE).getFirst();
-        long inheritFromAclQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_INHERIT_FROM_ACL).getFirst();
+        Long sharedAclToReplaceQNameId = getQNameId(ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+        Long inheritFromAclQNameId = getQNameId(ContentModel.PROP_INHERIT_FROM_ACL);
         if (!isAclEntityUnused(aclEntityId, sharedAclToReplaceQNameId, inheritFromAclQNameId,
                 ACLType.FIXED.getId(), ACLType.GLOBAL.getId()))
         {
@@ -304,6 +304,12 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             deleteAclChangeSetEntityIfUnused(acl.getAclChangeSetId());
         }
         return true;
+    }
+
+    private Long getQNameId(QName qname)
+    {
+        Pair<Long, QName> qnamePair = qnameDAO.getQName(qname);
+        return qnamePair == null ? null : qnamePair.getFirst();
     }
 
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults)
@@ -427,10 +433,10 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
 
     protected abstract Long getLatestAclEntityByGuid(String aclGuid);
 
-    protected abstract List<Long> getUnusedAclEntityIds(long afterAclId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId,
+        protected abstract List<Long> getUnusedAclEntityIds(long afterAclId, Long sharedAclToReplaceQNameId, Long inheritFromAclQNameId,
             int fixedAclType, int globalAclType, int maxResults);
 
-    protected abstract boolean isAclEntityUnused(long aclEntityId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId,
+        protected abstract boolean isAclEntityUnused(long aclEntityId, Long sharedAclToReplaceQNameId, Long inheritFromAclQNameId,
             int fixedAclType, int globalAclType);
 
     protected abstract int updateAclEntity(AclEntity entity);

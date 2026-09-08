@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
@@ -66,6 +67,7 @@ public class AclCrudDAOTest extends TestCase
     private AclCrudDAO aclCrudDAO;
     private AclDAO aclDAO;
 
+    @Before
     @Override
     public void setUp() throws Exception
     {

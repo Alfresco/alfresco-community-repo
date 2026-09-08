@@ -26,11 +26,11 @@
 
 package org.alfresco.rest.search;
 
+import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeChildAssociationModel;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
@@ -175,6 +175,8 @@ public class SearchSecondaryAssociationAdvancedTest extends AbstractSearchServic
         SearchResponse response = queryAsUser(testUser, "cm:name:'" + file.getName() + "'");
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Node with multiple secondary parents should still be indexed as a single entry");
+        Assert.assertTrue(isContentInSearchResponse(response, file.getName()),
+                "Expected the single returned entry to be " + file.getName());
 
         RestNodeAssociationModelCollection secChildrenA = restClient.authenticateUser(testUser).withCoreAPI().usingResource(secondaryFolderA).getSecondaryChildren();
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(secondaryFolderA).removeSecondaryChild(secChildrenA.getEntryByIndex(0));
@@ -202,6 +204,10 @@ public class SearchSecondaryAssociationAdvancedTest extends AbstractSearchServic
         SearchResponse response = queryAsUser(testUser, "PATH:\"" + pathViaCommon + "\"");
         Assert.assertEquals(response.getPagination().getCount(), 2,
                 "Both files should be findable via the common secondary folder path");
+        Assert.assertTrue(isContentInSearchResponse(response, siblingFileOne.getName()),
+                "Expected " + siblingFileOne.getName() + " among the common secondary folder children");
+        Assert.assertTrue(isContentInSearchResponse(response, siblingFileTwo.getName()),
+                "Expected " + siblingFileTwo.getName() + " among the common secondary folder children");
 
         RestNodeAssociationModelCollection secChildren = restClient.authenticateUser(testUser).withCoreAPI().usingResource(commonSecondaryFolder).getSecondaryChildren();
         while (!secChildren.getEntries().isEmpty())

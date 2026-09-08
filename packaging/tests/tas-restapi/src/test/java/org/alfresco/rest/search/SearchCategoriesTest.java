@@ -44,6 +44,7 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
 {
     private FolderModel folder;
     private FileModel fileWithPrimaryCategory;
+    private FileModel anotherFileWithPrimaryCategory;
     private FileModel fileWithCategoryAndTag;
     private FileModel fileWithBothCategories;
     private FileModel fileForCategoryRemoval;
@@ -80,36 +81,29 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         }
 
         fileWithPrimaryCategory = createFileClassifiedInto("file-with-primary-category.txt",
-                "File classified into primary category",
-                primaryCategoryNodeRef);
+                "File classified into primary category", primaryCategoryNodeRef);
 
-        FileModel anotherFileWithPrimaryCategory = createFileClassifiedInto("another-file-with-primary-category.txt",
-                "Second file classified into primary category",
-                primaryCategoryNodeRef);
+        anotherFileWithPrimaryCategory = createFileClassifiedInto("another-file-with-primary-category.txt",
+                "Second file classified into primary category", primaryCategoryNodeRef);
 
         fileWithCategoryAndTag = createFileClassifiedInto("file-with-category-and-tag.txt",
-                "File with both a category and a tag",
-                primaryCategoryNodeRef);
+                "File with both a category and a tag", primaryCategoryNodeRef);
         restClient.authenticateUser(testUser).withCoreAPI().usingResource(fileWithCategoryAndTag).addTag(COMBINED_TAG);
 
         fileWithBothCategories = createFileClassifiedInto("file-with-both-categories.txt",
-                "File classified into two categories",
-                primaryCategoryNodeRef, secondaryCategoryNodeRef);
+                "File classified into two categories", primaryCategoryNodeRef, secondaryCategoryNodeRef);
 
         fileForCategoryRemoval = createFileClassifiedInto("file-for-category-removal.txt",
-                "File whose category will be removed to verify de-indexing",
-                primaryCategoryNodeRef);
+                "File whose category will be removed to verify de-indexing", primaryCategoryNodeRef);
 
         fileForLateAssignment = new FileModel("file-for-late-category-assignment.txt");
         fileForLateAssignment.setContent("File that receives a category after creation");
         dataContent.usingUser(testUser).usingResource(folder).createContent(fileForLateAssignment);
 
         isolationFileA = createFileClassifiedInto("isolation-file-a.txt",
-                "First isolation test file (category will be removed)",
-                secondaryCategoryNodeRef);
+                "First isolation test file (category will be removed)", secondaryCategoryNodeRef);
         isolationFileB = createFileClassifiedInto("isolation-file-b.txt",
-                "Second isolation test file (category must stay)",
-                secondaryCategoryNodeRef);
+                "Second isolation test file (category must stay)", secondaryCategoryNodeRef);
 
         waitForMetadataIndexing(fileWithPrimaryCategory.getName(), true);
         waitForMetadataIndexing(anotherFileWithPrimaryCategory.getName(), true);
@@ -167,6 +161,8 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 1,
                 "Expected file with the cm:generalclassifiable aspect to be findable");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithPrimaryCategory.getName()),
+                "Expected " + fileWithPrimaryCategory.getName() + " in the aspect query results");
     }
 
     @Test(priority = 2)
@@ -178,6 +174,8 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 1,
                 "Expected file classified into the category to be findable via cm:categories property");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithPrimaryCategory.getName()),
+                "Expected " + fileWithPrimaryCategory.getName() + " in the cm:categories query results");
     }
 
     @Test(priority = 3)
@@ -189,6 +187,8 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 1,
                 "Expected file with both a category and the combined tag to be findable via combined query");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithCategoryAndTag.getName()),
+                "Expected " + fileWithCategoryAndTag.getName() + " in the category+tag query results");
     }
 
     @Test(priority = 4)
@@ -200,6 +200,10 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 2,
                 "Expected at least two files in this site classified into the primary category");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithPrimaryCategory.getName()),
+                "Expected " + fileWithPrimaryCategory.getName() + " among the primary-category files");
+        Assert.assertTrue(isContentInSearchResponse(response, anotherFileWithPrimaryCategory.getName()),
+                "Expected " + anotherFileWithPrimaryCategory.getName() + " among the primary-category files");
     }
 
     @Test(priority = 5)
@@ -211,6 +215,8 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(fromPrimary.getPagination().getCount() >= 1,
                 "Expected multi-category file to be findable via the primary category");
+        Assert.assertTrue(isContentInSearchResponse(fromPrimary, fileWithBothCategories.getName()),
+                "Expected " + fileWithBothCategories.getName() + " when querying the primary category");
 
         String querySecondary = "cm:categories:\"" + secondaryCategoryNodeRef + "\" AND cm:name:'" +
                 fileWithBothCategories.getName() + "'";
@@ -218,6 +224,8 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(fromSecondary.getPagination().getCount() >= 1,
                 "Expected multi-category file to be findable via the secondary category");
+        Assert.assertTrue(isContentInSearchResponse(fromSecondary, fileWithBothCategories.getName()),
+                "Expected " + fileWithBothCategories.getName() + " when querying the secondary category");
     }
 
     @Test(priority = 6)
@@ -228,6 +236,8 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         SearchResponse before = queryAsUser(testUser, queryBefore);
         Assert.assertTrue(before.getPagination().getCount() >= 1,
                 "File should be findable via its category before removal");
+        Assert.assertTrue(isContentInSearchResponse(before, fileForCategoryRemoval.getName()),
+                "Expected " + fileForCategoryRemoval.getName() + " to be present before category removal");
 
         JsonObject body = Json.createObjectBuilder()
                 .add("properties", Json.createObjectBuilder()
@@ -285,6 +295,10 @@ public class SearchCategoriesTest extends AbstractSearchServicesE2ETest
         SearchResponse both = queryAsUser(testUser, queryBoth);
         Assert.assertTrue(both.getPagination().getCount() >= 2,
                 "Both isolation files should initially be findable via the secondary category");
+        Assert.assertTrue(isContentInSearchResponse(both, isolationFileA.getName()),
+                "Expected " + isolationFileA.getName() + " to be present before removal");
+        Assert.assertTrue(isContentInSearchResponse(both, isolationFileB.getName()),
+                "Expected " + isolationFileB.getName() + " to be present before removal");
 
         JsonObject removeBody = Json.createObjectBuilder()
                 .add("properties", Json.createObjectBuilder()

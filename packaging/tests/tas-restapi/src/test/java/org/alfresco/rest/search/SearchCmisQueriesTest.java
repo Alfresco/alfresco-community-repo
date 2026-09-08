@@ -86,6 +86,8 @@ public class SearchCmisQueriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected exactly one invoice file with the CMIS LIKE query");
+        Assert.assertTrue(isContentInSearchResponse(response, invoice.getName()),
+                "Expected the returned entry to be " + invoice.getName());
     }
 
     @Test(priority = 2)
@@ -97,6 +99,8 @@ public class SearchCmisQueriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected exactly the report file matching both LIKE conditions");
+        Assert.assertTrue(isContentInSearchResponse(response, report.getName()),
+                "Expected the returned entry to be " + report.getName());
     }
 
     @Test(priority = 3)
@@ -108,6 +112,8 @@ public class SearchCmisQueriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 1,
                 "Expected at least one file matching CONTAINS + cmis:name filter");
+        Assert.assertTrue(isContentInSearchResponse(response, report.getName()),
+                "Expected " + report.getName() + " in the CONTAINS + metadata results");
     }
 
     @Test(priority = 4)
@@ -118,6 +124,8 @@ public class SearchCmisQueriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected exact-equality CMIS query to return the specific file");
+        Assert.assertTrue(isContentInSearchResponse(response, memo.getName()),
+                "Expected the returned entry to be " + memo.getName());
     }
 
     @Test(priority = 5)
@@ -129,6 +137,10 @@ public class SearchCmisQueriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2,
                 "Expected CMIS OR to return exactly two matching files");
+        Assert.assertTrue(isContentInSearchResponse(response, invoice.getName()),
+                "Expected " + invoice.getName() + " in the CMIS OR results");
+        Assert.assertTrue(isContentInSearchResponse(response, report.getName()),
+                "Expected " + report.getName() + " in the CMIS OR results");
     }
 
     @Test(priority = 6)
@@ -139,6 +151,8 @@ public class SearchCmisQueriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected CMIS query on cmis:folder type to return the folder");
+        Assert.assertTrue(isContentInSearchResponse(response, folder.getName()),
+                "Expected the returned entry to be " + folder.getName());
     }
 
     @Test(priority = 7)
@@ -150,6 +164,13 @@ public class SearchCmisQueriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 3,
                 "Expected ORDER BY CMIS query to return the prefixed files");
+        Assert.assertTrue(isContentInSearchResponse(response, invoice.getName()),
+                "Expected " + invoice.getName() + " in the ORDER BY results");
+        Assert.assertTrue(isContentInSearchResponse(response, memo.getName()),
+                "Expected " + memo.getName() + " in the ORDER BY results");
+        Assert.assertTrue(isContentInSearchResponse(response, report.getName()),
+                "Expected " + report.getName() + " in the ORDER BY results");
+
         String firstName = response.getEntries().getFirst().getModel().getName();
         Assert.assertEquals(firstName, invoice.getName(),
                 "Expected the alphabetically first file (invoice) to be returned first");
@@ -166,6 +187,10 @@ public class SearchCmisQueriesTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 2,
                 "Expected NOT LIKE to exclude the invoice file and return exactly the report and memo files");
+        Assert.assertTrue(isContentInSearchResponse(response, report.getName()),
+                "Expected " + report.getName() + " in the NOT LIKE results");
+        Assert.assertTrue(isContentInSearchResponse(response, memo.getName()),
+                "Expected " + memo.getName() + " in the NOT LIKE results");
 
         // Verify the invoice is truly excluded (guards against ES translator bug where NOT is ignored).
         boolean invoiceInResults = response.getEntries().stream()

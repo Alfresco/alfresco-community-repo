@@ -86,6 +86,8 @@ public class SearchAdvancedQueryOperatorsTest extends AbstractSearchServicesE2ET
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 1,
                 "Expected file without a title to be findable via ISUNSET on cm:title");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithoutTitle.getName()),
+                "Expected " + fileWithoutTitle.getName() + " in the ISUNSET results");
     }
 
     /**
@@ -101,5 +103,7 @@ public class SearchAdvancedQueryOperatorsTest extends AbstractSearchServicesE2ET
         Assert.assertTrue(response.getPagination().getCount() >= 1,
                 "Expected AFTS proximity '" + TOKEN_A + " *(2) " + TOKEN_D +
                         "' to find the file (2 words between A and D in the content)");
+        Assert.assertTrue(isContentInSearchResponse(response, proximityFile.getName()),
+                "Expected " + proximityFile.getName() + " in the proximity results");
     }
 }

@@ -40,6 +40,9 @@ import org.alfresco.utility.model.FolderModel;
 public class SearchTagsTest extends AbstractSearchServicesE2ETest
 {
     private FileModel fileWithSingleTag;
+    private FileModel fileWithMultipleTags;
+    private FileModel anotherFileWithTagOne;
+    private FileModel fileWithAllThreeTags;
 
     private static final String TAG_PREFIX = "acsmigrationtag";
     private static final String TAG_ONE = TAG_PREFIX + "one";
@@ -55,15 +58,15 @@ public class SearchTagsTest extends AbstractSearchServicesE2ETest
         fileWithSingleTag.setContent("File with a single tag");
         dataContent.usingUser(testUser).usingResource(folder).createContent(fileWithSingleTag);
 
-        FileModel fileWithMultipleTags = new FileModel("file-with-multiple-tags.txt");
+        fileWithMultipleTags = new FileModel("file-with-multiple-tags.txt");
         fileWithMultipleTags.setContent("File with multiple tags");
         dataContent.usingUser(testUser).usingResource(folder).createContent(fileWithMultipleTags);
 
-        FileModel anotherFileWithTagOne = new FileModel("another-file-with-tag-one.txt");
+        anotherFileWithTagOne = new FileModel("another-file-with-tag-one.txt");
         anotherFileWithTagOne.setContent("Second file also tagged with TAG_ONE");
         dataContent.usingUser(testUser).usingResource(folder).createContent(anotherFileWithTagOne);
 
-        FileModel fileWithAllThreeTags = new FileModel("file-with-all-three-tags.txt");
+        fileWithAllThreeTags = new FileModel("file-with-all-three-tags.txt");
         fileWithAllThreeTags.setContent("File tagged with all three migration tags");
         dataContent.usingUser(testUser).usingResource(folder).createContent(fileWithAllThreeTags);
 
@@ -97,6 +100,8 @@ public class SearchTagsTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 1,
                 "Expected at least one file tagged with " + TAG_ONE);
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithSingleTag.getName()),
+                "Expected " + fileWithSingleTag.getName() + " to be returned for TAG_ONE");
     }
 
     @Test(priority = 2)
@@ -106,11 +111,15 @@ public class SearchTagsTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(responseTwo.getPagination().getCount() >= 1,
                 "Expected the multi-tagged file to be findable via TAG_TWO");
+        Assert.assertTrue(isContentInSearchResponse(responseTwo, fileWithMultipleTags.getName()),
+                "Expected " + fileWithMultipleTags.getName() + " to be returned for TAG_TWO");
 
         SearchResponse responseThree = queryAsUser(testUser, "TAG:'" + TAG_THREE + "'");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(responseThree.getPagination().getCount() >= 1,
                 "Expected the multi-tagged file to be findable via TAG_THREE");
+        Assert.assertTrue(isContentInSearchResponse(responseThree, fileWithMultipleTags.getName()),
+                "Expected " + fileWithMultipleTags.getName() + " to be returned for TAG_THREE");
     }
 
     @Test(priority = 3)
@@ -121,6 +130,8 @@ public class SearchTagsTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected exactly the one tagged file with matching name");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithSingleTag.getName()),
+                "Expected the returned entry to be " + fileWithSingleTag.getName());
     }
 
     @Test(priority = 4)
@@ -130,6 +141,12 @@ public class SearchTagsTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 3,
                 "Expected wildcard TAG query to find all files sharing the migration tag prefix");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithSingleTag.getName()),
+                "Expected " + fileWithSingleTag.getName() + " in the wildcard TAG results");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithMultipleTags.getName()),
+                "Expected " + fileWithMultipleTags.getName() + " in the wildcard TAG results");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithAllThreeTags.getName()),
+                "Expected " + fileWithAllThreeTags.getName() + " in the wildcard TAG results");
     }
 
     @Test(priority = 5)
@@ -140,6 +157,8 @@ public class SearchTagsTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 1,
                 "Expected at least one file tagged with both TAG_TWO and TAG_THREE");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithMultipleTags.getName()),
+                "Expected " + fileWithMultipleTags.getName() + " to satisfy the TAG_TWO AND TAG_THREE conjunction");
     }
 
     @Test(priority = 6)
@@ -150,6 +169,10 @@ public class SearchTagsTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 3,
                 "Expected disjunction TAG query to return files matching either tag");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithSingleTag.getName()),
+                "Expected " + fileWithSingleTag.getName() + " (TAG_ONE) in the disjunction results");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithMultipleTags.getName()),
+                "Expected " + fileWithMultipleTags.getName() + " (TAG_TWO) in the disjunction results");
     }
 
     @Test(priority = 7)
@@ -159,5 +182,11 @@ public class SearchTagsTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 3,
                 "Expected TAG_ONE to be shared by at least three files");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithSingleTag.getName()),
+                "Expected " + fileWithSingleTag.getName() + " to share TAG_ONE");
+        Assert.assertTrue(isContentInSearchResponse(response, anotherFileWithTagOne.getName()),
+                "Expected " + anotherFileWithTagOne.getName() + " to share TAG_ONE");
+        Assert.assertTrue(isContentInSearchResponse(response, fileWithAllThreeTags.getName()),
+                "Expected " + fileWithAllThreeTags.getName() + " to share TAG_ONE");
     }
 }

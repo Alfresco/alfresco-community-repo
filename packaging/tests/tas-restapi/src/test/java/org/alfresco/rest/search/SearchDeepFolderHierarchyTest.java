@@ -4,7 +4,23 @@
  * %%
  * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
- * License header — same as other tests in this package.
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 
@@ -30,6 +46,8 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
     private FolderModel levelFive;
     private FolderModel levelSix;
     private FileModel deepFile;
+    private FileModel additionalDeepFileOne;
+    private FileModel additionalDeepFileTwo;
 
     private String pathBase;
 
@@ -53,11 +71,11 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
         deepFile.setContent("content at the deepest level");
         dataContent.usingUser(testUser).usingResource(levelSix).createContent(deepFile);
 
-        FileModel additionalDeepFileOne = new FileModel("deep-nested-file-two.txt");
+        additionalDeepFileOne = new FileModel("deep-nested-file-two.txt");
         additionalDeepFileOne.setContent("second file in the same deepest folder");
         dataContent.usingUser(testUser).usingResource(levelSix).createContent(additionalDeepFileOne);
 
-        FileModel additionalDeepFileTwo = new FileModel("deep-nested-file-three.txt");
+        additionalDeepFileTwo = new FileModel("deep-nested-file-three.txt");
         additionalDeepFileTwo.setContent("third file in the same deepest folder");
         dataContent.usingUser(testUser).usingResource(levelSix).createContent(additionalDeepFileTwo);
 
@@ -84,6 +102,8 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected the deeply-nested file to be found at its exact path");
+        Assert.assertTrue(isContentInSearchResponse(response, deepFile.getName()),
+                "Expected the returned entry to be " + deepFile.getName());
     }
 
     @Test(priority = 2)
@@ -98,6 +118,8 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected the deeply-nested file to be found via wildcard path");
+        Assert.assertTrue(isContentInSearchResponse(response, deepFile.getName()),
+                "Expected the returned entry to be " + deepFile.getName());
     }
 
     @Test(priority = 3)
@@ -112,6 +134,8 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected the intermediate-level folder to be found at its path");
+        Assert.assertTrue(isContentInSearchResponse(response, levelThree.getName()),
+                "Expected the returned entry to be " + levelThree.getName());
     }
 
     @Test(priority = 4)
@@ -142,6 +166,8 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected the file to be found as the direct child of the deepest folder");
+        Assert.assertTrue(isContentInSearchResponse(response, deepFile.getName()),
+                "Expected the returned entry to be " + deepFile.getName());
     }
 
     @Test(priority = 5)
@@ -152,6 +178,8 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected the level-one folder to be found at the root of the hierarchy");
+        Assert.assertTrue(isContentInSearchResponse(response, levelOne.getName()),
+                "Expected the returned entry to be " + levelOne.getName());
     }
 
     @Test(priority = 6)
@@ -170,6 +198,12 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 3,
                 "Expected all three files at the deepest level to be found");
+        Assert.assertTrue(isContentInSearchResponse(response, deepFile.getName()),
+                "Expected " + deepFile.getName() + " among the deepest-folder children");
+        Assert.assertTrue(isContentInSearchResponse(response, additionalDeepFileOne.getName()),
+                "Expected " + additionalDeepFileOne.getName() + " among the deepest-folder children");
+        Assert.assertTrue(isContentInSearchResponse(response, additionalDeepFileTwo.getName()),
+                "Expected " + additionalDeepFileTwo.getName() + " among the deepest-folder children");
     }
 
     @Test(priority = 7)
@@ -184,6 +218,12 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 3,
                 "Expected at least the three files under the hierarchy to be returned by TYPE+PATH");
+        Assert.assertTrue(isContentInSearchResponse(response, deepFile.getName()),
+                "Expected " + deepFile.getName() + " in the TYPE+PATH results");
+        Assert.assertTrue(isContentInSearchResponse(response, additionalDeepFileOne.getName()),
+                "Expected " + additionalDeepFileOne.getName() + " in the TYPE+PATH results");
+        Assert.assertTrue(isContentInSearchResponse(response, additionalDeepFileTwo.getName()),
+                "Expected " + additionalDeepFileTwo.getName() + " in the TYPE+PATH results");
     }
 
     @Test(priority = 8)
@@ -199,5 +239,7 @@ public class SearchDeepFolderHierarchyTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected exactly the level-four folder as the direct child of level-three");
+        Assert.assertTrue(isContentInSearchResponse(response, levelFour.getName()),
+                "Expected the returned entry to be " + levelFour.getName());
     }
 }

@@ -76,6 +76,8 @@ public class SearchMultiLanguageTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected French content to be found via an ASCII term inside it");
+        Assert.assertTrue(isContentInSearchResponse(response, frenchContent.getName()),
+                "Expected the returned entry to be " + frenchContent.getName());
     }
 
     @Test(priority = 2)
@@ -86,6 +88,8 @@ public class SearchMultiLanguageTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected Spanish content to be found via an ASCII term inside it");
+        Assert.assertTrue(isContentInSearchResponse(response, spanishContent.getName()),
+                "Expected the returned entry to be " + spanishContent.getName());
     }
 
     @Test(priority = 3)
@@ -95,16 +99,22 @@ public class SearchMultiLanguageTest extends AbstractSearchServicesE2ETest
                 "cm:content:'Hello' AND cm:name:'" + mixedLanguageContent.getName() + "'");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(english.getPagination().getCount(), 1, "Expected file found via English term");
+        Assert.assertTrue(isContentInSearchResponse(english, mixedLanguageContent.getName()),
+                "Expected the English-term result to be " + mixedLanguageContent.getName());
 
         SearchResponse spanish = queryAsUser(testUser,
                 "cm:content:'mundo' AND cm:name:'" + mixedLanguageContent.getName() + "'");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(spanish.getPagination().getCount(), 1, "Expected file found via Spanish term");
+        Assert.assertTrue(isContentInSearchResponse(spanish, mixedLanguageContent.getName()),
+                "Expected the Spanish-term result to be " + mixedLanguageContent.getName());
 
         SearchResponse german = queryAsUser(testUser,
                 "cm:content:'Guten' AND cm:name:'" + mixedLanguageContent.getName() + "'");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(german.getPagination().getCount(), 1, "Expected file found via German term");
+        Assert.assertTrue(isContentInSearchResponse(german, mixedLanguageContent.getName()),
+                "Expected the German-term result to be " + mixedLanguageContent.getName());
     }
 
     @Test(priority = 4)
@@ -115,6 +125,8 @@ public class SearchMultiLanguageTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(response.getPagination().getCount() >= 1,
                 "Expected the shared Spanish greeting to be found in at least one migration test file");
+        Assert.assertTrue(isContentInSearchResponse(response, mixedLanguageContent.getName()),
+                "Expected " + mixedLanguageContent.getName() + " to contain the shared Spanish greeting");
     }
 
     @Test(priority = 5)
@@ -125,5 +137,7 @@ public class SearchMultiLanguageTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1,
                 "Expected wildcard search to hit 'croissants' in the French content file");
+        Assert.assertTrue(isContentInSearchResponse(response, frenchContent.getName()),
+                "Expected the returned entry to be " + frenchContent.getName());
     }
 }

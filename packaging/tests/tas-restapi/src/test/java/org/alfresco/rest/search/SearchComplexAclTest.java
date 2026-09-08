@@ -127,6 +127,8 @@ public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(groupMember.getPagination().getCount(), 1,
                 "Group member should find the group-protected file");
+        Assert.assertTrue(isContentInSearchResponse(groupMember, groupProtectedFile.getName()),
+                "Expected the returned entry to be " + groupProtectedFile.getName());
 
         SearchResponse outsider = queryAsUser(outsiderUser, "cm:name:'" + groupProtectedFile.getName() + "'");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -141,6 +143,8 @@ public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(groupMember.getPagination().getCount(), 1,
                 "Group member should find the file that inherits the folder ACL");
+        Assert.assertTrue(isContentInSearchResponse(groupMember, inheritedProtectedFile.getName()),
+                "Expected the returned entry to be " + inheritedProtectedFile.getName());
 
         SearchResponse outsider = queryAsUser(outsiderUser, "cm:name:'" + inheritedProtectedFile.getName() + "'");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -155,6 +159,8 @@ public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(allowed.getPagination().getCount(), 1,
                 "Explicitly ALLOWED user should find the file");
+        Assert.assertTrue(isContentInSearchResponse(allowed, mixedPermsFile.getName()),
+                "Expected the returned entry to be " + mixedPermsFile.getName());
 
         SearchResponse denied = queryAsUser(outsiderUser, "cm:name:'" + mixedPermsFile.getName() + "'");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -170,12 +176,16 @@ public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(groupProtected.getPagination().getCount() >= 1,
                 "Admin should find the group-protected file regardless of ACL");
+        Assert.assertTrue(isContentInSearchResponse(groupProtected, groupProtectedFile.getName()),
+                "Expected " + groupProtectedFile.getName() + " in the admin results");
 
         SearchResponse mixedPerms = queryAsUser(dataUser.getAdminUser(),
                 "cm:name:'" + mixedPermsFile.getName() + "'");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertTrue(mixedPerms.getPagination().getCount() >= 1,
                 "Admin should also find the mixed-permission file");
+        Assert.assertTrue(isContentInSearchResponse(mixedPerms, mixedPermsFile.getName()),
+                "Expected " + mixedPermsFile.getName() + " in the admin results");
     }
 
     @Test(priority = 5)
@@ -186,8 +196,13 @@ public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
 
         Assert.assertEquals(firstMember.getPagination().getCount(), 1,
                 "First group member should find the group-protected file");
+        Assert.assertTrue(isContentInSearchResponse(firstMember, groupProtectedFile.getName()),
+                "Expected first member's result to be " + groupProtectedFile.getName());
+
         Assert.assertEquals(secondMember.getPagination().getCount(), 1,
                 "Second group member should also find the group-protected file");
+        Assert.assertTrue(isContentInSearchResponse(secondMember, groupProtectedFile.getName()),
+                "Expected second member's result to be " + groupProtectedFile.getName());
     }
 
     @Test(priority = 6)
@@ -202,6 +217,8 @@ public class SearchComplexAclTest extends AbstractSearchServicesE2ETest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(groupMember.getPagination().getCount(), 1,
                 "Group member should find the newly created file inheriting the folder ACL");
+        Assert.assertTrue(isContentInSearchResponse(groupMember, newlyCreatedFile.getName()),
+                "Expected the returned entry to be " + newlyCreatedFile.getName());
 
         SearchResponse outsider = queryAsUser(outsiderUser, "cm:name:'" + newlyCreatedFile.getName() + "'");
         restClient.assertStatusCodeIs(HttpStatus.OK);

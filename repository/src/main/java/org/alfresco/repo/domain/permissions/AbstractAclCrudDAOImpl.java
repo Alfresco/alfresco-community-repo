@@ -254,6 +254,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         return getLatestAclEntityByGuid(aclGuid);
     }
 
+    @Override
     public List<Long> getUnusedAclIds(long afterAclId, int maxResults)
     {
         if (maxResults < 1)
@@ -267,6 +268,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
                 ACLType.FIXED.getId(), ACLType.GLOBAL.getId(), maxResults);
     }
 
+    @Override
     public boolean deleteUnusedAcl(long aclEntityId)
     {
         long sharedAclToReplaceQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_SHARED_ACL_TO_REPLACE).getFirst();
@@ -284,7 +286,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         }
 
         List<AclMember> members = getAclMembersByAcl(aclEntityId);
-        List<Long> aceIds = new ArrayList<Long>(members.size());
+        List<Long> aceIds = new ArrayList<>(members.size());
         for (AclMember member : members)
         {
             aceIds.add(member.getAceId());

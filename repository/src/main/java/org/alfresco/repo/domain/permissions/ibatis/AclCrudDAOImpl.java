@@ -159,7 +159,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     protected List<Long> getUnusedAclEntityIds(long afterAclId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId,
             int fixedAclType, int globalAclType, int maxResults)
     {
-        Map<String, Object> params = new HashMap<String, Object>(5);
+        Map<String, Object> params = new HashMap<>(5);
         params.put("afterAclId", afterAclId);
         params.put("sharedAclToReplaceQNameId", sharedAclToReplaceQNameId);
         params.put("inheritFromAclQNameId", inheritFromAclQNameId);
@@ -173,7 +173,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     protected boolean isAclEntityUnused(long aclEntityId, long sharedAclToReplaceQNameId, long inheritFromAclQNameId,
             int fixedAclType, int globalAclType)
     {
-        Map<String, Object> params = new HashMap<String, Object>(5);
+        Map<String, Object> params = new HashMap<>(5);
         params.put("id", aclEntityId);
         params.put("sharedAclToReplaceQNameId", sharedAclToReplaceQNameId);
         params.put("inheritFromAclQNameId", inheritFromAclQNameId);
@@ -318,7 +318,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     @Override
     protected int deleteAclChangeSetEntityIfUnused(long aclChangeSetEntityId)
     {
-        Map<String, Object> params = new HashMap<String, Object>(1);
+        Map<String, Object> params = new HashMap<>(1);
         params.put("id", aclChangeSetEntityId);
         return template.delete(DELETE_UNUSED_ACL_CHANGESET, params);
     }
@@ -403,7 +403,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     @Override
     protected int deleteAceEntityIfUnused(long aceEntityId)
     {
-        Map<String, Object> params = new HashMap<String, Object>(1);
+        Map<String, Object> params = new HashMap<>(1);
         params.put("id", aceEntityId);
         return template.delete(DELETE_UNUSED_ACE, params);
     }

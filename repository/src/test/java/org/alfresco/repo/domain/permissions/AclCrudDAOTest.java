@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -76,6 +77,7 @@ public class AclCrudDAOTest extends TestCase
         aclDAO = (AclDAO) ctx.getBean("aclDAO");
     }
 
+    @Test
     public void testGetUnusedAclIdsReturnsBoundedIsolatedAcls() throws Exception
     {
         List<Long> aclIds = txnHelper.doInTransaction(() -> {
@@ -104,6 +106,7 @@ public class AclCrudDAOTest extends TestCase
         assertEquals(aclIds.get(1), unusedAclIds.get(0));
     }
 
+    @Test
     public void testDeleteUnusedAclPreservesSharedAceUntilLastReferenceIsRemoved() throws Exception
     {
         List<Long> ids = txnHelper.doInTransaction(() -> {

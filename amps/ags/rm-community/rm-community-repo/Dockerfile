@@ -1,6 +1,6 @@
 ARG BASE_IMAGE
 # BUILD STAGE AGS
-FROM debian:11-slim AS AGSBUILDER
+FROM debian:12-slim AS AGSBUILDER
 
 RUN export DEBIAN_FRONTEND=noninteractive; \
     apt-get update -qqy && apt-get -yqq install unzip && \

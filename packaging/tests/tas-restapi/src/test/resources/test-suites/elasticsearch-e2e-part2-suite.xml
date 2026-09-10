@@ -72,6 +72,26 @@
                     <exclude name="testWithConjunctionDisjunctionAndNegation"/>
                 </methods>
             </class>
+            <!-- 10) SearchQueryPaginationTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SearchQueryPaginationTest"/>
+            <!-- 11) SearchPermissionsTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SearchPermissionsTest"/>
+            <!-- 12) SearchParentFieldTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SearchParentFieldTest"/>
+            <!-- 13) SearchSecondaryAssociationTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SearchSecondaryAssociationTest"/>
+            <!-- 14) SpecialCharacterSearchTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SpecialCharacterSearchTest"/>
+            <!-- 15) ExplicitRoutingTest: Solr-only explicit routing; also needs runtime custom model, ACS-12502 -->
+            <class name="org.alfresco.rest.search.ExplicitRoutingTest">
+                <methods><exclude name=".*"/></methods>
+            </class>
+            <!-- 16) tracker.CascadingIntegrationTest: Solr tracker cascade; also needs runtime custom model, ACS-12502 -->
+            <class name="org.alfresco.rest.search.tracker.CascadingIntegrationTest">
+                <methods><exclude name=".*"/></methods>
+            </class>
+            <!-- 17) DocumentLibraryTagFilterTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.DocumentLibraryTagFilterTest"/>
         </classes>
     </test>
 </suite>

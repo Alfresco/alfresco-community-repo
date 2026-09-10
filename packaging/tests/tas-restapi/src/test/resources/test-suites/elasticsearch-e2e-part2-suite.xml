@@ -7,12 +7,6 @@
         <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
     </listeners>
     <test name="SearchTests-Part2">
-        <packages>
-            <package name="org.alfresco.rest.search.*">
-                <exclude name="org.alfresco.rest.search.fingerprint"/>
-                <exclude name="org.alfresco.rest.search.crosslocale"/>
-            </package>
-        </packages>
         <classes>
             <!-- 1) FacetRangeSearchTest: range facet gaps on ES -->
             <class name="org.alfresco.rest.search.FacetRangeSearchTest">
@@ -78,19 +72,6 @@
                     <exclude name="testWithConjunctionDisjunctionAndNegation"/>
                 </methods>
             </class>
-
-            <!-- Suppress part1 classes so the package sweep doesn't re-run them -->
-            <class name="org.alfresco.rest.search.SearchCasesTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchAspectTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchSimpleCasesTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchHighLightTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchExactTermTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchSpellCheckTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.NodeContentTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchNonIndexedFields"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchAPATHTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchWithCustomModelTest"><methods><exclude name=".*"/></methods></class>
         </classes>
     </test>
 </suite>

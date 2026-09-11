@@ -65,7 +65,7 @@
         <dependency.cxf.version>4.1.7</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.84</dependency.bouncycastle.version>
+        <dependency.bouncycastle.version>1.85</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.18.0</dependency.mockito-core.version>
         <dependency.test-parameter-injector.version>1.18</dependency.test-parameter-injector.version>
         <dependency.assertj.version>3.27.3</dependency.assertj.version>
@@ -1215,7 +1215,7 @@
                                             <exclude>jakarta.xml.soap:jakarta.xml.soap-api:(, 2.0.1)</exclude>
                                             <exclude>jakarta.jws:jakarta.jws-api:(, 3.0.0)</exclude>
 <!--                                            Enforce ban bouncycastle dependencies other than specified under <includes> section-->
-                                            <exclude>org.bouncycastle:(,1.84)</exclude>
+                                            <exclude>org.bouncycastle:(,1.85)</exclude>
 <!--                                            Enforce one version of Jaxb-->
                                             <exclude>com.sun.xml.bind</exclude>
                                         </excludes>

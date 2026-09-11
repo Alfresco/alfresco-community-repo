@@ -226,6 +226,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
     {
         Set<String> families = new HashSet<>();
         families.add("Bulk Filesystem Import");
+        org.junit.Assert.assertTrue(remoteUserAuthenticatorFactory.getAdminConsoleScriptFamilies().containsAll(families));
         complexCheckOfScriptCases(families);
     }
 

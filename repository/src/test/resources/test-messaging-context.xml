@@ -16,6 +16,10 @@
         <constructor-arg type="java.lang.Class" value="org.alfresco.repo.policy.PolicyComponentImpl"/>
     </bean>
 
+    <bean id="onContentUpdateRenditionHandler" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.messaging.TextMessageHandler" />
+    </bean>
+
     <bean id="transformRequestProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.TransformRequestProcessor" />
     </bean>

@@ -125,6 +125,11 @@ public class ScrollSearchStrategy extends SearchExecutionStrategy
                 LOGGER.trace("Scroll response JSON: {}", scrollResponse.toJsonString());
                 validateResponse(scrollResponse);
 
+                if (scrollResponse.hits().hits() == null || scrollResponse.hits().hits().isEmpty())
+                {
+                    break;
+                }
+
                 scrollId = scrollResponse.scrollId();
                 resultList.addAll(skipHits(scrollResponse.hits().hits(), skipCount, limit - resultList.size()));
             }

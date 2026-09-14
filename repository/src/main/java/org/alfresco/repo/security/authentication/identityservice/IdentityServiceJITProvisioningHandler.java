@@ -62,7 +62,7 @@ public class IdentityServiceJITProvisioningHandler
     private final TransactionService transactionService;
     private final IdentityServiceConfig identityServiceConfig;
     private final JobLockService jobLockService;
-    private UserInfoAttrMapping userInfoAttrMapping;
+    private volatile UserInfoAttrMapping userInfoAttrMapping;
     private TokenUserToOIDCUserMapper tokenUserToOIDCUserMapper;
     private AccessTokenToDecodedTokenUserMapper tokenToDecodedTokenUserMapper;
 
@@ -103,24 +103,59 @@ public class IdentityServiceJITProvisioningHandler
             @Override
             public Optional<OIDCUserInfo> doWork() throws Exception
             {
-                return oidcUserInfo.map(oidcUser -> transactionService.getRetryingTransactionHelper()
-                        .doInTransaction(() -> createUserIfNeeded(bearerToken, oidcUser), false));
+                return oidcUserInfo.map(oidcUser -> createUserIfNeeded(bearerToken, oidcUser));
             }
 
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    private void initMappers(IdentityServiceConfig identityServiceConfig)
+    private synchronized void initMappers(IdentityServiceConfig identityServiceConfig)
     {
-        this.userInfoAttrMapping = initUserInfoAttrMapping(identityServiceConfig);
+        if (userInfoAttrMapping != null)
+        {
+            return;
+        }
+        UserInfoAttrMapping mapping = initUserInfoAttrMapping(identityServiceConfig);
         this.tokenUserToOIDCUserMapper = new TokenUserToOIDCUserMapper(personService);
-        this.tokenToDecodedTokenUserMapper = new AccessTokenToDecodedTokenUserMapper(userInfoAttrMapping);
+        this.tokenToDecodedTokenUserMapper = new AccessTokenToDecodedTokenUserMapper(mapping);
+        this.userInfoAttrMapping = mapping;
     }
 
     private OIDCUserInfo createUserIfNeeded(String bearerToken, OIDCUserInfo userInfo)
     {
+        boolean userNeedsCreating = transactionService.getRetryingTransactionHelper()
+                .doInTransaction(() -> userNeedsCreating(userInfo), true);
+        if (!userNeedsCreating)
+        {
+            return userInfo;
+        }
+
+        OIDCUserInfo completeUserInfo = completeUserInfo(bearerToken, userInfo);
+        return transactionService.getRetryingTransactionHelper()
+                .doInTransaction(() -> createUserIfNeeded(completeUserInfo), false);
+    }
+
+    private boolean userNeedsCreating(OIDCUserInfo userInfo)
+    {
         String username = userInfo.username();
-        if (username == null || !personService.createMissingPeople() || personService.personExists(username))
+        return username != null && personService.createMissingPeople() && !personService.personExists(username);
+    }
+
+    private OIDCUserInfo completeUserInfo(String bearerToken, OIDCUserInfo userInfo)
+    {
+        if (userInfo.allFieldsNotEmpty())
+        {
+            return userInfo;
+        }
+        return extractUserInfoResponseFromEndpoint(bearerToken, userInfoAttrMapping)
+                .map(tokenUserToOIDCUserMapper::toOIDCUser)
+                .orElse(userInfo);
+    }
+
+    private OIDCUserInfo createUserIfNeeded(OIDCUserInfo userInfo)
+    {
+        String username = userInfo.username();
+        if (!userNeedsCreating(userInfo))
         {
             return userInfo;
         }
@@ -132,15 +167,8 @@ public class IdentityServiceJITProvisioningHandler
             return userInfo;
         }
 
-        OIDCUserInfo completeUserInfo = userInfo;
-        if (!completeUserInfo.allFieldsNotEmpty())
-        {
-            completeUserInfo = extractUserInfoResponseFromEndpoint(bearerToken, userInfoAttrMapping)
-                    .map(tokenUserToOIDCUserMapper::toOIDCUser)
-                    .orElse(completeUserInfo);
-        }
-        createPerson(completeUserInfo);
-        return completeUserInfo;
+        createPerson(userInfo);
+        return userInfo;
     }
 
     private Optional<DecodedTokenUser> extractUserInfoResponseFromAccessToken(String bearerToken)

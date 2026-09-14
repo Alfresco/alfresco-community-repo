@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,6 +45,7 @@ import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
@@ -108,6 +110,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
 
         when(transactionService.isReadOnly()).thenReturn(false);
         when(transactionService.getRetryingTransactionHelper()).thenReturn(retryingTransactionHelper);
+        when(retryingTransactionHelper.doInTransaction(any(), eq(true))).thenAnswer(invocation -> ((RetryingTransactionCallback<?>) invocation.getArgument(0)).execute());
         when(retryingTransactionHelper.doInTransaction(any(), eq(false))).thenAnswer(invocation -> ((RetryingTransactionCallback<?>) invocation.getArgument(0)).execute());
         when(identityServiceFacade.decodeToken(JWT_TOKEN)).thenReturn(decodedAccessToken);
         when(personService.createMissingPeople()).thenReturn(true);
@@ -183,7 +186,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     public void shouldNotCreateUserWhenItAppearsWhileWaitingForLock()
     {
         when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
-        when(personService.personExists(USERNAME)).thenReturn(false, true);
+        when(personService.personExists(USERNAME)).thenReturn(false, false, true);
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(USERNAME);
 
         jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig, jobLockService);
@@ -198,6 +201,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     @Test
     public void shouldExtractUserInfoFromUserInfoEndpointAndCreateUser()
     {
+        when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
+        expectedMapping = new UserInfoAttrMapping(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME, FIRST_NAME_CLAIM, LAST_NAME_CLAIM, EMAIL_CLAIM);
         when(decodedTokenUser.username()).thenReturn(USERNAME);
         when(decodedTokenUser.firstName()).thenReturn(FIRST_NAME);
         when(decodedTokenUser.lastName()).thenReturn(LAST_NAME);
@@ -215,6 +220,10 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals(LAST_NAME, result.get().lastName());
         assertEquals(EMAIL, result.get().email());
         assertTrue(result.get().allFieldsNotEmpty());
+        InOrder callOrder = inOrder(retryingTransactionHelper, identityServiceFacade);
+        callOrder.verify(retryingTransactionHelper).doInTransaction(any(), eq(true));
+        callOrder.verify(identityServiceFacade).getUserInfo(JWT_TOKEN, expectedMapping);
+        callOrder.verify(retryingTransactionHelper).doInTransaction(any(), eq(false));
         verify(personService).createPerson(any());
         verify(identityServiceFacade).getUserInfo(JWT_TOKEN, expectedMapping);
     }

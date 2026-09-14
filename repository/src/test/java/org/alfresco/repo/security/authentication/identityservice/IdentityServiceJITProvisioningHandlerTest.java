@@ -44,6 +44,7 @@ import org.junit.Test;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -68,6 +69,8 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     private PersonService personService;
     private NodeService nodeService;
     private TransactionService transactionService;
+    private IdentityServiceConfig identityServiceConfig;
+    private JobLockService jobLockService;
     private IdentityServiceFacade identityServiceFacade;
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
 
@@ -86,6 +89,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         personService = (PersonService) applicationContext.getBean("personService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
+        jobLockService = (JobLockService) applicationContext.getBean("JobLockService");
         DefaultChildApplicationContextManager childApplicationContextManager = (DefaultChildApplicationContextManager) applicationContext
                 .getBean("Authentication");
         ChildApplicationContextFactory childApplicationContextFactory = childApplicationContextManager.getChildApplicationContextFactory(
@@ -95,7 +99,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
                 .getBean("identityServiceFacade");
         jitProvisioningHandler = (IdentityServiceJITProvisioningHandler) childApplicationContextFactory.getApplicationContext()
                 .getBean("jitProvisioningHandler");
-        IdentityServiceConfig identityServiceConfig = (IdentityServiceConfig) childApplicationContextFactory.getApplicationContext()
+        identityServiceConfig = (IdentityServiceConfig) childApplicationContextFactory.getApplicationContext()
                 .getBean("identityServiceConfig");
         identityServiceConfig.setAllowAnyHostname(true);
         identityServiceConfig.setClientKeystore(null);
@@ -138,7 +142,6 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
                 IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
         String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
-        jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(null);
 
         String principalAttribute = isAuth0Enabled ? PersonClaims.NICKNAME_CLAIM_NAME : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
         IdentityServiceFacade.DecodedAccessToken decodedAccessToken = mock(IdentityServiceFacade.DecodedAccessToken.class);
@@ -146,12 +149,12 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         when(decodedAccessToken.getClaim(PersonClaims.GIVEN_NAME_CLAIM_NAME)).thenReturn("John");
         when(decodedAccessToken.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME)).thenReturn("Doe");
         when(decodedAccessToken.getClaim(PersonClaims.EMAIL_CLAIM_NAME)).thenReturn("johndoe123@alfresco.com");
+        ClientRegistration clientRegistration = mock(ClientRegistration.class, RETURNS_DEEP_STUBS);
+        when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn(principalAttribute);
         IdentityServiceFacade idsServiceFacadeMock = mock(IdentityServiceFacade.class);
         when(idsServiceFacadeMock.decodeToken(accessToken)).thenReturn(decodedAccessToken);
-
-        Field declaredField = jitProvisioningHandler.getClass().getDeclaredField("identityServiceFacade");
-        declaredField.setAccessible(true);
-        declaredField.set(jitProvisioningHandler, idsServiceFacadeMock);
+        when(idsServiceFacadeMock.getClientRegistration()).thenReturn(clientRegistration);
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(idsServiceFacadeMock, personService, transactionService, identityServiceConfig, jobLockService);
 
         CountDownLatch ready = new CountDownLatch(CONCURRENT_REQUEST_COUNT);
         CountDownLatch start = new CountDownLatch(1);
@@ -181,7 +184,6 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
             start.countDown();
             executor.shutdownNow();
             executor.close();
-            declaredField.set(jitProvisioningHandler, identityServiceFacade);
         }
 
         NodeRef person = personService.getPerson(IDS_USERNAME);

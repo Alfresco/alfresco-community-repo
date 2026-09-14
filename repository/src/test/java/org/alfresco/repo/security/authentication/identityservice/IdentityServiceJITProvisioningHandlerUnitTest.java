@@ -47,10 +47,10 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
 import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
 import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
-import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.PersonService;

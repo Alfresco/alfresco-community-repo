@@ -140,10 +140,23 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
         jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(null);
 
-        ExecutorService executor = Executors.newFixedThreadPool(CONCURRENT_REQUEST_COUNT);
+        String principalAttribute = isAuth0Enabled ? PersonClaims.NICKNAME_CLAIM_NAME : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
+        IdentityServiceFacade.DecodedAccessToken decodedAccessToken = mock(IdentityServiceFacade.DecodedAccessToken.class);
+        when(decodedAccessToken.getClaim(principalAttribute)).thenReturn(IDS_USERNAME);
+        when(decodedAccessToken.getClaim(PersonClaims.GIVEN_NAME_CLAIM_NAME)).thenReturn("John");
+        when(decodedAccessToken.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME)).thenReturn("Doe");
+        when(decodedAccessToken.getClaim(PersonClaims.EMAIL_CLAIM_NAME)).thenReturn("johndoe123@alfresco.com");
+        IdentityServiceFacade idsServiceFacadeMock = mock(IdentityServiceFacade.class);
+        when(idsServiceFacadeMock.decodeToken(accessToken)).thenReturn(decodedAccessToken);
+
+        Field declaredField = jitProvisioningHandler.getClass().getDeclaredField("identityServiceFacade");
+        declaredField.setAccessible(true);
+        declaredField.set(jitProvisioningHandler, idsServiceFacadeMock);
+
         CountDownLatch ready = new CountDownLatch(CONCURRENT_REQUEST_COUNT);
         CountDownLatch start = new CountDownLatch(1);
         List<Future<Optional<OIDCUserInfo>>> results = new ArrayList<>();
+        ExecutorService executor = Executors.newFixedThreadPool(CONCURRENT_REQUEST_COUNT);
         try
         {
             for (int i = 0; i < CONCURRENT_REQUEST_COUNT; i++)
@@ -165,7 +178,10 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         }
         finally
         {
+            start.countDown();
             executor.shutdownNow();
+            executor.close();
+            declaredField.set(jitProvisioningHandler, identityServiceFacade);
         }
 
         NodeRef person = personService.getPerson(IDS_USERNAME);

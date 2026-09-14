@@ -30,6 +30,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,6 +50,9 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
 import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
 import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 
@@ -72,6 +78,12 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     private IdentityServiceConfig identityServiceConfig;
 
     @Mock
+    private JobLockService jobLockService;
+
+    @Mock
+    private RetryingTransactionHelper retryingTransactionHelper;
+
+    @Mock
     private DecodedTokenUser decodedTokenUser;
 
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
@@ -95,6 +107,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         initMocks(this);
 
         when(transactionService.isReadOnly()).thenReturn(false);
+        when(transactionService.getRetryingTransactionHelper()).thenReturn(retryingTransactionHelper);
+        when(retryingTransactionHelper.doInTransaction(any(), eq(false))).thenAnswer(invocation -> ((RetryingTransactionCallback<?>) invocation.getArgument(0)).execute());
         when(identityServiceFacade.decodeToken(JWT_TOKEN)).thenReturn(decodedAccessToken);
         when(personService.createMissingPeople()).thenReturn(true);
         when(identityServiceFacade.getClientRegistration()).thenReturn(clientRegistration);
@@ -103,7 +117,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(identityServiceConfig.getFirstNameAttribute()).thenReturn(FIRST_NAME_CLAIM);
         when(identityServiceConfig.getLastNameAttribute()).thenReturn(LAST_NAME_CLAIM);
         expectedMapping = new UserInfoAttrMapping(USERNAME_CLAIM, FIRST_NAME_CLAIM, LAST_NAME_CLAIM, EMAIL_CLAIM);
-        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig);
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig, jobLockService);
     }
 
     @Test
@@ -113,7 +127,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(personService.personExists(USERNAME)).thenReturn(true);
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(USERNAME);
 
-        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig);
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig, jobLockService);
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
                 JWT_TOKEN);
 
@@ -121,6 +135,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals(USERNAME, result.get().username());
         assertFalse(result.get().allFieldsNotEmpty());
         verify(identityServiceFacade, never()).getUserInfo(JWT_TOKEN, expectedMapping);
+        verify(jobLockService, never()).getTransactionalLock(any(), anyLong(), anyLong(), anyInt());
     }
 
     @Test
@@ -149,7 +164,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(decodedAccessToken.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME)).thenReturn(LAST_NAME);
         when(decodedAccessToken.getClaim(PersonClaims.EMAIL_CLAIM_NAME)).thenReturn(EMAIL);
 
-        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig);
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig, jobLockService);
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
                 JWT_TOKEN);
 
@@ -159,8 +174,25 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals(LAST_NAME, result.get().lastName());
         assertEquals(EMAIL, result.get().email());
         assertTrue(result.get().allFieldsNotEmpty());
+        verify(jobLockService).getTransactionalLock(any(), anyLong(), anyLong(), anyInt());
         verify(personService).createPerson(any());
         verify(identityServiceFacade, never()).getUserInfo(JWT_TOKEN, expectedMapping);
+    }
+
+    @Test
+    public void shouldNotCreateUserWhenItAppearsWhileWaitingForLock()
+    {
+        when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
+        when(personService.personExists(USERNAME)).thenReturn(false, true);
+        when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(USERNAME);
+
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig, jobLockService);
+        Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+
+        assertTrue(result.isPresent());
+        assertEquals(USERNAME, result.get().username());
+        verify(jobLockService).getTransactionalLock(any(), anyLong(), anyLong(), anyInt());
+        verify(personService, never()).createPerson(any());
     }
 
     @Test

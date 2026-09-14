@@ -28,7 +28,14 @@ package org.alfresco.repo.security.authentication.identityservice;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import org.junit.After;
@@ -43,8 +50,10 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
 import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
@@ -53,7 +62,9 @@ import org.alfresco.util.BaseSpringTest;
 public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 {
     private static final String IDS_USERNAME = "johndoe123";
+    private static final int CONCURRENT_REQUEST_COUNT = 10;
 
+    private AuthorityService authorityService;
     private PersonService personService;
     private NodeService nodeService;
     private TransactionService transactionService;
@@ -71,6 +82,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     @Before
     public void setup()
     {
+        authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
         personService = (PersonService) applicationContext.getBean("personService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
@@ -116,6 +128,54 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
             assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
             assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
         }
+    }
+
+    @Test
+    public void shouldCreateUserOnceWhenFirstRequestsAreConcurrent() throws Exception
+    {
+        assertFalse(personService.personExists(IDS_USERNAME));
+
+        IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
+                IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
+        String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
+        jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(null);
+
+        ExecutorService executor = Executors.newFixedThreadPool(CONCURRENT_REQUEST_COUNT);
+        CountDownLatch ready = new CountDownLatch(CONCURRENT_REQUEST_COUNT);
+        CountDownLatch start = new CountDownLatch(1);
+        List<Future<Optional<OIDCUserInfo>>> results = new ArrayList<>();
+        try
+        {
+            for (int i = 0; i < CONCURRENT_REQUEST_COUNT; i++)
+            {
+                results.add(executor.submit(() -> {
+                    ready.countDown();
+                    start.await();
+                    return jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessToken);
+                }));
+            }
+
+            assertTrue(ready.await(30, TimeUnit.SECONDS));
+            start.countDown();
+
+            for (Future<Optional<OIDCUserInfo>> result : results)
+            {
+                assertEquals(IDS_USERNAME, result.get(60, TimeUnit.SECONDS).orElseThrow().username());
+            }
+        }
+        finally
+        {
+            executor.shutdownNow();
+        }
+
+        NodeRef person = personService.getPerson(IDS_USERNAME);
+        assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
+        assertTrue(authorityService.authorityExists(IDS_USERNAME));
+        long matchingPeople = nodeService.getChildAssocs(personService.getPeopleContainer()).stream()
+                .map(ChildAssociationRef::getChildRef)
+                .filter(personRef -> IDS_USERNAME.equals(nodeService.getProperty(personRef, ContentModel.PROP_USERNAME)))
+                .count();
+        assertEquals(1L, matchingPeople);
     }
 
     @Test

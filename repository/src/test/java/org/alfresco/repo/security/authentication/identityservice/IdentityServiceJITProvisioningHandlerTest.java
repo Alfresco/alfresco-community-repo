@@ -159,31 +159,32 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         CountDownLatch ready = new CountDownLatch(CONCURRENT_REQUEST_COUNT);
         CountDownLatch start = new CountDownLatch(1);
         List<Future<Optional<OIDCUserInfo>>> results = new ArrayList<>();
-        ExecutorService executor = Executors.newFixedThreadPool(CONCURRENT_REQUEST_COUNT);
-        try
+        try (ExecutorService executor = Executors.newFixedThreadPool(CONCURRENT_REQUEST_COUNT))
         {
-            for (int i = 0; i < CONCURRENT_REQUEST_COUNT; i++)
+            try
             {
-                results.add(executor.submit(() -> {
-                    ready.countDown();
-                    start.await();
-                    return jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessToken);
-                }));
+                for (int i = 0; i < CONCURRENT_REQUEST_COUNT; i++)
+                {
+                    results.add(executor.submit(() -> {
+                        ready.countDown();
+                        start.await();
+                        return jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessToken);
+                    }));
+                }
+
+                assertTrue(ready.await(30, TimeUnit.SECONDS));
+                start.countDown();
+
+                for (Future<Optional<OIDCUserInfo>> result : results)
+                {
+                    assertEquals(IDS_USERNAME, result.get(60, TimeUnit.SECONDS).orElseThrow().username());
+                }
             }
-
-            assertTrue(ready.await(30, TimeUnit.SECONDS));
-            start.countDown();
-
-            for (Future<Optional<OIDCUserInfo>> result : results)
+            finally
             {
-                assertEquals(IDS_USERNAME, result.get(60, TimeUnit.SECONDS).orElseThrow().username());
+                start.countDown();
+                executor.shutdownNow();
             }
-        }
-        finally
-        {
-            start.countDown();
-            executor.shutdownNow();
-            executor.close();
         }
 
         NodeRef person = personService.getPerson(IDS_USERNAME);

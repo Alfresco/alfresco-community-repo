@@ -7,12 +7,6 @@
         <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
     </listeners>
     <test name="SearchTests-Part2">
-        <packages>
-            <package name="org.alfresco.rest.search.*">
-                <exclude name="org.alfresco.rest.search.fingerprint"/>
-                <exclude name="org.alfresco.rest.search.crosslocale"/>
-            </package>
-        </packages>
         <classes>
             <!-- 1) FacetRangeSearchTest: range facet gaps on ES -->
             <class name="org.alfresco.rest.search.FacetRangeSearchTest">
@@ -78,19 +72,26 @@
                     <exclude name="testWithConjunctionDisjunctionAndNegation"/>
                 </methods>
             </class>
-
-            <!-- Suppress part1 classes so the package sweep doesn't re-run them -->
-            <class name="org.alfresco.rest.search.SearchCasesTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchAspectTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchSimpleCasesTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchHighLightTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchExactTermTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchSpellCheckTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.NodeContentTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchNonIndexedFields"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchAPATHTest"><methods><exclude name=".*"/></methods></class>
-            <class name="org.alfresco.rest.search.SearchWithCustomModelTest"><methods><exclude name=".*"/></methods></class>
+            <!-- 10) SearchQueryPaginationTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SearchQueryPaginationTest"/>
+            <!-- 11) SearchPermissionsTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SearchPermissionsTest"/>
+            <!-- 12) SearchParentFieldTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SearchParentFieldTest"/>
+            <!-- 13) SearchSecondaryAssociationTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SearchSecondaryAssociationTest"/>
+            <!-- 14) SpecialCharacterSearchTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.SpecialCharacterSearchTest"/>
+            <!-- 15) ExplicitRoutingTest: Solr-only explicit routing; also needs runtime custom model, ACS-12502 -->
+            <class name="org.alfresco.rest.search.ExplicitRoutingTest">
+                <methods><exclude name=".*"/></methods>
+            </class>
+            <!-- 16) tracker.CascadingIntegrationTest: Solr tracker cascade; also needs runtime custom model, ACS-12502 -->
+            <class name="org.alfresco.rest.search.tracker.CascadingIntegrationTest">
+                <methods><exclude name=".*"/></methods>
+            </class>
+            <!-- 17) DocumentLibraryTagFilterTest: will include all the tests -->
+            <class name="org.alfresco.rest.search.DocumentLibraryTagFilterTest"/>
         </classes>
     </test>
 </suite>

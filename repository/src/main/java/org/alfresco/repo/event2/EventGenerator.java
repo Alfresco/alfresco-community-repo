@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -152,7 +152,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         this.userFilter = eventFilterRegistry.getEventUserFilter();
     }
 
-    private void bindBehaviours()
+    protected void bindBehaviours()
     {
         setClassBehaviour(OnCreateNodePolicy.QNAME, "onCreateNode");
         setClassBehaviour(BeforeDeleteNodePolicy.QNAME, "beforeDeleteNode");
@@ -365,7 +365,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         return new PeerAssociationEventConsolidator(peerAssociationRef, nodeResourceHelper);
     }
 
-    private void setClassBehaviour(QName policyQName, String method)
+    protected void setClassBehaviour(QName policyQName, String method)
     {
         Behaviour behaviour = bindClassBehaviour(policyQName, method);
         behaviours.add(behaviour);

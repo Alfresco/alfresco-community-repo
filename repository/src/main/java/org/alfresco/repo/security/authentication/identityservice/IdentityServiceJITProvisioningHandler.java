@@ -155,11 +155,6 @@ public class IdentityServiceJITProvisioningHandler
     private OIDCUserInfo createUserIfNeeded(OIDCUserInfo userInfo)
     {
         String username = userInfo.username();
-        if (!userNeedsCreating(userInfo))
-        {
-            return userInfo;
-        }
-
         QName lockQName = QName.createQName(LOCK_NAMESPACE, username.toLowerCase(Locale.ROOT));
         jobLockService.getTransactionalLock(lockQName, LOCK_TTL, LOCK_RETRY_WAIT, LOCK_RETRY_COUNT);
         if (personService.personExists(username))

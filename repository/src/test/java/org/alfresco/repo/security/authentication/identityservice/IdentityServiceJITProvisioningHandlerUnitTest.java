@@ -186,7 +186,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     public void shouldNotCreateUserWhenItAppearsWhileWaitingForLock()
     {
         when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
-        when(personService.personExists(USERNAME)).thenReturn(false, false, true);
+        when(personService.personExists(USERNAME)).thenReturn(false, true);
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(USERNAME);
 
         jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig, jobLockService);
@@ -194,7 +194,10 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
 
         assertTrue(result.isPresent());
         assertEquals(USERNAME, result.get().username());
-        verify(jobLockService).getTransactionalLock(any(), anyLong(), anyLong(), anyInt());
+        InOrder callOrder = inOrder(personService, jobLockService);
+        callOrder.verify(personService).personExists(USERNAME);
+        callOrder.verify(jobLockService).getTransactionalLock(any(), anyLong(), anyLong(), anyInt());
+        callOrder.verify(personService).personExists(USERNAME);
         verify(personService, never()).createPerson(any());
     }
 

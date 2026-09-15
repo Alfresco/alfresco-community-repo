@@ -29,6 +29,48 @@
         <property name="connectionFactory" ref="pooledConnectionFactory"/>
     </bean>
 
+    <bean id="queueJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="sessionTransacted" value="${messaging.transacted}" />
+    </bean>
+
+    <bean id="topicJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="sessionTransacted" value="${messaging.transacted}" />
+        <property name="pubSubDomain" value="true" />
+    </bean>
+
+    <bean id="messagePublisher" class="org.alfresco.messaging.SpringJmsMessagePublisher">
+        <constructor-arg ref="queueJmsTemplate" />
+        <constructor-arg ref="topicJmsTemplate" />
+    </bean>
+
+    <bean id="renditionEventMessageListener" class="org.alfresco.messaging.JmsTextMessageListener">
+        <constructor-arg ref="onContentUpdateRenditionHandler" />
+    </bean>
+
+    <bean id="renditionEventListenerContainer" class="org.alfresco.messaging.EndpointMessageListenerContainer">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="sessionTransacted" value="${messaging.transacted}" />
+        <property name="endpointUri" value="${acs.repo.rendition.events.endpoint}" />
+        <property name="messageListener" ref="renditionEventMessageListener" />
+        <property name="concurrentConsumers" value="${messaging.routing.numThreads}" />
+        <property name="maxConcurrentConsumers" value="${messaging.routing.numThreads}" />
+    </bean>
+
+    <bean id="transformRequestMessageListener" class="org.alfresco.messaging.JmsTextMessageListener">
+        <constructor-arg ref="transformRequestProcessor" />
+    </bean>
+
+    <bean id="transformRequestListenerContainer" class="org.alfresco.messaging.EndpointMessageListenerContainer">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="sessionTransacted" value="${messaging.transacted}" />
+        <property name="endpointUri" value="${acs.repo.transform.request.endpoint}" />
+        <property name="messageListener" ref="transformRequestMessageListener" />
+        <property name="concurrentConsumers" value="${messaging.routing.numThreads}" />
+        <property name="maxConcurrentConsumers" value="${messaging.routing.numThreads}" />
+    </bean>
+
     <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
         <property name="connectionFactory" ref="pooledConnectionFactory" />
         <property name="transacted" value="${messaging.transacted}" />

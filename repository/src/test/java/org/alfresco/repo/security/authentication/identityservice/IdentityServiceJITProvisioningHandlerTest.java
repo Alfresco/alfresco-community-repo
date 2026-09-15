@@ -51,7 +51,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
 import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -70,7 +69,6 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     private NodeService nodeService;
     private TransactionService transactionService;
     private IdentityServiceConfig identityServiceConfig;
-    private JobLockService jobLockService;
     private IdentityServiceFacade identityServiceFacade;
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
 
@@ -89,7 +87,6 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         personService = (PersonService) applicationContext.getBean("personService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
-        jobLockService = (JobLockService) applicationContext.getBean("JobLockService");
         DefaultChildApplicationContextManager childApplicationContextManager = (DefaultChildApplicationContextManager) applicationContext
                 .getBean("Authentication");
         ChildApplicationContextFactory childApplicationContextFactory = childApplicationContextManager.getChildApplicationContextFactory(
@@ -154,7 +151,8 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         IdentityServiceFacade idsServiceFacadeMock = mock(IdentityServiceFacade.class);
         when(idsServiceFacadeMock.decodeToken(accessToken)).thenReturn(decodedAccessToken);
         when(idsServiceFacadeMock.getClientRegistration()).thenReturn(clientRegistration);
-        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(idsServiceFacadeMock, personService, transactionService, identityServiceConfig, jobLockService);
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(idsServiceFacadeMock, personService, transactionService, identityServiceConfig,
+                applicationContext.getBean("JobLockService", JobLockService.class));
 
         CountDownLatch ready = new CountDownLatch(CONCURRENT_REQUEST_COUNT);
         CountDownLatch start = new CountDownLatch(1);
@@ -187,14 +185,17 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
             }
         }
 
-        NodeRef person = personService.getPerson(IDS_USERNAME);
-        assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
-        assertTrue(authorityService.authorityExists(IDS_USERNAME));
-        long matchingPeople = nodeService.getChildAssocs(personService.getPeopleContainer()).stream()
-                .map(ChildAssociationRef::getChildRef)
-                .filter(personRef -> IDS_USERNAME.equals(nodeService.getProperty(personRef, ContentModel.PROP_USERNAME)))
-                .count();
-        assertEquals(1L, matchingPeople);
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                NodeRef person = personService.getPerson(IDS_USERNAME);
+                assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
+                assertTrue(authorityService.authorityExists(IDS_USERNAME));
+                long matchingPeople = nodeService.getChildAssocs(personService.getPeopleContainer()).stream()
+                        .map(childAssociation -> childAssociation.getChildRef())
+                        .filter(personRef -> IDS_USERNAME.equals(nodeService.getProperty(personRef, ContentModel.PROP_USERNAME)))
+                        .count();
+                assertEquals(1L, matchingPeople);
+                return null;
+        }, true);
     }
 
     @Test

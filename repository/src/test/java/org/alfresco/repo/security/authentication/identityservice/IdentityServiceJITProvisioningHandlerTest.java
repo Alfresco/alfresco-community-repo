@@ -185,17 +185,16 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
             }
         }
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+        AuthenticationUtil.runAsSystem(() -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
             NodeRef person = personService.getPerson(IDS_USERNAME);
             assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
             assertTrue(authorityService.authorityExists(IDS_USERNAME));
             long matchingPeople = nodeService.getChildAssocs(personService.getPeopleContainer()).stream()
-                    .map(childAssociation -> childAssociation.getChildRef())
-                    .filter(personRef -> IDS_USERNAME.equals(nodeService.getProperty(personRef, ContentModel.PROP_USERNAME)))
+                    .filter(childAssociation -> IDS_USERNAME.equals(nodeService.getProperty(childAssociation.getChildRef(), ContentModel.PROP_USERNAME)))
                     .count();
             assertEquals(1L, matchingPeople);
             return null;
-        }, true);
+        }, true));
     }
 
     @Test

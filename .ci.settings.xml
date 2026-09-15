@@ -1,28 +1,42 @@
 <settings>
+    <mirrors>
+        <mirror>
+            <id>alfresco-public</id>
+            <mirrorOf>*,!central-proxy</mirrorOf>
+            <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
+        </mirror>
+    </mirrors>
+
     <profiles>
         <profile>
-            <id>alfresco-internal</id>
+            <id>default</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <repositories>
                 <repository>
-                    <id>alfresco-internal</id>
+                    <id>central-proxy</id>
+<!--                    <url>https://artifacts.hyland.dev/basic/cic-ext-pull-through/maven/</url>-->
+                     <url>https://repo1.maven.org/maven2</url>
                     <releases>
                         <enabled>true</enabled>
                     </releases>
                     <snapshots>
-                        <enabled>true</enabled>
+                        <enabled>false</enabled>
                     </snapshots>
-                    <name>Alfresco Internal Repository</name>
-                    <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
                 </repository>
             </repositories>
             <pluginRepositories>
                 <pluginRepository>
-                    <id>alfresco-internal</id>
-                    <name>Alfresco Internal Repository</name>
-                    <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+                    <id>central-proxy</id>
+<!--                    <url>https://artifacts.hyland.dev/basic/cic-ext-pull-through/maven/</url>-->
+                     <url>https://repo1.maven.org/maven2</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
                 </pluginRepository>
             </pluginRepositories>
         </profile>
@@ -30,12 +44,7 @@
 
     <servers>
         <server>
-            <id>alfresco-public</id>
-            <username>${env.MAVEN_USERNAME}</username>
-            <password>${env.MAVEN_PASSWORD}</password>
-        </server>
-        <server>
-            <id>alfresco-internal</id>
+            <id>alfresco-public-releases</id>
             <username>${env.MAVEN_USERNAME}</username>
             <password>${env.MAVEN_PASSWORD}</password>
         </server>

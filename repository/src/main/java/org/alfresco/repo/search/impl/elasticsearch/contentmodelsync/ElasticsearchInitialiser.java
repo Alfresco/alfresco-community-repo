@@ -469,9 +469,9 @@ public class ElasticsearchInitialiser implements DictionaryListener
             // Send the batch when it reaches the configured size.
             if (batch.size() >= mappingBatchSize)
             {
-                BatchResult result = mapBatch(batch, failedModels);
+                MappingResult result = mapBatch(batch, failedModels);
                 mappedProperties += result.mappedProperties();
-                if (result.elasticsearchUnavailable())
+                if (result.outcome() == MappingOutcome.UNAVAILABLE)
                 {
                     failedModels.addAll(processedModels);
                     return mappedProperties;
@@ -482,9 +482,9 @@ public class ElasticsearchInitialiser implements DictionaryListener
         // Map any remaining properties that don't fill a complete batch.
         if (!batch.isEmpty())
         {
-            BatchResult result = mapBatch(batch, failedModels);
+            MappingResult result = mapBatch(batch, failedModels);
             mappedProperties += result.mappedProperties();
-            if (result.elasticsearchUnavailable())
+            if (result.outcome() == MappingOutcome.UNAVAILABLE)
             {
                 failedModels.addAll(processedModels);
             }
@@ -499,9 +499,9 @@ public class ElasticsearchInitialiser implements DictionaryListener
      *            properties to map
      * @param failedModels
      *            models containing rejected properties
-     * @return the number of mapped properties and whether Elasticsearch is unavailable
+     * @return the number of mapped properties and the outcome of the last request
      */
-    private BatchResult mapBatch(List<PendingProperty> batch, Set<QName> failedModels)
+    private MappingResult mapBatch(List<PendingProperty> batch, Set<QName> failedModels)
     {
         Set<PropertyDefinition> properties = batch.stream()
                 .map(PendingProperty::property)
@@ -510,11 +510,11 @@ public class ElasticsearchInitialiser implements DictionaryListener
         if (result.outcome() == MappingOutcome.MAPPED)
         {
             batch.forEach(entry -> mappedPropertyCache.add(entry.property().getName()));
-            return new BatchResult(result.mappedProperties(), false);
+            return result;
         }
         if (result.outcome() == MappingOutcome.UNAVAILABLE)
         {
-            return new BatchResult(0, true);
+            return result;
         }
         if (batch.size() == 1)
         {
@@ -522,16 +522,16 @@ public class ElasticsearchInitialiser implements DictionaryListener
             failedModels.add(rejected.model());
             LOGGER.warn("Elasticsearch rejected property {} from model {} other properties are unaffected",
                     rejected.property().getName(), rejected.model());
-            return new BatchResult(0, false);
+            return result;
         }
         int midpoint = batch.size() / 2;
-        BatchResult first = mapBatch(new ArrayList<>(batch.subList(0, midpoint)), failedModels);
-        if (first.elasticsearchUnavailable())
+        MappingResult first = mapBatch(new ArrayList<>(batch.subList(0, midpoint)), failedModels);
+        if (first.outcome() == MappingOutcome.UNAVAILABLE)
         {
             return first;
         }
-        BatchResult second = mapBatch(new ArrayList<>(batch.subList(midpoint, batch.size())), failedModels);
-        return new BatchResult(first.mappedProperties() + second.mappedProperties(), second.elasticsearchUnavailable());
+        MappingResult second = mapBatch(new ArrayList<>(batch.subList(midpoint, batch.size())), failedModels);
+        return new MappingResult(second.outcome(), first.mappedProperties() + second.mappedProperties());
     }
 
     /**
@@ -573,9 +573,6 @@ public class ElasticsearchInitialiser implements DictionaryListener
     }
 
     private record MappingResult(MappingOutcome outcome, int mappedProperties)
-    {}
-
-    private record BatchResult(int mappedProperties, boolean elasticsearchUnavailable)
     {}
 
     private record PendingProperty(QName model, PropertyDefinition property)

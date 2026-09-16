@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -491,6 +492,7 @@ public class ElasticsearchInitialiserTest
                     if (sent.contains(poison))
                     {
                         when(result.isAcknowledged()).thenReturn(false);
+                        when(result.getStatus()).thenReturn(400);
                         return result;
                     }
                     mapped.addAll(sent);
@@ -532,20 +534,18 @@ public class ElasticsearchInitialiserTest
         assertEquals("first pass sends both properties, second pass sends none", List.of(2, 0), sentSizes);
     }
 
-    /**
-     * The same property arriving twice must be de-duplicated so Elasticsearch is not sent a redundant definition.
-     */
     @Test
-    public void onModelUpdate_duplicateProperty_shouldBeSentOnce() throws IOException
+    public void onModelUpdate_morePropertiesThanBatchSize_shouldSplitAtTheBoundary() throws IOException
     {
         toTest.setCreateIndexIfNotExists(true);
         toTest.setRetryAttempts(1);
         toTest.setRetryPeriodSeconds(0);
         toTest.setLockRetryAttempts(1);
+        toTest.setMappingBatchSize(2);
         when(mockElasticSearchIndexService.indexExists()).thenReturn(true);
 
-        PropertyDefinition duplicated = propertyNamed("dup");
-        List<PropertyDefinition> properties = new ArrayList<>(List.of(duplicated, propertyNamed("other"), duplicated));
+        List<PropertyDefinition> properties = new ArrayList<>(List.of(
+                propertyNamed("p1"), propertyNamed("p2"), propertyNamed("p3"), propertyNamed("p4"), propertyNamed("p5")));
         doReturn(properties).when(mockCompiledModel).getProperties();
         when(mockDictionary.getModels(true)).thenReturn(List.of(mockModel));
         when(mockDictionary.getCompiledModel(any(QName.class))).thenReturn(mockCompiledModel);
@@ -559,7 +559,34 @@ public class ElasticsearchInitialiserTest
 
         toTest.afterDictionaryInit();
 
-        assertEquals("the duplicate must collapse to a single definition", List.of(2), sentSizes);
+        assertEquals("five properties at a batch size of two must be sent as 2 + 2 + 1", List.of(2, 2, 1), sentSizes);
+    }
+
+    @Test
+    public void onModelUpdate_transportFailure_shouldNotSplitTheBatch() throws IOException
+    {
+        toTest.setCreateIndexIfNotExists(true);
+        toTest.setRetryAttempts(1);
+        toTest.setRetryPeriodSeconds(0);
+        toTest.setLockRetryAttempts(1);
+        when(mockElasticSearchIndexService.indexExists()).thenReturn(true);
+
+        List<PropertyDefinition> properties = new ArrayList<>(List.of(
+                propertyNamed("p1"), propertyNamed("p2"), propertyNamed("p3"), propertyNamed("p4")));
+        doReturn(properties).when(mockCompiledModel).getProperties();
+        when(mockDictionary.getModels(true)).thenReturn(List.of(mockModel));
+        when(mockDictionary.getCompiledModel(any(QName.class))).thenReturn(mockCompiledModel);
+
+        AtomicInteger requests = new AtomicInteger();
+        when(mockContentModelSynchronizer.initializeElasticsearchIndexMappings(anyCollection()))
+                .thenAnswer(invocation -> {
+                    requests.incrementAndGet();
+                    throw new IOException("connection reset");
+                });
+
+        toTest.afterDictionaryInit();
+
+        assertEquals("a transport failure must cost exactly one request, not a bisection cascade", 1, requests.get());
     }
 
     private static ContentModelSynchronizer.IndexMappingResult acknowledged(int mappedCount)

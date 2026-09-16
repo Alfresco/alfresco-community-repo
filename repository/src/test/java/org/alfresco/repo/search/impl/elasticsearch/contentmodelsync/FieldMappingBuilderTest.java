@@ -81,7 +81,7 @@ public class FieldMappingBuilderTest
     @Test
     public void shouldCountIndexedProperties()
     {
-        FieldMappingBuilder fieldMappingBuilder = new FieldMappingBuilder(List.of(), List.of());
+        FieldMappingBuilder fieldMappingBuilder = new FieldMappingBuilder(List.of(mockedPredefinedFieldMapper(true)), List.of());
 
         List<PropertyDefinition> propertyDefinitions = List.of(
                 mockedPropertyDefinition(true),
@@ -95,12 +95,26 @@ public class FieldMappingBuilderTest
         assertEquals(format("Number of indexed properties should be %s but is %s", indexedPropertiesNumber, result.getSecond()), indexedPropertiesNumber, (int) result.getSecond());
     }
 
+    @Test
+    public void shouldNotCountPropertiesNoMapperCanHandle()
+    {
+        FieldMappingBuilder fieldMappingBuilder = new FieldMappingBuilder(List.of(mockedPredefinedFieldMapper(false)), List.of(mockedCustomFieldMapper(false)));
+
+        List<PropertyDefinition> propertyDefinitions = List.of(
+                mockedPropertyDefinition(true),
+                mockedPropertyDefinition(true));
+
+        var result = fieldMappingBuilder.buildFieldsMappings(TEST_INDEX_NAME, propertyDefinitions);
+
+        assertEquals("An unsupported datatype yields no field and must not be counted as mapped", 0, (int) result.getSecond());
+    }
+
     private PredefinedFieldMapper mockedPredefinedFieldMapper(boolean canMap)
     {
         PredefinedFieldMapper fieldMapper = mock();
 
         when(fieldMapper.canMap(any())).thenReturn(canMap);
-        when(fieldMapper.buildMapping(any())).thenReturn(new ElasticsearchFieldMapping(new FieldName("acme:test")));
+        when(fieldMapper.buildMapping(any())).thenReturn(mappedField());
 
         return fieldMapper;
     }
@@ -110,9 +124,14 @@ public class FieldMappingBuilderTest
         CustomFieldMapper fieldMapper = mock();
 
         when(fieldMapper.canMap(any())).thenReturn(canMap);
-        when(fieldMapper.buildMapping(any())).thenReturn(new ElasticsearchFieldMapping(new FieldName("acme:test")));
+        when(fieldMapper.buildMapping(any())).thenReturn(mappedField());
 
         return fieldMapper;
+    }
+
+    private ElasticsearchFieldMapping mappedField()
+    {
+        return new ElasticsearchFieldMapping(new FieldName("acme:test")).withAlias();
     }
 
     private PropertyDefinition mockedPropertyDefinition()

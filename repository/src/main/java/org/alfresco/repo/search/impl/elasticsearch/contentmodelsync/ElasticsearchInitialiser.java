@@ -77,6 +77,11 @@ public class ElasticsearchInitialiser implements DictionaryListener
      */
     private static final long STOP_MAX_WAIT_MILLIS = TimeUnit.SECONDS.toMillis(30);
 
+    /**
+     * HTTP status used to identify an invalid mapping definition.
+     */
+    private static final int HTTP_STATUS_BAD_REQUEST = 400;
+
     private DictionaryDAOImpl dictionaryDAO;
     private ContentModelSynchronizer contentModelSynchronizer;
     private ElasticsearchIndexService elasticsearchIndexService;
@@ -335,7 +340,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
                 if (hasMappedNewModels)
                 {
                     LOGGER.info(
-                            "Elasticsearch mappings update completed. {} out of {} types were mapped successfully. "
+                            "Elasticsearch mappings update completed. {} out of {} properties were mapped successfully. "
                                     + "Turn on DEBUG for elasticsearch.contentmodelsync.FieldMappingBuilder and restart "
                                     + "the server for more information",
                             globalModelInitialisedCounter.get(), mappedPropertyCache.size());
@@ -448,7 +453,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
         if (pending.isEmpty())
         {
             // Send an empty request to verify Elasticsearch is available.
-            if (sendMappingRequest(Set.of()) == null)
+            if (sendMappingRequest(Set.of()).outcome() != MappingOutcome.MAPPED)
             {
                 failedModels.addAll(processedModels);
             }
@@ -464,37 +469,52 @@ public class ElasticsearchInitialiser implements DictionaryListener
             // Send the batch when it reaches the configured size.
             if (batch.size() >= mappingBatchSize)
             {
-                mappedProperties += mapBatch(batch, failedModels);
+                BatchResult result = mapBatch(batch, failedModels);
+                mappedProperties += result.mappedProperties();
+                if (result.elasticsearchUnavailable())
+                {
+                    failedModels.addAll(processedModels);
+                    return mappedProperties;
+                }
                 batch = new ArrayList<>();
             }
         }
         // Map any remaining properties that don't fill a complete batch.
         if (!batch.isEmpty())
         {
-            mappedProperties += mapBatch(batch, failedModels);
+            BatchResult result = mapBatch(batch, failedModels);
+            mappedProperties += result.mappedProperties();
+            if (result.elasticsearchUnavailable())
+            {
+                failedModels.addAll(processedModels);
+            }
         }
         return mappedProperties;
     }
 
     /**
-     * Maps a batch of properties to Elasticsearch. If the batch fails, it is split into smaller batches to find the failed property.
+     * Maps a batch of properties to Elasticsearch. Invalid batches are split to isolate the rejected property. Elasticsearch failures are returned so the batch can be retried later.
      *
      * @param batch
      *            properties to map
      * @param failedModels
-     *            models containing properties that could not be mapped
-     * @return the number of successfully mapped properties
+     *            models containing rejected properties
+     * @return the number of mapped properties and whether Elasticsearch is unavailable
      */
-    private int mapBatch(List<PendingProperty> batch, Set<QName> failedModels)
+    private BatchResult mapBatch(List<PendingProperty> batch, Set<QName> failedModels)
     {
         Set<PropertyDefinition> properties = batch.stream()
                 .map(PendingProperty::property)
                 .collect(Collectors.toSet());
-        Integer mappedProperties = sendMappingRequest(properties);
-        if (mappedProperties != null)
+        MappingResult result = sendMappingRequest(properties);
+        if (result.outcome() == MappingOutcome.MAPPED)
         {
             batch.forEach(entry -> mappedPropertyCache.add(entry.property().getName()));
-            return mappedProperties;
+            return new BatchResult(result.mappedProperties(), false);
+        }
+        if (result.outcome() == MappingOutcome.UNAVAILABLE)
+        {
+            return new BatchResult(0, true);
         }
         if (batch.size() == 1)
         {
@@ -502,34 +522,61 @@ public class ElasticsearchInitialiser implements DictionaryListener
             failedModels.add(rejected.model());
             LOGGER.warn("Elasticsearch rejected property {} from model {} other properties are unaffected",
                     rejected.property().getName(), rejected.model());
-            return 0;
+            return new BatchResult(0, false);
         }
         int midpoint = batch.size() / 2;
-        return mapBatch(new ArrayList<>(batch.subList(0, midpoint)), failedModels)
-                + mapBatch(new ArrayList<>(batch.subList(midpoint, batch.size())), failedModels);
+        BatchResult first = mapBatch(new ArrayList<>(batch.subList(0, midpoint)), failedModels);
+        if (first.elasticsearchUnavailable())
+        {
+            return first;
+        }
+        BatchResult second = mapBatch(new ArrayList<>(batch.subList(midpoint, batch.size())), failedModels);
+        return new BatchResult(first.mappedProperties() + second.mappedProperties(), second.elasticsearchUnavailable());
     }
 
     /**
-     * Sends the given properties to Elasticsearch for mapping.
+     * Sends the given properties to Elasticsearch and returns the mapping result.
      *
      * @param properties
-     *            properties to map in Elasticsearch
-     * @return the number of successfully mapped properties, or {@code null} if the request is not acknowledged or fails
+     *            properties to map
+     * @return the mapping outcome and number of mapped properties
      */
-    private Integer sendMappingRequest(Set<PropertyDefinition> properties)
+    private MappingResult sendMappingRequest(Set<PropertyDefinition> properties)
     {
         try
         {
             ContentModelSynchronizer.IndexMappingResult result = contentModelSynchronizer
                     .initializeElasticsearchIndexMappings(properties);
-            return result.isAcknowledged() ? result.getSuccessfullyMappedPropertiesCount() : null;
+            if (result.isAcknowledged())
+            {
+                return new MappingResult(MappingOutcome.MAPPED, result.getSuccessfullyMappedPropertiesCount());
+            }
+            if (result.getStatus() == HTTP_STATUS_BAD_REQUEST)
+            {
+                return new MappingResult(MappingOutcome.REJECTED, 0);
+            }
+            LOGGER.warn("Elasticsearch could not map {} properties, status={}, the batch will be retried whole",
+                    properties.size(), result.getStatus());
+            return new MappingResult(MappingOutcome.UNAVAILABLE, 0);
         }
         catch (IOException e)
         {
-            LOGGER.warn("Elasticsearch mapping request failed for {} properties", properties.size(), e);
-            return null;
+            LOGGER.warn("Elasticsearch mapping request failed for {} properties, the batch will be retried whole",
+                    properties.size(), e);
+            return new MappingResult(MappingOutcome.UNAVAILABLE, 0);
         }
     }
+
+    private enum MappingOutcome
+    {
+        MAPPED, REJECTED, UNAVAILABLE
+    }
+
+    private record MappingResult(MappingOutcome outcome, int mappedProperties)
+    {}
+
+    private record BatchResult(int mappedProperties, boolean elasticsearchUnavailable)
+    {}
 
     private record PendingProperty(QName model, PropertyDefinition property)
     {}
@@ -633,10 +680,6 @@ public class ElasticsearchInitialiser implements DictionaryListener
 
     public void setMappingBatchSize(int mappingBatchSize)
     {
-        if (mappingBatchSize < 1)
-        {
-            throw new IllegalArgumentException("elasticsearch.mappingBatchSize must be at least 1, but was " + mappingBatchSize);
-        }
         this.mappingBatchSize = mappingBatchSize;
     }
 

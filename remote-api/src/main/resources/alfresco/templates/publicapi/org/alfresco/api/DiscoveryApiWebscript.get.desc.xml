@@ -4,7 +4,7 @@
     <description>Returns repository information</description>
     <url>/discovery</url>
     <authentication>user</authentication>
-    <transaction>required</transaction>
+    <transaction allow="readonly">required</transaction>
     <format default="json">argument</format>
     <lifecycle>public_api</lifecycle>
 </webscript>

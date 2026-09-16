@@ -209,7 +209,7 @@
 
     <distributionManagement>
         <repository>
-            <id>alfresco-public</id>
+            <id>alfresco-public-releases</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
         </repository>
     </distributionManagement>
@@ -1195,7 +1195,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.6.0</version>
+                    <version>3.5.6</version>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <runOrder>alphabetical</runOrder>
@@ -1239,7 +1239,6 @@
                             </manifestEntries>
                         </archive>
                         <attachClasses>true</attachClasses>
-                        <useCache>true</useCache>
                         <recompressZippedFiles>false</recompressZippedFiles>
                     </configuration>
                 </plugin>

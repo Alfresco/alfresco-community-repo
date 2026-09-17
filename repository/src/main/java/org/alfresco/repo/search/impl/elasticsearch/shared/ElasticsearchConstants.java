@@ -72,6 +72,8 @@ public class ElasticsearchConstants
     public static final String OWNER_PROPERTY_NAME = "cm:owner";
     public static final String TYPE_STORE_ROOT = "sys:store_root";
     public static final String TYPE_DELETED = "sys:deleted";
+    /** Raw (unencoded) qualified name of the property recording who deleted/archived a node. Must be passed through {@code FieldName.encoded(...)} before being used as an Elasticsearch field name. */
+    public static final String ARCHIVED_BY = "sys:archivedBy";
 
     // Other
     public static final String CM_CATEGORY_ROOT = "/cm:categoryRoot/cm:generalclassifiable/";

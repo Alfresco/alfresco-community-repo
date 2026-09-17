@@ -229,8 +229,8 @@ public class SearchRequestBuilderService
         }
         return switch (stores.get(0).getProtocol())
         {
-        case StoreRef.PROTOCOL_WORKSPACE -> httpClientFactory.getIndexName();
-        case StoreRef.PROTOCOL_ARCHIVE -> httpClientFactory.getArchiveIndexName();
+        // ACS-12695: archive/deleted-nodes scope now targets the single unified "alfresco" index rather than the separate legacy archive index.
+        case StoreRef.PROTOCOL_WORKSPACE, StoreRef.PROTOCOL_ARCHIVE -> httpClientFactory.getIndexName();
         default -> throw new RuntimeException(
                 "Protocol " + stores.get(0).getProtocol() + " is not supported when using Elasticsearch");
         };

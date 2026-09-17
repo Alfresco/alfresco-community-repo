@@ -26,21 +26,37 @@
 package org.alfresco.repo.search.impl.elasticsearch.query.filter;
 
 import static org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchQueryHelper.isEmptyFilterQuery;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ARCHIVED_BY;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.TYPE;
+
+import java.util.Optional;
 
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch._types.query_dsl.QueryBuilders;
 
+import org.alfresco.repo.search.impl.elasticsearch.model.FieldName;
 import org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchQueryHelper;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.LanguageQueryBuilder;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.security.AuthorityService;
 
 /**
  * Build a filter query and adds it to the current query returning a new query.
  */
 public class ElasticsearchFilterBuilder
 {
+    private final AuthorityService authorityService;
+
+    public ElasticsearchFilterBuilder(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
 
     /**
      * Take the query and the filter queries in the searchParameters and creates a new Elasticsearch query .
@@ -58,7 +74,75 @@ public class ElasticsearchFilterBuilder
             LanguageQueryBuilder languageQueryBuilder) throws ParseException
     {
         Query filterQueries = getFilterQueriesBuilder(searchParameters, languageQueryBuilder);
-        return QueryBuilders.bool().must(queryBuilder).filter(filterQueries).build().toQuery();
+        BoolQuery.Builder resultBuilder = QueryBuilders.bool()
+                .must(queryBuilder)
+                .filter(filterQueries)
+                .filter(getAliveStateFilter(searchParameters));
+
+        getOwnershipFilter(searchParameters).ifPresent(resultBuilder::filter);
+
+        return resultBuilder.build().toQuery();
+    }
+
+    /**
+     * ACS-12695: restrict results to the correct ALIVE state depending on the requested scope.
+     * <p>
+     * Now that the archive ("deleted-nodes") scope is routed to the same unified index as live nodes (see {@code SearchRequestBuilderService.getElasticIndex}), a query-time filter is required to keep scopes correctly separated:
+     * <ul>
+     * <li>{@code deleted-nodes} scope: only archived documents. Archived documents have {@code ALIVE=false} but still retain their full property set (including {@code TYPE}); permanently purged documents are also {@code ALIVE=false} but are stripped down to a minimal tombstone with no {@code TYPE} field, so requiring {@code TYPE} to exist excludes them.</li>
+     * <li>every other scope ({@code nodes}, {@code versions}, {@code history}): only live documents ({@code ALIVE=true}), never archived or purged content.</li>
+     * </ul>
+     */
+    private Query getAliveStateFilter(SearchParameters searchParameters)
+    {
+        if (isArchiveScope(searchParameters))
+        {
+            return QueryBuilders.bool()
+                    .filter(aliveTermQuery(false))
+                    .filter(QueryBuilders.exists().field(TYPE).build().toQuery())
+                    .build()
+                    .toQuery();
+        }
+        return aliveTermQuery(true);
+    }
+
+    /**
+     * ACS-12695: authorization/ownership filtering for the archive scope. Administrators may search all archived documents (no additional filter applied). Non-admin users may only search content they themselves deleted, i.e. documents where {@code sys:archivedBy} matches the current user.
+     */
+    private Optional<Query> getOwnershipFilter(SearchParameters searchParameters)
+    {
+        if (!isArchiveScope(searchParameters))
+        {
+            return Optional.empty();
+        }
+
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (currentUser == null || authorityService.isAdminAuthority(currentUser))
+        {
+            return Optional.empty();
+        }
+
+        Query archivedByCurrentUser = QueryBuilders.term()
+                .field(FieldName.encoded(ARCHIVED_BY))
+                .value(FieldValue.of(currentUser))
+                .build()
+                .toQuery();
+        return Optional.of(archivedByCurrentUser);
+    }
+
+    private boolean isArchiveScope(SearchParameters searchParameters)
+    {
+        return searchParameters.getStores().stream()
+                .anyMatch(store -> StoreRef.PROTOCOL_ARCHIVE.equals(store.getProtocol()));
+    }
+
+    private Query aliveTermQuery(boolean alive)
+    {
+        return QueryBuilders.term()
+                .field(ALIVE)
+                .value(FieldValue.of(Boolean.toString(alive)))
+                .build()
+                .toQuery();
     }
 
     private Query getFilterQueriesBuilder(SearchParameters searchParameters,

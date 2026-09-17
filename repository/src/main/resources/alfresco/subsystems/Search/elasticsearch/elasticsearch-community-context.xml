@@ -249,9 +249,7 @@
         <constructor-arg name="indexConfigurationInitializer" ref="indexConfigurationInitializer"/>
     </bean>
 
-    <bean id="elasticsearchFilterBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.filter.ElasticsearchFilterBuilder">
-        <constructor-arg name="authorityService" ref="authorityService"/>
-    </bean>
+    <bean id="elasticsearchFilterBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.filter.ElasticsearchFilterBuilder"/>
 
     <bean id="elasticsearchHighlightBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilder">
         <constructor-arg name="namespaceDAO" ref="namespaceDAO" />

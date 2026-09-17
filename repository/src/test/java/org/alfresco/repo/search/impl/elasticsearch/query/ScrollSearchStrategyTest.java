@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -35,11 +36,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,11 +53,13 @@ import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.ShardStatistics;
 import org.opensearch.client.opensearch._types.Time;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
+import org.opensearch.client.opensearch.core.ClearScrollRequest;
 import org.opensearch.client.opensearch.core.ScrollRequest;
 import org.opensearch.client.opensearch.core.ScrollResponse;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
+import org.opensearch.client.opensearch.core.search.HitsMetadata;
 import org.opensearch.client.opensearch.core.search.TotalHits;
 import org.opensearch.client.opensearch.core.search.TotalHitsRelation;
 
@@ -66,6 +71,8 @@ import org.alfresco.service.cmr.search.SearchParameters;
 
 public class ScrollSearchStrategyTest
 {
+    private static final int SCROLL_CALL_SAFETY_LIMIT = 10;
+
     @Mock
     private SearchRequestBuilderService requestBuilderService;
     @Mock
@@ -268,5 +275,176 @@ public class ScrollSearchStrategyTest
         {
             resultSet.close();
         }
+    }
+
+    @Test
+    public void search_scrollExhausted_stopsScrollingAndReturnsPartialPage() throws Exception
+    {
+        when(searchParameters.getStores()).thenReturn(new ArrayList<>());
+        when(searchParameters.getSkipCount()).thenReturn(3);
+        when(searchParameters.getLimit()).thenReturn(4);
+
+        when(requestBuilderService.buildSearchRequest(any(), any(), anyInt(), any(Time.class), anyString()))
+                .thenReturn(new SearchRequestWrapper.Builder().searchRequest(searchRequest).build());
+
+        when(client.search(any(SearchRequest.class), eq(Object.class)))
+                .thenReturn(searchResponse(hits("1", "2", "3"), 5L, "scroll-0"));
+
+        ScrollResponse<Object> lastBatch = scrollResponse(hits("4", "5"), 5L, "scroll-1");
+        ScrollResponse<Object> exhausted = scrollResponse(List.of(), 5L, "scroll-1");
+        AtomicInteger scrollCalls = new AtomicInteger();
+        when(client.scroll(any(ScrollRequest.class), eq(Object.class))).thenAnswer(invocation -> {
+            int call = scrollCalls.incrementAndGet();
+            if (call > SCROLL_CALL_SAFETY_LIMIT)
+            {
+                throw new AssertionError("Scroll loop did not terminate: " + call + " scroll requests issued");
+            }
+            return call == 1 ? lastBatch : exhausted;
+        });
+
+        ArgumentCaptor<List> collected = ArgumentCaptor.forClass(List.class);
+        ElasticsearchResultSet rsMock = mock(ElasticsearchResultSet.class);
+        when(resultSetBuilder.build(eq(searchParameters), collected.capture(), anyLong(), anyLong())).thenReturn(rsMock);
+
+        ResultSet resultSet = strategy.executeSearch(searchParameters, queryWithPermissions);
+        try
+        {
+            assertNotNull(resultSet);
+            assertEquals(2, scrollCalls.get());
+            verify(client, times(2)).scroll(any(ScrollRequest.class), eq(Object.class));
+
+            List<?> page = collected.getValue();
+            assertEquals(2, page.size());
+            assertEquals("4", ((Hit<?>) page.get(0)).id());
+            assertEquals("5", ((Hit<?>) page.get(1)).id());
+            verify(resultSetBuilder).build(eq(searchParameters), anyList(), eq(5L), anyLong());
+            verify(client).clearScroll(any(ClearScrollRequest.class));
+        }
+        finally
+        {
+            resultSet.close();
+        }
+    }
+
+    @Test
+    public void search_skipCountBeyondTotalHits_stopsScrollingAndReturnsEmptyPage() throws Exception
+    {
+        when(searchParameters.getStores()).thenReturn(new ArrayList<>());
+        when(searchParameters.getSkipCount()).thenReturn(6);
+        when(searchParameters.getLimit()).thenReturn(4);
+
+        when(requestBuilderService.buildSearchRequest(any(), any(), anyInt(), any(Time.class), anyString()))
+                .thenReturn(new SearchRequestWrapper.Builder().searchRequest(searchRequest).build());
+
+        when(client.search(any(SearchRequest.class), eq(Object.class)))
+                .thenReturn(searchResponse(hits("1", "2", "3"), 5L, "scroll-0"));
+
+        ScrollResponse<Object> secondBatch = scrollResponse(hits("4", "5"), 5L, "scroll-1");
+        ScrollResponse<Object> exhausted = scrollResponse(List.of(), 5L, "scroll-1");
+        AtomicInteger scrollCalls = new AtomicInteger();
+        when(client.scroll(any(ScrollRequest.class), eq(Object.class))).thenAnswer(invocation -> {
+            int call = scrollCalls.incrementAndGet();
+            if (call > SCROLL_CALL_SAFETY_LIMIT)
+            {
+                throw new AssertionError("Scroll loop did not terminate: " + call + " scroll requests issued");
+            }
+            return call == 1 ? secondBatch : exhausted;
+        });
+
+        ArgumentCaptor<List> collected = ArgumentCaptor.forClass(List.class);
+        ElasticsearchResultSet rsMock = mock(ElasticsearchResultSet.class);
+        when(resultSetBuilder.build(eq(searchParameters), collected.capture(), anyLong(), anyLong())).thenReturn(rsMock);
+
+        ResultSet resultSet = strategy.executeSearch(searchParameters, queryWithPermissions);
+        try
+        {
+            assertNotNull(resultSet);
+            assertEquals(2, scrollCalls.get());
+            assertTrue(collected.getValue().isEmpty());
+            verify(resultSetBuilder).build(eq(searchParameters), anyList(), eq(5L), anyLong());
+        }
+        finally
+        {
+            resultSet.close();
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void search_scrollReturnsNullHits_stopsScrolling() throws Exception
+    {
+        when(searchParameters.getStores()).thenReturn(new ArrayList<>());
+        when(searchParameters.getSkipCount()).thenReturn(0);
+        when(searchParameters.getLimit()).thenReturn(4);
+
+        when(requestBuilderService.buildSearchRequest(any(), any(), anyInt(), any(Time.class), anyString()))
+                .thenReturn(new SearchRequestWrapper.Builder().searchRequest(searchRequest).build());
+
+        when(client.search(any(SearchRequest.class), eq(Object.class)))
+                .thenReturn(searchResponse(hits("1", "2"), 2L, "scroll-0"));
+
+        HitsMetadata<Object> nullHits = mock(HitsMetadata.class);
+        when(nullHits.hits()).thenReturn(null);
+        when(nullHits.total()).thenReturn(new TotalHits.Builder().value(2).relation(TotalHitsRelation.Eq).build());
+        ScrollResponse<Object> nullHitsResponse = mock(ScrollResponse.class);
+        when(nullHitsResponse.hits()).thenReturn(nullHits);
+        when(nullHitsResponse.scrollId()).thenReturn("scroll-1");
+
+        AtomicInteger scrollCalls = new AtomicInteger();
+        when(client.scroll(any(ScrollRequest.class), eq(Object.class))).thenAnswer(invocation -> {
+            if (scrollCalls.incrementAndGet() > SCROLL_CALL_SAFETY_LIMIT)
+            {
+                throw new AssertionError("Scroll loop did not terminate: " + scrollCalls.get() + " scroll requests issued");
+            }
+            return nullHitsResponse;
+        });
+
+        ArgumentCaptor<List> collected = ArgumentCaptor.forClass(List.class);
+        ElasticsearchResultSet rsMock = mock(ElasticsearchResultSet.class);
+        when(resultSetBuilder.build(eq(searchParameters), collected.capture(), anyLong(), anyLong())).thenReturn(rsMock);
+
+        ResultSet resultSet = strategy.executeSearch(searchParameters, queryWithPermissions);
+        try
+        {
+            assertNotNull(resultSet);
+            assertEquals(1, scrollCalls.get());
+            assertEquals(2, collected.getValue().size());
+        }
+        finally
+        {
+            resultSet.close();
+        }
+    }
+
+    private static List<Hit<Object>> hits(String... ids)
+    {
+        List<Hit<Object>> hits = new ArrayList<>(ids.length);
+        for (String id : ids)
+        {
+            hits.add(new Hit.Builder<>().id(id).build());
+        }
+        return hits;
+    }
+
+    private static SearchResponse<Object> searchResponse(List<Hit<Object>> hits, long totalHits, String scrollId)
+    {
+        return new SearchResponse.Builder<Object>()
+                .took(1).timedOut(false)
+                .shards(new ShardStatistics.Builder().total(1).successful(1).skipped(0).failed(0).build())
+                .hits(hb -> hb.total(new TotalHits.Builder().value(totalHits).relation(TotalHitsRelation.Eq).build())
+                        .hits(hits))
+                .scrollId(scrollId)
+                .build();
+    }
+
+    private static ScrollResponse<Object> scrollResponse(List<Hit<Object>> hits, long totalHits, String scrollId)
+    {
+        return new ScrollResponse.Builder<Object>()
+                .took(1L).timedOut(false)
+                .shards(new ShardStatistics.Builder().total(1).successful(1).skipped(0).failed(0).build())
+                .hits(hb -> hb.total(new TotalHits.Builder().value(totalHits).relation(TotalHitsRelation.Eq).build())
+                        .hits(hits))
+                .scrollId(scrollId)
+                .build();
     }
 }

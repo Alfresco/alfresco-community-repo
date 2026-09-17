@@ -264,7 +264,7 @@ public class ContentModelSynchronizer
     /**
      * @param properties
      *            properties to send to Elasticsearch
-     * @return number of the successfully updated properties. If the mapping acknowledge fails the method will returns -1
+     * @return number of the successfully updated properties, or 0 if Elasticsearch did not accept the request
      * @throws IOException
      *             if it fails to execute mapping request.
      */
@@ -284,8 +284,10 @@ public class ContentModelSynchronizer
                         ResponseJsonUtils.extractErrorReason(rawBody), properties.size(), requestBody);
                 LOGGER.debug("Full mappings update response body: {}", rawBody);
             }
-            Integer successfullyMappedPropertiesCount = mappingRequestBuilder.getSecond();
-            return new IndexMappingResult(success, successfullyMappedPropertiesCount);
+            // Count only properties included in the mapping request.
+            // If the request fails, Elasticsearch maps none of the properties.
+            int successfullyMappedPropertiesCount = success ? mappingRequestBuilder.getSecond() : 0;
+            return new IndexMappingResult(success, successfullyMappedPropertiesCount, response.getStatus());
         }
     }
 
@@ -298,11 +300,13 @@ public class ContentModelSynchronizer
     {
         private final boolean acknowledged;
         private final int successfullyMappedPropertiesCount;
+        private final int status;
 
-        private IndexMappingResult(boolean acknowledged, int successfullyMappedPropertiesCount)
+        private IndexMappingResult(boolean acknowledged, int successfullyMappedPropertiesCount, int status)
         {
             this.acknowledged = acknowledged;
             this.successfullyMappedPropertiesCount = successfullyMappedPropertiesCount;
+            this.status = status;
         }
 
         public boolean isAcknowledged()
@@ -313,6 +317,14 @@ public class ContentModelSynchronizer
         public int getSuccessfullyMappedPropertiesCount()
         {
             return successfullyMappedPropertiesCount;
+        }
+
+        /**
+         * @return the HTTP status Elasticsearch returned
+         */
+        public int getStatus()
+        {
+            return status;
         }
     }
 }

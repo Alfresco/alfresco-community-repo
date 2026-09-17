@@ -32,10 +32,17 @@ import static org.testng.AssertJUnit.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.rest.search.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.ResponseHighlightModel;
+import org.alfresco.rest.search.RestRequestFieldsModel;
+import org.alfresco.rest.search.RestRequestHighlightModel;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.SearchNodeModel;
+import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.rest.search.SearchScoreModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.report.Bug;

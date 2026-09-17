@@ -34,7 +34,6 @@ import static org.testng.Assert.assertNull;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.rest.search.*;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.testng.SkipException;
@@ -43,6 +42,11 @@ import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRequestRangesModel;
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.RestGenericBucketModel;
+import org.alfresco.rest.search.RestGenericFacetResponseModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.LogFactory;
 
 /**

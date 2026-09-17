@@ -33,7 +33,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.rest.search.*;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -41,6 +40,15 @@ import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestRequestRangesModel;
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.Pagination;
+import org.alfresco.rest.search.RestGenericBucketModel;
+import org.alfresco.rest.search.RestGenericFacetResponseModel;
+import org.alfresco.rest.search.RestRequestFacetFieldModel;
+import org.alfresco.rest.search.RestRequestFacetFieldsModel;
+import org.alfresco.rest.search.RestRequestPivotModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 
 /**
  * Pivot Faceted search test.

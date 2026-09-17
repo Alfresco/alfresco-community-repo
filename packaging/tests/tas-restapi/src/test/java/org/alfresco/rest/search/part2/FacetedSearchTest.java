@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.rest.search.*;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.testng.Assert;
@@ -39,6 +38,17 @@ import org.testng.TestException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.FacetFieldBucket;
+import org.alfresco.rest.search.FacetQuery;
+import org.alfresco.rest.search.RestGenericBucketModel;
+import org.alfresco.rest.search.RestGenericFacetResponseModel;
+import org.alfresco.rest.search.RestRequestFacetFieldModel;
+import org.alfresco.rest.search.RestRequestFacetFieldsModel;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.RestResultBucketsModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 

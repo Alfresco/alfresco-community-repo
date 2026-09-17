@@ -26,13 +26,20 @@ package org.alfresco.rest.search.part1;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.rest.search.*;
 import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.FacetFieldBucket;
+import org.alfresco.rest.search.RestRequestFacetFieldModel;
+import org.alfresco.rest.search.RestRequestFacetFieldsModel;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.RestResultBucketsModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;

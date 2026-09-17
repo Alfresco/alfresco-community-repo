@@ -29,10 +29,18 @@ package org.alfresco.rest.search.part1;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.rest.search.*;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.FacetFieldBucket;
+import org.alfresco.rest.search.RestRequestFacetFieldModel;
+import org.alfresco.rest.search.RestRequestFacetFieldsModel;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.RestResultBucketsModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 
 /**
  * Tests the search functionality using an ancestor path. Using the category as an example, it is a node that is located in root/rootCategory/classifiable. We now provide the ability to search by path so that we can return all the child elements of our target path. A search on root/rootCategory/classifiable should return Regions, Languages as they are the child elements of the given path.

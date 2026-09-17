@@ -26,12 +26,12 @@
 
 package org.alfresco.rest.search.part2;
 
-import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
-import org.alfresco.rest.search.SearchResponse;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;

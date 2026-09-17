@@ -26,16 +26,16 @@
 
 package org.alfresco.rest.search.part1;
 
-import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
-import org.alfresco.rest.search.RestRequestQueryModel;
-import org.alfresco.rest.search.SearchRequest;
-import org.alfresco.rest.search.SearchResponse;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.model.RestRequestSpellcheckModel;
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;

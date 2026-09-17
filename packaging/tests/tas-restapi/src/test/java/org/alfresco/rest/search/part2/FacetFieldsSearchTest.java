@@ -31,12 +31,19 @@ import java.util.List;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 
-import org.alfresco.rest.search.*;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.SiteService.Visibility;
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.FacetFieldBucket;
+import org.alfresco.rest.search.RestRequestFacetFieldModel;
+import org.alfresco.rest.search.RestRequestFacetFieldsModel;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.RestResultBucketsModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;

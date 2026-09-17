@@ -26,13 +26,13 @@
 
 package org.alfresco.rest.search.part2;
 
-import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeChildAssociationModel;
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;

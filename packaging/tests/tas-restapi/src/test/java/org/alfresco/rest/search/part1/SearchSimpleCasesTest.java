@@ -22,11 +22,12 @@
  */
 package org.alfresco.rest.search.part1;
 
-import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
-import org.alfresco.rest.search.SearchResponse;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.SearchResponse;
 
 public class SearchSimpleCasesTest extends AbstractSearchServicesE2ETest
 {

@@ -29,13 +29,13 @@ package org.alfresco.rest.search.part2;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
-import org.alfresco.rest.search.SearchResponse;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
 import org.alfresco.utility.model.FileModel;
 

@@ -37,12 +37,16 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Sets;
-import org.alfresco.rest.search.*;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.testng.SkipException;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.RestInstanceModel;
+import org.alfresco.rest.search.RestShardInfoModel;
+import org.alfresco.rest.search.RestShardInfoModelCollection;
+import org.alfresco.rest.search.RestShardModel;
 import org.alfresco.utility.LogFactory;
 
 /**

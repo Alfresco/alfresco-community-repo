@@ -38,12 +38,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.alfresco.rest.search.*;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.Pagination;
+import org.alfresco.rest.search.RestGenericBucketModel;
+import org.alfresco.rest.search.RestGenericFacetResponseModel;
+import org.alfresco.rest.search.RestGenericMetricModel;
+import org.alfresco.rest.search.RestRequestFacetFieldModel;
+import org.alfresco.rest.search.RestRequestFacetFieldsModel;
+import org.alfresco.rest.search.RestRequestFilterQueryModel;
+import org.alfresco.rest.search.RestRequestPivotModel;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.RestRequestStatsModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 
 /**
  * Stats search test.

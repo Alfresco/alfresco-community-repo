@@ -28,9 +28,9 @@ package org.alfresco.rest.search.part2;
 
 import static org.testng.Assert.assertTrue;
 
-import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.report.Bug;

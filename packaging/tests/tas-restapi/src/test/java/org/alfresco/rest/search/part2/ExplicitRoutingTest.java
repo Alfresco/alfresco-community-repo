@@ -31,11 +31,11 @@ import static org.testng.Assert.assertTrue;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.rest.search.AbstractE2EFunctionalTest;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.search.AbstractE2EFunctionalTest;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 

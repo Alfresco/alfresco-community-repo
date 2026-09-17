@@ -26,8 +26,9 @@
 
 package org.alfresco.rest.search.part1;
 
-import org.alfresco.rest.search.AbstractSearchExactTermTest;
 import org.testng.annotations.Test;
+
+import org.alfresco.rest.search.AbstractSearchExactTermTest;
 
 /**
  * Tests Exact Term queries against standard properties (cm:name, cm:title, cm:description, cm:content). These tests are engine-agnostic and do not require Cross Locale or Solr-specific tokenisation configuration.

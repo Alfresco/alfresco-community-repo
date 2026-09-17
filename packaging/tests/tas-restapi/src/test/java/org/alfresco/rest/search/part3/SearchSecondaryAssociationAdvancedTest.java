@@ -26,8 +26,6 @@
 
 package org.alfresco.rest.search.part3;
 
-import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
-import org.alfresco.rest.search.SearchResponse;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -35,6 +33,8 @@ import org.testng.annotations.Test;
 import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeChildAssociationModel;
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;

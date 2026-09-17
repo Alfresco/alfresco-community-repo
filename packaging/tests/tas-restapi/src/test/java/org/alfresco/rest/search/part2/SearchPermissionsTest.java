@@ -29,13 +29,13 @@ package org.alfresco.rest.search.part2;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 
-import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
-import org.alfresco.rest.search.SearchResponse;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.SiteService.Visibility;
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;

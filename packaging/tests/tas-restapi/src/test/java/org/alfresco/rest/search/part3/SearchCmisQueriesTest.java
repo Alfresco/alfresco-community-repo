@@ -26,15 +26,15 @@
 
 package org.alfresco.rest.search.part3;
 
-import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
-import org.alfresco.rest.search.RestRequestQueryModel;
-import org.alfresco.rest.search.SearchRequest;
-import org.alfresco.rest.search.SearchResponse;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 

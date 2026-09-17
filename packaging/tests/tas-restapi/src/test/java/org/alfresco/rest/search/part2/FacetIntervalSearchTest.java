@@ -29,13 +29,20 @@ package org.alfresco.rest.search.part2;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.alfresco.rest.search.*;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.FacetInterval;
+import org.alfresco.rest.search.RestGenericBucketModel;
+import org.alfresco.rest.search.RestGenericFacetResponseModel;
+import org.alfresco.rest.search.RestRequestFacetIntervalsModel;
+import org.alfresco.rest.search.RestRequestFacetSetModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 
 /**
  * Faceted Intervals Search Test

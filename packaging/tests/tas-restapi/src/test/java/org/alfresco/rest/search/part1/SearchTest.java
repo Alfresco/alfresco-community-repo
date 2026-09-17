@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.alfresco.rest.search.*;
 import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
@@ -48,6 +47,12 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.body.RestNodeLockBodyModel;
+import org.alfresco.rest.search.AbstractSearchServicesE2ETest;
+import org.alfresco.rest.search.RestRequestFilterQueryModel;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.SearchNodeModel;
+import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 

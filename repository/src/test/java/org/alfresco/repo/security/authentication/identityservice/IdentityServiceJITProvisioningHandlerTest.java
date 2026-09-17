@@ -28,7 +28,14 @@ package org.alfresco.repo.security.authentication.identityservice;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import org.junit.After;
@@ -37,6 +44,7 @@ import org.junit.Test;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -45,6 +53,7 @@ import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAt
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
@@ -53,10 +62,13 @@ import org.alfresco.util.BaseSpringTest;
 public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 {
     private static final String IDS_USERNAME = "johndoe123";
+    private static final int CONCURRENT_REQUEST_COUNT = 10;
 
+    private AuthorityService authorityService;
     private PersonService personService;
     private NodeService nodeService;
     private TransactionService transactionService;
+    private IdentityServiceConfig identityServiceConfig;
     private IdentityServiceFacade identityServiceFacade;
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
 
@@ -71,6 +83,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     @Before
     public void setup()
     {
+        authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
         personService = (PersonService) applicationContext.getBean("personService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
@@ -83,7 +96,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
                 .getBean("identityServiceFacade");
         jitProvisioningHandler = (IdentityServiceJITProvisioningHandler) childApplicationContextFactory.getApplicationContext()
                 .getBean("jitProvisioningHandler");
-        IdentityServiceConfig identityServiceConfig = (IdentityServiceConfig) childApplicationContextFactory.getApplicationContext()
+        identityServiceConfig = (IdentityServiceConfig) childApplicationContextFactory.getApplicationContext()
                 .getBean("identityServiceConfig");
         identityServiceConfig.setAllowAnyHostname(true);
         identityServiceConfig.setClientKeystore(null);
@@ -116,6 +129,72 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
             assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
             assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
         }
+    }
+
+    @Test
+    public void shouldCreateUserOnceWhenFirstRequestsAreConcurrent() throws Exception
+    {
+        assertFalse(personService.personExists(IDS_USERNAME));
+
+        IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
+                IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
+        String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
+
+        String principalAttribute = isAuth0Enabled ? PersonClaims.NICKNAME_CLAIM_NAME : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
+        IdentityServiceFacade.DecodedAccessToken decodedAccessToken = mock(IdentityServiceFacade.DecodedAccessToken.class);
+        when(decodedAccessToken.getClaim(principalAttribute)).thenReturn(IDS_USERNAME);
+        when(decodedAccessToken.getClaim(PersonClaims.GIVEN_NAME_CLAIM_NAME)).thenReturn("John");
+        when(decodedAccessToken.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME)).thenReturn("Doe");
+        when(decodedAccessToken.getClaim(PersonClaims.EMAIL_CLAIM_NAME)).thenReturn("johndoe123@alfresco.com");
+        ClientRegistration clientRegistration = mock(ClientRegistration.class, RETURNS_DEEP_STUBS);
+        when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn(principalAttribute);
+        IdentityServiceFacade idsServiceFacadeMock = mock(IdentityServiceFacade.class);
+        when(idsServiceFacadeMock.decodeToken(accessToken)).thenReturn(decodedAccessToken);
+        when(idsServiceFacadeMock.getClientRegistration()).thenReturn(clientRegistration);
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(idsServiceFacadeMock, personService, transactionService, identityServiceConfig,
+                applicationContext.getBean("JobLockService", JobLockService.class));
+
+        CountDownLatch ready = new CountDownLatch(CONCURRENT_REQUEST_COUNT);
+        CountDownLatch start = new CountDownLatch(1);
+        List<Future<Optional<OIDCUserInfo>>> results = new ArrayList<>();
+        try (ExecutorService executor = Executors.newFixedThreadPool(CONCURRENT_REQUEST_COUNT))
+        {
+            try
+            {
+                for (int i = 0; i < CONCURRENT_REQUEST_COUNT; i++)
+                {
+                    results.add(executor.submit(() -> {
+                        ready.countDown();
+                        start.await();
+                        return jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessToken);
+                    }));
+                }
+
+                assertTrue(ready.await(30, TimeUnit.SECONDS));
+                start.countDown();
+
+                for (Future<Optional<OIDCUserInfo>> result : results)
+                {
+                    assertEquals(IDS_USERNAME, result.get(60, TimeUnit.SECONDS).orElseThrow().username());
+                }
+            }
+            finally
+            {
+                start.countDown();
+                executor.shutdownNow();
+            }
+        }
+
+        AuthenticationUtil.runAsSystem(() -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            NodeRef person = personService.getPerson(IDS_USERNAME);
+            assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
+            assertTrue(authorityService.authorityExists(IDS_USERNAME));
+            long matchingPeople = nodeService.getChildAssocs(personService.getPeopleContainer()).stream()
+                    .filter(childAssociation -> IDS_USERNAME.equals(nodeService.getProperty(childAssociation.getChildRef(), ContentModel.PROP_USERNAME)))
+                    .count();
+            assertEquals(1L, matchingPeople);
+            return null;
+        }, true));
     }
 
     @Test

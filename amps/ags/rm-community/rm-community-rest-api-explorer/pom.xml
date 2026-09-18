@@ -39,6 +39,13 @@
                 <plugin>
                     <groupId>org.codehaus.cargo</groupId>
                     <artifactId>cargo-maven3-plugin</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.codehaus.cargo</groupId>
+                            <artifactId>cargo-core-container-tomcat</artifactId>
+                            <version>1.10.20</version>
+                        </dependency>
+                    </dependencies>
                     <executions>
                         <execution>
                             <id>run-war</id>

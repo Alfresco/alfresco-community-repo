@@ -52,7 +52,7 @@ env:
   BUILD_OUTPUT_DIR: /tmp/build-output
   DOCKER_IMAGES_DIR: /tmp/docker-images
   MVN_TEST_ARGS: "-ntp -nsu"
-  MAVEN_BUILD_THREADS: "1C"
+  MAVEN_BUILD_THREADS: "1"
 
 jobs:
   commit_parser:
@@ -84,7 +84,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -146,7 +145,6 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -232,7 +230,6 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="ElasticSearchE2ETests-part1" verbose="1" preserve-order="true">
+<suite name="ElasticSearchE2ETests-part1" verbose="1" preserve-order="true" parallel="classes" thread-count="2">
     <listeners>
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
         <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>

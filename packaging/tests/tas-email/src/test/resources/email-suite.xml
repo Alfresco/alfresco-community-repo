@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<!-- Deliberately sequential: the IMAP/SMTP tests share one mail endpoint
+     and mailbox state, which is not safe to drive from several threads. -->
 <suite name="EMAIL API" preserve-order="true">
     <listeners>
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>

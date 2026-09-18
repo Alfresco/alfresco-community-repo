@@ -49,6 +49,10 @@ env:
   CI_WORKSPACE: ${{ github.workspace }}
   TAS_ENVIRONMENT: ./packaging/tests/environment
   TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
+  BUILD_OUTPUT_DIR: /tmp/build-output
+  DOCKER_IMAGES_DIR: /tmp/docker-images
+  MVN_TEST_ARGS: "-ntp -nsu"
+  MAVEN_BUILD_THREADS: "1C"
 
 jobs:
   commit_parser:
@@ -92,8 +96,18 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
-      - name: "Prepare maven cache and check compilation"
+      - name: "Build the whole reactor once"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/ci/prepare.sh
+      - name: "Pack the build output for the test jobs"
+        run: bash ./scripts/ci/save_build_output.sh
+      - name: "Upload the build output"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+          retention-days: 1
+          compression-level: 0 # already zstd compressed
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -114,6 +128,56 @@ jobs:
             !contains(needs.commit_parser.outputs.title, '[force]')
           ) ||
           contains(needs.commit_parser.outputs.title, '[run tests]')
+
+  docker_images:
+    name: "Build Docker images"
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+      - test_run_check
+    if: needs.test_run_check.outputs.tests == 'true'
+    env:
+      # build.sh turns this into "-Pbuild-docker-images -Pags", which is the
+      # same command the image-consuming jobs used to run one by one.
+      REQUIRES_LOCAL_IMAGES: true
+      BUILD_OPTIONS: "-ntp -nsu -Dmaven.artifact.threads=8"
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: "Init"
+        env:
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+        run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
+      - name: "Build the images"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: bash ./scripts/ci/build.sh
+      - name: "Pack the images for the test jobs"
+        run: bash ./scripts/ci/save_docker_images.sh
+      - name: "Upload the images"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: docker-images
+          path: ${{ env.DOCKER_IMAGES_DIR }}
+          retention-days: 1
+          compression-level: 0 # already zstd compressed
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
 
   pmd_scan:
     name: "PMD Scan"
@@ -179,9 +243,16 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Run tests"
         run: |
-          mvn -B test -pl ${{ matrix.testModule }} -am ${{ matrix.testAttributes }} -DfailIfNoTests=false "${args[@]}"
+          mvn -B ${MVN_TEST_ARGS} test -pl ${{ matrix.testModule }} -am ${{ matrix.testAttributes }} -DfailIfNoTests=false "${args[@]}"
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -197,7 +268,6 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
 
     env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
@@ -225,16 +295,20 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - name: "Build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+      - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: |
-          bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
+        run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Set transformers tag"
         run: |
           if [ -n "${{ matrix.transformers-tag }}" ]; then
@@ -246,7 +320,7 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
-        run: mvn -B test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
+        run: mvn -B ${MVN_TEST_ARGS} test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -280,12 +354,19 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: Run MariaDB ${{ matrix.version }} database
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
         env:
           MARIADB_VERSION: ${{ matrix.version }}
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
+        run: mvn -B ${MVN_TEST_ARGS} test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -313,12 +394,19 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Run MariaDB 11.8 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
         env:
           MARIADB_VERSION: 11.8
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
+        run: mvn -B ${MVN_TEST_ARGS} test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -346,12 +434,19 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Run MySQL 8 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
         env:
           MYSQL_VERSION: 8
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+        run: mvn -B ${MVN_TEST_ARGS} test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -380,12 +475,19 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Run PostgreSQL 15.17 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
           POSTGRES_VERSION: 15.17
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+        run: mvn -B ${MVN_TEST_ARGS} test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -414,12 +516,19 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Run PostgreSQL 16.13 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
           POSTGRES_VERSION: 16.13
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+        run: mvn -B ${MVN_TEST_ARGS} test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -447,12 +556,19 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Run PostgreSQL 17.9 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
           POSTGRES_VERSION: 17.9
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+        run: mvn -B ${MVN_TEST_ARGS} test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -484,10 +600,17 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Run ActiveMQ"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.activemq }} up -d
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
+        run: mvn -B ${MVN_TEST_ARGS} test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -554,6 +677,13 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Set the host IP"
         run: echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
       - name: "Generate GitHub App token"
@@ -583,7 +713,7 @@ jobs:
           AUTH0_CLIENT_ID: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_CLIENT_ID || '' }}
           AUTH0_CLIENT_SECRET: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_CLIENT_SECRET || '' }}
           AUTH0_ADMIN_PASSWORD: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_PASSWORD || '' }}
-        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
+        run: mvn -B ${MVN_TEST_ARGS} test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -591,13 +721,10 @@ jobs:
     name: ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs:
-      - prepare
+      - docker_images
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     env:
-      REQUIRES_LOCAL_IMAGES: true
-      REQUIRES_TAS_TESTS: true
-      REQUIRES_INSTALLED_ARTIFACTS: true
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
@@ -647,18 +774,29 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - name: "Build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+      - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: |
-          bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
+        run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
+      - name: "Download the locally built Docker images"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: docker-images
+          path: ${{ env.DOCKER_IMAGES_DIR }}
+      - name: "Load the locally built Docker images"
+        run: bash ./scripts/ci/load_docker_images.sh
       - name: "Set up the environment"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -667,7 +805,7 @@ jobs:
       - name: "Run tests"
         id: tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+        run: mvn -B ${MVN_TEST_ARGS} verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
       - name: "Print output after success"
         if: ${{ always() && steps.tests.outcome == 'success' }}
         run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"
@@ -701,10 +839,17 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Run Postgres 17.9 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
       - name: "Run tests"
-        run: mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+        run: mvn -B ${MVN_TEST_ARGS} test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -716,7 +861,6 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
@@ -730,19 +874,23 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - name: "Build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+      - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: |
-          bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
+        run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
+        run: mvn --file amps/ags/pom.xml -B ${MVN_TEST_ARGS} verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -754,7 +902,6 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
@@ -768,19 +915,23 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - name: "Build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+      - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: |
-          bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
+        run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
+        run: mvn --file amps/ags/pom.xml -B ${MVN_TEST_ARGS} verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -788,11 +939,10 @@ jobs:
     name: "AGS Community Rest API Tests"
     runs-on: ubuntu-latest
     needs:
-      - prepare
+      - docker_images
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     env:
-      REQUIRES_LOCAL_IMAGES: true
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
@@ -802,25 +952,36 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - name: "Build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+      - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: |
-          bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
+        run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
+      - name: "Download the locally built Docker images"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: docker-images
+          path: ${{ env.DOCKER_IMAGES_DIR }}
+      - name: "Load the locally built Docker images"
+        run: bash ./scripts/ci/load_docker_images.sh
       - name: "Set up the environment"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
-          mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
+          mvn -B ${MVN_TEST_ARGS} install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
       - name: "Test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
+        run: mvn -B ${MVN_TEST_ARGS} test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
       - name: "Configure AWS credentials"
         if: ${{ always() }}
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
@@ -855,17 +1016,21 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - name: "Build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+      - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: |
-          bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
+        run: bash ./scripts/ci/init.sh
+      - name: "Download the shared build output"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-output
+          path: ${{ env.BUILD_OUTPUT_DIR }}
+      - name: "Restore the shared build output"
+        run: bash ./scripts/ci/restore_build_output.sh
       - name: "Test Tomcat deployment"
         run: |
-          mvn verify -Pags,start-api-explorer -DskipTests &
+          mvn -B ${MVN_TEST_ARGS} verify -Pags,start-api-explorer -DskipTests &
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8085/api-explorer"

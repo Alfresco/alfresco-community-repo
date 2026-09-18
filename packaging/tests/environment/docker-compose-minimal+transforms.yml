@@ -9,7 +9,9 @@ services:
   alfresco:
     image: alfresco/alfresco-community-repo-base:latest
     environment:
-      CATALINA_OPTS : "-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
+      # Remote debug is opt-in: export ALFRESCO_DEBUG_OPTS to enable it, e.g.
+      # ALFRESCO_DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
+      CATALINA_OPTS: "${ALFRESCO_DEBUG_OPTS:-}"
       JAVA_TOOL_OPTIONS: "
         -Dencryption.keystore.type=JCEKS
         -Dencryption.cipherAlgorithm=DESede/CBC/PKCS5Padding
@@ -61,6 +63,7 @@ services:
       - POSTGRES_PASSWORD=alfresco
       - POSTGRES_USER=alfresco
       - POSTGRES_DB=alfresco
+    command: postgres -c max_connections=300 -c fsync=off -c synchronous_commit=off -c full_page_writes=off -c wal_level=minimal -c max_wal_senders=0
 
   solr6:
     image: alfresco/alfresco-search-services:${SOLR6_TAG}

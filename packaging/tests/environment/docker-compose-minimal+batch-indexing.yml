@@ -68,7 +68,7 @@ services:
       - POSTGRES_PASSWORD=alfresco
       - POSTGRES_USER=alfresco
       - POSTGRES_DB=alfresco
-    command: postgres -c max_connections=300 -c log_min_messages=LOG
+    command: postgres -c max_connections=300 -c log_min_messages=LOG -c fsync=off -c synchronous_commit=off -c full_page_writes=off -c wal_level=minimal -c max_wal_senders=0
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER" ]
       interval: 10s
@@ -115,9 +115,11 @@ services:
 
   elasticsearch:
     image: elasticsearch:${ELASTICSEARCH_TAG}
+    mem_limit: 1536m
     environment:
       - xpack.security.enabled=false
       - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     ulimits:
       memlock:
         soft: -1

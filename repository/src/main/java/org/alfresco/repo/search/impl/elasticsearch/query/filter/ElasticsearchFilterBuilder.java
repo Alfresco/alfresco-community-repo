@@ -41,7 +41,6 @@ import org.alfresco.service.cmr.search.SearchParameters;
  */
 public class ElasticsearchFilterBuilder
 {
-
     /**
      * Take the query and the filter queries in the searchParameters and creates a new Elasticsearch query .
      *

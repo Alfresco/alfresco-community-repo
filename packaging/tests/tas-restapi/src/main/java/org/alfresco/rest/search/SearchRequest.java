@@ -58,6 +58,9 @@ import org.alfresco.utility.model.TestModel;
  * @author msuzuki
  *
  */
+// This model mirrors the public Search API's request schema, which is wide by nature (one field/accessor pair
+// per top-level JSON property), so the field/public-member counts are expected to grow with the API.
+@SuppressWarnings({"PMD.TooManyFields", "PMD.ExcessivePublicCount"})
 public class SearchRequest extends TestModel
 {
     @JsonProperty(value = "query")
@@ -81,6 +84,7 @@ public class SearchRequest extends TestModel
     RestRequestDefaultsModel defaults;
     List<RestRequestTemplatesModel> templates;
     RestRequestLimitsModel limits;
+    RestRequestScopeModel scope;
 
     public SearchRequest()
     {}
@@ -235,6 +239,16 @@ public class SearchRequest extends TestModel
     public void setFilterQueries(RestRequestFilterQueryModel filterQueries)
     {
         this.filterQueries = filterQueries;
+    }
+
+    public RestRequestScopeModel getScope()
+    {
+        return scope;
+    }
+
+    public void setScope(RestRequestScopeModel scope)
+    {
+        this.scope = scope;
     }
 
     public List<RestRequestRangesModel> getRanges()

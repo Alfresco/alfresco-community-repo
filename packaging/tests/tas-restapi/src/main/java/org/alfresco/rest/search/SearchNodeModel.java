@@ -104,6 +104,10 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
 
     private Boolean isFavorite;
 
+    private String archivedAt;
+
+    private RestByUserModel archivedByUser;
+
     public Map<String, Object> getAssociation()
     {
         return association;
@@ -338,5 +342,25 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
     public void setIsFavorite(Boolean favorite)
     {
         isFavorite = favorite;
+    }
+
+    public String getArchivedAt()
+    {
+        return archivedAt;
+    }
+
+    public void setArchivedAt(String archivedAt)
+    {
+        this.archivedAt = archivedAt;
+    }
+
+    public RestByUserModel getArchivedByUser()
+    {
+        return archivedByUser;
+    }
+
+    public void setArchivedByUser(RestByUserModel archivedByUser)
+    {
+        this.archivedByUser = archivedByUser;
     }
 }

@@ -27,8 +27,6 @@ package org.alfresco.repo.search.impl.elasticsearch.resultset;
 
 import static java.util.Optional.ofNullable;
 
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,6 +43,7 @@ import org.opensearch.client.opensearch.core.search.SearchResult;
 
 import org.alfresco.repo.search.impl.elasticsearch.model.FieldName;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -57,10 +56,11 @@ class HighlightsHandler
     {
         Set<String> requestedHighlightFields = extractRequestedHighlightFields(searchParameters);
         List<Hit<Object>> hits = extractHits(searchResponse);
+        StoreRef storeRef = ElasticsearchResultSetBuilder.resolveStoreRef(searchParameters);
         Map<NodeRef, List<Pair<String, List<String>>>> highlights = new HashMap<>();
         for (Hit<Object> hit : hits)
         {
-            NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, hit.id());
+            NodeRef nodeRef = new NodeRef(storeRef, hit.id());
 
             List<Pair<String, List<String>>> highlightEntries = new ArrayList<>();
             for (Map.Entry<String, List<String>> highlightField : hit.highlight().entrySet())

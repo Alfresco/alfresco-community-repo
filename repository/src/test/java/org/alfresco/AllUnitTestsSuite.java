@@ -332,6 +332,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiserTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.FieldMappingBuilderTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.IndexConfigurationInitializerIntegrationTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.ResourceUtilsTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.SettingsJsonUtilsTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.DateFieldMapperTest.class,

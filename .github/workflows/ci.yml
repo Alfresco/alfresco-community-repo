@@ -624,7 +624,13 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: AppContext04TestSuite
             compose-profile: with-transform-core-aio
-          - testSuite: ElasticsearchCommunityTestsTestSuite
+          - testSuite: ElasticsearchCommunityTestsPart1TestSuite
+            compose-profile: with-elasticsearch
+            mvn-options: '-Dindex.subsystem.name=elasticsearch'
+          - testSuite: ElasticsearchCommunityTestsPart2TestSuite
+            compose-profile: with-elasticsearch
+            mvn-options: '-Dindex.subsystem.name=elasticsearch'
+          - testSuite: ElasticsearchCommunityTestsPart3TestSuite
             compose-profile: with-elasticsearch
             mvn-options: '-Dindex.subsystem.name=elasticsearch'
           - testSuite: AppContext05TestSuite

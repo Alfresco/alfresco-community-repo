@@ -63,6 +63,10 @@ public interface AclCrudDAO
 
     public Long getLatestAclByGuid(String aclGuid);
 
+    List<Long> getUnusedAclIds(long afterAclId, int maxResults);
+
+    boolean deleteUnusedAcl(long aclEntityId);
+
     public void updateAcl(AclUpdateEntity entity);
 
     public void deleteAcl(long aclEntityId);

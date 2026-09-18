@@ -11,7 +11,7 @@ IN="${DOCKER_IMAGES_DIR:-/tmp/docker-images}"
 
 zstd -d -T0 -c "${IN}/acs-images.tzst" | docker load
 
-docker image ls "alfresco/alfresco-community-repo-base" \
-               "alfresco/alfresco-governance-repository-community-base"
+docker image ls "alfresco/alfresco-community-repo-base"
+docker image ls "alfresco/alfresco-governance-repository-community-base"
 
 echo "===================== Finishing Load Docker Images ======================"

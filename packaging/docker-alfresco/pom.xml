@@ -14,6 +14,27 @@
         <image.name>alfresco/alfresco-community-repo-base</image.name>
         <scripts.directory>${project.parent.parent.basedir}/scripts</scripts.directory>
     </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>content-services-community</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-mmt</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-community-repo-distribution</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

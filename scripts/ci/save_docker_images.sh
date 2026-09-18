@@ -19,7 +19,9 @@ IMAGES=(
   "alfresco/alfresco-governance-repository-community-base:latest"
 )
 
-docker image ls "${IMAGES[@]}"
+for image in "${IMAGES[@]}"; do
+  docker image ls "${image}"
+done
 docker save "${IMAGES[@]}" | zstd -3 -T0 -o "${OUT}/acs-images.tzst"
 
 ls -lh "${OUT}"

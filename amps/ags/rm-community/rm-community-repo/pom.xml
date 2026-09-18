@@ -156,6 +156,20 @@
          <version>${dependency.awaitility.version}</version>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-share-services</artifactId>
+         <version>${project.version}</version>
+         <type>amp</type>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-governance-services-community-rest-api-explorer</artifactId>
+         <version>${project.version}</version>
+         <type>war</type>
+         <scope>provided</scope>
+      </dependency>
    </dependencies>
 
    <build>

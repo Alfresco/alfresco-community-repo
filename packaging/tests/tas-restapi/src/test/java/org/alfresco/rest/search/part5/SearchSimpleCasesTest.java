@@ -20,7 +20,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.search.part1;
+package org.alfresco.rest.search.part5;
 
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;

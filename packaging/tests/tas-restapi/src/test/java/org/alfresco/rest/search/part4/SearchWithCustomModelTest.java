@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.search.part1;
+package org.alfresco.rest.search.part4;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.search.part1;
+package org.alfresco.rest.search.part4;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;

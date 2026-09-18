@@ -21,7 +21,7 @@
  * #L%
  */
 
-package org.alfresco.rest.search.part1;
+package org.alfresco.rest.search.part4;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;

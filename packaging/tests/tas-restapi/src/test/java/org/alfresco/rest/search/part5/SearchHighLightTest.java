@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.search.part1;
+package org.alfresco.rest.search.part5;
 
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;

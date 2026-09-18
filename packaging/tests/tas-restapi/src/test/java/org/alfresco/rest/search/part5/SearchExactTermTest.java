@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.search.part1;
+package org.alfresco.rest.search.part5;
 
 import org.testng.annotations.Test;
 

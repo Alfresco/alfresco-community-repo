@@ -81,6 +81,7 @@ public class SearchRequest extends TestModel
     RestRequestDefaultsModel defaults;
     List<RestRequestTemplatesModel> templates;
     RestRequestLimitsModel limits;
+    RestRequestScopeModel scope;
 
     public SearchRequest()
     {}
@@ -235,6 +236,16 @@ public class SearchRequest extends TestModel
     public void setFilterQueries(RestRequestFilterQueryModel filterQueries)
     {
         this.filterQueries = filterQueries;
+    }
+
+    public RestRequestScopeModel getScope()
+    {
+        return scope;
+    }
+
+    public void setScope(RestRequestScopeModel scope)
+    {
+        this.scope = scope;
     }
 
     public List<RestRequestRangesModel> getRanges()

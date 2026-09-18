@@ -58,6 +58,9 @@ import org.alfresco.utility.model.TestModel;
  * @author msuzuki
  *
  */
+// This model mirrors the public Search API's request schema, which is wide by nature (one field/accessor pair
+// per top-level JSON property), so the field/public-member counts are expected to grow with the API.
+@SuppressWarnings({"PMD.TooManyFields", "PMD.ExcessivePublicCount"})
 public class SearchRequest extends TestModel
 {
     @JsonProperty(value = "query")

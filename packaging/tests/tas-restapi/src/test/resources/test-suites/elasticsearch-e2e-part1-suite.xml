@@ -33,10 +33,11 @@
                     <exclude name="searchNonIndexedData"/>
                 </methods>
             </class>
-            <!-- 4) SearchExactTermTest(Other mentioned tests): ES exact-term validation & cm:name over-match gaps
-                    - exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch,
-                    - exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch: Batch Indexing custom model deployment
-                    at runtime gap (tokenised-model.xml 'tok' prefix), https://hyland.atlassian.net/browse/ACS-12502 -->
+            <!-- 4) SearchExactTermTest: Excluded as it's @BeforeClass waits ~40 min for 'tok:' documents that are never
+                    indexed on ES (Batch Indexing runtime custom model gap, tokenised-model.xml 'tok' prefix,
+                    https://hyland.atlassian.net/browse/ACS-12502). Do NOT re-enable the two exception-only tests individually -
+                    they assert HTTP 500/501 and pass without indexed data, so they add no coverage but restore the full wait.
+                    Re-enable the whole class once ACS-12502 is fixed. -->
             <class name="org.alfresco.rest.search.part1.SearchExactTermTest">
                 <methods>
                     <exclude name=".*"/>

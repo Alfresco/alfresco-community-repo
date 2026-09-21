@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.alfresco</groupId>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>26.3.0.52-SNAPSHOT</version>
+    <version>26.3.0.54-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
     <url>http://www.alfresco.org/</url>

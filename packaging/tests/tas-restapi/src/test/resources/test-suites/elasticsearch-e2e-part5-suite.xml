@@ -8,16 +8,6 @@
     </listeners>
     <test name="SearchTests-Part5">
         <classes>
-            <class name="org.alfresco.rest.search.part5.SearchExactTermTest">
-                <methods>
-                    <exclude name="exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch"/> <!-- pragma: allowlist secret -->
-                    <exclude name="exactSearch_singleTerm_shouldReturnResultsContainingExactTermInName"/>
-                    <exclude name="exactSearch_multiTerm_shouldReturnResultsContainingExactTerm"/>
-                    <exclude name="exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase"/>
-                    <exclude name="exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch"/>
-                    <exclude name="exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch"/>
-                </methods>
-            </class>
             <!-- 3) SearchHighLightTest.searchNonIndexedData:AFTS bare-property-name parsing gap on ES (returns HTTP 500) -->
             <class name="org.alfresco.rest.search.part5.SearchHighLightTest">
                 <methods>

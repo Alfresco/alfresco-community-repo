@@ -2,7 +2,7 @@
     <mirrors>
         <mirror>
             <id>alfresco-public</id>
-            <mirrorOf>*,!central-proxy</mirrorOf>
+            <mirrorOf>external:*,!central,!hyland-alfresco-public</mirrorOf>
             <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
         </mirror>
     </mirrors>
@@ -15,9 +15,19 @@
             </activation>
             <repositories>
                 <repository>
-                    <id>central-proxy</id>
+                    <id>central</id>
 <!--                    <url>https://artifacts.hyland.dev/basic/cic-ext-pull-through/maven/</url>-->
-                     <url>https://repo.maven.apache.org/maven2/</url>
+                    <url>https://repo.maven.apache.org/maven2/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>hyland-alfresco-public</id>
+                    <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
                     <releases>
                         <enabled>true</enabled>
                     </releases>
@@ -28,9 +38,19 @@
             </repositories>
             <pluginRepositories>
                 <pluginRepository>
-                    <id>central-proxy</id>
+                    <id>central</id>
 <!--                    <url>https://artifacts.hyland.dev/basic/cic-ext-pull-through/maven/</url>-->
-                     <url>https://repo.maven.apache.org/maven2/</url>
+                    <url>https://repo.maven.apache.org/maven2/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>hyland-alfresco-public</id>
+                    <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
                     <releases>
                         <enabled>true</enabled>
                     </releases>

@@ -1046,7 +1046,7 @@ public class SearchMapperTests
 
         searchRequestContext = SearchRequestContext.from(minimalQuery());
         searchParameters = new SearchParameters();
-        List<RangeParameters> rangeParams = new ArrayList<RangeParameters>();
+        List<RangeParameters> rangeParams = new ArrayList<>();
         facets = new ArrayList<>(2);
         facets.add(new FacetField("king", null, null, null, null, null, null, null, null, null, null));
         facets.add(new FacetField("kong", null, null, null, null, null, null, null, null, null, null));
@@ -1171,7 +1171,7 @@ public class SearchMapperTests
     public void facetRange()
     {
         SearchParameters searchParameters = new SearchParameters();
-        List<RangeParameters> rangeParams = new ArrayList<RangeParameters>();
+        List<RangeParameters> rangeParams = new ArrayList<>();
         rangeParams.add(new RangeParameters(null, null, null, null, false, null, null, null, null));
         try
         {
@@ -1188,9 +1188,9 @@ public class SearchMapperTests
         assertEquals(searchParameters.getRanges(), rangeParams);
 
         rangeParams.clear();
-        List<String> includes = new ArrayList<String>();
+        List<String> includes = new ArrayList<>();
         includes.add("lower");
-        List<String> other = new ArrayList<String>();
+        List<String> other = new ArrayList<>();
         includes.add("before");
 
         rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000", true, other, includes, null, null));

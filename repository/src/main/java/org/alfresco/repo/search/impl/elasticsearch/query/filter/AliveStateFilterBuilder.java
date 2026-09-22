@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 /**
  * The default (Community) implementation always restricts results to live nodes.
  */
+@FunctionalInterface
 public interface AliveStateFilterBuilder
 {
     /**

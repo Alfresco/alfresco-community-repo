@@ -47,7 +47,7 @@ public class DefaultAliveStateFilterBuilderTest
     private SearchParameters searchParameters;
 
     @Test
-    public void getAliveStateFilter_alwaysReturnsAliveEqualsTrueTermQuery()
+    public void aliveStateFilter_alwaysReturnsAliveTrue()
     {
         Query filter = aliveStateFilterBuilder.getAliveStateFilter(searchParameters);
 

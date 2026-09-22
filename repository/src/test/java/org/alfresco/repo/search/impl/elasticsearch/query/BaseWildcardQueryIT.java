@@ -49,6 +49,9 @@ public abstract class BaseWildcardQueryIT extends ElasticsearchBaseQueryIT
     protected NodeRef goslingDocument;
     protected NodeRef swimmingDocument;
     protected NodeRef supersizemyrepoDocument;
+    protected NodeRef specialCharTokenizedFieldDocument;
+    protected NodeRef specialCharUntokenizedFieldDocument;
+    protected NodeRef reservedWordsFieldDocument;
 
     @Before
     public void initDocuments() throws Exception
@@ -83,6 +86,21 @@ public abstract class BaseWildcardQueryIT extends ElasticsearchBaseQueryIT
                 .withContent("Swimming every morning is great exercise"));
         supersizemyrepoDocument = indexDocument(new IndexDocumentSourceBuilder().withName("supersizemyrepoDocument")
                 .withContent("supersizemyrepo tool helps with repository management"));
+
+        Map<String, Object> specialCharTokenisedPropertiesText = Map.of("acme:contractTokenisedField", "To be, or not to be - that is the question ( Hamlet, Act 3*, Scene 1 )");
+        Map<String, Object> specialCharUntokenisedPropertiesText = Map.of("acme:contractUntokenisedField", "Tomorrow, and tomorrow, and tomorrow - creeps in this petty pace. ( Macbeth, Act 5, Scene 5 )*");
+
+        specialCharTokenizedFieldDocument = indexDocument(new IndexDocumentSourceBuilder().withName("documentWithSpecialCharsInTokenisedText")
+                .withContent("content").withAdditionalProperties(specialCharTokenisedPropertiesText));
+
+        specialCharUntokenizedFieldDocument = indexDocument(new IndexDocumentSourceBuilder().withName("documentWithSpecialCharsInUntokenisedText")
+                .withContent("content").withAdditionalProperties(specialCharUntokenisedPropertiesText));
+
+        Map<String, Object> reservedWordsPropertiesText = Map.of("acme:contractTokenisedField",
+                "Enter Romeo AND Juliet NOT Hamlet OR Macbeth + Othello - Lear");
+
+        reservedWordsFieldDocument = indexDocument(new IndexDocumentSourceBuilder().withName("documentWithReservedWordsInTokenisedText")
+                .withContent("content").withAdditionalProperties(reservedWordsPropertiesText));
     }
 
     /* See https://alfresco.atlassian.net/browse/SEARCH-2862 for wildcards in phrase queries */
@@ -179,4 +197,13 @@ public abstract class BaseWildcardQueryIT extends ElasticsearchBaseQueryIT
 
     @Test
     public abstract void nonStemmedContentWildcardSuffixSearch();
+
+    @Test
+    public abstract void specialCharsUntokenisedFieldWildcardQuerySearch();
+
+    @Test
+    public abstract void specialCharsTokenisedFieldWildcardQuerySearch();
+
+    @Test
+    public abstract void reservedWordsTokenisedFieldWildcardQuerySearch();
 }

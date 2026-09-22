@@ -72,6 +72,7 @@ import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
 import org.alfresco.rest.api.search.model.Spelling;
 import org.alfresco.rest.api.search.model.Template;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
@@ -107,6 +108,9 @@ public class SearchMapper
     public static final String LUCENE = "lucene";
     public static final String AFTS = "afts";
     private StoreMapper storeMapper;
+
+    /** Whether the {@code deleted-nodes} (trashcan) search scope is supported. Overridden by editions that support it. */
+    private boolean deletedNodesScopeSupported;
 
     /**
      * Turn the SearchQuery params serialized by Jackson into the Java SearchParameters object
@@ -504,6 +508,12 @@ public class SearchMapper
             List<String> stores = scope.getLocations();
             if (stores != null && !stores.isEmpty())
             {
+                if (stores.contains(StoreMapper.DELETED) && !deletedNodesScopeSupported)
+                {
+                    throw new DisabledServiceException(
+                            "The 'deleted-nodes' search scope (trashcan search) is not supported in this edition of Alfresco.");
+                }
+
                 // First reset the stores then add them.
                 sp.getStores().clear();
 
@@ -876,5 +886,10 @@ public class SearchMapper
     public void setStoreMapper(StoreMapper storeMapper)
     {
         this.storeMapper = storeMapper;
+    }
+
+    public void setDeletedNodesScopeSupported(boolean deletedNodesScopeSupported)
+    {
+        this.deletedNodesScopeSupported = deletedNodesScopeSupported;
     }
 }

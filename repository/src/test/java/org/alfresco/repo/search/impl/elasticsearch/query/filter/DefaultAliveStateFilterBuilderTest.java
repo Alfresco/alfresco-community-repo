@@ -25,8 +25,9 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query.filter;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
 import static org.junit.Assert.assertEquals;
+
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

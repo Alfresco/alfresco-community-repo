@@ -72,6 +72,7 @@ import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
 import org.alfresco.rest.api.search.model.Spelling;
 import org.alfresco.rest.api.search.model.Template;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -519,6 +520,10 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
 
+        // Emulate an edition (e.g. Enterprise) that supports the 'deleted-nodes' scope, so the assertions below
+        // (including the 'history' combined with 'deleted-nodes' check further down) can exercise it.
+        searchMapper.setDeletedNodesScopeSupported(true);
+
         searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.DELETED, StoreMapper.LIVE_NODES, StoreMapper.VERSIONS)),
                 searchRequestContext);
         assertEquals(3, searchParameters.getStores().size());
@@ -561,6 +566,29 @@ public class SearchMapperTests
         {
             // Must be a valid scope with history
             assertNotNull(iae);
+        }
+
+        // Reset
+        searchMapper.setDeletedNodesScopeSupported(false);
+    }
+
+    @Test
+    public void fromScope_deletedNodesScopeNotSupported()
+    {
+        SearchMapper communitySearchMapper = new SearchMapper();
+        communitySearchMapper.setStoreMapper(new StoreMapper());
+        SearchParameters searchParameters = new SearchParameters();
+        communitySearchMapper.setDefaults(searchParameters);
+        SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
+
+        try
+        {
+            communitySearchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.DELETED)), searchRequestContext);
+            fail();
+        }
+        catch (DisabledServiceException dse)
+        {
+            assertNotNull(dse.getMessage());
         }
     }
 

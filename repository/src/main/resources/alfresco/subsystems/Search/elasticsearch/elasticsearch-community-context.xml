@@ -249,7 +249,11 @@
         <constructor-arg name="indexConfigurationInitializer" ref="indexConfigurationInitializer"/>
     </bean>
 
-    <bean id="elasticsearchFilterBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.filter.ElasticsearchFilterBuilder"/>
+    <bean id="aliveStateFilterBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.filter.DefaultAliveStateFilterBuilder"/>
+
+    <bean id="elasticsearchFilterBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.filter.ElasticsearchFilterBuilder">
+        <constructor-arg name="aliveStateFilterBuilder" ref="aliveStateFilterBuilder" />
+    </bean>
 
     <bean id="elasticsearchHighlightBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilder">
         <constructor-arg name="namespaceDAO" ref="namespaceDAO" />

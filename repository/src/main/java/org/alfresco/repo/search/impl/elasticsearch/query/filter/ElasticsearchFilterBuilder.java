@@ -41,6 +41,13 @@ import org.alfresco.service.cmr.search.SearchParameters;
  */
 public class ElasticsearchFilterBuilder
 {
+    private final AliveStateFilterBuilder aliveStateFilterBuilder;
+
+    public ElasticsearchFilterBuilder(AliveStateFilterBuilder aliveStateFilterBuilder)
+    {
+        this.aliveStateFilterBuilder = aliveStateFilterBuilder;
+    }
+
     /**
      * Take the query and the filter queries in the searchParameters and creates a new Elasticsearch query .
      *
@@ -57,7 +64,12 @@ public class ElasticsearchFilterBuilder
             LanguageQueryBuilder languageQueryBuilder) throws ParseException
     {
         Query filterQueries = getFilterQueriesBuilder(searchParameters, languageQueryBuilder);
-        return QueryBuilders.bool().must(queryBuilder).filter(filterQueries).build().toQuery();
+        return QueryBuilders.bool()
+                .must(queryBuilder)
+                .filter(filterQueries)
+                .filter(aliveStateFilterBuilder.getAliveStateFilter(searchParameters))
+                .build()
+                .toQuery();
     }
 
     private Query getFilterQueriesBuilder(SearchParameters searchParameters,

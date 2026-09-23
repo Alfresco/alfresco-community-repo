@@ -29,14 +29,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.camel.ExchangePattern;
-import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.messaging.MessagePublisher;
 
 /**
- * Abstract helper to send events to an endpoint. The <code>AbstractEventProducer</code> acts as a wrapper that provides marshalling for a Camel <code>ProducerTemplate</code>. <br/>
+ * Abstract helper to marshal and send events to a messaging endpoint.
  * <p/>
  * A client has the option of creating an event producer without supplying an endpoint. In this case, a endpoint must be provided with every send operation. <br/>
  * <p/>
@@ -52,13 +51,13 @@ public abstract class AbstractEventProducer
     public static final String JMS_AMQP_MESSAGE_FORMAT = JMS_AMQP_PREFIX + MESSAGE_FORMAT;
     public static final short AMQP_UNKNOWN = 0;
 
-    protected ProducerTemplate producer;
+    protected MessagePublisher publisher;
     protected String endpoint;
     protected ObjectMapper objectMapper;
 
-    public void setProducer(ProducerTemplate producer)
+    public void setPublisher(MessagePublisher publisher)
     {
-        this.producer = producer;
+        this.publisher = publisher;
     }
 
     public void setEndpoint(String endpoint)
@@ -89,11 +88,6 @@ public abstract class AbstractEventProducer
 
     public void send(String endpointUri, Object event, Map<String, Object> headers)
     {
-        send(endpointUri, null, event, headers);
-    }
-
-    public void send(String endpointUri, ExchangePattern exchangePattern, Object event, Map<String, Object> headers)
-    {
         try
         {
             if (StringUtils.isEmpty(endpointUri))
@@ -106,12 +100,7 @@ public abstract class AbstractEventProducer
                 event = this.objectMapper.writeValueAsString(event);
             }
 
-            if (exchangePattern == null)
-            {
-                exchangePattern = ExchangePattern.InOnly;
-            }
-
-            this.producer.sendBodyAndHeaders(endpointUri, exchangePattern, event, this.addHeaders(headers));
+            this.publisher.send(endpointUri, (String) event, this.addHeaders(headers));
         }
         catch (Exception e)
         {

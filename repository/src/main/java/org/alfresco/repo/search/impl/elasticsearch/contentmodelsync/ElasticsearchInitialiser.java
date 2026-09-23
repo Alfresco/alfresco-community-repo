@@ -82,6 +82,11 @@ public class ElasticsearchInitialiser implements DictionaryListener
      */
     private static final int HTTP_STATUS_BAD_REQUEST = 400;
 
+    /**
+     * Ceiling for the doubling retry wait, so a long outage cannot push a single wait past the point where the surrounding lifecycle gives up on this thread.
+     */
+    private static final long MAX_RETRY_PERIOD_SECONDS = 60L;
+
     private DictionaryDAOImpl dictionaryDAO;
     private ContentModelSynchronizer contentModelSynchronizer;
     private ElasticsearchIndexService elasticsearchIndexService;
@@ -98,12 +103,16 @@ public class ElasticsearchInitialiser implements DictionaryListener
     // Keeps track of properties already processed to avoid mapping them again.
     private final Set<QName> mappedPropertyCache = ConcurrentHashMap.newKeySet();
 
+    // Properties Elasticsearch has rejected outright. Held out of later passes so a definition it will
+    // never accept is isolated once, instead of being re-bisected on every dictionary initialisation.
+    private final Set<QName> poisonPropertyCache = ConcurrentHashMap.newKeySet();
+
     // Maximum number of properties included in one Elasticsearch mapping request.
     // Overridden by elasticsearch.mappingBatchSize; this default applies when constructed directly.
     private int mappingBatchSize = 500;
 
     // This counter will be used during the map model execution
-    private final AtomicInteger globalModelInitialisedCounter = new AtomicInteger(0);
+    private final AtomicInteger globalPropertyInitialisedCounter = new AtomicInteger(0);
     private SearchEngineDetector searchEngineDetector;
 
     public ElasticsearchInitialiser(DictionaryDAOImpl dictionary, ElasticsearchIndexService elasticsearchIndexService,
@@ -343,7 +352,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
                             "Elasticsearch mappings update completed. {} out of {} properties were mapped successfully. "
                                     + "Turn on DEBUG for elasticsearch.contentmodelsync.FieldMappingBuilder and restart "
                                     + "the server for more information",
-                            globalModelInitialisedCounter.get(), mappedPropertyCache.size());
+                            globalPropertyInitialisedCounter.get(), mappedPropertyCache.size());
                 }
 
                 success = true;
@@ -382,6 +391,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
     private boolean mapModels()
     {
         int attemptsRemaining = retryAttempts;
+        long retryWaitSeconds = retryPeriodSeconds;
         String lastFailureReason = "No failure detected";
         Collection<QName> modelsToInit = dictionaryDAO.getModels(true);
         int currentPropertiesInitialisedCounter = 0;
@@ -416,16 +426,24 @@ public class ElasticsearchInitialiser implements DictionaryListener
                 LOGGER.warn("Elasticsearch mappings could not be updated as the Index does not exist, {} attempts left",
                         attemptsRemaining);
             }
-            if (!modelsToInit.isEmpty())
+            if (!modelsToInit.isEmpty() && attemptsRemaining > 0)
             {
-                LOGGER.trace("Elasticsearch field mapping update, {} attempts left, {} models left to map",
-                        attemptsRemaining, modelsToInit.size());
-                waitBeforeRetry(retryPeriodSeconds);
+                // WARN, not TRACE: a cluster that is struggling should be visible without raising log levels.
+                LOGGER.warn("Elasticsearch field mapping update will retry in {} s, {} attempts left, {} models left to map",
+                        retryWaitSeconds, attemptsRemaining, modelsToInit.size());
+                waitBeforeRetry(retryWaitSeconds);
+                // Back off so a cluster that needs time to recover is not polled at a fixed rate.
+                retryWaitSeconds = retryWaitSeconds * 2;
+                if (retryWaitSeconds > MAX_RETRY_PERIOD_SECONDS)
+                {
+                    retryWaitSeconds = MAX_RETRY_PERIOD_SECONDS;
+                }
             }
         }
+        reportQuarantinedProperties();
         if (modelsToInit.isEmpty())
         {
-            globalModelInitialisedCounter.addAndGet(currentPropertiesInitialisedCounter);
+            globalPropertyInitialisedCounter.addAndGet(currentPropertiesInitialisedCounter);
             boolean hasNewModelsMapped = currentPropertiesInitialisedCounter > 0;
             return hasNewModelsMapped;
         }
@@ -438,15 +456,35 @@ public class ElasticsearchInitialiser implements DictionaryListener
     }
 
     /**
-     * Groups properties into batches and sends them to Elasticsearch.
+     * Logs every rejected property in one line, so they are not left scattered through the log. Fixing them needs a corrected model and a restart.
+     */
+    private void reportQuarantinedProperties()
+    {
+        if (!poisonPropertyCache.isEmpty())
+        {
+            LOGGER.error("Elasticsearch rejected {} propert(ies). They are quarantined and will not be retried until restart: {}",
+                    poisonPropertyCache.size(), poisonPropertyCache);
+        }
+    }
+
+    /**
+     * @return the properties Elasticsearch rejected
+     */
+    public Set<QName> getQuarantinedProperties()
+    {
+        return Set.copyOf(poisonPropertyCache);
+    }
+
+    /**
+     * Sends properties to Elasticsearch in batches.
      *
      * @param pending
      *            properties waiting to be mapped
      * @param processedModels
-     *            models being processed
+     *            models being mapped, used only when there is nothing to send
      * @param failedModels
-     *            models whose properties could not be mapped
-     * @return the number of successfully mapped properties
+     *            collects the models that still have work left
+     * @return the number of properties mapped
      */
     private int mapInBatches(List<PendingProperty> pending, Collection<QName> processedModels, Set<QName> failedModels)
     {
@@ -461,45 +499,36 @@ public class ElasticsearchInitialiser implements DictionaryListener
         }
 
         int mappedProperties = 0;
-        List<PendingProperty> batch = new ArrayList<>();
-
-        for (PendingProperty entry : pending)
+        for (int start = 0; start < pending.size(); start += mappingBatchSize)
         {
-            batch.add(entry);
-            // Send the batch when it reaches the configured size.
-            if (batch.size() >= mappingBatchSize)
+            int end = start + mappingBatchSize;
+            if (end > pending.size())
             {
-                MappingResult result = mapBatch(batch, failedModels);
-                mappedProperties += result.mappedProperties();
-                if (result.outcome() == MappingOutcome.UNAVAILABLE)
-                {
-                    failedModels.addAll(processedModels);
-                    return mappedProperties;
-                }
-                batch = new ArrayList<>();
+                end = pending.size();
             }
-        }
-        // Map any remaining properties that don't fill a complete batch.
-        if (!batch.isEmpty())
-        {
-            MappingResult result = mapBatch(batch, failedModels);
+            MappingResult result = mapBatch(pending.subList(start, end), failedModels);
             mappedProperties += result.mappedProperties();
             if (result.outcome() == MappingOutcome.UNAVAILABLE)
             {
-                failedModels.addAll(processedModels);
+                // This batch and the ones after it were not completed, so their models go to the next attempt.
+                for (PendingProperty entry : pending.subList(start, pending.size()))
+                {
+                    failedModels.add(entry.model());
+                }
+                return mappedProperties;
             }
         }
         return mappedProperties;
     }
 
     /**
-     * Maps a batch of properties to Elasticsearch. Invalid batches are split to isolate the rejected property. Elasticsearch failures are returned so the batch can be retried later.
+     * Maps one batch. A rejected batch is split in half to find the bad property. An unavailable batch is handed back to {@link #mapModels()}, which retries it.
      *
      * @param batch
      *            properties to map
      * @param failedModels
-     *            models containing rejected properties
-     * @return the number of mapped properties and the outcome of the last request
+     *            collects the models of rejected properties
+     * @return how many properties were mapped, and how the last request ended
      */
     private MappingResult mapBatch(List<PendingProperty> batch, Set<QName> failedModels)
     {
@@ -520,6 +549,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
         {
             PendingProperty rejected = batch.get(0);
             failedModels.add(rejected.model());
+            poisonPropertyCache.add(rejected.property().getName());
             LOGGER.warn("Elasticsearch rejected property {} from model {} other properties are unaffected",
                     rejected.property().getName(), rejected.model());
             return result;
@@ -535,11 +565,11 @@ public class ElasticsearchInitialiser implements DictionaryListener
     }
 
     /**
-     * Sends the given properties to Elasticsearch and returns the mapping result.
+     * Sends one mapping request and classifies what came back.
      *
      * @param properties
      *            properties to map
-     * @return the mapping outcome and number of mapped properties
+     * @return how many properties were mapped, and how the request ended
      */
     private MappingResult sendMappingRequest(Set<PropertyDefinition> properties)
     {
@@ -553,6 +583,12 @@ public class ElasticsearchInitialiser implements DictionaryListener
             }
             if (result.getStatus() == HTTP_STATUS_BAD_REQUEST)
             {
+                if (result.isTotalFieldsLimitExceeded())
+                {
+                    LOGGER.warn("Elasticsearch refused {} properties because the index field limit is reached, raise index.mapping.total_fields.limit",
+                            properties.size());
+                    return new MappingResult(MappingOutcome.UNAVAILABLE, 0);
+                }
                 return new MappingResult(MappingOutcome.REJECTED, 0);
             }
             LOGGER.warn("Elasticsearch could not map {} properties, status={}, the batch will be retried whole",
@@ -569,7 +605,9 @@ public class ElasticsearchInitialiser implements DictionaryListener
 
     private enum MappingOutcome
     {
-        MAPPED, REJECTED, UNAVAILABLE
+        MAPPED, REJECTED,
+        /** Failed for a reason no single property can be blamed for, so the batch is retried whole. */
+        UNAVAILABLE
     }
 
     private record MappingResult(MappingOutcome outcome, int mappedProperties)
@@ -582,6 +620,7 @@ public class ElasticsearchInitialiser implements DictionaryListener
     {
         return toInit.getProperties().stream()
                 .filter(property -> !mappedPropertyCache.contains(property.getName()))
+                .filter(property -> !poisonPropertyCache.contains(property.getName()))
                 .collect(Collectors.toSet());
     }
 

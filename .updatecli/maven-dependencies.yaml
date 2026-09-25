@@ -67,4 +67,6 @@ actions:
     spec:
       labels:
         - dependencies
-      draft: true
+      draft: false
+      reviewers:
+        - "Alfresco/alfresco-dependency-maintainers"

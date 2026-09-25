@@ -20,9 +20,11 @@ scms:
 sources:
   transform-core:
     name: Alfresco Transform Core version
-    kind: dockerimage
+    kind: maven
     spec:
-      image: alfresco/alfresco-transform-core-aio
+      repository: https://artifacts.alfresco.com/nexus/content/groups/public
+      groupid: org.alfresco
+      artifactid: alfresco-transform-model
       versionfilter:
         kind: '{{ $tengineAio.versionFilterKind }}'
         pattern: '{{ $tengineAio.version }}'

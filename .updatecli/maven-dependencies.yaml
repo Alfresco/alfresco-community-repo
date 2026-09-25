@@ -33,7 +33,7 @@ sources:
     name: Alfresco Transform Service version
     kind: maven
     spec:
-      repository: 'https://{{ requiredEnv "NEXUS_USERNAME_READ_ONLY" }}:{{ requiredEnv "NEXUS_PASSWORD_READ_ONLY" }}@artifacts.alfresco.com/nexus/content/groups/internal'
+      repository: 'https://{{ requiredEnv "NEXUS_USERNAME" }}:{{ requiredEnv "NEXUS_PASSWORD" }}@artifacts.alfresco.com/nexus/content/groups/internal'
       groupid: org.alfresco
       artifactid: alfresco-transform-service
       versionfilter:

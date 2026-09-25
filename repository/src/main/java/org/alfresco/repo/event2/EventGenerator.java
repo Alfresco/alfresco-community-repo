@@ -115,6 +115,8 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private EventUserFilter userFilter;
     protected final EventTransactionListener transactionListener = new EventTransactionListener();
     protected boolean enabled;
+    /** Master switch for event2 filtering; when false every event is emitted unfiltered (PRODENG-475). */
+    protected boolean filteringEnabled = true;
     private Set<Behaviour> behaviours;
 
     public void setEnabled(boolean enabled)
@@ -214,6 +216,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
+    }
+
+    public void setFilteringEnabled(boolean filteringEnabled)
+    {
+        this.filteringEnabled = filteringEnabled;
     }
 
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -493,12 +500,14 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
     private boolean isFiltered(QName nodeType, String user)
     {
-        return (nodeTypeFilter.isExcluded(nodeType) || (userFilter.isExcluded(user)));
+        // When filtering is disabled, nothing is dropped - every event is emitted (PRODENG-475).
+        return filteringEnabled && (nodeTypeFilter.isExcluded(nodeType) || (userFilter.isExcluded(user)));
     }
 
     private boolean isFilteredChildAssociation(QName childAssocType, String user)
     {
-        return (childAssociationTypeFilter.isExcluded(childAssocType) || (userFilter.isExcluded(user)));
+        // When filtering is disabled, nothing is dropped - every event is emitted (PRODENG-475).
+        return filteringEnabled && (childAssociationTypeFilter.isExcluded(childAssocType) || (userFilter.isExcluded(user)));
     }
 
     protected EventInfo getEventInfo(String user)
@@ -723,6 +732,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 final QName nodeType = eventConsolidator.getEntityType();
                 if (isFiltered(nodeType, user))
                 {
+                    if (LOGGER.isDebugEnabled())
+                    {
+                        LOGGER.debug("EVENT2-FILTER-POC DROP node '" + nodeReference + "' type='"
+                                + ((nodeType == null) ? "Unknown" : nodeType.toPrefixString()) + "' user='" + user + "'");
+                    }
                     if (LOGGER.isTraceEnabled())
                     {
                         LOGGER.trace("EventFilter - Excluding node: '" + nodeReference + "' of type: '"
@@ -751,6 +765,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 final QName childAssocType = eventConsolidator.getEntityType();
                 if (isFilteredChildAssociation(childAssocType, user))
                 {
+                    if (LOGGER.isDebugEnabled())
+                    {
+                        LOGGER.debug("EVENT2-FILTER-POC DROP child-assoc '" + childAssociationReference + "' type='"
+                                + ((childAssocType == null) ? "Unknown" : childAssocType.toPrefixString()) + "' user='" + user + "'");
+                    }
                     if (LOGGER.isTraceEnabled())
                     {
                         LOGGER.trace("EventFilter - Excluding child association: '" + childAssociationReference + "' of type: '"

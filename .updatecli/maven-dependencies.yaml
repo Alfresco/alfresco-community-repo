@@ -15,6 +15,7 @@ scms:
       token: '{{ requiredEnv "GITHUB_TOKEN" }}'
       username: '{{ requiredEnv "GITHUB_ACTOR" }}'
       branch: "master"
+      commitusingapi: true
 
 sources:
   transform-core:

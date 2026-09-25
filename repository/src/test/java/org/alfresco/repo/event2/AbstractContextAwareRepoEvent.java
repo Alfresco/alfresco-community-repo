@@ -79,7 +79,7 @@ import org.alfresco.util.PropertyMap;
 /**
  * @author Iulian Aftene
  */
-@TestPropertySource(properties = {"repo.event2.queue.skip=false"})
+@TestPropertySource(properties = {"repo.event2.queue.skip=false", "repo.event2.filter.enabled=true"})
 public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 {
     protected static final boolean DEBUG = false;

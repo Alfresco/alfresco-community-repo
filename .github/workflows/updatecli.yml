@@ -48,6 +48,13 @@ jobs:
           permission-contents: write
           permission-pull-requests: write
       - uses: updatecli/updatecli-action@ca8c01bf875e2520512c344a71dd02f3dc3326a7 # v3.7.0
+      - name: "Updatecli scm cache"
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /tmp/updatecli/github
+          key: updatecli-v1-${{ hashFiles('.updatecli/**') }}
+          restore-keys: |
+            updatecli-v1-
       - name: "updatecli diff"
         if: github.event_name == 'pull_request'
         run: updatecli diff --config ${{ matrix.manifest }} --values alfresco-updatecli/deployments/values/supported-matrix.yaml

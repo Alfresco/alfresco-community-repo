@@ -9,7 +9,6 @@
 
     <test name="Part3">
         <packages>
-            <package name="org.alfresco.rest.renditions.*"/>
             <package name="org.alfresco.rest.sharedLinks.*"/>
             <package name="org.alfresco.rest.sites.*"/>
             <package name="org.alfresco.rest.tags.*"/>

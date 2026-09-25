@@ -25,21 +25,31 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query.filter;
 
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
+
+import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
+import org.opensearch.client.opensearch._types.query_dsl.QueryBuilders;
 
 import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
- * Strategy for building the Elasticsearch/OpenSearch filter that restricts search results by the alive state of nodes
- * (e.g. live vs. deleted nodes), based on the scope/store requested in the current search.
+ * Strategy for building the Elasticsearch/OpenSearch filter that restricts search results by the alive state of nodes (e.g. live vs. deleted nodes), based on the scope/store requested in the current search.
  */
-@FunctionalInterface
 public interface AliveStateFilterBuilder
 {
     /**
+     * Builds the filter restricting results by alive state. The default implementation restricts results to live nodes.
      * @param searchParameters
      *            the parameters of the current search, including the requested scope/stores
      * @return a filter query restricting results by alive state
      */
-    Query getAliveStateFilter(SearchParameters searchParameters);
+    default Query getAliveStateFilter(SearchParameters searchParameters)
+    {
+        return QueryBuilders.term()
+                .field(ALIVE)
+                .value(FieldValue.of(Boolean.toString(true)))
+                .build()
+                .toQuery();
+    }
 }

@@ -105,8 +105,7 @@ public class SearchStoreResolverTest
     public void resolveIndex_rejectsUnsupportedProtocol()
     {
         StoreRef unsupported = new StoreRef("unsupported", "SpacesStore");
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> resolver.resolveIndex(List.of(unsupported)));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> resolver.resolveIndex(List.of(unsupported)));
         assertTrue(exception.getMessage().contains("is not supported"));
     }
 

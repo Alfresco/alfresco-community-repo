@@ -25,26 +25,10 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query.filter;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
-
-import org.opensearch.client.opensearch._types.FieldValue;
-import org.opensearch.client.opensearch._types.query_dsl.Query;
-import org.opensearch.client.opensearch._types.query_dsl.QueryBuilders;
-
-import org.alfresco.service.cmr.search.SearchParameters;
-
 /**
- * Default {@link AliveStateFilterBuilder}: always restricts results to live (non-archived) nodes.
+ * Default {@link AliveStateFilterBuilder}: always restricts results to live (non-archived) nodes, using the behaviour
+ * provided by the {@link AliveStateFilterBuilder#getAliveStateFilter(org.alfresco.service.cmr.search.SearchParameters) default method}.
  */
 public class DefaultAliveStateFilterBuilder implements AliveStateFilterBuilder
 {
-    @Override
-    public Query getAliveStateFilter(SearchParameters searchParameters)
-    {
-        return QueryBuilders.term()
-                .field(ALIVE)
-                .value(FieldValue.of(Boolean.toString(true)))
-                .build()
-                .toQuery();
-    }
 }

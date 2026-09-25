@@ -1,0 +1,154 @@
+---
+name: Bump TAS test-environment image tags
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      email: '{{ requiredEnv "GITHUB_ACTOR" }}@users.noreply.github.com'
+      owner: "Alfresco"
+      repository: "alfresco-community-repo"
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      username: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      branch: "master"
+
+sources:
+  postgres:
+    name: PostgreSQL image tag
+    kind: dockerimage
+    spec:
+      image: postgres
+      tagfilter: "^\\d+\\.\\d+$"
+    versionfilter:
+      kind: semver
+      pattern: "~17"
+
+  activemq:
+    name: Alfresco ActiveMQ image tag
+    kind: dockerimage
+    spec:
+      image: alfresco/alfresco-activemq
+    versionfilter:
+      kind: regex
+      pattern: "^6\\.2\\.\\d+-jre17-rockylinux8$"
+
+  solr6:
+    name: Alfresco Search Services image tag
+    kind: dockerimage
+    spec:
+      image: alfresco/alfresco-search-services
+    versionfilter:
+      kind: regex
+      pattern: "^2\\.0\\.\\d+$"
+
+  elasticsearch:
+    name: Elasticsearch image tag
+    kind: dockerimage
+    spec:
+      image: elasticsearch
+      tagfilter: "^\\d+\\.\\d+\\.\\d+$"
+    versionfilter:
+      kind: semver
+      pattern: "~8.17"
+
+  batch-indexing:
+    name: Alfresco Elasticsearch batch-indexing image tag
+    kind: dockerimage
+    spec:
+      image: alfresco/alfresco-elasticsearch-batch-indexing
+    versionfilter:
+      kind: regex/semver
+      regex: "^(\\d+\\.\\d+\\.\\d+(-A\\.\\d+)?)$"
+      pattern: ">=5.9.0-0 <6.0.0-0"
+
+targets:
+  postgres_tas:
+    name: "Update POSTGRES_TAG in packaging/tests/environment/.env"
+    kind: file
+    sourceid: postgres
+    scmid: default
+    spec:
+      file: packaging/tests/environment/.env
+      matchpattern: '(?m)^POSTGRES_TAG=.*$'
+      replacepattern: 'POSTGRES_TAG={{ source "postgres" }}'
+
+  postgres_rm:
+    name: "Update POSTGRES_TAG in amps/ags/rm-community/rm-community-repo/.env"
+    kind: file
+    sourceid: postgres
+    scmid: default
+    spec:
+      file: amps/ags/rm-community/rm-community-repo/.env
+      matchpattern: '(?m)^POSTGRES_TAG=.*$'
+      replacepattern: 'POSTGRES_TAG={{ source "postgres" }}'
+
+  activemq_tas:
+    name: "Update ACTIVEMQ_TAG in packaging/tests/environment/.env"
+    kind: file
+    sourceid: activemq
+    scmid: default
+    spec:
+      file: packaging/tests/environment/.env
+      matchpattern: '(?m)^ACTIVEMQ_TAG=.*$'
+      replacepattern: 'ACTIVEMQ_TAG={{ source "activemq" }}'
+
+  activemq_rm:
+    name: "Update ACTIVEMQ_TAG in amps/ags/rm-community/rm-community-repo/.env"
+    kind: file
+    sourceid: activemq
+    scmid: default
+    spec:
+      file: amps/ags/rm-community/rm-community-repo/.env
+      matchpattern: '(?m)^ACTIVEMQ_TAG=.*$'
+      replacepattern: 'ACTIVEMQ_TAG={{ source "activemq" }}'
+
+  solr6_tas:
+    name: "Update SOLR6_TAG in packaging/tests/environment/.env"
+    kind: file
+    sourceid: solr6
+    scmid: default
+    spec:
+      file: packaging/tests/environment/.env
+      matchpattern: '(?m)^SOLR6_TAG=.*$'
+      replacepattern: 'SOLR6_TAG={{ source "solr6" }}'
+
+  solr6_rm:
+    name: "Update SOLR6_TAG in amps/ags/rm-community/rm-community-repo/.env"
+    kind: file
+    sourceid: solr6
+    scmid: default
+    spec:
+      file: amps/ags/rm-community/rm-community-repo/.env
+      matchpattern: '(?m)^SOLR6_TAG=.*$'
+      replacepattern: 'SOLR6_TAG={{ source "solr6" }}'
+
+  elasticsearch_tas:
+    name: "Update ELASTICSEARCH_TAG in packaging/tests/environment/.env"
+    kind: file
+    sourceid: elasticsearch
+    scmid: default
+    spec:
+      file: packaging/tests/environment/.env
+      matchpattern: '(?m)^ELASTICSEARCH_TAG=.*$'
+      replacepattern: 'ELASTICSEARCH_TAG={{ source "elasticsearch" }}'
+
+  batch_indexing_tas:
+    name: "Update BATCH_INDEXING_TAG in packaging/tests/environment/.env"
+    kind: file
+    sourceid: batch-indexing
+    scmid: default
+    spec:
+      file: packaging/tests/environment/.env
+      matchpattern: '(?m)^BATCH_INDEXING_TAG=.*$'
+      replacepattern: 'BATCH_INDEXING_TAG={{ source "batch-indexing" }}'
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: "Bump TAS test-environment image tags"
+    spec:
+      labels:
+        - dependencies
+      draft: true

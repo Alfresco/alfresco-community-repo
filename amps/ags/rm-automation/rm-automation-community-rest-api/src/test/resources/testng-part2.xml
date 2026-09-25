@@ -1,0 +1,24 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<!-- Half of the original testng.xml, split purely to keep the CI job's
+     wall-clock time down: two matrix legs, each running against its own
+     Alfresco/Solr stack. Packages are assigned by (static) @Test count, not by
+     any functional grouping - testng-part1.xml runs the other half. testng.xml
+     itself is kept, unused by CI, so the whole module can still be run with a
+     single -DsuiteXmlFile=testng.xml locally. -->
+<suite name="TestNG AllTestSuite - part2" configfailurepolicy="continue" verbose="1" time-out="300000">
+   <listeners>
+      <listener class-name="org.alfresco.utility.testng.AlphabeticalPriorityInterceptor" />
+   </listeners>
+   <test name="restapi-part2" preserve-order="false">
+      <packages>
+         <package name="org.alfresco.rest.rm.community.records.*"/>
+         <package name="org.alfresco.rest.rm.community.audit.*"/>
+         <package name="org.alfresco.rest.rm.community.recordcategories.*"/>
+         <package name="org.alfresco.rest.rm.community.smoke.*"/>
+         <package name="org.alfresco.rest.rm.community.search.*"/>
+         <package name="org.alfresco.rest.rm.community.rules.*"/>
+         <package name="org.alfresco.rest.rm.community.unfiledrecordfolders.*"/>
+      </packages>
+   </test>
+</suite>

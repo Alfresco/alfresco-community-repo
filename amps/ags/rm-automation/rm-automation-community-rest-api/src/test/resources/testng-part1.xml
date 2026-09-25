@@ -1,0 +1,25 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<!-- Half of the original testng.xml, split purely to keep the CI job's
+     wall-clock time down: two matrix legs, each running against its own
+     Alfresco/Solr stack. Packages are assigned by (static) @Test count, not by
+     any functional grouping - testng-part2.xml runs the other half. testng.xml
+     itself is kept, unused by CI, so the whole module can still be run with a
+     single -DsuiteXmlFile=testng.xml locally. -->
+<suite name="TestNG AllTestSuite - part1" configfailurepolicy="continue" verbose="1" time-out="300000">
+   <listeners>
+      <listener class-name="org.alfresco.utility.testng.AlphabeticalPriorityInterceptor" />
+   </listeners>
+   <test name="restapi-part1" preserve-order="false">
+      <packages>
+         <package name="org.alfresco.rest.rm.community.hold.*"/>
+         <package name="org.alfresco.rest.rm.community.retentionschedule.*"/>
+         <package name="org.alfresco.rest.rm.community.files.*"/>
+         <package name="org.alfresco.rest.rm.community.fileplans.*"/>
+         <package name="org.alfresco.rest.rm.community.recordfolders.*"/>
+         <package name="org.alfresco.rest.rm.community.unfiledcontainers.*"/>
+         <package name="org.alfresco.rest.rm.community.site.*"/>
+         <package name="org.alfresco.rest.rm.community.rmroles.*"/>
+      </packages>
+   </test>
+</suite>

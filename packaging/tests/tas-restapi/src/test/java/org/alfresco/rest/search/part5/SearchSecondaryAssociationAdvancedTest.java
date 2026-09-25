@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.search.part3;
+package org.alfresco.rest.search.part5;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;

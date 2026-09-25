@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.search.part3;
+package org.alfresco.rest.search.part5;
 
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;

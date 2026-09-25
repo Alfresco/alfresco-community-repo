@@ -15,6 +15,9 @@
                 </methods>
             </class>
             <class name="org.alfresco.rest.search.part5.SearchSimpleCasesTest"/>
+            <class name="org.alfresco.rest.search.part5.SearchMultiLanguageTest"/>
+            <class name="org.alfresco.rest.search.part5.SearchSecondaryAssociationAdvancedTest"/>
+            <class name="org.alfresco.rest.search.part5.SearchTagsTest"/>
         </classes>
     </test>
 </suite>

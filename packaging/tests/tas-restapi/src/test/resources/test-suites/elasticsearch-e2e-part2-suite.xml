@@ -13,21 +13,7 @@
             <package name="org.alfresco.rest.search.part2"/>
         </packages>
         <classes>
-            <!-- 1) FacetRangeSearchTest: range facet gaps on ES -->
-            <class name="org.alfresco.rest.search.part2.FacetRangeSearchTest">
-                <methods>
-                    <exclude name="searchWithRange"/>
-                    <exclude name="searchWithRangeHardend"/>
-                    <exclude name="searchWithRangeAndIncludeUpperBound"/>
-                </methods>
-            </class>
-            <!-- 2) FacetIntervalSearchTest: interval facet gaps on ES -->
-            <class name="org.alfresco.rest.search.part2.FacetIntervalSearchTest">
-                <methods>
-                    <exclude name="searchWithBasicInterval"/>
-                    <exclude name="searchWithDates"/>
-                </methods>
-            </class>
+
             <!-- 3) FacetFieldsSearchTest: mincount / SITE facet gaps on ES -->
             <class name="org.alfresco.rest.search.part2.FacetFieldsSearchTest">
                 <methods>

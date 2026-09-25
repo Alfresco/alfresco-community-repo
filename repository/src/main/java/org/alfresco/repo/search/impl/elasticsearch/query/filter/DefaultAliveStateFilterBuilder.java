@@ -26,9 +26,7 @@
 package org.alfresco.repo.search.impl.elasticsearch.query.filter;
 
 /**
- * Default {@link AliveStateFilterBuilder}: always restricts results to live (non-archived) nodes, using the behaviour
- * provided by the {@link AliveStateFilterBuilder#getAliveStateFilter(org.alfresco.service.cmr.search.SearchParameters) default method}.
+ * Default {@link AliveStateFilterBuilder}: always restricts results to live (non-archived) nodes, using the behaviour provided by the {@link AliveStateFilterBuilder#getAliveStateFilter(org.alfresco.service.cmr.search.SearchParameters) default method}.
  */
 public class DefaultAliveStateFilterBuilder implements AliveStateFilterBuilder
-{
-}
+{}

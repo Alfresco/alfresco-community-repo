@@ -40,6 +40,7 @@ public interface AliveStateFilterBuilder
 {
     /**
      * Builds the filter restricting results by alive state. The default implementation restricts results to live nodes.
+     * 
      * @param searchParameters
      *            the parameters of the current search, including the requested scope/stores
      * @return a filter query restricting results by alive state

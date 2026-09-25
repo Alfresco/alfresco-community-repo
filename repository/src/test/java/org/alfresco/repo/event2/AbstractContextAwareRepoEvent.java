@@ -79,7 +79,7 @@ import org.alfresco.util.PropertyMap;
 /**
  * @author Iulian Aftene
  */
-@TestPropertySource(properties = {"repo.event2.queue.skip=false", "repo.event2.filter.enabled=true"})
+@TestPropertySource(properties = {"repo.event2.queue.skip=false"})
 public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 {
     protected static final boolean DEBUG = false;
@@ -143,6 +143,11 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     @Before
     public void setUp() throws Exception
     {
+        applicationContext.getBeansOfType(EventGenerator.class).values()
+                .forEach(generator -> generator.setFilteringEnabled(true));
+        applicationContext.getBeansOfType(NodeResourceHelper.class).values()
+                .forEach(helper -> helper.setFilteringEnabled(true));
+
         if (!isCamelConfigured)
         {
             dataFormat = new JacksonDataFormat(objectMapper, RepoEvent.class);

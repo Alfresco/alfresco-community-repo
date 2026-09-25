@@ -62,13 +62,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GITHUB_ACTOR: ${{ steps.app-token.outputs.app-slug }}[bot]
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          NEXUS_USERNAME_READ_ONLY: ${{ secrets.NEXUS_USERNAME_READ_ONLY }}
+          NEXUS_PASSWORD_READ_ONLY: ${{ secrets.NEXUS_PASSWORD_READ_ONLY }}
       - name: "updatecli pipeline apply"
         if: github.event_name != 'pull_request'
         run: updatecli pipeline apply --config ${{ matrix.manifest }} --values alfresco-updatecli/deployments/values/supported-matrix.yaml
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GITHUB_ACTOR: ${{ steps.app-token.outputs.app-slug }}[bot]
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          NEXUS_USERNAME_READ_ONLY: ${{ secrets.NEXUS_USERNAME_READ_ONLY }}
+          NEXUS_PASSWORD_READ_ONLY: ${{ secrets.NEXUS_PASSWORD_READ_ONLY }}

@@ -31,11 +31,11 @@ sources:
 
   transform-service:
     name: Alfresco Transform Service version
-    kind: dockerimage
+    kind: maven
     spec:
-      image: quay.io/alfresco/alfresco-transform-router
-      username: '{{ requiredEnv "QUAY_USERNAME" }}'
-      password: '{{ requiredEnv "QUAY_PASSWORD" }}'
+      repository: 'https://{{ requiredEnv "NEXUS_USERNAME_READ_ONLY" }}:{{ requiredEnv "NEXUS_PASSWORD_READ_ONLY" }}@artifacts.alfresco.com/nexus/content/groups/internal'
+      groupid: org.alfresco
+      artifactid: alfresco-transform-service
       versionfilter:
         kind: '{{ $trouter.versionFilterKind }}'
         pattern: '{{ $trouter.version }}'

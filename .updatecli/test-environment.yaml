@@ -1,6 +1,9 @@
 ---
 name: Bump TAS test-environment image tags
 
+{{- $tier := index .matrix "community-prerelease" }}
+{{- $batchIndexing := index $tier "batch-indexing" }}
+
 scms:
   default:
     kind: github
@@ -18,54 +21,48 @@ sources:
     name: PostgreSQL image tag
     kind: dockerimage
     spec:
-      image: postgres
-      tagfilter: "^\\d+\\.\\d+$"
+      image: '{{ $tier.postgres.image }}'
       versionfilter:
-        kind: semver
-        pattern: "~17"
+        kind: '{{ $tier.postgres.versionFilterKind }}'
+        pattern: '{{ $tier.postgres.version }}'
 
   activemq:
     name: Alfresco ActiveMQ image tag
     kind: dockerimage
     spec:
-      image: alfresco/alfresco-activemq
-      tagfilter: "^6\\.2\\.\\d+-jre17-rockylinux8$"
+      image: '{{ $tier.activemq.image }}'
+      tagfilter: '^{{ $tier.activemq.version }}{{ $tier.activemq.pattern }}$'
       versionfilter:
-        kind: regex/semver
-        regex: "^(6\\.2\\.\\d+)-jre17-rockylinux8$"
-        pattern: "~6.2"
+        kind: regex
+        pattern: '^{{ $tier.activemq.version }}{{ $tier.activemq.pattern }}$'
 
   solr6:
     name: Alfresco Search Services image tag
     kind: dockerimage
     spec:
-      image: alfresco/alfresco-search-services
-      tagfilter: "^2\\.0\\.\\d+$"
+      image: '{{ $tier.search.image }}'
       versionfilter:
-        kind: regex/semver
-        regex: "^(2\\.0\\.\\d+)$"
-        pattern: "~2.0"
+        kind: '{{ $tier.search.versionFilterKind }}'
+        pattern: '{{ $tier.search.version }}'
 
   elasticsearch:
     name: Elasticsearch image tag
     kind: dockerimage
     spec:
-      image: elasticsearch
-      tagfilter: "^\\d+\\.\\d+\\.\\d+$"
+      image: '{{ $tier.elasticsearch.image }}'
       versionfilter:
-        kind: semver
-        pattern: "~8.17"
+        kind: '{{ $tier.elasticsearch.versionFilterKind }}'
+        pattern: '{{ $tier.elasticsearch.version }}'
 
   batch-indexing:
     name: Alfresco Elasticsearch batch-indexing image tag
     kind: dockerimage
     spec:
-      image: alfresco/alfresco-elasticsearch-batch-indexing
-      tagfilter: "^5\\.\\d+\\.\\d+(-A\\.\\d+)?$"
+      image: '{{ $batchIndexing.image }}'
       versionfilter:
-        kind: regex/semver
-        regex: "^(\\d+\\.\\d+\\.\\d+(?:-A\\.\\d+)?)$"
-        pattern: ">=5.9.0-0 <6.0.0-0"
+        kind: '{{ $batchIndexing.versionFilterKind }}'
+        pattern: '{{ $batchIndexing.version }}'
+        regex: '{{ $batchIndexing.regex }}'
 
 targets:
   postgres_tas:

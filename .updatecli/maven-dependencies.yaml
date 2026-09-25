@@ -2,6 +2,7 @@
 name: Bump Alfresco Maven dependency versions
 
 {{- $tengineAio := index .matrix.next "tengine-aio" }}
+{{- $trouter := .matrix.next.trouter }}
 
 scms:
   default:
@@ -25,6 +26,17 @@ sources:
         kind: '{{ $tengineAio.versionFilterKind }}'
         pattern: '{{ $tengineAio.version }}'
 
+  transform-service:
+    name: Alfresco Transform Service version
+    kind: dockerimage
+    spec:
+      image: quay.io/alfresco/alfresco-transform-router
+      username: '{{ requiredEnv "QUAY_USERNAME" }}'
+      password: '{{ requiredEnv "QUAY_PASSWORD" }}'
+      versionfilter:
+        kind: '{{ $trouter.versionFilterKind }}'
+        pattern: '{{ $trouter.version }}'
+
 targets:
   transform-core-pom:
     name: "Update dependency.alfresco-transform-core.version in pom.xml"
@@ -35,6 +47,16 @@ targets:
       file: pom.xml
       matchpattern: '(?m)^(\s*<dependency\.alfresco-transform-core\.version>)[^<]*(</dependency\.alfresco-transform-core\.version>)$'
       replacepattern: '${1}{{ source "transform-core" }}${2}'
+
+  transform-service-pom:
+    name: "Update dependency.alfresco-transform-service.version in pom.xml"
+    kind: file
+    sourceid: transform-service
+    scmid: default
+    spec:
+      file: pom.xml
+      matchpattern: '(?m)^(\s*<dependency\.alfresco-transform-service\.version>)[^<]*(</dependency\.alfresco-transform-service\.version>)$'
+      replacepattern: '${1}{{ source "transform-service" }}${2}'
 
 actions:
   default:

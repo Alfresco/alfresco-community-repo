@@ -54,9 +54,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GITHUB_ACTOR: ${{ steps.app-token.outputs.app-slug }}[bot]
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       - name: "updatecli apply"
         if: github.event_name != 'pull_request'
         run: updatecli apply --config ${{ matrix.manifest }} --values alfresco-updatecli/deployments/values/supported-matrix.yaml
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GITHUB_ACTOR: ${{ steps.app-token.outputs.app-slug }}[bot]
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}

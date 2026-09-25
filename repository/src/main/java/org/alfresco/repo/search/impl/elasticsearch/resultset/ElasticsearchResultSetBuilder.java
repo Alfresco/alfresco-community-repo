@@ -144,7 +144,7 @@ public class ElasticsearchResultSetBuilder
 
     private List<NodeRefAndScore> mapNodeRefsAndScores(List<Hit<Object>> hits, SearchParameters searchParameters)
     {
-        StoreRef storeRef = searchStoreResolver.resolveStore(searchParameters);
+        StoreRef storeRef = searchStoreResolver.resolveNodeStore(searchParameters);
         cacheNodes(hits.stream().map(hit -> new NodeRef(storeRef, hit.id())).toList(), searchParameters.isBulkFetchEnabled());
         List<NodeRefAndScore> results = new ArrayList<>();
         for (Hit<Object> hit : hits)

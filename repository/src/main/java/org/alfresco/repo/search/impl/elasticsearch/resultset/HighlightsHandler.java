@@ -64,7 +64,7 @@ class HighlightsHandler
     {
         Set<String> requestedHighlightFields = extractRequestedHighlightFields(searchParameters);
         List<Hit<Object>> hits = extractHits(searchResponse);
-        StoreRef storeRef = searchStoreResolver.resolveStore(searchParameters);
+        StoreRef storeRef = searchStoreResolver.resolveNodeStore(searchParameters);
         Map<NodeRef, List<Pair<String, List<String>>>> highlights = new HashMap<>();
         for (Hit<Object> hit : hits)
         {

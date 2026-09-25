@@ -124,4 +124,20 @@ public class SearchStoreResolverTest
         searchParameters.addStore(WORKSPACE_STORE);
         assertFalse(resolver.isArchiveScope(searchParameters));
     }
+
+    @Test
+    public void resolveNodeStore_archiveScopeReturnsArchiveSpacesStore()
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchParameters.addStore(ARCHIVE_STORE);
+        assertEquals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, resolver.resolveNodeStore(searchParameters));
+    }
+
+    @Test
+    public void resolveNodeStore_nonArchiveNormalisesToWorkspaceSpacesStore()
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchParameters.addStore(new StoreRef(StoreRef.PROTOCOL_WORKSPACE + StoreRef.URI_FILLER));
+        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, resolver.resolveNodeStore(searchParameters));
+    }
 }

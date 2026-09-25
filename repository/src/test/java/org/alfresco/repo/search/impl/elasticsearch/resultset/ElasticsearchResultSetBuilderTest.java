@@ -119,7 +119,7 @@ public class ElasticsearchResultSetBuilderTest
         nodeRef3 = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, TEST_NODE_ID_3);
 
         // Default search parameters setup
-        when(searchStoreResolver.resolveStore(searchParameters)).thenReturn(STORE_REF_WORKSPACE_SPACESSTORE);
+        when(searchStoreResolver.resolveNodeStore(searchParameters)).thenReturn(STORE_REF_WORKSPACE_SPACESSTORE);
         when(searchParameters.getSkipCount()).thenReturn(TEST_SKIP_COUNT);
         when(searchParameters.isBulkFetchEnabled()).thenReturn(false);
     }

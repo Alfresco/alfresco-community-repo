@@ -44,18 +44,6 @@ public class SearchStoreResolver
     }
 
     /**
-     * Resolves the single store targeted by the query.
-     *
-     * @param searchParameters
-     *            the current search parameters
-     * @return the single {@link StoreRef} the query targets
-     */
-    public StoreRef resolveStore(SearchParameters searchParameters)
-    {
-        return resolveStore(searchParameters.getStores());
-    }
-
-    /**
      * Resolves the single store from a store list. Elasticsearch supports exactly one store per query.
      *
      * @param stores
@@ -98,6 +86,20 @@ public class SearchStoreResolver
      */
     public boolean isArchiveScope(SearchParameters searchParameters)
     {
-        return StoreRef.PROTOCOL_ARCHIVE.equals(resolveStore(searchParameters).getProtocol());
+        return StoreRef.PROTOCOL_ARCHIVE.equals(resolveStore(searchParameters.getStores()).getProtocol());
+    }
+
+    /**
+     * Resolves the canonical SpacesStore that result {@link org.alfresco.service.cmr.repository.NodeRef}s belong to: the archive store for the {@code deleted-nodes} scope, otherwise the workspace store.
+     *
+     * @param searchParameters
+     *            the current search parameters
+     * @return the store to use for the result node references
+     */
+    public StoreRef resolveNodeStore(SearchParameters searchParameters)
+    {
+        return isArchiveScope(searchParameters)
+                ? StoreRef.STORE_REF_ARCHIVE_SPACESSTORE
+                : StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
     }
 }

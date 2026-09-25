@@ -88,7 +88,7 @@ public class HighlightsHandlerTest
         given(searchHit.id()).willReturn(NODE_ID);
         given(generalHighlightParameters.getFields()).willReturn(List.of(fieldHighlightParametersA, fieldHighlightParametersB));
         given(searchParameters.getHighlight()).willReturn(generalHighlightParameters);
-        given(searchStoreResolver.resolveStore(searchParameters)).willReturn(STORE_REF_WORKSPACE_SPACESSTORE);
+        given(searchStoreResolver.resolveNodeStore(searchParameters)).willReturn(STORE_REF_WORKSPACE_SPACESSTORE);
 
         highlightsHandler = new HighlightsHandler(searchStoreResolver);
     }

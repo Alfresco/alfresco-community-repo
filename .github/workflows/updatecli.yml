@@ -1,7 +1,14 @@
-name: "Updatecli - Bump test-environment image tags"
+name: "Updatecli - Bump automated versions"
+
+run-name: "Updatecli${{ inputs.alfresco-updatecli-ref && format(' (alfresco-updatecli@{0})', inputs.alfresco-updatecli-ref) || '' }}"
 
 on:
   workflow_dispatch:
+    inputs:
+      alfresco-updatecli-ref:
+        description: "The alfresco-updatecli ref to source the shared version policy from"
+        type: string
+        default: master
   schedule:
     - cron: "0 22 * * 0"
   pull_request:
@@ -14,15 +21,21 @@ permissions:
 
 jobs:
   updatecli:
-    name: "Run updatecli"
+    name: "Run updatecli (${{ matrix.manifest }})"
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        manifest:
+          - .updatecli/test-environment.yaml
+          - .updatecli/maven-dependencies.yaml
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: "Checkout shared version policy"
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: Alfresco/alfresco-updatecli
-          ref: master
+          ref: ${{ inputs.alfresco-updatecli-ref || 'master' }}
           sparse-checkout: |
             deployments/values/supported-matrix.yaml
           sparse-checkout-cone-mode: false
@@ -37,13 +50,13 @@ jobs:
       - uses: updatecli/updatecli-action@ca8c01bf875e2520512c344a71dd02f3dc3326a7 # v3.7.0
       - name: "updatecli diff"
         if: github.event_name == 'pull_request'
-        run: updatecli diff --config .updatecli/test-environment.yaml --values alfresco-updatecli/deployments/values/supported-matrix.yaml
+        run: updatecli diff --config ${{ matrix.manifest }} --values alfresco-updatecli/deployments/values/supported-matrix.yaml
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GITHUB_ACTOR: ${{ steps.app-token.outputs.app-slug }}[bot]
       - name: "updatecli apply"
         if: github.event_name != 'pull_request'
-        run: updatecli apply --config .updatecli/test-environment.yaml --values alfresco-updatecli/deployments/values/supported-matrix.yaml
+        run: updatecli apply --config ${{ matrix.manifest }} --values alfresco-updatecli/deployments/values/supported-matrix.yaml
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GITHUB_ACTOR: ${{ steps.app-token.outputs.app-slug }}[bot]

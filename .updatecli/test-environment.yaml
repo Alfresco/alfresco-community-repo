@@ -1,7 +1,7 @@
 ---
 name: Bump TAS test-environment image tags
 
-{{- $tier := index .matrix "community-prerelease" }}
+{{- $tier := index .matrix "community-next" }}
 {{- $batchIndexing := index $tier "batch-indexing" }}
 
 scms:

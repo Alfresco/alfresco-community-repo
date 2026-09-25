@@ -3,6 +3,7 @@ name: Bump Alfresco Maven dependency versions
 
 {{- $tengineAio := index .matrix.next "tengine-aio" }}
 {{- $trouter := .matrix.next.trouter }}
+{{- $nexusHost := trimPrefix "https://" (requiredEnv "NEXUS_URL") }}
 
 scms:
   default:
@@ -22,7 +23,7 @@ sources:
     name: Alfresco Transform Core version
     kind: maven
     spec:
-      repository: https://artifacts.alfresco.com/nexus/content/groups/public
+      repository: '{{ requiredEnv "NEXUS_URL" }}/content/groups/public'
       groupid: org.alfresco
       artifactid: alfresco-transform-model
       versionfilter:
@@ -33,7 +34,7 @@ sources:
     name: Alfresco Transform Service version
     kind: maven
     spec:
-      repository: 'https://{{ requiredEnv "NEXUS_USERNAME" }}:{{ requiredEnv "NEXUS_PASSWORD" }}@artifacts.alfresco.com/nexus/content/groups/internal'
+      repository: 'https://{{ requiredEnv "NEXUS_USERNAME" }}:{{ requiredEnv "NEXUS_PASSWORD" }}@{{ $nexusHost }}/content/groups/internal'
       groupid: org.alfresco
       artifactid: alfresco-transform-service
       versionfilter:

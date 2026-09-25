@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -30,7 +30,8 @@ import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
- * The default (Community) implementation always restricts results to live nodes.
+ * Strategy for building the Elasticsearch/OpenSearch filter that restricts search results by the alive state of nodes
+ * (e.g. live vs. deleted nodes), based on the scope/store requested in the current search.
  */
 @FunctionalInterface
 public interface AliveStateFilterBuilder

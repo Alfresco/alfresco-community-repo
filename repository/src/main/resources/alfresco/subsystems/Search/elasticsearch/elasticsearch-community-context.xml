@@ -76,6 +76,10 @@
         <property name="keyResourceLoader" ref="springKeyResourceLoader" />
     </bean>
 
+    <bean id="searchStoreResolver" class="org.alfresco.repo.search.impl.elasticsearch.store.SearchStoreResolver">
+        <constructor-arg ref="elasticsearchHttpClientFactory"/>
+    </bean>
+
     <bean id="elasticsearchInitialiser"
           destroy-method="stop"
           class="org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiser"
@@ -111,7 +115,7 @@
     <bean id="searchRequestBuilderService"
           class="org.alfresco.repo.search.impl.elasticsearch.query.SearchRequestBuilderService">
         <constructor-arg ref="aFTSQueryBuilder"/>
-        <constructor-arg ref="elasticsearchHttpClientFactory"/>
+        <constructor-arg ref="searchStoreResolver"/>
         <constructor-arg ref="elasticsearchSortBuilder"/>
         <constructor-arg ref="elasticsearchAggregationBuilder"/>
         <constructor-arg ref="elasticsearchHighlightBuilder"/>
@@ -303,11 +307,14 @@
         <constructor-arg name="nodeService" ref="nodeService"/>
         <constructor-arg name="nodeDAO" ref="nodeDAO"/>
         <constructor-arg name="highlightsHandler">
-            <bean class="org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandler" />
+            <bean class="org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandler">
+                <constructor-arg ref="searchStoreResolver"/>
+            </bean>
         </constructor-arg>
         <constructor-arg name="aggregationHandler">
             <bean class="org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationHandler" />
         </constructor-arg>
+        <constructor-arg name="searchStoreResolver" ref="searchStoreResolver"/>
     </bean>
 
     <bean id="elasticsearchDocumentsService" class="org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsService">

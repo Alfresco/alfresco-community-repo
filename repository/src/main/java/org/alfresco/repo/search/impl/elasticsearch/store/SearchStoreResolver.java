@@ -32,10 +32,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
- * Resolves the single Alfresco {@link StoreRef} - and the Elasticsearch index it maps to - that an Elasticsearch query
- * targets. An Elasticsearch query always targets exactly one store; this component centralises that contract, the
- * store-to-index mapping and the archive ("deleted-nodes") scope detection, so that every Elasticsearch component
- * resolves the store, index and scope consistently.
+ * Resolves the single Alfresco {@link StoreRef} an Elasticsearch query targets and the index it maps to.
  */
 public class SearchStoreResolver
 {
@@ -73,36 +70,21 @@ public class SearchStoreResolver
         {
             throw new IllegalArgumentException("Querying Elasticsearch with a store list " + stores + " is not supported");
         }
-        return stores.get(0);
+        return stores.getFirst();
     }
 
     /**
      * Resolves the Elasticsearch index name for the store targeted by the query.
      *
-     * @param searchParameters
-     *            the current search parameters
-     * @return the Elasticsearch index name
-     */
-    public String resolveIndex(SearchParameters searchParameters)
-    {
-        return resolveIndex(searchParameters.getStores());
-    }
-
-    /**
-     * Resolves the Elasticsearch index name for the single targeted store.
-     *
      * @param stores
-     *            the requested stores; Elasticsearch supports exactly one
+     *            the requested stores
      * @return the Elasticsearch index name
-     * @throws IllegalArgumentException
-     *             if the store list is invalid or its protocol is unsupported
      */
     public String resolveIndex(List<StoreRef> stores)
     {
         StoreRef store = resolveStore(stores);
         return switch (store.getProtocol())
         {
-        // Both the live (workspace) and archive ("deleted-nodes") scopes target the single unified index.
         case StoreRef.PROTOCOL_WORKSPACE, StoreRef.PROTOCOL_ARCHIVE -> httpClientFactory.getIndexName();
         default -> throw new IllegalArgumentException(
                 "Protocol " + store.getProtocol() + " is not supported when using Elasticsearch");

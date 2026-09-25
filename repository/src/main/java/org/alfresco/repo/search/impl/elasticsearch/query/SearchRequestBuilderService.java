@@ -37,7 +37,6 @@ import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.search.SourceConfig;
 import org.opensearch.client.opensearch.core.search.TrackHits;
 
-import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.TermsAggregationWrapper;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.TermsAggregationWrapper.ComplementaryAggregation;
@@ -45,16 +44,16 @@ import org.alfresco.repo.search.impl.elasticsearch.query.highlight.Elasticsearch
 import org.alfresco.repo.search.impl.elasticsearch.query.language.LanguageQueryBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.query.sort.ElasticsearchSortBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtil;
+import org.alfresco.repo.search.impl.elasticsearch.store.SearchStoreResolver;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.util.Pair;
 
-@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public class SearchRequestBuilderService
 {
 
     private final LanguageQueryBuilder languageQueryBuilder;
-    private final ElasticsearchHttpClientFactory httpClientFactory;
+    private final SearchStoreResolver searchStoreResolver;
     private final ElasticsearchSortBuilder elasticsearchSortBuilder;
     private final ElasticsearchAggregationBuilder elasticsearchAggregationBuilder;
     private final ElasticsearchHighlightBuilder elasticsearchHighlightBuilder;
@@ -62,13 +61,13 @@ public class SearchRequestBuilderService
     public static final int DEFAULT_TRACK_TOTAL_HITS_UP_TO = 10000;
 
     public SearchRequestBuilderService(
-            LanguageQueryBuilder languageQueryBuilder, ElasticsearchHttpClientFactory httpClientFactory,
+            LanguageQueryBuilder languageQueryBuilder, SearchStoreResolver searchStoreResolver,
             ElasticsearchSortBuilder elasticsearchSortBuilder,
             ElasticsearchAggregationBuilder elasticsearchAggregationBuilder,
             ElasticsearchHighlightBuilder elasticsearchHighlightBuilder)
     {
         this.languageQueryBuilder = languageQueryBuilder;
-        this.httpClientFactory = httpClientFactory;
+        this.searchStoreResolver = searchStoreResolver;
         this.elasticsearchSortBuilder = elasticsearchSortBuilder;
         this.elasticsearchAggregationBuilder = elasticsearchAggregationBuilder;
         this.elasticsearchHighlightBuilder = elasticsearchHighlightBuilder;
@@ -223,16 +222,6 @@ public class SearchRequestBuilderService
      */
     public String getElasticIndex(List<StoreRef> stores)
     {
-        if (stores.size() != 1)
-        {
-            throw new RuntimeException("Querying Elasticsearch with an store list " + stores + " is not supported");
-        }
-        return switch (stores.get(0).getProtocol())
-        {
-        // ACS-12695: archive/deleted-nodes scope now targets the single unified "alfresco" index rather than the separate legacy archive index.
-        case StoreRef.PROTOCOL_WORKSPACE, StoreRef.PROTOCOL_ARCHIVE -> httpClientFactory.getIndexName();
-        default -> throw new RuntimeException(
-                "Protocol " + stores.get(0).getProtocol() + " is not supported when using Elasticsearch");
-        };
+        return searchStoreResolver.resolveIndex(stores);
     }
 }

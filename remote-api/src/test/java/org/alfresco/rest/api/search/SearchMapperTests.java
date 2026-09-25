@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,6 +29,7 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
@@ -581,15 +582,9 @@ public class SearchMapperTests
         communitySearchMapper.setDefaults(searchParameters);
         SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
 
-        try
-        {
-            communitySearchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.DELETED)), searchRequestContext);
-            fail();
-        }
-        catch (DisabledServiceException dse)
-        {
-            assertNotNull(dse.getMessage());
-        }
+        assertThatThrownBy(() -> communitySearchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.DELETED)), searchRequestContext))
+                .isInstanceOf(DisabledServiceException.class)
+                .hasMessageContaining("not supported");
     }
 
     @Test

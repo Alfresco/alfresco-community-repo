@@ -48,6 +48,7 @@ import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.HitsMetadata;
 
+import org.alfresco.repo.search.impl.elasticsearch.store.SearchStoreResolver;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
@@ -76,6 +77,8 @@ public class HighlightsHandlerTest
     FieldHighlightParameters fieldHighlightParametersB;
     @Mock
     GeneralHighlightParameters generalHighlightParameters;
+    @Mock
+    SearchStoreResolver searchStoreResolver;
 
     @Before
     public void setUp()
@@ -85,8 +88,9 @@ public class HighlightsHandlerTest
         given(searchHit.id()).willReturn(NODE_ID);
         given(generalHighlightParameters.getFields()).willReturn(List.of(fieldHighlightParametersA, fieldHighlightParametersB));
         given(searchParameters.getHighlight()).willReturn(generalHighlightParameters);
+        given(searchStoreResolver.resolveStore(searchParameters)).willReturn(STORE_REF_WORKSPACE_SPACESSTORE);
 
-        highlightsHandler = new HighlightsHandler();
+        highlightsHandler = new HighlightsHandler(searchStoreResolver);
     }
 
     @Test

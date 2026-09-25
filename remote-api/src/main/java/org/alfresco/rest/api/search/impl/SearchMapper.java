@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -108,8 +108,6 @@ public class SearchMapper
     public static final String LUCENE = "lucene";
     public static final String AFTS = "afts";
     private StoreMapper storeMapper;
-
-    /** Whether the {@code deleted-nodes} (trashcan) search scope is supported. Overridden by editions that support it. */
     private boolean deletedNodesScopeSupported;
 
     /**
@@ -508,11 +506,7 @@ public class SearchMapper
             List<String> stores = scope.getLocations();
             if (stores != null && !stores.isEmpty())
             {
-                if (stores.contains(StoreMapper.DELETED) && !deletedNodesScopeSupported)
-                {
-                    throw new DisabledServiceException(
-                            "The 'deleted-nodes' search scope (trashcan search) is not supported in this edition of Alfresco.");
-                }
+                validateDeletedNodesScopeSupported(stores);
 
                 // First reset the stores then add them.
                 sp.getStores().clear();
@@ -537,6 +531,15 @@ public class SearchMapper
                             new Object[]{": scope 'history' can only be used on its own"});
                 }
             }
+        }
+    }
+
+    private void validateDeletedNodesScopeSupported(List<String> stores)
+    {
+        if (!deletedNodesScopeSupported && stores.contains(StoreMapper.DELETED))
+        {
+            throw new DisabledServiceException(
+                    "The 'deleted-nodes' search scope (trashcan search) is not supported in this edition of Alfresco.");
         }
     }
 

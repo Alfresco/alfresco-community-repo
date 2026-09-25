@@ -56,6 +56,7 @@ import org.opensearch.client.opensearch.core.search.HitsMetadata;
 import org.opensearch.client.opensearch.core.search.TotalHits;
 
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.search.impl.elasticsearch.store.SearchStoreResolver;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -90,6 +91,9 @@ public class ElasticsearchResultSetBuilderTest
     private AggregationHandler aggregationHandler;
 
     @Mock
+    private SearchStoreResolver searchStoreResolver;
+
+    @Mock
     private SearchResponse<Object> searchResponse;
 
     @Mock
@@ -108,13 +112,14 @@ public class ElasticsearchResultSetBuilderTest
     @Before
     public void setUp()
     {
-        builder = new ElasticsearchResultSetBuilder(nodeService, nodeDAO, highlightsHandler, aggregationHandler);
+        builder = new ElasticsearchResultSetBuilder(nodeService, nodeDAO, highlightsHandler, aggregationHandler, searchStoreResolver);
 
         nodeRef1 = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, TEST_NODE_ID_1);
         nodeRef2 = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, TEST_NODE_ID_2);
         nodeRef3 = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, TEST_NODE_ID_3);
 
         // Default search parameters setup
+        when(searchStoreResolver.resolveStore(searchParameters)).thenReturn(STORE_REF_WORKSPACE_SPACESSTORE);
         when(searchParameters.getSkipCount()).thenReturn(TEST_SKIP_COUNT);
         when(searchParameters.isBulkFetchEnabled()).thenReturn(false);
     }

@@ -27,8 +27,6 @@ package org.alfresco.repo.search.impl.elasticsearch.resultset;
 
 import static java.util.Optional.ofNullable;
 
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +37,7 @@ import org.opensearch.client.opensearch.core.search.HitsMetadata;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.alfresco.repo.search.impl.elasticsearch.store.SearchStoreResolver;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -54,14 +53,16 @@ public class ElasticsearchResultSetBuilder
     private final NodeDAO nodeDAO;
     private final HighlightsHandler highlightsHandler;
     private final AggregationHandler aggregationHandler;
+    private final SearchStoreResolver searchStoreResolver;
 
     public ElasticsearchResultSetBuilder(NodeService nodeService, NodeDAO nodeDAO, HighlightsHandler highlightsHandler,
-            AggregationHandler aggregationHandler)
+            AggregationHandler aggregationHandler, SearchStoreResolver searchStoreResolver)
     {
         this.nodeService = nodeService;
         this.nodeDAO = nodeDAO;
         this.highlightsHandler = highlightsHandler;
         this.aggregationHandler = aggregationHandler;
+        this.searchStoreResolver = searchStoreResolver;
     }
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse)
@@ -84,7 +85,7 @@ public class ElasticsearchResultSetBuilder
             boolean searchAfterMode, Map<String, String> bucketsTranslator, Map<String, Pair<String, String>> complementaryBucketsTranslator)
     {
         var hits = ofNullable(searchResponse.hits()).map(HitsMetadata::hits).orElse(List.of());
-        List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(searchParameters, hits, searchParameters.isBulkFetchEnabled());
+        List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters);
 
         var resultSetMetaData = new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);
         var spellCheckResult = new SpellCheckResult(null, null, false);
@@ -119,7 +120,7 @@ public class ElasticsearchResultSetBuilder
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, List<Hit<Object>> hits, long totalHits, long queryTime)
     {
-        List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(searchParameters, hits, searchParameters.isBulkFetchEnabled());
+        List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters);
 
         var resultSetMetaData = new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);
         var spellCheckResult = new SpellCheckResult(null, null, false);
@@ -141,10 +142,10 @@ public class ElasticsearchResultSetBuilder
                 null);
     }
 
-    private List<NodeRefAndScore> mapNodeRefsAndScores(SearchParameters searchParameters, List<Hit<Object>> hits, boolean isBulkFetchEnabled)
+    private List<NodeRefAndScore> mapNodeRefsAndScores(List<Hit<Object>> hits, SearchParameters searchParameters)
     {
-        StoreRef storeRef = resolveStoreRef(searchParameters);
-        cacheNodes(hits.stream().map(hit -> new NodeRef(storeRef, hit.id())).toList(), isBulkFetchEnabled);
+        StoreRef storeRef = searchStoreResolver.resolveStore(searchParameters);
+        cacheNodes(hits.stream().map(hit -> new NodeRef(storeRef, hit.id())).toList(), searchParameters.isBulkFetchEnabled());
         List<NodeRefAndScore> results = new ArrayList<>();
         for (Hit<Object> hit : hits)
         {
@@ -155,17 +156,6 @@ public class ElasticsearchResultSetBuilder
             }
         }
         return results;
-    }
-
-    /**
-     * ACS-12695: hits now come from a single unified index, so the store can no longer be assumed to always be the workspace store - archive ("deleted-nodes") scope results must resolve to the archive store so that restore-by-id and other archive-only flows keep working.
-     */
-    static StoreRef resolveStoreRef(SearchParameters searchParameters)
-    {
-        return searchParameters.getStores().stream()
-                .filter(store -> StoreRef.PROTOCOL_ARCHIVE.equals(store.getProtocol()))
-                .findFirst()
-                .orElse(STORE_REF_WORKSPACE_SPACESSTORE);
     }
 
     private void cacheNodes(List<NodeRef> nodesRef, boolean isBulkFetchEnabled)

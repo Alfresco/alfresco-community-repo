@@ -55,11 +55,8 @@ jobs:
           key: updatecli-v1-${{ hashFiles('.updatecli/**') }}
           restore-keys: |
             updatecli-v1-
-      # TEMPORARY: diff disabled and apply forced on pull_request too, to validate
-      # this PR's manifests end to end. Revert both conditions to their normal
-      # split (diff on pull_request, apply otherwise) before merging.
       - name: "updatecli pipeline diff"
-        if: false
+        if: github.event_name == 'pull_request'
         run: updatecli pipeline diff --config ${{ matrix.manifest }} --values alfresco-updatecli/deployments/values/supported-matrix.yaml
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -67,7 +64,7 @@ jobs:
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       - name: "updatecli pipeline apply"
-        if: true
+        if: github.event_name != 'pull_request'
         run: updatecli pipeline apply --config ${{ matrix.manifest }} --values alfresco-updatecli/deployments/values/supported-matrix.yaml
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

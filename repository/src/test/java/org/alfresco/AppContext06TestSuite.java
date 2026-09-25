@@ -59,6 +59,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.oauth1.OAuth1CredentialsStoreServiceTest.class,
         org.alfresco.repo.oauth2.OAuth2CredentialsStoreServiceTest.class,
         org.alfresco.repo.template.TemplateServiceImplTest.class,
+        org.alfresco.repo.template.TemplateNodeTest.class,
         org.alfresco.repo.tenant.MultiTServiceImplTest.class,
         org.alfresco.repo.search.SearcherComponentTest.class,
         org.alfresco.repo.blog.BlogServiceImplTest.class,

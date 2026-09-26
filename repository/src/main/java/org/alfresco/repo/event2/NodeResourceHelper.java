@@ -92,6 +92,8 @@ public class NodeResourceHelper implements InitializingBean
 
     private NodeAspectFilter nodeAspectFilter;
     private NodePropertyFilter nodePropertyFilter;
+    /** Master switch for event2 filtering; when false, aspects/properties are not stripped (PRODENG-475). */
+    private boolean filteringEnabled = true;
 
     @Override
     public void afterPropertiesSet() throws Exception
@@ -111,6 +113,11 @@ public class NodeResourceHelper implements InitializingBean
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void setFilteringEnabled(boolean filteringEnabled)
+    {
+        this.filteringEnabled = filteringEnabled;
     }
 
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -218,7 +225,7 @@ public class NodeResourceHelper implements InitializingBean
         Map<String, Serializable> filteredProps = new HashMap<>(props.size());
 
         props.forEach((k, v) -> {
-            if (!nodePropertyFilter.isExcluded(k))
+            if (!filteringEnabled || !nodePropertyFilter.isExcluded(k))
             {
                 if (v instanceof MLText)
                 {
@@ -226,6 +233,10 @@ public class NodeResourceHelper implements InitializingBean
                 }
                 Serializable mappedValue = propertyMapper.map(k, v);
                 filteredProps.put(getQNamePrefixString(k), mappedValue);
+            }
+            else if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("EVENT2-FILTER-POC STRIP property '" + getQNamePrefixString(k) + "'");
             }
         });
 
@@ -237,7 +248,7 @@ public class NodeResourceHelper implements InitializingBean
         Map<String, Map<String, String>> filteredProps = new HashMap<>(props.size());
 
         props.forEach((k, v) -> {
-            if (!nodePropertyFilter.isExcluded(k) && v instanceof MLText)
+            if ((!filteringEnabled || !nodePropertyFilter.isExcluded(k)) && v instanceof MLText)
             {
                 final MLText mlTextValue = (MLText) v;
                 final HashMap<String, String> localizedValues = new HashMap<>(mlTextValue.size());
@@ -343,9 +354,13 @@ public class NodeResourceHelper implements InitializingBean
         Set<String> filteredAspects = new HashSet<>(aspects.size());
 
         aspects.forEach(q -> {
-            if (!nodeAspectFilter.isExcluded(q))
+            if (!filteringEnabled || !nodeAspectFilter.isExcluded(q))
             {
                 filteredAspects.add(getQNamePrefixString(q));
+            }
+            else if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("EVENT2-FILTER-POC STRIP aspect '" + getQNamePrefixString(q) + "'");
             }
         });
 

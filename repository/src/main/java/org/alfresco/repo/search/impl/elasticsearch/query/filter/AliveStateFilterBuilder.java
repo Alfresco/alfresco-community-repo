@@ -39,17 +39,24 @@ import org.alfresco.service.cmr.search.SearchParameters;
 public interface AliveStateFilterBuilder
 {
     /**
-     * Builds the filter restricting results by alive state. The default implementation restricts results to live nodes.
-     * 
      * @param searchParameters
      *            the parameters of the current search, including the requested scope/stores
      * @return a filter query restricting results by alive state
      */
-    default Query getAliveStateFilter(SearchParameters searchParameters)
+    Query getAliveStateFilter(SearchParameters searchParameters);
+
+    /**
+     * Builds an {@code ALIVE} term filter, shared by implementations.
+     *
+     * @param alive
+     *            {@code true} to match live nodes, {@code false} to match archived (deleted) nodes
+     * @return a term query on the {@code ALIVE} field
+     */
+    default Query aliveTermQuery(boolean alive)
     {
         return QueryBuilders.term()
                 .field(ALIVE)
-                .value(FieldValue.of(Boolean.toString(true)))
+                .value(FieldValue.of(Boolean.toString(alive)))
                 .build()
                 .toQuery();
     }

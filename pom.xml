@@ -62,7 +62,7 @@
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.22.0</dependency.jackson.version>
         <dependency.jackson.annotations.version>2.22</dependency.jackson.annotations.version>
-        <dependency.cxf.version>4.1.7</dependency.cxf.version>
+        <dependency.cxf.version>4.1.8</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.85</dependency.bouncycastle.version>
@@ -302,14 +302,6 @@
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-analysis-common</artifactId>
                 <version>${dependency.lucene.version}</version>
-            </dependency>
-
-            <!-- This dependency was added to override vulnerable neethi (3.2.1) pulled in by 'cxf-rt-ws-policy' 4.1.2 (PRODSEC-12231). -->
-            <!-- Please remove this, once 'cxf-rt-ws-policy' is released with neethi >= 3.2.2. -->
-            <dependency>
-                <groupId>org.apache.neethi</groupId>
-                <artifactId>neethi</artifactId>
-                <version>3.2.2</version>
             </dependency>
 
             <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->

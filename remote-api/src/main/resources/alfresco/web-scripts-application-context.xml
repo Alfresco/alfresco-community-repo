@@ -228,6 +228,7 @@
          <list>
             <value>AdminConsole</value>
             <value>AdminConsoleHelper</value>
+            <value>Bulk Filesystem Import</value>
          </list>
       </property>
    </bean>

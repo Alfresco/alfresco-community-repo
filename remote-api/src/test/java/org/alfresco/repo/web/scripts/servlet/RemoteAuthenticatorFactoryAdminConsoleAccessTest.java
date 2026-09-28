@@ -221,6 +221,15 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         complexCheckOfScriptCases(families);
     }
 
+    @Test
+    public void testAdminCanAccessBulkFilesystemImportScript()
+    {
+        Set<String> families = new HashSet<>();
+        families.add("Bulk Filesystem Import");
+        org.junit.Assert.assertTrue(remoteUserAuthenticatorFactory.getAdminConsoleScriptFamilies().containsAll(families));
+        complexCheckOfScriptCases(families);
+    }
+
     /**
      * Tested access to the AdminConsole for an non literal admin user but with admin permissions (user added to ALFRESCO_ADMINISTRATORS) and accessing via Basic Auth
      */

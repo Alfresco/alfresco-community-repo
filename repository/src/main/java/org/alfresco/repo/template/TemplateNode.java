@@ -658,7 +658,14 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         // TODO URLs for the repo server.
         // TODO URLs for folders
 
-        String siteShortName = services.getSiteService().getSiteShortName(getNodeRef());
+        // Run site lookup as system to avoid parent-folder permission issues.
+        String siteShortName = AuthenticationUtil.runAsSystem(new RunAsWork<>() {
+            @Override
+            public String doWork() throws Exception
+            {
+                return services.getSiteService().getSiteShortName(getNodeRef());
+            }
+        });
 
         String baseUrl = UrlUtil.getShareUrl(services.getSysAdminParams());
 
@@ -679,6 +686,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     // ------------------------------------------------------------------------------
     // Inner classes
 
+    @Override
     public NamespacePrefixResolver getNamespacePrefixResolver()
     {
         return this.services.getNamespaceService();

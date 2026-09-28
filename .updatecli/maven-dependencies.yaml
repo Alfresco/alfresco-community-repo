@@ -1,0 +1,75 @@
+---
+name: Bump Alfresco Maven dependency versions
+
+{{- $tengineAio := index .matrix.next "tengine-aio" }}
+{{- $trouter := .matrix.next.trouter }}
+{{- $nexusHost := trimPrefix "https://" (requiredEnv "NEXUS_URL") }}
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      email: '{{ requiredEnv "GITHUB_ACTOR" }}@users.noreply.github.com'
+      owner: "Alfresco"
+      repository: "alfresco-community-repo"
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      username: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      branch: "master"
+      commitusingapi: true
+
+sources:
+  transform-core:
+    name: Alfresco Transform Core version
+    kind: maven
+    spec:
+      repository: '{{ requiredEnv "NEXUS_URL" }}/content/groups/public'
+      groupid: org.alfresco
+      artifactid: alfresco-transform-model
+      versionfilter:
+        kind: '{{ $tengineAio.versionFilterKind }}'
+        pattern: '{{ $tengineAio.version }}'
+
+  transform-service:
+    name: Alfresco Transform Service version
+    kind: maven
+    spec:
+      repository: 'https://{{ requiredEnv "NEXUS_USERNAME" }}:{{ requiredEnv "NEXUS_PASSWORD" }}@{{ $nexusHost }}/content/groups/internal'
+      groupid: org.alfresco
+      artifactid: alfresco-transform-service
+      versionfilter:
+        kind: '{{ $trouter.versionFilterKind }}'
+        pattern: '{{ $trouter.version }}'
+
+targets:
+  transform-core-pom:
+    name: "Update dependency.alfresco-transform-core.version in pom.xml"
+    kind: file
+    sourceid: transform-core
+    scmid: default
+    spec:
+      file: pom.xml
+      matchpattern: '(?m)^(\s*<dependency\.alfresco-transform-core\.version>)[^<]*(</dependency\.alfresco-transform-core\.version>)$'
+      replacepattern: '${1}{{ source "transform-core" }}${2}'
+
+  transform-service-pom:
+    name: "Update dependency.alfresco-transform-service.version in pom.xml"
+    kind: file
+    sourceid: transform-service
+    scmid: default
+    spec:
+      file: pom.xml
+      matchpattern: '(?m)^(\s*<dependency\.alfresco-transform-service\.version>)[^<]*(</dependency\.alfresco-transform-service\.version>)$'
+      replacepattern: '${1}{{ source "transform-service" }}${2}'
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: "Bump Alfresco Maven dependency versions"
+    spec:
+      labels:
+        - dependencies
+      draft: false
+      reviewers:
+        - "Alfresco/alfresco-dependency-maintainers"

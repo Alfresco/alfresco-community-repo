@@ -36,14 +36,14 @@ import org.alfresco.service.cmr.search.SearchParameters;
 /**
  * Strategy for building the Elasticsearch/OpenSearch filter that restricts search results by the alive state of nodes (e.g. live vs. deleted nodes), based on the scope/store requested in the current search.
  */
-public interface AliveStateFilterBuilder
+public abstract class AliveStateFilterBuilder
 {
     /**
      * @param searchParameters
      *            the parameters of the current search, including the requested scope/stores
      * @return a filter query restricting results by alive state
      */
-    Query getAliveStateFilter(SearchParameters searchParameters);
+    public abstract Query getAliveStateFilter(SearchParameters searchParameters);
 
     /**
      * Builds an {@code ALIVE} term filter, shared by implementations.
@@ -52,7 +52,7 @@ public interface AliveStateFilterBuilder
      *            {@code true} to match live nodes, {@code false} to match archived (deleted) nodes
      * @return a term query on the {@code ALIVE} field
      */
-    default Query aliveTermQuery(boolean alive)
+    protected final Query aliveTermQuery(boolean alive)
     {
         return QueryBuilders.term()
                 .field(ALIVE)

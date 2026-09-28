@@ -32,7 +32,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 /**
  * Default {@link AliveStateFilterBuilder}: always restricts results to live (non-archived) nodes.
  */
-public class DefaultAliveStateFilterBuilder implements AliveStateFilterBuilder
+public class DefaultAliveStateFilterBuilder extends AliveStateFilterBuilder
 {
     @Override
     public Query getAliveStateFilter(SearchParameters searchParameters)

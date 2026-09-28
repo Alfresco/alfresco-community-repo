@@ -56,7 +56,7 @@ public class SearchStoreResolver
     {
         if (stores == null || stores.size() != 1)
         {
-            throw new IllegalArgumentException("Querying Elasticsearch with a store list " + stores + " is not supported");
+            throw new UnsupportedOperationException("Querying Elasticsearch with a store list " + stores + " is not supported");
         }
         return stores.getFirst();
     }

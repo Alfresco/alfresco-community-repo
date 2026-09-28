@@ -72,19 +72,19 @@ public class SearchStoreResolverTest
     @Test
     public void resolveStore_rejectsEmptyStoreList()
     {
-        assertThrows(IllegalArgumentException.class, () -> resolver.resolveStore(List.of()));
+        assertThrows(UnsupportedOperationException.class, () -> resolver.resolveStore(List.of()));
     }
 
     @Test
     public void resolveStore_rejectsMultipleStores()
     {
-        assertThrows(IllegalArgumentException.class, () -> resolver.resolveStore(List.of(WORKSPACE_STORE, ARCHIVE_STORE)));
+        assertThrows(UnsupportedOperationException.class, () -> resolver.resolveStore(List.of(WORKSPACE_STORE, ARCHIVE_STORE)));
     }
 
     @Test
     public void resolveStore_rejectsNullStoreList()
     {
-        assertThrows(IllegalArgumentException.class, () -> resolver.resolveStore((List<StoreRef>) null));
+        assertThrows(UnsupportedOperationException.class, () -> resolver.resolveStore((List<StoreRef>) null));
     }
 
     @Test

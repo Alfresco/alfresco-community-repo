@@ -49,7 +49,7 @@ public class SearchStoreResolver
      * @param stores
      *            the requested stores
      * @return the single {@link StoreRef}
-     * @throws IllegalArgumentException
+     * @throws UnsupportedOperationException
      *             if the list does not contain exactly one store
      */
     public StoreRef resolveStore(List<StoreRef> stores)

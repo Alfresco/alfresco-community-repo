@@ -157,32 +157,31 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         CountDownLatch ready = new CountDownLatch(CONCURRENT_REQUEST_COUNT);
         CountDownLatch start = new CountDownLatch(1);
         List<Future<Optional<OIDCUserInfo>>> results = new ArrayList<>();
-        try (ExecutorService executor = Executors.newFixedThreadPool(CONCURRENT_REQUEST_COUNT))
+        // not try-with-resources: ExecutorService only became AutoCloseable in Java 19
+        ExecutorService executor = Executors.newFixedThreadPool(CONCURRENT_REQUEST_COUNT);
+        try
         {
-            try
+            for (int i = 0; i < CONCURRENT_REQUEST_COUNT; i++)
             {
-                for (int i = 0; i < CONCURRENT_REQUEST_COUNT; i++)
-                {
-                    results.add(executor.submit(() -> {
-                        ready.countDown();
-                        start.await();
-                        return jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessToken);
-                    }));
-                }
-
-                assertTrue(ready.await(30, TimeUnit.SECONDS));
-                start.countDown();
-
-                for (Future<Optional<OIDCUserInfo>> result : results)
-                {
-                    assertEquals(IDS_USERNAME, result.get(60, TimeUnit.SECONDS).orElseThrow().username());
-                }
+                results.add(executor.submit(() -> {
+                    ready.countDown();
+                    start.await();
+                    return jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessToken);
+                }));
             }
-            finally
+
+            assertTrue(ready.await(30, TimeUnit.SECONDS));
+            start.countDown();
+
+            for (Future<Optional<OIDCUserInfo>> result : results)
             {
-                start.countDown();
-                executor.shutdownNow();
+                assertEquals(IDS_USERNAME, result.get(60, TimeUnit.SECONDS).orElseThrow().username());
             }
+        }
+        finally
+        {
+            start.countDown();
+            executor.shutdownNow();
         }
 
         AuthenticationUtil.runAsSystem(() -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {

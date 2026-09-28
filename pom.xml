@@ -57,8 +57,8 @@
         <dependency.acs-event-model.version>1.1.0-A.1</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
-        <dependency.spring.version>7.0.8</dependency.spring.version>
-        <dependency.spring-security.version>7.0.6</dependency.spring-security.version>
+        <dependency.spring.version>7.0.9</dependency.spring.version>
+        <dependency.spring-security.version>7.0.7</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.22.3</dependency.jackson.version>
         <dependency.jackson.annotations.version>2.22</dependency.jackson.annotations.version>

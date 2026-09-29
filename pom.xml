@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>26.3.0.57-SNAPSHOT</version>
+    <version>26.3.0.59-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -61,7 +61,7 @@
         <dependency.spring-security.version>7.0.7</dependency.spring-security.version>
         <dependency.micrometer.version>1.16.7</dependency.micrometer.version> <!-- should be in sync with micrometer-observation transitive dependency from spring-context -->
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.22.1</dependency.jackson.version>
+        <dependency.jackson.version>2.22.3</dependency.jackson.version>
         <dependency.cxf.version>4.1.8</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
@@ -982,6 +982,12 @@
                         <artifactId>geronimo-jms_2.0_spec</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <!-- Pin's proton-j transitive dependency of camel-amqp/qpid-jms-client to 0.35.0 (MNT-25897) -->
+            <dependency>
+                <groupId>org.apache.qpid</groupId>
+                <artifactId>proton-j</artifactId>
+                <version>0.35.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>

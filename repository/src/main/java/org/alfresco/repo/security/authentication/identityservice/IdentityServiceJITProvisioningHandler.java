@@ -28,6 +28,7 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -35,6 +36,7 @@ import java.util.function.Predicate;
 import org.apache.commons.lang3.StringUtils;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.identityservice.user.AccessTokenToDecodedTokenUserMapper;
 import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
@@ -50,23 +52,31 @@ import org.alfresco.service.transaction.TransactionService;
  */
 public class IdentityServiceJITProvisioningHandler
 {
+    private static final String LOCK_NAMESPACE = "http://www.alfresco.org/identity-service/jit-provisioning";
+    private static final long LOCK_TTL = 30000L;
+    private static final long LOCK_RETRY_WAIT = 100L;
+    private static final int LOCK_RETRY_COUNT = 300;
+
     private final IdentityServiceFacade identityServiceFacade;
     private final PersonService personService;
     private final TransactionService transactionService;
     private final IdentityServiceConfig identityServiceConfig;
-    private UserInfoAttrMapping userInfoAttrMapping;
+    private final JobLockService jobLockService;
+    private volatile UserInfoAttrMapping userInfoAttrMapping;
     private TokenUserToOIDCUserMapper tokenUserToOIDCUserMapper;
     private AccessTokenToDecodedTokenUserMapper tokenToDecodedTokenUserMapper;
 
     public IdentityServiceJITProvisioningHandler(IdentityServiceFacade identityServiceFacade,
             PersonService personService,
             TransactionService transactionService,
-            IdentityServiceConfig identityServiceConfig)
+            IdentityServiceConfig identityServiceConfig,
+            JobLockService jobLockService)
     {
         this.identityServiceFacade = identityServiceFacade;
         this.personService = personService;
         this.transactionService = transactionService;
         this.identityServiceConfig = identityServiceConfig;
+        this.jobLockService = jobLockService;
     }
 
     /**
@@ -93,36 +103,67 @@ public class IdentityServiceJITProvisioningHandler
             @Override
             public Optional<OIDCUserInfo> doWork() throws Exception
             {
-                return oidcUserInfo.map(oidcUser -> {
-                    if (userDoesNotExistsAndCanBeCreated(oidcUser))
-                    {
-
-                        if (!oidcUser.allFieldsNotEmpty())
-                        {
-                            oidcUser = extractUserInfoResponseFromEndpoint(bearerToken, userInfoAttrMapping)
-                                    .map(tokenUserToOIDCUserMapper::toOIDCUser)
-                                    .orElse(oidcUser);
-                        }
-                        createPerson(oidcUser);
-                    }
-                    return oidcUser;
-                });
+                return oidcUserInfo.map(oidcUser -> createUserIfNeeded(bearerToken, oidcUser));
             }
 
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    private void initMappers(IdentityServiceConfig identityServiceConfig)
+    private synchronized void initMappers(IdentityServiceConfig identityServiceConfig)
     {
-        this.userInfoAttrMapping = initUserInfoAttrMapping(identityServiceConfig);
+        if (userInfoAttrMapping != null)
+        {
+            return;
+        }
+        UserInfoAttrMapping mapping = initUserInfoAttrMapping(identityServiceConfig);
         this.tokenUserToOIDCUserMapper = new TokenUserToOIDCUserMapper(personService);
-        this.tokenToDecodedTokenUserMapper = new AccessTokenToDecodedTokenUserMapper(userInfoAttrMapping);
+        this.tokenToDecodedTokenUserMapper = new AccessTokenToDecodedTokenUserMapper(mapping);
+        this.userInfoAttrMapping = mapping;
     }
 
-    private boolean userDoesNotExistsAndCanBeCreated(OIDCUserInfo userInfo)
+    private OIDCUserInfo createUserIfNeeded(String bearerToken, OIDCUserInfo userInfo)
     {
-        return userInfo.username() != null && personService.createMissingPeople()
-                && !personService.personExists(userInfo.username());
+        boolean userNeedsCreating = transactionService.getRetryingTransactionHelper()
+                .doInTransaction(() -> userNeedsCreating(userInfo), true);
+        if (!userNeedsCreating)
+        {
+            return userInfo;
+        }
+
+        OIDCUserInfo completeUserInfo = completeUserInfo(bearerToken, userInfo);
+        return transactionService.getRetryingTransactionHelper()
+                .doInTransaction(() -> createUserIfNeeded(completeUserInfo), false);
+    }
+
+    private boolean userNeedsCreating(OIDCUserInfo userInfo)
+    {
+        String username = userInfo.username();
+        return username != null && personService.createMissingPeople() && !personService.personExists(username);
+    }
+
+    private OIDCUserInfo completeUserInfo(String bearerToken, OIDCUserInfo userInfo)
+    {
+        if (userInfo.allFieldsNotEmpty())
+        {
+            return userInfo;
+        }
+        return extractUserInfoResponseFromEndpoint(bearerToken, userInfoAttrMapping)
+                .map(tokenUserToOIDCUserMapper::toOIDCUser)
+                .orElse(userInfo);
+    }
+
+    private OIDCUserInfo createUserIfNeeded(OIDCUserInfo userInfo)
+    {
+        String username = userInfo.username();
+        QName lockQName = QName.createQName(LOCK_NAMESPACE, username.toLowerCase(Locale.ROOT));
+        jobLockService.getTransactionalLock(lockQName, LOCK_TTL, LOCK_RETRY_WAIT, LOCK_RETRY_COUNT);
+        if (personService.personExists(username))
+        {
+            return userInfo;
+        }
+
+        createPerson(userInfo);
+        return userInfo;
     }
 
     private Optional<DecodedTokenUser> extractUserInfoResponseFromAccessToken(String bearerToken)

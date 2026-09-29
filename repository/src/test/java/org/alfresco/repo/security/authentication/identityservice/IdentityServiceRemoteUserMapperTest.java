@@ -41,6 +41,7 @@ import junit.framework.TestCase;
 import org.mockito.Mockito;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.DecodedAccessToken;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
@@ -108,7 +109,8 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
 
         when(personService.getUserIdentifier(anyString())).thenAnswer(i -> i.getArgument(0, String.class));
 
-        final IdentityServiceJITProvisioningHandler jitProvisioning = new IdentityServiceJITProvisioningHandler(facade, personService, transactionService, identityServiceConfig);
+        final IdentityServiceJITProvisioningHandler jitProvisioning = new IdentityServiceJITProvisioningHandler(
+                facade, personService, transactionService, identityServiceConfig, mock(JobLockService.class));
 
         final IdentityServiceRemoteUserMapper mapper = new IdentityServiceRemoteUserMapper();
         mapper.setJitProvisioningHandler(jitProvisioning);

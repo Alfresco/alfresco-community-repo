@@ -70,6 +70,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.TypeQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteMembershipCacheEvictionListenerTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteTermsAggregationBuilderTest;
+import org.alfresco.repo.search.impl.elasticsearch.query.filter.DefaultAliveStateFilterBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.AFTSBooleanOperatorsAdaptorTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ElasticsearchAFTSQueryBuilderTest;
@@ -125,6 +126,9 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTe
 
         // Permissions
         FlatElasticsearchPermissionQueryFactoryTest.class,
+
+        // Filters
+        DefaultAliveStateFilterBuilderTest.class,
 
         // Query building
         AFTSBooleanOperatorsAdaptorTest.class,

@@ -330,6 +330,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationHandlerTest.class,
         org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtilTest.class,
         org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.store.SearchStoreResolverTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiserTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.FieldMappingBuilderTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.ResourceUtilsTest.class,

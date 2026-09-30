@@ -450,4 +450,9 @@ public class NodeResourceHelper implements InitializingBean
     {
         return permissionService;
     }
+
+    public NodeService getNodeService()
+    {
+        return nodeService;
+    }
 }

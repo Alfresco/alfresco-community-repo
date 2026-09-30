@@ -143,6 +143,11 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     @Before
     public void setUp() throws Exception
     {
+        applicationContext.getBeansOfType(EventGenerator.class).values()
+                .forEach(generator -> generator.setFilteringEnabled(true));
+        applicationContext.getBeansOfType(NodeResourceHelper.class).values()
+                .forEach(helper -> helper.setFilteringEnabled(true));
+
         if (!isCamelConfigured)
         {
             dataFormat = new JacksonDataFormat(objectMapper, RepoEvent.class);

@@ -61,6 +61,7 @@
         <property name="eventSender" ref="eventSender"/>
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="enabled" value="${repo.event2.enabled}"/>
+        <property name="filteringEnabled" value="${repo.event2.filter.enabled}"/>
     </bean>
 
     <bean id="baseNodeResourceHelper" abstract="true">
@@ -71,6 +72,7 @@
         <property name="namespaceService" ref="namespaceService"/>
         <property name="permissionService" ref="permissionService"/>
         <property name="propertyMapper" ref="event2PropertyMapper"/>
+        <property name="filteringEnabled" value="${repo.event2.filter.enabled}"/>
     </bean>
 
     <bean id="baseEventSender" abstract="true">

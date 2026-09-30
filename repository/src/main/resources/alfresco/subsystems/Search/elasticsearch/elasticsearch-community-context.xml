@@ -64,7 +64,6 @@
         <property name="user" value="${elasticsearch.user}" />
         <property name="password" value="${elasticsearch.password}" />
         <property name="indexName" value="${elasticsearch.indexName}" />
-        <property name="archiveIndexName" value="${elasticsearch.archive.indexName}" />
         <property name="maxTotalConnections" value="${elasticsearch.max.total.connections}" />
         <property name="maxHostConnections" value="${elasticsearch.max.host.connections}" />
         <property name="socketTimeout" value="${elasticsearch.http.socket.timeout}" />

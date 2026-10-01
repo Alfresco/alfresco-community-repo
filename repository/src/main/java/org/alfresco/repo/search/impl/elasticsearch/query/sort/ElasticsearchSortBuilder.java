@@ -60,12 +60,15 @@ public class ElasticsearchSortBuilder
     private final NamespaceDAO namespaceDAO;
     private final DictionaryService dictionaryService;
     private final IndexConfigurationInitializer indexConfigurationInitializer;
+    private final boolean nodeDbidTieBreakerEnabled;
 
-    public ElasticsearchSortBuilder(NamespaceDAO namespaceDAO, DictionaryService dictionaryService, IndexConfigurationInitializer indexConfigurationInitializer)
+    public ElasticsearchSortBuilder(NamespaceDAO namespaceDAO, DictionaryService dictionaryService, IndexConfigurationInitializer indexConfigurationInitializer,
+            boolean nodeDbidTieBreakerEnabled)
     {
         this.namespaceDAO = namespaceDAO;
         this.dictionaryService = dictionaryService;
         this.indexConfigurationInitializer = indexConfigurationInitializer;
+        this.nodeDbidTieBreakerEnabled = nodeDbidTieBreakerEnabled;
     }
 
     /**
@@ -91,10 +94,8 @@ public class ElasticsearchSortBuilder
                 .map(Optional::get)
                 .forEach(sortBuilders::add);
 
-        boolean documentOrderRequested = sortDefinitions.stream()
-                .anyMatch(sortDefinition -> sortDefinition.getSortType() == SearchParameters.SortDefinition.SortType.DOCUMENT);
         String nodeDbidSortField = getSortableFieldName(PROPERTY_FIELD_PREFIX + ContentModel.PROP_NODE_DBID);
-        boolean nodeDbidSortRequested = sortDefinitions.stream()
+        boolean nodeDbidSortRequested = nodeDbidTieBreakerEnabled && sortDefinitions.stream()
                 .filter(sortDefinition -> sortDefinition.getSortType() == SearchParameters.SortDefinition.SortType.FIELD)
                 .map(SearchParameters.SortDefinition::getField)
                 .map(this::normalizeSortField)
@@ -102,12 +103,12 @@ public class ElasticsearchSortBuilder
                 .map(this::getSortableFieldName)
                 .anyMatch(nodeDbidSortField::equals);
 
-        if (sortBuilders.isEmpty())
+        if (nodeDbidTieBreakerEnabled && sortBuilders.isEmpty())
         {
             sortBuilders.add(new SortOptions.Builder().score(new ScoreSort.Builder().order(SortOrder.Desc).build()).build());
         }
 
-        if (!documentOrderRequested && !nodeDbidSortRequested)
+        if (nodeDbidTieBreakerEnabled && !nodeDbidSortRequested)
         {
             sortBuilders.add(createFieldSort(nodeDbidSortField, SortOrder.Asc));
         }

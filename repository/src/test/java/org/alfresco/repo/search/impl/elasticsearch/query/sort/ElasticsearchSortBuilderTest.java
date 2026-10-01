@@ -49,12 +49,15 @@ import org.alfresco.service.namespace.NamespaceService;
 public class ElasticsearchSortBuilderTest
 {
     private ElasticsearchSortBuilder sortBuilder;
+    private NamespaceDAO namespaceDAO;
+    private DictionaryService dictionaryService;
+    private IndexConfigurationInitializer indexConfigurationInitializer;
     private PropertyDefinition propertyDefinition;
 
     @Before
     public void setUp()
     {
-        NamespaceDAO namespaceDAO = mock(NamespaceDAO.class);
+        namespaceDAO = mock(NamespaceDAO.class);
         when(namespaceDAO.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
         when(namespaceDAO.getNamespaceURI(NamespaceService.SYSTEM_MODEL_PREFIX)).thenReturn(NamespaceService.SYSTEM_MODEL_1_0_URI);
         when(namespaceDAO.getPrefixes(NamespaceService.CONTENT_MODEL_1_0_URI)).thenReturn(List.of(NamespaceService.CONTENT_MODEL_PREFIX));
@@ -64,10 +67,11 @@ public class ElasticsearchSortBuilderTest
         when(propertyDefinition.isIndexed()).thenReturn(true);
         when(propertyDefinition.getIndexTokenisationMode()).thenReturn(IndexTokenisationMode.FALSE);
 
-        DictionaryService dictionaryService = mock(DictionaryService.class);
+        dictionaryService = mock(DictionaryService.class);
         when(dictionaryService.getProperty(any())).thenReturn(propertyDefinition);
 
-        sortBuilder = new ElasticsearchSortBuilder(namespaceDAO, dictionaryService, mock(IndexConfigurationInitializer.class));
+        indexConfigurationInitializer = mock(IndexConfigurationInitializer.class);
+        sortBuilder = new ElasticsearchSortBuilder(namespaceDAO, dictionaryService, indexConfigurationInitializer, true);
     }
 
     @Test
@@ -132,14 +136,39 @@ public class ElasticsearchSortBuilderTest
     }
 
     @Test
-    public void shouldPreserveDocumentSortWithoutTieBreaker()
+    public void shouldPreserveExistingIndexCompatibilityWhenTieBreakerDisabled()
+    {
+        ElasticsearchSortBuilder compatibilitySortBuilder = new ElasticsearchSortBuilder(
+                namespaceDAO, dictionaryService, indexConfigurationInitializer, false);
+        SearchParameters searchParameters = searchParametersWithSort(SearchParameters.SortDefinition.SortType.FIELD, "cm:name", true);
+
+        List<SortOptions> sorts = compatibilitySortBuilder.getSortBuilders(searchParameters);
+
+        assertEquals(1, sorts.size());
+        assertFieldSort(sorts.get(0), "cm%3Aname_untokenized", SortOrder.Asc);
+    }
+
+    @Test
+    public void shouldPreserveDefaultRelevanceWhenTieBreakerDisabled()
+    {
+        ElasticsearchSortBuilder compatibilitySortBuilder = new ElasticsearchSortBuilder(
+                namespaceDAO, dictionaryService, indexConfigurationInitializer, false);
+
+        List<SortOptions> sorts = compatibilitySortBuilder.getSortBuilders(new SearchParameters());
+
+        assertTrue(sorts.isEmpty());
+    }
+
+    @Test
+    public void shouldAppendNodeDbidToDocumentSort()
     {
         SearchParameters searchParameters = searchParametersWithSort(SearchParameters.SortDefinition.SortType.DOCUMENT, null, true);
 
         List<SortOptions> sorts = sortBuilder.getSortBuilders(searchParameters);
 
-        assertEquals(1, sorts.size());
+        assertEquals(2, sorts.size());
         assertFieldSort(sorts.get(0), "_doc", SortOrder.Asc);
+        assertFieldSort(sorts.get(1), "sys%3Anode%2Ddbid_untokenized", SortOrder.Asc);
     }
 
     private SearchParameters searchParametersWithSort(SearchParameters.SortDefinition.SortType type, String field, boolean ascending)

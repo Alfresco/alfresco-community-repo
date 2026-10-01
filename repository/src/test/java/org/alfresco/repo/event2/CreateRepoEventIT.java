@@ -100,6 +100,7 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("default description", getProperty(nodeResource, "cm:description"));
         assertEquals("default description", getLocalizedProperty(nodeResource, "cm:description", defaultLocale));
         assertEquals("german description", getLocalizedProperty(nodeResource, "cm:description", germanLocale));
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID), getProperty(nodeResource, "sys:node-dbid"));
         assertNull("There is no content.", nodeResource.getContent());
 
         assertNotNull("Missing createdByUser property.", nodeResource.getCreatedByUser());

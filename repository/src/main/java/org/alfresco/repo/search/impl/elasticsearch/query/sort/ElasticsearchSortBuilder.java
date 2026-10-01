@@ -28,11 +28,10 @@ package org.alfresco.repo.search.impl.elasticsearch.query.sort;
 import static org.alfresco.repo.search.adaptor.QueryConstants.PROPERTY_FIELD_PREFIX;
 import static org.alfresco.repo.search.impl.QueryParserUtils.matchPropertyDefinition;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.opensearch.client.opensearch._types.FieldSort;
 import org.opensearch.client.opensearch._types.FieldValue;
@@ -42,6 +41,7 @@ import org.opensearch.client.opensearch._types.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.IndexConfigurationInitializer;
@@ -75,7 +75,6 @@ public class ElasticsearchSortBuilder
      *            Containing sort definition
      * @return List of SortBuilders
      */
-    @SuppressWarnings("PMD.ExhaustiveSwitchHasDefault")
     public List<SortOptions> getSortBuilders(SearchParameters searchParameters)
     {
 
@@ -88,43 +87,72 @@ public class ElasticsearchSortBuilder
         AlfrescoFunctionEvaluationContext functionContext = new AlfrescoFunctionEvaluationContext(
                 namespaceDAO, dictionaryService, searchParameters.getNamespace());
 
-        return searchParameters.getSortDefinitions().stream().map(sortDefinition -> {
-            SortOrder sortOrder = sortDefinition.isAscending() ? SortOrder.Asc : SortOrder.Desc;
-            SortOptions sortBuilder = null;
-            switch (sortDefinition.getSortType())
+        List<SortOptions> sortBuilders = new ArrayList<>();
+        sortDefinitions.stream()
+                .map(sortDefinition -> getSortBuilder(sortDefinition, functionContext))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(sortBuilders::add);
+
+        boolean documentOrderRequested = sortDefinitions.stream()
+                .anyMatch(sortDefinition -> sortDefinition.getSortType() == SearchParameters.SortDefinition.SortType.DOCUMENT);
+        String nodeDbidSortField = getSortableFieldName(PROPERTY_FIELD_PREFIX + ContentModel.PROP_NODE_DBID);
+        boolean nodeDbidSortRequested = sortDefinitions.stream()
+                .filter(sortDefinition -> sortDefinition.getSortType() == SearchParameters.SortDefinition.SortType.FIELD)
+                .map(SearchParameters.SortDefinition::getField)
+                .map(this::normalizeSortField)
+                .map(functionContext::getLuceneFieldName)
+                .map(this::getSortableFieldName)
+                .anyMatch(nodeDbidSortField::equals);
+
+        if (!sortBuilders.isEmpty() && !documentOrderRequested && !nodeDbidSortRequested)
+        {
+            sortBuilders.add(createFieldSort(nodeDbidSortField, SortOrder.Asc));
+        }
+
+        return sortBuilders;
+    }
+
+    @SuppressWarnings("PMD.ExhaustiveSwitchHasDefault")
+    private Optional<SortOptions> getSortBuilder(SearchParameters.SortDefinition sortDefinition, AlfrescoFunctionEvaluationContext functionContext)
+    {
+        SortOrder sortOrder = sortDefinition.isAscending() ? SortOrder.Asc : SortOrder.Desc;
+        switch (sortDefinition.getSortType())
+        {
+        case FIELD:
+            String sortField = normalizeSortField(sortDefinition.getField());
+            String luceneFieldName = functionContext.getLuceneFieldName(sortField);
+            boolean nodeDbidSort = luceneFieldName != null && getSortableFieldName(PROPERTY_FIELD_PREFIX + ContentModel.PROP_NODE_DBID)
+                    .equals(getSortableFieldName(luceneFieldName));
+            if (!nodeDbidSort && !fieldIsIndexed(luceneFieldName))
             {
-            case FIELD:
-                String sortField = normalizeSortField(sortDefinition.getField());
-
-                String luceneFieldName = functionContext.getLuceneFieldName(sortField);
-
-                if (!fieldIsIndexed(luceneFieldName))
-                {
-                    LOGGER.warn("Ignorning sort on field {}. Sorting by unindexed fields is not supported.",
-                            sortDefinition.getField());
-                    break;
-                }
-
-                if (fieldIsTokenizedOnly(luceneFieldName))
-                {
-                    LOGGER.warn("Ignorning sort on field {}. Sorting by tokenized fields is not supported.",
-                            sortDefinition.getField());
-                    break;
-                }
-
-                sortBuilder = new SortOptions.Builder().field(new FieldSort.Builder().field(getSortableFieldName(luceneFieldName)).missing(FieldValue.of("_last")).order(sortOrder).build()).build();
-                break;
-            case DOCUMENT:
-                sortBuilder = new SortOptions.Builder().field(new FieldSort.Builder().field("_doc").missing(FieldValue.of("_last")).order(sortOrder).build()).build();
-                break;
-            case SCORE:
-                sortBuilder = new SortOptions.Builder().score(new ScoreSort.Builder().order(sortOrder).build()).build();
-                break;
-            default:
+                LOGGER.warn("Ignorning sort on field {}. Sorting by unindexed fields is not supported.",
+                        sortDefinition.getField());
+                return Optional.empty();
             }
+            if (!nodeDbidSort && fieldIsTokenizedOnly(luceneFieldName))
+            {
+                LOGGER.warn("Ignorning sort on field {}. Sorting by tokenized fields is not supported.",
+                        sortDefinition.getField());
+                return Optional.empty();
+            }
+            return Optional.of(createFieldSort(getSortableFieldName(luceneFieldName), sortOrder));
+        case DOCUMENT:
+            return Optional.of(createFieldSort("_doc", sortOrder));
+        case SCORE:
+            return Optional.of(new SortOptions.Builder().score(new ScoreSort.Builder().order(sortOrder).build()).build());
+        default:
+            return Optional.empty();
+        }
+    }
 
-            return sortBuilder;
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+    private SortOptions createFieldSort(String fieldName, SortOrder sortOrder)
+    {
+        return new SortOptions.Builder().field(new FieldSort.Builder()
+                .field(fieldName)
+                .missing(FieldValue.of("_last"))
+                .order(sortOrder)
+                .build()).build();
     }
 
     private String getSortableFieldName(String name)

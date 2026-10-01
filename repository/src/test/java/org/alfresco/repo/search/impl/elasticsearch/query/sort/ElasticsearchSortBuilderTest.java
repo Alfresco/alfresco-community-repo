@@ -119,6 +119,19 @@ public class ElasticsearchSortBuilderTest
     }
 
     @Test
+    public void shouldSortByScoreAndNodeDbidWhenNoSortRequested()
+    {
+        SearchParameters searchParameters = new SearchParameters();
+
+        List<SortOptions> sorts = sortBuilder.getSortBuilders(searchParameters);
+
+        assertEquals(2, sorts.size());
+        assertTrue(sorts.get(0).isScore());
+        assertEquals(SortOrder.Desc, sorts.get(0).score().order());
+        assertFieldSort(sorts.get(1), "sys%3Anode%2Ddbid_untokenized", SortOrder.Asc);
+    }
+
+    @Test
     public void shouldPreserveDocumentSortWithoutTieBreaker()
     {
         SearchParameters searchParameters = searchParametersWithSort(SearchParameters.SortDefinition.SortType.DOCUMENT, null, true);

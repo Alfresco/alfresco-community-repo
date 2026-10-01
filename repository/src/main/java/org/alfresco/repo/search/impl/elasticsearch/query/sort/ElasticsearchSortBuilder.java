@@ -78,11 +78,8 @@ public class ElasticsearchSortBuilder
     public List<SortOptions> getSortBuilders(SearchParameters searchParameters)
     {
 
-        List<SearchParameters.SortDefinition> sortDefinitions = searchParameters.getSortDefinitions();
-        if (sortDefinitions == null)
-        {
-            return Collections.emptyList();
-        }
+        List<SearchParameters.SortDefinition> sortDefinitions = Optional.<List<SearchParameters.SortDefinition>> ofNullable(searchParameters.getSortDefinitions())
+                .orElseGet(Collections::emptyList);
 
         AlfrescoFunctionEvaluationContext functionContext = new AlfrescoFunctionEvaluationContext(
                 namespaceDAO, dictionaryService, searchParameters.getNamespace());
@@ -105,7 +102,12 @@ public class ElasticsearchSortBuilder
                 .map(this::getSortableFieldName)
                 .anyMatch(nodeDbidSortField::equals);
 
-        if (!sortBuilders.isEmpty() && !documentOrderRequested && !nodeDbidSortRequested)
+        if (sortBuilders.isEmpty())
+        {
+            sortBuilders.add(new SortOptions.Builder().score(new ScoreSort.Builder().order(SortOrder.Desc).build()).build());
+        }
+
+        if (!documentOrderRequested && !nodeDbidSortRequested)
         {
             sortBuilders.add(createFieldSort(nodeDbidSortField, SortOrder.Asc));
         }

@@ -50,7 +50,7 @@
                     </executions>
                     <configuration>
                         <container>
-                            <containerId>tomcat9x</containerId>
+                            <containerId>tomcat11x</containerId>
                             <type>embedded</type>
                             <log>target/cargo.log</log>
                         </container>

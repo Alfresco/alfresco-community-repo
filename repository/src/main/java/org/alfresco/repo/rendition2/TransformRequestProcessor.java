@@ -29,12 +29,11 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.messaging.TextMessageHandler;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
@@ -45,9 +44,9 @@ import org.alfresco.util.ParameterCheck;
  *
  * @author aepure
  */
-public class TransformRequestProcessor implements Processor
+public class TransformRequestProcessor implements TextMessageHandler
 {
-    private static Log logger = LogFactory.getLog(RenditionEventProcessor.class);
+    private static Log logger = LogFactory.getLog(TransformRequestProcessor.class);
 
     private RenditionService2Impl renditionService2;
     private ObjectMapper messagingObjectMapper;
@@ -69,19 +68,17 @@ public class TransformRequestProcessor implements Processor
     }
 
     @Override
-    public void process(Exchange exchange) throws Exception
+    public void process(String body)
     {
-        String body = (String) exchange.getMessage().getBody();
-
         if (logger.isDebugEnabled())
         {
-            logger.info("Processing message [thread=" + Thread.currentThread().getId() + ", body=" + body + "]");
+            logger.info("Processing message [thread=" + Thread.currentThread().threadId() + ", body=" + body + "]");
         }
         if (body == null || body.isEmpty())
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Exchange message is null or empty");
+                logger.debug("Message body is null or empty");
             }
             return;
         }

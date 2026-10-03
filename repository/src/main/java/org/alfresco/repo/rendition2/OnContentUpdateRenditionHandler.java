@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,18 +23,11 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.messaging.camel.routes;
+package org.alfresco.repo.rendition2;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import org.springframework.beans.factory.InitializingBean;
 
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
+import org.alfresco.messaging.TextMessageHandler;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
@@ -47,58 +40,46 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 
-/**
- * Rendition listener for on content update raw event.
- * 
- * @author Cristian Turlica
- */
-@Component
-public class OnContentUpdateRenditionRoute extends RouteBuilder
+public class OnContentUpdateRenditionHandler implements InitializingBean, TextMessageHandler
 {
-    private static Log logger = LogFactory.getLog(OnContentUpdateRenditionRoute.class);
+    private final String endpointUri;
+    private final TransactionAwareEventProducer eventProducer;
+    private final PolicyComponent policyComponent;
+    private final RenditionEventProcessor eventProcessor;
 
-    @Value("${acs.repo.rendition.events.endpoint}")
-    public String sourceQueue;
-
-    // Not restricted for now, should be restricted after performance tests.
-    private ExecutorService executorService = Executors.newCachedThreadPool();
-
-    @Autowired
-    private TransactionAwareEventProducer transactionAwareEventProducer;
-
-    @Autowired
-    private PolicyComponent policyComponent;
+    public OnContentUpdateRenditionHandler(String endpointUri, TransactionAwareEventProducer eventProducer,
+            PolicyComponent policyComponent, RenditionEventProcessor eventProcessor)
+    {
+        this.endpointUri = endpointUri;
+        this.eventProducer = eventProducer;
+        this.policyComponent = policyComponent;
+        this.eventProcessor = eventProcessor;
+    }
 
     @Override
-    public void configure() throws Exception
+    public void afterPropertiesSet()
     {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("OnContentUpdate rendition events route config: ");
-            logger.debug("SourceQueue is " + sourceQueue);
-        }
-
-        EventBehaviour eventBehaviour = new EventBehaviour(transactionAwareEventProducer, sourceQueue, this, "createOnContentUpdateEvent",
+        EventBehaviour eventBehaviour = new EventBehaviour(eventProducer, endpointUri, this, "createOnContentUpdateEvent",
                 Behaviour.NotificationFrequency.EVERY_EVENT);
         policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, RenditionModel.ASPECT_RENDITIONED, eventBehaviour);
+    }
 
-        from(sourceQueue).threads().executorService(executorService).process("renditionEventProcessor").end();
+    @Override
+    public void process(String body)
+    {
+        eventProcessor.process(body);
     }
 
     @SuppressWarnings("unused")
     public OnContentUpdatePolicyEvent createOnContentUpdateEvent(NodeRef sourceNodeRef, boolean newContent)
     {
         OnContentUpdatePolicyEvent event = new OnContentUpdatePolicyEvent();
-
-        // Raw event specific
         event.setId(GUID.generate());
         event.setType(EventType.CONTENT_UPDATED.toString());
         event.setAuthenticatedUser(AuthenticationUtil.getFullyAuthenticatedUser());
         event.setExecutingUser(AuthenticationUtil.getRunAsUser());
         event.setTimestamp(System.currentTimeMillis());
         event.setSchema(1);
-
-        // On content update policy event specific
         event.setNodeRef(sourceNodeRef.toString());
         event.setNewContent(newContent);
         return event;

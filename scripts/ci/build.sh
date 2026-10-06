@@ -26,6 +26,13 @@ fi
 
 mvn -B -V $PHASE -DskipTests -Dmaven.javadoc.skip=true $PROFILES $BUILD_OPTIONS
 
+# ===== TEMPORARY (cross-testing, do not merge): build ES connector from a branch =====
+# When CROSSTEST_CONNECTOR_REF is set, build the connector images locally so the
+# subsequent docker-compose steps use them (BATCH_INDEXING_TAG must point at the
+# connector version - see packaging/tests/environment/.env).
+bash "$(dirname "${BASH_SOURCE[0]}")/build-connector-crosstest.sh" || true
+# ===== END TEMPORARY =====
+
 popd
 set +vex
 echo "=========================== Finishing Build Script =========================="

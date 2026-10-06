@@ -295,7 +295,7 @@
             <dependency>
                 <groupId>org.apache.neethi</groupId>
                 <artifactId>neethi</artifactId>
-                <version>3.2.3</version>
+                <version>3.2.4</version>
             </dependency>
 
             <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->

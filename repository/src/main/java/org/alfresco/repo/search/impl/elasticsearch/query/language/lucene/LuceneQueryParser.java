@@ -91,7 +91,6 @@ import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.QueryConstants.PROPERTY_FIELD_PREFIX;
 import static org.alfresco.repo.search.impl.QueryParserUtils.matchDataTypeDefinition;
 import static org.alfresco.repo.search.impl.QueryParserUtils.matchPropertyDefinition;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
 import static org.alfresco.repo.search.impl.elasticsearch.util.CollectionUtils.safe;
 import static org.alfresco.repo.site.SiteModel.TYPE_SITE;
 
@@ -744,20 +743,15 @@ public class LuceneQueryParser extends QueryParser
     Query uuidPrefixQuery(String id)
     {
         String field = ID_FIELD;
-        return booleanQuerySupplier.get().add(luceneTermQuery(ALIVE, "true"), BooleanClause.Occur.MUST)
-                .add(NodeRef.isNodeRef(id)
-                        ? lucenePrefixQuery(field, id.substring(id.lastIndexOf('/') + 1))
-                        : lucenePrefixQuery(field, id), BooleanClause.Occur.MUST)
-                .build();
+        return NodeRef.isNodeRef(id)
+                ? lucenePrefixQuery(field, id.substring(id.lastIndexOf('/') + 1))
+                : lucenePrefixQuery(field, id);
     }
 
     private Query nodeRefTermQuery(String id, String field)
     {
         String nodeId = NodeRef.isNodeRef(id) ? id.substring(id.lastIndexOf('/') + 1) : id;
-        return booleanQuerySupplier.get()
-                .add(luceneTermQuery(ALIVE, "true"), MUST)
-                .add(luceneTermQuery(field, escape(nodeId, true)), MUST)
-                .build();
+        return luceneTermQuery(field, escape(nodeId, true));
     }
 
     Query classDefinitionQuery(String text, boolean quoted)

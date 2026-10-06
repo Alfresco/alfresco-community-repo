@@ -71,6 +71,8 @@ public class ContentModelSynchronizer
             "settings", "analysis", "analyzer", "filter", "locale_content", "locale_text_index", "locale_text_query", "path_emulator", "locale_cross_text_index", "locale_cross_text_query");
     static final boolean PRESERVE_EXISTING = true;
     private static final String SUPPORTED_ANALYZERS_FILE = "supportedAnalyzers.json";
+    /** Elasticsearch wording for the index field cap. */
+    private static final String TOTAL_FIELDS_LIMIT_MESSAGE = "Limit of total fields";
 
     private final FieldMappingBuilder elasticsearchFieldBuilder;
     private final ElasticsearchHttpClientFactory httpClientFactory;
@@ -264,7 +266,7 @@ public class ContentModelSynchronizer
     /**
      * @param properties
      *            properties to send to Elasticsearch
-     * @return number of the successfully updated properties. If the mapping acknowledge fails the method will returns -1
+     * @return number of the successfully updated properties, or 0 if Elasticsearch did not accept the request
      * @throws IOException
      *             if it fails to execute mapping request.
      */
@@ -275,17 +277,22 @@ public class ContentModelSynchronizer
         try (Response response = httpClientFactory.getElasticsearchClient().generic().execute(request))
         {
             boolean success = response.getStatus() == 200;
+            boolean totalFieldsLimitExceeded = false;
             if (!success)
             {
                 String rawBody = response.getBody().map(Body::bodyAsString).orElse("{}");
                 String requestBody = request.getBody().map(Body::bodyAsString).orElse("{}");
+                String reason = ResponseJsonUtils.extractErrorReason(rawBody);
+                totalFieldsLimitExceeded = reason != null && reason.contains(TOTAL_FIELDS_LIMIT_MESSAGE);
                 LOGGER.warn("Elasticsearch mappings update failed: server={} index={} status={} reason={} propertiesCount={} request={}",
                         httpClientFactory.getElasticsearchServerUrl(), httpClientFactory.getIndexName(), response.getStatus(),
-                        ResponseJsonUtils.extractErrorReason(rawBody), properties.size(), requestBody);
+                        reason, properties.size(), requestBody);
                 LOGGER.debug("Full mappings update response body: {}", rawBody);
             }
-            Integer successfullyMappedPropertiesCount = mappingRequestBuilder.getSecond();
-            return new IndexMappingResult(success, successfullyMappedPropertiesCount);
+            // Count only properties included in the mapping request.
+            // If the request fails, Elasticsearch maps none of the properties.
+            int successfullyMappedPropertiesCount = success ? mappingRequestBuilder.getSecond() : 0;
+            return new IndexMappingResult(success, successfullyMappedPropertiesCount, response.getStatus(), totalFieldsLimitExceeded);
         }
     }
 
@@ -298,11 +305,16 @@ public class ContentModelSynchronizer
     {
         private final boolean acknowledged;
         private final int successfullyMappedPropertiesCount;
+        private final int status;
+        private final boolean totalFieldsLimitExceeded;
 
-        private IndexMappingResult(boolean acknowledged, int successfullyMappedPropertiesCount)
+        private IndexMappingResult(boolean acknowledged, int successfullyMappedPropertiesCount, int status,
+                boolean totalFieldsLimitExceeded)
         {
             this.acknowledged = acknowledged;
             this.successfullyMappedPropertiesCount = successfullyMappedPropertiesCount;
+            this.status = status;
+            this.totalFieldsLimitExceeded = totalFieldsLimitExceeded;
         }
 
         public boolean isAcknowledged()
@@ -313,6 +325,22 @@ public class ContentModelSynchronizer
         public int getSuccessfullyMappedPropertiesCount()
         {
             return successfullyMappedPropertiesCount;
+        }
+
+        /**
+         * @return the HTTP status Elasticsearch returned
+         */
+        public int getStatus()
+        {
+            return status;
+        }
+
+        /**
+         * @return true if the index is full, rather than any property being invalid
+         */
+        public boolean isTotalFieldsLimitExceeded()
+        {
+            return totalFieldsLimitExceeded;
         }
     }
 }

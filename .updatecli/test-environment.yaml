@@ -45,6 +45,7 @@ sources:
       versionfilter:
         kind: '{{ $tier.search.versionFilterKind }}'
         pattern: '{{ $tier.search.version }}'
+        regex: '{{ $tier.search.regex }}'
 
   elasticsearch:
     name: Elasticsearch image tag

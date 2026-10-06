@@ -64,6 +64,7 @@ import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PARENT;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PATHWITHREPEATS;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PRIMARYASSOCQNAME;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PRIMARYASSOCTYPEQNAME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PRIMARYPARENT;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PROPERTIES;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_QNAME;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_READER;
@@ -84,9 +85,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.junit.Assert;
 import org.junit.Test;
 
 import org.alfresco.repo.search.adaptor.QueryConstants;
@@ -466,9 +465,8 @@ public class TermOrPhraseQueryTest extends BaseQueryTest
     @Test
     public void IDFieldTermQuery()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(fieldQueryString(QueryConstants.FIELD_ID, AN_ID));
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(fieldQueryString("_id", AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(fieldQueryString("_id", AN_ID),
+                parseAndBuildQuery(fieldQueryString(QueryConstants.FIELD_ID, AN_ID)));
     }
 
     /**
@@ -493,9 +491,8 @@ public class TermOrPhraseQueryTest extends BaseQueryTest
     @Test
     public void IDFieldPhraseQuery()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(fieldQueryString(FIELD_ID, quoted(AN_ID)));
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(fieldQueryString("_id", AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(fieldQueryString("_id", AN_ID),
+                parseAndBuildQuery(fieldQueryString(FIELD_ID, quoted(AN_ID))));
     }
 
     /**
@@ -520,25 +517,22 @@ public class TermOrPhraseQueryTest extends BaseQueryTest
     @Test
     public void IDFieldPhraseQueryContainsNodeRef()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(fieldQueryString(QueryConstants.FIELD_ID, quoted(A_NODEREF)));
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(fieldQueryString("_id", AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(fieldQueryString("_id", AN_ID),
+                parseAndBuildQuery(fieldQueryString(QueryConstants.FIELD_ID, quoted(A_NODEREF))));
     }
 
     @Test
     public void sysNodeUuidFieldTermQueryIsRewrittenToIdQuery()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(fieldQueryString(escape("sys:node-uuid"), AN_ID));
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(fieldQueryString(LuceneQueryParser.ID_FIELD, AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(fieldQueryString(LuceneQueryParser.ID_FIELD, AN_ID),
+                parseAndBuildQuery(fieldQueryString(escape("sys:node-uuid"), AN_ID)));
     }
 
     @Test
     public void sysNodeUuidFieldQueryWithNodeRefIsRewrittenToIdQuery()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(fieldQueryString(escape("sys:node-uuid"), quoted(A_NODEREF)));
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(fieldQueryString(LuceneQueryParser.ID_FIELD, AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(fieldQueryString(LuceneQueryParser.ID_FIELD, AN_ID),
+                parseAndBuildQuery(fieldQueryString(escape("sys:node-uuid"), quoted(A_NODEREF))));
     }
 
     @Test
@@ -556,33 +550,43 @@ public class TermOrPhraseQueryTest extends BaseQueryTest
     @Test
     public void testPARENTFieldTermQuery()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(fieldQueryString(FIELD_PARENT, AN_ID));
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(fieldQueryString(FIELD_PARENT, AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(fieldQueryString(FIELD_PARENT, AN_ID),
+                parseAndBuildQuery(fieldQueryString(FIELD_PARENT, AN_ID)));
     }
 
     @Test
     public void testPARENTFieldPhraseQueryWithNodeRef()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(fieldQueryString(FIELD_PARENT, quoted(A_NODEREF)));
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(fieldQueryString(FIELD_PARENT, AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(fieldQueryString(FIELD_PARENT, AN_ID),
+                parseAndBuildQuery(fieldQueryString(FIELD_PARENT, quoted(A_NODEREF))));
     }
 
     @Test
     public void testANCESTORFieldTermQuery()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(fieldQueryString(FIELD_ANCESTOR, AN_ID));
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(fieldQueryString(FIELD_ANCESTOR, AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(fieldQueryString(FIELD_ANCESTOR, AN_ID),
+                parseAndBuildQuery(fieldQueryString(FIELD_ANCESTOR, AN_ID)));
     }
 
     @Test
     public void testANCESTORFieldPhraseQueryWithNodeRef()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(fieldQueryString(FIELD_ANCESTOR, quoted(A_NODEREF)));
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(fieldQueryString(FIELD_ANCESTOR, AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(fieldQueryString(FIELD_ANCESTOR, AN_ID),
+                parseAndBuildQuery(fieldQueryString(FIELD_ANCESTOR, quoted(A_NODEREF))));
+    }
+
+    @Test
+    public void testPRIMARYPARENTFieldTermQuery()
+    {
+        assertQueryEquals(fieldQueryString(FIELD_PRIMARYPARENT, AN_ID),
+                parseAndBuildQuery(fieldQueryString(FIELD_PRIMARYPARENT, AN_ID)));
+    }
+
+    @Test
+    public void testPRIMARYPARENTFieldPhraseQueryWithNodeRef()
+    {
+        assertQueryEquals(fieldQueryString(FIELD_PRIMARYPARENT, AN_ID),
+                parseAndBuildQuery(fieldQueryString(FIELD_PRIMARYPARENT, quoted(A_NODEREF))));
     }
 
     @Test

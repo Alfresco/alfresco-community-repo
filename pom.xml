@@ -305,6 +305,14 @@
                 <version>${dependency.junrar.version}</version>
             </dependency>
 
+            <!-- Override xmlschema-core transitive dependency from 'cxf-core' (v4.1.8). -->
+            <!-- This should be removed once 'cxf-core' is bumped to a version that includes it. -->
+            <dependency>
+                <groupId>org.apache.ws.xmlschema</groupId>
+                <artifactId>xmlschema-core</artifactId>
+                <version>2.3.3</version>
+            </dependency>
+
             <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->
             <dependency>
                 <groupId>com.jayway.jsonpath</groupId>

@@ -89,7 +89,7 @@
         <dependency.tika.version>3.3.2</dependency.tika.version>
         <dependency.json-schema-validator.version>1.5.9</dependency.json-schema-validator.version>
         <dependency.jsoup.version>1.23.2</dependency.jsoup.version>
-        <dependency.junrar.version>7.5.10</dependency.junrar.version>
+        <dependency.junrar.version>7.6.1</dependency.junrar.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.4.0</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
@@ -296,6 +296,13 @@
                 <groupId>org.apache.neethi</groupId>
                 <artifactId>neethi</artifactId>
                 <version>3.2.3</version>
+            </dependency>
+
+            <!-- Override junrar transitive dependency from tika-parser-pkg-module (CVE-2026-86071) -->
+            <dependency>
+                <groupId>com.github.junrar</groupId>
+                <artifactId>junrar</artifactId>
+                <version>${dependency.junrar.version}</version>
             </dependency>
 
             <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->

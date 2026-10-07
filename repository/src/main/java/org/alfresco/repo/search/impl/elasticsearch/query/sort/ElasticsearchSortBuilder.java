@@ -125,7 +125,7 @@ public class ElasticsearchSortBuilder
         case FIELD:
             String sortField = normalizeSortField(sortDefinition.getField());
             String luceneFieldName = functionContext.getLuceneFieldName(sortField);
-            boolean nodeDbidSort = luceneFieldName != null && getSortableFieldName(PROPERTY_FIELD_PREFIX + ContentModel.PROP_NODE_DBID)
+            boolean nodeDbidSort = nodeDbidTieBreakerEnabled && luceneFieldName != null && getSortableFieldName(PROPERTY_FIELD_PREFIX + ContentModel.PROP_NODE_DBID)
                     .equals(getSortableFieldName(luceneFieldName));
             if (!nodeDbidSort && !fieldIsIndexed(luceneFieldName))
             {

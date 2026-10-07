@@ -160,6 +160,19 @@ public class ElasticsearchSortBuilderTest
     }
 
     @Test
+    public void shouldIgnoreExplicitNodeDbidSortWhenTieBreakerDisabled()
+    {
+        when(propertyDefinition.isIndexed()).thenReturn(false);
+        ElasticsearchSortBuilder compatibilitySortBuilder = new ElasticsearchSortBuilder(
+                namespaceDAO, dictionaryService, indexConfigurationInitializer, false);
+        SearchParameters searchParameters = searchParametersWithSort(SearchParameters.SortDefinition.SortType.FIELD, "sys:node-dbid", true);
+
+        List<SortOptions> sorts = compatibilitySortBuilder.getSortBuilders(searchParameters);
+
+        assertTrue(sorts.isEmpty());
+    }
+
+    @Test
     public void shouldAppendNodeDbidToDocumentSort()
     {
         SearchParameters searchParameters = searchParametersWithSort(SearchParameters.SortDefinition.SortType.DOCUMENT, null, true);

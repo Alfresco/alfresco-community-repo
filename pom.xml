@@ -295,7 +295,7 @@
             <dependency>
                 <groupId>org.apache.neethi</groupId>
                 <artifactId>neethi</artifactId>
-                <version>3.2.3</version>
+                <version>3.2.4</version>
             </dependency>
 
             <!-- Override junrar transitive dependency from tika-parser-pkg-module (CVE-2026-86071) -->

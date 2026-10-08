@@ -480,7 +480,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull(originalAspects);
         assertFalse(originalAspects.contains("cm:versionable"));
         // Check properties
-        assertTrue(resource.getProperties().isEmpty());
+        assertEquals(Set.of("sys:node-dbid"), resource.getProperties().keySet());
+        assertNodeDbidProperty(resource, nodeRef);
 
         // Add cm:versionable aspect with default value
         retryingTransactionHelper.doInTransaction(() -> {
@@ -495,8 +496,9 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         Set<String> expectedAspects = new HashSet<>(originalAspects);
         expectedAspects.add("cm:versionable");
         assertEquals(expectedAspects, resource.getAspectNames());
-        // Check properties
-        assertFalse(resource.getProperties().isEmpty());
+        // Check that the aspect added properties in addition to the always-present DBID.
+        assertTrue(resource.getProperties().keySet().stream().anyMatch(property -> !"sys:node-dbid".equals(property)));
+        assertNodeDbidProperty(resource, nodeRef);
 
         // Check resourceBefore
         NodeResource resourceBefore = getNodeResourceBefore(2);
@@ -1099,7 +1101,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         NodeResource resource = getNodeResource(1);
         // Check properties
-        assertTrue(resource.getProperties().isEmpty());
+        assertEquals(Set.of("sys:node-dbid"), resource.getProperties().keySet());
+        assertNodeDbidProperty(resource, nodeRef);
 
         // Add and remove cm:userName property
         retryingTransactionHelper.doInTransaction(() -> {
@@ -1111,7 +1114,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         // No change to properties expected
         resource = getNodeResource(2);
-        assertTrue(resource.getProperties().isEmpty());
+        assertEquals(Set.of("sys:node-dbid"), resource.getProperties().keySet());
+        assertNodeDbidProperty(resource, nodeRef);
 
         // There should be one update event as modifiedAt is updated
         List<RepoEvent<EventData<NodeResource>>> nodeUpdatedEvents = getFilteredEvents(EventType.NODE_UPDATED);

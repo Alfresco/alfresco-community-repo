@@ -82,6 +82,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PrefixQ
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.RangeQueryTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.TermOrPhraseQueryTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.WildcardQueryTest;
+import org.alfresco.repo.search.impl.elasticsearch.query.sort.ElasticsearchSortBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationHandlerTest;
 import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtilTest;
 import org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResultSetBuilderTest;
@@ -133,6 +134,7 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTe
         ElasticsearchQueryHelperTest.class,
         StoreRefStripperTest.class,
         ElasticsearchHighlightBuilderTest.class,
+        ElasticsearchSortBuilderTest.class,
 
         // Result sets
         ElasticsearchResultSetBuilderTest.class,

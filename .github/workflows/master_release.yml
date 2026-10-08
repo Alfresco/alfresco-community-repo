@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v18.28.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v19.3.0
         id: get-commit
         with:
           header-only: "true"
@@ -64,19 +64,19 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
       - name: "Create local release branch"
         run: git checkout -B "${{ github.ref_name }}"
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.28.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.28.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.28.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.3.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.3.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.3.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Compute release and next development versions"
         id: versions
-        uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@v18.28.1
+        uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@v19.3.0
       - name: "Verify release version"
         run: bash scripts/ci/verify_release_tag.sh
       - name: "Release"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@v18.28.1
+        uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@v19.3.0
         with:
           token: ${{ steps.app-token.outputs.token }}
           release-version: ${{ steps.versions.outputs.release-version }}
@@ -109,9 +109,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.app-token.outputs.token }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.28.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.28.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.28.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.3.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.3.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.3.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Update downstream"

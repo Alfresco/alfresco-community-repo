@@ -600,6 +600,10 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      # TEMPORARY (cross-testing, do not merge): scoped to the Elasticsearch E2E matrix
+      # entries via matrix.crosstest-ref; builds+uses the connector from this branch.
+      CROSSTEST_CONNECTOR_REF: ${{ matrix.crosstest-ref }}
+      BATCH_INDEXING_TAG: ${{ matrix.batch-tag || '5.9.0-A.1' }}
     strategy:
       fail-fast: false
       matrix:
@@ -632,14 +636,20 @@ jobs:
             pom-dir: tas-restapi
             test-profile: elasticsearch-e2e-tests-part1
             compose-file: docker-compose-minimal+batch-indexing.yml
+            crosstest-ref: fix/connector-nodetype-drop-sys-wildcard
+            batch-tag: 5.9.0-A.14-SNAPSHOT
           - test-name: "Elasticsearch E2E Tests - part2"
             pom-dir: tas-restapi
             test-profile: elasticsearch-e2e-tests-part2
             compose-file: docker-compose-minimal+batch-indexing.yml
+            crosstest-ref: fix/connector-nodetype-drop-sys-wildcard
+            batch-tag: 5.9.0-A.14-SNAPSHOT
           - test-name: "Elasticsearch E2E Tests - part3"
             pom-dir: tas-restapi
             test-profile: elasticsearch-e2e-tests-part3
             compose-file: docker-compose-minimal+batch-indexing.yml
+            crosstest-ref: fix/connector-nodetype-drop-sys-wildcard
+            batch-tag: 5.9.0-A.14-SNAPSHOT
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
@@ -647,6 +657,16 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      # TEMPORARY (cross-testing, do not merge): token to clone the private connector repo.
+      - name: "Generate connector access token (cross-testing)"
+        if: matrix.crosstest-ref != ''
+        id: connector-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
+          owner: Alfresco
+          repositories: alfresco-elasticsearch-connector
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
@@ -654,6 +674,8 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          # TEMPORARY (cross-testing, do not merge): consumed by build-connector-crosstest.sh
+          CROSSTEST_CONNECTOR_TOKEN: ${{ steps.connector-token.outputs.token }}
         run: |
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh

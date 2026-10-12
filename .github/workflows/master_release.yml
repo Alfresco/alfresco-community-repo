@@ -97,7 +97,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           release-version: ${{ steps.versions.outputs.release-version }}
           development-version: ${{ steps.versions.outputs.next-development-version }}
-          release-profile: "all-tas-tests,ags"
+          release-profile: "all-tas-tests,ags,release"
           maven-args: "-DskipTests -Dbuild-number=${{ env.BUILD_NUMBER }}"
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

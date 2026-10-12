@@ -26,6 +26,7 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -33,7 +34,9 @@ import static org.mockito.Mockito.mock;
 import java.util.Properties;
 
 import org.junit.Test;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
@@ -52,6 +55,8 @@ public class IdentityServiceUserTokenWiringTest
 {
     private static final String CONTEXT_XML = "alfresco/subsystems/Authentication/identity-service/identity-service-authentication-context.xml";
     private static final String CACHE_FLAG = "identity-service.authentication.userTokenCache.enabled";
+    private static final String PASSWORD_GRANT_FLAG = "identity-service.authentication.enable-username-password-authentication";
+    private static final String IDENTITY_SERVICE_ENABLED_FLAG = "identity-service.authentication.enabled";
 
     @Test
     public void cacheEnabledFlagSelectsCachingProvider()
@@ -114,7 +119,97 @@ public class IdentityServiceUserTokenWiringTest
                 directBean instanceof DirectUserTokenProvider);
     }
 
+    @Test
+    public void passwordGrantEnabledFlagSelectsDirectProvider()
+    {
+        Properties props = new Properties();
+        props.setProperty(PASSWORD_GRANT_FLAG, "true");
+
+        UserTokenProvider provider = loadUserTokenProviderWith(props);
+
+        assertTrue("With enable-username-password-authentication=true, userTokenProvider must be a DirectUserTokenProvider but was: "
+                + provider.getClass().getName(), provider instanceof DirectUserTokenProvider);
+    }
+
+    @Test
+    public void passwordGrantDisabledInjectsNullUserTokenProvider()
+    {
+        Properties props = new Properties();
+        props.setProperty(PASSWORD_GRANT_FLAG, "false");
+
+        assertNull("With enable-username-password-authentication=false, consumers must receive a null userTokenProvider",
+                loadInjectedUserTokenProvider(loadFactory(), props));
+    }
+
+    @Test
+    public void passwordGrantDisabledInjectsNullUserTokenProviderEvenWhenCacheEnabled()
+    {
+        Properties props = new Properties();
+        props.setProperty(PASSWORD_GRANT_FLAG, "false");
+        props.setProperty(CACHE_FLAG, "true");
+
+        assertNull("With enable-username-password-authentication=false, the cache flag must not enable username/password authentication",
+                loadInjectedUserTokenProvider(loadFactory(), props));
+    }
+
+    /**
+     * ACS-13054 / MNT-25656: disabling username/password authentication must not remove the {@link IdentityServiceFacade}, which is also needed for Bearer token validation and user provisioning. Uses the production facade definition, so the providers that require the facade are constructed with the real (lazy) instance.
+     */
+    @Test
+    public void passwordGrantDisabledKeepsIdentityServiceFacadeAndStartsContext()
+    {
+        Properties props = new Properties();
+        props.setProperty(PASSWORD_GRANT_FLAG, "false");
+        DefaultListableBeanFactory factory = loadFactoryWithProductionFacade();
+
+        assertNull(loadInjectedUserTokenProvider(factory, props));
+        assertNotNull("identityServiceFacade must be created when only username/password authentication is disabled",
+                factory.getBean("identityServiceFacade"));
+        assertNotNull(factory.getBean("directUserTokenProvider"));
+        assertNotNull(factory.getBean("cachingUserTokenProvider"));
+    }
+
+    /**
+     * Edge case: the identity-service subsystem is in the authentication chain but deactivated. The context must still start; the authentication component is inactive, so the providers are never used.
+     */
+    @Test
+    public void identityServiceDisabledStillStartsContext()
+    {
+        Properties props = new Properties();
+        props.setProperty(IDENTITY_SERVICE_ENABLED_FLAG, "false");
+        props.setProperty(PASSWORD_GRANT_FLAG, "false");
+        DefaultListableBeanFactory factory = loadFactoryWithProductionFacade();
+
+        assertNull(loadInjectedUserTokenProvider(factory, props));
+        assertNotNull(factory.getBean("identityServiceFacade"));
+        assertNotNull(factory.getBean("directUserTokenProvider"));
+        assertNotNull(factory.getBean("cachingUserTokenProvider"));
+    }
+
+    @Test
+    public void identityServiceFacadeIsCreatedByDefault()
+    {
+        DefaultListableBeanFactory factory = loadFactoryWithProductionFacade();
+        resolvePlaceholders(factory, new Properties());
+
+        assertNotNull(factory.getBean("identityServiceFacade"));
+        assertTrue(factory.getBean("userTokenProvider", UserTokenProvider.class) instanceof DirectUserTokenProvider);
+    }
+
     // ------- helpers -------
+
+    /**
+     * Resolves {@code userTokenProvider} the way production consumers do - through a bean reference - so a {@code null} factory-method result is observed as {@code null} rather than as Spring's internal null placeholder.
+     */
+    private static UserTokenProvider loadInjectedUserTokenProvider(DefaultListableBeanFactory factory, Properties props)
+    {
+        RootBeanDefinition consumer = new RootBeanDefinition(UserTokenProviderConsumer.class);
+        consumer.getPropertyValues().add("userTokenProvider", new RuntimeBeanReference("userTokenProvider"));
+        factory.registerBeanDefinition("userTokenProviderConsumer", consumer);
+
+        resolvePlaceholders(factory, props);
+        return factory.getBean("userTokenProviderConsumer", UserTokenProviderConsumer.class).userTokenProvider;
+    }
 
     private UserTokenProvider loadUserTokenProvider(String cacheFlagValue)
     {
@@ -138,11 +233,21 @@ public class IdentityServiceUserTokenWiringTest
      */
     private static DefaultListableBeanFactory loadFactory()
     {
+        DefaultListableBeanFactory factory = loadFactoryWithProductionFacade();
+        overrideWithSingleton(factory, "identityServiceFacade", mock(IdentityServiceFacade.class));
+        return factory;
+    }
+
+    /**
+     * Like {@link #loadFactory()}, but keeps the production {@code identityServiceFacade} definition (backed by a stubbed {@link IdentityServiceConfig}). The facade is lazy, so no Identity Provider is contacted.
+     */
+    private static DefaultListableBeanFactory loadFactoryWithProductionFacade()
+    {
         DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
         XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
         reader.loadBeanDefinitions(new ClassPathResource(CONTEXT_XML));
 
-        overrideWithSingleton(factory, "identityServiceFacade", mock(IdentityServiceFacade.class));
+        overrideWithSingleton(factory, "identityServiceConfig", mock(IdentityServiceConfig.class));
         overrideWithSingleton(factory, "jitProvisioningHandler", mock(IdentityServiceJITProvisioningHandler.class));
 
         SimpleCache<String, UserToken> backingCache = new MemoryCache<>();
@@ -176,5 +281,15 @@ public class IdentityServiceUserTokenWiringTest
         ppc.setIgnoreUnresolvablePlaceholders(true);
         ppc.setProperties(props);
         ppc.postProcessBeanFactory(factory);
+    }
+
+    public static class UserTokenProviderConsumer
+    {
+        private UserTokenProvider userTokenProvider;
+
+        public void setUserTokenProvider(UserTokenProvider userTokenProvider)
+        {
+            this.userTokenProvider = userTokenProvider;
+        }
     }
 }

@@ -45,6 +45,30 @@ public final class UserTokenProviders
     }
 
     /**
+     * @param passwordGrantEnabled
+     *            value of {@code identity-service.authentication.enable-username-password-authentication}
+     * @param cacheEnabled
+     *            value of {@code identity-service.authentication.userTokenCache.enabled}
+     * @param direct
+     *            the always-go-to-Keycloak provider
+     * @param caching
+     *            the local-JVM caching decorator wrapping {@code direct}
+     * @return {@code null} when username/password authentication is disabled (consumers then reject username/password logins), otherwise the result of {@link #chooseProvider(boolean, UserTokenProvider, UserTokenProvider)}
+     */
+    public static UserTokenProvider chooseProvider(boolean passwordGrantEnabled,
+            boolean cacheEnabled,
+            UserTokenProvider direct,
+            UserTokenProvider caching)
+    {
+        if (!passwordGrantEnabled)
+        {
+            LOGGER.info("Identity Service username/password authentication is DISABLED.");
+            return null;
+        }
+        return chooseProvider(cacheEnabled, direct, caching);
+    }
+
+    /**
      * @param cacheEnabled
      *            value of {@code identity-service.authentication.userTokenCache.enabled}
      * @param direct

@@ -62,7 +62,7 @@
         <dependency.micrometer.version>1.15.12</dependency.micrometer.version> <!-- should be in sync with micrometer-observation transitive dependency from spring-context -->
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.22.3</dependency.jackson.version>
-        <dependency.cxf.version>4.1.8</dependency.cxf.version>
+        <dependency.cxf.version>4.1.9</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.85</dependency.bouncycastle.version>
@@ -290,27 +290,11 @@
                 <version>3.6.1</version>
             </dependency>
 
-            <!-- This dependency was added because latest (v4.1.8) 'cxf-rt-ws-policy' uses vulnerable version of neethi (v3.2.2). (PRODSEC-12231) -->
-            <!-- This should be removed once the clean 'cxf-rt-ws-policy' will be released. -->
-            <dependency>
-                <groupId>org.apache.neethi</groupId>
-                <artifactId>neethi</artifactId>
-                <version>3.2.4</version>
-            </dependency>
-
             <!-- Override junrar transitive dependency from tika-parser-pkg-module (CVE-2026-86071) -->
             <dependency>
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
                 <version>${dependency.junrar.version}</version>
-            </dependency>
-
-            <!-- Override xmlschema-core transitive dependency from 'cxf-core' (v4.1.8). -->
-            <!-- This should be removed once 'cxf-core' is bumped to a version that includes it. -->
-            <dependency>
-                <groupId>org.apache.ws.xmlschema</groupId>
-                <artifactId>xmlschema-core</artifactId>
-                <version>2.3.3</version>
             </dependency>
 
             <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->

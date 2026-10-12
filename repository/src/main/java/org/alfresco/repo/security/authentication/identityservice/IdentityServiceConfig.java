@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -32,6 +36,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -43,7 +49,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 @SuppressWarnings("PMD.ExcessivePublicCount")
 public class IdentityServiceConfig
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceConfig.class);
     private static final String REALMS = "realms";
+    private static final Set<String> RESERVED_AUTHORIZATION_PARAMS = Set.of(
+            "client_id", "redirect_uri", "response_type", "scope", "state", "audience");
 
     private int clientConnectionTimeout;
     private int clientSocketTimeout;
@@ -79,6 +88,7 @@ public class IdentityServiceConfig
     private String webScriptsHomeRedirectPath;
     private String webScriptsHomeScopes;
     private boolean scopeValidationDisabled;
+    private Map<String, String> authorizationAdditionalParams = Collections.emptyMap();
 
     public boolean isScopeValidationDisabled()
     {
@@ -88,6 +98,53 @@ public class IdentityServiceConfig
     public void setScopeValidationDisabled(boolean scopeValidationDisabled)
     {
         this.scopeValidationDisabled = scopeValidationDisabled;
+    }
+
+    public Map<String, String> getAuthorizationAdditionalParams()
+    {
+        return authorizationAdditionalParams;
+    }
+
+    public void setAuthorizationAdditionalParams(String additionalParams)
+    {
+        if (StringUtils.isBlank(additionalParams))
+        {
+            authorizationAdditionalParams = Collections.emptyMap();
+            return;
+        }
+
+        Map<String, String> parsedParams = new LinkedHashMap<>();
+        String[] entries = additionalParams.split(",", -1);
+        for (int index = 0; index < entries.length; index++)
+        {
+            String entry = entries[index].trim();
+            int separator = entry.indexOf('=');
+            if (separator < 0)
+            {
+                logMalformedAdditionalParam(index, "missing '=' separator");
+                continue;
+            }
+
+            String key = entry.substring(0, separator).trim();
+            if (key.isEmpty())
+            {
+                logMalformedAdditionalParam(index, "empty parameter name");
+                continue;
+            }
+            if (RESERVED_AUTHORIZATION_PARAMS.contains(key.toLowerCase(Locale.ROOT)))
+            {
+                logMalformedAdditionalParam(index, "reserved parameter name");
+                continue;
+            }
+
+            parsedParams.put(key, entry.substring(separator + 1).trim());
+        }
+        authorizationAdditionalParams = Collections.unmodifiableMap(parsedParams);
+    }
+
+    private static void logMalformedAdditionalParam(int index, String reason)
+    {
+        LOGGER.warn("Ignoring malformed entry {} in identity-service.authorization.additional-params: {}", index + 1, reason);
     }
 
     public String getWebScriptsHomeRedirectPath()

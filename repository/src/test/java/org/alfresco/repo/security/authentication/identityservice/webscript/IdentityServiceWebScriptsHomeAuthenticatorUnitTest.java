@@ -111,6 +111,7 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
         when(identityServiceFacade.getClientRegistration()).thenReturn(clientRegistration);
         when(request.getRequestURL()).thenReturn(webScriptHomeURL);
         when(remoteUserMapper.getRemoteUser(request)).thenReturn(null);
+        when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of());
 
         authenticator = new IdentityServiceWebScriptsHomeAuthenticator();
         authenticator.setActive(true);
@@ -200,6 +201,24 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
         assertTrue(authenticationRequest.getValue().contains("offline_access"));
         assertTrue(authenticationRequest.getValue().contains("audience=%s".formatted(audience)));
         assertTrue(authenticationRequest.getValue().contains("state"));
+    }
+
+    @Test
+    public void shouldAddEncodedAdditionalAuthorizationParameters() throws IOException
+    {
+        when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of(
+                "resourceServer", "Identity Provider unencrypted",
+                "custom&name", "a=b&c"));
+        when(identityServiceConfig.getWebScriptsHomeRedirectPath()).thenReturn(REDIRECT_PATH);
+        when(identityServiceConfig.getWebScriptsHomeScopes()).thenReturn(Set.of("openid"));
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+
+        authenticator.requestAuthentication(request, response);
+
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertThat(authenticationRequest.getValue())
+                .contains("resourceServer=Identity%20Provider%20unencrypted")
+                .contains("custom%26name=a%3Db%26c");
     }
 
     @Test

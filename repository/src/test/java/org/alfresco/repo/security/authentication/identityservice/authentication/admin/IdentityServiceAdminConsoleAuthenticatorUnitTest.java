@@ -109,6 +109,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(identityServiceFacade.getClientRegistration()).thenReturn(clientRegistration);
         when(request.getRequestURL()).thenReturn(adminConsoleURL);
         when(remoteUserMapper.getRemoteUser(request)).thenReturn(null);
+        when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of());
 
         authenticator = new IdentityServiceAdminConsoleAuthenticator();
         authenticator.setActive(true);
@@ -196,6 +197,24 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         assertTrue(authenticationRequest.getValue().contains("offline_access"));
         assertTrue(authenticationRequest.getValue().contains("audience=%s".formatted(audience)));
         assertTrue(authenticationRequest.getValue().contains("state"));
+    }
+
+    @Test
+    public void shouldAddEncodedAdditionalAuthorizationParameters() throws IOException
+    {
+        when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of(
+                "resourceServer", "Identity Provider unencrypted",
+                "custom&name", "a=b&c"));
+        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid"));
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+
+        authenticator.requestAuthentication(request, response);
+
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertThat(authenticationRequest.getValue())
+                .contains("resourceServer=Identity%20Provider%20unencrypted")
+                .contains("custom%26name=a%3Db%26c");
     }
 
     @Test

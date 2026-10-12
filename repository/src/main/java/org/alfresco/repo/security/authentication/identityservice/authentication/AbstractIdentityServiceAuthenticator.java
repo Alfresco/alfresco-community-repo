@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.security.authentication.identityservice.authentication;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant.authorizationCode;
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.SCOPES_SUPPORTED;
 
@@ -48,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator;
@@ -149,6 +151,9 @@ public abstract class AbstractIdentityServiceAuthenticator implements ExternalUs
         {
             builder.queryParam("audience", identityServiceConfig.getAudience());
         }
+
+        identityServiceConfig.getAuthorizationAdditionalParams()
+                .forEach((name, value) -> builder.queryParam(UriUtils.encodeQueryParam(name, UTF_8), UriUtils.encodeQueryParam(value, UTF_8)));
 
         return builder.build()
                 .toUriString();

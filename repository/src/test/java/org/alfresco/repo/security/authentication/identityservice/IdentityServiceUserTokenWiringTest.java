@@ -208,7 +208,7 @@ public class IdentityServiceUserTokenWiringTest
         factory.registerBeanDefinition("userTokenProviderConsumer", consumer);
 
         resolvePlaceholders(factory, props);
-        return factory.getBean("userTokenProviderConsumer", UserTokenProviderConsumer.class).userTokenProvider;
+        return factory.getBean("userTokenProviderConsumer", UserTokenProviderConsumer.class).getUserTokenProvider();
     }
 
     private UserTokenProvider loadUserTokenProvider(String cacheFlagValue)
@@ -290,6 +290,11 @@ public class IdentityServiceUserTokenWiringTest
         public void setUserTokenProvider(UserTokenProvider userTokenProvider)
         {
             this.userTokenProvider = userTokenProvider;
+        }
+
+        public UserTokenProvider getUserTokenProvider()
+        {
+            return userTokenProvider;
         }
     }
 }

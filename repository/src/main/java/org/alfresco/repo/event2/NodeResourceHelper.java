@@ -234,10 +234,6 @@ public class NodeResourceHelper implements InitializingBean
                 Serializable mappedValue = propertyMapper.map(k, v);
                 filteredProps.put(getQNamePrefixString(k), mappedValue);
             }
-            else if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("EVENT2-FILTER-POC STRIP property '" + getQNamePrefixString(k) + "'");
-            }
         });
 
         return filteredProps;
@@ -357,10 +353,6 @@ public class NodeResourceHelper implements InitializingBean
             if (!filteringEnabled || !nodeAspectFilter.isExcluded(q))
             {
                 filteredAspects.add(getQNamePrefixString(q));
-            }
-            else if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("EVENT2-FILTER-POC STRIP aspect '" + getQNamePrefixString(q) + "'");
             }
         });
 

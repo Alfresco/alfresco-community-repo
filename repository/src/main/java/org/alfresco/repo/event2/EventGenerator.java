@@ -501,13 +501,13 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private boolean isFiltered(QName nodeType, String user)
     {
         // When filtering is disabled, nothing is dropped - every event is emitted (PRODENG-475).
-        return filteringEnabled && (nodeTypeFilter.isExcluded(nodeType) || (userFilter.isExcluded(user)));
+        return filteringEnabled && (nodeTypeFilter.isExcluded(nodeType) || userFilter.isExcluded(user));
     }
 
     private boolean isFilteredChildAssociation(QName childAssocType, String user)
     {
         // When filtering is disabled, nothing is dropped - every event is emitted (PRODENG-475).
-        return filteringEnabled && (childAssociationTypeFilter.isExcluded(childAssocType) || (userFilter.isExcluded(user)));
+        return filteringEnabled && (childAssociationTypeFilter.isExcluded(childAssocType) || userFilter.isExcluded(user));
     }
 
     protected EventInfo getEventInfo(String user)
@@ -732,11 +732,6 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 final QName nodeType = eventConsolidator.getEntityType();
                 if (isFiltered(nodeType, user))
                 {
-                    if (LOGGER.isDebugEnabled())
-                    {
-                        LOGGER.debug("EVENT2-FILTER-POC DROP node '" + nodeReference + "' type='"
-                                + ((nodeType == null) ? "Unknown" : nodeType.toPrefixString()) + "' user='" + user + "'");
-                    }
                     if (LOGGER.isTraceEnabled())
                     {
                         LOGGER.trace("EventFilter - Excluding node: '" + nodeReference + "' of type: '"
@@ -765,11 +760,6 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 final QName childAssocType = eventConsolidator.getEntityType();
                 if (isFilteredChildAssociation(childAssocType, user))
                 {
-                    if (LOGGER.isDebugEnabled())
-                    {
-                        LOGGER.debug("EVENT2-FILTER-POC DROP child-assoc '" + childAssociationReference + "' type='"
-                                + ((childAssocType == null) ? "Unknown" : childAssocType.toPrefixString()) + "' user='" + user + "'");
-                    }
                     if (LOGGER.isTraceEnabled())
                     {
                         LOGGER.trace("EventFilter - Excluding child association: '" + childAssociationReference + "' of type: '"

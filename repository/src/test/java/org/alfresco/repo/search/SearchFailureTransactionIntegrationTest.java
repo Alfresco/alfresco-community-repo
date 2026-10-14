@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.search;
 
+import static java.util.Collections.emptyMap;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -114,9 +116,23 @@ public class SearchFailureTransactionIntegrationTest extends BaseSpringTest
     }
 
     @Test
-    public void auditWriteFailureMustRollBackTheCallersWork()
+    public void preInvocationAuditWriteFailureMustRollBackTheCallersWork()
     {
-        SearchService auditFailingSearchService = searchServiceWhoseAuditWriteFails();
+        assertAuditFailureRollsBackTheCallersWork(AuditWrite.PRE_INVOCATION);
+    }
+
+    /**
+     * The post-invocation write is caught and wrapped separately from the pre-invocation one, so it needs its own coverage: here the first write succeeds and the search runs before the second write fails.
+     */
+    @Test
+    public void postInvocationAuditWriteFailureMustRollBackTheCallersWork()
+    {
+        assertAuditFailureRollsBackTheCallersWork(AuditWrite.POST_INVOCATION);
+    }
+
+    private void assertAuditFailureRollsBackTheCallersWork(AuditWrite failing)
+    {
+        SearchService auditFailingSearchService = searchServiceWhoseAuditWriteFails(failing);
 
         NodeRef created = txnHelper.doInTransaction(() -> {
             try
@@ -126,7 +142,10 @@ public class SearchFailureTransactionIntegrationTest extends BaseSpringTest
             }
             catch (AuditWriteException expected)
             {
-                // a caller that swallows this must still not be allowed to commit unrecorded work
+                // confirms the intended write failed, not merely some audit write
+                assertTrue("expected the " + failing.messageFragment + " audit write to fail, but got: "
+                        + expected.getMessage(),
+                        expected.getMessage().contains(failing.messageFragment));
             }
 
             return nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
@@ -151,15 +170,39 @@ public class SearchFailureTransactionIntegrationTest extends BaseSpringTest
         return advised(target);
     }
 
+    /** Which of the two audit writes around an invocation should fail. */
+    private enum AuditWrite
+    {
+        PRE_INVOCATION("pre-invocation"), POST_INVOCATION("post-invocation");
+
+        private final String messageFragment;
+
+        AuditWrite(String messageFragment)
+        {
+            this.messageFragment = messageFragment;
+        }
+    }
+
     /**
      * Uses the real {@link AuditMethodInterceptor} with an audit component that cannot write, so the failure is raised by production code rather than fabricated by the test.
      */
-    private SearchService searchServiceWhoseAuditWriteFails()
+    private SearchService searchServiceWhoseAuditWriteFails(AuditWrite failing)
     {
+        IllegalStateException unavailable = new IllegalStateException("audit table unavailable");
+
         AuditComponent failingAudit = mock(AuditComponent.class);
         given(failingAudit.areAuditValuesRequired(anyString())).willReturn(true);
-        given(failingAudit.recordAuditValues(anyString(), anyMap()))
-                .willThrow(new IllegalStateException("audit table unavailable"));
+        if (failing == AuditWrite.PRE_INVOCATION)
+        {
+            given(failingAudit.recordAuditValues(anyString(), anyMap())).willThrow(unavailable);
+        }
+        else
+        {
+            // let the search run, then fail the write that records its outcome
+            given(failingAudit.recordAuditValues(anyString(), anyMap()))
+                    .willReturn(emptyMap())
+                    .willThrow(unavailable);
+        }
 
         BeanIdentifier beanIdentifier = mock(BeanIdentifier.class);
         given(beanIdentifier.getBeanName(any())).willReturn("SearchService");

@@ -25,14 +25,25 @@
  */
 package org.alfresco.repo.search;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
 import java.io.IOException;
 
+import org.aopalliance.aop.Advice;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.audit.AuditComponent;
+import org.alfresco.repo.audit.AuditMethodInterceptor;
+import org.alfresco.repo.audit.AuditWriteException;
+import org.alfresco.repo.audit.BeanIdentifier;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
@@ -102,19 +113,74 @@ public class SearchFailureTransactionIntegrationTest extends BaseSpringTest
                 persisted);
     }
 
-    /** Advised by the production interceptor, so the rollback rule being exercised is the shipped one. */
-    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
+    @Test
+    public void auditWriteFailureMustRollBackTheCallersWork()
+    {
+        SearchService auditFailingSearchService = searchServiceWhoseAuditWriteFails();
+
+        NodeRef created = txnHelper.doInTransaction(() -> {
+            try
+            {
+                auditFailingSearchService.query(new SearchParameters());
+                fail("the stubbed audit write was expected to fail");
+            }
+            catch (AuditWriteException expected)
+            {
+                // a caller that swallows this must still not be allowed to commit unrecorded work
+            }
+
+            return nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, GUID.generate()),
+                    ContentModel.TYPE_CMOBJECT).getChildRef();
+        }, false, true);
+
+        boolean persisted = txnHelper.doInTransaction(() -> nodeService.exists(created), true, true);
+
+        assertFalse("Audit deliberately aborts an operation it could not record, so work"
+                + " done alongside a failed audit write must not be committed. Check that the rollback"
+                + " rule on SearchService_transaction in alfresco/public-services-context.xml still"
+                + " excludes " + AuditWriteException.class.getSimpleName(),
+                persisted);
+    }
+
     private SearchService searchServiceThatFailsLikeAnUnreachableIndex()
     {
-        SearchService target = (SearchService) java.lang.reflect.Proxy.newProxyInstance(
-                getClass().getClassLoader(), new Class<?>[]{SearchService.class},
-                (proxy, method, args) -> {
-                    throw new RuntimeException(new IOException("elasticsearch: Name or service not known"));
-                });
+        SearchService target = mock(SearchService.class);
+        given(target.query(any(SearchParameters.class)))
+                .willThrow(new RuntimeException(new IOException("elasticsearch: Name or service not known")));
+        return advised(target);
+    }
 
+    /**
+     * Uses the real {@link AuditMethodInterceptor} with an audit component that cannot write, so the failure is raised by production code rather than fabricated by the test.
+     */
+    private SearchService searchServiceWhoseAuditWriteFails()
+    {
+        AuditComponent failingAudit = mock(AuditComponent.class);
+        given(failingAudit.areAuditValuesRequired(anyString())).willReturn(true);
+        given(failingAudit.recordAuditValues(anyString(), anyMap()))
+                .willThrow(new IllegalStateException("audit table unavailable"));
+
+        BeanIdentifier beanIdentifier = mock(BeanIdentifier.class);
+        given(beanIdentifier.getBeanName(any())).willReturn("SearchService");
+
+        AuditMethodInterceptor auditInterceptor = new AuditMethodInterceptor();
+        auditInterceptor.setAuditComponent(failingAudit);
+        auditInterceptor.setBeanIdentifier(beanIdentifier);
+
+        return advised(mock(SearchService.class), auditInterceptor);
+    }
+
+    /** Wraps the target in the production interceptor, so the rollback rule exercised is the shipped one, with any further advice nested inside it as in {@code public-services-context.xml}. */
+    private SearchService advised(SearchService target, Advice... nested)
+    {
         ProxyFactory factory = new ProxyFactory(target);
         factory.setInterfaces(SearchService.class);
         factory.addAdvice(applicationContext.getBean("SearchService_transaction", TransactionInterceptor.class));
+        for (Advice advice : nested)
+        {
+            factory.addAdvice(advice);
+        }
         return (SearchService) factory.getProxy();
     }
 }

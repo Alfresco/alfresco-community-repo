@@ -61,7 +61,7 @@ public class SearchServiceTransactionWiringTest
     private static final String INTERCEPTOR = "SearchService_transaction";
 
     @Test
-    public void searchFailuresMustNotRollBackTheCallersTransaction() throws Exception
+    public void searchFailuresMustNotRollBackTheCallersTransaction()
     {
         TransactionAttribute attribute = searchServiceTransactionAttribute();
 
@@ -77,7 +77,7 @@ public class SearchServiceTransactionWiringTest
 
     /** A failed read leaves the caller's work valid whether it failed with an Exception or an Error, and {@code catch (Throwable ...)} callers are equally exposed. */
     @Test
-    public void errorsMustNotRollBackTheCallersTransactionEither() throws Exception
+    public void errorsMustNotRollBackTheCallersTransactionEither()
     {
         TransactionAttribute attribute = searchServiceTransactionAttribute();
 
@@ -86,7 +86,7 @@ public class SearchServiceTransactionWiringTest
     }
 
     @Test
-    public void searchMustKeepParticipatingInTheCallersTransaction() throws Exception
+    public void searchMustKeepParticipatingInTheCallersTransaction()
     {
         TransactionAttribute attribute = searchServiceTransactionAttribute();
 
@@ -127,13 +127,21 @@ public class SearchServiceTransactionWiringTest
                 attribute.rollbackOn(failure));
     }
 
-    private static TransactionAttribute searchServiceTransactionAttribute() throws Exception
+    private static TransactionAttribute searchServiceTransactionAttribute()
     {
         DefaultListableBeanFactory factory = loadFactory();
         resolvePlaceholders(factory);
 
         TransactionInterceptor interceptor = factory.getBean(INTERCEPTOR, TransactionInterceptor.class);
-        Method query = SearchService.class.getMethod("query", SearchParameters.class);
+        Method query;
+        try
+        {
+            query = SearchService.class.getMethod("query", SearchParameters.class);
+        }
+        catch (NoSuchMethodException e)
+        {
+            throw new IllegalStateException("SearchService.query(SearchParameters) is missing", e);
+        }
 
         return interceptor.getTransactionAttributeSource().getTransactionAttribute(query, SearchService.class);
     }
@@ -147,12 +155,16 @@ public class SearchServiceTransactionWiringTest
         return factory;
     }
 
-    private static void resolvePlaceholders(DefaultListableBeanFactory factory) throws IOException
+    private static void resolvePlaceholders(DefaultListableBeanFactory factory)
     {
         Properties properties = new Properties();
         try (var stream = new ClassPathResource(TRANSACTION_PROPERTIES).getInputStream())
         {
             properties.load(stream);
+        }
+        catch (IOException e)
+        {
+            throw new IllegalStateException("Could not read " + TRANSACTION_PROPERTIES, e);
         }
 
         PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();

@@ -27,7 +27,6 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,8 +50,6 @@ public class IdentityServiceConfig
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceConfig.class);
     private static final String REALMS = "realms";
-    private static final Set<String> RESERVED_AUTHORIZATION_PARAMS = Set.of(
-            "client_id", "redirect_uri", "response_type", "scope", "state", "audience");
 
     private int clientConnectionTimeout;
     private int clientSocketTimeout;
@@ -131,12 +128,6 @@ public class IdentityServiceConfig
                 logMalformedAdditionalParam(index, "empty parameter name");
                 continue;
             }
-            if (RESERVED_AUTHORIZATION_PARAMS.contains(key.toLowerCase(Locale.ROOT)))
-            {
-                logMalformedAdditionalParam(index, "reserved parameter name");
-                continue;
-            }
-
             parsedParams.put(key, entry.substring(separator + 1).trim());
         }
         authorizationAdditionalParams = Collections.unmodifiableMap(parsedParams);

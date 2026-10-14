@@ -208,7 +208,8 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
     {
         when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of(
                 "resourceServer", "Identity Provider unencrypted",
-                "custom&name", "a=b&c"));
+                "custom&name", "a=b&c",
+                "literal+plus", "a+b"));
         when(identityServiceConfig.getWebScriptsHomeRedirectPath()).thenReturn(REDIRECT_PATH);
         when(identityServiceConfig.getWebScriptsHomeScopes()).thenReturn(Set.of("openid"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
@@ -218,7 +219,8 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
         verify(response).sendRedirect(authenticationRequest.capture());
         assertThat(authenticationRequest.getValue())
                 .contains("resourceServer=Identity%20Provider%20unencrypted")
-                .contains("custom%26name=a%3Db%26c");
+                .contains("custom%26name=a%3Db%26c")
+                .contains("literal%2Bplus=a%2Bb");
     }
 
     @Test

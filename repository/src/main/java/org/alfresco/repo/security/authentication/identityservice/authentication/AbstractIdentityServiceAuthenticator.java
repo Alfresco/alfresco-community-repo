@@ -26,6 +26,7 @@
 package org.alfresco.repo.security.authentication.identityservice.authentication;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant.authorizationCode;
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.SCOPES_SUPPORTED;
 
@@ -152,11 +153,25 @@ public abstract class AbstractIdentityServiceAuthenticator implements ExternalUs
             builder.queryParam("audience", identityServiceConfig.getAudience());
         }
 
-        identityServiceConfig.getAuthorizationAdditionalParams()
-                .forEach((name, value) -> builder.queryParam(UriUtils.encodeQueryParam(name, UTF_8), UriUtils.encodeQueryParam(value, UTF_8)));
+        Set<String> existingAuthorizationParams = builder.build().getQueryParams().keySet();
+        identityServiceConfig.getAuthorizationAdditionalParams().forEach((name, value) -> {
+            if (existingAuthorizationParams.contains(name))
+            {
+                LOGGER.warn("Ignoring additional authorization parameter {} because the authorization request already contains it", name);
+            }
+            else
+            {
+                builder.queryParam(encodeQueryParam(name), encodeQueryParam(value));
+            }
+        });
 
         return builder.build()
                 .toUriString();
+    }
+
+    private static String encodeQueryParam(String value)
+    {
+        return UriUtils.encodeQueryParam(value, UTF_8).replace("+", "%2B");
     }
 
     private Set<String> getConfiguredScopes(ClientRegistration clientRegistration)

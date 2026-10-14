@@ -78,6 +78,8 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Mock
     IdentityServiceFacade identityServiceFacade;
     @Mock
+    ProviderDetails providerDetails;
+    @Mock
     IdentityServiceConfig identityServiceConfig;
     @Mock
     AdminAuthenticationCookiesService cookiesService;
@@ -99,7 +101,6 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         initMocks(this);
         ClientRegistration clientRegistration = mock(ClientRegistration.class);
-        ProviderDetails providerDetails = mock(ProviderDetails.class);
         Scope scope = Scope.parse(Arrays.asList("openid", "profile", "email", "offline_access"));
 
         when(clientRegistration.getProviderDetails()).thenReturn(providerDetails);
@@ -204,7 +205,8 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of(
                 "resourceServer", "Identity Provider unencrypted",
-                "custom&name", "a=b&c"));
+                "custom&name", "a=b&c",
+                "literal+plus", "a+b"));
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
         when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
@@ -214,7 +216,32 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         verify(response).sendRedirect(authenticationRequest.capture());
         assertThat(authenticationRequest.getValue())
                 .contains("resourceServer=Identity%20Provider%20unencrypted")
-                .contains("custom%26name=a%3Db%26c");
+                .contains("custom%26name=a%3Db%26c")
+                .contains("literal%2Bplus=a%2Bb");
+    }
+
+    @Test
+    public void shouldNotDuplicateExistingAuthorizationParameters() throws IOException
+    {
+        when(providerDetails.getAuthorizationUri()).thenReturn("http://localhost:8999/auth?existing=original#fragment");
+        when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of(
+                "existing", "replacement",
+                "client_id", "replacement-client",
+                "additional", "value"));
+        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid"));
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+
+        authenticator.requestAuthentication(request, response);
+
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertThat(authenticationRequest.getValue())
+                .containsOnlyOnce("existing=original")
+                .containsOnlyOnce("client_id=alfresco")
+                .doesNotContain("existing=replacement")
+                .doesNotContain("client_id=replacement-client")
+                .contains("additional=value")
+                .endsWith("#fragment");
     }
 
     @Test

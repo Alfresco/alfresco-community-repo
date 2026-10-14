@@ -70,17 +70,6 @@ public class IdentityServiceConfigUnitTest
     }
 
     @Test
-    public void shouldIgnoreReservedAuthorizationParametersRegardlessOfCase()
-    {
-        config.setAuthorizationAdditionalParams(
-                "valid=one,client_id=other,redirect_uri=https://example.com,response_type=token,scope=other,state=fixed,audience=other,CLIENT_ID=uppercase,alsoValid=two");
-
-        assertThat(config.getAuthorizationAdditionalParams()).containsExactly(
-                Map.entry("valid", "one"),
-                Map.entry("alsoValid", "two"));
-    }
-
-    @Test
     public void shouldUseLastValueWhenParameterIsConfiguredMoreThanOnce()
     {
         config.setAuthorizationAdditionalParams("duplicate=first,duplicate=last");
@@ -88,6 +77,3 @@ public class IdentityServiceConfigUnitTest
         assertThat(config.getAuthorizationAdditionalParams()).containsExactly(Map.entry("duplicate", "last"));
     }
 }
-
-
-

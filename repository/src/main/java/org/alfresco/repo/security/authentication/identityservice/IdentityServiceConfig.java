@@ -108,9 +108,7 @@ public class IdentityServiceConfig
     }
 
     /**
-     * Parses a comma-delimited list of additional OIDC parameters in {@code name=value} format. Values containing commas
-     * can be single-quoted, using {@code ''} for a literal quote. Malformed entries are ignored and duplicate names use
-     * the last value.
+     * Parses a comma-delimited list of additional OIDC parameters in {@code name=value} format. Values containing commas can be single-quoted, using {@code ''} for a literal quote. Malformed entries are ignored and duplicate names use the last value.
      *
      * @param additionalParams
      *            configured additional authorization parameters, or {@code null}

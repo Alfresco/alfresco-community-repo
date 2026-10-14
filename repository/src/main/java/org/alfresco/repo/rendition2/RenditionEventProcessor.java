@@ -28,12 +28,11 @@ package org.alfresco.repo.rendition2;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.messaging.TextMessageHandler;
 import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -45,7 +44,7 @@ import org.alfresco.util.ParameterCheck;
  * 
  * @author Cristian Turlica
  */
-public class RenditionEventProcessor implements Processor
+public class RenditionEventProcessor implements TextMessageHandler
 {
     private static Log logger = LogFactory.getLog(RenditionEventProcessor.class);
 
@@ -69,20 +68,18 @@ public class RenditionEventProcessor implements Processor
     }
 
     @Override
-    public void process(Exchange exchange) throws Exception
+    public void process(String body)
     {
-        String body = (String) exchange.getMessage().getBody();
-
         if (logger.isDebugEnabled())
         {
-            logger.info("Processing message [thread=" + Thread.currentThread().getId() + ", body=" + body + "]");
+            logger.info("Processing message [thread=" + Thread.currentThread().threadId() + ", body=" + body + "]");
         }
 
         if (body == null || body.isEmpty())
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Exchange message is null or empty");
+                logger.debug("Message body is null or empty");
             }
 
             return;

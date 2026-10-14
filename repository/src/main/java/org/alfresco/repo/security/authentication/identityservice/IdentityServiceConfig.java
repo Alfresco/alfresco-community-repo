@@ -25,8 +25,10 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -106,9 +108,9 @@ public class IdentityServiceConfig
     }
 
     /**
-     * Parses additional OIDC authorization parameters from a comma-delimited {@code name=value} list.
-     * <p>
-     * Names and unquoted values are trimmed. A value containing commas, leading/trailing whitespace or quotes can be enclosed in single quotes. The enclosing quotes are not part of the resulting value, and a literal single quote is written as two consecutive quotes ({@code ''}) inside such a value. Malformed entries are logged and ignored. Entries preceding an unterminated quoted value are retained, but subsequent entries cannot be recovered reliably. When a parameter is configured more than once, the last value wins while its original insertion position is retained.
+     * Parses a comma-delimited list of additional OIDC parameters in {@code name=value} format. Values containing commas
+     * can be single-quoted, using {@code ''} for a literal quote. Malformed entries are ignored and duplicate names use
+     * the last value.
      *
      * @param additionalParams
      *            configured additional authorization parameters, or {@code null}
@@ -124,129 +126,122 @@ public class IdentityServiceConfig
         authorizationAdditionalParams = Collections.unmodifiableMap(parseAdditionalParams(additionalParams));
     }
 
-    /**
-     * Parses the configured authorization parameters in a single pass, so that delimiters, separators and quotes are interpreted exactly once and in context.
-     *
-     * @param additionalParams
-     *            non-null, non-blank comma-delimited authorization parameters
-     * @return parsed parameters ordered by the first occurrence of each name
-     */
+    /** Parses all configured entries into an insertion-ordered parameter map. */
     private static Map<String, String> parseAdditionalParams(String additionalParams)
     {
         final Map<String, String> parsedParams = new LinkedHashMap<>();
-        final int length = additionalParams.length();
-        int position = 0;
-        int entryNumber = 0;
-
-        while (position <= length)
+        final List<String> entries = splitAdditionalParams(additionalParams);
+        for (int index = 0; index < entries.size(); index++)
         {
-            entryNumber++;
-            final int entryStart = position;
+            parseAdditionalParam(entries.get(index), index + 1, parsedParams);
+        }
+        return parsedParams;
+    }
 
-            // Read the parameter name, up to the first separator or delimiter.
-            int separator = -1;
-            while (position < length)
+    /** Splits on delimiters outside quoted values. */
+    private static List<String> splitAdditionalParams(String additionalParams)
+    {
+        final List<String> entries = new ArrayList<>();
+        int entryStart = 0;
+        boolean separatorFound = false;
+        boolean valueStarted = false;
+        boolean quotedValue = false;
+
+        for (int position = 0; position < additionalParams.length(); position++)
+        {
+            final char current = additionalParams.charAt(position);
+            if (quotedValue)
             {
-                final char current = additionalParams.charAt(position);
-                if (current == PARAM_SEPARATOR)
+                if (current == QUOTE && position + 1 < additionalParams.length() && additionalParams.charAt(position + 1) == QUOTE)
                 {
-                    separator = position;
-                    break;
+                    position++; // Skip an escaped quote.
                 }
-                if (current == PARAM_DELIMITER)
+                else if (current == QUOTE)
                 {
-                    break;
+                    quotedValue = false;
                 }
+            }
+            else if (current == PARAM_DELIMITER)
+            {
+                entries.add(additionalParams.substring(entryStart, position));
+                entryStart = position + 1;
+                separatorFound = false;
+                valueStarted = false;
+            }
+            else if (!separatorFound && current == PARAM_SEPARATOR)
+            {
+                separatorFound = true;
+            }
+            else if (separatorFound && !valueStarted && !Character.isWhitespace(current))
+            {
+                valueStarted = true;
+                quotedValue = current == QUOTE;
+            }
+        }
+        entries.add(additionalParams.substring(entryStart));
+        return entries;
+    }
+
+    /** Validates and adds one configured parameter entry to the result map. */
+    private static void parseAdditionalParam(String entry, int entryNumber, Map<String, String> parsedParams)
+    {
+        final int separator = entry.indexOf(PARAM_SEPARATOR);
+        if (separator < 0)
+        {
+            // Tolerate empty entries, e.g. a trailing or doubled delimiter.
+            if (!entry.isBlank())
+            {
+                logMalformedAdditionalParam(entryNumber, "missing '" + PARAM_SEPARATOR + "' separator");
+            }
+            return;
+        }
+
+        final String name = entry.substring(0, separator).trim();
+        if (name.isEmpty())
+        {
+            logMalformedAdditionalParam(entryNumber, "empty parameter name");
+            return;
+        }
+
+        parseAdditionalParamValue(entry.substring(separator + 1), entryNumber)
+                .ifPresent(value -> parsedParams.put(name, value));
+    }
+
+    /** Parses an unquoted or single-quoted parameter value. */
+    private static Optional<String> parseAdditionalParamValue(String configuredValue, int entryNumber)
+    {
+        final String value = configuredValue.strip();
+        if (value.isEmpty() || value.charAt(0) != QUOTE)
+        {
+            return Optional.of(value);
+        }
+
+        final StringBuilder parsedValue = new StringBuilder();
+        for (int position = 1; position < value.length(); position++)
+        {
+            final char current = value.charAt(position);
+            if (current != QUOTE)
+            {
+                parsedValue.append(current);
+            }
+            else if (position + 1 < value.length() && value.charAt(position + 1) == QUOTE)
+            {
+                parsedValue.append(QUOTE);
                 position++;
             }
-
-            if (separator < 0)
+            else if (value.substring(position + 1).isBlank())
             {
-                // Tolerate empty entries, e.g. a trailing or doubled delimiter.
-                if (!additionalParams.substring(entryStart, position).isBlank())
-                {
-                    logMalformedAdditionalParam(entryNumber, "missing '" + PARAM_SEPARATOR + "' separator");
-                }
-                position++;
-                continue;
-            }
-
-            final String name = additionalParams.substring(entryStart, separator).trim();
-            position = separator + 1;
-
-            // Skip whitespace between the separator and the value.
-            while (position < length && Character.isWhitespace(additionalParams.charAt(position)))
-            {
-                position++;
-            }
-
-            final String value;
-            if (position < length && additionalParams.charAt(position) == QUOTE)
-            {
-                final StringBuilder quotedValue = new StringBuilder();
-                position++;
-                boolean terminated = false;
-                while (position < length)
-                {
-                    final char current = additionalParams.charAt(position++);
-                    if (current != QUOTE)
-                    {
-                        quotedValue.append(current);
-                    }
-                    else if (position < length && additionalParams.charAt(position) == QUOTE)
-                    {
-                        // Escaped quote.
-                        quotedValue.append(QUOTE);
-                        position++;
-                    }
-                    else
-                    {
-                        terminated = true;
-                        break;
-                    }
-                }
-
-                if (!terminated)
-                {
-                    logMalformedAdditionalParam(entryNumber, "unterminated quoted value");
-                    break;
-                }
-
-                // Only whitespace may follow a quoted value.
-                final int trailingStart = position;
-                while (position < length && additionalParams.charAt(position) != PARAM_DELIMITER)
-                {
-                    position++;
-                }
-                if (!additionalParams.substring(trailingStart, position).isBlank())
-                {
-                    logMalformedAdditionalParam(entryNumber, "unexpected characters after quoted value");
-                    position++;
-                    continue;
-                }
-                value = quotedValue.toString();
+                return Optional.of(parsedValue.toString());
             }
             else
             {
-                final int valueStart = position;
-                while (position < length && additionalParams.charAt(position) != PARAM_DELIMITER)
-                {
-                    position++;
-                }
-                value = additionalParams.substring(valueStart, position).trim();
+                logMalformedAdditionalParam(entryNumber, "unexpected characters after quoted value");
+                return Optional.empty();
             }
-
-            // Consume the delimiter, or move past the end of the input to stop the loop.
-            position++;
-
-            if (name.isEmpty())
-            {
-                logMalformedAdditionalParam(entryNumber, "empty parameter name");
-                continue;
-            }
-            parsedParams.put(name, value);
         }
-        return parsedParams;
+
+        logMalformedAdditionalParam(entryNumber, "unterminated quoted value");
+        return Optional.empty();
     }
 
     private static void logMalformedAdditionalParam(int entryNumber, String reason)

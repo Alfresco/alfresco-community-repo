@@ -74,22 +74,35 @@ public class IdentityServiceConfigUnitTest
     @Test
     public void shouldIgnoreEmptyEntriesAndSurroundingWhitespace()
     {
-        config.setAuthorizationAdditionalParams(" , foo = bar , ,baz =  '  spaced  ' ,");
+        config.setAuthorizationAdditionalParams(" , foo = bar , ,baz =  '  spaced  ' ,unicode =\u2003'kept'\u2003,");
 
         assertThat(config.getAuthorizationAdditionalParams()).containsExactly(
                 Map.entry("foo", "bar"),
-                Map.entry("baz", "  spaced  "));
+                Map.entry("baz", "  spaced  "),
+                Map.entry("unicode", "kept"));
     }
 
     @Test
     public void shouldSupportEscapedQuotesInQuotedValues()
     {
-        config.setAuthorizationAdditionalParams("quoted='it''s, quoted',plain=it's fine,onlyQuote=''''");
+        config.setAuthorizationAdditionalParams("quoted='it''s, quoted, again',plain=it's fine,onlyQuote='''',emptyQuoted=''");
 
         assertThat(config.getAuthorizationAdditionalParams()).containsExactly(
-                Map.entry("quoted", "it's, quoted"),
+                Map.entry("quoted", "it's, quoted, again"),
                 Map.entry("plain", "it's fine"),
-                Map.entry("onlyQuote", "'"));
+                Map.entry("onlyQuote", "'"),
+                Map.entry("emptyQuoted", ""));
+    }
+
+    @Test
+    public void shouldNotTreatAnApostropheInAnUnquotedValueAsAQuote()
+    {
+        config.setAuthorizationAdditionalParams("surname=O'Brien,next=value,quoted='value'  ");
+
+        assertThat(config.getAuthorizationAdditionalParams()).containsExactly(
+                Map.entry("surname", "O'Brien"),
+                Map.entry("next", "value"),
+                Map.entry("quoted", "value"));
     }
 
     @Test

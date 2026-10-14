@@ -103,6 +103,7 @@ public class SearchFailureTransactionIntegrationTest extends BaseSpringTest
     }
 
     /** Advised by the production interceptor, so the rollback rule being exercised is the shipped one. */
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     private SearchService searchServiceThatFailsLikeAnUnreachableIndex()
     {
         SearchService target = (SearchService) java.lang.reflect.Proxy.newProxyInstance(

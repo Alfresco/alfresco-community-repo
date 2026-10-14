@@ -216,7 +216,8 @@
         </property>
         <property name="transactionAttributes">
             <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
+                <!-- No rollbacks because SearchService is read-only -->
+                <prop key="*">${server.transaction.mode.default},+java.lang.Throwable</prop>
             </props>
         </property>
     </bean>

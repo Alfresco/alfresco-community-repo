@@ -290,6 +290,7 @@
       <constructor-arg ref="identityServiceFacade"/>
       <constructor-arg ref="transactionService"/>
       <constructor-arg ref="identityServiceConfig"/>
+      <constructor-arg ref="JobLockService"/>
    </bean>
 
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">

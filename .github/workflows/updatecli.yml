@@ -1,0 +1,80 @@
+name: "Updatecli - Bump automated versions"
+
+run-name: "Updatecli${{ inputs.alfresco-updatecli-ref && format(' (alfresco-updatecli@{0})', inputs.alfresco-updatecli-ref) || '' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      alfresco-updatecli-ref:
+        description: "The alfresco-updatecli ref to source the shared version policy from"
+        type: string
+        default: master
+  schedule:
+    - cron: "0 22 * * 0"
+  pull_request:
+    paths:
+      - ".updatecli/**"
+      - ".github/workflows/updatecli.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  updatecli:
+    name: "Run updatecli (${{ matrix.manifest }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        manifest:
+          - .updatecli/test-environment.yaml
+          - .updatecli/maven-dependencies.yaml
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: "Checkout shared version policy"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: Alfresco/alfresco-updatecli
+          ref: ${{ inputs.alfresco-updatecli-ref || 'master' }}
+          sparse-checkout: |
+            deployments/values/supported-matrix.yaml
+          sparse-checkout-cone-mode: false
+          path: alfresco-updatecli
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        if: github.event_name != 'pull_request'
+        with:
+          client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-members: read
+      - uses: updatecli/updatecli-action@ca8c01bf875e2520512c344a71dd02f3dc3326a7 # v3.7.0
+      - name: "Updatecli scm cache"
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /tmp/updatecli/github
+          key: updatecli-v1-${{ hashFiles('.updatecli/**') }}
+          restore-keys: |
+            updatecli-v1-
+      - name: "updatecli pipeline diff"
+        if: github.event_name == 'pull_request'
+        run: updatecli pipeline diff --config ${{ matrix.manifest }} --values alfresco-updatecli/deployments/values/supported-matrix.yaml
+        env:
+          # Read-only default token, not the write-capable App token: diff never
+          # commits or pushes, and this evaluates manifest content from the PR
+          # itself, so it shouldn't hold write-scoped credentials.
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          NEXUS_URL: ${{ vars.NEXUS_URL }}
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME_READ_ONLY }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD_READ_ONLY }}
+      - name: "updatecli pipeline apply"
+        if: github.event_name != 'pull_request'
+        run: updatecli pipeline apply --config ${{ matrix.manifest }} --values alfresco-updatecli/deployments/values/supported-matrix.yaml
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_ACTOR: ${{ steps.app-token.outputs.app-slug }}[bot]
+          NEXUS_URL: ${{ vars.NEXUS_URL }}
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME_READ_ONLY }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD_READ_ONLY }}

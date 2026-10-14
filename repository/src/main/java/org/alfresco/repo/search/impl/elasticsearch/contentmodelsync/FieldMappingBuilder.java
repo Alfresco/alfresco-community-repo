@@ -81,6 +81,8 @@ public class FieldMappingBuilder
         Map<String, Object> mappings = contentModelProperties.stream()
                 .filter(PropertyDefinition::isIndexed)
                 .map(this::buildFieldMappings)
+                // An unsupported datatype yields no field, so counting it would overstate what was mapped.
+                .filter(fields -> !fields.isEmpty())
                 .peek(t -> counter.incrementAndGet())
                 .collect(HashMap::new, Map::putAll, Map::putAll);
 

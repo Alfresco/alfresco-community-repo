@@ -93,6 +93,7 @@
         <constructor-arg value="${elasticsearch.lockRetryPeriodSeconds}" />
         <constructor-arg value="${elasticsearch.createIndexIfNotExists}" />
         <constructor-arg ref="searchEngineDetector"/>
+        <property name="mappingBatchSize" value="${elasticsearch.mappingBatchSize}"/>
     </bean>
 
     <bean id="searchEngineDetector"

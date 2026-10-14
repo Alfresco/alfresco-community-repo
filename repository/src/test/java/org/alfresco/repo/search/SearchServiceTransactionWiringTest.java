@@ -44,6 +44,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.interceptor.TransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
+import org.alfresco.repo.audit.AuditWriteException;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 
@@ -100,6 +101,21 @@ public class SearchServiceTransactionWiringTest
                     + " uncommitted changes",
                     suspending, attribute.getPropagationBehavior());
         }
+    }
+
+    /**
+     * Audit records the invocation inside this transaction and deliberately aborts the operation if it cannot, so that failure must still roll back.
+     */
+    @Test
+    public void auditWriteFailuresMustStillRollBack()
+    {
+        TransactionAttribute attribute = searchServiceTransactionAttribute();
+
+        assertTrue("A failed audit write must still mark the caller's transaction rollback-only,"
+                + " otherwise the operation commits unrecorded. Check that the rollback rule on "
+                + INTERCEPTOR + " in " + CONTEXT_XML + " still excludes "
+                + AuditWriteException.class.getSimpleName(),
+                attribute.rollbackOn(new AuditWriteException("Failed to audit pre-invocation", null)));
     }
 
     @Test

@@ -206,7 +206,8 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of(
                 "resourceServer", "Identity Provider unencrypted",
                 "custom&name", "a=b&c",
-                "literal+plus", "a+b"));
+                "literal+plus", "a+b",
+                "claims", "{\"userinfo\":{\"given_name\":null,\"email\":null}}"));
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
         when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
@@ -217,7 +218,8 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         assertThat(authenticationRequest.getValue())
                 .contains("resourceServer=Identity%20Provider%20unencrypted")
                 .contains("custom%26name=a%3Db%26c")
-                .contains("literal%2Bplus=a%2Bb");
+                .contains("literal%2Bplus=a%2Bb")
+                .contains("claims=%7B%22userinfo%22:%7B%22given_name%22:null,%22email%22:null%7D%7D");
     }
 
     @Test

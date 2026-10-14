@@ -50,23 +50,54 @@ public class IdentityServiceConfigUnitTest
     @Test
     public void shouldParseAdditionalAuthorizationParameters()
     {
-        config.setAuthorizationAdditionalParams("resourceServer=Identity Provider unencrypted, foo = bar,expression=a=b,empty=");
+        config.setAuthorizationAdditionalParams(
+                "resourceServer=Identity Provider unencrypted, foo = bar,expression=a=b,empty=,claims='{\"userinfo\":{\"given_name\":null,\"email\":null}}'");
 
         assertThat(config.getAuthorizationAdditionalParams()).containsExactly(
                 Map.entry("resourceServer", "Identity Provider unencrypted"),
                 Map.entry("foo", "bar"),
                 Map.entry("expression", "a=b"),
-                Map.entry("empty", ""));
+                Map.entry("empty", ""),
+                Map.entry("claims", "{\"userinfo\":{\"given_name\":null,\"email\":null}}"));
     }
 
     @Test
     public void shouldIgnoreMalformedAdditionalAuthorizationParameters()
     {
-        config.setAuthorizationAdditionalParams("valid=one,missingSeparator,=missingName,   ,alsoValid=two");
+        config.setAuthorizationAdditionalParams("valid=one,missingSeparator,=missingName,   ,alsoValid=two,unterminated='one,two");
 
         assertThat(config.getAuthorizationAdditionalParams()).containsExactly(
                 Map.entry("valid", "one"),
                 Map.entry("alsoValid", "two"));
+    }
+
+    @Test
+    public void shouldIgnoreEmptyEntriesAndSurroundingWhitespace()
+    {
+        config.setAuthorizationAdditionalParams(" , foo = bar , ,baz =  '  spaced  ' ,");
+
+        assertThat(config.getAuthorizationAdditionalParams()).containsExactly(
+                Map.entry("foo", "bar"),
+                Map.entry("baz", "  spaced  "));
+    }
+
+    @Test
+    public void shouldSupportEscapedQuotesInQuotedValues()
+    {
+        config.setAuthorizationAdditionalParams("quoted='it''s, quoted',plain=it's fine,onlyQuote=''''");
+
+        assertThat(config.getAuthorizationAdditionalParams()).containsExactly(
+                Map.entry("quoted", "it's, quoted"),
+                Map.entry("plain", "it's fine"),
+                Map.entry("onlyQuote", "'"));
+    }
+
+    @Test
+    public void shouldIgnoreEntriesWithUnexpectedCharactersAfterAQuotedValue()
+    {
+        config.setAuthorizationAdditionalParams("broken='one' two,valid=three");
+
+        assertThat(config.getAuthorizationAdditionalParams()).containsExactly(Map.entry("valid", "three"));
     }
 
     @Test

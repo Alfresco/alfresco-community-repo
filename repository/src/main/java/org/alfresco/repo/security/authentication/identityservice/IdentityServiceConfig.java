@@ -50,6 +50,9 @@ public class IdentityServiceConfig
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceConfig.class);
     private static final String REALMS = "realms";
+    private static final char PARAM_DELIMITER = ',';
+    private static final char PARAM_SEPARATOR = '=';
+    private static final char QUOTE = '\'';
 
     private int clientConnectionTimeout;
     private int clientSocketTimeout;
@@ -102,6 +105,14 @@ public class IdentityServiceConfig
         return authorizationAdditionalParams;
     }
 
+    /**
+     * Parses additional OIDC authorization parameters from a comma-delimited {@code name=value} list.
+     * <p>
+     * Names and unquoted values are trimmed. A value containing commas, leading/trailing whitespace or quotes can be enclosed in single quotes. The enclosing quotes are not part of the resulting value, and a literal single quote is written as two consecutive quotes ({@code ''}) inside such a value. Malformed entries are logged and ignored. Entries preceding an unterminated quoted value are retained, but subsequent entries cannot be recovered reliably. When a parameter is configured more than once, the last value wins while its original insertion position is retained.
+     *
+     * @param additionalParams
+     *            configured additional authorization parameters, or {@code null}
+     */
     public void setAuthorizationAdditionalParams(String additionalParams)
     {
         if (StringUtils.isBlank(additionalParams))
@@ -110,32 +121,137 @@ public class IdentityServiceConfig
             return;
         }
 
-        Map<String, String> parsedParams = new LinkedHashMap<>();
-        String[] entries = additionalParams.split(",", -1);
-        for (int index = 0; index < entries.length; index++)
-        {
-            String entry = entries[index].trim();
-            int separator = entry.indexOf('=');
-            if (separator < 0)
-            {
-                logMalformedAdditionalParam(index, "missing '=' separator");
-                continue;
-            }
-
-            String key = entry.substring(0, separator).trim();
-            if (key.isEmpty())
-            {
-                logMalformedAdditionalParam(index, "empty parameter name");
-                continue;
-            }
-            parsedParams.put(key, entry.substring(separator + 1).trim());
-        }
-        authorizationAdditionalParams = Collections.unmodifiableMap(parsedParams);
+        authorizationAdditionalParams = Collections.unmodifiableMap(parseAdditionalParams(additionalParams));
     }
 
-    private static void logMalformedAdditionalParam(int index, String reason)
+    /**
+     * Parses the configured authorization parameters in a single pass, so that delimiters, separators and quotes are interpreted exactly once and in context.
+     *
+     * @param additionalParams
+     *            non-null, non-blank comma-delimited authorization parameters
+     * @return parsed parameters ordered by the first occurrence of each name
+     */
+    private static Map<String, String> parseAdditionalParams(String additionalParams)
     {
-        LOGGER.warn("Ignoring malformed entry {} in identity-service.authorization.additional-params: {}", index + 1, reason);
+        final Map<String, String> parsedParams = new LinkedHashMap<>();
+        final int length = additionalParams.length();
+        int position = 0;
+        int entryNumber = 0;
+
+        while (position <= length)
+        {
+            entryNumber++;
+            final int entryStart = position;
+
+            // Read the parameter name, up to the first separator or delimiter.
+            int separator = -1;
+            while (position < length)
+            {
+                final char current = additionalParams.charAt(position);
+                if (current == PARAM_SEPARATOR)
+                {
+                    separator = position;
+                    break;
+                }
+                if (current == PARAM_DELIMITER)
+                {
+                    break;
+                }
+                position++;
+            }
+
+            if (separator < 0)
+            {
+                // Tolerate empty entries, e.g. a trailing or doubled delimiter.
+                if (!additionalParams.substring(entryStart, position).isBlank())
+                {
+                    logMalformedAdditionalParam(entryNumber, "missing '" + PARAM_SEPARATOR + "' separator");
+                }
+                position++;
+                continue;
+            }
+
+            final String name = additionalParams.substring(entryStart, separator).trim();
+            position = separator + 1;
+
+            // Skip whitespace between the separator and the value.
+            while (position < length && Character.isWhitespace(additionalParams.charAt(position)))
+            {
+                position++;
+            }
+
+            final String value;
+            if (position < length && additionalParams.charAt(position) == QUOTE)
+            {
+                final StringBuilder quotedValue = new StringBuilder();
+                position++;
+                boolean terminated = false;
+                while (position < length)
+                {
+                    final char current = additionalParams.charAt(position++);
+                    if (current != QUOTE)
+                    {
+                        quotedValue.append(current);
+                    }
+                    else if (position < length && additionalParams.charAt(position) == QUOTE)
+                    {
+                        // Escaped quote.
+                        quotedValue.append(QUOTE);
+                        position++;
+                    }
+                    else
+                    {
+                        terminated = true;
+                        break;
+                    }
+                }
+
+                if (!terminated)
+                {
+                    logMalformedAdditionalParam(entryNumber, "unterminated quoted value");
+                    break;
+                }
+
+                // Only whitespace may follow a quoted value.
+                final int trailingStart = position;
+                while (position < length && additionalParams.charAt(position) != PARAM_DELIMITER)
+                {
+                    position++;
+                }
+                if (!additionalParams.substring(trailingStart, position).isBlank())
+                {
+                    logMalformedAdditionalParam(entryNumber, "unexpected characters after quoted value");
+                    position++;
+                    continue;
+                }
+                value = quotedValue.toString();
+            }
+            else
+            {
+                final int valueStart = position;
+                while (position < length && additionalParams.charAt(position) != PARAM_DELIMITER)
+                {
+                    position++;
+                }
+                value = additionalParams.substring(valueStart, position).trim();
+            }
+
+            // Consume the delimiter, or move past the end of the input to stop the loop.
+            position++;
+
+            if (name.isEmpty())
+            {
+                logMalformedAdditionalParam(entryNumber, "empty parameter name");
+                continue;
+            }
+            parsedParams.put(name, value);
+        }
+        return parsedParams;
+    }
+
+    private static void logMalformedAdditionalParam(int entryNumber, String reason)
+    {
+        LOGGER.warn("Ignoring malformed entry {} in identity-service.authorization.additional-params: {}", entryNumber, reason);
     }
 
     public String getWebScriptsHomeRedirectPath()

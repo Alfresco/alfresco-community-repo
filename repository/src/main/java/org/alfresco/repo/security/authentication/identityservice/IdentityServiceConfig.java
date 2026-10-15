@@ -207,7 +207,7 @@ public class IdentityServiceConfig
             return;
         }
 
-        final String name = entry.substring(0, separator).trim();
+        final String name = entry.substring(0, separator).strip();
         if (name.isEmpty())
         {
             logMalformedAdditionalParam(entryNumber, "empty parameter name");

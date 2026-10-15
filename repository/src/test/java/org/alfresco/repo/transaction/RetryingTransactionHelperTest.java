@@ -199,6 +199,62 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
         assertEquals("The txn value must be the same as the value after", afterValue, txnValue);
     }
 
+    @Test
+    public void testRelatedMetadataCommitAndRollback()
+    {
+        NodeRef childNodeRef = txnHelper.doInTransaction(() -> {
+            nodeService.setProperty(rootNodeRef, PROP_CHECK_VALUE, Long.valueOf(1));
+            NodeRef child = nodeService.createNode(
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, GUID.generate()),
+                    ContentModel.TYPE_CMOBJECT).getChildRef();
+            nodeService.setProperty(child, PROP_CHECK_VALUE, Long.valueOf(1));
+            return child;
+        }, false, true);
+
+        try
+        {
+            txnHelper.doInTransaction(() -> {
+                assertEquals(Long.valueOf(1), nodeService.getProperty(rootNodeRef, PROP_CHECK_VALUE));
+                assertEquals(Long.valueOf(1), nodeService.getProperty(childNodeRef, PROP_CHECK_VALUE));
+                assertEquals(rootNodeRef, nodeService.getPrimaryParent(childNodeRef).getParentRef());
+                return null;
+            }, true, true);
+
+            IllegalStateException rollback = new IllegalStateException("Roll back related metadata changes");
+            try
+            {
+                txnHelper.doInTransaction(() -> {
+                    nodeService.setProperty(rootNodeRef, PROP_CHECK_VALUE, Long.valueOf(2));
+                    nodeService.setProperty(childNodeRef, PROP_CHECK_VALUE, Long.valueOf(2));
+                    throw rollback;
+                }, false, true);
+                fail("Expected the metadata transaction to roll back");
+            }
+            catch (IllegalStateException expected)
+            {
+                assertSame(rollback, expected);
+            }
+
+            txnHelper.doInTransaction(() -> {
+                assertEquals("Parent change must have rolled back", Long.valueOf(1),
+                        nodeService.getProperty(rootNodeRef, PROP_CHECK_VALUE));
+                assertEquals("Child change must have rolled back", Long.valueOf(1),
+                        nodeService.getProperty(childNodeRef, PROP_CHECK_VALUE));
+                assertEquals(rootNodeRef, nodeService.getPrimaryParent(childNodeRef).getParentRef());
+                return null;
+            }, true, true);
+        }
+        finally
+        {
+            txnHelper.doInTransaction(() -> {
+                nodeService.deleteNode(childNodeRef);
+                return null;
+            }, false, true);
+        }
+    }
+
     /**
      * Check that the transaction state can be fetched in and around the transaction. This also checks that any mischievous attempts to manipulate the transaction (other than setRollback) are detected.
      */

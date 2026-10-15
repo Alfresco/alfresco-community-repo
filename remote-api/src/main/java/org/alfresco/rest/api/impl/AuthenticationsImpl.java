@@ -260,17 +260,7 @@ public class AuthenticationsImpl implements Authentications
      */
     private String getTicketForSsoAuthenticatedUser(Parameters parameters)
     {
-        // An explicit ticket was provided: keep the standard validation behaviour
-        if (StringUtils.isNotEmpty(parameters.getParameter(PARAM_ALF_TICKET))
-                || StringUtils.isNotEmpty(parameters.getParameter(PARAM_TICKET)))
-        {
-            return null;
-        }
-
-        final String authorization = parameters.getRequest().getHeader(AUTHORIZATION_HEADER);
-        final boolean noAuthorizationHeader = StringUtils.isEmpty(authorization);
-        final boolean negotiate = !noAuthorizationHeader && authorization.split(" ")[0].equalsIgnoreCase(AUTHORIZATION_NEGOTIATE);
-        if (!noAuthorizationHeader && !negotiate)
+        if (!isRequestWithoutTicket(parameters))
         {
             return null;
         }
@@ -281,45 +271,63 @@ public class AuthenticationsImpl implements Authentications
             return null;
         }
 
-        final HttpServletRequest httpServletRequest = extractHttpServletRequestFromParameters(parameters);
-        if (httpServletRequest == null)
+        final String sessionTicket = getExternalAuthSessionTicket(parameters, currentUser);
+
+        // Kerberos SSO checked last (walks the authentication chain): only when it is the active global authentication filter
+        if (sessionTicket == null || !isKerberosSsoActive())
         {
             return null;
         }
 
-        final HttpSession session = httpServletRequest.getSession(false);
+        return isTicketOwnedBy(sessionTicket, currentUser) ? sessionTicket : null;
+    }
+
+    /**
+     * @return true if the request has no alf_ticket/ticket parameter and either no Authorization header or a "Negotiate" one
+     */
+    private boolean isRequestWithoutTicket(Parameters parameters)
+    {
+        // An explicit ticket was provided: keep the standard validation behaviour
+        if (StringUtils.isNotEmpty(parameters.getParameter(PARAM_ALF_TICKET))
+                || StringUtils.isNotEmpty(parameters.getParameter(PARAM_TICKET)))
+        {
+            return false;
+        }
+
+        final String authorization = parameters.getRequest().getHeader(AUTHORIZATION_HEADER);
+        return StringUtils.isEmpty(authorization) || authorization.split(" ")[0].equalsIgnoreCase(AUTHORIZATION_NEGOTIATE);
+    }
+
+    /**
+     * @return the ticket of the {@link SessionUser} held in an externally authenticated HTTP session, if that session user is the given user; null otherwise
+     */
+    private String getExternalAuthSessionTicket(Parameters parameters, String userName)
+    {
+        final HttpServletRequest httpServletRequest = extractHttpServletRequestFromParameters(parameters);
+        final HttpSession session = httpServletRequest == null ? null : httpServletRequest.getSession(false);
         if (session == null || !Boolean.TRUE.equals(session.getAttribute(BaseAuthenticationFilter.LOGIN_EXTERNAL_AUTH)))
         {
             return null;
         }
 
-        final Object sessionAttribute = session.getAttribute(AuthenticationDriver.AUTHENTICATION_USER);
-        if (!(sessionAttribute instanceof SessionUser))
+        if (!(session.getAttribute(AuthenticationDriver.AUTHENTICATION_USER) instanceof SessionUser sessionUser)
+                || !userName.equals(sessionUser.getUserName()))
         {
             return null;
         }
 
-        final SessionUser sessionUser = (SessionUser) sessionAttribute;
-        final String sessionTicket = sessionUser.getTicket();
-        if (StringUtils.isEmpty(sessionTicket) || !currentUser.equals(sessionUser.getUserName()))
-        {
-            return null;
-        }
+        return StringUtils.defaultIfEmpty(sessionUser.getTicket(), null);
+    }
 
-        // Checked last (walks the authentication chain): only when Kerberos SSO is the active global authentication filter
-        if (!isKerberosSsoActive())
-        {
-            return null;
-        }
-
+    private boolean isTicketOwnedBy(String ticket, String userName)
+    {
         try
         {
-            final String ticketUser = ticketComponent.validateTicket(sessionTicket);
-            return currentUser.equals(ticketUser) ? sessionTicket : null;
+            return userName.equals(ticketComponent.validateTicket(ticket));
         }
         catch (AuthenticationException e)
         {
-            return null;
+            return false;
         }
     }
 

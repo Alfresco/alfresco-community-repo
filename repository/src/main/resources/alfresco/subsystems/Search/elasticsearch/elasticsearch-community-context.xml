@@ -248,6 +248,7 @@
         <constructor-arg name="namespaceDAO" ref="namespaceDAO"/>
         <constructor-arg name="dictionaryService" ref="DictionaryService"/>
         <constructor-arg name="indexConfigurationInitializer" ref="indexConfigurationInitializer"/>
+        <constructor-arg name="nodeDbidTieBreakerEnabled" value="${elasticsearch.sort.nodeDbidTieBreaker.enabled}"/>
     </bean>
 
     <bean id="elasticsearchFilterBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.filter.ElasticsearchFilterBuilder">

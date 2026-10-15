@@ -140,7 +140,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     private static final JOSEObjectType AT_JWT = new JOSEObjectType("at+jwt");
     private static final String DEFAULT_ISSUER_ATTR = "issuer";
 
-    private boolean enabled;
+    private boolean enabled = true;
     private SpringBasedIdentityServiceFacadeFactory factory;
 
     public void setEnabled(boolean enabled)
@@ -159,8 +159,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     @Override
     public IdentityServiceFacade getObject() throws Exception
     {
-        // The creation of the client can be disabled for testing or when the username/password authentication is not required,
-        // for instance when Identity Service is configured for 'bearer only' authentication or Direct Access Grants are disabled.
+        // The creation of the client can be disabled for testing.
         if (!enabled)
         {
             return null;

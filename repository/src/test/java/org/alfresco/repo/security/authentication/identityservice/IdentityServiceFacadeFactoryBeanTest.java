@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -29,7 +29,9 @@ import static com.nimbusds.jose.HeaderParameterNames.KEY_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
@@ -74,6 +76,27 @@ public class IdentityServiceFacadeFactoryBeanTest
     public final RestOperations restOperations = mock(RestOperations.class);
     public final ResponseEntity responseEntity = mock(ResponseEntity.class);
     public final ProviderDetails providerDetails = mock(ProviderDetails.class);
+
+    @Test
+    public void shouldCreateLazyFacadeByDefaultWithoutContactingIdentityService() throws Exception
+    {
+        final IdentityServiceFacadeFactoryBean factoryBean = new IdentityServiceFacadeFactoryBean();
+        factoryBean.setIdentityServiceConfig(config);
+        clearInvocations(config);
+
+        assertThat(factoryBean.getObject()).isInstanceOf(IdentityServiceFacadeFactoryBean.LazyInstantiatingIdentityServiceFacade.class);
+        verifyNoInteractions(config);
+    }
+
+    @Test
+    public void shouldReturnNullWhenExplicitlyDisabled() throws Exception
+    {
+        final IdentityServiceFacadeFactoryBean factoryBean = new IdentityServiceFacadeFactoryBean();
+        factoryBean.setIdentityServiceConfig(config);
+        factoryBean.setEnabled(false);
+
+        assertThat(factoryBean.getObject()).isNull();
+    }
 
     @Test
     public void shouldCreateJwtDecoderWithoutIDSWhenPublicKeyIsProvided()

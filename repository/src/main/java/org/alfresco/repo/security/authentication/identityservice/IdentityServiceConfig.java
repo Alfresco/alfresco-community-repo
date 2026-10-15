@@ -25,10 +25,7 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,8 +34,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -50,11 +45,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @SuppressWarnings("PMD.ExcessivePublicCount")
 public class IdentityServiceConfig
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceConfig.class);
     private static final String REALMS = "realms";
-    private static final char PARAM_DELIMITER = ',';
-    private static final char PARAM_SEPARATOR = '=';
-    private static final char QUOTE = '\'';
 
     private int clientConnectionTimeout;
     private int clientSocketTimeout;
@@ -121,145 +112,7 @@ public class IdentityServiceConfig
             return;
         }
 
-        authorizationAdditionalParams = Collections.unmodifiableMap(parseAdditionalParams(additionalParams));
-    }
-
-    /** Parses all configured entries into an insertion-ordered parameter map. */
-    private static Map<String, String> parseAdditionalParams(String additionalParams)
-    {
-        final Map<String, String> parsedParams = new LinkedHashMap<>();
-        final List<String> entries = splitAdditionalParams(additionalParams);
-        for (int index = 0; index < entries.size(); index++)
-        {
-            parseAdditionalParam(entries.get(index), index + 1, parsedParams);
-        }
-        return parsedParams;
-    }
-
-    /** Splits on delimiters outside quoted values. */
-    private static List<String> splitAdditionalParams(String additionalParams)
-    {
-        final List<String> entries = new ArrayList<>();
-        int entryStart = 0;
-
-        int delimiter = findEntryDelimiter(additionalParams, entryStart);
-        while (delimiter >= 0)
-        {
-            entries.add(additionalParams.substring(entryStart, delimiter));
-            entryStart = delimiter + 1;
-            delimiter = findEntryDelimiter(additionalParams, entryStart);
-        }
-        entries.add(additionalParams.substring(entryStart));
-        return entries;
-    }
-
-    /** Finds the next delimiter, ignoring delimiters inside a quoted value. */
-    private static int findEntryDelimiter(String additionalParams, int entryStart)
-    {
-        final int delimiter = additionalParams.indexOf(PARAM_DELIMITER, entryStart);
-        final int separator = additionalParams.indexOf(PARAM_SEPARATOR, entryStart);
-        if (separator < 0 || delimiter >= 0 && delimiter < separator)
-        {
-            return delimiter;
-        }
-
-        final int valueStart = skipWhitespace(additionalParams, separator + 1);
-        if (valueStart < additionalParams.length() && additionalParams.charAt(valueStart) == QUOTE)
-        {
-            final int closingQuote = findClosingQuote(additionalParams, valueStart + 1);
-            return closingQuote < 0 ? -1 : additionalParams.indexOf(PARAM_DELIMITER, closingQuote + 1);
-        }
-        return delimiter;
-    }
-
-    /** Returns the position of the first non-whitespace character. */
-    private static int skipWhitespace(String value, int position)
-    {
-        while (position < value.length() && Character.isWhitespace(value.charAt(position)))
-        {
-            position++;
-        }
-        return position;
-    }
-
-    /** Finds a closing quote while skipping escaped quote pairs. */
-    private static int findClosingQuote(String value, int position)
-    {
-        int quote = value.indexOf(QUOTE, position);
-        while (quote >= 0 && quote + 1 < value.length() && value.charAt(quote + 1) == QUOTE)
-        {
-            quote = value.indexOf(QUOTE, quote + 2);
-        }
-        return quote;
-    }
-
-    /** Validates and adds one configured parameter entry to the result map. */
-    private static void parseAdditionalParam(String entry, int entryNumber, Map<String, String> parsedParams)
-    {
-        final int separator = entry.indexOf(PARAM_SEPARATOR);
-        if (separator < 0)
-        {
-            // Tolerate empty entries, e.g. a trailing or doubled delimiter.
-            if (!entry.isBlank())
-            {
-                logMalformedAdditionalParam(entryNumber, "missing '" + PARAM_SEPARATOR + "' separator");
-            }
-            return;
-        }
-
-        final String name = entry.substring(0, separator).strip();
-        if (name.isEmpty())
-        {
-            logMalformedAdditionalParam(entryNumber, "empty parameter name");
-            return;
-        }
-
-        parseAdditionalParamValue(entry.substring(separator + 1), entryNumber)
-                .ifPresent(value -> parsedParams.put(name, value));
-    }
-
-    /** Parses an unquoted or single-quoted parameter value. */
-    private static Optional<String> parseAdditionalParamValue(String configuredValue, int entryNumber)
-    {
-        final String value = configuredValue.strip();
-        if (value.isEmpty() || value.charAt(0) != QUOTE)
-        {
-            return Optional.of(value);
-        }
-
-        final StringBuilder parsedValue = new StringBuilder();
-        int position = 1;
-        while (position < value.length())
-        {
-            final char current = value.charAt(position);
-            if (current != QUOTE)
-            {
-                parsedValue.append(current);
-            }
-            else if (position + 1 < value.length() && value.charAt(position + 1) == QUOTE)
-            {
-                parsedValue.append(QUOTE);
-                position++;
-            }
-            else if (value.substring(position + 1).isBlank())
-            {
-                return Optional.of(parsedValue.toString());
-            }
-            else
-            {
-                logMalformedAdditionalParam(entryNumber, "unexpected characters after quoted value");
-                return Optional.empty();
-            }
-            position++;
-        }
-
-        logMalformedAdditionalParam(entryNumber, "unterminated quoted value");
-        return Optional.empty();
-    }
-
-    private static void logMalformedAdditionalParam(int entryNumber, String reason)
-    {
-        LOGGER.warn("Ignoring malformed entry {} in identity-service.authorization.additional-params: {}", entryNumber, reason);
+        authorizationAdditionalParams = Collections.unmodifiableMap(AdditionalAuthorizationParametersParser.parse(additionalParams));
     }
 
     public String getWebScriptsHomeRedirectPath()

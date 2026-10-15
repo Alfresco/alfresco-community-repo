@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.security.authentication.identityservice.authentication;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant.authorizationCode;
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.SCOPES_SUPPORTED;
 
@@ -48,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator;
@@ -150,8 +153,25 @@ public abstract class AbstractIdentityServiceAuthenticator implements ExternalUs
             builder.queryParam("audience", identityServiceConfig.getAudience());
         }
 
+        Set<String> existingAuthorizationParams = builder.build().getQueryParams().keySet();
+        identityServiceConfig.getAuthorizationAdditionalParams().forEach((name, value) -> {
+            if (existingAuthorizationParams.contains(name))
+            {
+                LOGGER.warn("Ignoring additional authorization parameter {} because the authorization request already contains it", name);
+            }
+            else
+            {
+                builder.queryParam(encodeQueryParam(name), encodeQueryParam(value));
+            }
+        });
+
         return builder.build()
                 .toUriString();
+    }
+
+    private static String encodeQueryParam(String value)
+    {
+        return UriUtils.encodeQueryParam(value, UTF_8).replace("+", "%2B");
     }
 
     private Set<String> getConfiguredScopes(ClientRegistration clientRegistration)

@@ -141,43 +141,56 @@ public class IdentityServiceConfig
     {
         final List<String> entries = new ArrayList<>();
         int entryStart = 0;
-        boolean separatorFound = false;
-        boolean valueStarted = false;
-        boolean quotedValue = false;
 
-        for (int position = 0; position < additionalParams.length(); position++)
+        int delimiter = findEntryDelimiter(additionalParams, entryStart);
+        while (delimiter >= 0)
         {
-            final char current = additionalParams.charAt(position);
-            if (quotedValue)
-            {
-                if (current == QUOTE && position + 1 < additionalParams.length() && additionalParams.charAt(position + 1) == QUOTE)
-                {
-                    position++; // Skip an escaped quote.
-                }
-                else if (current == QUOTE)
-                {
-                    quotedValue = false;
-                }
-            }
-            else if (current == PARAM_DELIMITER)
-            {
-                entries.add(additionalParams.substring(entryStart, position));
-                entryStart = position + 1;
-                separatorFound = false;
-                valueStarted = false;
-            }
-            else if (!separatorFound && current == PARAM_SEPARATOR)
-            {
-                separatorFound = true;
-            }
-            else if (separatorFound && !valueStarted && !Character.isWhitespace(current))
-            {
-                valueStarted = true;
-                quotedValue = current == QUOTE;
-            }
+            entries.add(additionalParams.substring(entryStart, delimiter));
+            entryStart = delimiter + 1;
+            delimiter = findEntryDelimiter(additionalParams, entryStart);
         }
         entries.add(additionalParams.substring(entryStart));
         return entries;
+    }
+
+    /** Finds the next delimiter, ignoring delimiters inside a quoted value. */
+    private static int findEntryDelimiter(String additionalParams, int entryStart)
+    {
+        final int delimiter = additionalParams.indexOf(PARAM_DELIMITER, entryStart);
+        final int separator = additionalParams.indexOf(PARAM_SEPARATOR, entryStart);
+        if (separator < 0 || delimiter >= 0 && delimiter < separator)
+        {
+            return delimiter;
+        }
+
+        final int valueStart = skipWhitespace(additionalParams, separator + 1);
+        if (valueStart < additionalParams.length() && additionalParams.charAt(valueStart) == QUOTE)
+        {
+            final int closingQuote = findClosingQuote(additionalParams, valueStart + 1);
+            return closingQuote < 0 ? -1 : additionalParams.indexOf(PARAM_DELIMITER, closingQuote + 1);
+        }
+        return delimiter;
+    }
+
+    /** Returns the position of the first non-whitespace character. */
+    private static int skipWhitespace(String value, int position)
+    {
+        while (position < value.length() && Character.isWhitespace(value.charAt(position)))
+        {
+            position++;
+        }
+        return position;
+    }
+
+    /** Finds a closing quote while skipping escaped quote pairs. */
+    private static int findClosingQuote(String value, int position)
+    {
+        int quote = value.indexOf(QUOTE, position);
+        while (quote >= 0 && quote + 1 < value.length() && value.charAt(quote + 1) == QUOTE)
+        {
+            quote = value.indexOf(QUOTE, quote + 2);
+        }
+        return quote;
     }
 
     /** Validates and adds one configured parameter entry to the result map. */
@@ -215,7 +228,8 @@ public class IdentityServiceConfig
         }
 
         final StringBuilder parsedValue = new StringBuilder();
-        for (int position = 1; position < value.length(); position++)
+        int position = 1;
+        while (position < value.length())
         {
             final char current = value.charAt(position);
             if (current != QUOTE)
@@ -236,6 +250,7 @@ public class IdentityServiceConfig
                 logMalformedAdditionalParam(entryNumber, "unexpected characters after quoted value");
                 return Optional.empty();
             }
+            position++;
         }
 
         logMalformedAdditionalParam(entryNumber, "unterminated quoted value");

@@ -27,17 +27,24 @@
 package org.alfresco.rest.api.impl;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.Base64;
 
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.security.authentication.TicketComponent;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.web.scripts.BufferedRequest;
+import org.alfresco.repo.webdav.auth.AuthenticationDriver;
+import org.alfresco.repo.webdav.auth.BaseAuthenticationFilter;
 import org.alfresco.rest.api.Authentications;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.PublicApiTenantWebScriptServletRequest;
@@ -50,6 +57,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.web.app.servlet.KerberosAuthenticationFilter;
 
 /**
  * @author Jamal Kaabi-Mofrad
@@ -58,10 +66,15 @@ public class AuthenticationsImpl implements Authentications
 {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String PARAM_ALF_TICKET = "alf_ticket";
+    private static final String PARAM_TICKET = "ticket";
+    private static final String AUTHORIZATION_NEGOTIATE = "negotiate";
 
     private AuthenticationService authenticationService;
     private TicketComponent ticketComponent;
     private RemoteUserMapper remoteUserMapper;
+
+    private ChildApplicationContextManager authenticationContextManager;
+    private static final String GLOBAL_AUTHENTICATION_FILTER_BEAN = "globalAuthenticationFilter";
 
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -76,6 +89,11 @@ public class AuthenticationsImpl implements Authentications
     public void setRemoteUserMapper(RemoteUserMapper remoteUserMapper)
     {
         this.remoteUserMapper = remoteUserMapper;
+    }
+
+    public void setAuthenticationContextManager(ChildApplicationContextManager authenticationContextManager)
+    {
+        this.authenticationContextManager = authenticationContextManager;
     }
 
     public void init()
@@ -115,6 +133,15 @@ public class AuthenticationsImpl implements Authentications
         if (!People.DEFAULT_USER.equals(me))
         {
             throw new InvalidArgumentException("Invalid parameter: " + me);
+        }
+
+        // Return the ticket of an user already authenticated by an SSO filter (e.g. Kerberos)
+        final String ssoTicket = getTicketForSsoAuthenticatedUser(parameters);
+        if (ssoTicket != null)
+        {
+            LoginTicketResponse ssoResponse = new LoginTicketResponse();
+            ssoResponse.setId(ssoTicket);
+            return ssoResponse;
         }
 
         final String ticket = getTicket(parameters);
@@ -212,6 +239,138 @@ public class AuthenticationsImpl implements Authentications
         }
 
         throw new InvalidArgumentException("Authorization '" + authorizationParts[0] + "' not supported.");
+    }
+
+    /**
+     * Returns the ticket held in the HTTP session of an SSO authenticated user.
+     * <p>
+     * Applies only when the request carries no ticket (no alf_ticket/ticket parameter and either no Authorization header or a "Negotiate" one) and:
+     * <ul>
+     * <li>Kerberos SSO is the active global authentication filter ({@link #isKerberosSsoActive()});</li>
+     * <li>The session is flagged as externally authenticated ({@link BaseAuthenticationFilter#LOGIN_EXTERNAL_AUTH}), set by the SSO filters on every request they authenticate;</li>
+     * <li>The session holds a {@link SessionUser} ({@link AuthenticationDriver#AUTHENTICATION_USER}) for the fully authenticated user;</li>
+     * <li>The session user's ticket is valid and belongs to that same user.</li>
+     * </ul>
+     * </p>
+     * <p>
+     * No new ticket is created: the existing session ticket is returned.
+     * </p>
+     *
+     * @return the session ticket, or null if the request does not match this case
+     */
+    private String getTicketForSsoAuthenticatedUser(Parameters parameters)
+    {
+        if (!isRequestWithoutTicket(parameters))
+        {
+            return null;
+        }
+
+        final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (currentUser == null || AuthenticationUtil.isRunAsUserTheSystemUser())
+        {
+            return null;
+        }
+
+        final String sessionTicket = getExternalAuthSessionTicket(parameters, currentUser);
+
+        // Kerberos SSO checked last (walks the authentication chain): only when it is the active global authentication filter
+        if (sessionTicket == null || !isKerberosSsoActive())
+        {
+            return null;
+        }
+
+        return isTicketOwnedBy(sessionTicket, currentUser) ? sessionTicket : null;
+    }
+
+    /**
+     * @return true if the request has no alf_ticket/ticket parameter and either no Authorization header or a "Negotiate" one
+     */
+    private boolean isRequestWithoutTicket(Parameters parameters)
+    {
+        // An explicit ticket was provided: keep the standard validation behaviour
+        if (StringUtils.isNotEmpty(parameters.getParameter(PARAM_ALF_TICKET))
+                || StringUtils.isNotEmpty(parameters.getParameter(PARAM_TICKET)))
+        {
+            return false;
+        }
+
+        final String authorization = parameters.getRequest().getHeader(AUTHORIZATION_HEADER);
+        return StringUtils.isEmpty(authorization) || authorization.split(" ")[0].equalsIgnoreCase(AUTHORIZATION_NEGOTIATE);
+    }
+
+    /**
+     * @return the ticket of the {@link SessionUser} held in an externally authenticated HTTP session, if that session user is the given user; null otherwise
+     */
+    private String getExternalAuthSessionTicket(Parameters parameters, String userName)
+    {
+        final HttpServletRequest httpServletRequest = extractHttpServletRequestFromParameters(parameters);
+        final HttpSession session = httpServletRequest == null ? null : httpServletRequest.getSession(false);
+        if (session == null || !Boolean.TRUE.equals(session.getAttribute(BaseAuthenticationFilter.LOGIN_EXTERNAL_AUTH)))
+        {
+            return null;
+        }
+
+        if (!(session.getAttribute(AuthenticationDriver.AUTHENTICATION_USER) instanceof SessionUser sessionUser)
+                || !userName.equals(sessionUser.getUserName()))
+        {
+            return null;
+        }
+
+        return StringUtils.defaultIfEmpty(sessionUser.getTicket(), null);
+    }
+
+    private boolean isTicketOwnedBy(String ticket, String userName)
+    {
+        try
+        {
+            return userName.equals(ticketComponent.validateTicket(ticket));
+        }
+        catch (AuthenticationException e)
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Checks whether the global authentication filter that is actually routed to at runtime is the Kerberos SSO filter. Mirrors the routing done by the "GlobalAuthenticationFilter" ChainingSubsystemProxyFactory: the first active "globalAuthenticationFilter" bean in the authentication chain order wins.
+     * <p>
+     * This reflects the real state (chain, kerberos.authentication.sso.enabled, values changed via JMX/Admin Console) rather than a raw property value.
+     * </p>
+     */
+    private boolean isKerberosSsoActive()
+    {
+        if (authenticationContextManager == null)
+        {
+            return false;
+        }
+
+        for (String instanceId : authenticationContextManager.getInstanceIds())
+        {
+            final ApplicationContext context;
+            try
+            {
+                context = authenticationContextManager.getApplicationContext(instanceId);
+            }
+            catch (RuntimeException e)
+            {
+                // Subsystem failed to start, ignore (same behaviour as ChainingSubsystemProxyFactory)
+                continue;
+            }
+
+            try
+            {
+                final Object filter = context.getBean(GLOBAL_AUTHENTICATION_FILTER_BEAN);
+                if (!(filter instanceof ActivateableBean) || ((ActivateableBean) filter).isActive())
+                {
+                    return filter instanceof KerberosAuthenticationFilter;
+                }
+            }
+            catch (NoSuchBeanDefinitionException e)
+            {
+                // No global filter in this subsystem, continue
+            }
+        }
+        return false;
     }
 
     private String getTicketFromRemoteUserMapperUserId(Parameters parameters)

@@ -125,7 +125,8 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
                         logger.trace("Authenticating user '" + AuthenticationUtil.maskUsername(username) + "'");
                     }
 
-                    Authorization auth = new Authorization(username, password);
+                    // Without ":" the value is a bare ticket (e.g. "TICKET_xxx"), handled like Authorization(String)
+                    Authorization auth = (pos != -1 || basicAuth.isEmpty()) ? new Authorization(username, password) : new Authorization(basicAuth);
                     if (auth.isTicket())
                     {
                         authenticationService.validate(auth.getTicket());

@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.transaction;
 
+import static org.junit.Assert.assertThrows;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -197,6 +199,55 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
         long afterValue = getCheckValue();
         assertEquals("The value must have increased", beforeValue + 1, afterValue);
         assertEquals("The txn value must be the same as the value after", afterValue, txnValue);
+    }
+
+    @Test
+    public void testRelatedMetadataCommitAndRollback()
+    {
+        NodeRef childNodeRef = txnHelper.doInTransaction(() -> {
+            nodeService.setProperty(rootNodeRef, PROP_CHECK_VALUE, Long.valueOf(1));
+            NodeRef child = nodeService.createNode(
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, GUID.generate()),
+                    ContentModel.TYPE_CMOBJECT).getChildRef();
+            nodeService.setProperty(child, PROP_CHECK_VALUE, Long.valueOf(1));
+            return child;
+        }, false, true);
+
+        try
+        {
+            txnHelper.doInTransaction(() -> {
+                assertEquals(Long.valueOf(1), nodeService.getProperty(rootNodeRef, PROP_CHECK_VALUE));
+                assertEquals(Long.valueOf(1), nodeService.getProperty(childNodeRef, PROP_CHECK_VALUE));
+                assertEquals(rootNodeRef, nodeService.getPrimaryParent(childNodeRef).getParentRef());
+                return null;
+            }, true, true);
+
+            IllegalStateException rollback = new IllegalStateException("Roll back related metadata changes");
+            IllegalStateException actual = assertThrows(IllegalStateException.class, () -> txnHelper.doInTransaction(() -> {
+                nodeService.setProperty(rootNodeRef, PROP_CHECK_VALUE, Long.valueOf(2));
+                nodeService.setProperty(childNodeRef, PROP_CHECK_VALUE, Long.valueOf(2));
+                throw rollback;
+            }, false, true));
+            assertSame(rollback, actual);
+
+            txnHelper.doInTransaction(() -> {
+                assertEquals("Parent change must have rolled back", Long.valueOf(1),
+                        nodeService.getProperty(rootNodeRef, PROP_CHECK_VALUE));
+                assertEquals("Child change must have rolled back", Long.valueOf(1),
+                        nodeService.getProperty(childNodeRef, PROP_CHECK_VALUE));
+                assertEquals(rootNodeRef, nodeService.getPrimaryParent(childNodeRef).getParentRef());
+                return null;
+            }, true, true);
+        }
+        finally
+        {
+            txnHelper.doInTransaction(() -> {
+                nodeService.deleteNode(childNodeRef);
+                return null;
+            }, false, true);
+        }
     }
 
     /**

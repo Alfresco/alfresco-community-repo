@@ -1,0 +1,117 @@
+name: ACS Spanner PoC (Emulator)
+
+on:
+  push:
+    branches:
+      - feature/ACS-13143-spanner-poc
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  startup:
+    name: Repository Startup - ${{ matrix.backend }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [postgresql, spanner-emulator]
+    env:
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      CI_WORKSPACE: ${{ github.workspace }}
+      POC_DB_USERNAME: alfresco
+      POC_DB_PASSWORD: alfresco # pragma: allowlist secret
+      POC_BACKEND: ${{ matrix.backend }}
+      JDBC_VERSION: 42.7.7
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+        with:
+          java-version: '21'
+      - name: Start Dedicated Database
+        run: |
+          mkdir -p repository/target/spanner-poc/acs-13147 "$RUNNER_TEMP/spanner-poc"
+          git rev-parse HEAD > repository/target/spanner-poc/acs-13147/source-ref.txt
+          if [[ "$POC_BACKEND" == postgresql ]]; then
+            POSTGRES_VERSION=17.9 docker compose -p acs-spanner-poc \
+              -f scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d postgres
+            echo 'POC_JDBC_URL=jdbc:postgresql://localhost:5433/alfresco' >> "$GITHUB_ENV"
+          else
+            docker compose -p acs-spanner-poc \
+              -f scripts/ci/docker-compose/docker-compose-spanner.yaml up -d
+            echo 'POC_JDBC_URL=jdbc:postgresql://localhost:55434/alfresco?sslmode=disable' >> "$GITHUB_ENV"
+          fi
+      - name: Compile Existing Tests
+        run: mvn -B -ntp test-compile -pl repository -am -DskipTests
+      - name: Probe Standard PostgreSQL JDBC
+        run: |
+          set -o pipefail
+          jshell --feedback concise \
+            --class-path "$HOME/.m2/repository/org/postgresql/postgresql/$JDBC_VERSION/postgresql-$JDBC_VERSION.jar" \
+            scripts/ci/spanner-poc-probe.jsh \
+            |& tee repository/target/spanner-poc/acs-13147/jdbc-connectivity.log
+      - name: Attempt ACS Bootstrap and Test-Context Startup
+        id: startup
+        run: |
+          set -o pipefail
+          mvn -B -ntp test -pl repository -am \
+            -Dtest=RepositoryStartupTest -DfailIfNoTests=false \
+            -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco \
+            "-Ddb.url=$POC_JDBC_URL" "-Ddb.username=$POC_DB_USERNAME" "-Ddb.password=$POC_DB_PASSWORD" \
+            "-Ddir.root=$GITHUB_WORKSPACE/repository/target/alf_data-spanner-poc" \
+            "-Djava.io.tmpdir=$RUNNER_TEMP/spanner-poc" \
+            |& tee repository/target/spanner-poc/acs-13147/startup.log
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          report = ET.parse('repository/target/surefire-reports/TEST-org.alfresco.RepositoryStartupTest.xml').getroot()
+          assert {case.get('name') for case in report.findall('testcase')} == {'testRepoReadWrite', 'testBasicWriteOperations'}
+          assert all(int(report.get(field, '0')) == 0 for field in ('failures', 'errors', 'skipped'))
+          PY
+      - name: Diagnose Bootstrap Marker DDL in Scratch Database
+        if: failure() && steps.startup.outcome == 'failure' && matrix.backend == 'spanner-emulator'
+        env:
+          POC_JDBC_URL: jdbc:postgresql://localhost:55434/alfresco-probe?sslmode=disable
+          POC_SQL_PROBE: create table alf_bootstrap_lock (charval CHAR(1) NOT NULL)
+        run: |
+          set -o pipefail
+          jshell --feedback concise \
+            --class-path "$HOME/.m2/repository/org/postgresql/postgresql/$JDBC_VERSION/postgresql-$JDBC_VERSION.jar" \
+            scripts/ci/spanner-poc-probe.jsh \
+            |& tee repository/target/spanner-poc/acs-13147/bootstrap-lock-probe.log
+      - name: Capture Database Evidence
+        if: always()
+        run: |
+          mkdir -p repository/target/spanner-poc/acs-13147
+          docker ps -a --no-trunc > repository/target/spanner-poc/acs-13147/containers.txt
+          if [[ "$POC_BACKEND" == postgresql ]]; then
+            compose_file=scripts/ci/docker-compose/docker-compose-db.yaml
+            export POSTGRES_VERSION=17.9
+          else
+            compose_file=scripts/ci/docker-compose/docker-compose-spanner.yaml
+          fi
+          docker compose -p acs-spanner-poc -f "$compose_file" logs --no-color \
+            > repository/target/spanner-poc/acs-13147/database.log 2>&1
+          docker image ls --digests --no-trunc > repository/target/spanner-poc/acs-13147/images.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: acs-13147-${{ matrix.backend }}
+          path: |
+            repository/target/spanner-poc/acs-13147/
+            repository/target/surefire-reports/
+            repository/target/alfresco.log*
+            ${{ runner.temp }}/spanner-poc/
+      - name: Stop Dedicated Database
+        if: always()
+        run: |
+          if [[ "$POC_BACKEND" == postgresql ]]; then
+            POSTGRES_VERSION=17.9 docker compose -p acs-spanner-poc \
+              -f scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres down
+          else
+            docker compose -p acs-spanner-poc \
+              -f scripts/ci/docker-compose/docker-compose-spanner.yaml down
+          fi

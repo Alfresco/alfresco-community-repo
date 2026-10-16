@@ -1,6 +1,9 @@
 name: ACS Spanner PoC (Emulator)
 
 on:
+  push:
+    branches:
+      - feature/ACS-13143-spanner-poc
   workflow_dispatch:
 
 permissions:

@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.transaction;
 
+import static org.junit.Assert.assertThrows;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -223,19 +225,12 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
             }, true, true);
 
             IllegalStateException rollback = new IllegalStateException("Roll back related metadata changes");
-            try
-            {
-                txnHelper.doInTransaction(() -> {
-                    nodeService.setProperty(rootNodeRef, PROP_CHECK_VALUE, Long.valueOf(2));
-                    nodeService.setProperty(childNodeRef, PROP_CHECK_VALUE, Long.valueOf(2));
-                    throw rollback;
-                }, false, true);
-                fail("Expected the metadata transaction to roll back");
-            }
-            catch (IllegalStateException expected)
-            {
-                assertSame(rollback, expected);
-            }
+            IllegalStateException actual = assertThrows(IllegalStateException.class, () -> txnHelper.doInTransaction(() -> {
+                nodeService.setProperty(rootNodeRef, PROP_CHECK_VALUE, Long.valueOf(2));
+                nodeService.setProperty(childNodeRef, PROP_CHECK_VALUE, Long.valueOf(2));
+                throw rollback;
+            }, false, true));
+            assertSame(rollback, actual);
 
             txnHelper.doInTransaction(() -> {
                 assertEquals("Parent change must have rolled back", Long.valueOf(1),

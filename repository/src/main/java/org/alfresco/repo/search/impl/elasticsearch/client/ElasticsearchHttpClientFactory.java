@@ -93,7 +93,6 @@ public class ElasticsearchHttpClientFactory
 
     // Elasticsearch index details
     private String indexName;
-    private String archiveIndexName;
 
     // Connection pool size
     private int maxTotalConnections;
@@ -556,16 +555,6 @@ public class ElasticsearchHttpClientFactory
     public void setIndexName(String indexName)
     {
         this.indexName = indexName;
-    }
-
-    public void setArchiveIndexName(String archiveIndexName)
-    {
-        this.archiveIndexName = archiveIndexName;
-    }
-
-    public String getArchiveIndexName()
-    {
-        return archiveIndexName;
     }
 
     public String getIndexName()

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -72,6 +72,7 @@ import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
 import org.alfresco.rest.api.search.model.Spelling;
 import org.alfresco.rest.api.search.model.Template;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
@@ -107,6 +108,7 @@ public class SearchMapper
     public static final String LUCENE = "lucene";
     public static final String AFTS = "afts";
     private StoreMapper storeMapper;
+    private boolean deletedNodesScopeSupported;
 
     /**
      * Turn the SearchQuery params serialized by Jackson into the Java SearchParameters object
@@ -504,6 +506,8 @@ public class SearchMapper
             List<String> stores = scope.getLocations();
             if (stores != null && !stores.isEmpty())
             {
+                validateDeletedNodesScopeSupported(stores);
+
                 // First reset the stores then add them.
                 sp.getStores().clear();
 
@@ -527,6 +531,15 @@ public class SearchMapper
                             new Object[]{": scope 'history' can only be used on its own"});
                 }
             }
+        }
+    }
+
+    private void validateDeletedNodesScopeSupported(List<String> stores)
+    {
+        if (!deletedNodesScopeSupported && stores.contains(StoreMapper.DELETED))
+        {
+            throw new DisabledServiceException(
+                    "The 'deleted-nodes' search scope (trashcan search) is not supported in this edition of Alfresco.");
         }
     }
 
@@ -876,5 +889,10 @@ public class SearchMapper
     public void setStoreMapper(StoreMapper storeMapper)
     {
         this.storeMapper = storeMapper;
+    }
+
+    public void setDeletedNodesScopeSupported(boolean deletedNodesScopeSupported)
+    {
+        this.deletedNodesScopeSupported = deletedNodesScopeSupported;
     }
 }

@@ -291,8 +291,20 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
                 createBuilderIfAbsent(entityReference, true);
             }
         }
+        else
+        {
+            decorateDeletedNodeResource(resourceBuilder);
+        }
         // Now create an instance of NodeResource
         return resourceBuilder.build();
+    }
+
+    /**
+     * Extension hook allowing subclasses to enrich the {@link NodeResource} built for a node that is being deleted (when the last recorded event type is {@link EventType#NODE_DELETED}).
+     */
+    protected void decorateDeletedNodeResource(NodeResource.Builder builder)
+    {
+        // no-op
     }
 
     protected NodeResource buildNodeResourceBeforeDelta(NodeResource after)

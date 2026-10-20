@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -103,6 +103,10 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
     private String location;
 
     private Boolean isFavorite;
+
+    private String archivedAt;
+
+    private RestByUserModel archivedByUser;
 
     public Map<String, Object> getAssociation()
     {
@@ -338,5 +342,25 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
     public void setIsFavorite(Boolean favorite)
     {
         isFavorite = favorite;
+    }
+
+    public String getArchivedAt()
+    {
+        return archivedAt;
+    }
+
+    public void setArchivedAt(String archivedAt)
+    {
+        this.archivedAt = archivedAt;
+    }
+
+    public RestByUserModel getArchivedByUser()
+    {
+        return archivedByUser;
+    }
+
+    public void setArchivedByUser(RestByUserModel archivedByUser)
+    {
+        this.archivedByUser = archivedByUser;
     }
 }

@@ -27,8 +27,6 @@ package org.alfresco.repo.search.impl.elasticsearch.resultset;
 
 import static java.util.Optional.ofNullable;
 
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +37,10 @@ import org.opensearch.client.opensearch.core.search.HitsMetadata;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.alfresco.repo.search.impl.elasticsearch.store.SearchStoreResolver;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -53,14 +53,16 @@ public class ElasticsearchResultSetBuilder
     private final NodeDAO nodeDAO;
     private final HighlightsHandler highlightsHandler;
     private final AggregationHandler aggregationHandler;
+    private final SearchStoreResolver searchStoreResolver;
 
     public ElasticsearchResultSetBuilder(NodeService nodeService, NodeDAO nodeDAO, HighlightsHandler highlightsHandler,
-            AggregationHandler aggregationHandler)
+            AggregationHandler aggregationHandler, SearchStoreResolver searchStoreResolver)
     {
         this.nodeService = nodeService;
         this.nodeDAO = nodeDAO;
         this.highlightsHandler = highlightsHandler;
         this.aggregationHandler = aggregationHandler;
+        this.searchStoreResolver = searchStoreResolver;
     }
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, SearchResponse<Object> searchResponse)
@@ -83,7 +85,7 @@ public class ElasticsearchResultSetBuilder
             boolean searchAfterMode, Map<String, String> bucketsTranslator, Map<String, Pair<String, String>> complementaryBucketsTranslator)
     {
         var hits = ofNullable(searchResponse.hits()).map(HitsMetadata::hits).orElse(List.of());
-        List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters.isBulkFetchEnabled());
+        List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters);
 
         var resultSetMetaData = new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);
         var spellCheckResult = new SpellCheckResult(null, null, false);
@@ -118,7 +120,7 @@ public class ElasticsearchResultSetBuilder
 
     public ElasticsearchResultSet build(SearchParameters searchParameters, List<Hit<Object>> hits, long totalHits, long queryTime)
     {
-        List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters.isBulkFetchEnabled());
+        List<NodeRefAndScore> nodeRefAndScores = mapNodeRefsAndScores(hits, searchParameters);
 
         var resultSetMetaData = new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);
         var spellCheckResult = new SpellCheckResult(null, null, false);
@@ -140,13 +142,14 @@ public class ElasticsearchResultSetBuilder
                 null);
     }
 
-    private List<NodeRefAndScore> mapNodeRefsAndScores(List<Hit<Object>> hits, boolean isBulkFetchEnabled)
+    private List<NodeRefAndScore> mapNodeRefsAndScores(List<Hit<Object>> hits, SearchParameters searchParameters)
     {
-        cacheNodes(hits.stream().map(hit -> new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, hit.id())).toList(), isBulkFetchEnabled);
+        StoreRef storeRef = searchStoreResolver.resolveNodeStore(searchParameters);
+        cacheNodes(hits.stream().map(hit -> new NodeRef(storeRef, hit.id())).toList(), searchParameters.isBulkFetchEnabled());
         List<NodeRefAndScore> results = new ArrayList<>();
         for (Hit<Object> hit : hits)
         {
-            NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, hit.id());
+            NodeRef nodeRef = new NodeRef(storeRef, hit.id());
             if (nodeService.exists(nodeRef))
             {
                 results.add(new NodeRefAndScore(nodeRef, hit.score() != null ? hit.score().floatValue() : 0.0f));

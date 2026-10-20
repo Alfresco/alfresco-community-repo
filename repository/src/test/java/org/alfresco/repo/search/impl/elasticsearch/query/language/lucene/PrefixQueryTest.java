@@ -78,9 +78,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.junit.Assert;
 import org.junit.Test;
 
 import org.alfresco.repo.search.adaptor.QueryConstants;
@@ -200,9 +198,8 @@ public class PrefixQueryTest extends BaseQueryTest
     @Test
     public void IDFieldIsNotNodeRef()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(prefixQueryString(QueryConstants.FIELD_ID, AN_ID));
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(prefixQueryString("_id", AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(prefixQueryString("_id", AN_ID),
+                parseAndBuildQuery(prefixQueryString(QueryConstants.FIELD_ID, AN_ID)));
     }
 
     /**
@@ -227,21 +224,16 @@ public class PrefixQueryTest extends BaseQueryTest
     @Test
     public void IDFieldContainsNodeRef()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(prefixQueryString(QueryConstants.FIELD_ID,
-                A_NODEREF.replace(":", "\\:").replace("/", "\\/")));
-
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(prefixQueryString("_id", AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(prefixQueryString("_id", AN_ID),
+                parseAndBuildQuery(prefixQueryString(QueryConstants.FIELD_ID,
+                        A_NODEREF.replace(":", "\\:").replace("/", "\\/"))));
     }
 
     @Test
     public void sysNodeUuidFieldPrefixQueryIsRewrittenToIdQuery()
     {
-        BooleanQuery booleanQuery = (BooleanQuery) parseAndBuildQuery(
-                prefixQueryString("sys\\:node-uuid", AN_ID));
-
-        Assert.assertEquals(2, booleanQuery.clauses().size());
-        assertQueryEquals(prefixQueryString(LuceneQueryParser.ID_FIELD, AN_ID), booleanQuery.clauses().get(1).getQuery());
+        assertQueryEquals(prefixQueryString(LuceneQueryParser.ID_FIELD, AN_ID),
+                parseAndBuildQuery(prefixQueryString("sys\\:node-uuid", AN_ID)));
     }
 
     @Test

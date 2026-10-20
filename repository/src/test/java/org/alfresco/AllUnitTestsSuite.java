@@ -153,6 +153,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.search.impl.solr.SolrSQLJSONResultMetadataSetTest.class,
         org.alfresco.repo.search.impl.solr.facet.SolrFacetComparatorTest.class,
         org.alfresco.repo.search.impl.solr.facet.FacetQNameUtilsTest.class,
+        org.alfresco.repo.search.SearchServiceTransactionWiringTest.class,
         org.alfresco.util.BeanExtenderUnitTest.class,
         org.alfresco.repo.solr.SOLRTrackingComponentUnitTest.class,
         IdentityServiceFacadeFactoryBeanTest.class,

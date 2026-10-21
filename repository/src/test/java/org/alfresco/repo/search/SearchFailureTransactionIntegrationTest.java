@@ -36,6 +36,7 @@ import static org.mockito.Mockito.mock;
 import java.io.IOException;
 
 import org.aopalliance.aop.Advice;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
@@ -72,6 +73,7 @@ public class SearchFailureTransactionIntegrationTest extends BaseSpringTest
     private RetryingTransactionHelper txnHelper;
     private SearchService unreachableSearchService;
     private NodeRef rootNodeRef;
+    private AuthenticationComponent authenticationComponent;
 
     @Before
     public void setUp()
@@ -80,12 +82,19 @@ public class SearchFailureTransactionIntegrationTest extends BaseSpringTest
         nodeService = serviceRegistry.getNodeService();
         txnHelper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
 
-        ((AuthenticationComponent) applicationContext.getBean("authenticationComponent")).setSystemUserAsCurrentUser();
+        authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
+        authenticationComponent.setSystemUserAsCurrentUser();
 
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "test-" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
 
         unreachableSearchService = searchServiceThatFailsLikeAnUnreachableIndex();
+    }
+
+    @After
+    public void tearDown()
+    {
+        authenticationComponent.clearCurrentSecurityContext();
     }
 
     @Test

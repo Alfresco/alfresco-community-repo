@@ -39,7 +39,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import net.sf.acegisecurity.Authentication;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
@@ -239,7 +238,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
         catch (Throwable e)
         {
             // Failure to audit must stop the process: ALF-11139
-            throw new AlfrescoRuntimeException(
+            throw new AuditWriteException(
                     "Failed to audit pre-invocation: \n" +
                     "   Invocation: " + mi,
                     e);
@@ -271,7 +270,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
         catch (Throwable e)
         {
             // Failure to audit must stop the process: ALF-11139
-            throw new AlfrescoRuntimeException(
+            throw new AuditWriteException(
                     "Failed to audit post-invocation: \n" +
                     "   Invocation: " + mi,
                     e);

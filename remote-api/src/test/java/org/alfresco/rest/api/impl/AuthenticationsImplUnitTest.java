@@ -68,6 +68,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.web.app.servlet.KerberosAuthenticationFilter;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @RunWith(MockitoJUnitRunner.class)
 public class AuthenticationsImplUnitTest
 {

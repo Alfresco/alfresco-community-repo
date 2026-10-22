@@ -33,6 +33,7 @@ import static org.alfresco.repo.security.authentication.identityservice.Identity
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -153,7 +154,12 @@ public abstract class AbstractIdentityServiceAuthenticator implements ExternalUs
             builder.queryParam("audience", identityServiceConfig.getAudience());
         }
 
-        Set<String> existingAuthorizationParams = builder.build().getQueryParams().keySet();
+        Set<String> existingAuthorizationParams = builder.build()
+                .getQueryParams()
+                .keySet()
+                .stream()
+                .map(name -> URLDecoder.decode(name, UTF_8))
+                .collect(Collectors.toSet());
         identityServiceConfig.getAuthorizationAdditionalParams().forEach((name, value) -> {
             if (existingAuthorizationParams.contains(name))
             {

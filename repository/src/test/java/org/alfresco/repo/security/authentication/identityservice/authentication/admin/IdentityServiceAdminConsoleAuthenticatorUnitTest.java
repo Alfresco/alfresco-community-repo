@@ -225,9 +225,13 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Test
     public void shouldNotDuplicateExistingAuthorizationParameters() throws IOException
     {
-        when(providerDetails.getAuthorizationUri()).thenReturn("http://localhost:8999/auth?existing=original#fragment");
+        when(providerDetails.getAuthorizationUri())
+                .thenReturn("http://localhost:8999/auth?existing=original&encoded%5Fname=original&custom+name=original#fragment");
         when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of(
                 "existing", "replacement",
+                "encoded_name", "replacement-encoded",
+                "custom name", "replacement-space",
+                "custom+name", "literal-plus",
                 "client_id", "replacement-client",
                 "additional", "value"));
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
@@ -239,9 +243,14 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         verify(response).sendRedirect(authenticationRequest.capture());
         assertThat(authenticationRequest.getValue())
                 .containsOnlyOnce("existing=original")
+                .containsOnlyOnce("encoded%5Fname=original")
+                .containsOnlyOnce("custom+name=original")
                 .containsOnlyOnce("client_id=alfresco")
                 .doesNotContain("existing=replacement")
+                .doesNotContain("encoded_name=replacement-encoded")
+                .doesNotContain("custom%20name=replacement-space")
                 .doesNotContain("client_id=replacement-client")
+                .contains("custom%2Bname=literal-plus")
                 .contains("additional=value")
                 .endsWith("#fragment");
     }

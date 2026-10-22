@@ -8,7 +8,7 @@ on:
 
 permissions:
   actions: write    # re-run the failed jobs
-  contents: read    # read the configuration file and the branch tip
+  contents: read    # read the branch tip
 
 jobs:
   retry:
@@ -21,6 +21,13 @@ jobs:
     steps:
       - id: retry
         uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@REPLACE_WITH_TAG
+        with:
+          # These publish or propagate, so repeating them is not safe.
+          non-retryable-jobs: |
+            Parse commit metadata
+            Push to Nexus
+            Update alfresco-enterprise-repo
+          max-attempts: 3
 
       - name: Report to Teams
         if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_WEBHOOK != ''

@@ -1,6 +1,0 @@
-# Behaviour of the Workflow run auto-retry workflow. Removing this file turns the retry off.
-max-attempts: 3
-non-retryable-jobs:
-  - "Parse commit metadata"
-  - "Push to Nexus"
-  - "Update alfresco-enterprise-repo"

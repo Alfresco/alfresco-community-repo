@@ -32,6 +32,7 @@ import org.junit.runners.Suite;
 import org.alfresco.repo.security.authentication.identityservice.CachingUserTokenProviderTest;
 import org.alfresco.repo.security.authentication.identityservice.ClientRegistrationProviderUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.DirectUserTokenProviderTest;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfigUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBeanTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceUserTokenWiringTest;
@@ -164,6 +165,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         TokenUserToOIDCUserMapperUnitTest.class,
         AdminAuthenticationCookiesServiceUnitTest.class,
         AdditionalHeadersHttpServletRequestWrapperUnitTest.class,
+        IdentityServiceConfigUnitTest.class,
         IdentityServiceAdminConsoleAuthenticatorUnitTest.class,
         IdentityServiceWebScriptsHomeAuthenticatorUnitTest.class,
         ClientRegistrationProviderUnitTest.class,

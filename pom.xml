@@ -61,8 +61,8 @@
         <dependency.spring-security.version>6.5.11</dependency.spring-security.version>
         <dependency.micrometer.version>1.15.12</dependency.micrometer.version> <!-- should be in sync with micrometer-observation transitive dependency from spring-context -->
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.22.1</dependency.jackson.version>
-        <dependency.cxf.version>4.1.7</dependency.cxf.version>
+        <dependency.jackson.version>2.22.4</dependency.jackson.version>
+        <dependency.cxf.version>4.1.9</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.85</dependency.bouncycastle.version>
@@ -88,13 +88,13 @@
         <dependency.groovy.version>3.0.25</dependency.groovy.version>
         <dependency.tika.version>3.3.2</dependency.tika.version>
         <dependency.json-schema-validator.version>1.5.9</dependency.json-schema-validator.version>
-        <dependency.jsoup.version>1.23.1</dependency.jsoup.version>
-        <dependency.junrar.version>7.5.10</dependency.junrar.version>
+        <dependency.jsoup.version>1.23.2</dependency.jsoup.version>
+        <dependency.junrar.version>7.6.1</dependency.junrar.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.4.0</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>4.18.3</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
-        <dependency.netty.version>4.1.137.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
+        <dependency.netty.version>4.1.139.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.18.6</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
         <dependency.apache-csv.version>1.14.1</dependency.apache-csv.version>
@@ -289,12 +289,11 @@
                 <version>3.6.1</version>
             </dependency>
 
-            <!-- This dependency was added because latest (v4.2.0) 'cxf-rt-ws-policy' uses vulnerable version of neethi (v3.2.1). (PRODSEC-12231) -->
-            <!-- This should be removed once the clean 'cxf-rt-ws-policy' will be released. -->
+            <!-- Override junrar transitive dependency from tika-parser-pkg-module (CVE-2026-86071) -->
             <dependency>
-                <groupId>org.apache.neethi</groupId>
-                <artifactId>neethi</artifactId>
-                <version>3.2.2</version>
+                <groupId>com.github.junrar</groupId>
+                <artifactId>junrar</artifactId>
+                <version>${dependency.junrar.version}</version>
             </dependency>
 
             <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->

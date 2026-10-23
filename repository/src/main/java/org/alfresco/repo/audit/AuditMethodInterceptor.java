@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -43,7 +43,6 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
@@ -237,7 +236,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
         catch (Throwable e)
         {
             // Failure to audit must stop the process: ALF-11139
-            throw new AlfrescoRuntimeException(
+            throw new AuditWriteException(
                     "Failed to audit pre-invocation: \n" +
                             "   Invocation: " + mi,
                     e);
@@ -269,7 +268,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
         catch (Throwable e)
         {
             // Failure to audit must stop the process: ALF-11139
-            throw new AlfrescoRuntimeException(
+            throw new AuditWriteException(
                     "Failed to audit post-invocation: \n" +
                             "   Invocation: " + mi,
                     e);

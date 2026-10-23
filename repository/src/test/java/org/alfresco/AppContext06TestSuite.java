@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -51,6 +51,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.rendition2.NoneRenditionTest.class,
 
         org.alfresco.repo.solr.SOLRTrackingComponentTest.class,
+        org.alfresco.repo.search.SearchFailureTransactionIntegrationTest.class,
         org.alfresco.repo.tagging.TaggingServiceImplTest.class,
         org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class,
         org.alfresco.repo.transaction.RetryingTransactionHelperTest.class,

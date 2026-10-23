@@ -20,7 +20,7 @@ jobs:
       TEAMS_WEBHOOK: ${{ secrets.TEAMS_WEBHOOK }}
     steps:
       - id: retry
-        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@REPLACE_WITH_TAG
+        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@v19.7.0
         with:
           # These publish or propagate, so repeating them is not safe.
           non-retryable-jobs: |
@@ -31,7 +31,7 @@ jobs:
 
       - name: Report to Teams
         if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_WEBHOOK != ''
-        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-notification@REPLACE_WITH_TAG
+        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-notification@v19.7.0
         with:
           webhook-url: ${{ secrets.TEAMS_WEBHOOK }}
           # Without this the card is green, worked out from this watcher's own jobs.

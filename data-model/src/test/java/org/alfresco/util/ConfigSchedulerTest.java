@@ -25,9 +25,11 @@
  */
 package org.alfresco.util;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
@@ -204,7 +206,13 @@ public class ConfigSchedulerTest extends TestCase
 
         registry.afterPropertiesSet();
 
-        System.out.println(getMs() + "readConfigCount=" + readConfigCount);
-        assertEquals("The config should have been read during startup", 1, readConfigCount);
+        // The read is handed to a scheduler thread, so it is not instant.
+        await("the config to be read on startup")
+                .atMost(Duration.ofSeconds(10))
+                .pollDelay(Duration.ZERO)
+                .pollInterval(Duration.ofMillis(50))
+                .until(() -> readConfigCount > 0);
+
+        assertEquals("The config should have been read once on startup", 1, readConfigCount);
     }
 }

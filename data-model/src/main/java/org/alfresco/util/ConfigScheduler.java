@@ -152,8 +152,8 @@ public abstract class ConfigScheduler<Data>
             {
                 this.cronExpression = cronExpression;
                 this.initialAndOnErrorCronExpression = initialAndOnErrorCronExpression;
-                readConfigAndReplace(false);
                 schedule();
+                triggerNow();
             }
             else
             {
@@ -186,6 +186,21 @@ public abstract class ConfigScheduler<Data>
         catch (Exception e)
         {
             log.error("Error scheduling " + e.getMessage());
+        }
+    }
+
+    private synchronized void triggerNow()
+    {
+        if (scheduler != null && jobKey != null)
+        {
+            try
+            {
+                scheduler.triggerJob(jobKey);
+            }
+            catch (Exception e)
+            {
+                log.error("Error triggering the first config read " + e.getMessage());
+            }
         }
     }
 

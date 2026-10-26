@@ -432,8 +432,9 @@
                                  <POSTGRES_USER>${alfresco.db.username}</POSTGRES_USER>
                                  <POSTGRES_DB>${alfresco.test.db.name}</POSTGRES_DB>
                               </env>
+                              <!-- Test databases are ephemeral, so trade durability for speed -->
                               <cmd>
-                                 <shell>-c max_connections=300</shell>
+                                 <shell>-c max_connections=300 -c fsync=off -c synchronous_commit=off -c full_page_writes=off</shell>
                               </cmd>
                               <wait>
                                  <log>database system is ready to accept connections</log>
@@ -505,6 +506,11 @@
                               </env>
                               <cmd>
                                  <arg>--transaction-isolation=READ-COMMITTED</arg>
+                                 <!-- Test databases are ephemeral, so trade durability for speed -->
+                                 <arg>--innodb-flush-log-at-trx-commit=0</arg>
+                                 <arg>--innodb-doublewrite=OFF</arg>
+                                 <arg>--skip-log-bin</arg>
+                                 <arg>--sync-binlog=0</arg>
                               </cmd>
                               <wait>
                                  <log>mysqld: ready for connections</log>

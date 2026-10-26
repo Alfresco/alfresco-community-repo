@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows: ["Master/Release branch workflow"]
     types: [completed]
-    branches: [master, "release/**"]
+    branches: ["master", "release/25.N" , "release/23.7", "release/25.5", "release/26.2"]
 
 permissions:
   actions: write    # re-run the failed jobs

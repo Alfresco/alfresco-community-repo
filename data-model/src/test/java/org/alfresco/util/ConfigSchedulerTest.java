@@ -62,7 +62,7 @@ public class ConfigSchedulerTest extends TestCase
             }
         }
 
-        private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this) {
+        private final ConfigScheduler<Data> configScheduler = new ConfigScheduler(this) {
             @Override
             public boolean readConfig() throws IOException
             {
@@ -112,11 +112,15 @@ public class ConfigSchedulerTest extends TestCase
         }
 
         /**
-         * Cancels the scheduled job, so it cannot keep firing into later tests.
+         * Cancels the scheduled job, so it cannot keep firing into later tests. Synchronized on the scheduler so a running job finishes switching schedules before its job is deleted, otherwise the job would be re-created after cancellation.
          */
+        @SuppressWarnings("PMD.AvoidSynchronizedStatement")
         public void shutdown()
         {
-            configScheduler.run(false, log, null, null);
+            synchronized (configScheduler)
+            {
+                configScheduler.run(false, log, null, null);
+            }
         }
 
         public boolean readConfig()

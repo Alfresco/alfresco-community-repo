@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -30,10 +30,12 @@ import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.CronExpression;
@@ -42,6 +44,8 @@ public class ConfigSchedulerTest extends TestCase
 {
     private static class TestRegistry
     {
+        private final AtomicInteger readConfigCount = new AtomicInteger();
+
         private CronExpression cronExpression;
 
         private CronExpression initialAndOnErrorCronExpression;
@@ -102,10 +106,23 @@ public class ConfigSchedulerTest extends TestCase
             configScheduler.run(true, log, cronExpression, initialAndOnErrorCronExpression);
         }
 
+        public int getReadConfigCount()
+        {
+            return readConfigCount.get();
+        }
+
+        /**
+         * Cancels the scheduled job, so it cannot keep firing into later tests.
+         */
+        public void shutdown()
+        {
+            configScheduler.run(false, log, null, null);
+        }
+
         public boolean readConfig()
         {
             Data data = getData();
-            data.registersData = "Can be anything " + ++readConfigCount;
+            data.registersData = "Can be anything " + readConfigCount.incrementAndGet();
             System.err.println(data.registersData);
             return mockSuccessReadingConfig;
         }
@@ -115,13 +132,18 @@ public class ConfigSchedulerTest extends TestCase
     private static boolean mockSuccessReadingConfig = true;
 
     private TestRegistry registry = new TestRegistry();
-    private static int readConfigCount;
     private long startMs;
 
     @Before
     public void setUp() throws Exception
     {
         mockSuccessReadingConfig = true;
+    }
+
+    @After
+    public void tearDown()
+    {
+        registry.shutdown();
     }
 
     private String getMs()
@@ -150,7 +172,6 @@ public class ConfigSchedulerTest extends TestCase
     @Test
     public void testSwitchingOfSchedule() throws Exception
     {
-        readConfigCount = 0;
         registry.setInitialAndOnErrorCronExpression(new CronExpression(("0/2 * * ? * * *"))); // every 2 seconds
         registry.setCronExpression(new CronExpression(("0/4 * * ? * * *"))); // every 4 seconds
 
@@ -198,7 +219,6 @@ public class ConfigSchedulerTest extends TestCase
     @Test
     public void testConfigIsReadDuringStartup() throws Exception
     {
-        readConfigCount = 0;
         // A cron that will not fire during the test, so any read can only be the startup one.
         registry.setInitialAndOnErrorCronExpression(new CronExpression("0 0 0 1 1 ? 2099"));
         registry.setCronExpression(new CronExpression("0 0 0 1 1 ? 2099"));
@@ -211,8 +231,8 @@ public class ConfigSchedulerTest extends TestCase
                 .atMost(Duration.ofSeconds(10))
                 .pollDelay(Duration.ZERO)
                 .pollInterval(Duration.ofMillis(50))
-                .until(() -> readConfigCount > 0);
+                .until(() -> registry.getReadConfigCount() > 0);
 
-        assertEquals("The config should have been read once on startup", 1, readConfigCount);
+        assertEquals("The config should have been read once on startup", 1, registry.getReadConfigCount());
     }
 }

@@ -24,7 +24,11 @@ else
   PHASE="package"
 fi
 
-mvn -B -V $PHASE -DskipTests -Dmaven.javadoc.skip=true $PROFILES $BUILD_OPTIONS
+if [[ -n ${BUILD_MODULES} ]]; then
+  MODULES="-pl ${BUILD_MODULES}"
+fi
+
+mvn -B -V $PHASE -DskipTests -Dmaven.javadoc.skip=true $PROFILES $MODULES $BUILD_OPTIONS
 
 popd
 set +vex

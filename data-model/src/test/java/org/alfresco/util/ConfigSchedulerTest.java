@@ -192,4 +192,19 @@ public class ConfigSchedulerTest extends TestCase
         Thread.sleep(2000); // 19 seconds
         data = assertDataChanged(data, "There should have been a read after 18 seconds");
     }
+
+    @Test
+    public void testConfigIsReadDuringStartup() throws Exception
+    {
+        readConfigCount = 0;
+        // A cron that will not fire during the test, so any read can only be the startup one.
+        registry.setInitialAndOnErrorCronExpression(new CronExpression("0 0 0 1 1 ? 2099"));
+        registry.setCronExpression(new CronExpression("0 0 0 1 1 ? 2099"));
+        startMs = System.currentTimeMillis();
+
+        registry.afterPropertiesSet();
+
+        System.out.println(getMs() + "readConfigCount=" + readConfigCount);
+        assertEquals("The config should have been read during startup", 1, readConfigCount);
+    }
 }

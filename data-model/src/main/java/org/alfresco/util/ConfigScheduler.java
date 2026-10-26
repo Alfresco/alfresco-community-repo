@@ -152,6 +152,7 @@ public abstract class ConfigScheduler<Data>
             {
                 this.cronExpression = cronExpression;
                 this.initialAndOnErrorCronExpression = initialAndOnErrorCronExpression;
+                readConfigAndReplace(false);
                 schedule();
             }
             else

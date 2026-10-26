@@ -118,7 +118,7 @@ public class EventFilterUnitTest
         assertTrue("System properties are excluded by default.",
                 propertyFilter.isExcluded(ContentModel.PROP_NODE_UUID));
 
-        assertTrue("System properties are excluded by default.",
+        assertFalse("Node DBID is required by Search Enterprise.",
                 propertyFilter.isExcluded(ContentModel.PROP_NODE_DBID));
 
         assertTrue("User configured properties are excluded.", propertyFilter.isExcluded(ContentModel.PROP_PASSWORD));

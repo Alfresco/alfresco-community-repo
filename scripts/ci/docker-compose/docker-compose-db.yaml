@@ -1,6 +1,5 @@
 version: "3"
 
-# Test databases are ephemeral, so trade durability for speed
 services:
   postgres:
     profiles: ["postgres"]
@@ -9,13 +8,13 @@ services:
       - POSTGRES_PASSWORD=alfresco
       - POSTGRES_USER=alfresco
       - POSTGRES_DB=alfresco
-    command: postgres -c max_connections=300 -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+    command: postgres -c max_connections=300
     ports:
       - "5433:5432"
   mariadb:
     profiles: ["mariadb"]
     image: mariadb:${MARIADB_VERSION}
-    command: --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb-flush-log-at-trx-commit=0 --innodb-doublewrite=OFF
+    command: --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       - MYSQL_ROOT_PASSWORD=alfresco
       - MYSQL_USER=alfresco
@@ -26,7 +25,7 @@ services:
   mysql:
     profiles: ["mysql"]
     image: mysql:${MYSQL_VERSION}
-    command: --transaction-isolation='READ-COMMITTED' --innodb-flush-log-at-trx-commit=0 --innodb-doublewrite=OFF --skip-log-bin --sync-binlog=0
+    command: --transaction-isolation='READ-COMMITTED'
     environment:
       - MYSQL_ROOT_PASSWORD=alfresco
       - MYSQL_USER=alfresco

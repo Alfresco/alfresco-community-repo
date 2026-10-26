@@ -42,6 +42,15 @@ on:
         required: false
   workflow_dispatch:
 
+# Cancel superseded runs for pull requests and feature/fix branch pushes. Master/release runs (including those via
+# master_release.yml, where github.* describes the caller) get a unique group so they are never cancelled or queued.
+concurrency:
+  group: >-
+    ${{ (github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/'))
+    && format('{0}-{1}-{2}', github.workflow, github.event_name, github.ref)
+    || format('{0}-{1}', github.workflow, github.run_id) }}
+  cancel-in-progress: true
+
 env:
   JAVA_VERSION: '21'
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60

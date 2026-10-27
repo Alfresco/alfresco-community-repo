@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     # Lifted to env because the secrets context cannot be read from a step condition.
     env:
-      TEAMS_WEBHOOK: ${{ secrets.TEAMS_WEBHOOK }}
+      TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL: ${{ secrets.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL }}
     steps:
       - id: retry
         uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@v19.7.0
@@ -30,10 +30,10 @@ jobs:
           max-attempts: 3
 
       - name: Report to Teams
-        if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_WEBHOOK != ''
+        if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL != ''
         uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-notification@v19.7.0
         with:
-          webhook-url: ${{ secrets.TEAMS_WEBHOOK }}
+          webhook-url: ${{ secrets.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL }}
           # Without this the card is green, worked out from this watcher's own jobs.
           status: failure
           title: Release chain stopped in ${{ github.repository }}
@@ -44,7 +44,7 @@ jobs:
 
       # Until the Teams webhook secret exists, failing here is how the escalation stays visible.
       - name: Fail visibly when no Teams webhook is configured
-        if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_WEBHOOK == ''
+        if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL == ''
         env:
           REASON: ${{ steps.retry.outputs.reason }}
           FAILED_JOBS: ${{ steps.retry.outputs.failed-jobs }}

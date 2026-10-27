@@ -26,19 +26,20 @@
 
 package org.alfresco.repo.action.access;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-public class ConfigurableActionAccessRestriction extends ActionAccessRestrictionAbstractBase {
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
+
+public class ConfigurableActionAccessRestriction extends ActionAccessRestrictionAbstractBase
+{
 
     private AuthorityService authorityService;
-
 
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -46,33 +47,39 @@ public class ConfigurableActionAccessRestriction extends ActionAccessRestriction
     }
 
     @Override
-    protected void innerVerifyAccessRestriction(Action action) {
+    protected void innerVerifyAccessRestriction(Action action)
+    {
 
         boolean isAdminOrSystemUser = authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser();
-        if (isAdminOrSystemUser){
+        if (isAdminOrSystemUser)
+        {
             return;
         }
         String allowedGroups = getAllowedGroups(action.getActionDefinitionName());
-        if(allowedGroups.isEmpty()){
+        if (allowedGroups.isEmpty())
+        {
             return;
         }
 
         List<String> groups = Arrays.stream(allowedGroups.split(",")).toList();
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (user==null || user.isEmpty()){
+        if (user == null || user.isEmpty())
+        {
             throw new ActionAccessException("Unknown user");
         }
 
         Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, user, false);
 
-        boolean groupFound = groups.stream().map(e -> "GROUP_" + e.trim()).anyMatch(containingAuthorities::contains);
-        if(!groupFound){
+        boolean groupFound = groups.stream().map(e -> PermissionService.GROUP_PREFIX + e.trim()).anyMatch(containingAuthorities::contains);
+        if (!groupFound)
+        {
             throw new ActionAccessException("User " + user + " is not allowed to define uses of or directly execute this action");
         }
 
     }
 
-    private String getAllowedGroups(String actionDefinitionName) {
+    private String getAllowedGroups(String actionDefinitionName)
+    {
         String key = "action." + actionDefinitionName + ".allowedGroups";
         return configProperties.getProperty(key, "");
 

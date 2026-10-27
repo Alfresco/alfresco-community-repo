@@ -11,23 +11,5 @@
         <packages>
             <package name="org.alfresco.rest.search.part3"/>
         </packages>
-        <classes>
-            <!-- Run in elasticsearch-e2e-part5-suite.xml -->
-            <class name="org.alfresco.rest.search.part3.SearchSecondaryAssociationAdvancedTest">
-                <methods>
-                    <exclude name=".*"/>
-                </methods>
-            </class>
-            <class name="org.alfresco.rest.search.part3.SearchDeepFolderHierarchyTest">
-                <methods>
-                    <exclude name=".*"/>
-                </methods>
-            </class>
-            <class name="org.alfresco.rest.search.part3.SearchTagsTest">
-                <methods>
-                    <exclude name=".*"/>
-                </methods>
-            </class>
-        </classes>
     </test>
 </suite>

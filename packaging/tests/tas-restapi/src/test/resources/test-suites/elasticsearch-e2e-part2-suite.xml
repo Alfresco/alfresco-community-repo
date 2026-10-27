@@ -28,6 +28,12 @@
                     <exclude name="searchWithDates"/>
                 </methods>
             </class>
+            <!-- 3) FacetFieldsSearchTest: mincount / SITE facet gaps on ES -->
+            <class name="org.alfresco.rest.search.part2.FacetFieldsSearchTest">
+                <methods>
+                    <exclude name="testSearchWithFacetFieldsOnlyFacetsWhereAccess"/>
+                </methods>
+            </class>
             <!-- 4) StatsSearchTest: not supported by ES -->
             <class name="org.alfresco.rest.search.part2.StatsSearchTest">
                 <methods>
@@ -62,24 +68,17 @@
                     <exclude name=".*"/>
                 </methods>
             </class>
-            <!-- 10) ExplicitRoutingTest: Solr-only explicit routing; also needs runtime custom model, ACS-12502 -->
-            <class name="org.alfresco.rest.search.part2.ExplicitRoutingTest">
-                <methods>
-                    <exclude name=".*"/>
-                </methods>
-            </class>
-            <!-- Run in elasticsearch-e2e-part4-suite.xml -->
+            <!-- 9) SearchAFTSInFieldTest: ES tokenizer / cross-locale / ~ operator gaps -->
             <class name="org.alfresco.rest.search.part2.SearchAFTSInFieldTest">
                 <methods>
-                    <exclude name=".*"/>
+                    <exclude name="testSearchInFieldName"/>
+                    <exclude name="testSearchInFieldNameQueryExpansion"/>
+                    <exclude name="testExactMatchWithoutCrossLocale"/>
+                    <exclude name="testWithConjunctionDisjunctionAndNegation"/>
                 </methods>
             </class>
-            <class name="org.alfresco.rest.search.part2.SpecialCharacterSearchTest">
-                <methods>
-                    <exclude name=".*"/>
-                </methods>
-            </class>
-            <class name="org.alfresco.rest.search.part2.FacetFieldsSearchTest">
+            <!-- 10) ExplicitRoutingTest: Solr-only explicit routing; also needs runtime custom model, ACS-12502 -->
+            <class name="org.alfresco.rest.search.part2.ExplicitRoutingTest">
                 <methods>
                     <exclude name=".*"/>
                 </methods>

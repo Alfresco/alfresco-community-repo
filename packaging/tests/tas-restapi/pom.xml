@@ -59,6 +59,18 @@
                 <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/elasticsearch-e2e-part3-suite.xml</suiteXmlFile>
             </properties>
         </profile>
+        <profile>
+            <id>elasticsearch-e2e-tests-part4</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/elasticsearch-e2e-part4-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <profile>
+            <id>elasticsearch-e2e-tests-part5</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/elasticsearch-e2e-part5-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
     </profiles>
 
     <dependencies>

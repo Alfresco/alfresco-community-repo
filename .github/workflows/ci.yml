@@ -543,7 +543,13 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: AppContext04TestSuite
             compose-profile: with-transform-core-aio
-          - testSuite: ElasticsearchCommunityTestsTestSuite
+          - testSuite: ElasticsearchCommunityTestsPart1TestSuite
+            compose-profile: with-elasticsearch
+            mvn-options: '-Dindex.subsystem.name=elasticsearch'
+          - testSuite: ElasticsearchCommunityTestsPart2TestSuite
+            compose-profile: with-elasticsearch
+            mvn-options: '-Dindex.subsystem.name=elasticsearch'
+          - testSuite: ElasticsearchCommunityTestsPart3TestSuite
             compose-profile: with-elasticsearch
             mvn-options: '-Dindex.subsystem.name=elasticsearch'
           - testSuite: AppContext05TestSuite
@@ -643,15 +649,24 @@ jobs:
           - test-name: "REST API TAS tests part3"
             pom-dir: tas-restapi
             test-profile: run-restapi-part3
-          - test-name: "CMIS TAS tests - BROWSER binding"
+          - test-name: "CMIS TAS tests - BROWSER binding - part1"
             pom-dir: tas-cmis
-            test-profile: run-cmis-browser
-          - test-name: "CMIS TAS tests - ATOM binding"
+            test-profile: run-cmis-browser,cmis-part1
+          - test-name: "CMIS TAS tests - BROWSER binding - part2"
             pom-dir: tas-cmis
-            test-profile: run-cmis-atom
-          - test-name: "CMIS TAS tests - WEBSERVICES binding"
+            test-profile: run-cmis-browser,cmis-part2
+          - test-name: "CMIS TAS tests - ATOM binding - part1"
             pom-dir: tas-cmis
-            test-profile: run-cmis-webservices
+            test-profile: run-cmis-atom,cmis-part1
+          - test-name: "CMIS TAS tests - ATOM binding - part2"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-atom,cmis-part2
+          - test-name: "CMIS TAS tests - WEBSERVICES binding - part1"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-webservices,cmis-part1
+          - test-name: "CMIS TAS tests - WEBSERVICES binding - part2"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-webservices,cmis-part2
           - test-name: "Email TAS tests"
             pom-dir: tas-email
           - test-name: "WebDAV TAS tests"
@@ -669,6 +684,14 @@ jobs:
           - test-name: "Elasticsearch E2E Tests - part3"
             pom-dir: tas-restapi
             test-profile: elasticsearch-e2e-tests-part3
+            compose-file: docker-compose-minimal+batch-indexing.yml
+          - test-name: "Elasticsearch E2E Tests - part4"
+            pom-dir: tas-restapi
+            test-profile: elasticsearch-e2e-tests-part4
+            compose-file: docker-compose-minimal+batch-indexing.yml
+          - test-name: "Elasticsearch E2E Tests - part5"
+            pom-dir: tas-restapi
+            test-profile: elasticsearch-e2e-tests-part5
             compose-file: docker-compose-minimal+batch-indexing.yml
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0

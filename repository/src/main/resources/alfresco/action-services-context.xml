@@ -317,6 +317,11 @@
     <!-- Actions -->
 
     <bean id="action-executer" abstract="true" init-method="init">
+        <property name="actionAccessRestrictions">
+            <list>
+                <ref bean="configurableActionAccessRestriction" />
+            </list>
+        </property>
         <property name="runtimeActionService">
             <ref bean="actionService" />
         </property>

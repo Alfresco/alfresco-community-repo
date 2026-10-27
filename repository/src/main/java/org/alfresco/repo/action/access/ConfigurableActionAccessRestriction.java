@@ -50,18 +50,23 @@ public class ConfigurableActionAccessRestriction extends ActionAccessRestriction
     protected void innerVerifyAccessRestriction(Action action)
     {
 
+        String allowedGroups = getAllowedGroups(action.getActionDefinitionName());
+        if (allowedGroups == null)
+        {
+            return;
+        }
+
         boolean isAdminOrSystemUser = authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser();
         if (isAdminOrSystemUser)
         {
             return;
         }
-        String allowedGroups = getAllowedGroups(action.getActionDefinitionName());
-        if (allowedGroups.isEmpty())
-        {
-            return;
-        }
 
-        List<String> groups = Arrays.stream(allowedGroups.split(",")).toList();
+        List<String> groups = Arrays.stream(allowedGroups.split(",")).map(String::trim).filter(e -> !e.isEmpty()).toList();
+        if (groups.isEmpty())
+        {
+            throw new ActionAccessException("Only admin or system user is allowed to define uses of or directly execute this action");
+        }
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         if (user == null || user.isEmpty())
         {
@@ -78,10 +83,16 @@ public class ConfigurableActionAccessRestriction extends ActionAccessRestriction
 
     }
 
+    /**
+     * Returns the configured groups for the action, or null when there is no setting (the action is unrestricted).
+     */
     private String getAllowedGroups(String actionDefinitionName)
     {
-        String key = "action." + actionDefinitionName + ".allowedGroups";
-        return configProperties.getProperty(key, "");
+        return configProperties.getProperty(settingKey(actionDefinitionName));
+    }
 
+    private static String settingKey(String actionDefinitionName)
+    {
+        return "action." + actionDefinitionName + ".allowedGroups";
     }
 }

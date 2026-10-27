@@ -359,14 +359,31 @@ public class ElasticsearchQueryParserAdaptorTest
     public void testTagFieldValueIfHyphenIsThere()
     {
         Query aftsQuery = aftsQueryParserAdaptor.getFieldQuery("TAG", "-00");
-        assertThat(aftsQuery.queryString().query(), is("TAG:\\-00"));
+        assertThat(aftsQuery.queryString().query(), is("(TAG:\\-00 TAG.text:\\-00)"));
     }
 
     @Test
     public void testFieldValueIfNoHyphenIsThere()
     {
         Query aftsQuery = aftsQueryParserAdaptor.getFieldQuery("TAG", "00");
-        assertThat(aftsQuery.queryString().query(), is("TAG:00"));
+        assertThat(aftsQuery.queryString().query(), is("(TAG:00 TAG.text:00)"));
+    }
+
+    /** An unquoted tag term also matches the analysed field, so that one word of a multi-word tag finds it. */
+    @Test
+    public void shouldMatchTheAnalysedFieldForAnUnquotedTagTerm()
+    {
+        Query aftsQuery = aftsQueryParserAdaptor.getFieldQuery("TAG", "purple");
+        assertThat(aftsQuery.queryString().query(), is("(TAG:purple TAG.text:purple)"));
+    }
+
+    /** A quoted tag keeps its whitespace escaped, so the query_string parser does not split it into separate terms. */
+    @Test
+    public void shouldEscapeWhitespaceInAQuotedTagContainingWhitespace()
+    {
+        Query aftsQuery = aftsQueryParserAdaptor
+                .getFieldQuery("TAG", "purple elephant", AnalysisMode.DEFAULT, 0, LuceneFunction.FIELD);
+        assertThat(aftsQuery.queryString().query(), is("TAG:purple\\ elephant"));
     }
 
     @Test

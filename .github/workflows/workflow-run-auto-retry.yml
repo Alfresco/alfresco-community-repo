@@ -20,7 +20,7 @@ jobs:
       TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL: ${{ secrets.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL }}
     steps:
       - id: retry
-        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@v19.7.1
+        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@v19.11.0
         with:
           # These publish or propagate, so repeating them is not safe.
           non-retryable-jobs: |
@@ -29,24 +29,46 @@ jobs:
             Update alfresco-enterprise-repo
           max-attempts: 3
 
+      # The release version is the pom version at the commit that was being released.
+      - name: Work out the version being released
+        id: version
+        if: steps.retry.outputs.decision == 'escalate'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          POM=$(gh api "repos/$REPOSITORY/contents/pom.xml?ref=$SHA" --jq '.content' | base64 -d)
+          VERSION=$(printf '%s' "$POM" \
+            | grep -A1 '<artifactId>alfresco-community-repo</artifactId>' \
+            | sed -n 's|.*<version>\([^<]*\)</version>.*|\1|p' \
+            | head -1)
+          # A card saying Unknown is better than one quietly missing the row.
+          echo "release=${VERSION%-SNAPSHOT}" >> $GITHUB_OUTPUT
+          [ -n "$VERSION" ] || echo "release=Unknown" >> $GITHUB_OUTPUT
+
       - name: Report to Teams
         if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL != ''
-        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-notification@v19.7.1
+        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-escalation-notification@v19.11.0
         with:
           webhook-url: ${{ secrets.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL }}
-          # Without this the card is green, worked out from this watcher's own jobs.
-          status: failure
-          title: Release chain stopped in ${{ github.repository }}
-          message: ${{ steps.retry.outputs.reason }}
-          skip_checkout: "true"
-          card-actions: >-
-            [{"type":"Action.OpenUrl","title":"View run","url":"${{ github.event.workflow_run.html_url }}"}]
+          reason-code: ${{ steps.retry.outputs.reason-code }}
+          failed-jobs: ${{ steps.retry.outputs.failed-jobs }}
+          max-attempts: ${{ steps.retry.outputs.max-attempts }}
+          position: Hop 1 of 5 - alfresco-community-repo
+          downstream: >-
+            Nothing propagates to alfresco-enterprise-repo,
+            alfresco-enterprise-share, acs-packaging or acs-community-packaging
+            until this is resolved.
+          release-version: ${{ steps.version.outputs.release }}
+          cc: "cc: release duty - please pick this up."
 
       # Until the Teams webhook secret exists, failing here is how the escalation stays visible.
       - name: Fail visibly when no Teams webhook is configured
         if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL == ''
         env:
-          REASON: ${{ steps.retry.outputs.reason }}
+          REASON: ${{ steps.retry.outputs.reason-text }}
           FAILED_JOBS: ${{ steps.retry.outputs.failed-jobs }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
         run: |

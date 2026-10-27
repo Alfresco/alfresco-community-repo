@@ -626,8 +626,8 @@ jobs:
   tas_tests:
     name: ${{ matrix.test-name }}
     runs-on: ubuntu-latest
+    # Not gated on Prepare: this job builds the whole reactor itself and is on the critical path
     needs:
-      - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     env:
@@ -838,8 +838,8 @@ jobs:
   ags_community_rest_api_tests:
     name: "AGS Community Rest API Tests - part${{ matrix.part }}"
     runs-on: ubuntu-latest
+    # Not gated on Prepare: this job builds the whole reactor itself and is on the critical path
     needs:
-      - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     env:

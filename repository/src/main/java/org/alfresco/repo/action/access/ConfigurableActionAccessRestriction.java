@@ -36,6 +36,20 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 
+/*
+ * An action access restriction that allows configuration of which groups are allowed to use the action.
+ *
+ * The configuration is done in the repository.properties file, using the following property:
+ *
+ * action.<actionDefinitionName>.allowedGroups=<comma separated list of group names>
+ *
+ * If the property is not set, then the action is unrestricted.  If the property is set to an empty value, then only admin or system user can use the action.
+ *
+ * Note: a missing setting means unrestricted. Mail relies on its setting in repository.properties. If that setting is removed,
+ * any authenticated user can send mail through rules and the action API, and no warning is logged.
+ *
+ * @author sbhattacharya
+ */
 public class ConfigurableActionAccessRestriction extends ActionAccessRestrictionAbstractBase
 {
 

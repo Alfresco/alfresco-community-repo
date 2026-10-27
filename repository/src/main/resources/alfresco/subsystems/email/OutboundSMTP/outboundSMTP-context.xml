@@ -47,7 +47,7 @@
    
    <bean id="mail" class="org.alfresco.repo.action.executer.MailActionExecuter" parent="action-executer">
        <property name="actionAccessRestrictions">
-           <ref bean="adminActionAccessRestriction"/>
+           <ref bean="configurableActionAccessRestriction"/>
        </property>
        <property name="queueName" value="outboundMail"/>
         <property name="mailService">

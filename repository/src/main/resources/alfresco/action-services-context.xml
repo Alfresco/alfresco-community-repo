@@ -794,5 +794,11 @@
             <ref bean="AuthorityService" />
         </property>
     </bean>
+
+    <bean id="configurableActionAccessRestriction" class="org.alfresco.repo.action.access.ConfigurableActionAccessRestriction" parent="actionAccessRestrictionBase">
+        <property name="authorityService">
+            <ref bean="AuthorityService" />
+        </property>
+    </bean>
     
 </beans>

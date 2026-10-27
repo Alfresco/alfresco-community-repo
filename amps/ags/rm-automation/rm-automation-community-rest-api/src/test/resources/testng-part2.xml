@@ -1,0 +1,160 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="TestNG AllTestSuite - part2" configfailurepolicy="continue" verbose="1" time-out="300000">
+   <listeners>
+      <listener class-name="org.alfresco.utility.testng.AlphabeticalPriorityInterceptor" />
+   </listeners>
+   <!-- Runs everything except the packages listed in testng-part1.xml. Keep both files in sync. -->
+   <test name="restapi-part2" preserve-order="false">
+      <packages>
+         <package name="org.alfresco.rest.rm.community.*"/>
+      </packages>
+      <classes>
+         <class name="org.alfresco.rest.rm.community.hold.AddToHoldsBulkV1Tests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.hold.AddToHoldsTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.hold.AddToHoldsV1Tests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.hold.HoldsTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.hold.PreventActionsOnFrozenContentTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.hold.PreventActionsOnFrozenContentV1Tests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.hold.RemoveFromHoldsTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.hold.RemoveFromHoldsV1Tests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.retentionschedule.RetentionScheduleStepTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.retentionschedule.RetentionScheduleTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.files.DeclareAndFileDocumentAsRecordTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.files.DeclareDocumentAsRecordTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.files.FileVersionAsRecordTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.fileplans.FilePlanTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.recordfolders.ElectronicRecordTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.recordfolders.NonElectronicRecordTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.recordfolders.RecordFolderTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.unfiledcontainers.UnfiledContainerTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.site.RMSiteTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.rmroles.RMRolesTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.recordcategories.AutomaticDispositionTest">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.recordcategories.DispositionScheduleInheritanceTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.recordcategories.MoveRecCategoriesWithRSTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.recordcategories.RecordCategoryTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.rules.CopyToRuleOnFoldersTest">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.rules.FileAsRecordRuleTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.rules.FileVersionAsRecordRuleTest">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.rules.MoveToRuleOnFoldersTest">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.unfiledrecordfolders.UnfiledRecordsFolderTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+      </classes>
+   </test>
+</suite>

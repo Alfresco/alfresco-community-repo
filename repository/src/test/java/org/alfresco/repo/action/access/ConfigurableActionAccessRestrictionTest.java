@@ -30,6 +30,7 @@ import static org.junit.Assert.assertThrows;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -38,6 +39,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.CompositeActionImpl;
+import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -50,6 +54,7 @@ public class ConfigurableActionAccessRestrictionTest extends BaseSpringTest
 
     private static final String MAIL_ACTION = "mail";
     private static final String SCRIPT_ACTION = "script";
+    private static final String COMPOSITE_ACTION = "composite-action";
     private static final String UNLISTED_ACTION = "copy";
     private static final String CONTROLLED_CONTEXT = ActionAccessRestriction.V1_ACTION_CONTEXT;
 
@@ -164,6 +169,20 @@ public class ConfigurableActionAccessRestrictionTest extends BaseSpringTest
         ActionAccessRestriction.setActionContext(action, null);
 
         cnfRestriction.verifyAccessRestriction(action);
+    }
+
+    @Test
+    public void compositeWithEmptySettingIsAdminOnly()
+    {
+        CompositeActionExecuter compositeExecuter = new CompositeActionExecuter();
+        compositeExecuter.setActionService(applicationContext.getBean("actionService", RuntimeActionService.class));
+        compositeExecuter.setActionAccessRestrictions(List.of(restrictionWithSetting(COMPOSITE_ACTION, "")));
+        CompositeActionImpl composite = new CompositeActionImpl(null, "123");
+        composite.addAction(createAction(UNLISTED_ACTION));
+        ActionAccessRestriction.setActionContext(composite, CONTROLLED_CONTEXT);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+
+        assertThrows(ActionAccessException.class, () -> compositeExecuter.verifyActionAccessRestrictions(composite));
     }
 
     private ConfigurableActionAccessRestriction restrictionWithSetting(String actionName, String allowedGroups)

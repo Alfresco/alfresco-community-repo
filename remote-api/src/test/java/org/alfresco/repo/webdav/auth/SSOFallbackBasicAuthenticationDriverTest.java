@@ -37,9 +37,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -114,7 +116,7 @@ public class SSOFallbackBasicAuthenticationDriverTest
     }
 
     @Before
-    public void setUp() throws Throwable
+    public void setUp()
     {
         driver = new SSOFallbackBasicAuthenticationDriver();
         driver.setAuthenticationService(authenticationService);
@@ -143,7 +145,7 @@ public class SSOFallbackBasicAuthenticationDriverTest
     }
 
     @Test
-    public void testUserNameAndPasswordAuthenticated() throws Exception
+    public void testUserNameAndPasswordAuthenticated() throws IOException, ServletException
     {
         givenBasicCredentials(USER + ":" + PASSWORD);
 
@@ -155,7 +157,7 @@ public class SSOFallbackBasicAuthenticationDriverTest
     }
 
     @Test
-    public void testTicketWithEmptyUserNameValidated() throws Exception
+    public void testTicketWithEmptyUserNameValidated() throws IOException, ServletException
     {
         givenBasicCredentials(":" + TICKET);
 
@@ -166,7 +168,7 @@ public class SSOFallbackBasicAuthenticationDriverTest
     }
 
     @Test
-    public void testTicketWithTicketUserIdValidated() throws Exception
+    public void testTicketWithTicketUserIdValidated() throws IOException, ServletException
     {
         givenBasicCredentials("ROLE_TICKET:" + TICKET);
 
@@ -177,7 +179,7 @@ public class SSOFallbackBasicAuthenticationDriverTest
     }
 
     @Test
-    public void testBareTicketValidated() throws Exception
+    public void testBareTicketValidated() throws IOException, ServletException
     {
         givenBasicCredentials(TICKET);
 
@@ -188,7 +190,7 @@ public class SSOFallbackBasicAuthenticationDriverTest
     }
 
     @Test
-    public void testInvalidBareTicketNotAuthenticated() throws Exception
+    public void testInvalidBareTicketNotAuthenticated() throws IOException, ServletException
     {
         givenBasicCredentials(TICKET);
         doThrow(new AuthenticationException("Invalid ticket")).when(authenticationService).validate(TICKET);
@@ -200,7 +202,7 @@ public class SSOFallbackBasicAuthenticationDriverTest
     }
 
     @Test
-    public void testEmptyCredentialsNotAuthenticated() throws Exception
+    public void testEmptyCredentialsNotAuthenticated() throws IOException, ServletException
     {
         // "Basic " followed by nothing decodes to empty credentials, which Authorization(String) would reject
         when(request.getHeader("Authorization")).thenReturn("Basic ");
@@ -218,7 +220,7 @@ public class SSOFallbackBasicAuthenticationDriverTest
         when(request.getHeader("Authorization")).thenReturn("Basic " + encoded);
     }
 
-    private boolean authenticateRequest() throws Exception
+    private boolean authenticateRequest() throws IOException, ServletException
     {
         return driver.authenticateRequest(servletContext, request, response);
     }

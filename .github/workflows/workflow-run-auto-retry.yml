@@ -15,9 +15,10 @@ jobs:
     # Evaluated before a runner is allocated, so a successful release run costs nothing.
     if: contains(fromJSON('["failure","timed_out"]'), github.event.workflow_run.conclusion)
     runs-on: ubuntu-latest
-    # Lifted to env because the secrets context cannot be read from a step condition.
+    # Only whether the secret exists, because a step condition cannot read the secrets
+    # context and the URL itself has no business in every step's environment.
     env:
-      TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL: ${{ secrets.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL }}
+      HAS_TEAMS_WEBHOOK: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK != '' }}
     steps:
       - id: retry
         uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@v19.11.0
@@ -49,10 +50,10 @@ jobs:
           [ -n "$VERSION" ] || echo "release=Unknown" >> $GITHUB_OUTPUT
 
       - name: Report to Teams
-        if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL != ''
+        if: steps.retry.outputs.decision == 'escalate' && env.HAS_TEAMS_WEBHOOK == 'true'
         uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-escalation-notification@v19.11.0
         with:
-          webhook-url: ${{ secrets.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL }}
+          webhook-url: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK }}
           reason-code: ${{ steps.retry.outputs.reason-code }}
           failed-jobs: ${{ steps.retry.outputs.failed-jobs }}
           max-attempts: ${{ steps.retry.outputs.max-attempts }}
@@ -66,7 +67,7 @@ jobs:
 
       # Until the Teams webhook secret exists, failing here is how the escalation stays visible.
       - name: Fail visibly when no Teams webhook is configured
-        if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL == ''
+        if: steps.retry.outputs.decision == 'escalate' && env.HAS_TEAMS_WEBHOOK != 'true'
         env:
           REASON: ${{ steps.retry.outputs.reason-text }}
           FAILED_JOBS: ${{ steps.retry.outputs.failed-jobs }}

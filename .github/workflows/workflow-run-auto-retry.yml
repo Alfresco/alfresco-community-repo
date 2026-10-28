@@ -41,13 +41,13 @@ jobs:
         run: |
           set -euo pipefail
           POM=$(gh api "repos/$REPOSITORY/contents/pom.xml?ref=$SHA" --jq '.content' | base64 -d)
-          VERSION=$(printf '%s' "$POM" \
-            | grep -A1 '<artifactId>alfresco-community-repo</artifactId>' \
-            | sed -n 's|.*<version>\([^<]*\)</version>.*|\1|p' \
-            | head -1)
+          # sed rather than grep so a pom without the marker leaves VERSION empty
+          # instead of ending the step before the fallback below.
+          VERSION=$(printf '%s' "$POM" | sed -n \
+            '/<artifactId>alfresco-community-repo<\/artifactId>/{n;s|.*<version>\([^<]*\)</version>.*|\1|p;}')
           # A card saying Unknown is better than one quietly missing the row.
-          echo "release=${VERSION%-SNAPSHOT}" >> $GITHUB_OUTPUT
-          [ -n "$VERSION" ] || echo "release=Unknown" >> $GITHUB_OUTPUT
+          VERSION="${VERSION%-SNAPSHOT}"
+          echo "release=${VERSION:-Unknown}" >> "$GITHUB_OUTPUT"
 
       - name: Report to Teams
         if: steps.retry.outputs.decision == 'escalate' && env.HAS_TEAMS_WEBHOOK == 'true'

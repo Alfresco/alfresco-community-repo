@@ -56,7 +56,7 @@ public class ConfigurableActionAccessRestrictionTest extends BaseSpringTest
     private static final String GROUP_SHORT_NAME = "CONFIG_RESTRICTION_TEST";
     private static final String GROUP_FULL_NAME = "GROUP_" + GROUP_SHORT_NAME;
 
-    private ConfigurableActionAccessRestriction configurableActionAccessRestriction;
+    private ConfigurableActionAccessRestriction cnfRestriction;
     private AuthorityService authorityService;
     private NodeService nodeService;
 
@@ -65,7 +65,7 @@ public class ConfigurableActionAccessRestrictionTest extends BaseSpringTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        configurableActionAccessRestriction = applicationContext.getBean("configurableActionAccessRestriction", ConfigurableActionAccessRestriction.class);
+        cnfRestriction = applicationContext.getBean("configurableActionAccessRestriction", ConfigurableActionAccessRestriction.class);
         authorityService = applicationContext.getBean("AuthorityService", AuthorityService.class);
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
 
@@ -90,7 +90,7 @@ public class ConfigurableActionAccessRestrictionTest extends BaseSpringTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        configurableActionAccessRestriction.verifyAccessRestriction(createAction(MAIL_ACTION));
+        cnfRestriction.verifyAccessRestriction(createAction(MAIL_ACTION));
     }
 
     @Test
@@ -98,7 +98,7 @@ public class ConfigurableActionAccessRestrictionTest extends BaseSpringTest
     {
         AuthenticationUtil.setRunAsUserSystem();
 
-        configurableActionAccessRestriction.verifyAccessRestriction(createAction(MAIL_ACTION));
+        cnfRestriction.verifyAccessRestriction(createAction(MAIL_ACTION));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class ConfigurableActionAccessRestrictionTest extends BaseSpringTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
 
-        assertThrows(ActionAccessException.class, () -> configurableActionAccessRestriction.verifyAccessRestriction(createAction(MAIL_ACTION)));
+        assertThrows(ActionAccessException.class, () -> cnfRestriction.verifyAccessRestriction(createAction(MAIL_ACTION)));
     }
 
     @Test
@@ -114,7 +114,7 @@ public class ConfigurableActionAccessRestrictionTest extends BaseSpringTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
 
-        configurableActionAccessRestriction.verifyAccessRestriction(createAction(UNLISTED_ACTION));
+        cnfRestriction.verifyAccessRestriction(createAction(UNLISTED_ACTION));
     }
 
     @Test
@@ -163,7 +163,7 @@ public class ConfigurableActionAccessRestrictionTest extends BaseSpringTest
         Action action = createAction(MAIL_ACTION);
         ActionAccessRestriction.setActionContext(action, null);
 
-        configurableActionAccessRestriction.verifyAccessRestriction(action);
+        cnfRestriction.verifyAccessRestriction(action);
     }
 
     private ConfigurableActionAccessRestriction restrictionWithSetting(String actionName, String allowedGroups)

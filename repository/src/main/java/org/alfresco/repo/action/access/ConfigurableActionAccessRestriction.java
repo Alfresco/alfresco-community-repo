@@ -65,19 +65,19 @@ public class ConfigurableActionAccessRestriction extends ActionAccessRestriction
     {
 
         String allowedGroups = getAllowedGroups(action.getActionDefinitionName());
-        if (allowedGroups == null) //No setting: unrestricted
+        if (allowedGroups == null) // No setting: unrestricted
         {
             return;
         }
 
-        if (authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser())   //Empty setting: no groups, so only admins
+        if (authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser()) // Empty setting: no groups, so only admins
         {
             return;
         }
 
         String user = AuthenticationUtil.getRunAsUser();
         List<String> groups = parseGroups(allowedGroups);
-        if (isMemberOfAnyGroup(user, groups)) //Listed groups: members of any listed group get past this line
+        if (isMemberOfAnyGroup(user, groups)) // Listed groups: members of any listed group get past this line
         {
             return;
         }

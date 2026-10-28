@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import jakarta.transaction.UserTransaction;
 
@@ -82,6 +83,7 @@ import org.alfresco.util.PropertyMap;
 /**
  * TODO: Fix the loose transaction handling. TODO: Rationalise with other v0 Comment REST API tests (eg. see BlogServiceTest ... etc). See also ACE-5437.
  */
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.UnitTestShouldUseTestAnnotation"})
 public class CommentsApiTest extends BaseWebScriptTest
 {
     // V0 Comments REST API
@@ -437,9 +439,14 @@ public class CommentsApiTest extends BaseWebScriptTest
         assertFalse("Event handler attributes must be removed", EVENT_HANDLER_ATTRIBUTE.matcher(storedContent).find());
     }
 
+    private static String toLowerCaseRoot(String value)
+    {
+        return value.toLowerCase(Locale.ROOT);
+    }
+
     private void assertDisallowedHtmlRemoved(String storedContent)
     {
-        String lower = storedContent.toLowerCase();
+        String lower = toLowerCaseRoot(storedContent);
         assertFalse("Script tag must be removed", lower.contains("<script"));
         assertFalse("Disallowed img element must be removed", lower.contains("<img"));
         assertFalse("Unsafe javascript: URL must be removed", lower.contains("javascript:"));
@@ -456,40 +463,47 @@ public class CommentsApiTest extends BaseWebScriptTest
      * @param rawContent
      *            the (potentially unsafe) HTML content to send
      * @return the sanitized content persisted on the comment node
-     * @throws Exception
      */
-    private String updateCommentContent(NodeRef commentNodeRef, String user, String rawContent) throws Exception
+    private String updateCommentContent(NodeRef commentNodeRef, String user, String rawContent)
     {
-        UserTransaction txn = transactionService.getUserTransaction();
-        txn.begin();
-        AuthenticationUtil.setFullyAuthenticatedUser(user);
-
-        JSONObject comment = new JSONObject();
-        comment.put("title", "Test title");
-        comment.put("content", rawContent);
-
-        Response response = sendRequest(new PutRequest(MessageFormat.format(URL_PUT_COMMENT,
-                new Object[]{commentNodeRef.getStoreRef().getProtocol(), commentNodeRef.getStoreRef().getIdentifier(), commentNodeRef.getId()}),
-                comment.toString(), JSON), 200);
-
-        assertEquals(200, response.getStatus());
-
-        // read back the content that was actually stored on the comment node
-        ContentReader reader = contentService.getReader(commentNodeRef, ContentModel.PROP_CONTENT);
-        String storedContent = (reader != null && reader.exists()) ? reader.getContentString() : null;
-
-        // Normally, webscripts are in their own transaction. The test infrastructure here forces us to have a transaction
-        // around the calls. if the WebScript fails, then we should rollback.
-        if (response.getStatus() == 500)
+        try
         {
-            txn.rollback();
-        }
-        else
-        {
-            txn.commit();
-        }
+            UserTransaction txn = transactionService.getUserTransaction();
+            txn.begin();
+            AuthenticationUtil.setFullyAuthenticatedUser(user);
 
-        return storedContent;
+            JSONObject comment = new JSONObject();
+            comment.put("title", "Test title");
+            comment.put("content", rawContent);
+
+            StoreRef storeRef = commentNodeRef.getStoreRef();
+            Response response = sendRequest(new PutRequest(
+                    MessageFormat.format(URL_PUT_COMMENT, storeRef.getProtocol(), storeRef.getIdentifier(), commentNodeRef.getId()),
+                    comment.toString(), JSON), 200);
+
+            assertEquals(200, response.getStatus());
+
+            // read back the content that was actually stored on the comment node
+            ContentReader reader = contentService.getReader(commentNodeRef, ContentModel.PROP_CONTENT);
+            String storedContent = (reader != null && reader.exists()) ? reader.getContentString() : null;
+
+            // Normally, webscripts are in their own transaction. The test infrastructure here forces us to have a transaction
+            // around the calls. if the WebScript fails, then we should rollback.
+            if (response.getStatus() == 500)
+            {
+                txn.rollback();
+            }
+            else
+            {
+                txn.commit();
+            }
+
+            return storedContent;
+        }
+        catch (Exception e)
+        {
+            throw new AlfrescoRuntimeException("Failed to update comment content in test", e);
+        }
     }
 
     /**
@@ -497,6 +511,7 @@ public class CommentsApiTest extends BaseWebScriptTest
      *
      * @throws Exception
      */
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     public void testUpdateCommentSanitizesUnsafeHtml() throws Exception
     {
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -524,8 +539,9 @@ public class CommentsApiTest extends BaseWebScriptTest
         assertDisallowedHtmlRemoved(storedContent);
 
         // allowed formatting markup must be preserved
-        assertTrue("Allowed paragraph element should be preserved", storedContent.toLowerCase().contains("<p"));
-        assertTrue("Allowed bold element should be preserved", storedContent.toLowerCase().contains("<b"));
+        String lowerStored = toLowerCaseRoot(storedContent);
+        assertTrue("Allowed paragraph element should be preserved", lowerStored.contains("<p"));
+        assertTrue("Allowed bold element should be preserved", lowerStored.contains("<b"));
         assertTrue("Text content should be preserved", storedContent.contains("Hello"));
 
         // cleanup
@@ -541,6 +557,7 @@ public class CommentsApiTest extends BaseWebScriptTest
      *
      * @throws Exception
      */
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     public void testUpdateCommentSanitizesNestedDivXssPayload() throws Exception
     {
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -569,7 +586,7 @@ public class CommentsApiTest extends BaseWebScriptTest
 
         assertNotNull("Comment content should have been stored", storedContent);
 
-        String lower = storedContent.toLowerCase();
+        String lower = toLowerCaseRoot(storedContent);
 
         assertNoEventHandlerAttributes(storedContent);
 
@@ -590,6 +607,7 @@ public class CommentsApiTest extends BaseWebScriptTest
      *
      * @throws Exception
      */
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     public void testUpdateCommentSanitizesDomEventHandlers() throws Exception
     {
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -626,8 +644,8 @@ public class CommentsApiTest extends BaseWebScriptTest
 
         assertNoEventHandlerAttributes(storedContent);
 
-        String lower = storedContent.toLowerCase();
-        assertTrue("Allowed style attribute should be preserved on span", lower.contains("color:red"));
+        assertTrue("Allowed style attribute should be preserved on span",
+                toLowerCaseRoot(storedContent).contains("color:red"));
 
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         txn = transactionService.getUserTransaction();

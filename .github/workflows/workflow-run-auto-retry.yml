@@ -1,0 +1,57 @@
+name: Workflow run auto-retry
+
+on:
+  workflow_run:
+    workflows: ["Master/Release branch workflow"]
+    types: [completed]
+    branches: ["master", "release/25.N" , "release/23.7", "release/25.5", "release/26.2"]
+
+permissions:
+  actions: write    # re-run the failed jobs
+  contents: read    # read the branch tip
+
+jobs:
+  retry:
+    # Evaluated before a runner is allocated, so a successful release run costs nothing.
+    if: contains(fromJSON('["failure","timed_out"]'), github.event.workflow_run.conclusion)
+    runs-on: ubuntu-latest
+    # Lifted to env because the secrets context cannot be read from a step condition.
+    env:
+      TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL: ${{ secrets.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL }}
+    steps:
+      - id: retry
+        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@v19.7.0
+        with:
+          # These publish or propagate, so repeating them is not safe.
+          non-retryable-jobs: |
+            Parse commit metadata
+            Push to Nexus
+            Update alfresco-enterprise-repo
+          max-attempts: 3
+
+      - name: Report to Teams
+        if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL != ''
+        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-notification@v19.7.0
+        with:
+          webhook-url: ${{ secrets.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL }}
+          # Without this the card is green, worked out from this watcher's own jobs.
+          status: failure
+          title: Release chain stopped in ${{ github.repository }}
+          message: ${{ steps.retry.outputs.reason }}
+          skip_checkout: "true"
+          card-actions: >-
+            [{"type":"Action.OpenUrl","title":"View run","url":"${{ github.event.workflow_run.html_url }}"}]
+
+      # Until the Teams webhook secret exists, failing here is how the escalation stays visible.
+      - name: Fail visibly when no Teams webhook is configured
+        if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL == ''
+        env:
+          REASON: ${{ steps.retry.outputs.reason }}
+          FAILED_JOBS: ${{ steps.retry.outputs.failed-jobs }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          echo "::error::$REASON"
+          echo "Failed jobs:"
+          echo "$FAILED_JOBS"
+          echo "Run: $RUN_URL"
+          exit 1

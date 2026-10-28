@@ -72,6 +72,7 @@ import org.alfresco.service.transaction.TransactionService;
 public class SSOFallbackBasicAuthenticationDriverTest
 {
     private static final String USER = "user1";
+    // pragma: allowlist nextline secret dummy password for a mocked AuthenticationService
     private static final String PASSWORD = "secret";
     private static final String TICKET = "TICKET_abc";
     private static final NodeRef PERSON_NODE = new NodeRef("workspace://SpacesStore/person");

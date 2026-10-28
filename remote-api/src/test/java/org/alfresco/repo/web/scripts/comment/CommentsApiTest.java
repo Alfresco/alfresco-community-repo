@@ -105,7 +105,8 @@ public class CommentsApiTest extends BaseWebScriptTest
     private TransactionService transactionService;
     private SearchService searchService;
     private NodeService nodeService;
-    private ContentService contentService;    private NamespaceService namespaceService;
+    private ContentService contentService;
+    private NamespaceService namespaceService;
     private VersionService versionService;
     private PersonService personService;
     private MutableAuthenticationService authenticationService;
@@ -430,9 +431,12 @@ public class CommentsApiTest extends BaseWebScriptTest
     /**
      * Updates a comment with the supplied raw content and returns the content actually stored on the comment node.
      *
-     * @param commentNodeRef the comment node to update
-     * @param user the user performing the update
-     * @param rawContent the (potentially unsafe) HTML content to send
+     * @param commentNodeRef
+     *            the comment node to update
+     * @param user
+     *            the user performing the update
+     * @param rawContent
+     *            the (potentially unsafe) HTML content to send
      * @return the sanitized content persisted on the comment node
      * @throws Exception
      */
@@ -462,8 +466,7 @@ public class CommentsApiTest extends BaseWebScriptTest
     }
 
     /**
-     * Verifies that unsafe HTML in an updated comment is sanitized (stored XSS protection) while
-     * allowed formatting markup is preserved, mirroring the policy used in CommentsPost.java.
+     * Verifies that unsafe HTML in an updated comment is sanitized (stored XSS protection) while allowed formatting markup is preserved, mirroring the policy used in CommentsPost.java.
      *
      * @throws Exception
      */
@@ -511,8 +514,7 @@ public class CommentsApiTest extends BaseWebScriptTest
     }
 
     /**
-     * Verifies that a nested-div / plaintext based XSS payload is neutralized by the PUT comment
-     * sanitization policy while safe structural markup (div, br) is preserved.
+     * Verifies that a nested-div / plaintext based XSS payload is neutralized by the PUT comment sanitization policy while safe structural markup (div, br) is preserved.
      *
      * @throws Exception
      */
@@ -558,6 +560,61 @@ public class CommentsApiTest extends BaseWebScriptTest
         assertTrue("Allowed br element should be preserved", lower.contains("<br"));
 
         // cleanup
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        nodeService.deleteNode(content);
+        txn.commit();
+    }
+
+    /**
+     * Verifies that common DOM event-handler attributes are stripped when updating a comment (stored XSS).
+     *
+     * @throws Exception
+     */
+    public void testUpdateCommentSanitizesDomEventHandlers() throws Exception
+    {
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        NodeRef content = fileFolderService.create(companyHomeNodeRef,
+                "CommentEventHandlers" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+        txn.commit();
+
+        Response response = addComment(content, AuthenticationUtil.getAdminUserName(), 200);
+        JSONObject jsonResponse = parseResponseJSON(response);
+        NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
+
+        String[] domEventHandlers = {
+                "onclick", "ondblclick", "onmousedown", "onmouseup", "onmouseover", "onmouseout",
+                "onmouseenter", "onmouseleave", "onmousemove", "oncontextmenu", "onwheel", "onauxclick",
+                "ondrag", "ondragstart", "ondragend", "ondragenter", "ondragleave", "ondragover", "ondrop",
+                "onpointerdown", "onpointerup", "onpointermove", "onpointerover", "onpointerout",
+                "onpointerenter", "onpointerleave", "onpointercancel"
+        };
+
+        StringBuilder payload = new StringBuilder();
+        for (String eventHandler : domEventHandlers)
+        {
+            payload.append("<div ").append(eventHandler).append("=\"alert(1)\">x</div>");
+        }
+        payload.append("<span onmouseover=\"alert(1)\" style=\"color:red\">styled</span>");
+
+        String storedContent = updateCommentContent(commentNodeRef, AuthenticationUtil.getAdminUserName(),
+                payload.toString());
+
+        assertNotNull("Comment content should have been stored", storedContent);
+
+        String lower = storedContent.toLowerCase();
+        for (String eventHandler : domEventHandlers)
+        {
+            assertFalse("Event handler must be removed: " + eventHandler, lower.contains(eventHandler));
+        }
+        assertFalse("Event handler must be removed from span", lower.contains("onmouseover"));
+        assertFalse("alert( call must be removed", lower.contains("alert("));
+        assertTrue("Allowed style attribute should be preserved on span", lower.contains("color:red"));
+
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         txn = transactionService.getUserTransaction();
         txn.begin();

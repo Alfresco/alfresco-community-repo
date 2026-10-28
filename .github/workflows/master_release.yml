@@ -75,6 +75,9 @@ jobs:
         run: git checkout -B "${{ github.ref_name }}"
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -130,6 +133,9 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}

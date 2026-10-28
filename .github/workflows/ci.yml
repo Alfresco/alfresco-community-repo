@@ -653,6 +653,17 @@ jobs:
           AUTH0_CLIENT_SECRET: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_CLIENT_SECRET || '' }}
           AUTH0_ADMIN_PASSWORD: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_PASSWORD || '' }}
         run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
+      - name: "Upload test reports"
+        # Per-class test timings, used to rebalance the split suites
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-reports-repository-app-context-${{ strategy.job-index }}
+          path: |
+            **/target/surefire-reports/*.xml
+            **/target/failsafe-reports/*.xml
+          if-no-files-found: ignore
+          retention-days: 3
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -841,6 +852,17 @@ jobs:
       - name: "Verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
+      - name: "Upload test reports"
+        # Per-class test timings, used to rebalance the split suites
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-reports-ags-postgresql-${{ strategy.job-index }}
+          path: |
+            **/target/surefire-reports/*.xml
+            **/target/failsafe-reports/*.xml
+          if-no-files-found: ignore
+          retention-days: 3
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -882,6 +904,17 @@ jobs:
       - name: "Verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
+      - name: "Upload test reports"
+        # Per-class test timings, used to rebalance the split suites
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-reports-ags-mysql-${{ strategy.job-index }}
+          path: |
+            **/target/surefire-reports/*.xml
+            **/target/failsafe-reports/*.xml
+          if-no-files-found: ignore
+          retention-days: 3
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -947,6 +980,17 @@ jobs:
           aws s3 cp --acl private alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/part${{ matrix.part }}/alfresco.log
           aws s3 cp --acl private solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/part${{ matrix.part }}/solr.log
           aws s3 cp --acl private ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/part${{ matrix.part }}/rm-automation-community-rest-api.log
+      - name: "Upload test reports"
+        # Per-class test timings, used to rebalance the split suites
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-reports-ags-community-rest-api-${{ strategy.job-index }}
+          path: |
+            **/target/surefire-reports/*.xml
+            **/target/failsafe-reports/*.xml
+          if-no-files-found: ignore
+          retention-days: 3
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

@@ -59,6 +59,8 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -103,7 +105,7 @@ public class CommentsApiTest extends BaseWebScriptTest
     private TransactionService transactionService;
     private SearchService searchService;
     private NodeService nodeService;
-    private NamespaceService namespaceService;
+    private ContentService contentService;    private NamespaceService namespaceService;
     private VersionService versionService;
     private PersonService personService;
     private MutableAuthenticationService authenticationService;
@@ -140,6 +142,7 @@ public class CommentsApiTest extends BaseWebScriptTest
         transactionService = (TransactionService) appContext.getBean("transactionService");
         searchService = (SearchService) appContext.getBean("SearchService");
         nodeService = (NodeService) appContext.getBean("nodeService");
+        contentService = (ContentService) appContext.getBean("contentService");
         namespaceService = (NamespaceService) appContext.getBean("namespaceService");
         versionService = (VersionService) appContext.getBean("versionService");
         personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
@@ -422,6 +425,144 @@ public class CommentsApiTest extends BaseWebScriptTest
     {
         String version = versionService.getCurrentVersion(nodeRef).getVersionLabel();
         return version;
+    }
+
+    /**
+     * Updates a comment with the supplied raw content and returns the content actually stored on the comment node.
+     *
+     * @param commentNodeRef the comment node to update
+     * @param user the user performing the update
+     * @param rawContent the (potentially unsafe) HTML content to send
+     * @return the sanitized content persisted on the comment node
+     * @throws Exception
+     */
+    private String updateCommentContent(NodeRef commentNodeRef, String user, String rawContent) throws Exception
+    {
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        AuthenticationUtil.setFullyAuthenticatedUser(user);
+
+        JSONObject comment = new JSONObject();
+        comment.put("title", "Test title");
+        comment.put("content", rawContent);
+
+        Response response = sendRequest(new PutRequest(MessageFormat.format(URL_PUT_COMMENT,
+                new Object[]{commentNodeRef.getStoreRef().getProtocol(), commentNodeRef.getStoreRef().getIdentifier(), commentNodeRef.getId()}),
+                comment.toString(), JSON), 200);
+
+        assertEquals(200, response.getStatus());
+
+        // read back the content that was actually stored on the comment node
+        ContentReader reader = contentService.getReader(commentNodeRef, ContentModel.PROP_CONTENT);
+        String storedContent = (reader != null && reader.exists()) ? reader.getContentString() : null;
+
+        txn.commit();
+
+        return storedContent;
+    }
+
+    /**
+     * Verifies that unsafe HTML in an updated comment is sanitized (stored XSS protection) while
+     * allowed formatting markup is preserved, mirroring the policy used in CommentsPost.java.
+     *
+     * @throws Exception
+     */
+    public void testUpdateCommentSanitizesUnsafeHtml() throws Exception
+    {
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        NodeRef content = fileFolderService.create(companyHomeNodeRef, "CommentSanitize" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+        txn.commit();
+
+        // create a comment to update
+        Response response = addComment(content, AuthenticationUtil.getAdminUserName(), 200);
+        JSONObject jsonResponse = parseResponseJSON(response);
+        NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
+
+        // update the comment with a mix of malicious and allowed markup
+        String unsafeContent = "<p>Hello <b>world</b></p>"
+                + "<script>alert('xss')</script>"
+                + "<img src=x onerror=alert('xss')>"
+                + "<a href=\"javascript:alert('xss')\">click</a>";
+
+        String storedContent = updateCommentContent(commentNodeRef, AuthenticationUtil.getAdminUserName(), unsafeContent);
+
+        assertNotNull("Comment content should have been stored", storedContent);
+
+        // dangerous markup must be stripped
+        assertFalse("Script tag must be removed", storedContent.toLowerCase().contains("<script"));
+        assertFalse("Event handler must be removed", storedContent.toLowerCase().contains("onerror"));
+        assertFalse("Unsafe javascript: URL must be removed", storedContent.toLowerCase().contains("javascript:"));
+        assertFalse("Disallowed img element must be removed", storedContent.toLowerCase().contains("<img"));
+
+        // allowed formatting markup must be preserved
+        assertTrue("Allowed paragraph element should be preserved", storedContent.toLowerCase().contains("<p"));
+        assertTrue("Allowed bold element should be preserved", storedContent.toLowerCase().contains("<b"));
+        assertTrue("Text content should be preserved", storedContent.contains("Hello"));
+
+        // cleanup
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        nodeService.deleteNode(content);
+        txn.commit();
+    }
+
+    /**
+     * Verifies that a nested-div / plaintext based XSS payload is neutralized by the PUT comment
+     * sanitization policy while safe structural markup (div, br) is preserved.
+     *
+     * @throws Exception
+     */
+    public void testUpdateCommentSanitizesNestedDivXssPayload() throws Exception
+    {
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+        // create a node to attach the comment to
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        NodeRef content = fileFolderService.create(companyHomeNodeRef,
+                "CommentNestedDivXss" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+        txn.commit();
+
+        // create a comment to update
+        Response response = addComment(content, AuthenticationUtil.getAdminUserName(), 200);
+        JSONObject jsonResponse = parseResponseJSON(response);
+        NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
+
+        // malicious payload using plaintext + nested divs with event handlers
+        String unsafeContent = "<plaintext><plaintext>"
+                + "<div oncontentvisibilityautostatechange=alert(document.domain) "
+                + "style=display:block;content-visibility:auto>"
+                + "<div onmouseover=\"alert(document.domain)\" style=display:block>"
+                + "<br><br><br>"
+                + "</div></div>";
+
+        String storedContent = updateCommentContent(commentNodeRef,
+                AuthenticationUtil.getAdminUserName(), unsafeContent);
+
+        assertNotNull("Comment content should have been stored", storedContent);
+
+        String lower = storedContent.toLowerCase();
+
+        // dangerous markup must be stripped
+        assertFalse("plaintext element must be removed", lower.contains("<plaintext"));
+        assertFalse("onmouseover handler must be removed", lower.contains("onmouseover"));
+        assertFalse("oncontentvisibilityautostatechange handler must be removed",
+                lower.contains("oncontentvisibilityautostatechange"));
+        assertFalse("alert( call must be removed", lower.contains("alert("));
+
+        // safe structural markup must be preserved
+        assertTrue("Allowed br element should be preserved", lower.contains("<br"));
+
+        // cleanup
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        nodeService.deleteNode(content);
+        txn.commit();
     }
 
     public void testCommentDoesNotVersion() throws Exception

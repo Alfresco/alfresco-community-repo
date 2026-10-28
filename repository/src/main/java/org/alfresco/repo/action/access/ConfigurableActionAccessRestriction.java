@@ -65,36 +65,40 @@ public class ConfigurableActionAccessRestriction extends ActionAccessRestriction
     {
 
         String allowedGroups = getAllowedGroups(action.getActionDefinitionName());
-        if (allowedGroups == null)
+        if (allowedGroups == null) //No setting: unrestricted
         {
             return;
         }
 
-        boolean isAdminOrSystemUser = authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser();
-        if (isAdminOrSystemUser)
+        if (authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser())   //Empty setting: no groups, so only admins
         {
             return;
         }
 
-        List<String> groups = Arrays.stream(allowedGroups.split(",")).map(String::trim).filter(e -> !e.isEmpty()).toList();
-        if (groups.isEmpty())
+        String user = AuthenticationUtil.getRunAsUser();
+        List<String> groups = parseGroups(allowedGroups);
+        if (isMemberOfAnyGroup(user, groups)) //Listed groups: members of any listed group get past this line
         {
-            throw new ActionAccessException("Only admin or system user is allowed to define uses of or directly execute this action");
+            return;
         }
-        String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (user == null || user.isEmpty())
+
+        throw new ActionAccessException("Only admin, system user or members of the allowed groups can define uses of or directly execute this action");
+    }
+
+    private List<String> parseGroups(String allowedGroups)
+    {
+        return Arrays.stream(allowedGroups.split(",")).map(String::trim).filter(e -> !e.isEmpty()).toList();
+    }
+
+    private boolean isMemberOfAnyGroup(String user, List<String> groups)
+    {
+        if (user == null || groups.isEmpty())
         {
-            throw new ActionAccessException("Unknown user");
+            return false;
         }
 
         Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, user, false);
-
-        boolean groupFound = groups.stream().map(e -> PermissionService.GROUP_PREFIX + e.trim()).anyMatch(containingAuthorities::contains);
-        if (!groupFound)
-        {
-            throw new ActionAccessException("User " + user + " is not allowed to define uses of or directly execute this action");
-        }
-
+        return groups.stream().map(group -> PermissionService.GROUP_PREFIX + group).anyMatch(containingAuthorities::contains);
     }
 
     /**

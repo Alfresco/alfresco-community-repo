@@ -59,10 +59,15 @@ function main()
    }
 
    // update comment
-   updateComment(node);   
+   updateComment(node);
+   if (status.getCode() != status.STATUS_OK)
+   {
+      return;
+   }
+
    model.item = getCommentData(node);
    model.node = node;
-   
+
    // post an activity item, but only if we got a site
    if (json.has("site") && json.has("itemTitle") && json.has("page"))
    {

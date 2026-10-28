@@ -574,10 +574,9 @@ public class CommentsApiTest extends BaseWebScriptTest
         JSONObject jsonResponse = parseResponseJSON(response);
         NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
 
-        // nested divs with disallowed event-handler attributes (parsed as HTML, in policy scope)
-        String unsafeContent = "<div oncontentvisibilityautostatechange=alert(document.domain) "
-                + "style=display:block;content-visibility:auto>"
-                + "<div onmouseover=\"alert(document.domain)\" style=display:block>"
+        // nested divs with disallowed event-handler attributes; use allowStyling()-safe CSS (e.g. color, not display)
+        String unsafeContent = "<div style=\"color:blue\">"
+                + "<div onmouseover=\"alert(document.domain)\" style=\"color:green\">"
                 + "<br><br><br>"
                 + "</div></div>";
 
@@ -592,7 +591,8 @@ public class CommentsApiTest extends BaseWebScriptTest
 
         // safe structural markup must be preserved
         assertTrue("Allowed br element should be preserved", lower.contains("<br"));
-        assertTrue("Allowed style attribute should be preserved", lower.contains("display:block"));
+        assertTrue("Allowed style attribute should be preserved", lower.contains("color:green"));
+        assertTrue("Allowed nested div structure should be preserved", lower.contains("<div"));
 
         // cleanup
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -652,6 +652,85 @@ public class CommentsApiTest extends BaseWebScriptTest
         txn.begin();
         nodeService.deleteNode(content);
         txn.commit();
+    }
+
+    /**
+     * PUT update with site activity parameters (same shape as Share uses for comment-updated feed entries).
+     */
+    private Response putCommentWithSiteActivity(NodeRef commentNodeRef, NodeRef parentNodeRef, String user,
+            String content, int expectedStatus)
+    {
+        try
+        {
+            UserTransaction txn = transactionService.getUserTransaction();
+            txn.begin();
+            AuthenticationUtil.setFullyAuthenticatedUser(user);
+
+            JSONObject comment = new JSONObject();
+            comment.put("title", "Test title");
+            comment.put("content", content);
+            comment.put("site", SITE_SHORT_NAME);
+            comment.put("itemTitle", "Test Title");
+            comment.put("page", "document-details");
+            comment.put("pageParams", "{\"nodeRef\":\"" + parentNodeRef.toString() + "\"}");
+
+            StoreRef storeRef = commentNodeRef.getStoreRef();
+            Response response = sendRequest(new PutRequest(
+                    MessageFormat.format(URL_PUT_COMMENT, storeRef.getProtocol(), storeRef.getIdentifier(), commentNodeRef.getId()),
+                    comment.toString(), JSON), expectedStatus);
+
+            assertEquals(expectedStatus, response.getStatus());
+
+            if (response.getStatus() == 500)
+            {
+                txn.rollback();
+            }
+            else
+            {
+                txn.commit();
+            }
+
+            return response;
+        }
+        catch (Exception e)
+        {
+            throw new AlfrescoRuntimeException("Failed to PUT comment with site activity params in test", e);
+        }
+    }
+
+    /**
+     * Empty comment content must return 400 and must not post a comment-updated site activity (comment.put.json.js).
+     *
+     * @throws Exception
+     */
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
+    public void testUpdateCommentEmptyContentDoesNotPostActivity() throws Exception
+    {
+        permissionService.setPermission(sitePage, USER_TWO, PermissionService.ALL_PERMISSIONS, true);
+        postLookup.execute();
+        feedGenerator.execute();
+
+        Response addResponse = addComment(sitePage, USER_TWO, 200);
+        JSONObject jsonResponse = parseResponseJSON(addResponse);
+        NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
+
+        ContentReader readerBefore = contentService.getReader(commentNodeRef, ContentModel.PROP_CONTENT);
+        String contentBefore = readerBefore.getContentString();
+
+        postLookup.execute();
+        feedGenerator.execute();
+        int activityCountBeforeReject = activityService.getSiteFeedEntries(SITE_SHORT_NAME).size();
+
+        putCommentWithSiteActivity(commentNodeRef, sitePage, USER_TWO, "   ", Status.STATUS_BAD_REQUEST);
+
+        ContentReader readerAfter = contentService.getReader(commentNodeRef, ContentModel.PROP_CONTENT);
+        assertEquals("Comment content must be unchanged after rejected update", contentBefore, readerAfter.getContentString());
+
+        postLookup.execute();
+        feedGenerator.execute();
+        int activityCountAfterReject = activityService.getSiteFeedEntries(SITE_SHORT_NAME).size();
+        assertEquals("Rejected empty update must not post comment-updated activity", activityCountBeforeReject,
+                activityCountAfterReject);
     }
 
     public void testCommentDoesNotVersion() throws Exception

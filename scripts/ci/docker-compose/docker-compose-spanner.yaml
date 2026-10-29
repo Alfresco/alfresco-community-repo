@@ -1,0 +1,6 @@
+services:
+  spanner:
+    image: ${SPANNER_PGADAPTER_IMAGE:-gcr.io/cloud-spanner-pg-adapter/pgadapter-emulator:v0.56.1}
+    platform: linux/amd64
+    ports:
+      - "127.0.0.1:${SPANNER_POSTGRES_PORT:-55434}:5432"

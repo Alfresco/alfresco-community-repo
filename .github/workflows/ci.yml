@@ -561,8 +561,8 @@ jobs:
         if: ${{ matrix.mtls }}
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
-          private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
+          client-id: ${{ vars.GH_APP_ENGINEERING_RO_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_ENGINEERING_RO_PRIVATE_KEY }}
           permission-contents: read
       - name: "Generate Keystores and Truststores for Mutual TLS configuration"
         if: ${{ matrix.mtls }}

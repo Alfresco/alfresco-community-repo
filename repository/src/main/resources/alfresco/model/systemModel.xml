@@ -444,6 +444,48 @@
             </property>
          </properties>
       </aspect>
+
+      <!-- Folder moved by a Move rule, so that the rest of a folder upload can be merged into it -->
+      <aspect name="sys:ruleMoved">
+         <title>Moved by rule</title>
+         <properties>
+            <property name="sys:ruleMovedFrom">
+               <type>d:noderef</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleMovedAction">
+               <type>d:text</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleMovedUser">
+               <type>d:text</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleMovedAt">
+               <type>d:datetime</type>
+               <index enabled="false"></index>
+            </property>
+         </properties>
+      </aspect>
+
+      <!-- Folder deep copied by a Copy rule, so that the rest of a folder upload follows it into the copy -->
+      <aspect name="sys:ruleCopySource">
+         <title>Copied by rule</title>
+         <properties>
+            <property name="sys:ruleCopyTarget">
+               <type>d:noderef</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleCopyUser">
+               <type>d:text</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleCopyAt">
+               <type>d:datetime</type>
+               <index enabled="false"></index>
+            </property>
+         </properties>
+      </aspect>
    </aspects>
 
 </model>

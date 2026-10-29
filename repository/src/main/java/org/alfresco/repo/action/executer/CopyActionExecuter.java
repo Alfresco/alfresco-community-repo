@@ -70,6 +70,7 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
      */
     private NodeService nodeService;
     private CheckOutCheckInService checkOutCheckInService;
+    private FolderUploadRuleHandler folderUploadRuleHandler;
 
     /**
      * Sets the node service
@@ -93,6 +94,11 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
     public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
     {
         this.checkOutCheckInService = checkOutCheckInService;
+    }
+
+    public void setFolderUploadRuleHandler(FolderUploadRuleHandler folderUploadRuleHandler)
+    {
+        this.folderUploadRuleHandler = folderUploadRuleHandler;
     }
 
     @Override
@@ -175,12 +181,18 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
         {
             ChildAssociationRef originalAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
             // Create a new copy of the node
-            this.copyService.copyAndRename(
+            NodeRef newCopy = this.copyService.copyAndRename(
                     actionedUponNodeRef,
                     destinationParent,
                     originalAssoc.getTypeQName(),
                     originalAssoc.getQName(),
                     deepCopy);
+
+            // Files uploaded into the folder afterwards follow it into the copy
+            if (deepCopy)
+            {
+                folderUploadRuleHandler.markCopiedFolder(ruleAction, actionedUponNodeRef, newCopy);
+            }
         }
     }
 }

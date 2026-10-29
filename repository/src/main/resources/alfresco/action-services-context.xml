@@ -463,10 +463,22 @@
         <property name="nodeService" ref="NodeService" />
         <property name="copyService" ref="CopyService" />
         <property name="checkOutCheckInService" ref="CheckOutCheckInService" />
+        <property name="folderUploadRuleHandler" ref="folderUploadRuleHandler" />
+    </bean>
+
+    <!-- Move / Deep copy rules catch up with a folder uploaded one file at a time -->
+    <bean id="folderUploadRuleHandler" class="org.alfresco.repo.action.executer.FolderUploadRuleHandler" init-method="init">
+        <property name="nodeService" ref="NodeService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="windowMinutes" value="${system.rules.folderUploadMerge.windowMinutes}" />
     </bean>
     
     <bean id="move" class="org.alfresco.repo.action.executer.MoveActionExecuter" parent="action-executer">
         <property name="nodeService" ref="NodeService" />
+        <property name="folderUploadRuleHandler" ref="folderUploadRuleHandler" />
         <property name="fileFolderService">
             <ref bean="FileFolderService" />
         </property>

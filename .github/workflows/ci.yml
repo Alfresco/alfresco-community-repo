@@ -30,7 +30,7 @@ on:
         required: false
       DOCKER_USERNAME:
         required: false
-      GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY:
+      GH_APP_ENGINEERING_RO_PRIVATE_KEY:
         required: false
       NEXUS_PASSWORD:
         required: false

@@ -134,7 +134,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                 throw new AlfrescoRuntimeException(
                         "Found a content store that previously supported a URL, but no longer does: \n" +
                                 "   Store:       " + cachedStore + "\n" +
-                                "   Content URL: " + contentUrl);
+                                "   Content URL: " + contentUrl,
+                        e);
             }
         }
         // It isn't, so search all the stores. As above, the exists() calls are made without holding
@@ -157,13 +158,15 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             {
                 // The store can't handle the content URL
             }
-            if (!exists)
+            if (exists)
             {
-                // It is not in the store
-                continue;
+                // We found one
+                store = storeInList;
+                break;
             }
-            // We found one
-            store = storeInList;
+        }
+        if (store != null)
+        {
             // Put the value in the cache
             storesCacheWriteLock.lock();
             try
@@ -174,7 +177,6 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             {
                 storesCacheWriteLock.unlock();
             }
-            break;
         }
         // Check if the content URL was supported
         if (!contentUrlSupported)

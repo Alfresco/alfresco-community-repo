@@ -33,7 +33,6 @@ import org.junit.runners.Suite;
 import org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSearchServiceFactoryTest;
 import org.alfresco.repo.search.impl.elasticsearch.ElasticsearchTagSupportIT;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchIndexServiceIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.AspectQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.IgnoreUnsupportedPropertyIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.SortIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.IndexLocaleAnalyzerIT;
@@ -56,7 +55,6 @@ import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.IndexLoca
         org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsServiceIT.class,
 
         // Query ITs
-        AspectQueryIT.class,
         IgnoreUnsupportedPropertyIT.class,
         SortIT.class,
 

@@ -19,6 +19,7 @@
          <package name="org.alfresco.rest.rm.community.recordcategories.*"/>
          <package name="org.alfresco.rest.rm.community.rules.*"/>
          <package name="org.alfresco.rest.rm.community.unfiledrecordfolders.*"/>
+         <package name="org.alfresco.rest.rm.community.smoke.*"/>
       </packages>
    </test>
 </suite>

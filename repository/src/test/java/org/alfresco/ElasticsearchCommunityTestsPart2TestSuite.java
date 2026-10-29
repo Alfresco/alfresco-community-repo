@@ -36,7 +36,6 @@ import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.Elast
 import org.alfresco.repo.search.impl.elasticsearch.query.ClassQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.FilterQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.PathQueryIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.ResultSetIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.TermsAggregationsIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.TypeQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ExactTermQueryIT;
@@ -56,7 +55,6 @@ import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ExactTerm
         // Query ITs
         FilterQueryIT.class,
         TermsAggregationsIT.class,
-        ResultSetIT.class,
         TypeQueryIT.class,
         PathQueryIT.class,
         ClassQueryIT.class,

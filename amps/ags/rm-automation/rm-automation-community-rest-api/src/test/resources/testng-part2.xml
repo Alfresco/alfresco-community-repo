@@ -155,6 +155,81 @@
                <exclude name=".*"/>
             </methods>
          </class>
+         <class name="org.alfresco.rest.rm.community.smoke.AuditAccessTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.BasicRulesIntegrationTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.CreateCategoriesTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.CreateFoldersTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.DeclareDocsAsRecordsOnUpdateRuleNewVersionTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.DestroyRecordFolderActionsTest">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.DispositionScheduleLinkedRecordsTest">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.FileAsRecordTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.FileVersionAsRecordTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.FoldersDispositionScheduleTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.FoldersDispositionScheduleWithoutGhostRecordTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.RecordRetentionAsOfDateTest">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.RecordsDispositionScheduleTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.RecordsDispositionScheduleWithGhostingTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
+         <class name="org.alfresco.rest.rm.community.smoke.UnfiledRecordsRuleTests">
+            <methods>
+               <exclude name=".*"/>
+            </methods>
+         </class>
       </classes>
    </test>
 </suite>

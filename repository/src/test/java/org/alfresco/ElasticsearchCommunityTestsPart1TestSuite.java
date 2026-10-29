@@ -45,10 +45,12 @@ import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.Resour
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.SettingsJsonUtilsTest;
 import org.alfresco.repo.search.impl.elasticsearch.model.FieldNameTest;
 import org.alfresco.repo.search.impl.elasticsearch.permission.FlatElasticsearchPermissionQueryFactoryTest;
+import org.alfresco.repo.search.impl.elasticsearch.query.AspectQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchQueryHelperTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.FilterAggregationsIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.MultiValueFieldQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.QueryByIdIT;
+import org.alfresco.repo.search.impl.elasticsearch.query.ResultSetIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.SiteQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.StoreRefStripperTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.TagQueryIT;
@@ -130,9 +132,11 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTe
         // Query ITs
         QueryByIdIT.class,
         FilterAggregationsIT.class,
+        ResultSetIT.class,
         SiteQueryIT.class,
         TagQueryIT.class,
         MultiValueFieldQueryIT.class,
+        AspectQueryIT.class,
 
         // Lucene unit tests
         FuzzyQueryTest.class,

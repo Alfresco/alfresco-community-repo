@@ -30,7 +30,8 @@ jobs:
             Update alfresco-enterprise-repo
           max-attempts: 3
 
-      # The release version is the pom version at the commit that was being released.
+      # The release version is the pom version at the commit that was being released,
+      # which is what maven-compute-release-versions strips -SNAPSHOT from.
       - name: Work out the version being released
         id: version
         if: steps.retry.outputs.decision == 'escalate'
@@ -41,31 +42,33 @@ jobs:
         run: |
           set -euo pipefail
           POM=$(gh api "repos/$REPOSITORY/contents/pom.xml?ref=$SHA" --jq '.content' | base64 -d)
-          # sed rather than grep so a pom without the marker leaves VERSION empty
-          # instead of ending the step before the fallback below.
-          VERSION=$(printf '%s' "$POM" | sed -n \
-            '/<artifactId>alfresco-community-repo<\/artifactId>/{n;s|.*<version>\([^<]*\)</version>.*|\1|p;}')
+          # The project's own version is the first one in the pom, ahead of the parent block.
+          FOUND=$(printf '%s' "$POM" | sed -n \
+            '1,/<parent>/{s|.*<version>\([^<]*\)</version>.*|\1|p;}')
+          VERSION=${FOUND%%$'\n'*}
           # A card saying Unknown is better than one quietly missing the row.
           VERSION="${VERSION%-SNAPSHOT}"
           echo "release=${VERSION:-Unknown}" >> "$GITHUB_OUTPUT"
 
       - name: Report to Teams
         if: steps.retry.outputs.decision == 'escalate' && env.HAS_TEAMS_WEBHOOK == 'true'
-        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-escalation-notification@v19.11.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-workflow-run-notification@v19.11.0
         with:
           webhook-url: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK }}
           reason-code: ${{ steps.retry.outputs.reason-code }}
           failed-jobs: ${{ steps.retry.outputs.failed-jobs }}
           max-attempts: ${{ steps.retry.outputs.max-attempts }}
-          position: Hop 1 of 5 - alfresco-community-repo
-          downstream: >-
+          title: Release chain blocked
+          subtitle: Hop 1 of 5 - alfresco-community-repo
+          message: >-
             Nothing propagates to alfresco-enterprise-repo,
             alfresco-enterprise-share, acs-packaging or acs-community-packaging
             until this is resolved.
-          release-version: ${{ steps.version.outputs.release }}
-          cc: "cc: release duty - please pick this up."
+          facts: |
+            Release version|${{ steps.version.outputs.release }}
+          footer: "cc: release duty - please pick this up."
 
-      # Until the Teams webhook secret exists, failing here is how the escalation stays visible.
+      # A missing webhook must not turn a blocked release into a green run.
       - name: Fail visibly when no Teams webhook is configured
         if: steps.retry.outputs.decision == 'escalate' && env.HAS_TEAMS_WEBHOOK != 'true'
         env:

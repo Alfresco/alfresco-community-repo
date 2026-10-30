@@ -15,12 +15,13 @@ jobs:
     # Evaluated before a runner is allocated, so a successful release run costs nothing.
     if: contains(fromJSON('["failure","timed_out"]'), github.event.workflow_run.conclusion)
     runs-on: ubuntu-latest
-    # Lifted to env because the secrets context cannot be read from a step condition.
+    # Only whether the secret exists, because a step condition cannot read the secrets
+    # context and the URL itself has no business in every step's environment.
     env:
-      TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL: ${{ secrets.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL }}
+      HAS_TEAMS_WEBHOOK: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK != '' }}
     steps:
       - id: retry
-        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@v19.7.1
+        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@v19.11.0
         with:
           # These publish or propagate, so repeating them is not safe.
           non-retryable-jobs: |
@@ -29,24 +30,50 @@ jobs:
             Update alfresco-enterprise-repo
           max-attempts: 3
 
-      - name: Report to Teams
-        if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL != ''
-        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-notification@v19.7.1
-        with:
-          webhook-url: ${{ secrets.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL }}
-          # Without this the card is green, worked out from this watcher's own jobs.
-          status: failure
-          title: Release chain stopped in ${{ github.repository }}
-          message: ${{ steps.retry.outputs.reason }}
-          skip_checkout: "true"
-          card-actions: >-
-            [{"type":"Action.OpenUrl","title":"View run","url":"${{ github.event.workflow_run.html_url }}"}]
-
-      # Until the Teams webhook secret exists, failing here is how the escalation stays visible.
-      - name: Fail visibly when no Teams webhook is configured
-        if: steps.retry.outputs.decision == 'escalate' && env.TEAMS_CI_BACKEND_ALERTS_WEBHOOK_URL == ''
+      # The release version is the pom version at the commit that was being released,
+      # which is what maven-compute-release-versions strips -SNAPSHOT from.
+      - name: Work out the version being released
+        id: version
+        if: steps.retry.outputs.decision == 'escalate'
         env:
-          REASON: ${{ steps.retry.outputs.reason }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          # A failed lookup must not skip the Teams card, so fall through to Unknown.
+          POM=$(gh api "repos/$REPOSITORY/contents/pom.xml?ref=$SHA" --jq '.content' | base64 -d) || POM=""
+          # The project's own version is the first one in the pom, ahead of the parent block.
+          FOUND=$(printf '%s' "$POM" | sed -n \
+            '1,/<parent>/{s|.*<version>\([^<]*\)</version>.*|\1|p;}')
+          VERSION=${FOUND%%$'\n'*}
+          # A card saying Unknown is better than one quietly missing the row.
+          VERSION="${VERSION%-SNAPSHOT}"
+          echo "release=${VERSION:-Unknown}" >> "$GITHUB_OUTPUT"
+
+      - name: Report to Teams
+        if: steps.retry.outputs.decision == 'escalate' && env.HAS_TEAMS_WEBHOOK == 'true'
+        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-workflow-run-notification@v19.11.0
+        with:
+          webhook-url: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK }}
+          reason-code: ${{ steps.retry.outputs.reason-code }}
+          failed-jobs: ${{ steps.retry.outputs.failed-jobs }}
+          max-attempts: ${{ steps.retry.outputs.max-attempts }}
+          title: Release chain blocked
+          subtitle: Hop 1 of 5 - alfresco-community-repo
+          message: >-
+            Nothing propagates to alfresco-enterprise-repo,
+            alfresco-enterprise-share, acs-packaging or acs-community-packaging
+            until this is resolved.
+          facts: |
+            Release version|${{ steps.version.outputs.release }}
+          footer: "cc: release duty - please pick this up."
+
+      # A missing webhook must not turn a blocked release into a green run.
+      - name: Fail visibly when no Teams webhook is configured
+        if: steps.retry.outputs.decision == 'escalate' && env.HAS_TEAMS_WEBHOOK != 'true'
+        env:
+          REASON: ${{ steps.retry.outputs.reason-text }}
           FAILED_JOBS: ${{ steps.retry.outputs.failed-jobs }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
         run: |

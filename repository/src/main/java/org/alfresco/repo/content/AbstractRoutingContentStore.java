@@ -101,108 +101,97 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     private ContentStore selectReadStore(String contentUrl)
     {
         Pair<String, String> cacheKey = new Pair<String, String>(instanceKey, contentUrl);
+        ContentStore cachedStore;
         storesCacheReadLock.lock();
         try
         {
             // Check if the store is in the cache
-            ContentStore store = storesByContentUrl.get(cacheKey);
-            if (store != null)
-            {
-                // We found a store that was previously used
-                try
-                {
-                    // It is possible for content to be removed from a store and
-                    // it might have moved into another store.
-                    if (store.exists(contentUrl))
-                    {
-                        // We found a store and can use it
-                        return store;
-                    }
-                }
-                catch (UnsupportedContentUrlException e)
-                {
-                    // This is odd. The store that previously supported the content URL
-                    // no longer does so. I can't think of a reason why that would be.
-                    throw new AlfrescoRuntimeException(
-                            "Found a content store that previously supported a URL, but no longer does: \n" +
-                                    "   Store:       " + store + "\n" +
-                                    "   Content URL: " + contentUrl);
-                }
-            }
+            cachedStore = storesByContentUrl.get(cacheKey);
         }
         finally
         {
             storesCacheReadLock.unlock();
         }
-        // Get the write lock and double check
-        storesCacheWriteLock.lock();
-        try
+        // MNT-25951: check the cached store without holding the read lock. exists() can be a network
+        // call (e.g. S3), and a queued writer would otherwise block every other reader behind it.
+        if (cachedStore != null)
         {
-            // Double check
-            ContentStore store = storesByContentUrl.get(cacheKey);
-            if (store != null && store.exists(contentUrl))
+            // We found a store that was previously used
+            try
             {
-                // We found a store and can use it
-                if (logger.isDebugEnabled())
+                // It is possible for content to be removed from a store and
+                // it might have moved into another store.
+                if (cachedStore.exists(contentUrl))
                 {
-                    logger.debug(
-                            "Found mapped store for content URL: \n" +
-                                    "   Content URL: " + contentUrl + "\n" +
-                                    "   Store:       " + store);
+                    // We found a store and can use it
+                    return cachedStore;
                 }
-                return store;
             }
-            else
+            catch (UnsupportedContentUrlException e)
             {
-                store = null;
+                // This is odd. The store that previously supported the content URL
+                // no longer does so. I can't think of a reason why that would be.
+                throw new AlfrescoRuntimeException(
+                        "Found a content store that previously supported a URL, but no longer does: \n" +
+                                "   Store:       " + cachedStore + "\n" +
+                                "   Content URL: " + contentUrl,
+                        e);
             }
-            // It isn't, so search all the stores
-            List<ContentStore> stores = getAllStores();
-            // Keep track of the unsupported state of the content URL - it might be a rubbish URL
-            boolean contentUrlSupported = false;
-            for (ContentStore storeInList : stores)
+        }
+        // It isn't, so search all the stores. As above, the exists() calls are made without holding
+        // the lock; only the cache update takes the write lock. Two threads may search for the same
+        // URL at the same time, in which case both find and cache the same store.
+        ContentStore store = null;
+        List<ContentStore> stores = getAllStores();
+        // Keep track of the unsupported state of the content URL - it might be a rubbish URL
+        boolean contentUrlSupported = false;
+        for (ContentStore storeInList : stores)
+        {
+            boolean exists = false;
+            try
             {
-                boolean exists = false;
-                try
-                {
-                    exists = storeInList.exists(contentUrl);
-                    // At least the content URL was supported
-                    contentUrlSupported = true;
-                }
-                catch (UnsupportedContentUrlException e)
-                {
-                    // The store can't handle the content URL
-                }
-                if (!exists)
-                {
-                    // It is not in the store
-                    continue;
-                }
+                exists = storeInList.exists(contentUrl);
+                // At least the content URL was supported
+                contentUrlSupported = true;
+            }
+            catch (UnsupportedContentUrlException e)
+            {
+                // The store can't handle the content URL
+            }
+            if (exists)
+            {
                 // We found one
                 store = storeInList;
-                // Put the value in the cache
-                storesByContentUrl.put(cacheKey, store);
                 break;
             }
-            // Check if the content URL was supported
-            if (!contentUrlSupported)
-            {
-                throw new UnsupportedContentUrlException(this, contentUrl);
-            }
-            // Done
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(
-                        "Mapped content URL to store for reading: \n" +
-                                "   Content URL: " + contentUrl + "\n" +
-                                "   Store:       " + store);
-            }
-            return store;
         }
-        finally
+        if (store != null)
         {
-            storesCacheWriteLock.unlock();
+            // Put the value in the cache
+            storesCacheWriteLock.lock();
+            try
+            {
+                storesByContentUrl.put(cacheKey, store);
+            }
+            finally
+            {
+                storesCacheWriteLock.unlock();
+            }
         }
+        // Check if the content URL was supported
+        if (!contentUrlSupported)
+        {
+            throw new UnsupportedContentUrlException(this, contentUrl);
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Mapped content URL to store for reading: \n" +
+                            "   Content URL: " + contentUrl + "\n" +
+                            "   Store:       " + store);
+        }
+        return store;
     }
 
     /**

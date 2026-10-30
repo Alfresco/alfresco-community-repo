@@ -445,6 +445,7 @@
          </properties>
       </aspect>
 
+      <!-- Store move details so later uploads can be merged into the moved folder. -->
       <aspect name="sys:ruleMoveTracking">
          <title>Rule move tracking</title>
          <properties>
@@ -467,6 +468,7 @@
          </properties>
       </aspect>
 
+      <!-- Store copy details so later uploads can be copied to the destination folder. -->
       <aspect name="sys:ruleCopyTracking">
          <title>Rule copy tracking</title>
          <properties>
@@ -485,6 +487,7 @@
          </properties>
       </aspect>
 
+      <!-- Keep the old move tracking properties so existing markers can be migrated. -->
       <aspect name="sys:ruleMoved">
          <title>Moved by rule</title>
          <properties>
@@ -507,7 +510,7 @@
          </properties>
       </aspect>
 
-      <!-- Store the copy's location, user and time on the original folder. -->
+      <!-- Keep the old copy tracking properties so existing markers can be migrated. -->
       <aspect name="sys:ruleCopySource">
          <title>Copied by rule</title>
          <properties>

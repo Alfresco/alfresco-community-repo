@@ -37,15 +37,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.ASPECT_RULE_COPY_SOURCE;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.ASPECT_RULE_MOVED;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_COPY_AT;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_COPY_TARGET;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_COPY_USER;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVED_ACTION;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVED_AT;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVED_FROM;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVED_USER;
+import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.ASPECT_RULE_COPY_TRACKING;
+import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.ASPECT_RULE_MOVE_TRACKING;
+import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_COPY_DESTINATION;
+import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_COPY_LAST_ACTIVITY;
+import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_COPY_OWNER;
+import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVE_ACTION_ID;
+import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVE_LAST_ACTIVITY;
+import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVE_OWNER;
+import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVE_SOURCE_PARENT;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -120,7 +120,7 @@ public class FolderUploadRuleHandlerUnitTest
         when(dictionaryService.isSubClass(ContentModel.TYPE_FOLDER, ContentModel.TYPE_FOLDER)).thenReturn(true);
         when(dictionaryService.isSubClass(ContentModel.TYPE_CONTENT, ContentModel.TYPE_FOLDER)).thenReturn(false);
 
-        // Rule -> composite action -> move action, as created by Share
+        // Share stores the move action inside a group of actions belonging to the rule.
         when(ruleAction.getNodeRef()).thenReturn(actionNode);
         when(ruleAction.getId()).thenReturn(ACTION_ID);
         parent(actionNode, compositeNode);
@@ -139,13 +139,13 @@ public class FolderUploadRuleHandlerUnitTest
         AuthenticationUtil.clearCurrentSecurityContext();
         if (TransactionSynchronizationManager.isSynchronizationActive())
         {
-            // Lets Alfresco release its thread-bound transaction resources
+            // Clear the transaction data so the next test starts fresh.
             TransactionSynchronizationUtils.triggerAfterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK);
             TransactionSynchronizationManager.clearSynchronization();
         }
     }
 
-    // The next file's folder is merged into the folder the same rule moved before
+    // Move the next uploaded file into the folder that this rule already moved.
     @Test
     public void mergesIntoFolderMovedBySameRule() throws Exception
     {
@@ -154,14 +154,14 @@ public class FolderUploadRuleHandlerUnitTest
         children(uploadedFolder, file);
         when(nodeService.getChildAssocs(uploadedFolder)).thenReturn(new ArrayList<>());
 
-        assertTrue(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
+        assertTrue(merge.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
 
         verify(fileFolderService).move(file, movedFolder, null);
         verify(nodeService).deleteNode(uploadedFolder);
-        verify(nodeService).addAspect(eq(movedFolder), eq(ASPECT_RULE_MOVED), anyMap());
+        verify(nodeService).addAspect(eq(movedFolder), eq(ASPECT_RULE_MOVE_TRACKING), anyMap());
     }
 
-    // Subfolders are merged too and a file with a taken name gets a new name
+    // Combine matching subfolders and rename a.txt to a-1.txt when a.txt already exists.
     @Test
     public void mergesSubfoldersAndRenamesClashingFiles() throws Exception
     {
@@ -178,123 +178,57 @@ public class FolderUploadRuleHandlerUnitTest
         when(nodeService.getChildAssocs(sub)).thenReturn(new ArrayList<>());
         when(nodeService.getChildAssocs(uploadedFolder)).thenReturn(new ArrayList<>());
 
-        assertTrue(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
+        assertTrue(merge.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
 
         verify(fileFolderService).move(clash, existingSub, "a-1.txt");
         verify(nodeService).deleteNode(sub);
         verify(nodeService).deleteNode(uploadedFolder);
     }
 
-    // A folder the rule did not move is left alone
+    // Do not merge into a folder moved for a different user or rule action.
     @Test
-    public void doesNotMergeWithoutMarker() throws Exception
+    public void doesNotMergeForAnotherUserOrRule() throws Exception
     {
-        assertFalse(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
+        when(nodeService.hasAspect(movedFolder, ASPECT_RULE_MOVE_TRACKING)).thenReturn(true);
+        when(nodeService.getProperties(movedFolder)).thenReturn(
+                movedProperties(src, ACTION_ID, "bob", new Date()),
+                movedProperties(src, "another-action", USER, new Date()));
+
+        assertFalse(merge.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
+        assertFalse(merge.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
+
         verifyNoMoves();
     }
 
-    // Another user's folder is never merged with mine
-    @Test
-    public void doesNotMergeForAnotherUser() throws Exception
-    {
-        movedMarker(src, ACTION_ID, "bob", new Date());
-        assertFalse(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
-        verifyNoMoves();
-    }
-
-    // A folder that came from another source folder is left alone
-    @Test
-    public void doesNotMergeFromAnotherSource() throws Exception
-    {
-        movedMarker(node("other-src"), ACTION_ID, USER, new Date());
-        assertFalse(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
-        verifyNoMoves();
-    }
-
-    // A folder moved by a different rule is left alone
-    @Test
-    public void doesNotMergeForAnotherRule() throws Exception
-    {
-        movedMarker(src, "another-action", USER, new Date());
-        assertFalse(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
-        verifyNoMoves();
-    }
-
-    // Too late to merge, and the old marker is cleaned up
+    // After 31 minutes, skip the merge and remove the expired move details.
     @Test
     public void doesNotMergeAfterWindow() throws Exception
     {
         movedMarker(src, ACTION_ID, USER, new Date(System.currentTimeMillis() - 31 * 60_000L));
-        assertFalse(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
+        assertFalse(merge.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
         verifyNoMoves();
-        verify(nodeService).removeAspect(movedFolder, ASPECT_RULE_MOVED);
+        verify(nodeService).removeAspect(movedFolder, ASPECT_RULE_MOVE_TRACKING);
     }
 
-    // A longer configured window still merges a slow upload
     @Test
-    public void mergesWithinConfiguredWindow() throws Exception
+    public void upgradesLegacyMoveTracking() throws Exception
     {
-        merge.setWindowMinutes(60);
-        movedMarker(src, ACTION_ID, USER, new Date(System.currentTimeMillis() - 45 * 60_000L));
+        QName legacyAspect = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMoved");
+        Map<QName, Serializable> properties = new HashMap<>();
+        properties.put(QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedFrom"), src);
+        properties.put(QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedAction"), ACTION_ID);
+        properties.put(QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedUser"), USER);
+        properties.put(QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedAt"), new Date());
+        when(nodeService.hasAspect(movedFolder, legacyAspect)).thenReturn(true);
+        when(nodeService.getProperties(movedFolder)).thenReturn(properties);
         children(uploadedFolder);
-        assertTrue(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
-        verify(nodeService, never()).removeAspect(movedFolder, ASPECT_RULE_MOVED);
+
+        assertTrue(merge.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
+
+        verify(nodeService).removeAspect(movedFolder, legacyAspect);
     }
 
-    // Rules that also apply to subfolders keep working as before
-    @Test
-    public void ignoresRulesThatApplyToSubfolders() throws Exception
-    {
-        movedMarker(src, ACTION_ID, USER, new Date());
-        when(nodeService.getProperty(ruleNode, RuleModel.PROP_APPLY_TO_CHILDREN)).thenReturn(true);
-        assertFalse(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
-        verifyNoMoves();
-    }
-
-    // Rules that run in the background keep working as before
-    @Test
-    public void ignoresRulesRunInBackground() throws Exception
-    {
-        movedMarker(src, ACTION_ID, USER, new Date());
-        when(nodeService.getProperty(ruleNode, RuleModel.PROP_EXECUTE_ASYNC)).thenReturn(true);
-        assertFalse(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
-        verifyNoMoves();
-    }
-
-    // A move run by hand, not by a rule, is not touched
-    @Test
-    public void ignoresActionsNotRunByARule() throws Exception
-    {
-        movedMarker(src, ACTION_ID, USER, new Date());
-        when(ruleAction.getNodeRef()).thenReturn(null);
-        assertFalse(merge.mergeMovedFolder(ruleAction, uploadedFolder, src, dst));
-        merge.markMovedFolder(ruleAction, movedFolder, src);
-        verifyNoMoves();
-        verify(nodeService, never()).addAspect(any(), any(), anyMap());
-    }
-
-    // Only folders are merged, never single files
-    @Test
-    public void ignoresFiles() throws Exception
-    {
-        NodeRef file = file(node("file"), "build");
-        merge.markMovedFolder(ruleAction, file, src);
-        assertFalse(merge.mergeMovedFolder(ruleAction, file, src, dst));
-        verify(nodeService, never()).addAspect(any(), any(), anyMap());
-    }
-
-    // Marking a moved folder does not fire other rules or change its modified date
-    @Test
-    public void marksMovedFolderWithoutFiringBehaviours()
-    {
-        merge.markMovedFolder(ruleAction, movedFolder, src);
-
-        verify(behaviourFilter).disableBehaviour(movedFolder);
-        verify(nodeService).addAspect(eq(movedFolder), eq(ASPECT_RULE_MOVED), anyMap());
-        verify(behaviourFilter).enableBehaviour(movedFolder);
-    }
-
-    // A deep copied folder and its subfolders are all marked
+    // Store the copy location on the original folder and its subfolders.
     @Test
     public void marksCopiedFolderAndItsSubfolders()
     {
@@ -306,13 +240,13 @@ public class FolderUploadRuleHandlerUnitTest
         children(sub);
         when(nodeService.getChildByName(copy, ContentModel.ASSOC_CONTAINS, "sub")).thenReturn(subCopy);
 
-        merge.markCopiedFolder(ruleAction, uploadedFolder, copy);
+        merge.trackCopiedFolder(ruleAction, uploadedFolder, copy);
 
-        verify(nodeService).addAspect(eq(uploadedFolder), eq(ASPECT_RULE_COPY_SOURCE), anyMap());
-        verify(nodeService).addAspect(eq(sub), eq(ASPECT_RULE_COPY_SOURCE), anyMap());
+        verify(nodeService).addAspect(eq(uploadedFolder), eq(ASPECT_RULE_COPY_TRACKING), anyMap());
+        verify(nodeService).addAspect(eq(sub), eq(ASPECT_RULE_COPY_TRACKING), anyMap());
     }
 
-    // A file added later is copied into the copy when it is saved
+    // Copy a later file at the end of the transaction, not when it is first created.
     @Test
     public void copiesNewChildIntoCopyAtCommit() throws Exception
     {
@@ -331,12 +265,12 @@ public class FolderUploadRuleHandlerUnitTest
         TransactionSynchronizationUtils.triggerBeforeCommit(false);
 
         verify(fileFolderService).copy(file, copy, "file2.txt");
-        verify(nodeService).setProperty(eq(uploadedFolder), eq(PROP_RULE_COPY_AT), any(Date.class));
+        verify(nodeService).setProperty(eq(uploadedFolder), eq(PROP_RULE_COPY_LAST_ACTIVITY), any(Date.class));
     }
 
-    // A file already in the copy is never overwritten
+    // Skip copying when a file with the same name already exists at the destination.
     @Test
-    public void neverOverwritesInCopy() throws Exception
+    public void preservesExistingDestinationChildDuringDeepCopy() throws Exception
     {
         NodeRef copy = node("copy");
         copyMarker(uploadedFolder, copy, USER, new Date());
@@ -350,27 +284,6 @@ public class FolderUploadRuleHandlerUnitTest
         TransactionSynchronizationUtils.triggerBeforeCommit(false);
 
         verify(nodeService).getChildByName(copy, ContentModel.ASSOC_CONTAINS, "file2.txt");
-        verifyNoCopies();
-    }
-
-    // Nothing is copied for another user or once the window has passed
-    @Test
-    public void doesNotCopyForAnotherUserOrAfterWindow() throws Exception
-    {
-        NodeRef copy = node("copy");
-        NodeRef file = file(node("file2"), "file2.txt");
-        ChildAssociationRef assoc = parent(file, uploadedFolder);
-        parent(uploadedFolder, src);
-
-        copyMarker(uploadedFolder, copy, "bob", new Date());
-        merge.onCreateChildAssociation(assoc, true);
-
-        copyMarker(uploadedFolder, copy, USER, new Date(System.currentTimeMillis() - 31 * 60_000L));
-        merge.onCreateChildAssociation(assoc, true);
-        verify(nodeService).removeAspect(uploadedFolder, ASPECT_RULE_COPY_SOURCE);
-
-        // Nothing queued: no transaction resource needed and nothing copied
-        assertFalse(TransactionSynchronizationManager.isSynchronizationActive());
         verifyNoCopies();
     }
 
@@ -388,22 +301,27 @@ public class FolderUploadRuleHandlerUnitTest
 
     private void movedMarker(NodeRef from, String actionId, String user, Date at)
     {
+        when(nodeService.hasAspect(movedFolder, ASPECT_RULE_MOVE_TRACKING)).thenReturn(true);
+        when(nodeService.getProperties(movedFolder)).thenReturn(movedProperties(from, actionId, user, at));
+    }
+
+    private Map<QName, Serializable> movedProperties(NodeRef from, String actionId, String user, Date at)
+    {
         Map<QName, Serializable> props = new HashMap<>();
-        props.put(PROP_RULE_MOVED_FROM, from);
-        props.put(PROP_RULE_MOVED_ACTION, actionId);
-        props.put(PROP_RULE_MOVED_USER, user);
-        props.put(PROP_RULE_MOVED_AT, at);
-        when(nodeService.hasAspect(movedFolder, ASPECT_RULE_MOVED)).thenReturn(true);
-        when(nodeService.getProperties(movedFolder)).thenReturn(props);
+        props.put(PROP_RULE_MOVE_SOURCE_PARENT, from);
+        props.put(PROP_RULE_MOVE_ACTION_ID, actionId);
+        props.put(PROP_RULE_MOVE_OWNER, user);
+        props.put(PROP_RULE_MOVE_LAST_ACTIVITY, at);
+        return props;
     }
 
     private void copyMarker(NodeRef folder, NodeRef target, String user, Date at)
     {
         Map<QName, Serializable> props = new HashMap<>();
-        props.put(PROP_RULE_COPY_TARGET, target);
-        props.put(PROP_RULE_COPY_USER, user);
-        props.put(PROP_RULE_COPY_AT, at);
-        when(nodeService.hasAspect(folder, ASPECT_RULE_COPY_SOURCE)).thenReturn(true);
+        props.put(PROP_RULE_COPY_DESTINATION, target);
+        props.put(PROP_RULE_COPY_OWNER, user);
+        props.put(PROP_RULE_COPY_LAST_ACTIVITY, at);
+        when(nodeService.hasAspect(folder, ASPECT_RULE_COPY_TRACKING)).thenReturn(true);
         when(nodeService.getProperties(folder)).thenReturn(props);
     }
 

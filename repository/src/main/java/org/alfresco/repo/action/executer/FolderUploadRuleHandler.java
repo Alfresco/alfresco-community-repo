@@ -31,11 +31,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
@@ -63,32 +65,48 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
 
 /**
- * Share uploads a dropped folder one file per request, so a Move or Deep copy rule fires on the folder after the first file only.
+ * Folder uploads arrive as separate file requests, so a rule can run before the whole folder is uploaded.
  * <ul>
- * <li>Move: the folder that comes back with the next file is merged into the folder this rule already moved.</li>
- * <li>Deep copy: files that land in the copied folder afterwards are copied into the copy too.</li>
+ * <li>Move: add later files to the folder that the rule already moved.</li>
+ * <li>Deep copy: also copy files added to the original folder later.</li>
  * </ul>
- * Only for the same rule, the same user and within a few minutes; anything else behaves as before.
+ * Tracking aspects remember the related folder, user and last successful activity. Later requests must match the user and time window. Move also checks the source parent and rule action.
+ * <p>
+ * These checks do not identify a client upload batch. Separate same-name drops can match, and other files added by the same user can follow an active copy marker. Move renames conflicts; catch-up copies preserve existing destination items. Only successful merges or copies restart the time window.
  */
 public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChildAssociationPolicy, CopyServicePolicies.OnCopyNodePolicy
 {
     private static final Log logger = LogFactory.getLog(FolderUploadRuleHandler.class);
 
-    public static final QName ASPECT_RULE_MOVED = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMoved");
-    public static final QName PROP_RULE_MOVED_FROM = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedFrom");
-    public static final QName PROP_RULE_MOVED_ACTION = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedAction");
-    public static final QName PROP_RULE_MOVED_USER = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedUser");
-    public static final QName PROP_RULE_MOVED_AT = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedAt");
+    // These names are stored in the repository and must match systemModel.xml.
+    public static final QName ASPECT_RULE_MOVE_TRACKING = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMoveTracking");
+    public static final QName PROP_RULE_MOVE_SOURCE_PARENT = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMoveSourceParent");
+    public static final QName PROP_RULE_MOVE_ACTION_ID = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMoveActionId");
+    public static final QName PROP_RULE_MOVE_OWNER = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMoveOwner");
+    public static final QName PROP_RULE_MOVE_LAST_ACTIVITY = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMoveLastActivity");
 
-    public static final QName ASPECT_RULE_COPY_SOURCE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopySource");
-    public static final QName PROP_RULE_COPY_TARGET = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyTarget");
-    public static final QName PROP_RULE_COPY_USER = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyUser");
-    public static final QName PROP_RULE_COPY_AT = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyAt");
+    public static final QName ASPECT_RULE_COPY_TRACKING = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyTracking");
+    public static final QName PROP_RULE_COPY_DESTINATION = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyDestination");
+    public static final QName PROP_RULE_COPY_OWNER = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyOwner");
+    public static final QName PROP_RULE_COPY_LAST_ACTIVITY = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyLastActivity");
 
-    private static final String KEY_PENDING_COPIES = FolderUploadRuleHandler.class.getName() + ".pendingCopies";
+    // Read earlier tracking names so in-progress uploads survive the rename.
+    private static final QName LEGACY_MOVE_TRACKING = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMoved");
+    private static final QName LEGACY_COPY_TRACKING = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopySource");
+    private static final Map<QName, QName> LEGACY_MOVE_PROPERTIES = Map.of(
+            PROP_RULE_MOVE_SOURCE_PARENT, QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedFrom"),
+            PROP_RULE_MOVE_ACTION_ID, QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedAction"),
+            PROP_RULE_MOVE_OWNER, QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedUser"),
+            PROP_RULE_MOVE_LAST_ACTIVITY, QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleMovedAt"));
+    private static final Map<QName, QName> LEGACY_COPY_PROPERTIES = Map.of(
+            PROP_RULE_COPY_DESTINATION, QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyTarget"),
+            PROP_RULE_COPY_OWNER, QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyUser"),
+            PROP_RULE_COPY_LAST_ACTIVITY, QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyAt"));
 
-    // How long after the last file the upload still counts as the same folder drop (long enough for one large file)
-    private long windowMillis = 30 * 60_000L;
+    private static final String KEY_PENDING_COPY_ASSOCIATIONS = FolderUploadRuleHandler.class.getName() + ".pendingCopyAssociations";
+
+    // Allow up to 30 minutes between files unless a different limit is configured.
+    private long trackingWindowMillis = 30 * 60_000L;
 
     private NodeService nodeService;
     private FileFolderService fileFolderService;
@@ -96,11 +114,12 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     private PolicyComponent policyComponent;
     private BehaviourFilter behaviourFilter;
 
+    // Wait until content has been written, but keep the copy in the upload transaction.
     private final TransactionListenerAdapter copyListener = new TransactionListenerAdapter() {
         @Override
         public void beforeCommit(boolean readOnly)
         {
-            copyPendingChildren();
+            copyPendingChildrenBeforeCommit();
         }
     };
 
@@ -129,156 +148,293 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         this.behaviourFilter = behaviourFilter;
     }
 
+    /**
+     * Sets how long later uploads can be added to a folder already moved or copied by a rule.
+     *
+     * @param windowMinutes
+     *            maximum gap between uploads, in minutes
+     */
     public void setWindowMinutes(long windowMinutes)
     {
-        this.windowMillis = windowMinutes * 60_000L;
+        this.trackingWindowMillis = windowMinutes * 60_000L;
     }
 
+    /**
+     * Registers the callbacks for copying later uploads and keeping upload details out of copies.
+     */
     public void init()
     {
-        policyComponent.bindAssociationBehaviour(NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, ASPECT_RULE_COPY_SOURCE,
+        policyComponent.bindAssociationBehaviour(NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, ASPECT_RULE_COPY_TRACKING,
                 ContentModel.ASSOC_CONTAINS, new JavaBehaviour(this, "onCreateChildAssociation"));
-        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, ASPECT_RULE_COPY_SOURCE, new JavaBehaviour(this, "getCopyCallback"));
-        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, ASPECT_RULE_MOVED, new JavaBehaviour(this, "getCopyCallback"));
+        policyComponent.bindAssociationBehaviour(NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, LEGACY_COPY_TRACKING,
+                ContentModel.ASSOC_CONTAINS, new JavaBehaviour(this, "onCreateChildAssociation"));
+        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, ASPECT_RULE_COPY_TRACKING, new JavaBehaviour(this, "getCopyCallback"));
+        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, ASPECT_RULE_MOVE_TRACKING, new JavaBehaviour(this, "getCopyCallback"));
+        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, LEGACY_COPY_TRACKING, new JavaBehaviour(this, "getCopyCallback"));
+        policyComponent.bindClassBehaviour(CopyServicePolicies.OnCopyNodePolicy.QNAME, LEGACY_MOVE_TRACKING, new JavaBehaviour(this, "getCopyCallback"));
     }
 
-    // The markers stay on the node they were set on and are never copied
+    /**
+     * Prevents the stored upload details from being copied to another folder.
+     *
+     * @param classRef
+     *            the aspect being copied
+     * @param copyDetails
+     *            details of the copy operation
+     * @return a callback that leaves this aspect out of the copy
+     */
     @Override
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return DoNothingCopyBehaviourCallback.getInstance();
     }
 
+    // Move tracking and folder merging.
+
     /**
-     * Move rule: merge the folder into the same-named folder this rule moved there before.
+     * Adds this folder's contents to the folder with the same name that this rule already moved.
      *
-     * @return true if merged (nothing left to move), false to move as usual
+     * @param ruleAction
+     *            the move action being run by the rule
+     * @param folder
+     *            the newly uploaded folder
+     * @param sourceParent
+     *            the parent of the uploaded folder
+     * @param destinationParent
+     *            the folder selected as the move destination
+     * @return true if merged, or false if the caller should move the folder normally
+     * @throws FileNotFoundException
+     *             if a folder needed for the merge cannot be found
      */
-    public boolean mergeMovedFolder(Action ruleAction, NodeRef folder, NodeRef sourceParent, NodeRef destinationParent) throws FileNotFoundException
+    public boolean mergeIntoPreviouslyMovedFolder(Action ruleAction, NodeRef folder, NodeRef sourceParent, NodeRef destinationParent) throws FileNotFoundException
     {
         if (!isFolder(folder))
         {
             return false;
         }
-        String name = (String) nodeService.getProperty(folder, ContentModel.PROP_NAME);
-        NodeRef existing = nodeService.getChildByName(destinationParent, ContentModel.ASSOC_CONTAINS, name);
-        Map<QName, Serializable> marker = existing == null ? null : readLiveMarker(existing, ASPECT_RULE_MOVED, PROP_RULE_MOVED_AT);
+        NodeRef existingFolder = findDestinationFolder(folder, destinationParent);
+        Map<QName, Serializable> marker = existingFolder == null ? null : getUnexpiredMarker(existingFolder, ASPECT_RULE_MOVE_TRACKING, PROP_RULE_MOVE_LAST_ACTIVITY);
+        // A matching name alone is not enough; the stored source, action and user must also match.
         if (marker == null
-                || !sourceParent.equals(marker.get(PROP_RULE_MOVED_FROM))
-                || !ruleAction.getId().equals(marker.get(PROP_RULE_MOVED_ACTION))
-                || !marker.get(PROP_RULE_MOVED_USER).equals(currentUser())
-                || !isEligibleRuleAction(ruleAction))
+                || !sourceParent.equals(marker.get(PROP_RULE_MOVE_SOURCE_PARENT))
+                || !ruleAction.getId().equals(marker.get(PROP_RULE_MOVE_ACTION_ID))
+                || !Objects.equals(marker.get(PROP_RULE_MOVE_OWNER), currentUser())
+                || !isSupportedRuleAction(ruleAction))
         {
             return false;
         }
-        mergeInto(folder, existing);
+        mergeFolderContents(folder, existingFolder);
         deleteIfEmpty(folder);
-        markMovedFolder(ruleAction, existing, sourceParent);
+        markRuleMovedFolder(ruleAction, existingFolder, sourceParent);
         return true;
     }
 
-    // Move rule: remember which rule moved this folder, from where, for whom and when
-    public void markMovedFolder(Action ruleAction, NodeRef folder, NodeRef sourceParent)
+    private NodeRef findDestinationFolder(NodeRef sourceFolder, NodeRef destinationParent)
     {
-        if (!isFolder(folder) || !isEligibleRuleAction(ruleAction))
+        String folderName = (String) nodeService.getProperty(sourceFolder, ContentModel.PROP_NAME);
+        return nodeService.getChildByName(destinationParent, ContentModel.ASSOC_CONTAINS, folderName);
+    }
+
+    /**
+     * Stores move details so later uploads can be added to this folder. Does nothing for files or rules that run in the background or apply to subfolders.
+     *
+     * @param ruleAction
+     *            the move action being run by the rule
+     * @param folder
+     *            the folder that was moved
+     * @param sourceParent
+     *            the folder's parent before the move
+     */
+    public void markRuleMovedFolder(Action ruleAction, NodeRef folder, NodeRef sourceParent)
+    {
+        if (!isFolder(folder) || !isSupportedRuleAction(ruleAction))
         {
             return;
         }
         Map<QName, Serializable> props = new HashMap<>();
-        props.put(PROP_RULE_MOVED_FROM, sourceParent);
-        props.put(PROP_RULE_MOVED_ACTION, ruleAction.getId());
-        props.put(PROP_RULE_MOVED_USER, currentUser());
-        props.put(PROP_RULE_MOVED_AT, new Date());
-        writeQuietly(folder, () -> nodeService.addAspect(folder, ASPECT_RULE_MOVED, props));
+        props.put(PROP_RULE_MOVE_SOURCE_PARENT, sourceParent);
+        props.put(PROP_RULE_MOVE_ACTION_ID, ruleAction.getId());
+        props.put(PROP_RULE_MOVE_OWNER, currentUser());
+        props.put(PROP_RULE_MOVE_LAST_ACTIVITY, new Date());
+        updateMarkerWithoutBehaviours(folder, () -> nodeService.addAspect(folder, ASPECT_RULE_MOVE_TRACKING, props));
     }
 
-    // Deep copy rule: remember the copy of the folder and of each subfolder so later files can follow
-    public void markCopiedFolder(Action ruleAction, NodeRef folder, NodeRef copy)
+    // Deep Copy tracking and catch-up before commit.
+
+    /**
+     * Stores the copy location on the original folder and its subfolders for later uploads. Does nothing for files or rules that run in the background or apply to subfolders.
+     *
+     * @param ruleAction
+     *            the copy action being run by the rule
+     * @param folder
+     *            the original folder
+     * @param copy
+     *            the new copy of the folder
+     */
+    public void trackCopiedFolder(Action ruleAction, NodeRef folder, NodeRef copy)
     {
-        if (!isFolder(folder) || !isEligibleRuleAction(ruleAction))
+        if (!isFolder(folder) || !isSupportedRuleAction(ruleAction))
         {
             return;
         }
-        markCopiedTree(folder, copy, currentUser());
+        // Each original subfolder needs its own destination so later children can follow it.
+        trackCopiedTree(folder, copy, currentUser());
     }
 
-    // A new file or folder in a copied folder: copy it too, at commit when its content is written
+    /**
+     * Schedules a newly uploaded file or folder to be copied just before the transaction commits. Waiting until then allows its content to be written before it is copied.
+     *
+     * @param childAssocRef
+     *            the link between the parent folder and the new item
+     * @param isNewNode
+     *            whether the item was newly created
+     */
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        if (!isNewNode || !childAssocRef.isPrimary() || activeCopyTarget(childAssocRef.getParentRef()) == null)
+        if (!isNewNode || !childAssocRef.isPrimary() || getActiveCopyTarget(childAssocRef.getParentRef(), false) == null)
         {
             return;
         }
-        Set<ChildAssociationRef> pending = TransactionalResourceHelper.getSet(KEY_PENDING_COPIES);
+        // Keep the original parent association so a later move does not copy the child to the wrong place.
+        // The transaction-scoped set also avoids queuing the same association twice.
+        Set<ChildAssociationRef> pending = TransactionalResourceHelper.getSet(KEY_PENDING_COPY_ASSOCIATIONS);
         pending.add(childAssocRef);
         AlfrescoTransactionSupport.bindListener(copyListener);
     }
 
-    private void copyPendingChildren()
+    private void copyPendingChildrenBeforeCommit()
     {
-        Set<ChildAssociationRef> pending = TransactionalResourceHelper.getSet(KEY_PENDING_COPIES);
+        Set<ChildAssociationRef> pending = TransactionalResourceHelper.getSet(KEY_PENDING_COPY_ASSOCIATIONS);
         List<ChildAssociationRef> toCopy = new ArrayList<>(pending);
+        // Copying may trigger more callbacks process this snapshot only once.
         pending.clear();
-        for (ChildAssociationRef assoc : toCopy)
+        for (ChildAssociationRef association : toCopy)
         {
-            NodeRef child = assoc.getChildRef();
-            NodeRef parent = assoc.getParentRef();
-            NodeRef target = activeCopyTarget(parent);
-            if (target == null || !nodeService.exists(child) || !parent.equals(nodeService.getPrimaryParent(child).getParentRef()))
-            {
-                continue;
-            }
-            String name = (String) nodeService.getProperty(child, ContentModel.PROP_NAME);
-            if (nodeService.getChildByName(target, ContentModel.ASSOC_CONTAINS, name) != null)
-            {
-                logger.info("Not copying " + child + " into " + target + ": '" + name + "' already exists there");
-                continue;
-            }
-            NodeRef copy;
-            try
-            {
-                // FileFolderService keeps the name; CopyService alone would not
-                copy = fileFolderService.copy(child, target, name).getNodeRef();
-            }
-            catch (FileNotFoundException e)
-            {
-                continue;
-            }
-            if (isFolder(child))
-            {
-                markCopiedTree(child, copy, currentUser());
-            }
-            // Each copied file keeps the upload window open
-            NodeRef root = copyRoot(parent);
-            writeQuietly(root, () -> nodeService.setProperty(root, PROP_RULE_COPY_AT, new Date()));
+            copyPendingChild(association);
         }
     }
 
-    // The copy of this folder, if a rule copied it for the current user and the upload is still going on
-    private NodeRef activeCopyTarget(NodeRef folder)
+    /**
+     * Rechecks a queued child because it may have moved or been deleted before commit.
+     */
+    private void copyPendingChild(ChildAssociationRef association)
+    {
+        NodeRef child = association.getChildRef();
+        NodeRef sourceParent = association.getParentRef();
+        // The marker or destination may have changed since this association was queued.
+        NodeRef destinationParent = getActiveCopyTarget(sourceParent, true);
+        if (destinationParent == null || !isCurrentChild(child, sourceParent))
+        {
+            return;
+        }
+
+        String name = (String) nodeService.getProperty(child, ContentModel.PROP_NAME);
+        // Preserve the first destination item; skipped copies must not extend the tracking window.
+        if (destinationChildExists(destinationParent, name, child))
+        {
+            return;
+        }
+
+        NodeRef copy = copyUploadedChild(child, destinationParent, name);
+        if (copy == null)
+        {
+            // The source was deleted during the copy attempt, so there is no successful copy to record.
+            return;
+        }
+        if (isFolder(child))
+        {
+            trackCopiedTree(child, copy, currentUser());
+        }
+        refreshCopyTrackingActivity(sourceParent);
+    }
+
+    private boolean isCurrentChild(NodeRef child, NodeRef expectedParent)
+    {
+        return nodeService.exists(child) && expectedParent.equals(nodeService.getPrimaryParent(child).getParentRef());
+    }
+
+    // Unlike Move, Deep Copy skips a taken name instead of generating a new one.
+    private boolean destinationChildExists(NodeRef destinationParent, String name, NodeRef sourceChild)
+    {
+        if (nodeService.getChildByName(destinationParent, ContentModel.ASSOC_CONTAINS, name) == null)
+        {
+            return false;
+        }
+        logger.info("Not copying " + sourceChild + " into " + destinationParent + ": '" + name + "' already exists there");
+        return true;
+    }
+
+    private NodeRef copyUploadedChild(NodeRef child, NodeRef destinationParent, String name)
+    {
+        try
+        {
+            // Keep the uploaded name instead of creating an automatically renamed copy.
+            return fileFolderService.copy(child, destinationParent, name).getNodeRef();
+        }
+        catch (FileNotFoundException e)
+        {
+            // The source may have been deleted after the earlier check but before the copy started.
+            if (!nodeService.exists(child))
+            {
+                logger.info("Not copying " + child + ": the uploaded item was deleted");
+                return null;
+            }
+            // A real copy failure must fail the upload, not leave an incomplete destination silently.
+            throw new AlfrescoRuntimeException("Unable to copy uploaded item " + child + " into " + destinationParent, e);
+        }
+    }
+
+    private void refreshCopyTrackingActivity(NodeRef sourceFolder)
+    {
+        // One timestamp controls the tracked tree, even when the new file is several folders deep.
+        NodeRef trackingRoot = getCopyTrackingRoot(sourceFolder);
+        updateMarkerWithoutBehaviours(trackingRoot, () -> nodeService.setProperty(trackingRoot, PROP_RULE_COPY_LAST_ACTIVITY, new Date()));
+    }
+
+    /**
+     * Finds this folder's copy when the user and root timer still match.
+     *
+     * @param folder
+     *            the original folder receiving a new child
+     * @param failOnMissingDestination
+     *            false when deciding whether to queue true when completing an already queued copy
+     * @return the destination folder, or null when tracking no longer applies
+     */
+    private NodeRef getActiveCopyTarget(NodeRef folder, boolean failOnMissingDestination)
     {
         String user = currentUser();
-        Map<QName, Serializable> marker = readMarker(folder, ASPECT_RULE_COPY_SOURCE);
-        if (user == null || marker == null || !user.equals(marker.get(PROP_RULE_COPY_USER)))
+        Map<QName, Serializable> marker = getOrMigrateMarker(folder, ASPECT_RULE_COPY_TRACKING);
+        if (user == null || marker == null || !user.equals(marker.get(PROP_RULE_COPY_OWNER)))
         {
             return null;
         }
-        if (readLiveMarker(copyRoot(folder), ASPECT_RULE_COPY_SOURCE, PROP_RULE_COPY_AT) == null)
+        // Use the top folder's activity, not an older timestamp on an untouched subfolder.
+        if (getUnexpiredMarker(getCopyTrackingRoot(folder), ASPECT_RULE_COPY_TRACKING, PROP_RULE_COPY_LAST_ACTIVITY) == null)
         {
             return null;
         }
-        NodeRef target = (NodeRef) marker.get(PROP_RULE_COPY_TARGET);
-        return target != null && nodeService.exists(target) ? target : null;
+        NodeRef target = (NodeRef) marker.get(PROP_RULE_COPY_DESTINATION);
+        if (target != null && nodeService.exists(target))
+        {
+            return target;
+        }
+        if (failOnMissingDestination)
+        {
+            // Losing a destination after queuing must fail the upload rather than silently omit its copy.
+            throw new AlfrescoRuntimeException("Copy destination disappeared while uploading into " + folder + ": " + target);
+        }
+        return null;
     }
 
-    // The top-most copied folder of the drop; its time is the one that counts
-    private NodeRef copyRoot(NodeRef folder)
+    // Walk up to the top folder with copy details and use its last copy time for the time limit.
+    private NodeRef getCopyTrackingRoot(NodeRef folder)
     {
         return AuthenticationUtil.runAsSystem(() -> {
             NodeRef root = folder;
             NodeRef parent = nodeService.getPrimaryParent(root).getParentRef();
-            while (parent != null && nodeService.hasAspect(parent, ASPECT_RULE_COPY_SOURCE))
+            // Include legacy aspects so an older upload still shares its original root timer.
+            while (parent != null && (nodeService.hasAspect(parent, ASPECT_RULE_COPY_TRACKING) || nodeService.hasAspect(parent, LEGACY_COPY_TRACKING)))
             {
                 root = parent;
                 parent = nodeService.getPrimaryParent(root).getParentRef();
@@ -287,14 +443,15 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         });
     }
 
-    private void markCopiedTree(NodeRef folder, NodeRef copy, String user)
+    private void trackCopiedTree(NodeRef folder, NodeRef copy, String user)
     {
         Map<QName, Serializable> props = new HashMap<>();
-        props.put(PROP_RULE_COPY_TARGET, copy);
-        props.put(PROP_RULE_COPY_USER, user);
-        props.put(PROP_RULE_COPY_AT, new Date());
-        writeQuietly(folder, () -> nodeService.addAspect(folder, ASPECT_RULE_COPY_SOURCE, props));
+        props.put(PROP_RULE_COPY_DESTINATION, copy);
+        props.put(PROP_RULE_COPY_OWNER, user);
+        props.put(PROP_RULE_COPY_LAST_ACTIVITY, new Date());
+        updateMarkerWithoutBehaviours(folder, () -> nodeService.addAspect(folder, ASPECT_RULE_COPY_TRACKING, props));
 
+        // Files use their parent's marker. Only folders need their own mapping for future children.
         for (ChildAssociationRef assoc : nodeService.getChildAssocs(folder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL))
         {
             NodeRef child = assoc.getChildRef();
@@ -304,14 +461,14 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
                 NodeRef childCopy = nodeService.getChildByName(copy, ContentModel.ASSOC_CONTAINS, name);
                 if (childCopy != null)
                 {
-                    markCopiedTree(child, childCopy, user);
+                    trackCopiedTree(child, childCopy, user);
                 }
             }
         }
     }
 
-    // Move the children across: same-named folders are merged, same-named files get a new name (never overwritten)
-    private void mergeInto(NodeRef from, NodeRef into) throws FileNotFoundException
+    // Move the contents, combine folders with matching names, and rename files instead of replacing them.
+    private void mergeFolderContents(NodeRef from, NodeRef into) throws FileNotFoundException
     {
         for (ChildAssociationRef assoc : nodeService.getChildAssocs(from, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL))
         {
@@ -328,12 +485,13 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
             }
             else if (isFolder(child) && isFolder(existing))
             {
-                mergeInto(child, existing);
+                // Combine matching folders recursively instead of replacing either folder's contents.
+                mergeFolderContents(child, existing);
                 deleteIfEmpty(child);
             }
             else
             {
-                String newName = freeName(into, name);
+                String newName = generateAvailableName(into, name);
                 logger.warn("'" + name + "' already exists in " + into + ", moving " + child + " as '" + newName + "'");
                 fileFolderService.move(child, into, newName);
             }
@@ -344,14 +502,14 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     {
         if (nodeService.getChildAssocs(folder).isEmpty())
         {
-            // The emptied leftover of the upload is not worth keeping in the trashcan
+            // Delete the empty upload folder without putting it in the trashcan.
             nodeService.addAspect(folder, ContentModel.ASPECT_TEMPORARY, null);
             nodeService.deleteNode(folder);
         }
     }
 
-    // name.txt -> name-1.txt, name-2.txt, ... whichever is free
-    private String freeName(NodeRef folder, String name)
+    // Try name-1.txt, name-2.txt and so on until the name is unused.
+    private String generateAvailableName(NodeRef folder, String name)
     {
         int dot = name.lastIndexOf('.');
         String base = dot > 0 ? name.substring(0, dot) : name;
@@ -365,8 +523,10 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         return candidate;
     }
 
-    // Only rules that run right away and only on their own folder (not "run in background" or "apply to subfolders")
-    private boolean isEligibleRuleAction(Action action)
+    // Shared tracking and rule checks.
+
+    // Skip actions outside rules, background rules, and rules set to apply to subfolders.
+    private boolean isSupportedRuleAction(Action action)
     {
         NodeRef actionNodeRef = action.getNodeRef();
         if (actionNodeRef == null || currentUser() == null)
@@ -385,6 +545,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
                 QName parentType = nodeService.getType(parent);
                 if (ActionModel.TYPE_COMPOSITE_ACTION.equals(parentType))
                 {
+                    // A rule action can sit inside nested action groups; keep walking to the owning rule.
                     node = parent;
                 }
                 else
@@ -398,26 +559,99 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         });
     }
 
-    private Map<QName, Serializable> readMarker(NodeRef node, QName aspect)
+    /**
+     * Reads current tracking details, upgrading an earlier aspect without restarting its timer.
+     */
+    private Map<QName, Serializable> getOrMigrateMarker(NodeRef node, QName aspect)
     {
-        return AuthenticationUtil.runAsSystem(() -> nodeService.exists(node) && nodeService.hasAspect(node, aspect) ? nodeService.getProperties(node) : null);
+        return AuthenticationUtil.runAsSystem(() -> {
+            if (!nodeService.exists(node))
+            {
+                return null;
+            }
+            if (nodeService.hasAspect(node, aspect))
+            {
+                return nodeService.getProperties(node);
+            }
+            boolean moveTracking = ASPECT_RULE_MOVE_TRACKING.equals(aspect);
+            QName legacyAspect = moveTracking ? LEGACY_MOVE_TRACKING : LEGACY_COPY_TRACKING;
+            if (!nodeService.hasAspect(node, legacyAspect))
+            {
+                return null;
+            }
+            Map<QName, Serializable> properties = nodeService.getProperties(node);
+            Map<QName, Serializable> migrated = new HashMap<>();
+            Map<QName, QName> aliases = moveTracking ? LEGACY_MOVE_PROPERTIES : LEGACY_COPY_PROPERTIES;
+            // Carry over the old activity time renaming metadata must not reopen an expired window.
+            aliases.forEach((current, legacy) -> migrated.put(current, properties.get(legacy)));
+            updateMarkerWithoutBehaviours(node, () -> {
+                // Install the replacement before removing the legacy aspect in the same transaction.
+                nodeService.addAspect(node, aspect, migrated);
+                nodeService.removeAspect(node, legacyAspect);
+            });
+            Map<QName, Serializable> marker = new HashMap<>(properties);
+            // Return the renamed values immediately without another repository lookup.
+            marker.putAll(migrated);
+            return marker;
+        });
     }
 
-    // An expired marker is of no use to anyone: remove it so the folder ends up clean
-    private Map<QName, Serializable> readLiveMarker(NodeRef node, QName aspect, QName atProperty)
+    // Remove the stored upload details if their time limit has passed.
+    private Map<QName, Serializable> getUnexpiredMarker(NodeRef node, QName aspect, QName atProperty)
     {
-        Map<QName, Serializable> marker = readMarker(node, aspect);
+        Map<QName, Serializable> marker = getOrMigrateMarker(node, aspect);
+        // Clean up on access rather than running a separate background scan.
         if (marker != null && !withinWindow((Date) marker.get(atProperty)))
         {
-            writeQuietly(node, () -> nodeService.removeAspect(node, aspect));
+            if (ASPECT_RULE_COPY_TRACKING.equals(aspect))
+            {
+                // Expiring only the root could let leftover child markers become active roots later.
+                expireCopyTracking(node, marker);
+            }
+            else
+            {
+                updateMarkerWithoutBehaviours(node, () -> nodeService.removeAspect(node, aspect));
+            }
             return null;
         }
         return marker;
     }
 
-    // Markers are bookkeeping: write them as system without touching cm:modified or firing update rules
-    private void writeQuietly(NodeRef node, Runnable write)
+    /**
+     * Removes matching nested markers, leaving separately tracked destinations alone.
+     */
+    private void expireCopyTracking(NodeRef folder, Map<QName, Serializable> marker)
     {
+        NodeRef destination = (NodeRef) marker.get(PROP_RULE_COPY_DESTINATION);
+        Serializable owner = marker.get(PROP_RULE_COPY_OWNER);
+        for (ChildAssociationRef association : nodeService.getChildAssocs(folder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL))
+        {
+            NodeRef child = association.getChildRef();
+            if (!association.isPrimary() || !isFolder(child))
+            {
+                continue;
+            }
+            Map<QName, Serializable> childMarker = getOrMigrateMarker(child, ASPECT_RULE_COPY_TRACKING);
+            if (childMarker == null || !Objects.equals(owner, childMarker.get(PROP_RULE_COPY_OWNER)))
+            {
+                continue;
+            }
+            NodeRef childDestination = (NodeRef) childMarker.get(PROP_RULE_COPY_DESTINATION);
+            // Follow only the same destination tree a different mapping may belong to another copy.
+            if (destination != null && childDestination != null && nodeService.exists(childDestination)
+                    && destination.equals(nodeService.getPrimaryParent(childDestination).getParentRef()))
+            {
+                expireCopyTracking(child, childMarker);
+            }
+        }
+        // Remove the root last, after visiting its matching descendants.
+        updateMarkerWithoutBehaviours(folder, () -> nodeService.removeAspect(folder, ASPECT_RULE_COPY_TRACKING));
+    }
+
+    // BehaviourFilter uses reference counts, so this also preserves an outer caller's disable.
+    private void updateMarkerWithoutBehaviours(NodeRef node, Runnable write)
+    {
+        // Elevate only the tracking update the file move or copy still runs as the uploading user.
         AuthenticationUtil.runAsSystem(() -> {
             behaviourFilter.disableBehaviour(node);
             try
@@ -426,6 +660,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
             }
             finally
             {
+                // Release this method's disable even if the update fails. Any outer disable remains in effect.
                 behaviourFilter.enableBehaviour(node);
             }
             return null;
@@ -434,7 +669,8 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
 
     private boolean withinWindow(Date at)
     {
-        return at != null && System.currentTimeMillis() - at.getTime() <= windowMillis;
+        // An incomplete marker with no timestamp is treated as expired.
+        return at != null && System.currentTimeMillis() - at.getTime() <= trackingWindowMillis;
     }
 
     private boolean isFolder(NodeRef node)

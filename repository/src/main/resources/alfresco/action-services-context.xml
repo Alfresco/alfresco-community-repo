@@ -466,7 +466,7 @@
         <property name="folderUploadRuleHandler" ref="folderUploadRuleHandler" />
     </bean>
 
-    <!-- Move / Deep copy rules catch up with a folder uploaded one file at a time -->
+    <!-- Handle files uploaded after a rule has moved or copied their folder. -->
     <bean id="folderUploadRuleHandler" class="org.alfresco.repo.action.executer.FolderUploadRuleHandler" init-method="init">
         <property name="nodeService" ref="NodeService" />
         <property name="fileFolderService" ref="FileFolderService" />

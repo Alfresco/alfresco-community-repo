@@ -445,7 +445,46 @@
          </properties>
       </aspect>
 
-      <!-- Folder moved by a Move rule, so that the rest of a folder upload can be merged into it -->
+      <aspect name="sys:ruleMoveTracking">
+         <title>Rule move tracking</title>
+         <properties>
+            <property name="sys:ruleMoveSourceParent">
+               <type>d:noderef</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleMoveActionId">
+               <type>d:text</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleMoveOwner">
+               <type>d:text</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleMoveLastActivity">
+               <type>d:datetime</type>
+               <index enabled="false"></index>
+            </property>
+         </properties>
+      </aspect>
+
+      <aspect name="sys:ruleCopyTracking">
+         <title>Rule copy tracking</title>
+         <properties>
+            <property name="sys:ruleCopyDestination">
+               <type>d:noderef</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleCopyOwner">
+               <type>d:text</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleCopyLastActivity">
+               <type>d:datetime</type>
+               <index enabled="false"></index>
+            </property>
+         </properties>
+      </aspect>
+
       <aspect name="sys:ruleMoved">
          <title>Moved by rule</title>
          <properties>
@@ -468,7 +507,7 @@
          </properties>
       </aspect>
 
-      <!-- Folder deep copied by a Copy rule, so that the rest of a folder upload follows it into the copy -->
+      <!-- Store the copy's location, user and time on the original folder. -->
       <aspect name="sys:ruleCopySource">
          <title>Copied by rule</title>
          <properties>

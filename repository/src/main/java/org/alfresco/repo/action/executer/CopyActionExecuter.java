@@ -188,10 +188,10 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
                     originalAssoc.getQName(),
                     deepCopy);
 
-            // Files uploaded into the folder afterwards follow it into the copy
+            // Remember the copy's location so files uploaded later can be copied there too.
             if (deepCopy)
             {
-                folderUploadRuleHandler.markCopiedFolder(ruleAction, actionedUponNodeRef, newCopy);
+                folderUploadRuleHandler.trackCopiedFolder(ruleAction, actionedUponNodeRef, newCopy);
             }
         }
     }

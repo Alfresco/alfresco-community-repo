@@ -108,15 +108,15 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
 
             try
             {
-                // A folder uploaded file by file is merged into the folder this rule already moved
+                // Add later uploads to the folder this rule already moved, if one exists.
                 NodeRef sourceParent = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
-                if (folderUploadRuleHandler.mergeMovedFolder(ruleAction, actionedUponNodeRef, sourceParent, destinationParent))
+                if (folderUploadRuleHandler.mergeIntoPreviouslyMovedFolder(ruleAction, actionedUponNodeRef, sourceParent, destinationParent))
                 {
                     return;
                 }
 
                 fileFolderService.move(actionedUponNodeRef, destinationParent, null);
-                folderUploadRuleHandler.markMovedFolder(ruleAction, actionedUponNodeRef, sourceParent);
+                folderUploadRuleHandler.markRuleMovedFolder(ruleAction, actionedUponNodeRef, sourceParent);
             }
             catch (FileNotFoundException e)
             {

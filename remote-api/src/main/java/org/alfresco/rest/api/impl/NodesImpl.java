@@ -33,10 +33,12 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.AbstractList;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -2169,6 +2171,8 @@ public class NodesImpl implements Nodes
             throw new PermissionDeniedException("Cannot delete: " + nodeId);
         }
 
+        validateNoWorkingCopyDescendants(nodeRef, nodeId);
+
         // default false (if not provided)
         boolean permanentDelete = Boolean.valueOf(parameters.getParameter(PARAM_PERMANENT));
 
@@ -2193,6 +2197,41 @@ public class NodesImpl implements Nodes
         postActivity(Activity_Type.DELETED, activityInfo, true);
 
         fileFolderService.delete(nodeRef);
+    }
+
+    private void validateNoWorkingCopyDescendants(NodeRef nodeRef, String nodeId)
+    {
+        if (!isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false))
+        {
+            return;
+        }
+
+        Deque<NodeRef> toVisit = new ArrayDeque<>();
+        toVisit.push(nodeRef);
+
+        while (!toVisit.isEmpty())
+        {
+            for (ChildAssociationRef childAssoc : nodeService.getChildAssocs(toVisit.pop()))
+            {
+                // cascade delete only follows primary child associations
+                if (!childAssoc.isPrimary())
+                {
+                    continue;
+                }
+
+                NodeRef childRef = childAssoc.getChildRef();
+
+                if (nodeService.hasAspect(childRef, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(childRef, ContentModel.ASPECT_CHECKED_OUT))
+                {
+                    throw new ConstraintViolatedException("Cannot delete " + nodeId + " because it contains a checked out node: " + childRef.getId());
+                }
+
+                if (isSubClass(childRef, ContentModel.TYPE_FOLDER, false))
+                {
+                    toVisit.push(childRef);
+                }
+            }
+        }
     }
 
     @Override

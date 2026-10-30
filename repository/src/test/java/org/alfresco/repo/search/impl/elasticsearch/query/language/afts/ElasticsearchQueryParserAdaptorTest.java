@@ -386,6 +386,15 @@ public class ElasticsearchQueryParserAdaptorTest
         assertThat(aftsQuery.queryString().query(), is("TAG:purple\\ elephant"));
     }
 
+    /** escape() doubles a literal backslash, so whitespace preceded by one must still be escaped. */
+    @Test
+    public void shouldEscapeWhitespacePrecededByABackslashInAQuotedTag()
+    {
+        Query aftsQuery = aftsQueryParserAdaptor
+                .getFieldQuery("TAG", "foo\\ bar", AnalysisMode.DEFAULT, 0, LuceneFunction.FIELD);
+        assertThat(aftsQuery.queryString().query(), is("TAG:foo\\\\\\ bar"));
+    }
+
     @Test
     public void shouldSetAnalyzeWildcardTrueForCmContentField()
     {

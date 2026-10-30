@@ -1126,11 +1126,11 @@ public class LuceneQueryParser extends QueryParser
     }
 
     /**
-     * Escapes whitespace so that the Elasticsearch query_string parser does not re-parse a multi-word term as separate terms.
+     * Escapes whitespace so that the Elasticsearch query_string parser does not re-parse a multi-word term as separate terms. Only whitespace preceded by an even number of backslashes is escaped, since escape() has already doubled every literal backslash.
      */
     private static String escapeWhitespace(String value)
     {
-        return value.replaceAll("(?<!\\\\)(\\s)", "\\\\$1");
+        return value.replaceAll("(?<!\\\\)((?:\\\\\\\\)*)(\\s)", "$1\\\\$2");
     }
 
     /**

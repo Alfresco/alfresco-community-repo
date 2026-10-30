@@ -41,7 +41,8 @@ jobs:
           SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
-          POM=$(gh api "repos/$REPOSITORY/contents/pom.xml?ref=$SHA" --jq '.content' | base64 -d)
+          # A failed lookup must not skip the Teams card, so fall through to Unknown.
+          POM=$(gh api "repos/$REPOSITORY/contents/pom.xml?ref=$SHA" --jq '.content' | base64 -d) || POM=""
           # The project's own version is the first one in the pom, ahead of the parent block.
           FOUND=$(printf '%s' "$POM" | sed -n \
             '1,/<parent>/{s|.*<version>\([^<]*\)</version>.*|\1|p;}')

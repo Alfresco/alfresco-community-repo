@@ -18,7 +18,7 @@ public class AccessRestrictionUtil
     public static final String MAIL_ACTION = "mail";
 
     public static final String ERROR_MESSAGE_FIELD = "message";
-    public static final String ERROR_MESSAGE_ACCESS_RESTRICTED = "Only admin or system user is allowed to define uses of or directly execute this action";
+    public static final String ERROR_MESSAGE_ACCESS_RESTRICTED = "Only admin, system user or members of the allowed groups can define uses of or directly execute this action";
     private static final String ERROR_MESSAGE_FAILED_TO_SEND_EMAIL = "Failed to send email to:";
 
     public static Map<String, Serializable> createMailParameters(UserModel sender, UserModel recipient)

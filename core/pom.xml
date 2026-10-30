@@ -10,6 +10,11 @@
       <version>26.3.0.88-SNAPSHOT</version>
    </parent>
 
+   <properties>
+      <!-- Follows -DskipTests unless set explicitly; used by the surefire configuration below -->
+      <skipCoreTests>${skipTests}</skipCoreTests>
+   </properties>
+
    <dependencies>
       <!-- Jakarta... -->
       <dependency>

@@ -42,6 +42,15 @@ on:
         required: false
   workflow_dispatch:
 
+# Cancel superseded runs for pull requests and feature/fix branch pushes. Master/release runs (including those via
+# master_release.yml, where github.* describes the caller) get a unique group so they are never cancelled or queued.
+concurrency:
+  group: >-
+    ${{ (github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/'))
+    && format('{0}-{1}-{2}', github.workflow, github.event_name, github.ref)
+    || format('{0}-{1}', github.workflow, github.run_id) }}
+  cancel-in-progress: true
+
 env:
   JAVA_VERSION: '21'
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
@@ -65,8 +74,8 @@ jobs:
         with:
           header-only: "true"
 
-  prepare:
-    name: "Prepare"
+  pre_commit:
+    name: "Pre-commit checks"
     runs-on: ubuntu-latest
     needs: [commit_parser]
     if: >
@@ -81,10 +90,37 @@ jobs:
           fetch-depth: 0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+          # Separate cache so this job (which only resolves plugins) never saves a partial Maven repository
+          # under the main key. The prefix must not start with "maven" or other jobs' restore-keys would match it.
+          cache-key-prefix: pre-commit-maven
       - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v18.20.0
+
+  prepare:
+    name: "Prepare"
+    runs-on: ubuntu-latest
+    needs: [commit_parser]
+    if: >
+      !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
+      !contains(needs.commit_parser.outputs.title, '[force]')
+    env:
+      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -130,8 +166,12 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -153,22 +193,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - testName: Core
-            testModule: core
-            testAttributes: "-Dtest=AllCoreUnitTestSuite"
-          - testName: Data-Model
-            testModule: data-model
-            testAttributes: "-Dtest=AllDataModelUnitTestSuite"
+          - testName: Core, Data-Model, Mmt
+            testModule: core,data-model,mmt
+            testAttributes: "-Dtest=AllCoreUnitTestSuite,AllDataModelUnitTestSuite,AllMmtUnitTestSuite"
           - testName: Repository
             testModule: repository
             testAttributes: "-Dtest=AllUnitTestsSuite"
-          - testName: Mmt
-            testModule: mmt
-            testAttributes: "-Dtest=AllMmtUnitTestSuite"
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -222,6 +259,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -270,6 +310,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -303,6 +346,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -336,6 +382,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -370,6 +419,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -404,6 +456,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -437,6 +492,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -474,6 +532,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -513,7 +574,13 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: AppContext04TestSuite
             compose-profile: with-transform-core-aio
-          - testSuite: ElasticsearchCommunityTestsTestSuite
+          - testSuite: ElasticsearchCommunityTestsPart1TestSuite
+            compose-profile: with-elasticsearch
+            mvn-options: '-Dindex.subsystem.name=elasticsearch'
+          - testSuite: ElasticsearchCommunityTestsPart2TestSuite
+            compose-profile: with-elasticsearch
+            mvn-options: '-Dindex.subsystem.name=elasticsearch'
+          - testSuite: ElasticsearchCommunityTestsPart3TestSuite
             compose-profile: with-elasticsearch
             mvn-options: '-Dindex.subsystem.name=elasticsearch'
           - testSuite: AppContext05TestSuite
@@ -542,6 +609,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -590,12 +660,13 @@ jobs:
   tas_tests:
     name: ${{ matrix.test-name }}
     runs-on: ubuntu-latest
+    # Not gated on Prepare: this job builds the whole reactor itself and is on the critical path
     needs:
-      - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     env:
-      REQUIRES_LOCAL_IMAGES: true
+      # Community image only: just the AGS Community REST API job needs the AGS modules and image
+      BUILD_PROFILES: "-Pbuild-docker-images"
       REQUIRES_TAS_TESTS: true
       REQUIRES_INSTALLED_ARTIFACTS: true
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
@@ -613,15 +684,27 @@ jobs:
           - test-name: "REST API TAS tests part3"
             pom-dir: tas-restapi
             test-profile: run-restapi-part3
-          - test-name: "CMIS TAS tests - BROWSER binding"
+          - test-name: "REST API TAS tests part4"
+            pom-dir: tas-restapi
+            test-profile: run-restapi-part4
+          - test-name: "CMIS TAS tests - BROWSER binding - part1"
             pom-dir: tas-cmis
-            test-profile: run-cmis-browser
-          - test-name: "CMIS TAS tests - ATOM binding"
+            test-profile: run-cmis-browser,cmis-part1
+          - test-name: "CMIS TAS tests - BROWSER binding - part2"
             pom-dir: tas-cmis
-            test-profile: run-cmis-atom
-          - test-name: "CMIS TAS tests - WEBSERVICES binding"
+            test-profile: run-cmis-browser,cmis-part2
+          - test-name: "CMIS TAS tests - ATOM binding - part1"
             pom-dir: tas-cmis
-            test-profile: run-cmis-webservices
+            test-profile: run-cmis-atom,cmis-part1
+          - test-name: "CMIS TAS tests - ATOM binding - part2"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-atom,cmis-part2
+          - test-name: "CMIS TAS tests - WEBSERVICES binding - part1"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-webservices,cmis-part1
+          - test-name: "CMIS TAS tests - WEBSERVICES binding - part2"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-webservices,cmis-part2
           - test-name: "Email TAS tests"
             pom-dir: tas-email
           - test-name: "WebDAV TAS tests"
@@ -632,18 +715,24 @@ jobs:
             pom-dir: tas-restapi
             test-profile: elasticsearch-e2e-tests-part1
             compose-file: docker-compose-minimal+batch-indexing.yml
+            mvn-options: '-DsolrWaitTimeInSeconds=3'
           - test-name: "Elasticsearch E2E Tests - part2"
             pom-dir: tas-restapi
             test-profile: elasticsearch-e2e-tests-part2
             compose-file: docker-compose-minimal+batch-indexing.yml
+            mvn-options: '-DsolrWaitTimeInSeconds=3'
           - test-name: "Elasticsearch E2E Tests - part3"
             pom-dir: tas-restapi
             test-profile: elasticsearch-e2e-tests-part3
             compose-file: docker-compose-minimal+batch-indexing.yml
+            mvn-options: '-DsolrWaitTimeInSeconds=3'
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -667,7 +756,7 @@ jobs:
       - name: "Run tests"
         id: tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+        run: mvn -B verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false ${{ matrix.mvn-options }}
       - name: "Print output after success"
         if: ${{ always() && steps.tests.outcome == 'success' }}
         run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"
@@ -691,6 +780,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -727,6 +819,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -765,6 +860,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -785,20 +883,27 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_community_rest_api_tests:
-    name: "AGS Community Rest API Tests"
+    name: "AGS Community Rest API Tests - part${{ matrix.part }}"
     runs-on: ubuntu-latest
+    # Not gated on Prepare: this job builds the whole reactor itself
     needs:
-      - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     env:
       REQUIRES_LOCAL_IMAGES: true
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [1, 2]
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -820,7 +925,7 @@ jobs:
           mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
       - name: "Test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
+        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -DsuiteXmlFile=testng-part${{ matrix.part }}.xml -Pags -Pall-tas-tests
       - name: "Configure AWS credentials"
         if: ${{ always() }}
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
@@ -832,9 +937,9 @@ jobs:
         if: ${{ always() }}
         run: |
           bash amps/ags/ci/scripts/getLogs.sh
-          aws s3 cp --acl private alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/alfresco.log
-          aws s3 cp --acl private solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/solr.log
-          aws s3 cp --acl private ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/rm-automation-community-rest-api.log
+          aws s3 cp --acl private alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/part${{ matrix.part }}/alfresco.log
+          aws s3 cp --acl private solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/part${{ matrix.part }}/solr.log
+          aws s3 cp --acl private ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/part${{ matrix.part }}/rm-automation-community-rest-api.log
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -852,6 +957,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+        with:
+          remove-android: 'false'
+          remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
         with:
           java-version: ${{ env.JAVA_VERSION }}

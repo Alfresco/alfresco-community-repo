@@ -27,12 +27,14 @@
 package org.alfresco.repo.rule;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import jakarta.mail.internet.MimeMessage;
 
@@ -48,7 +50,9 @@ import org.junit.rules.RuleChain;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
+import org.alfresco.repo.action.executer.CopyActionExecuter;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
@@ -65,6 +69,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
@@ -255,6 +261,106 @@ public class RuleServiceIntegrationTest
         Assert.assertNotNull(message);
         Assert.assertEquals("Hello Jan 1, 1970", (String) message.getContent());
 
+    }
+
+    @Test
+    public void testFolderUploadMoveAcrossUsers()
+    {
+        createFolderUploadRule(MoveActionExecuter.NAME);
+
+        uploadFolderFile(TEST_USER1.getUsername(), "first.txt");
+        uploadFolderFile(TEST_USER2.getUsername(), "second.txt");
+
+        assertUploadedFiles(MoveActionExecuter.NAME, "first.txt", "second.txt");
+    }
+
+    @Test
+    public void testFolderUploadCopyAcrossUsers()
+    {
+        createFolderUploadRule(CopyActionExecuter.NAME);
+
+        uploadFolderFile(TEST_USER1.getUsername(), "first.txt");
+        uploadFolderFile(TEST_USER2.getUsername(), "second.txt");
+
+        assertUploadedFiles(CopyActionExecuter.NAME, "first.txt", "second.txt");
+    }
+
+    private void createFolderUploadRule(String actionName)
+    {
+        AuthenticationUtil.runAsSystem(() -> TRANSACTION_HELPER.doInTransaction(() -> {
+            for (String user : List.of(TEST_USER1.getUsername(), TEST_USER2.getUsername()))
+            {
+                SERVICE_REGISTRY.getPermissionService().setPermission(parentFolder, user, PermissionService.COORDINATOR, true);
+                SERVICE_REGISTRY.getPermissionService().setPermission(childFolder, user, PermissionService.COORDINATOR, true);
+            }
+            org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule();
+            rule.setTitle("Folder upload " + GUID.generate());
+            rule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
+            rule.applyToChildren(false);
+            Action action = ACTION_SERVICE.createAction(actionName);
+            action.setParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER, childFolder);
+            if (CopyActionExecuter.NAME.equals(actionName))
+            {
+                action.setParameterValue(CopyActionExecuter.PARAM_DEEP_COPY, true);
+            }
+            rule.setAction(action);
+            RULE_SERVICE.saveRule(parentFolder, rule);
+            return null;
+        }, false, true));
+    }
+
+    private NodeRef uploadFolderFile(String user, String name)
+    {
+        AuthenticationUtil.pushAuthentication();
+        try
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(user);
+            return TRANSACTION_HELPER.doInTransaction(() -> {
+                NodeRef folder = NODE_SERVICE.getChildByName(parentFolder, ContentModel.ASSOC_CONTAINS, "build");
+                if (folder == null)
+                {
+                    folder = SERVICE_REGISTRY.getFileFolderService().create(parentFolder, "build", ContentModel.TYPE_FOLDER).getNodeRef();
+                }
+                NodeRef file = SERVICE_REGISTRY.getFileFolderService().create(folder, name, ContentModel.TYPE_CONTENT).getNodeRef();
+                ContentWriter writer = CONTENT_SERVICE.getWriter(file, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                writer.setEncoding("UTF-8");
+                writer.putContent(name);
+                return file;
+            }, false, true);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
+    private void assertUploadedFiles(String actionName, String... names)
+    {
+        AuthenticationUtil.runAsSystem(() -> TRANSACTION_HELPER.doInTransaction(() -> {
+            NodeRef destination = NODE_SERVICE.getChildByName(childFolder, ContentModel.ASSOC_CONTAINS, "build");
+            assertNotNull("The rule destination must contain the uploaded folder", destination);
+            Assert.assertEquals("The destination must contain every uploaded file exactly once", names.length,
+                    NODE_SERVICE.getChildAssocs(destination, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL).size());
+            for (String name : names)
+            {
+                NodeRef file = NODE_SERVICE.getChildByName(destination, ContentModel.ASSOC_CONTAINS, name);
+                assertNotNull("Missing destination file " + name, file);
+                Assert.assertEquals("Content must be copied after it is written", name, CONTENT_SERVICE.getReader(file, ContentModel.PROP_CONTENT).getContentString());
+            }
+            NodeRef source = NODE_SERVICE.getChildByName(parentFolder, ContentModel.ASSOC_CONTAINS, "build");
+            if (MoveActionExecuter.NAME.equals(actionName))
+            {
+                assertNull("Move must not leave an empty upload folder", source);
+            }
+            else
+            {
+                assertNotNull("Copy must preserve the original folder", source);
+                Assert.assertEquals("Copy must preserve every original file", names.length,
+                        NODE_SERVICE.getChildAssocs(source, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL).size());
+            }
+            return null;
+        }, true, true));
     }
 
     /**

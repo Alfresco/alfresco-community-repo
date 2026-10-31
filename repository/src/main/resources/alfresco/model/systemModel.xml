@@ -457,10 +457,6 @@
                <type>d:text</type>
                <index enabled="false"></index>
             </property>
-            <property name="sys:ruleMoveOwner">
-               <type>d:text</type>
-               <index enabled="false"></index>
-            </property>
             <property name="sys:ruleMoveLastActivity">
                <type>d:datetime</type>
                <index enabled="false"></index>
@@ -472,57 +468,12 @@
       <aspect name="sys:ruleCopyTracking">
          <title>Rule copy tracking</title>
          <properties>
-            <property name="sys:ruleCopyDestination">
+            <property name="sys:ruleCopyDestinations">
                <type>d:noderef</type>
-               <index enabled="false"></index>
-            </property>
-            <property name="sys:ruleCopyOwner">
-               <type>d:text</type>
+               <multiple>true</multiple>
                <index enabled="false"></index>
             </property>
             <property name="sys:ruleCopyLastActivity">
-               <type>d:datetime</type>
-               <index enabled="false"></index>
-            </property>
-         </properties>
-      </aspect>
-
-      <!-- Keep the old move tracking properties so existing markers can be migrated. -->
-      <aspect name="sys:ruleMoved">
-         <title>Moved by rule</title>
-         <properties>
-            <property name="sys:ruleMovedFrom">
-               <type>d:noderef</type>
-               <index enabled="false"></index>
-            </property>
-            <property name="sys:ruleMovedAction">
-               <type>d:text</type>
-               <index enabled="false"></index>
-            </property>
-            <property name="sys:ruleMovedUser">
-               <type>d:text</type>
-               <index enabled="false"></index>
-            </property>
-            <property name="sys:ruleMovedAt">
-               <type>d:datetime</type>
-               <index enabled="false"></index>
-            </property>
-         </properties>
-      </aspect>
-
-      <!-- Keep the old copy tracking properties so existing markers can be migrated. -->
-      <aspect name="sys:ruleCopySource">
-         <title>Copied by rule</title>
-         <properties>
-            <property name="sys:ruleCopyTarget">
-               <type>d:noderef</type>
-               <index enabled="false"></index>
-            </property>
-            <property name="sys:ruleCopyUser">
-               <type>d:text</type>
-               <index enabled="false"></index>
-            </property>
-            <property name="sys:ruleCopyAt">
                <type>d:datetime</type>
                <index enabled="false"></index>
             </property>

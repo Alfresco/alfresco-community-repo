@@ -127,12 +127,8 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
         }
 
         // Get the deep copy value
-        boolean deepCopy = false;
         Boolean deepCopyValue = (Boolean) ruleAction.getParameterValue(PARAM_DEEP_COPY);
-        if (deepCopyValue != null)
-        {
-            deepCopy = deepCopyValue.booleanValue();
-        }
+        boolean deepCopy = Boolean.TRUE.equals(deepCopyValue);
 
         // Get the overwirte value
         boolean overwrite = true;

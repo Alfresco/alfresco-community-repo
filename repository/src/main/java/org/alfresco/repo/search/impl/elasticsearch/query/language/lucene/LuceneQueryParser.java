@@ -154,6 +154,8 @@ public class LuceneQueryParser extends QueryParser
     public static final String ID_FIELD = "_id";
     /** The primary hierarchy field name in Elasticsearch. */
     public static final String PRIMARY_HIERARCHY_FIELD = "primaryHierarchy";
+    /** The analysed multi-field of the TAG keyword field in Elasticsearch. */
+    public static final String TAG_ANALYSED_FIELD = FIELD_TAG + ".text";
     /** The primary parent field name in Elasticsearch. */
     public static final String PRIMARY_PARENT_FIELD = "PRIMARYPARENT";
     public static final String PARENT_FIELD = "PARENT";
@@ -298,8 +300,9 @@ public class LuceneQueryParser extends QueryParser
         case FIELD_READER:
         case FIELD_DENIED:
         case FIELD_AUTHORITY:
-        case FIELD_TAG:
             return luceneTermQuery(fieldName, escape(queryText, true));
+        case FIELD_TAG:
+            return tagQuery(escape(queryText, true), quoted, untokenisedSearch);
         case FIELD_SITE:
             return siteQuery(queryText);
         case FIELD_ISUNSET:
@@ -1100,6 +1103,34 @@ public class LuceneQueryParser extends QueryParser
     private Optional<String> getSiteHierarchyNode(String queryText)
     {
         return of(queryText).map(siteService::getSite).map(SiteInfo::getNodeRef).map(NodeRef::getId);
+    }
+
+    /**
+     * A tag is indexed as a keyword, with an analysed "TAG.text" multi-field alongside it. A quoted or untokenised query has to match the keyword exactly, so its whitespace is escaped. An unquoted query is a single word, which can only match a multi-word tag through the analysed field, so both are tried.
+     */
+    private Query tagQuery(String queryText, boolean quoted, boolean untokenisedSearch)
+    {
+        final Query keywordQuery = luceneTermQuery(FIELD_TAG, escapeWhitespace(queryText));
+        if (quoted || untokenisedSearch)
+        {
+            return keywordQuery;
+        }
+
+        // Nested in an outer boolean so that the toString() form is parenthesised, as in textFieldQuery.
+        return booleanQuerySupplier.get()
+                .add(booleanQuerySupplier.get()
+                        .add(keywordQuery, SHOULD)
+                        .add(luceneFieldQuery(TAG_ANALYSED_FIELD, queryText, false), SHOULD)
+                        .build(), getDefaultOperator() == Operator.AND ? MUST : SHOULD)
+                .build();
+    }
+
+    /**
+     * Escapes whitespace so that the Elasticsearch query_string parser does not re-parse a multi-word term as separate terms. Only whitespace preceded by an even number of backslashes is escaped, since escape() has already doubled every literal backslash.
+     */
+    private static String escapeWhitespace(String value)
+    {
+        return value.replaceAll("(?<!\\\\)((?:\\\\\\\\)*)(\\s)", "$1\\\\$2");
     }
 
     /**

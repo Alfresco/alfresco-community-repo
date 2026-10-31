@@ -599,11 +599,11 @@ public class TermOrPhraseQueryTest extends BaseQueryTest
     }
 
     @Test
-    public void TAGFieldShouldDelegateToDefaultQueryParser()
+    public void TAGFieldShouldAlsoMatchTheAnalysedField()
     {
         Stream.of("agazzarini", "maxred", "a1s3s83a", "383e8dj-")
                 .forEach(value -> assertQueryEquals(
-                        fieldQueryString(FIELD_TAG, value),
+                        "(" + fieldQueryString(FIELD_TAG, value) + " " + fieldQueryString(LuceneQueryParser.TAG_ANALYSED_FIELD, value) + ")",
                         parseAndBuildQuery(fieldQueryString(FIELD_TAG, value))));
     }
 

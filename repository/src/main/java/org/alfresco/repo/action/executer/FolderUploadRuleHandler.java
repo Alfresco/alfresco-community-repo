@@ -82,7 +82,6 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     public static final QName PROP_RULE_COPY_LAST_ACTIVITY = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyLastActivity");
 
     private static final String KEY_NEW_CHILDREN = FolderUploadRuleHandler.class.getName() + ".newChildren";
-    private static final String KEY_MERGED_FOLDERS = FolderUploadRuleHandler.class.getName() + ".mergedFolders";
 
     private NodeService nodeService;
     private FileFolderService fileFolderService;
@@ -196,17 +195,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         moveContents(folder, movedFolder);
         deleteIfEmpty(folder);
         markRuleMovedFolder(ruleAction, movedFolder, sourceParent);
-        TransactionalResourceHelper.getMap(KEY_MERGED_FOLDERS).put(folder, movedFolder);
         return true;
-    }
-
-    /**
-     * Returns the folder that {@code folder} was merged into in this transaction, so the rule's other actions run on a folder that still exists.
-     */
-    public static NodeRef resolveMergedFolder(NodeRef folder)
-    {
-        Map<NodeRef, NodeRef> mergedFolders = AlfrescoTransactionSupport.getResource(KEY_MERGED_FOLDERS);
-        return mergedFolders == null ? folder : mergedFolders.getOrDefault(folder, folder);
     }
 
     // Folders with the same name are merged; a file whose name is taken is renamed (a.txt becomes a-1.txt).
@@ -216,18 +205,17 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         {
             String name = getName(child);
             NodeRef existing = nodeService.getChildByName(toFolder, ContentModel.ASSOC_CONTAINS, name);
-            if (existing == null)
-            {
-                fileFolderService.move(child, toFolder, null);
-            }
-            else if (isFolder(child) && isFolder(existing))
+            if (isFolder(child) && existing != null && isFolder(existing))
             {
                 moveContents(child, existing);
                 deleteIfEmpty(child);
+                continue;
             }
-            else
+            fileFolderService.move(child, toFolder, existing == null ? null : getFreeName(toFolder, name));
+            // A merged file is new to the moved folder, so it must also reach the folder's copies.
+            if (nodeService.hasAspect(toFolder, ASPECT_RULE_COPY_TRACKING))
             {
-                fileFolderService.move(child, toFolder, getFreeName(toFolder, name));
+                queueForCopy(nodeService.getPrimaryParent(child));
             }
         }
     }
@@ -301,8 +289,16 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
+        if (isNewNode && childAssocRef.isPrimary())
+        {
+            queueForCopy(childAssocRef);
+        }
+    }
+
+    private void queueForCopy(ChildAssociationRef childAssocRef)
+    {
         // Keep the mark while rules are disabled, for example during a bulk import.
-        if (!isNewNode || !childAssocRef.isPrimary() || !ruleService.isEnabled())
+        if (!ruleService.isEnabled())
         {
             return;
         }

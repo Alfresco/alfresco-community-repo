@@ -60,14 +60,12 @@ import org.springframework.transaction.support.TransactionSynchronizationUtils;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
-import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.rule.RuleServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -148,8 +146,13 @@ public class FolderUploadRuleHandlerUnitTest
     public void mergesIntoFolderMovedBySameRule() throws Exception
     {
         movedMark(ACTION_ID, NOW);
+        NodeRef copy = node("copy");
+        copyMark(movedFolder, NOW, copy);
+        parent(movedFolder, dst);
         NodeRef file = file(node("file2"), "file2.txt");
         children(uploadedFolder, file);
+        parent(file, movedFolder);
+        when(fileFolderService.copy(file, copy, "file2.txt")).thenReturn(mock(FileInfo.class));
 
         assertTrue("The late folder should be merged", handler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
 
@@ -157,15 +160,9 @@ public class FolderUploadRuleHandlerUnitTest
         verify(nodeService).deleteNode(uploadedFolder);
         verify(nodeService).addAspect(eq(movedFolder), eq(ASPECT_RULE_MOVE_TRACKING), anyMap());
 
-        // The rule's next action must run on the folder that still exists.
-        RuntimeActionService actionService = mock(RuntimeActionService.class);
-        CompositeAction composite = mock(CompositeAction.class);
-        Action nextAction = mock(Action.class);
-        when(composite.getActions()).thenReturn(List.of(nextAction));
-        CompositeActionExecuter executer = new CompositeActionExecuter();
-        executer.setActionService(actionService);
-        executer.executeImpl(composite, uploadedFolder);
-        verify(actionService).directActionExecution(nextAction, movedFolder);
+        // A Copy rule that already copied the moved folder must also get the merged file.
+        TransactionSynchronizationUtils.triggerBeforeCommit(false);
+        verify(fileFolderService).copy(file, copy, "file2.txt");
     }
 
     @Test

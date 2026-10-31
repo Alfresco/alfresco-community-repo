@@ -108,7 +108,7 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
 
             try
             {
-                // Add later uploads to the folder this rule already moved, if one exists.
+                // If this rule already moved a folder with this name, add the files to it.
                 NodeRef sourceParent = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
                 if (folderUploadRuleHandler.mergeIntoPreviouslyMovedFolder(ruleAction, actionedUponNodeRef, sourceParent, destinationParent))
                 {

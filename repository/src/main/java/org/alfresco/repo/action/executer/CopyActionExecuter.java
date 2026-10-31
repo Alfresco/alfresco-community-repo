@@ -184,7 +184,7 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
                     originalAssoc.getQName(),
                     deepCopy);
 
-            // Remember the copy's location so files uploaded later can be copied there too.
+            // Remember the copy so late files can be copied to it too.
             if (deepCopy)
             {
                 folderUploadRuleHandler.trackCopiedFolder(ruleAction, actionedUponNodeRef, newCopy);

@@ -82,7 +82,7 @@ public class CompositeActionExecuter extends ActionExecuterAbstractBase
             for (Action subAction : ((CompositeAction) action).getActions())
             {
                 // We don't check the conditions of sub-actions and they don't have an execution history
-                this.actionService.directActionExecution(subAction, FolderUploadRuleHandler.resolveMergedFolder(actionedUponNodeRef));
+                this.actionService.directActionExecution(subAction, actionedUponNodeRef);
             }
         }
     }

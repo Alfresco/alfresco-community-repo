@@ -62,12 +62,12 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
 
 /**
- * Share and ADW upload a folder one file at a time, so a folder rule can run before all of the files have arrived. This class makes the late files follow the folder:
+ * Share and ADW upload a folder one file at a time, so a folder rule can run before all files have arrived. This class handles the late files:
  * <ul>
- * <li>Move rule: a late file is moved into the folder that the rule already moved.</li>
- * <li>Deep copy rule: a late file is also copied into the folder's copy.</li>
+ * <li>Move rule: late files go into the folder that was already moved.</li>
+ * <li>Deep copy rule: late files are also copied to the folder's copy.</li>
  * </ul>
- * A moved or copied folder is marked with an aspect. The mark is ignored once no file has arrived for the configured number of minutes.
+ * Tracking stops when no file has arrived for the configured number of minutes.
  */
 @SuppressWarnings("PMD.GodClass")
 public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChildAssociationPolicy, CopyServicePolicies.OnCopyNodePolicy
@@ -82,7 +82,6 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     public static final QName PROP_RULE_COPY_LAST_ACTIVITY = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyLastActivity");
 
     private static final String KEY_NEW_CHILDREN = FolderUploadRuleHandler.class.getName() + ".newChildren";
-    private static final String KEY_MERGED_FOLDERS = FolderUploadRuleHandler.class.getName() + ".mergedFolders";
 
     private NodeService nodeService;
     private FileFolderService fileFolderService;
@@ -144,7 +143,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     }
 
     /**
-     * The marks belong to the original folder, so they are never copied.
+     * A copy of a folder does not get the folder's tracking.
      */
     @Override
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
@@ -171,9 +170,9 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     }
 
     /**
-     * If the same rule recently moved a folder with this name from the same place, moves this folder's contents into it.
+     * If this rule recently moved a folder with the same name, moves this folder's files into it.
      *
-     * @return true if the contents were merged, false if the folder should be moved as usual
+     * @return true if the files were moved, false if the folder should be moved as usual
      */
     public boolean mergeIntoPreviouslyMovedFolder(Action ruleAction, NodeRef folder, NodeRef sourceParent, NodeRef destinationParent) throws FileNotFoundException
     {
@@ -196,38 +195,27 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         moveContents(folder, movedFolder);
         deleteIfEmpty(folder);
         markRuleMovedFolder(ruleAction, movedFolder, sourceParent);
-        TransactionalResourceHelper.getMap(KEY_MERGED_FOLDERS).put(folder, movedFolder);
         return true;
     }
 
-    /**
-     * Returns the folder that {@code folder} was merged into in this transaction, so the rule's other actions run on a folder that still exists.
-     */
-    public static NodeRef resolveMergedFolder(NodeRef folder)
-    {
-        Map<NodeRef, NodeRef> mergedFolders = AlfrescoTransactionSupport.getResource(KEY_MERGED_FOLDERS);
-        return mergedFolders == null ? folder : mergedFolders.getOrDefault(folder, folder);
-    }
-
-    // Folders with the same name are merged; a file whose name is taken is renamed (a.txt becomes a-1.txt).
+    // Same-name folders are merged. Same-name files are renamed, for example a.txt to a-1.txt.
     private void moveContents(NodeRef fromFolder, NodeRef toFolder) throws FileNotFoundException
     {
         for (NodeRef child : getChildren(fromFolder))
         {
             String name = getName(child);
             NodeRef existing = nodeService.getChildByName(toFolder, ContentModel.ASSOC_CONTAINS, name);
-            if (existing == null)
-            {
-                fileFolderService.move(child, toFolder, null);
-            }
-            else if (isFolder(child) && isFolder(existing))
+            if (isFolder(child) && existing != null && isFolder(existing))
             {
                 moveContents(child, existing);
                 deleteIfEmpty(child);
+                continue;
             }
-            else
+            fileFolderService.move(child, toFolder, existing == null ? null : getFreeName(toFolder, name));
+            // If the folder was also copied, copy the merged file too.
+            if (nodeService.hasAspect(toFolder, ASPECT_RULE_COPY_TRACKING))
             {
-                fileFolderService.move(child, toFolder, getFreeName(toFolder, name));
+                queueForCopy(nodeService.getPrimaryParent(child));
             }
         }
     }
@@ -241,7 +229,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
                 return;
             }
         }
-        // The empty folder is only a leftover of the upload, so skip the trashcan.
+        // The empty folder is not needed, so do not keep it in the trashcan.
         nodeService.addAspect(folder, ContentModel.ASPECT_TEMPORARY, null);
         nodeService.deleteNode(folder);
     }
@@ -262,7 +250,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     // ----- Deep copy rule -----
 
     /**
-     * Marks a folder that a rule has just deep copied, and each of its subfolders, with their copy.
+     * Marks a copied folder and its subfolders with where they were copied to.
      */
     public void trackCopiedFolder(Action ruleAction, NodeRef folder, NodeRef copy)
     {
@@ -274,7 +262,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
 
     private void markCopiedFolder(NodeRef folder, NodeRef copy)
     {
-        // A folder copied by more than one rule keeps all of its copies.
+        // Several rules can copy the same folder, so keep every copy.
         List<NodeRef> copies = isCopyActive(folder) ? getCopies(folder) : new ArrayList<>();
         if (!copies.contains(copy))
         {
@@ -301,8 +289,16 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        // Keep the mark while rules are disabled, for example during a bulk import.
-        if (!isNewNode || !childAssocRef.isPrimary() || !ruleService.isEnabled())
+        if (isNewNode && childAssocRef.isPrimary())
+        {
+            queueForCopy(childAssocRef);
+        }
+    }
+
+    private void queueForCopy(ChildAssociationRef childAssocRef)
+    {
+        // Do nothing while rules are disabled, for example during a bulk import.
+        if (!ruleService.isEnabled())
         {
             return;
         }
@@ -312,7 +308,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
             writeMark(folder, () -> nodeService.removeAspect(folder, ASPECT_RULE_COPY_TRACKING));
             return;
         }
-        // Copy just before commit, once the upload has written the file content.
+        // Copy at the end of the transaction, when the file content is written.
         Set<ChildAssociationRef> newChildren = TransactionalResourceHelper.getSet(KEY_NEW_CHILDREN);
         newChildren.add(childAssocRef);
         AlfrescoTransactionSupport.bindListener(copyBeforeCommit);
@@ -321,7 +317,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     private void copyNewChildren()
     {
         Set<ChildAssociationRef> newChildren = TransactionalResourceHelper.getSet(KEY_NEW_CHILDREN);
-        // A copy can land in another copied folder, so repeat until nothing new is left.
+        // A copy can add files to another copied folder, so repeat until nothing is left.
         while (!newChildren.isEmpty())
         {
             List<ChildAssociationRef> toCopy = new ArrayList<>(newChildren);
@@ -330,14 +326,14 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
             {
                 copyNewChild(child.getChildRef(), child.getParentRef());
             }
-            // Rules triggered by the copies must also run before this transaction commits.
+            // Run the rules that the copies triggered.
             ruleService.executePendingRules();
         }
     }
 
     private void copyNewChild(NodeRef child, NodeRef folder)
     {
-        // Skip a child that was deleted or moved away before commit.
+        // Skip files that were deleted or moved away.
         if (!nodeService.exists(child) || !folder.equals(nodeService.getPrimaryParent(child).getParentRef()))
         {
             return;
@@ -346,7 +342,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         boolean copied = false;
         for (NodeRef copyFolder : getCopies(folder))
         {
-            // Never replace something that is already in the copy.
+            // Never replace a file that is already in the copy.
             if (!nodeService.exists(copyFolder) || nodeService.getChildByName(copyFolder, ContentModel.ASSOC_CONTAINS, name) != null)
             {
                 continue;
@@ -376,7 +372,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         }
     }
 
-    // A copied folder stays active while files keep arriving in it or in a copied folder above it.
+    // Tracking continues while files keep arriving in this folder or a parent folder.
     private boolean isCopyActive(NodeRef folder)
     {
         for (NodeRef node = folder; node != null && nodeService.hasAspect(node, ASPECT_RULE_COPY_TRACKING); node = getParent(node))
@@ -408,7 +404,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
 
     // ----- Shared helpers -----
 
-    // Only rules that run in the foreground and do not apply to subfolders. The action can sit inside the rule's composite action.
+    // Only rules that do not run in the background or apply to subfolders. The action may be inside a composite action.
     private boolean isSupportedRule(Action action)
     {
         NodeRef actionNode = action.getNodeRef();
@@ -424,7 +420,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         });
     }
 
-    // Any user uploading to the folder may update the mark, and updating it must not change the folder's modified date.
+    // Any uploader can update the mark, and the folder's modified date stays the same.
     private void writeMark(NodeRef folder, Runnable write)
     {
         AuthenticationUtil.runAsSystem(() -> {

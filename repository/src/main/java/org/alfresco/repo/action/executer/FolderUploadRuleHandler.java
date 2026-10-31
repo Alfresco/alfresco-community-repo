@@ -45,7 +45,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleModel;
-import org.alfresco.repo.rule.RuntimeRuleService;
+import org.alfresco.repo.rule.RuleServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
@@ -89,7 +89,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     private DictionaryService dictionaryService;
     private PolicyComponent policyComponent;
     private BehaviourFilter behaviourFilter;
-    private RuntimeRuleService ruleService;
+    private RuleServiceImpl ruleService;
     private long windowMillis = 30 * 60_000L;
 
     private final TransactionListenerAdapter copyBeforeCommit = new TransactionListenerAdapter() {
@@ -125,7 +125,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         this.behaviourFilter = behaviourFilter;
     }
 
-    public void setRuleService(RuntimeRuleService ruleService)
+    public void setRuleService(RuleServiceImpl ruleService)
     {
         this.ruleService = ruleService;
     }
@@ -183,6 +183,7 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
         }
         NodeRef movedFolder = nodeService.getChildByName(destinationParent, ContentModel.ASSOC_CONTAINS, getName(folder));
         boolean movedBySameRule = movedFolder != null
+                && !movedFolder.equals(folder)
                 && nodeService.hasAspect(movedFolder, ASPECT_RULE_MOVE_TRACKING)
                 && isRecent((Date) nodeService.getProperty(movedFolder, PROP_RULE_MOVE_LAST_ACTIVITY))
                 && sourceParent.equals(nodeService.getProperty(movedFolder, PROP_RULE_MOVE_SOURCE_PARENT))
@@ -300,7 +301,8 @@ public class FolderUploadRuleHandler implements NodeServicePolicies.OnCreateChil
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        if (!isNewNode || !childAssocRef.isPrimary())
+        // Keep the mark while rules are disabled, for example during a bulk import.
+        if (!isNewNode || !childAssocRef.isPrimary() || !ruleService.isEnabled())
         {
             return;
         }

@@ -64,7 +64,7 @@ import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleModel;
-import org.alfresco.repo.rule.RuntimeRuleService;
+import org.alfresco.repo.rule.RuleServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.CompositeAction;
@@ -90,7 +90,7 @@ public class FolderUploadRuleHandlerUnitTest
     private final NodeService nodeService = mock(NodeService.class);
     private final FileFolderService fileFolderService = mock(FileFolderService.class);
     private final DictionaryService dictionaryService = mock(DictionaryService.class);
-    private final RuntimeRuleService ruleService = mock(RuntimeRuleService.class);
+    private final RuleServiceImpl ruleService = mock(RuleServiceImpl.class);
     private final Action ruleAction = mock(Action.class);
 
     private final NodeRef ruleNode = node("rule");
@@ -117,6 +117,7 @@ public class FolderUploadRuleHandlerUnitTest
         handler.setRuleService(ruleService);
 
         when(nodeService.exists(any(NodeRef.class))).thenReturn(true);
+        when(ruleService.isEnabled()).thenReturn(true);
         when(dictionaryService.isSubClass(ContentModel.TYPE_FOLDER, ContentModel.TYPE_FOLDER)).thenReturn(true);
 
         // Share saves a rule's action inside a composite action.
@@ -187,10 +188,14 @@ public class FolderUploadRuleHandlerUnitTest
     }
 
     @Test
-    public void doesNotMergeForAnotherRuleOrAfterWindow() throws Exception
+    public void doesNotMergeForAnotherRuleItselfOrAfterWindow() throws Exception
     {
         movedMark("another-action", NOW);
         assertFalse("Another rule's folder must not be reused", handler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
+
+        when(nodeService.getChildByName(src, ContentModel.ASSOC_CONTAINS, "build")).thenReturn(uploadedFolder);
+        when(nodeService.hasAspect(uploadedFolder, ASPECT_RULE_MOVE_TRACKING)).thenReturn(true);
+        assertFalse("A folder moved into its own parent must not merge into itself", handler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, src));
 
         movedMark(ACTION_ID, EXPIRED);
         assertFalse("An expired mark must be ignored", handler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
@@ -268,11 +273,16 @@ public class FolderUploadRuleHandlerUnitTest
     }
 
     @Test
-    public void stopsCopyingAfterWindow() throws Exception
+    public void stopsCopyingAfterWindowOrWhileRulesAreDisabled() throws Exception
     {
         copyMark(uploadedFolder, EXPIRED, node("copy"));
         ChildAssociationRef association = parent(file(node("file2"), "file2.txt"), uploadedFolder);
 
+        when(ruleService.isEnabled()).thenReturn(false);
+        handler.onCreateChildAssociation(association, true);
+        verify(nodeService, never()).removeAspect(uploadedFolder, ASPECT_RULE_COPY_TRACKING);
+
+        when(ruleService.isEnabled()).thenReturn(true);
         handler.onCreateChildAssociation(association, true);
         TransactionSynchronizationUtils.triggerBeforeCommit(false);
 

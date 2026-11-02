@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -51,7 +52,6 @@ import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus.Statu
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -83,31 +83,36 @@ public class HoldBulkServiceTest extends BaseRMTestCase
         doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private HoldBulkStatus holdBulkStatus;
-            private final ResultSet resultSet = mock(ResultSet.class);
+            // The bulk operation must still be running when it is cancelled, so the first page of work is only
+            // returned once the cancellation has been requested
+            private final CountDownLatch workRequested = new CountDownLatch(1);
+            private final CountDownLatch cancelRequested = new CountDownLatch(1);
 
             public void given()
             {
                 Mockito.when(resultSet.getNumberFound()).thenReturn(4L);
-                Mockito.when(resultSet.hasMore()).thenReturn(false).thenReturn(true).thenReturn(false);
+                Mockito.when(resultSet.hasMore()).thenReturn(false);
                 Mockito.when(resultSet.getNodeRefs())
                         .thenAnswer((Answer<List<NodeRef>>) invocationOnMock -> {
-                            await().pollDelay(1, SECONDS).until(() -> true);
-                            return List.of(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()),
-                                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()));
+                            workRequested.countDown();
+                            cancelRequested.await(60, SECONDS);
+                            return Collections.emptyList();
                         });
                 // create a hold
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
             }
 
-            public void when()
+            public void when() throws Exception
             {
                 BulkOperation bulkOperation = new BulkOperation(new Query("afts", "*", ""), "ADD");
                 // execute the bulk operation
                 holdBulkStatus = holdBulkService.execute(hold, bulkOperation);
+                assertTrue("The bulk operation did not request any work", workRequested.await(30, SECONDS));
                 // cancel the bulk operation
                 holdBulkMonitor.cancelBulkOperation(holdBulkStatus.bulkStatusId(),
                         new BulkCancellationRequest("No reason"));
-                await().atMost(10, SECONDS)
+                cancelRequested.countDown();
+                await().atMost(30, SECONDS)
                         .until(() -> Objects.equals(
                                 holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
                                 Status.CANCELLED.getValue()));

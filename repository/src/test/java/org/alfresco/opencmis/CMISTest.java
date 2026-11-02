@@ -143,6 +143,8 @@ import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.audit.AuditQueryParameters;
+import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
@@ -2006,7 +2008,39 @@ public class CMISTest
                 }
             }, true, false);
 
-            Long fromToken = latestToken - 2;
+            // Audit entry ids are shared by all audit applications, so the latest three change log entries are not always contiguous
+            List<Long> latestEntryIds = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Long>>() {
+                public List<Long> execute() throws Exception
+                {
+                    final List<Long> entryIds = new ArrayList<>();
+                    AuditQueryParameters params = new AuditQueryParameters();
+                    params.setApplicationName(CMISConnector.CMIS_CHANGELOG_AUDIT_APPLICATION);
+                    params.setForward(false);
+                    params.setToId(latestToken + 1);
+                    auditDAO.findAuditEntries(new AuditQueryCallback() {
+                        public boolean valuesRequired()
+                        {
+                            return false;
+                        }
+
+                        public boolean handleAuditEntry(Long entryId, String applicationName, String user, long time, Map<String, Serializable> values)
+                        {
+                            entryIds.add(entryId);
+                            return true;
+                        }
+
+                        public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+                        {
+                            return true;
+                        }
+                    }, params, 3);
+                    return entryIds;
+                }
+            }, true, false);
+            assertEquals(3, latestEntryIds.size());
+            assertEquals(latestToken, latestEntryIds.get(0));
+
+            Long fromToken = latestEntryIds.get(2);
             changeLogToken.setValue(fromToken.toString());
 
             ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("20"));

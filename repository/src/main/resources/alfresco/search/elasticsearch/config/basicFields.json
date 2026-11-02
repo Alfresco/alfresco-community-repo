@@ -78,7 +78,12 @@
             "copy_to": "ANCESTOR"
         },
         "TAG": {
-            "type": "keyword"
+            "type": "keyword",
+            "fields": {
+                "text": {
+                    "type": "text"
+                }
+            }
         },
         "TAG_untokenized": {
             "type": "alias",

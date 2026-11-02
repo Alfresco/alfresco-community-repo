@@ -30,7 +30,7 @@ on:
         required: false
       DOCKER_USERNAME:
         required: false
-      GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY:
+      GH_APP_ENGINEERING_RO_PRIVATE_KEY:
         required: false
       NEXUS_PASSWORD:
         required: false
@@ -66,10 +66,10 @@ jobs:
     outputs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 2
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v19.7.1
         id: get-commit
         with:
           header-only: "true"
@@ -85,21 +85,21 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
           # Separate cache so this job (which only resolves plugins) never saves a partial Maven repository
           # under the main key. The prefix must not start with "maven" or other jobs' restore-keys would match it.
           cache-key-prefix: pre-commit-maven
-      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v19.7.1
 
   prepare:
     name: "Prepare"
@@ -112,13 +112,13 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -166,13 +166,13 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - uses: Alfresco/ya-pmd-scan@v4.4.1
@@ -200,13 +200,13 @@ jobs:
             testModule: repository
             testAttributes: "-Dtest=AllUnitTestsSuite"
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -256,13 +256,13 @@ jobs:
             compose-profile: with-transform-core-aio
             transformers-tag: 5.2.0
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
@@ -307,13 +307,13 @@ jobs:
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -343,13 +343,13 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -379,13 +379,13 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -416,13 +416,13 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -453,13 +453,13 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -489,13 +489,13 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -529,13 +529,13 @@ jobs:
       matrix:
         activemq: [ 'activemq6', 'activemq5' ]
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -606,13 +606,13 @@ jobs:
             disabledHostnameVerification: false
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -629,10 +629,10 @@ jobs:
       - name: "Generate GitHub App token"
         id: app-token
         if: ${{ matrix.mtls }}
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
-          private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
+          client-id: ${{ vars.GH_APP_ENGINEERING_RO_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_ENGINEERING_RO_PRIVATE_KEY }}
           permission-contents: read
       - name: "Generate Keystores and Truststores for Mutual TLS configuration"
         if: ${{ matrix.mtls }}
@@ -727,13 +727,13 @@ jobs:
             compose-file: docker-compose-minimal+batch-indexing.yml
             mvn-options: '-DsolrWaitTimeInSeconds=3'
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
@@ -777,13 +777,13 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Init"
@@ -816,13 +816,13 @@ jobs:
       matrix:
         part: [ 1, 2, 3, 4 ]
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
@@ -857,13 +857,13 @@ jobs:
       matrix:
         part: [ 1, 2, 3, 4 ]
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
@@ -898,13 +898,13 @@ jobs:
       matrix:
         part: [1, 2]
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"
@@ -928,7 +928,7 @@ jobs:
         run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -DsuiteXmlFile=testng-part${{ matrix.part }}.xml -Pags -Pall-tas-tests
       - name: "Configure AWS credentials"
         if: ${{ always() }}
-        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           aws-access-key-id: ${{ secrets.AGS_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AGS_AWS_SECRET_ACCESS_KEY }}
@@ -954,13 +954,13 @@ jobs:
       MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v18.20.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v18.20.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v18.20.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
       - name: "Build"

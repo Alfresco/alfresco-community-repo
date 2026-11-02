@@ -131,6 +131,7 @@ import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.Elast
 import org.alfresco.repo.search.impl.elasticsearch.model.FieldName;
 import org.alfresco.repo.search.impl.elasticsearch.query.AlfrescoDefaultTextFields;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.FieldQueryTransformer;
+import org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants;
 import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.repo.search.impl.elasticsearch.util.ThrowingFunction;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -155,7 +156,7 @@ public class LuceneQueryParser extends QueryParser
     /** The primary hierarchy field name in Elasticsearch. */
     public static final String PRIMARY_HIERARCHY_FIELD = "primaryHierarchy";
     /** The analysed multi-field of the TAG keyword field in Elasticsearch. */
-    public static final String TAG_ANALYSED_FIELD = FIELD_TAG + ".text";
+    public static final String TAG_ANALYSED_FIELD = ElasticsearchConstants.TAG_ANALYSED;
     /** The primary parent field name in Elasticsearch. */
     public static final String PRIMARY_PARENT_FIELD = "PRIMARYPARENT";
     public static final String PARENT_FIELD = "PARENT";

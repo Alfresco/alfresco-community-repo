@@ -2201,11 +2201,6 @@ public class NodesImpl implements Nodes
 
     private void validateNoWorkingCopyDescendants(NodeRef nodeRef, String nodeId)
     {
-        if (!isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false))
-        {
-            return;
-        }
-
         // The cascade delete is not permission filtered, so the scan has to run as system to also see descendants that are not readable by the caller. The caller's authorization to delete is unaffected: it is enforced separately when the delete itself is performed.
         boolean hasCheckedOutDescendant = AuthenticationUtil.runAsSystem(() -> {
             Deque<NodeRef> toVisit = new ArrayDeque<>();
@@ -2227,11 +2222,7 @@ public class NodesImpl implements Nodes
                     {
                         return true;
                     }
-
-                    if (isSubClass(childRef, ContentModel.TYPE_FOLDER, false))
-                    {
-                        toVisit.push(childRef);
-                    }
+                    toVisit.push(childRef);
                 }
             }
             return false;

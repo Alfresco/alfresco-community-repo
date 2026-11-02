@@ -52,6 +52,7 @@ import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus.Statu
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -84,7 +85,8 @@ public class HoldBulkServiceTest extends BaseRMTestCase
             private NodeRef hold;
             private HoldBulkStatus holdBulkStatus;
             // The bulk operation must still be running when it is cancelled, so the first page of work is only
-            // returned once the cancellation has been requested
+            // returned once the cancellation has been requested. Every page has work, so only the cancellation
+            // can end the bulk operation.
             private final CountDownLatch workRequested = new CountDownLatch(1);
             private final CountDownLatch cancelRequested = new CountDownLatch(1);
 
@@ -92,11 +94,16 @@ public class HoldBulkServiceTest extends BaseRMTestCase
             {
                 Mockito.when(resultSet.getNumberFound()).thenReturn(4L);
                 Mockito.when(resultSet.hasMore()).thenReturn(false);
+                List<NodeRef> page = List.of(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()),
+                        new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()));
                 Mockito.when(resultSet.getNodeRefs())
                         .thenAnswer((Answer<List<NodeRef>>) invocationOnMock -> {
-                            workRequested.countDown();
-                            cancelRequested.await(60, SECONDS);
-                            return Collections.emptyList();
+                            if (workRequested.getCount() > 0)
+                            {
+                                workRequested.countDown();
+                                cancelRequested.await(60, SECONDS);
+                            }
+                            return page;
                         });
                 // create a hold
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
@@ -112,10 +119,9 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 holdBulkMonitor.cancelBulkOperation(holdBulkStatus.bulkStatusId(),
                         new BulkCancellationRequest("No reason"));
                 cancelRequested.countDown();
+                // the bulk operation only finishes if the cancellation stops it
                 await().atMost(30, SECONDS)
-                        .until(() -> Objects.equals(
-                                holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
-                                Status.CANCELLED.getValue()));
+                        .until(() -> holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).endTime() != null);
             }
 
             public void then()
@@ -127,6 +133,8 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                         HoldBulkStatus.Status.CANCELLED.getValue());
                 assertEquals(holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).cancellationReason(),
                         "No reason");
+                // no more work was requested after the cancellation: one query to count the items, one for the first page
+                Mockito.verify(searchServiceMock, Mockito.times(2)).query(any(SearchParameters.class));
             }
         });
     }

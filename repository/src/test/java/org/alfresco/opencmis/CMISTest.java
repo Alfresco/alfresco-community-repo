@@ -2009,7 +2009,8 @@ public class CMISTest
             }, true, false);
 
             // Audit entry ids are shared by all audit applications, so the latest three change log entries are not always contiguous
-            List<Long> latestEntryIds = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Long>>() {
+            List<Long> latestEntryIds = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<>() {
+                @Override
                 public List<Long> execute() throws Exception
                 {
                     final List<Long> entryIds = new ArrayList<>();
@@ -2018,17 +2019,20 @@ public class CMISTest
                     params.setForward(false);
                     params.setToId(latestToken + 1);
                     auditDAO.findAuditEntries(new AuditQueryCallback() {
+                        @Override
                         public boolean valuesRequired()
                         {
                             return false;
                         }
 
+                        @Override
                         public boolean handleAuditEntry(Long entryId, String applicationName, String user, long time, Map<String, Serializable> values)
                         {
                             entryIds.add(entryId);
                             return true;
                         }
 
+                        @Override
                         public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
                         {
                             return true;

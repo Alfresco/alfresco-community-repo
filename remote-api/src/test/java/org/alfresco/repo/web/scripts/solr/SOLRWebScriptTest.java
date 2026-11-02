@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.web.scripts.solr;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         super.tearDown();
     }
 
-    private JSONArray getTransactions(long fromCommitTime, long txnId) throws Exception
+    private JSONArray getTransactions(long fromCommitTime, long txnId) throws IOException
     {
         // Limit the query to the test's own transaction (minTxnId inclusive, maxTxnId exclusive): other transactions
         // of the repository, e.g. from background jobs, can commit after fromCommitTime too
@@ -459,7 +460,8 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
     private long buildTransactions5()
     {
-        return txnHelper.doInTransaction(new RetryingTransactionCallback<Long>() {
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<>() {
+            @Override
             public Long execute() throws Throwable
             {
                 PropertyMap props = new PropertyMap();
@@ -534,7 +536,8 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
     private long buildTransactions6()
     {
-        return txnHelper.doInTransaction(new RetryingTransactionCallback<Long>() {
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<>() {
+            @Override
             public Long execute() throws Throwable
             {
                 PropertyMap props = new PropertyMap();
@@ -626,7 +629,8 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
     private long buildTransactions7()
     {
-        return txnHelper.doInTransaction(new RetryingTransactionCallback<Long>() {
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<>() {
+            @Override
             public Long execute() throws Throwable
             {
                 PropertyMap props = new PropertyMap();

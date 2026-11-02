@@ -102,7 +102,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
             }
 
-            public void when() throws Exception
+            public void when() throws InterruptedException
             {
                 BulkOperation bulkOperation = new BulkOperation(new Query("afts", "*", ""), "ADD");
                 // execute the bulk operation

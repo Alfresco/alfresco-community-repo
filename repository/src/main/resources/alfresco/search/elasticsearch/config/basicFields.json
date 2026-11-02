@@ -81,7 +81,8 @@
             "type": "keyword",
             "fields": {
                 "text": {
-                    "type": "text"
+                    "type": "text",
+                    "analyzer": "tag_analyzer"
                 }
             }
         },

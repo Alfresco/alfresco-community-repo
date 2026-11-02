@@ -103,12 +103,15 @@ public class CachedContentCleanupJobTest
     }
 
     /**
-     * Runs the cleaner once and waits until that run has finished. Each run sets a new Date object, so comparing the references tells whether the run has finished.
+     * Runs the cleaner once and waits until that run has finished. The cleaner thread only starts a run when it is notified while waiting, so the run is requested once the thread waits for it: it can only leave wait() when notified, so the request is never lost and never starts a second run. Each run sets a new Date object, so comparing the references tells whether the run has finished.
      */
     @SuppressWarnings("PMD.CompareObjectsWithEquals")
     private void runCleanerAndWait(Runnable startCleaner)
     {
         Date previousFinish = cleaner.getTimeFinished();
+        await().pollInterval(Duration.ofMillis(10))
+                .atMost(MAX_WAIT_TIMEOUT)
+                .until(() -> !cleaner.isRunning() && cleaner.getState() == Thread.State.WAITING);
         startCleaner.run();
 
         await().pollInterval(Duration.ofMillis(50))

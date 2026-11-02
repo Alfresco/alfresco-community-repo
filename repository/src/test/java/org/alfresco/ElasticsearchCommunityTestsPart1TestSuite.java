@@ -30,134 +30,68 @@ import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import org.alfresco.repo.search.impl.elasticsearch.ElasticsearchCategoryServiceTest;
-import org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSearchServiceTest;
+import org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSearchServiceFactoryTest;
+import org.alfresco.repo.search.impl.elasticsearch.ElasticsearchTagSupportIT;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ContentModelSynchronizerTest;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiserTest;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.FieldMappingBuilderTest;
+import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchIndexServiceIT;
+import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiserIT;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.IndexConfigurationInitializerIntegrationTest;
+import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.IndexingIT;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfigIT;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.DateFieldMapperTest;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.PathFieldMapperTest;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.SimpleFieldMapperTest;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.TextFieldMapperTest;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.ResourceUtilsTest;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.SettingsJsonUtilsTest;
-import org.alfresco.repo.search.impl.elasticsearch.model.FieldNameTest;
-import org.alfresco.repo.search.impl.elasticsearch.permission.FlatElasticsearchPermissionQueryFactoryTest;
+import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchFieldAnalyzersConfigIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.AspectQueryIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.ElasticsearchQueryHelperTest;
+import org.alfresco.repo.search.impl.elasticsearch.query.ClassQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.FilterAggregationsIT;
+import org.alfresco.repo.search.impl.elasticsearch.query.FilterQueryIT;
+import org.alfresco.repo.search.impl.elasticsearch.query.IgnoreUnsupportedPropertyIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.MultiValueFieldQueryIT;
+import org.alfresco.repo.search.impl.elasticsearch.query.PathQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.QueryByIdIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.ResultSetIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.SiteQueryIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.StoreRefStripperTest;
+import org.alfresco.repo.search.impl.elasticsearch.query.SortIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.TagQueryIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilderTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteMembershipCacheEvictionListenerTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteTermsAggregationBuilderTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.filter.DefaultAliveStateFilterBuilderTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilderTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.AFTSBooleanOperatorsAdaptorTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ElasticsearchAFTSQueryBuilderTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ElasticsearchQueryParserAdaptorTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.EscapeCharacterTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.FuzzyQueryTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PrefixQueryTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.RangeQueryTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.TermOrPhraseQueryTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.WildcardQueryTest;
-import org.alfresco.repo.search.impl.elasticsearch.query.sort.ElasticsearchSortBuilderTest;
-import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationHandlerTest;
-import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtilTest;
-import org.alfresco.repo.search.impl.elasticsearch.resultset.ElasticsearchResultSetBuilderTest;
-import org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTest;
+import org.alfresco.repo.search.impl.elasticsearch.query.TermsAggregationsIT;
+import org.alfresco.repo.search.impl.elasticsearch.query.TypeQueryIT;
 
 /**
- * Elasticsearch community tests, part 1 of 3: the unit tests plus part of the integration tests.
+ * Elasticsearch community integration tests, part 1 of 3: index set-up, content model sync, search services and the query ITs.
  * <p>
- * The suite is split only to shorten CI: each part runs as its own job. {@link ElasticsearchCommunityTestsTestSuite} still runs all parts.
+ * The unit tests of this area run in {@link AllUnitTestsSuite}. {@link ElasticsearchCommunityTestsTestSuite} runs all three parts.
  */
 @RunWith(Categories.class)
 @Suite.SuiteClasses({
         // Content model sync
-        ElasticsearchInitialiserTest.class,
+        ElasticsearchInitialiserIT.class,
+        ElasticsearchIndexServiceIT.class,
         ContentModelSynchronizerTest.class,
-        FieldMappingBuilderTest.class,
         IndexConfigurationInitializerIntegrationTest.class,
+        IndexingIT.class,
         ElasticsearchExactTermSearchConfigIT.class,
-        SettingsJsonUtilsTest.class,
-        ResourceUtilsTest.class,
-
-        // Field mappers
-        DateFieldMapperTest.class,
-        PathFieldMapperTest.class,
-        SimpleFieldMapperTest.class,
-        TextFieldMapperTest.class,
+        ElasticsearchFieldAnalyzersConfigIT.class,
 
         // Search service
-        ElasticsearchSearchServiceTest.class,
-        ElasticsearchCategoryServiceTest.class,
+        ElasticsearchSearchServiceFactoryTest.class,
+        ElasticsearchTagSupportIT.class,
 
-        // Model
-        FieldNameTest.class,
-
-        // Permissions
-        FlatElasticsearchPermissionQueryFactoryTest.class,
-
-        // Filters
-        DefaultAliveStateFilterBuilderTest.class,
-
-        // Query building
-        AFTSBooleanOperatorsAdaptorTest.class,
-        ElasticsearchAFTSQueryBuilderTest.class,
-        ElasticsearchQueryParserAdaptorTest.class,
-        ElasticsearchQueryHelperTest.class,
-        StoreRefStripperTest.class,
-        ElasticsearchHighlightBuilderTest.class,
-        ElasticsearchSortBuilderTest.class,
-
-        // Result sets
-        ElasticsearchResultSetBuilderTest.class,
-        AggregationNameUtilTest.class,
-        HighlightsHandlerTest.class,
-        AggregationHandlerTest.class,
-
-        // Aggregations
-        ElasticsearchAggregationBuilderTest.class,
-        SiteTermsAggregationBuilderTest.class,
-        SiteMembershipCacheEvictionListenerTest.class,
+        // Document Service
+        org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsServiceIT.class,
 
         // Query ITs
+        FilterQueryIT.class,
         QueryByIdIT.class,
         FilterAggregationsIT.class,
+        TermsAggregationsIT.class,
         ResultSetIT.class,
         SiteQueryIT.class,
         TagQueryIT.class,
+        TypeQueryIT.class,
         MultiValueFieldQueryIT.class,
+        PathQueryIT.class,
         AspectQueryIT.class,
-
-        // Lucene unit tests
-        FuzzyQueryTest.class,
-        PrefixQueryTest.class,
-        RangeQueryTest.class,
-        TermOrPhraseQueryTest.class,
-        WildcardQueryTest.class,
-        EscapeCharacterTest.class,
-
-        // language = afts ITs
-        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.TermQueryIT.class,
-        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.PermissionQueryIT.class,
-
-        // language = lucene ITs
-        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.ContentAndContentMetadataIT.class,
-        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.EscapeCharacterIT.class,
-        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PermissionQueryIT.class,
-
-        // language = cmis ITs
-        org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.EscapeCharacterIT.class,
-        org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.PhraseQueryIT.class
+        ClassQueryIT.class,
+        IgnoreUnsupportedPropertyIT.class,
+        SortIT.class
 })
 
 public class ElasticsearchCommunityTestsPart1TestSuite

@@ -30,47 +30,33 @@ import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiserIT;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.IndexingIT;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchFieldAnalyzersConfigIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.ClassQueryIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.FilterQueryIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.PathQueryIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.TermsAggregationsIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.TypeQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ExactTermQueryIT;
+import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.IndexLocaleAnalyzerIT;
 
 /**
- * Elasticsearch community tests, part 2 of 3.
+ * Elasticsearch community integration tests, part 2 of 3: AFTS and CMIS query language ITs.
  * <p>
- * The suite is split only to shorten CI: each part runs as its own job. {@link ElasticsearchCommunityTestsTestSuite} still runs all parts.
+ * The unit tests of this area run in {@link AllUnitTestsSuite}. {@link ElasticsearchCommunityTestsTestSuite} runs all three parts.
  */
 @RunWith(Categories.class)
 @Suite.SuiteClasses({
-        // Content model sync
-        ElasticsearchInitialiserIT.class,
-        IndexingIT.class,
-        ElasticsearchFieldAnalyzersConfigIT.class,
-
-        // Query ITs
-        FilterQueryIT.class,
-        TermsAggregationsIT.class,
-        TypeQueryIT.class,
-        PathQueryIT.class,
-        ClassQueryIT.class,
-
         // language = afts ITs
         ExactTermQueryIT.class,
+        IndexLocaleAnalyzerIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.TermQueryIT.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.afts.PhraseQueryIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.WildcardQueryIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.RangeQueryIT.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.afts.DateMathQueryIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.BooleanQueryIT.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ContentAndContentMetadataIT.class,
-
-        // language = lucene ITs
-        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PhraseQueryIT.class,
-        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.BooleanQueryIT.class,
-        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.FieldQueryIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.PermissionQueryIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.EscapeCharacterIT.class,
 
         // language = cmis ITs
+        org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.EscapeCharacterIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.TermQueryIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.PhraseQueryIT.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.WildcardQueryIT.class
 })
 

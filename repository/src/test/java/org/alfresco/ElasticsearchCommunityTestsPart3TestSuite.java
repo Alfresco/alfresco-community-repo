@@ -30,48 +30,23 @@ import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import org.alfresco.repo.search.impl.elasticsearch.ElasticsearchSearchServiceFactoryTest;
-import org.alfresco.repo.search.impl.elasticsearch.ElasticsearchTagSupportIT;
-import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchIndexServiceIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.IgnoreUnsupportedPropertyIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.SortIT;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.IndexLocaleAnalyzerIT;
-
 /**
- * Elasticsearch community tests, part 3 of 3.
+ * Elasticsearch community integration tests, part 3 of 3: Lucene query language ITs.
  * <p>
- * The suite is split only to shorten CI: each part runs as its own job. {@link ElasticsearchCommunityTestsTestSuite} still runs all parts.
+ * The unit tests of this area run in {@link AllUnitTestsSuite}. {@link ElasticsearchCommunityTestsTestSuite} runs all three parts.
  */
 @RunWith(Categories.class)
 @Suite.SuiteClasses({
-        // Content model sync
-        ElasticsearchIndexServiceIT.class,
-
-        // Search service
-        ElasticsearchSearchServiceFactoryTest.class,
-        ElasticsearchTagSupportIT.class,
-
-        // Document Service
-        org.alfresco.repo.search.impl.elasticsearch.admin.ElasticsearchDocumentsServiceIT.class,
-
-        // Query ITs
-        IgnoreUnsupportedPropertyIT.class,
-        SortIT.class,
-
-        // language = afts ITs
-        IndexLocaleAnalyzerIT.class,
-        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.WildcardQueryIT.class,
-        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.RangeQueryIT.class,
-        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.BooleanQueryIT.class,
-        org.alfresco.repo.search.impl.elasticsearch.query.language.afts.EscapeCharacterIT.class,
-
         // language = lucene ITs
         org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.TermQueryIT.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.WildcardQueryIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PhraseQueryIT.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.RangeQueryIT.class,
-
-        // language = cmis ITs
-        org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.TermQueryIT.class
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.BooleanQueryIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.ContentAndContentMetadataIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.EscapeCharacterIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.FieldQueryIT.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PermissionQueryIT.class
 })
 
 public class ElasticsearchCommunityTestsPart3TestSuite

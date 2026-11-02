@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.contentmodelsync;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.OWNER;
+import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.TAG_ANALYSED;
 
 import java.io.IOException;
 import jakarta.json.Json;
@@ -125,7 +125,7 @@ public class ElasticsearchIndexService
     }
 
     /**
-     * This method check if the basic mapping is loaded checking if a basic field mapping defined in resources/alfresco/search/elasticsearch/config/basicFields.json exists.
+     * This method checks if the basic mapping is loaded, by checking for the most recently added field in resources/alfresco/search/elasticsearch/config/basicFields.json. Checking a recent field rather than a long standing one means an index created by an earlier version is reported as not loaded, so that the missing fields are added to it.
      * 
      * @return true if mapping exists, false otherwise
      */
@@ -135,7 +135,7 @@ public class ElasticsearchIndexService
         String index = elasticsearchHttpClientFactory.getIndexName();
         try
         {
-            GetFieldMappingRequest request = new GetFieldMappingRequest.Builder().fields(OWNER).index(index).build();
+            GetFieldMappingRequest request = new GetFieldMappingRequest.Builder().fields(TAG_ANALYSED).index(index).build();
             GetFieldMappingResponse fieldMappingResponse = client.indices()
                     .getFieldMapping(request);
 

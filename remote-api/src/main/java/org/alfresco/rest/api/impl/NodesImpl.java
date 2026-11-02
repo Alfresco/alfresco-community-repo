@@ -2206,31 +2206,41 @@ public class NodesImpl implements Nodes
             return;
         }
 
-        Deque<NodeRef> toVisit = new ArrayDeque<>();
-        toVisit.push(nodeRef);
+        // The cascade delete is not permission filtered, so the scan has to run as system to also see descendants that are not readable by the caller. The caller's authorization to delete is unaffected: it is enforced separately when the delete itself is performed.
+        boolean hasCheckedOutDescendant = AuthenticationUtil.runAsSystem(() -> {
+            Deque<NodeRef> toVisit = new ArrayDeque<>();
+            toVisit.push(nodeRef);
 
-        while (!toVisit.isEmpty())
-        {
-            for (ChildAssociationRef childAssoc : nodeService.getChildAssocs(toVisit.pop()))
+            while (!toVisit.isEmpty())
             {
-                // cascade delete only follows primary child associations
-                if (!childAssoc.isPrimary())
+                for (ChildAssociationRef childAssoc : nodeService.getChildAssocs(toVisit.pop()))
                 {
-                    continue;
-                }
+                    // cascade delete only follows primary child associations
+                    if (!childAssoc.isPrimary())
+                    {
+                        continue;
+                    }
 
-                NodeRef childRef = childAssoc.getChildRef();
+                    NodeRef childRef = childAssoc.getChildRef();
 
-                if (nodeService.hasAspect(childRef, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(childRef, ContentModel.ASPECT_CHECKED_OUT))
-                {
-                    throw new ConstraintViolatedException("Cannot delete " + nodeId + " because it contains a checked out node: " + childRef.getId());
-                }
+                    if (nodeService.hasAspect(childRef, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(childRef, ContentModel.ASPECT_CHECKED_OUT))
+                    {
+                        return true;
+                    }
 
-                if (isSubClass(childRef, ContentModel.TYPE_FOLDER, false))
-                {
-                    toVisit.push(childRef);
+                    if (isSubClass(childRef, ContentModel.TYPE_FOLDER, false))
+                    {
+                        toVisit.push(childRef);
+                    }
                 }
             }
+            return false;
+        });
+
+        if (hasCheckedOutDescendant)
+        {
+            // Deliberately does not identify the descendant, which the caller may not be allowed to see.
+            throw new ConstraintViolatedException("Cannot delete " + nodeId + " because it contains a checked out node");
         }
     }
 

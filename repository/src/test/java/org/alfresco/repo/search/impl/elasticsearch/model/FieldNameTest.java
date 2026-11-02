@@ -74,6 +74,19 @@ public class FieldNameTest
     }
 
     @Test
+    public void shouldEncodeDottedNameToFixedIndexFieldName()
+    {
+        assertEquals("cm%3Acontent%2Esize", new FieldName("cm:content.size").encoded());
+        assertEquals("cm%3Acontent%2Esize", FieldName.encoded("cm:content.size"));
+    }
+
+    @Test
+    public void shouldDecodeDottedIndexFieldNameToRawName()
+    {
+        assertEquals("cm:content.size", FieldName.decode("cm%3Acontent%2Esize"));
+    }
+
+    @Test
     public void shouldGenerateUntokenizedName()
     {
         String name = "cm:content";

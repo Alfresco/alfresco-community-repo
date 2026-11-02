@@ -283,6 +283,12 @@
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-search-index-model</artifactId>
                 <version>${dependency.alfresco-search-index-model.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Excluded yasson because it transitively pulls in org.glassfish:jakarta.json which is banned by the enforcer.

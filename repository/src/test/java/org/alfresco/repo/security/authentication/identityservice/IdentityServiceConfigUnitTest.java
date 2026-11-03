@@ -27,9 +27,18 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Property;
 import org.junit.Test;
+
+import org.alfresco.util.log4j.Log4jAppenderUtil;
 
 public class IdentityServiceConfigUnitTest
 {
@@ -119,5 +128,57 @@ public class IdentityServiceConfigUnitTest
         config.setAuthorizationAdditionalParams("duplicate=first,duplicate=last");
 
         assertThat(config.getAuthorizationAdditionalParams()).containsExactly(Map.entry("duplicate", "last"));
+    }
+
+    @Test
+    public void shouldNameRepositoryPropertyInMalformedEntryWarningsByDefault()
+    {
+        final List<String> warnings = captureParserWarnings(() -> config.setAuthorizationAdditionalParams("missingSeparator,valid=one"));
+
+        assertThat(warnings).containsExactly(
+                "Ignoring malformed entry 1 in identity-service.authorization.additional-params: missing '=' separator");
+        assertThat(config.getAuthorizationAdditionalParams()).containsExactly(Map.entry("valid", "one"));
+    }
+
+    @Test
+    public void shouldNameGivenPropertyInMalformedEntryWarnings()
+    {
+        final String propertyName = "aos.identity-service.authorization.additional-params";
+
+        final List<String> warnings = captureParserWarnings(() -> config.setAuthorizationAdditionalParams(
+                "missingSeparator,=missingName,broken='one' two,valid=one,unterminated='one", propertyName));
+
+        assertThat(warnings).containsExactly(
+                "Ignoring malformed entry 1 in " + propertyName + ": missing '=' separator",
+                "Ignoring malformed entry 2 in " + propertyName + ": empty parameter name",
+                "Ignoring malformed entry 3 in " + propertyName + ": unexpected characters after quoted value",
+                "Ignoring malformed entry 5 in " + propertyName + ": unterminated quoted value");
+        assertThat(config.getAuthorizationAdditionalParams()).containsExactly(Map.entry("valid", "one"));
+    }
+
+    private static List<String> captureParserWarnings(Runnable action)
+    {
+        final List<String> warnings = new CopyOnWriteArrayList<>();
+        final AbstractAppender appender = new AbstractAppender("AdditionalParamsWarnings", null, null, true, Property.EMPTY_ARRAY) {
+            @Override
+            public void append(LogEvent event)
+            {
+                if (event.getLevel() == Level.WARN)
+                {
+                    warnings.add(event.getMessage().getFormattedMessage());
+                }
+            }
+        };
+        final org.apache.logging.log4j.Logger logger = LogManager.getLogger(AdditionalAuthorizationParametersParser.class);
+        Log4jAppenderUtil.addAbstractAppenderToLogger(appender, logger);
+        try
+        {
+            action.run();
+        }
+        finally
+        {
+            Log4jAppenderUtil.removeAbstractAppenderFromLogger(appender, logger);
+        }
+        return warnings;
     }
 }

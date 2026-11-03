@@ -87,6 +87,24 @@ public class FieldNameTest
     }
 
     @Test
+    public void shouldEncodeElasticsearchReservedCharactersToFixedIndexFieldName()
+    {
+        assertEquals("my%3Afield%2Dname", FieldName.encoded("my:field-name"));
+        assertEquals("my%3Afield%2Aname", FieldName.encoded("my:field*name"));
+        assertEquals("my%3Afield%2Bname", FieldName.encoded("my:field+name"));
+        assertEquals("my%3Afield%20name", FieldName.encoded("my:field name"));
+    }
+
+    @Test
+    public void shouldDecodeElasticsearchReservedCharactersToRawName()
+    {
+        assertEquals("my:field-name", FieldName.decode("my%3Afield%2Dname"));
+        assertEquals("my:field*name", FieldName.decode("my%3Afield%2Aname"));
+        assertEquals("my:field+name", FieldName.decode("my%3Afield%2Bname"));
+        assertEquals("my:field name", FieldName.decode("my%3Afield%20name"));
+    }
+
+    @Test
     public void shouldGenerateUntokenizedName()
     {
         String name = "cm:content";

@@ -124,6 +124,7 @@ import org.jaxen.saxpath.base.XPathReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.alfresco.elasticsearch.shared.ElasticsearchConstants;
 import org.alfresco.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
@@ -155,7 +156,7 @@ public class LuceneQueryParser extends QueryParser
     /** The primary hierarchy field name in Elasticsearch. */
     public static final String PRIMARY_HIERARCHY_FIELD = "primaryHierarchy";
     /** The analysed multi-field of the TAG keyword field in Elasticsearch. */
-    public static final String TAG_ANALYSED_FIELD = FIELD_TAG + ".text";
+    public static final String TAG_ANALYSED_FIELD = ElasticsearchConstants.TAG + ".text";
     /** The primary parent field name in Elasticsearch. */
     public static final String PRIMARY_PARENT_FIELD = "PRIMARYPARENT";
     public static final String PARENT_FIELD = "PARENT";

@@ -7282,10 +7282,16 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // f2 only holds a secondary link, so neither the cascade delete nor the validation reaches the checked out document
         deleteNode(f2Id);
+        assertTrue(existsArchiveNode(f2Id));
 
         // the checked out document and its primary parent are untouched
-        getSingle(URL_NODES, f1Id, null, null, 200);
-        getSingle(URL_NODES, d1Id, null, null, 200);
+        Node f1Resp = RestApiUtil.parseRestApiEntry(getSingle(URL_NODES, f1Id, null, null, 200).getJsonResponse(), Node.class);
+        assertEquals(f1Id, f1Resp.getId());
+        assertFalse(existsArchiveNode(f1Id));
+
+        Node d1Resp = RestApiUtil.parseRestApiEntry(getSingle(URL_NODES, d1Id, null, null, 200).getJsonResponse(), Node.class);
+        assertTrue("Document should still be checked out", d1Resp.getAspectNames().contains("cm:checkedOut"));
+        assertFalse(existsArchiveNode(d1Id));
 
         // -ve test - the primary parent is still protected
         deleteNode(f1Id, 409);

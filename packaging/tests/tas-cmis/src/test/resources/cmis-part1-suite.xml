@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="CMISSuites-part1" parallel="classes" thread-count="1">
+	<listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+	</listeners>
+    <!-- CI runs cmis-suite.xml in two halves of similar duration. This half lists its classes explicitly;
+         part2 runs the rest of the package, so new classes are picked up there. Keep both files in sync. -->
+	<test name="CMIS Tests - part1">
+		<classes>
+            <class name="org.alfresco.cmis.AppendContentStreamTests"/>
+            <class name="org.alfresco.cmis.CancelCheckOutTests"/>
+            <class name="org.alfresco.cmis.CopyTests"/>
+            <class name="org.alfresco.cmis.CreateFolderTests"/>
+            <class name="org.alfresco.cmis.DeleteContentStreamTests"/>
+            <class name="org.alfresco.cmis.DeleteTests"/>
+            <class name="org.alfresco.cmis.GetAllVersionsTests"/>
+            <class name="org.alfresco.cmis.GetChildrenTests"/>
+            <class name="org.alfresco.cmis.GetDescendantsTests"/>
+            <class name="org.alfresco.cmis.GetFolderParentTests"/>
+            <class name="org.alfresco.cmis.GetFolderTreeTests"/>
+            <class name="org.alfresco.cmis.GetObjectOfLatestVersionTests"/>
+            <class name="org.alfresco.cmis.GetTypeChildrenTests"/>
+            <class name="org.alfresco.cmis.GetTypeDescendantsTests"/>
+            <class name="org.alfresco.cmis.IsPrivateWorkingCopyTests"/>
+            <class name="org.alfresco.cmis.MoveTests"/>
+            <class name="org.alfresco.cmis.RelationshipTests"/>
+            <class name="org.alfresco.cmis.RemoveObjectFromFolderTests"/>
+            <class name="org.alfresco.cmis.RenameTests"/>
+            <class name="org.alfresco.cmis.RepositoryInfoTests"/>
+            <class name="org.alfresco.cmis.SetContentTests"/>
+		</classes>
+	</test>
+</suite>

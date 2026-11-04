@@ -42,6 +42,12 @@
             </properties>
         </profile>
         <profile>
+            <id>run-restapi-part4</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/part4-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <profile>
             <id>elasticsearch-e2e-tests-part1</id>
             <properties>
                 <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/elasticsearch-e2e-part1-suite.xml</suiteXmlFile>

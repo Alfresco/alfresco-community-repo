@@ -45,6 +45,7 @@ import org.junit.runner.RunWith;
         // The following packages are run by Pt1. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\..*Test",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.hold\\..*Test",
 
         // Exclude all UnitTests
         "!.*UnitTest",

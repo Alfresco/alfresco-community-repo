@@ -45,14 +45,14 @@ final class AdditionalAuthorizationParametersParser
     private AdditionalAuthorizationParametersParser()
     {}
 
-    /** Parses all configured entries into an insertion-ordered parameter map. */
-    static Map<String, String> parse(String additionalParams)
+    /** Parses all configured entries into an insertion-ordered parameter map, naming {@code propertyName} in warnings. */
+    static Map<String, String> parse(String additionalParams, String propertyName)
     {
         final Map<String, String> parsedParams = new LinkedHashMap<>();
         final List<String> entries = split(additionalParams);
         for (int index = 0; index < entries.size(); index++)
         {
-            parseEntry(entries.get(index), index + 1, parsedParams);
+            parseEntry(entries.get(index), index + 1, propertyName, parsedParams);
         }
         return parsedParams;
     }
@@ -115,7 +115,7 @@ final class AdditionalAuthorizationParametersParser
     }
 
     /** Validates and adds one configured parameter entry to the result map. */
-    private static void parseEntry(String entry, int entryNumber, Map<String, String> parsedParams)
+    private static void parseEntry(String entry, int entryNumber, String propertyName, Map<String, String> parsedParams)
     {
         final int separator = entry.indexOf(PARAM_SEPARATOR);
         if (separator < 0)
@@ -123,7 +123,7 @@ final class AdditionalAuthorizationParametersParser
             // Tolerate empty entries, e.g. a trailing or doubled delimiter.
             if (!entry.isBlank())
             {
-                logMalformedEntry(entryNumber, "missing '" + PARAM_SEPARATOR + "' separator");
+                logMalformedEntry(entryNumber, propertyName, "missing '" + PARAM_SEPARATOR + "' separator");
             }
             return;
         }
@@ -131,16 +131,16 @@ final class AdditionalAuthorizationParametersParser
         final String name = entry.substring(0, separator).strip();
         if (name.isEmpty())
         {
-            logMalformedEntry(entryNumber, "empty parameter name");
+            logMalformedEntry(entryNumber, propertyName, "empty parameter name");
             return;
         }
 
-        parseValue(entry.substring(separator + 1), entryNumber)
+        parseValue(entry.substring(separator + 1), entryNumber, propertyName)
                 .ifPresent(value -> parsedParams.put(name, value));
     }
 
     /** Parses an unquoted or single-quoted parameter value. */
-    private static Optional<String> parseValue(String configuredValue, int entryNumber)
+    private static Optional<String> parseValue(String configuredValue, int entryNumber, String propertyName)
     {
         final String value = configuredValue.strip();
         if (value.isEmpty() || value.charAt(0) != QUOTE)
@@ -168,18 +168,18 @@ final class AdditionalAuthorizationParametersParser
             }
             else
             {
-                logMalformedEntry(entryNumber, "unexpected characters after quoted value");
+                logMalformedEntry(entryNumber, propertyName, "unexpected characters after quoted value");
                 return Optional.empty();
             }
             position++;
         }
 
-        logMalformedEntry(entryNumber, "unterminated quoted value");
+        logMalformedEntry(entryNumber, propertyName, "unterminated quoted value");
         return Optional.empty();
     }
 
-    private static void logMalformedEntry(int entryNumber, String reason)
+    private static void logMalformedEntry(int entryNumber, String propertyName, String reason)
     {
-        LOGGER.warn("Ignoring malformed entry {} in identity-service.authorization.additional-params: {}", entryNumber, reason);
+        LOGGER.warn("Ignoring malformed entry {} in {}: {}", entryNumber, propertyName, reason);
     }
 }

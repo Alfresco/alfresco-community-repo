@@ -1722,7 +1722,7 @@ public class NodeServiceTest
                         barrier.await();
                         txnService.getRetryingTransactionHelper().doInTransaction(() -> nodeService.getPath(childNodeRef), true, true);
                     }
-                    catch (Throwable e)
+                    catch (Exception e)
                     {
                         // Expected: the request that finds the orphan fails, the recovery runs after rollback
                     }

@@ -4629,13 +4629,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Long childNodeId = lostNodePair.getFirst();
         NodeRef lostNodeRef = lostNodePair.getSecond();
 
-        if (!touchNode(childNodeId, null, null, false, false, true))
+        // touchNode returns false if the node is gone or already in this transaction
+        if (!touchNode(childNodeId, null, null, false, false, true) && !exists(childNodeId))
         {
-            // The node is gone or already in this transaction
-            if (!exists(childNodeId))
-            {
-                return false;
-            }
+            return false;
         }
         List<ChildAssocEntity> primaryParentAssocs = selectPrimaryParentAssocs(childNodeId);
         if (!primaryParentAssocs.isEmpty())

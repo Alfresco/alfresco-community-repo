@@ -70,7 +70,7 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
      */
     private NodeService nodeService;
     private CheckOutCheckInService checkOutCheckInService;
-    private FolderUploadRuleHandler folderUploadRuleHandler;
+    private FolderUploadCopyHandler folderUploadCopyHandler;
 
     /**
      * Sets the node service
@@ -96,9 +96,9 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
         this.checkOutCheckInService = checkOutCheckInService;
     }
 
-    public void setFolderUploadRuleHandler(FolderUploadRuleHandler folderUploadRuleHandler)
+    public void setFolderUploadCopyHandler(FolderUploadCopyHandler folderUploadCopyHandler)
     {
-        this.folderUploadRuleHandler = folderUploadRuleHandler;
+        this.folderUploadCopyHandler = folderUploadCopyHandler;
     }
 
     @Override
@@ -187,7 +187,7 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
             // Remember the copy so late files can be copied to it too.
             if (deepCopy)
             {
-                folderUploadRuleHandler.trackCopiedFolder(ruleAction, actionedUponNodeRef, newCopy);
+                folderUploadCopyHandler.trackCopiedFolder(ruleAction, actionedUponNodeRef, newCopy);
             }
         }
     }

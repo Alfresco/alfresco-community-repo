@@ -39,13 +39,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.ASPECT_RULE_COPY_TRACKING;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.ASPECT_RULE_MOVE_TRACKING;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_COPY_DESTINATIONS;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_COPY_LAST_ACTIVITY;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVE_ACTION_ID;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVE_LAST_ACTIVITY;
-import static org.alfresco.repo.action.executer.FolderUploadRuleHandler.PROP_RULE_MOVE_SOURCE_PARENT;
+import static org.alfresco.repo.action.executer.FolderUploadCopyHandler.ASPECT_RULE_COPY_TRACKING;
+import static org.alfresco.repo.action.executer.FolderUploadCopyHandler.PROP_RULE_COPY_DESTINATIONS;
+import static org.alfresco.repo.action.executer.FolderUploadCopyHandler.PROP_RULE_COPY_LAST_ACTIVITY;
+import static org.alfresco.repo.action.executer.FolderUploadMoveHandler.ASPECT_RULE_MOVE_TRACKING;
+import static org.alfresco.repo.action.executer.FolderUploadMoveHandler.PROP_RULE_MOVE_ACTION_ID;
+import static org.alfresco.repo.action.executer.FolderUploadMoveHandler.PROP_RULE_MOVE_LAST_ACTIVITY;
+import static org.alfresco.repo.action.executer.FolderUploadMoveHandler.PROP_RULE_MOVE_SOURCE_PARENT;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,7 +61,6 @@ import org.springframework.transaction.support.TransactionSynchronizationUtils;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.rule.RuleServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -79,7 +78,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
-public class FolderUploadRuleHandlerUnitTest
+public class FolderUploadHandlersUnitTest
 {
     private static final String ACTION_ID = "move-action-id";
     private static final Date NOW = new Date();
@@ -97,7 +96,8 @@ public class FolderUploadRuleHandlerUnitTest
     private final NodeRef uploadedFolder = node("src-build");
     private final NodeRef movedFolder = node("dst-build");
 
-    private FolderUploadRuleHandler handler;
+    private FolderUploadMoveHandler moveHandler;
+    private FolderUploadCopyHandler copyHandler;
 
     @Before
     public void setUp() throws Exception
@@ -106,13 +106,22 @@ public class FolderUploadRuleHandlerUnitTest
         AuthenticationUtil.setFullyAuthenticatedUser("alice");
         TransactionSynchronizationManager.initSynchronization();
 
-        handler = new FolderUploadRuleHandler();
-        handler.setNodeService(nodeService);
-        handler.setFileFolderService(fileFolderService);
-        handler.setDictionaryService(dictionaryService);
-        handler.setPolicyComponent(mock(PolicyComponent.class));
-        handler.setBehaviourFilter(mock(BehaviourFilter.class));
-        handler.setRuleService(ruleService);
+        FolderUploadRuleSupport support = new FolderUploadRuleSupport();
+        support.setNodeService(nodeService);
+        support.setDictionaryService(dictionaryService);
+        support.setBehaviourFilter(mock(BehaviourFilter.class));
+
+        copyHandler = new FolderUploadCopyHandler();
+        copyHandler.setNodeService(nodeService);
+        copyHandler.setFileFolderService(fileFolderService);
+        copyHandler.setRuleService(ruleService);
+        copyHandler.setSupport(support);
+
+        moveHandler = new FolderUploadMoveHandler();
+        moveHandler.setNodeService(nodeService);
+        moveHandler.setFileFolderService(fileFolderService);
+        moveHandler.setSupport(support);
+        moveHandler.setCopyHandler(copyHandler);
 
         when(nodeService.exists(any(NodeRef.class))).thenReturn(true);
         when(ruleService.isEnabled()).thenReturn(true);
@@ -154,7 +163,7 @@ public class FolderUploadRuleHandlerUnitTest
         parent(file, movedFolder);
         when(fileFolderService.copy(file, copy, "file2.txt")).thenReturn(mock(FileInfo.class));
 
-        assertTrue("The late folder should be merged", handler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
+        assertTrue("The late folder should be merged", moveHandler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
 
         verify(fileFolderService).move(file, movedFolder, null);
         verify(nodeService).deleteNode(uploadedFolder);
@@ -177,7 +186,7 @@ public class FolderUploadRuleHandlerUnitTest
         when(nodeService.getChildByName(movedFolder, ContentModel.ASSOC_CONTAINS, "sub")).thenReturn(existingSub);
         when(nodeService.getChildByName(existingSub, ContentModel.ASSOC_CONTAINS, "a.txt")).thenReturn(node("existing-a"));
 
-        assertTrue("The late folder should be merged", handler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
+        assertTrue("The late folder should be merged", moveHandler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
 
         verify(fileFolderService).move(clash, existingSub, "a-1.txt");
         verify(nodeService).deleteNode(sub);
@@ -188,14 +197,14 @@ public class FolderUploadRuleHandlerUnitTest
     public void doesNotMergeForAnotherRuleItselfOrAfterWindow() throws Exception
     {
         movedMark("another-action", NOW);
-        assertFalse("Another rule's folder must not be reused", handler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
+        assertFalse("Another rule's folder must not be reused", moveHandler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
 
         when(nodeService.getChildByName(src, ContentModel.ASSOC_CONTAINS, "build")).thenReturn(uploadedFolder);
         when(nodeService.hasAspect(uploadedFolder, ASPECT_RULE_MOVE_TRACKING)).thenReturn(true);
-        assertFalse("A folder moved into its own parent must not merge into itself", handler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, src));
+        assertFalse("A folder moved into its own parent must not merge into itself", moveHandler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, src));
 
         movedMark(ACTION_ID, EXPIRED);
-        assertFalse("An expired mark must be ignored", handler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
+        assertFalse("An expired mark must be ignored", moveHandler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
 
         verify(fileFolderService, never()).move(any(NodeRef.class), any(NodeRef.class), isNull());
         verify(nodeService, never()).deleteNode(any());
@@ -206,8 +215,8 @@ public class FolderUploadRuleHandlerUnitTest
     {
         when(nodeService.getProperty(ruleNode, RuleModel.PROP_EXECUTE_ASYNC)).thenReturn(true);
 
-        handler.markRuleMovedFolder(ruleAction, movedFolder, src);
-        handler.trackCopiedFolder(ruleAction, uploadedFolder, node("copy"));
+        moveHandler.markRuleMovedFolder(ruleAction, movedFolder, src);
+        copyHandler.trackCopiedFolder(ruleAction, uploadedFolder, node("copy"));
 
         verify(nodeService, never()).addAspect(any(), any(), anyMap());
     }
@@ -222,7 +231,7 @@ public class FolderUploadRuleHandlerUnitTest
         when(nodeService.getChildByName(secondCopy, ContentModel.ASSOC_CONTAINS, "sub")).thenReturn(node("sub-copy"));
         copyMark(uploadedFolder, NOW, copy);
 
-        handler.trackCopiedFolder(ruleAction, uploadedFolder, secondCopy);
+        copyHandler.trackCopiedFolder(ruleAction, uploadedFolder, secondCopy);
 
         verify(nodeService).addAspect(eq(uploadedFolder), eq(ASPECT_RULE_COPY_TRACKING),
                 argThat(mark -> List.of(copy, secondCopy).equals(mark.get(PROP_RULE_COPY_DESTINATIONS))));
@@ -245,7 +254,7 @@ public class FolderUploadRuleHandlerUnitTest
         });
 
         AuthenticationUtil.setFullyAuthenticatedUser("bob");
-        handler.onCreateChildAssociation(association, true);
+        copyHandler.onCreateChildAssociation(association, true);
         verify(fileFolderService, never()).copy(any(NodeRef.class), any(NodeRef.class), anyString());
         TransactionSynchronizationUtils.triggerBeforeCommit(false);
 
@@ -263,7 +272,7 @@ public class FolderUploadRuleHandlerUnitTest
         ChildAssociationRef association = parent(file(node("file2"), "file2.txt"), uploadedFolder);
         when(nodeService.getChildByName(copy, ContentModel.ASSOC_CONTAINS, "file2.txt")).thenReturn(node("existing"));
 
-        handler.onCreateChildAssociation(association, true);
+        copyHandler.onCreateChildAssociation(association, true);
         TransactionSynchronizationUtils.triggerBeforeCommit(false);
 
         verifyNoCopies();
@@ -276,11 +285,11 @@ public class FolderUploadRuleHandlerUnitTest
         ChildAssociationRef association = parent(file(node("file2"), "file2.txt"), uploadedFolder);
 
         when(ruleService.isEnabled()).thenReturn(false);
-        handler.onCreateChildAssociation(association, true);
+        copyHandler.onCreateChildAssociation(association, true);
         verify(nodeService, never()).removeAspect(uploadedFolder, ASPECT_RULE_COPY_TRACKING);
 
         when(ruleService.isEnabled()).thenReturn(true);
-        handler.onCreateChildAssociation(association, true);
+        copyHandler.onCreateChildAssociation(association, true);
         TransactionSynchronizationUtils.triggerBeforeCommit(false);
 
         verifyNoCopies();

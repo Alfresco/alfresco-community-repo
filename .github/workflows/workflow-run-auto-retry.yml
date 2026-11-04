@@ -21,7 +21,7 @@ jobs:
       HAS_TEAMS_WEBHOOK: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK != '' }}
     steps:
       - id: retry
-        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@v19.11.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           # These publish or propagate, so repeating them is not safe.
           non-retryable-jobs: |
@@ -53,7 +53,7 @@ jobs:
 
       - name: Report to Teams
         if: steps.retry.outputs.decision == 'escalate' && env.HAS_TEAMS_WEBHOOK == 'true'
-        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-workflow-run-notification@v19.11.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-workflow-run-notification@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           webhook-url: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK }}
           reason-code: ${{ steps.retry.outputs.reason-code }}

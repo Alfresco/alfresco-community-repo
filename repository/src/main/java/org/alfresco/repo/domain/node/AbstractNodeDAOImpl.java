@@ -4589,9 +4589,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                             if (assocId == null)
                             {
                                 // 'child' with missing parent assoc => collect lost+found orphan child
-                                if (lostNodePairs.add(lostNodePair))
+                                if (lostNodePairs.add(lostNodePair) && collectLostAndFoundNode(lostNodePair, lostName))
                                 {
-                                    collectLostAndFoundNode(lostNodePair, lostName);
                                     logger.error("ALF-13066: Orphan child node has been re-homed under lost_found: "
                                             + lostNodePair);
                                 }
@@ -4606,9 +4605,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                                     logger.error("ALF-12358: Deleted node - removed child assoc: " + assocId);
                                 }
 
-                                if (orphanChild && lostNodePairs.add(lostNodePair))
+                                if (orphanChild && lostNodePairs.add(lostNodePair) && collectLostAndFoundNode(lostNodePair, lostName))
                                 {
-                                    collectLostAndFoundNode(lostNodePair, lostName);
                                     logger.error("ALF-12358: Orphan child node has been re-homed under lost_found: "
                                             + lostNodePair);
                                 }
@@ -4626,10 +4624,29 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /**
      * TODO: Remove once ALF-12358 has been proven to be fixed i.e. no more orphans are created ... ever.
      */
-    private void collectLostAndFoundNode(Pair<Long, NodeRef> lostNodePair, String lostName)
+    private boolean collectLostAndFoundNode(Pair<Long, NodeRef> lostNodePair, String lostName)
     {
         Long childNodeId = lostNodePair.getFirst();
         NodeRef lostNodeRef = lostNodePair.getSecond();
+
+        if (!touchNode(childNodeId, null, null, false, false, true))
+        {
+            // The node is gone or already in this transaction
+            if (!exists(childNodeId))
+            {
+                return false;
+            }
+        }
+        List<ChildAssocEntity> primaryParentAssocs = selectPrimaryParentAssocs(childNodeId);
+        if (!primaryParentAssocs.isEmpty())
+        {
+            if (logger.isInfoEnabled())
+            {
+                logger.info("MNT-25998: Orphan child node already has a primary parent, not re-homing under lost_found: "
+                        + lostNodePair + " (primary parent assocs " + primaryParentAssocs.size() + ")");
+            }
+            return false;
+        }
 
         Long newParentNodeId = getOrCreateLostAndFoundContainer(lostNodeRef.getStoreRef()).getId();
 
@@ -4643,8 +4660,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 assocName,
                 true);
 
-        // Touch the node; all caches are fine
-        touchNode(childNodeId, null, null, false, false, false);
+        // The node was touched above, so it is already in this transaction
 
         // update cache
         boolean isRoot = false;
@@ -4653,6 +4669,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         setParentAssocsCached(childNodeId, parentAssocInfo);
 
         /* // Update ACLs for moved tree - note: actually a NOOP if oldParentAclId is null Long newParentAclId = newParentNode.getAclId(); Long oldParentAclId = null; // unknown accessControlListDAO.updateInheritance(childNodeId, oldParentAclId, newParentAclId); */
+        return true;
     }
 
     private Node getOrCreateLostAndFoundContainer(StoreRef storeRef)

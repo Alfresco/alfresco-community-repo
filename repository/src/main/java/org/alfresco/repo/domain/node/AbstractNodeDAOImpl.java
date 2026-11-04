@@ -4639,7 +4639,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             if (logger.isInfoEnabled())
             {
-                logger.info("MNT-25998: Orphan child node already has a primary parent, not re-homing under lost_found: "
+                logger.info("Orphan child node already has a primary parent, not re-homing under lost_found: "
                         + lostNodePair + " (primary parent assocs " + primaryParentAssocs.size() + ")");
             }
             return false;

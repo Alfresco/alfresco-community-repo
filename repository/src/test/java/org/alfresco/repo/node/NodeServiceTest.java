@@ -45,7 +45,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CyclicBarrier;
 import javax.sql.DataSource;
 
@@ -1712,6 +1714,7 @@ public class NodeServiceTest
 
             // Every thread sees the orphan and binds its own lost+found recovery
             final CyclicBarrier barrier = new CyclicBarrier(threadCount);
+            final Queue<Throwable> unexpectedErrors = new ConcurrentLinkedQueue<>();
             List<Thread> threads = new ArrayList<>(threadCount);
             for (int t = 0; t < threadCount; t++)
             {
@@ -1722,22 +1725,30 @@ public class NodeServiceTest
                         barrier.await();
                         txnService.getRetryingTransactionHelper().doInTransaction(() -> nodeService.getPath(childNodeRef), true, true);
                     }
+                    catch (ConcurrencyFailureException e)
+                    {
+                        // Expected: the request that finds the orphan fails with NonRootNodeWithoutParentsException,
+                        // and the lost+found recovery runs after rollback
+                    }
                     catch (Exception e)
                     {
-                        // Expected: the request that finds the orphan fails, the recovery runs after rollback
+                        unexpectedErrors.add(e);
                     }
                     finally
                     {
                         AuthenticationUtil.clearCurrentSecurityContext();
                     }
                 });
+                thread.setUncaughtExceptionHandler((th, e) -> unexpectedErrors.add(e));
                 thread.start();
                 threads.add(thread);
             }
             for (Thread thread : threads)
             {
                 thread.join(60000);
+                assertFalse("Worker thread " + thread.getName() + " did not finish within the timeout", thread.isAlive());
             }
+            assertTrue("Unexpected worker failures: " + unexpectedErrors, unexpectedErrors.isEmpty());
 
             assertEquals("Node " + childNodeId + " must have exactly one primary parent assoc", 1, countPrimaryParentAssocs(jdbcTemplate, childNodeId));
             txnService.getRetryingTransactionHelper().doInTransaction(() -> {

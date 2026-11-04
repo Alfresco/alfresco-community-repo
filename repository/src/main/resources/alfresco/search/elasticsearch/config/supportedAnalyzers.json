@@ -8,6 +8,12 @@
             "line_end_markers"
           ]
         },
+        "tag_analyzer": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "lowercase"
+          ]
+        },
         "locale_cross_text_index": {
           "tokenizer": "whitespace",
           "filter": [

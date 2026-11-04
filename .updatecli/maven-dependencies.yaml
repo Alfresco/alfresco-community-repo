@@ -29,6 +29,7 @@ sources:
       versionfilter:
         kind: '{{ $tengineAio.versionFilterKind }}'
         pattern: '{{ $tengineAio.version }}'
+        regex: '{{ $tengineAio.regex }}'
 
   transform-service:
     name: Alfresco Transform Service version
@@ -40,6 +41,7 @@ sources:
       versionfilter:
         kind: '{{ $trouter.versionFilterKind }}'
         pattern: '{{ $trouter.version }}'
+        regex: '{{ $trouter.regex }}'
 
 targets:
   transform-core-pom:

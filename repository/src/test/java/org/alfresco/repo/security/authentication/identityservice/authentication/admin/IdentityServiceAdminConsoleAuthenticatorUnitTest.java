@@ -78,6 +78,8 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Mock
     IdentityServiceFacade identityServiceFacade;
     @Mock
+    ProviderDetails providerDetails;
+    @Mock
     IdentityServiceConfig identityServiceConfig;
     @Mock
     AdminAuthenticationCookiesService cookiesService;
@@ -99,7 +101,6 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         initMocks(this);
         ClientRegistration clientRegistration = mock(ClientRegistration.class);
-        ProviderDetails providerDetails = mock(ProviderDetails.class);
         Scope scope = Scope.parse(Arrays.asList("openid", "profile", "email", "offline_access"));
 
         when(clientRegistration.getProviderDetails()).thenReturn(providerDetails);
@@ -109,6 +110,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(identityServiceFacade.getClientRegistration()).thenReturn(clientRegistration);
         when(request.getRequestURL()).thenReturn(adminConsoleURL);
         when(remoteUserMapper.getRemoteUser(request)).thenReturn(null);
+        when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of());
 
         authenticator = new IdentityServiceAdminConsoleAuthenticator();
         authenticator.setActive(true);
@@ -196,6 +198,61 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         assertTrue(authenticationRequest.getValue().contains("offline_access"));
         assertTrue(authenticationRequest.getValue().contains("audience=%s".formatted(audience)));
         assertTrue(authenticationRequest.getValue().contains("state"));
+    }
+
+    @Test
+    public void shouldAddEncodedAdditionalAuthorizationParameters() throws IOException
+    {
+        when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of(
+                "resourceServer", "Identity Provider unencrypted",
+                "custom&name", "a=b&c",
+                "literal+plus", "a+b",
+                "claims", "{\"userinfo\":{\"given_name\":null,\"email\":null}}"));
+        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid"));
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+
+        authenticator.requestAuthentication(request, response);
+
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertThat(authenticationRequest.getValue())
+                .contains("resourceServer=Identity%20Provider%20unencrypted")
+                .contains("custom%26name=a%3Db%26c")
+                .contains("literal%2Bplus=a%2Bb")
+                .contains("claims=%7B%22userinfo%22:%7B%22given_name%22:null,%22email%22:null%7D%7D");
+    }
+
+    @Test
+    public void shouldNotDuplicateExistingAuthorizationParameters() throws IOException
+    {
+        when(providerDetails.getAuthorizationUri())
+                .thenReturn("http://localhost:8999/auth?existing=original&encoded%5Fname=original&custom+name=original#fragment");
+        when(identityServiceConfig.getAuthorizationAdditionalParams()).thenReturn(Map.of(
+                "existing", "replacement",
+                "encoded_name", "replacement-encoded",
+                "custom name", "replacement-space",
+                "custom+name", "literal-plus",
+                "client_id", "replacement-client",
+                "additional", "value"));
+        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(REDIRECT_PATH);
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid"));
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+
+        authenticator.requestAuthentication(request, response);
+
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertThat(authenticationRequest.getValue())
+                .containsOnlyOnce("existing=original")
+                .containsOnlyOnce("encoded%5Fname=original")
+                .containsOnlyOnce("custom+name=original")
+                .containsOnlyOnce("client_id=alfresco")
+                .doesNotContain("existing=replacement")
+                .doesNotContain("encoded_name=replacement-encoded")
+                .doesNotContain("custom%20name=replacement-space")
+                .doesNotContain("client_id=replacement-client")
+                .contains("custom%2Bname=literal-plus")
+                .contains("additional=value")
+                .endsWith("#fragment");
     }
 
     @Test

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.alfresco</groupId>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>26.3.0.61-SNAPSHOT</version>
+    <version>26.3.0.94-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
     <url>http://www.alfresco.org/</url>
@@ -65,10 +65,10 @@
         <dependency.alfresco-server-root.version>8.0.1</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-core.version>5.4.4</dependency.alfresco-transform-core.version>
-        <dependency.alfresco-transform-service.version>4.4.4</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>5.5.0-A.3</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>4.5.0-A.2</dependency.alfresco-transform-service.version>
         <dependency.alfresco-greenmail.version>7.1</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>1.1.0-A.1</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>1.2.0-A.1</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
         <dependency.spring.version>7.0.9</dependency.spring.version>
@@ -76,7 +76,7 @@
         <dependency.micrometer.version>1.16.7</dependency.micrometer.version> <!-- should be in sync with micrometer-observation transitive dependency from spring-context -->
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.22.3</dependency.jackson.version>
-        <dependency.cxf.version>4.1.8</dependency.cxf.version>
+        <dependency.cxf.version>4.1.9</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>10.2</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.85</dependency.bouncycastle.version>
@@ -87,7 +87,7 @@
         <dependency.commons-dbcp.version>2.12.0</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.20.0</dependency.commons-io.version>
         <dependency.gson.version>2.13.1</dependency.gson.version>
-        <dependency.guava.version>33.3.1-jre</dependency.guava.version>
+        <dependency.guava.version>33.7.2-jre</dependency.guava.version>
         <dependency.httpclient.version>4.5.14</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.16</dependency.httpcore.version>
         <dependency.httpcomponents-httpclient5.version>5.6.4</dependency.httpcomponents-httpclient5.version>
@@ -107,7 +107,7 @@
         <dependency.poi.version>5.4.0</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>4.18.3</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
-        <dependency.netty.version>4.1.137.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
+        <dependency.netty.version>4.1.139.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>6.2.7</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>
@@ -139,7 +139,7 @@
         <dependency.jakarta-json-path.version>2.9.0</dependency.jakarta-json-path.version>
         <dependency.json-smart.version>2.5.2</dependency.json-smart.version>
         <alfresco.googledrive.version>5.0.0</alfresco.googledrive.version>
-        <alfresco.aos-module.version>3.4.2-A.3</alfresco.aos-module.version>
+        <alfresco.aos-module.version>3.5.0-A.2</alfresco.aos-module.version>
         <alfresco.api-explorer.version>26.3.0-A.4</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
@@ -790,7 +790,7 @@
             <dependency>
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
-                <version>7.5.10</version>
+                <version>7.6.1</version>
             </dependency>
             <dependency>
                 <groupId>com.networknt</groupId>
@@ -1250,6 +1250,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.4.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.5.0</version>
                     <configuration>
@@ -1440,4 +1445,37 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Attaches sources and javadoc to released artifacts, used by the release workflow -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

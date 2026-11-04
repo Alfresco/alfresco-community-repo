@@ -91,7 +91,6 @@ import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.QueryConstants.PROPERTY_FIELD_PREFIX;
 import static org.alfresco.repo.search.impl.QueryParserUtils.matchDataTypeDefinition;
 import static org.alfresco.repo.search.impl.QueryParserUtils.matchPropertyDefinition;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
 import static org.alfresco.repo.search.impl.elasticsearch.util.CollectionUtils.safe;
 import static org.alfresco.repo.site.SiteModel.TYPE_SITE;
 
@@ -132,6 +131,7 @@ import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.Elast
 import org.alfresco.repo.search.impl.elasticsearch.model.FieldName;
 import org.alfresco.repo.search.impl.elasticsearch.query.AlfrescoDefaultTextFields;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.FieldQueryTransformer;
+import org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants;
 import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.repo.search.impl.elasticsearch.util.ThrowingFunction;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -155,6 +155,8 @@ public class LuceneQueryParser extends QueryParser
     public static final String ID_FIELD = "_id";
     /** The primary hierarchy field name in Elasticsearch. */
     public static final String PRIMARY_HIERARCHY_FIELD = "primaryHierarchy";
+    /** The analysed multi-field of the TAG keyword field in Elasticsearch. */
+    public static final String TAG_ANALYSED_FIELD = ElasticsearchConstants.TAG_ANALYSED;
     /** The primary parent field name in Elasticsearch. */
     public static final String PRIMARY_PARENT_FIELD = "PRIMARYPARENT";
     public static final String PARENT_FIELD = "PARENT";
@@ -299,8 +301,9 @@ public class LuceneQueryParser extends QueryParser
         case FIELD_READER:
         case FIELD_DENIED:
         case FIELD_AUTHORITY:
-        case FIELD_TAG:
             return luceneTermQuery(fieldName, escape(queryText, true));
+        case FIELD_TAG:
+            return tagQuery(escape(queryText, true), quoted, untokenisedSearch);
         case FIELD_SITE:
             return siteQuery(queryText);
         case FIELD_ISUNSET:
@@ -749,20 +752,15 @@ public class LuceneQueryParser extends QueryParser
     Query uuidPrefixQuery(String id)
     {
         String field = ID_FIELD;
-        return booleanQuerySupplier.get().add(luceneTermQuery(ALIVE, "true"), BooleanClause.Occur.MUST)
-                .add(NodeRef.isNodeRef(id)
-                        ? lucenePrefixQuery(field, id.substring(id.lastIndexOf('/') + 1))
-                        : lucenePrefixQuery(field, id), BooleanClause.Occur.MUST)
-                .build();
+        return NodeRef.isNodeRef(id)
+                ? lucenePrefixQuery(field, id.substring(id.lastIndexOf('/') + 1))
+                : lucenePrefixQuery(field, id);
     }
 
     private Query nodeRefTermQuery(String id, String field)
     {
         String nodeId = NodeRef.isNodeRef(id) ? id.substring(id.lastIndexOf('/') + 1) : id;
-        return booleanQuerySupplier.get()
-                .add(luceneTermQuery(ALIVE, "true"), MUST)
-                .add(luceneTermQuery(field, escape(nodeId, true)), MUST)
-                .build();
+        return luceneTermQuery(field, escape(nodeId, true));
     }
 
     Query classDefinitionQuery(String text, boolean quoted)
@@ -1106,6 +1104,34 @@ public class LuceneQueryParser extends QueryParser
     private Optional<String> getSiteHierarchyNode(String queryText)
     {
         return of(queryText).map(siteService::getSite).map(SiteInfo::getNodeRef).map(NodeRef::getId);
+    }
+
+    /**
+     * A tag is indexed as a keyword, with an analysed "TAG.text" multi-field alongside it. A quoted or untokenised query has to match the keyword exactly, so its whitespace is escaped. An unquoted query is a single word, which can only match a multi-word tag through the analysed field, so both are tried.
+     */
+    private Query tagQuery(String queryText, boolean quoted, boolean untokenisedSearch)
+    {
+        final Query keywordQuery = luceneTermQuery(FIELD_TAG, escapeWhitespace(queryText));
+        if (quoted || untokenisedSearch)
+        {
+            return keywordQuery;
+        }
+
+        // Nested in an outer boolean so that the toString() form is parenthesised, as in textFieldQuery.
+        return booleanQuerySupplier.get()
+                .add(booleanQuerySupplier.get()
+                        .add(keywordQuery, SHOULD)
+                        .add(luceneFieldQuery(TAG_ANALYSED_FIELD, queryText, false), SHOULD)
+                        .build(), getDefaultOperator() == Operator.AND ? MUST : SHOULD)
+                .build();
+    }
+
+    /**
+     * Escapes whitespace so that the Elasticsearch query_string parser does not re-parse a multi-word term as separate terms. Only whitespace preceded by an even number of backslashes is escaped, since escape() has already doubled every literal backslash.
+     */
+    private static String escapeWhitespace(String value)
+    {
+        return value.replaceAll("(?<!\\\\)((?:\\\\\\\\)*)(\\s)", "$1\\\\$2");
     }
 
     /**

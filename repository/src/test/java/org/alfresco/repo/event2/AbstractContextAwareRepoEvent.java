@@ -393,6 +393,14 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return (T) resource.getProperties().get(propertyName);
     }
 
+    protected void assertNodeDbidProperty(NodeResource resource, NodeRef nodeRef)
+    {
+        Number expectedDbid = (Number) nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID);
+        Number eventDbid = getProperty(resource, "sys:node-dbid");
+        assertNotNull(eventDbid);
+        assertEquals(expectedDbid.longValue(), eventDbid.longValue());
+    }
+
     protected String getLocalizedProperty(NodeResource resource, String propertyName, Locale locale)
     {
         assertTrue(containsLocalizedProperty(resource, propertyName, locale));

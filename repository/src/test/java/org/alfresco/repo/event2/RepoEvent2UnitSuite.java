@@ -32,6 +32,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({EventFilterUnitTest.class,
         EventConsolidatorUnitTest.class,
+        EventConsolidatorDecorationTest.class,
         EventJSONSchemaUnitTest.class,
         EnqueuingEventSenderUnitTest.class,
         EventSenderFactoryBeanTest.class,

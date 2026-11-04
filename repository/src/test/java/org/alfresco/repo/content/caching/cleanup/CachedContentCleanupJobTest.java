@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.Duration;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.apache.commons.io.FileUtils;
@@ -101,6 +102,23 @@ public class CachedContentCleanupJobTest
         FileUtils.cleanDirectory(cacheRoot);
     }
 
+    /**
+     * Runs the cleaner once and waits until that run has finished. The cleaner thread only starts a run when it is notified while waiting, so the run is requested once the thread waits for it: it can only leave wait() when notified, so the request is never lost and never starts a second run. Each run sets a new Date object, so comparing the references tells whether the run has finished.
+     */
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
+    private void runCleanerAndWait(Runnable startCleaner)
+    {
+        Date previousFinish = cleaner.getTimeFinished();
+        await().pollInterval(Duration.ofMillis(10))
+                .atMost(MAX_WAIT_TIMEOUT)
+                .until(() -> !cleaner.isRunning() && cleaner.getState() == Thread.State.WAITING);
+        startCleaner.run();
+
+        await().pollInterval(Duration.ofMillis(50))
+                .atMost(MAX_WAIT_TIMEOUT)
+                .until(() -> cleaner.getTimeFinished() != previousFinish && !cleaner.isRunning());
+    }
+
     @Test
     public void filesNotInCacheAreDeleted() throws InterruptedException
     {
@@ -121,11 +139,7 @@ public class CachedContentCleanupJobTest
         }
 
         // Run cleaner
-        cleaner.execute();
-
-        await().pollDelay(Duration.ofMillis(100))
-                .atMost(MAX_WAIT_TIMEOUT)
-                .until(() -> !cleaner.isRunning());
+        runCleanerAndWait(cleaner::execute);
 
         // check all files deleted
         for (File file : files)
@@ -149,10 +163,9 @@ public class CachedContentCleanupJobTest
         for (int i = 0; i < numFiles; i++)
         {
             oldFiles[i] = createCacheFile(UrlSource.REVERSE_CACHE_LOOKUP, false);
+            // Make sure 'old' files really are older than minFileAgeMillis
+            assertTrue(oldFiles[i].setLastModified(System.currentTimeMillis() - 10 * minFileAge));
         }
-
-        // Sleep to make sure 'old' files really are older than minFileAgeMillis
-        Thread.sleep(minFileAge);
 
         File[] newFiles = new File[numFiles];
         long newFilesTotalSize = 0;
@@ -164,11 +177,7 @@ public class CachedContentCleanupJobTest
 
         // The cleaner must finish before any of the newFiles are older than minFileAge. If the files are too
         // old the test will fail and it will be necessary to rethink how to test this.
-        cleaner.execute();
-
-        await().pollDelay(Duration.ofMillis(100))
-                .atMost(MAX_WAIT_TIMEOUT)
-                .until(() -> !cleaner.isRunning());
+        runCleanerAndWait(cleaner::execute);
 
         if (cleaner.getDurationMillis() > minFileAge)
         {
@@ -211,13 +220,7 @@ public class CachedContentCleanupJobTest
         // It will delete the older files aggressively (i.e. the ones prior to the two second sleep) and
         // then will examine the new files for potential deletion.
         // Since some of the newer files are not in the cache, it will delete those.
-        cleaner.executeAggressive("aggressiveCleanReclaimsTargetSpace()", sevenFilesSize);
-
-        Thread.sleep(400);
-        while (cleaner.isRunning())
-        {
-            Thread.sleep(200);
-        }
+        runCleanerAndWait(() -> cleaner.executeAggressive("aggressiveCleanReclaimsTargetSpace()", sevenFilesSize));
 
         int numDeleted = 0;
 
@@ -268,13 +271,7 @@ public class CachedContentCleanupJobTest
         // It will delete the older files aggressively (i.e. even if they are actively in the cache) and
         // then will examine the new files for potential deletion.
         // Since some of the newer files are not in the cache, it will delete those too.
-        cleaner.executeAggressive("standardCleanAfterAggressiveFinished()", sevenFilesSize);
-
-        Thread.sleep(400);
-        while (cleaner.isRunning())
-        {
-            Thread.sleep(200);
-        }
+        runCleanerAndWait(() -> cleaner.executeAggressive("standardCleanAfterAggressiveFinished()", sevenFilesSize));
 
         for (int i = 0; i < numFiles; i++)
         {
@@ -376,13 +373,7 @@ public class CachedContentCleanupJobTest
             reader.getContentString();
         }
 
-        cleaner.execute();
-
-        Thread.sleep(400);
-        while (cleaner.isRunning())
-        {
-            Thread.sleep(200);
-        }
+        runCleanerAndWait(cleaner::execute);
 
         for (int i = 0; i < numFiles; i++)
         {

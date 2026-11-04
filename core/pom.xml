@@ -7,8 +7,13 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-community-repo</artifactId>
-      <version>26.3.0.61-SNAPSHOT</version>
+      <version>26.3.0.94-SNAPSHOT</version>
    </parent>
+
+   <properties>
+      <!-- Follows -DskipTests unless set explicitly; used by the surefire configuration below -->
+      <skipCoreTests>${skipTests}</skipCoreTests>
+   </properties>
 
    <dependencies>
       <!-- Jakarta... -->

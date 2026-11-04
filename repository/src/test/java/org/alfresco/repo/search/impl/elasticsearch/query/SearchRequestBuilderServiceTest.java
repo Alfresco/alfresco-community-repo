@@ -26,8 +26,8 @@
 package org.alfresco.repo.search.impl.elasticsearch.query;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,7 +47,6 @@ import org.opensearch.client.opensearch._types.aggregations.TermsAggregation;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.search.Highlight;
 
-import org.alfresco.repo.search.impl.elasticsearch.client.ElasticsearchHttpClientFactory;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.ElasticsearchAggregationBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.TermsAggregationWrapper;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.TermsAggregationWrapper.ComplementaryAggregation;
@@ -55,6 +54,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.highlight.Elasticsearch
 import org.alfresco.repo.search.impl.elasticsearch.query.language.LanguageQueryBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.query.sort.ElasticsearchSortBuilder;
 import org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtil;
+import org.alfresco.repo.search.impl.elasticsearch.store.SearchStoreResolver;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.util.Pair;
@@ -63,7 +63,7 @@ public class SearchRequestBuilderServiceTest
 {
 
     @Mock
-    private ElasticsearchHttpClientFactory httpClientFactory;
+    private SearchStoreResolver searchStoreResolver;
     @Mock
     private LanguageQueryBuilder languageQueryBuilder;
     @Mock
@@ -81,7 +81,7 @@ public class SearchRequestBuilderServiceTest
         MockitoAnnotations.openMocks(this);
         service = new SearchRequestBuilderService(
                 languageQueryBuilder,
-                httpClientFactory,
+                searchStoreResolver,
                 elasticsearchSortBuilder,
                 elasticsearchAggregationBuilder,
                 elasticsearchHighlightBuilder);
@@ -125,26 +125,23 @@ public class SearchRequestBuilderServiceTest
     }
 
     @Test
-    public void testGetElasticIndex_workspace()
+    public void testGetElasticIndex_delegatesToStoreResolver()
     {
         StoreRef store = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        when(httpClientFactory.getIndexName()).thenReturn("workspace-index");
+        when(searchStoreResolver.resolveIndex(List.of(store))).thenReturn("workspace-index");
         String index = service.getElasticIndex(List.of(store));
         assertEquals("workspace-index", index);
     }
 
     @Test
-    public void testGetElasticIndex_unsupportedProtocol()
+    public void testGetElasticIndex_propagatesResolverException()
     {
         StoreRef store = new StoreRef("unsupported", "SpacesStore");
-        try
-        {
-            service.getElasticIndex(List.of(store));
-            fail("Expected RuntimeException");
-        }
-        catch (RuntimeException e)
-        {
-            assertTrue(e.getMessage().contains("is not supported"));
-        }
+        when(searchStoreResolver.resolveIndex(List.of(store)))
+                .thenThrow(new IllegalArgumentException("Protocol unsupported is not supported when using Elasticsearch"));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> service.getElasticIndex(List.of(store)));
+        assertTrue(exception.getMessage().contains("is not supported"));
     }
 }

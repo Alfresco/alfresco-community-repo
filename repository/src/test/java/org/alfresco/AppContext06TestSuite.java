@@ -51,6 +51,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.rendition2.NoneRenditionTest.class,
 
         org.alfresco.repo.solr.SOLRTrackingComponentTest.class,
+        org.alfresco.repo.search.SearchFailureTransactionIntegrationTest.class,
         org.alfresco.repo.tagging.TaggingServiceImplTest.class,
         org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class,
         org.alfresco.repo.transaction.RetryingTransactionHelperTest.class,

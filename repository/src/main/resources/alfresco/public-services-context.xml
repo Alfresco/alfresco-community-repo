@@ -216,7 +216,8 @@
         </property>
         <property name="transactionAttributes">
             <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
+                <!-- No rollbacks: a failed search has nothing to undo, but a failed audit write must still abort -->
+                <prop key="*">${server.transaction.mode.default},+java.lang.Throwable,-AuditWriteException</prop>
             </props>
         </property>
     </bean>

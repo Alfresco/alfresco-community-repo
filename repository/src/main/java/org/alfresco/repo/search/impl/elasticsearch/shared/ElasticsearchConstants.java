@@ -43,6 +43,8 @@ public class ElasticsearchConstants
     public static final String UNPREFIXED_PATH = "UNPREFIXED_PATH";
     public static final String PROPERTIES = "PROPERTIES";
     public static final String TAG = "TAG";
+    /** The analysed multi-field of the TAG keyword field. */
+    public static final String TAG_ANALYSED = TAG + ".text";
     public static final String CM_TAGGABLE = "cm:taggable";
     public static final String TYPE = "TYPE";
     public static final String PRIMARY_HIERARCHY = "primaryHierarchy";

@@ -47,6 +47,8 @@ import org.junit.runner.RunWith;
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\..*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.bulk\\..*Test",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*DispositionServiceImplTest",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*FilePlanPermissionServiceImplTest",
 

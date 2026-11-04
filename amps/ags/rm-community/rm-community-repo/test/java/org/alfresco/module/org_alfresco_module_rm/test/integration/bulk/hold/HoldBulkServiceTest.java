@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -83,34 +84,44 @@ public class HoldBulkServiceTest extends BaseRMTestCase
         doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private HoldBulkStatus holdBulkStatus;
-            private final ResultSet resultSet = mock(ResultSet.class);
+            // The bulk operation must still be running when it is cancelled, so the first page of work is only
+            // returned once the cancellation has been requested. Every page has work, so only the cancellation
+            // can end the bulk operation.
+            private final CountDownLatch workRequested = new CountDownLatch(1);
+            private final CountDownLatch cancelRequested = new CountDownLatch(1);
 
             public void given()
             {
                 Mockito.when(resultSet.getNumberFound()).thenReturn(4L);
-                Mockito.when(resultSet.hasMore()).thenReturn(false).thenReturn(true).thenReturn(false);
+                Mockito.when(resultSet.hasMore()).thenReturn(false);
+                List<NodeRef> page = List.of(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()),
+                        new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()));
                 Mockito.when(resultSet.getNodeRefs())
                         .thenAnswer((Answer<List<NodeRef>>) invocationOnMock -> {
-                            await().pollDelay(1, SECONDS).until(() -> true);
-                            return List.of(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()),
-                                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()));
+                            if (workRequested.getCount() > 0)
+                            {
+                                workRequested.countDown();
+                                cancelRequested.await(60, SECONDS);
+                            }
+                            return page;
                         });
                 // create a hold
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
             }
 
-            public void when()
+            public void when() throws InterruptedException
             {
                 BulkOperation bulkOperation = new BulkOperation(new Query("afts", "*", ""), "ADD");
                 // execute the bulk operation
                 holdBulkStatus = holdBulkService.execute(hold, bulkOperation);
+                assertTrue("The bulk operation did not request any work", workRequested.await(30, SECONDS));
                 // cancel the bulk operation
                 holdBulkMonitor.cancelBulkOperation(holdBulkStatus.bulkStatusId(),
                         new BulkCancellationRequest("No reason"));
-                await().atMost(10, SECONDS)
-                        .until(() -> Objects.equals(
-                                holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
-                                Status.CANCELLED.getValue()));
+                cancelRequested.countDown();
+                // the bulk operation only finishes if the cancellation stops it
+                await().atMost(30, SECONDS)
+                        .until(() -> holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).endTime() != null);
             }
 
             public void then()
@@ -122,6 +133,8 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                         HoldBulkStatus.Status.CANCELLED.getValue());
                 assertEquals(holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).cancellationReason(),
                         "No reason");
+                // no more work was requested after the cancellation: one query to count the items, one for the first page
+                Mockito.verify(searchServiceMock, Mockito.times(2)).query(any(SearchParameters.class));
             }
         });
     }

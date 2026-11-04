@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>26.3.0.93-SNAPSHOT</version>
+        <version>26.3.0.94-SNAPSHOT</version>
     </parent>
 
     <organization>
@@ -52,6 +52,20 @@
                 <cmis.binding>atom</cmis.binding>
                 <cmis.basePath>/alfresco/api/-default-/public/cmis/versions/1.1/atom</cmis.basePath>
                 <excludedGroups>not_supported_on_cmis_atom|renditions|bug-atom.*</excludedGroups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>cmis-part1</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/cmis-part1-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>cmis-part2</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/cmis-part2-suite.xml</suiteXmlFile>
             </properties>
         </profile>
     </profiles>

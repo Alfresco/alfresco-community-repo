@@ -337,6 +337,8 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiserTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.FieldMappingBuilderTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.ResourceUtilsTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.filter.DefaultAliveStateFilterBuilderTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.sort.ElasticsearchSortBuilderTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.SettingsJsonUtilsTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.DateFieldMapperTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.PathFieldMapperTest.class,

@@ -81,7 +81,7 @@ public class IdentityServiceConfig
     private String webScriptsHomeRedirectPath;
     private String webScriptsHomeScopes;
     private boolean scopeValidationDisabled;
-    private static final String AUTHORIZATION_ADDITIONAL_PARAMS_PROPERTY = "identity-service.authorization.additional-params";
+    private static final String ADDITIONAL_PARAMS_PROPERTY = "identity-service.authorization.additional-params";
 
     private Map<String, String> authorizationAdditionalParams = Collections.emptyMap();
 
@@ -108,7 +108,7 @@ public class IdentityServiceConfig
      */
     public void setAuthorizationAdditionalParams(String additionalParams)
     {
-        setAuthorizationAdditionalParams(additionalParams, AUTHORIZATION_ADDITIONAL_PARAMS_PROPERTY);
+        setAuthorizationAdditionalParams(additionalParams, ADDITIONAL_PARAMS_PROPERTY);
     }
 
     /**

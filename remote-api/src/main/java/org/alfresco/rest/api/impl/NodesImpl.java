@@ -3174,7 +3174,7 @@ public class NodesImpl implements Nodes
         NodeRef workingCopyNodeRef = resolveWorkingCopy(nodeRef);
         if (workingCopyNodeRef != null)
         {
-            return updateCheckedOutContent(workingCopyNodeRef, stream, parameters, versionMajor, versionComment);
+            return updateCheckedOutContent(workingCopyNodeRef, contentInfo, stream, parameters, versionMajor, versionComment);
         }
 
         String fileName = parameters.getParameter(PARAM_NAME);
@@ -3210,12 +3210,12 @@ public class NodesImpl implements Nodes
         return null;
     }
 
-    private void writeContentWithoutVersioning(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding)
+    private void writeContentWithoutVersioning(NodeRef nodeRef, String fileName, BasicContentInfo contentInfo, InputStream stream, boolean guessEncoding)
     {
         behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         try
         {
-            writeContent(nodeRef, fileName, stream, guessEncoding);
+            writeContent(nodeRef, fileName, contentInfo, stream, guessEncoding);
         }
         finally
         {
@@ -3223,7 +3223,7 @@ public class NodesImpl implements Nodes
         }
     }
 
-    private Node updateCheckedOutContent(NodeRef workingCopyRef, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
+    private Node updateCheckedOutContent(NodeRef workingCopyRef, BasicContentInfo contentInfo, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
     {
         String fileName = parameters.getParameter(PARAM_NAME);
         if (fileName != null)
@@ -3235,7 +3235,7 @@ public class NodesImpl implements Nodes
         {
             fileName = (String) nodeService.getProperty(workingCopyRef, ContentModel.PROP_NAME);
         }
-        writeContentWithoutVersioning(workingCopyRef, fileName, stream, true);
+        writeContentWithoutVersioning(workingCopyRef, fileName, contentInfo, stream, true);
 
         Map<String, Serializable> versionProperties = buildVersionProperties(workingCopyRef, versionMajor, versionComment);
 
@@ -3328,7 +3328,7 @@ public class NodesImpl implements Nodes
         behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         try
         {
-            writeContent(nodeRef, fileName, stream, true);
+            writeContent(nodeRef, fileName, contentInfo, stream, true);
 
             if (shouldCreateVersionOnContentUpdate(nodeRef, isVersioned, versionMajor, versionComment))
             {
@@ -3385,27 +3385,39 @@ public class NodesImpl implements Nodes
         return true;
     }
 
-    private void writeContent(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding)
+    private void writeContent(NodeRef nodeRef, String fileName, BasicContentInfo contentInfo, InputStream stream, boolean guessEncoding)
     {
         try
         {
             ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
 
-            String mimeType = mimetypeService.guessMimetype(fileName);
-            if ((mimeType != null) && (!mimeType.equals(MimetypeMap.MIMETYPE_BINARY)))
+            String mimeType = contentInfo == null ? null : contentInfo.getMimeType();
+            if (StringUtils.isNotBlank(mimeType))
             {
-                // quick/weak guess based on file extension
                 writer.setMimetype(mimeType);
             }
             else
             {
-                // stronger guess based on file stream
-                writer.guessMimetype(fileName);
+                mimeType = mimetypeService.guessMimetype(fileName);
+                if ((mimeType != null) && (!mimeType.equals(MimetypeMap.MIMETYPE_BINARY)))
+                {
+                    // quick/weak guess based on file extension
+                    writer.setMimetype(mimeType);
+                }
+                else
+                {
+                    // stronger guess based on file stream
+                    writer.guessMimetype(fileName);
+                }
             }
 
-            InputStream is = null;
-
-            if (guessEncoding)
+            InputStream is = stream;
+            String encoding = contentInfo == null ? null : contentInfo.getEncoding();
+            if (StringUtils.isNotBlank(encoding))
+            {
+                writer.setEncoding(encoding);
+            }
+            else if (guessEncoding)
             {
                 is = new BufferedInputStream(stream);
                 is.mark(1024);
@@ -3421,10 +3433,6 @@ public class NodesImpl implements Nodes
                         logger.warn("Failed to reset stream after trying to guess encoding: " + ioe.getMessage());
                     }
                 }
-            }
-            else
-            {
-                is = stream;
             }
 
             writer.putContent(is);
@@ -3707,12 +3715,12 @@ public class NodesImpl implements Nodes
         if (content == null)
         {
             // Write "empty" content
-            writeContent(nodeRef, fileName, new ByteArrayInputStream("".getBytes()), false);
+            writeContent(nodeRef, fileName, null, new ByteArrayInputStream("".getBytes()), false);
         }
         else
         {
             // Write content
-            writeContent(nodeRef, fileName, content.getInputStream(), true);
+            writeContent(nodeRef, fileName, new ContentInfoImpl(content.getMimetype(), content.getEncoding(), -1, null), content.getInputStream(), true);
         }
 
         if ((versionMajor != null) || (versionComment != null))

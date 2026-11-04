@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
@@ -158,6 +159,57 @@ public class ConfigurableActionAccessRestrictionTest extends BaseSpringTest
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
 
         restriction.verifyAccessRestriction(createAction(SCRIPT_ACTION));
+    }
+
+    @Test
+    public void fullGroupNameIsAccepted()
+    {
+        authorityService.addAuthority(GROUP_FULL_NAME, AuthenticationUtil.getGuestUserName());
+        ConfigurableActionAccessRestriction restriction = restrictionWithSetting(SCRIPT_ACTION, GROUP_FULL_NAME);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+
+        restriction.verifyAccessRestriction(createAction(SCRIPT_ACTION));
+    }
+
+    @Test
+    public void fullGroupNameOfNonMemberIsRefused()
+    {
+        ConfigurableActionAccessRestriction restriction = restrictionWithSetting(SCRIPT_ACTION, GROUP_FULL_NAME);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+
+        assertThrows(ActionAccessException.class, () -> restriction.verifyAccessRestriction(createAction(SCRIPT_ACTION)));
+    }
+
+    @Test
+    public void groupWithShortNameStartingWithGroupPrefixIsAccepted()
+    {
+        String shortName = "GROUP_CONFIG_PREFIX_TEST";
+        String fullName = authorityService.createAuthority(AuthorityType.GROUP, shortName);
+        try
+        {
+            authorityService.addAuthority(fullName, AuthenticationUtil.getGuestUserName());
+            ConfigurableActionAccessRestriction restriction = restrictionWithSetting(SCRIPT_ACTION, shortName);
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+
+            restriction.verifyAccessRestriction(createAction(SCRIPT_ACTION));
+        }
+        finally
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+            authorityService.deleteAuthority(fullName);
+        }
+    }
+
+    @Test
+    public void mailExecuterUsesConfiguredRestriction()
+    {
+        ActionExecuter mailExecuter = applicationContext.getBean("mail", ActionExecuter.class);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+        assertThrows(ActionAccessException.class, () -> mailExecuter.verifyActionAccessRestrictions(createAction(MAIL_ACTION)));
+
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        mailExecuter.verifyActionAccessRestrictions(createAction(MAIL_ACTION));
     }
 
     @Test

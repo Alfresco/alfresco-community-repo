@@ -85,9 +85,29 @@ public class ConfigurableActionAccessRestriction extends ActionAccessRestriction
         throw new ActionAccessException("Only admin, system user or members of the allowed groups can define uses of or directly execute this action");
     }
 
+    /**
+     * Returns the full authority names that match the configured entries. Each entry is a short name, so it is prefixed with GROUP_. An entry that already starts with GROUP_ is also taken as a full name, because a group whose short name is GROUP_X has the full name GROUP_GROUP_X.
+     */
     private List<String> parseGroups(String allowedGroups)
     {
-        return Arrays.stream(allowedGroups.split(",")).map(String::trim).filter(e -> !e.isEmpty()).toList();
+        return Arrays.stream(allowedGroups.split(","))
+                .map(String::trim)
+                .filter(e -> !e.isEmpty())
+                .flatMap(group -> groupNameCandidates(group).stream())
+                .toList();
+    }
+
+    /**
+     * Returns the full names a single configured entry may refer to: the entry prefixed with GROUP_, plus the entry itself when it already starts with GROUP_.
+     */
+    private List<String> groupNameCandidates(String group)
+    {
+        String shortNameAsFullName = PermissionService.GROUP_PREFIX + group;
+        if (group.startsWith(PermissionService.GROUP_PREFIX))
+        {
+            return List.of(shortNameAsFullName, group);
+        }
+        return List.of(shortNameAsFullName);
     }
 
     private boolean isMemberOfAnyGroup(String user, List<String> groups)
@@ -98,7 +118,7 @@ public class ConfigurableActionAccessRestriction extends ActionAccessRestriction
         }
 
         Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, user, false);
-        return groups.stream().map(group -> PermissionService.GROUP_PREFIX + group).anyMatch(containingAuthorities::contains);
+        return groups.stream().anyMatch(containingAuthorities::contains);
     }
 
     /**

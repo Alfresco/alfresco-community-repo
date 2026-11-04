@@ -47,8 +47,6 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       GH_APP_ENGINEERING_RO_PRIVATE_KEY: ${{ secrets.GH_APP_ENGINEERING_RO_PRIVATE_KEY }}
-      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   push_to_nexus:
@@ -118,9 +116,6 @@ jobs:
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no downstream]') &&
       github.event_name != 'pull_request'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - name: "Generate GitHub App token"
         id: app-token

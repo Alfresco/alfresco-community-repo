@@ -33,10 +33,6 @@ on:
         required: false
       GH_APP_ENGINEERING_RO_PRIVATE_KEY:
         required: false
-      NEXUS_PASSWORD:
-        required: false
-      NEXUS_USERNAME:
-        required: false
       QUAY_PASSWORD:
         required: false
       QUAY_USERNAME:
@@ -82,9 +78,6 @@ jobs:
     if: >
       !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
       !contains(needs.commit_parser.outputs.title, '[force]')
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -112,9 +105,6 @@ jobs:
     if: >
       !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
       !contains(needs.commit_parser.outputs.title, '[force]')
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -170,9 +160,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true' && github.event_name == 'pull_request'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -197,9 +184,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -249,8 +233,6 @@ jobs:
 
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -319,9 +301,6 @@ jobs:
       fail-fast: false
       matrix:
         version: ['10.11']
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -359,9 +338,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -398,9 +374,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -438,9 +411,6 @@ jobs:
       - test_run_check
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -478,9 +448,6 @@ jobs:
       - test_run_check
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -517,9 +484,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -556,9 +520,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -597,9 +558,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -710,8 +668,6 @@ jobs:
       BUILD_PROFILES: "-Pbuild-docker-images"
       REQUIRES_TAS_TESTS: true
       REQUIRES_INSTALLED_ARTIFACTS: true
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -817,9 +773,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -856,8 +809,6 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -900,8 +851,6 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -944,8 +893,6 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     env:
       REQUIRES_LOCAL_IMAGES: true
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -1006,9 +953,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0

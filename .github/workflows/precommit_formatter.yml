@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     if: contains(github.event.head_commit.message, '[reformat code]')
     steps:
       - name: "Generate GitHub App token"
@@ -33,6 +34,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.app-token.outputs.token }}
+      # The check-format-and-headers hook runs Maven, so it needs the CI settings and credentials.
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          java-version: "21"
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:

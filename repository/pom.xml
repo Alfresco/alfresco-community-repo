@@ -37,6 +37,10 @@
 
         <!-- Elasticsearch / OpenSearch search support -->
         <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-search-index-model</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-java</artifactId>
         </dependency>

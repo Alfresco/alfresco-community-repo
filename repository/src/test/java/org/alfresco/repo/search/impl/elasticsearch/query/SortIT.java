@@ -27,10 +27,10 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_MIME_TYPE;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_SIZE;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.NAME;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.USER_MODIFIER;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CONTENT_MIME_TYPE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CONTENT_SIZE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.NAME;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.USER_MODIFIER;
 import static org.alfresco.transform.common.Mimetype.MIMETYPE_IMAGE_JPEG;
 import static org.alfresco.transform.common.Mimetype.MIMETYPE_PDF;
 import static org.alfresco.transform.common.Mimetype.MIMETYPE_TEXT_PLAIN;

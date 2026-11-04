@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.contentmodelsync;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.TAG_ANALYSED;
+import static org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.LuceneQueryParser.TAG_ANALYSED_FIELD;
 
 import java.io.IOException;
 import jakarta.json.Json;
@@ -135,7 +135,7 @@ public class ElasticsearchIndexService
         String index = elasticsearchHttpClientFactory.getIndexName();
         try
         {
-            GetFieldMappingRequest request = new GetFieldMappingRequest.Builder().fields(TAG_ANALYSED).index(index).build();
+            GetFieldMappingRequest request = new GetFieldMappingRequest.Builder().fields(TAG_ANALYSED_FIELD).index(index).build();
             GetFieldMappingResponse fieldMappingResponse = client.indices()
                     .getFieldMapping(request);
 

@@ -1,5 +1,12 @@
 <settings>
     <mirrors>
+        <!-- Maven Central goes through cic-ext-pull-through, as supply-chain policy requires.
+             Credentials are exported by the cloudsmith-auth action. -->
+        <mirror>
+            <id>cic-ext-pull-through</id>
+            <mirrorOf>central</mirrorOf>
+            <url>https://artifacts.hyland.dev/basic/cic-ext-pull-through/maven/</url>
+        </mirror>
         <mirror>
             <id>alfresco-public</id>
             <mirrorOf>external:*,!central,!hyland-alfresco-public</mirrorOf>
@@ -16,7 +23,6 @@
             <repositories>
                 <repository>
                     <id>central</id>
-<!--                    <url>https://artifacts.hyland.dev/basic/cic-ext-pull-through/maven/</url>-->
                     <url>https://repo.maven.apache.org/maven2/</url>
                     <releases>
                         <enabled>true</enabled>
@@ -39,7 +45,6 @@
             <pluginRepositories>
                 <pluginRepository>
                     <id>central</id>
-<!--                    <url>https://artifacts.hyland.dev/basic/cic-ext-pull-through/maven/</url>-->
                     <url>https://repo.maven.apache.org/maven2/</url>
                     <releases>
                         <enabled>true</enabled>
@@ -63,6 +68,11 @@
     </profiles>
 
     <servers>
+        <server>
+            <id>cic-ext-pull-through</id>
+            <username>${env.CLOUDSMITH_USERNAME}</username>
+            <password>${env.CLOUDSMITH_API_KEY}</password>
+        </server>
         <server>
             <id>alfresco-public-releases</id>
             <username>${env.MAVEN_USERNAME}</username>

@@ -4,6 +4,7 @@ name: Master/Release branch workflow
 # push using a GitHub App installation token, not the workflow token.
 permissions:
   contents: read
+  id-token: write
 
 on:
   push:
@@ -34,6 +35,7 @@ jobs:
     # to upload SARIF; the caller must grant it for the nested job to be allowed.
     permissions:
       contents: read
+      id-token: write
       security-events: write
     uses: ./.github/workflows/ci.yml
     secrets:
@@ -81,6 +83,9 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@v19.7.1
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -139,6 +144,9 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@v19.7.1
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

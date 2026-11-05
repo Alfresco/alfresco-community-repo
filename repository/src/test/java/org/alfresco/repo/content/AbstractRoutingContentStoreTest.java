@@ -42,6 +42,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -70,7 +71,7 @@ public class AbstractRoutingContentStoreTest
     private ContentStore storeA;
     private ContentStore storeB;
     private ContentStore writeStore;
-    private TestRoutingContentStore routingStore;
+    private StubRoutingContentStore routingStore;
     private ExecutorService executor;
 
     /** Released at the end of every test so that no thread stays parked inside a blocking exists() stub. */
@@ -85,7 +86,7 @@ public class AbstractRoutingContentStoreTest
         when(storeA.toString()).thenReturn("storeA");
         when(storeB.toString()).thenReturn("storeB");
 
-        routingStore = new TestRoutingContentStore(List.of(storeA, storeB), writeStore);
+        routingStore = new StubRoutingContentStore(List.of(storeA, storeB), writeStore);
         executor = Executors.newCachedThreadPool();
     }
 
@@ -126,7 +127,7 @@ public class AbstractRoutingContentStoreTest
     }
 
     @Test
-    public void getReaderUsesTheSelectedStore()
+    public void readerIsTakenFromTheSelectedStore()
     {
         ContentReader reader = mock(ContentReader.class);
         when(storeA.exists(URL_1)).thenReturn(false);
@@ -206,7 +207,7 @@ public class AbstractRoutingContentStoreTest
     }
 
     @Test
-    public void getWriterCachesTheStoreForTheNewUrl()
+    public void writerStoreIsCachedForTheNewUrl()
     {
         ContentWriter writer = mock(ContentWriter.class);
         when(writer.getContentUrl()).thenReturn(NEW_URL);
@@ -371,7 +372,7 @@ public class AbstractRoutingContentStoreTest
         assertTrue("Slow exists() was never called", entered.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
-    private static <T> T getWithin(Future<T> future) throws Exception
+    private static <T> T getWithin(Future<T> future) throws InterruptedException, ExecutionException
     {
         try
         {
@@ -384,13 +385,14 @@ public class AbstractRoutingContentStoreTest
         }
     }
 
-    private static class TestRoutingContentStore extends AbstractRoutingContentStore
+    private static class StubRoutingContentStore extends AbstractRoutingContentStore
     {
         private final List<ContentStore> stores;
         private final ContentStore writeStore;
 
-        TestRoutingContentStore(List<ContentStore> stores, ContentStore writeStore)
+        StubRoutingContentStore(List<ContentStore> stores, ContentStore writeStore)
         {
+            super();
             this.stores = stores;
             this.writeStore = writeStore;
             setStoresCache(new DefaultSimpleCache<>(100, getClass().getName()));

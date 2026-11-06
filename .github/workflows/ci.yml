@@ -2,6 +2,7 @@ name: Alfresco Community Repo CI
 
 permissions:
   contents: read
+  id-token: write
 
 on:
   pull_request:
@@ -31,10 +32,6 @@ on:
       DOCKER_USERNAME:
         required: false
       GH_APP_ENGINEERING_RO_PRIVATE_KEY:
-        required: false
-      NEXUS_PASSWORD:
-        required: false
-      NEXUS_USERNAME:
         required: false
       QUAY_PASSWORD:
         required: false
@@ -69,7 +66,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 2
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         id: get-commit
         with:
           header-only: "true"
@@ -81,25 +78,25 @@ jobs:
     if: >
       !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
       !contains(needs.commit_parser.outputs.title, '[force]')
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
           # Separate cache so this job (which only resolves plugins) never saves a partial Maven repository
           # under the main key. The prefix must not start with "maven" or other jobs' restore-keys would match it.
           cache-key-prefix: pre-commit-maven
-      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
 
   prepare:
     name: "Prepare"
@@ -108,19 +105,19 @@ jobs:
     if: >
       !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
       !contains(needs.commit_parser.outputs.title, '[force]')
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -157,24 +154,25 @@ jobs:
     # ya-pmd-scan uploads its findings as SARIF to GitHub code scanning, which needs security-events: write.
     permissions:
       contents: read
+      id-token: write
       security-events: write
     needs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true' && github.event_name == 'pull_request'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - uses: Alfresco/ya-pmd-scan@v4.4.1
         with:
           classpath-build-command: "mvn test-compile -ntp -Pags -pl \"-:alfresco-community-repo-docker\""
@@ -186,9 +184,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -201,14 +196,17 @@ jobs:
             testAttributes: "-Dtest=AllUnitTestsSuite"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -218,7 +216,7 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Run tests"
         run: |
-          mvn -B test -pl ${{ matrix.testModule }} -am ${{ matrix.testAttributes }} -DfailIfNoTests=false "${args[@]}"
+          mvn -B test -pl ${{ matrix.testModule }} -am ${{ matrix.testAttributes }} -Dsurefire.failIfNoSpecifiedTests=false "${args[@]}"
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -235,8 +233,6 @@ jobs:
 
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -257,14 +253,17 @@ jobs:
             transformers-tag: 5.2.0
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
@@ -302,20 +301,20 @@ jobs:
       fail-fast: false
       matrix:
         version: ['10.11']
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -328,7 +327,7 @@ jobs:
         env:
           MARIADB_VERSION: ${{ matrix.version }}
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -339,19 +338,19 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -364,7 +363,7 @@ jobs:
         env:
           MARIADB_VERSION: 11.8
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -375,19 +374,19 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -400,7 +399,7 @@ jobs:
         env:
           MYSQL_VERSION: 8
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -412,19 +411,19 @@ jobs:
       - test_run_check
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -437,7 +436,7 @@ jobs:
         env:
           POSTGRES_VERSION: 15.17
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -449,19 +448,19 @@ jobs:
       - test_run_check
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -474,7 +473,7 @@ jobs:
         env:
           POSTGRES_VERSION: 16.13
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -485,19 +484,19 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -510,7 +509,7 @@ jobs:
         env:
           POSTGRES_VERSION: 17.9
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -521,23 +520,23 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
         activemq: [ 'activemq6', 'activemq5' ]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -548,7 +547,7 @@ jobs:
       - name: "Run ActiveMQ"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.activemq }} up -d
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -Dsurefire.failIfNoSpecifiedTests=false -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -559,9 +558,6 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -607,14 +603,17 @@ jobs:
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -653,7 +652,7 @@ jobs:
           AUTH0_CLIENT_ID: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_CLIENT_ID || '' }}
           AUTH0_CLIENT_SECRET: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_CLIENT_SECRET || '' }}
           AUTH0_ADMIN_PASSWORD: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_PASSWORD || '' }}
-        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
+        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -669,8 +668,6 @@ jobs:
       BUILD_PROFILES: "-Pbuild-docker-images"
       REQUIRES_TAS_TESTS: true
       REQUIRES_INSTALLED_ARTIFACTS: true
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -728,14 +725,17 @@ jobs:
             mvn-options: '-DsolrWaitTimeInSeconds=3'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
@@ -773,19 +773,19 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -796,7 +796,7 @@ jobs:
       - name: "Run Postgres 17.9 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
       - name: "Run tests"
-        run: mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+        run: mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -809,22 +809,23 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
         part: [ 1, 2, 3, 4 ]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
@@ -850,22 +851,23 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
         part: [ 1, 2, 3, 4 ]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
@@ -891,22 +893,23 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     env:
       REQUIRES_LOCAL_IMAGES: true
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     strategy:
       fail-fast: false
       matrix:
         part: [1, 2]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
@@ -950,19 +953,19 @@ jobs:
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:

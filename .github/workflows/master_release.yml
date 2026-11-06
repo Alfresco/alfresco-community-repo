@@ -4,6 +4,7 @@ name: Master/Release branch workflow
 # push using a GitHub App installation token, not the workflow token.
 permissions:
   contents: read
+  id-token: write
 
 on:
   push:
@@ -24,7 +25,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         id: get-commit
         with:
           header-only: "true"
@@ -34,6 +35,7 @@ jobs:
     # to upload SARIF; the caller must grant it for the nested job to be allowed.
     permissions:
       contents: read
+      id-token: write
       security-events: write
     uses: ./.github/workflows/ci.yml
     secrets:
@@ -45,8 +47,6 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       GH_APP_ENGINEERING_RO_PRIVATE_KEY: ${{ secrets.GH_APP_ENGINEERING_RO_PRIVATE_KEY }}
-      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   push_to_nexus:
@@ -73,14 +73,17 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
       - name: "Create local release branch"
         run: git checkout -B "${{ github.ref_name }}"
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -90,12 +93,12 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Compute release and next development versions"
         id: versions
-        uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@v19.7.1
+        uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - name: "Verify release version"
         run: bash scripts/ci/verify_release_tag.sh
       - name: "Release"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@v19.7.1
+        uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           token: ${{ steps.app-token.outputs.token }}
           release-version: ${{ steps.versions.outputs.release-version }}
@@ -113,9 +116,6 @@ jobs:
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no downstream]') &&
       github.event_name != 'pull_request'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - name: "Generate GitHub App token"
         id: app-token
@@ -131,14 +131,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.app-token.outputs.token }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v19.7.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

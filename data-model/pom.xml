@@ -158,9 +158,6 @@
             <artifactId>chemistry-opencmis-server-bindings</artifactId>
             <version>${dependency.opencmis.version}</version>
         </dependency>
-        <!-- This is now deployed at:
-            | http://artifacts.alfresco.com/nexus/content/repositories/thirdparty/org/acegisecurity/acegi-security/0.8.2_patched/
-            -->
         <dependency>
             <groupId>org.acegisecurity</groupId>
             <artifactId>acegi-security</artifactId>

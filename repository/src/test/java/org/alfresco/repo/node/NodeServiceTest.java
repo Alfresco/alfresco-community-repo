@@ -1677,7 +1677,7 @@ public class NodeServiceTest
     }
 
     /**
-     * MNT-25998: several transactions that detect the same orphan at the same time must not each re-home it under lost_found. Each of them used to add its own primary parent assoc, leaving the node with two or more primary parents.
+     * Several transactions that detect the same orphan at the same time must not each re-home it under lost_found. Each of them used to add its own primary parent assoc, leaving the node with two or more primary parents.
      */
     @Test
     public void testConcurrentRecoveryOfNonRootNodeWithNoParentNode() throws Throwable

@@ -112,7 +112,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         {
             storesCacheReadLock.unlock();
         }
-        // MNT-25951: check the cached store without holding the read lock. exists() can be a network
+        // check the cached store without holding the read lock. exists() can be a network
         // call (e.g. S3), and a queued writer would otherwise block every other reader behind it.
         if (cachedStore != null)
         {

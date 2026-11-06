@@ -59,7 +59,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 
 /**
- * Unit tests for {@link AbstractRoutingContentStore#getReader(String)} / {@link AbstractRoutingContentStore#exists(String)} store selection, including the MNT-25951 regression where a slow {@link ContentStore#exists(String)} call (e.g. an S3 HEAD on a stuck socket) was made while holding the routing store lock and so blocked every other content read and write on the node.
+ * Unit tests for {@link AbstractRoutingContentStore#getReader(String)} / {@link AbstractRoutingContentStore#exists(String)} store selection, including the regression where a slow {@link ContentStore#exists(String)} call (e.g. an S3 HEAD on a stuck socket) was made while holding the routing store lock and so blocked every other content read and write on the node.
  */
 public class AbstractRoutingContentStoreTest
 {
@@ -226,7 +226,7 @@ public class AbstractRoutingContentStoreTest
     }
 
     // ---------------------------------------------------------------------------------------------
-    // MNT-25951: exists() must not be called while holding the routing store lock
+    // exists() must not be called while holding the routing store lock
     // ---------------------------------------------------------------------------------------------
 
     /**

@@ -33,10 +33,12 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.AbstractList;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -2169,6 +2171,8 @@ public class NodesImpl implements Nodes
             throw new PermissionDeniedException("Cannot delete: " + nodeId);
         }
 
+        validateNoWorkingCopyDescendants(nodeRef, nodeId);
+
         // default false (if not provided)
         boolean permanentDelete = Boolean.valueOf(parameters.getParameter(PARAM_PERMANENT));
 
@@ -2193,6 +2197,42 @@ public class NodesImpl implements Nodes
         postActivity(Activity_Type.DELETED, activityInfo, true);
 
         fileFolderService.delete(nodeRef);
+    }
+
+    private void validateNoWorkingCopyDescendants(NodeRef nodeRef, String nodeId)
+    {
+        // The cascade delete is not permission filtered, so the scan has to run as system to also see descendants that are not readable by the caller. The caller's authorization to delete is unaffected: it is enforced separately when the delete itself is performed.
+        boolean hasCheckedOutDescendant = AuthenticationUtil.runAsSystem(() -> {
+            Deque<NodeRef> toVisit = new ArrayDeque<>();
+            toVisit.push(nodeRef);
+
+            while (!toVisit.isEmpty())
+            {
+                for (ChildAssociationRef childAssoc : nodeService.getChildAssocs(toVisit.pop()))
+                {
+                    // cascade delete only follows primary child associations
+                    if (!childAssoc.isPrimary())
+                    {
+                        continue;
+                    }
+
+                    NodeRef childRef = childAssoc.getChildRef();
+
+                    if (nodeService.hasAspect(childRef, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(childRef, ContentModel.ASPECT_CHECKED_OUT))
+                    {
+                        return true;
+                    }
+                    toVisit.push(childRef);
+                }
+            }
+            return false;
+        });
+
+        if (hasCheckedOutDescendant)
+        {
+            // Deliberately does not identify the descendant, which the caller may not be allowed to see.
+            throw new ConstraintViolatedException("Cannot delete " + nodeId + " because it contains a checked out node");
+        }
     }
 
     @Override

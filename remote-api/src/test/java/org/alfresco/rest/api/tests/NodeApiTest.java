@@ -66,6 +66,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.rest.api.model.ConstraintDefinition;
 import org.alfresco.rest.api.model.LockInfo;
@@ -7185,5 +7186,123 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Clean up
         deleteNode(folderId);
+    }
+
+    /**
+     * Tests that a folder cannot be deleted while it contains a checked out document, either as a direct child or further down the hierarchy.
+     * <p>
+     * DELETE:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
+     */
+    @Test
+    public void testDeleteFolderWithCheckedOutDescendant() throws Exception
+    {
+        setRequestContext(user1);
+
+        // f0 / f1 / d1 - the checked out document is nested, not a direct child of f0
+        String f0Id = createFolder(Nodes.PATH_MY, "f0-checkedOutDelete-" + RUNID).getId();
+        String f1Id = createFolder(f0Id, "f1-checkedOutDelete-" + RUNID).getId();
+        String d1Id = createTextFile(f1Id, "content-checkedOutDelete-" + RUNID, "Content to be checked out.").getId();
+
+        HttpResponse response = post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        String wcId = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class).getId();
+
+        // -ve test - the checked out document is a nested descendant of f0
+        deleteNode(f0Id, 409);
+
+        // -ve test - the checked out document is a direct child of f1
+        deleteNode(f1Id, 409);
+
+        // -ve test - permanent delete must be rejected as well
+        deleteNode(f0Id, true, 409);
+
+        // the rejected deletions must leave the whole subtree intact
+        getSingle(URL_NODES, f0Id, null, null, 200);
+        getSingle(URL_NODES, f1Id, null, null, 200);
+        getSingle(URL_NODES, d1Id, null, null, 200);
+        getSingle(URL_NODES, wcId, null, null, 200);
+
+        assertFalse(existsArchiveNode(f0Id));
+        assertFalse(existsArchiveNode(f1Id));
+        assertFalse(existsArchiveNode(d1Id));
+
+        // once the checkout is cancelled the deletion is allowed again
+        post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 200);
+
+        deleteNode(f0Id);
+
+        assertTrue(existsArchiveNode(f0Id));
+        assertTrue(existsArchiveNode(f1Id));
+        assertTrue(existsArchiveNode(d1Id));
+    }
+
+    /**
+     * Tests that permanent deletion of a folder also succeeds once the checkout of a contained document has been cancelled.
+     */
+    @Test
+    public void testPermanentDeleteFolderAfterCancelCheckout() throws Exception
+    {
+        setRequestContext(user1);
+
+        String f0Id = createFolder(Nodes.PATH_MY, "f0-permanentCheckedOutDelete-" + RUNID).getId();
+        String d1Id = createTextFile(f0Id, "content-permanentCheckedOutDelete-" + RUNID, "Content to be checked out.").getId();
+
+        post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+
+        deleteNode(f0Id, true, 409);
+
+        post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 200);
+
+        deleteNode(f0Id, true, 204);
+
+        // permanent delete bypasses the trashcan
+        assertFalse(existsArchiveNode(f0Id));
+        assertFalse(existsArchiveNode(d1Id));
+    }
+
+    /**
+     * Tests that a folder holding only a secondary child association to a folder that contains a checked out document can still be deleted, since the cascade delete, and therefore the validation, only follows primary child associations.
+     */
+    @Test
+    public void testDeleteFolderWithSecondaryLinkToCheckedOutNode() throws Exception
+    {
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        // d1 lives in f1 (primary parent), and f1 is only linked into f2
+        String f1Id = createFolder(myNodeId, "f1-secondaryCheckedOut-" + RUNID).getId();
+        String f2Id = createFolder(myNodeId, "f2-secondaryCheckedOut-" + RUNID).getId();
+        String d1Id = createTextFile(f1Id, "content-secondaryCheckedOut-" + RUNID, "Content to be checked out.").getId();
+
+        post(getNodeSecondaryChildrenUrl(f2Id), toJsonAsStringNonNull(new AssocChild(f1Id, ASSOC_TYPE_CM_CONTAINS)), 201);
+
+        post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+
+        // f2 only holds a secondary link, so neither the cascade delete nor the validation reaches the checked out document
+        deleteNode(f2Id);
+        assertTrue(existsArchiveNode(f2Id));
+
+        // the checked out document and its primary parent are untouched
+        Node f1Resp = RestApiUtil.parseRestApiEntry(getSingle(URL_NODES, f1Id, null, null, 200).getJsonResponse(), Node.class);
+        assertEquals(f1Id, f1Resp.getId());
+        assertFalse(existsArchiveNode(f1Id));
+
+        Node d1Resp = RestApiUtil.parseRestApiEntry(getSingle(URL_NODES, d1Id, null, null, 200).getJsonResponse(), Node.class);
+        assertTrue("Document should still be checked out", d1Resp.getAspectNames().contains("cm:checkedOut"));
+        assertFalse(existsArchiveNode(d1Id));
+
+        // -ve test - the primary parent is still protected
+        deleteNode(f1Id, 409);
+
+        // Clean up
+        post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 200);
+        deleteNode(f1Id);
+    }
+
+    private String getNodeSecondaryChildrenUrl(String nodeId)
+    {
+        return URL_NODES + "/" + nodeId + "/secondary-children";
     }
 }

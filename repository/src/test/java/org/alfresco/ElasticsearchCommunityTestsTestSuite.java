@@ -71,6 +71,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.Elasticsear
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteMembershipCacheEvictionListenerTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteTermsAggregationBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.filter.DefaultAliveStateFilterBuilderTest;
+import org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.ElasticsearchFingerprintResolverTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.AFTSBooleanOperatorsAdaptorTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ElasticsearchAFTSQueryBuilderTest;
@@ -78,6 +79,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.Elasticse
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ExactTermQueryIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.IndexLocaleAnalyzerIT;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.EscapeCharacterTest;
+import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.FingerprintQueryTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.FuzzyQueryTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PrefixQueryTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.RangeQueryTest;
@@ -174,6 +176,8 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTe
         TermOrPhraseQueryTest.class,
         WildcardQueryTest.class,
         EscapeCharacterTest.class,
+        FingerprintQueryTest.class,
+        ElasticsearchFingerprintResolverTest.class,
 
         // language = afts ITs
         ExactTermQueryIT.class,

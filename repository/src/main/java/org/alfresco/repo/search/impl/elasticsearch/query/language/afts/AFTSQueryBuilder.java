@@ -37,6 +37,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Sort;
 
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfig;
+import org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.FingerprintResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.EsTypeResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.LanguageQueryBuilder;
 import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
@@ -65,6 +66,7 @@ public class AFTSQueryBuilder implements LanguageQueryBuilder
     private final ElasticsearchExactTermSearchConfig exactTermSearchConfig;
     private final SiteService siteService;
     private final EsTypeResolver esTypeResolver;
+    private final FingerprintResolver fingerprintResolver;
 
     public AFTSQueryBuilder(NamespacePrefixResolver namespace,
             DictionaryService dictionaryService,
@@ -72,11 +74,22 @@ public class AFTSQueryBuilder implements LanguageQueryBuilder
             SiteService siteService,
             EsTypeResolver esTypeResolver)
     {
+        this(namespace, dictionaryService, exactTermSearchConfig, siteService, esTypeResolver, null);
+    }
+
+    public AFTSQueryBuilder(NamespacePrefixResolver namespace,
+            DictionaryService dictionaryService,
+            ElasticsearchExactTermSearchConfig exactTermSearchConfig,
+            SiteService siteService,
+            EsTypeResolver esTypeResolver,
+            FingerprintResolver fingerprintResolver)
+    {
         this.namespace = namespace;
         this.dictionaryService = dictionaryService;
         this.exactTermSearchConfig = exactTermSearchConfig;
         this.siteService = siteService;
         this.esTypeResolver = esTypeResolver;
+        this.fingerprintResolver = fingerprintResolver;
     }
 
     /**
@@ -97,7 +110,7 @@ public class AFTSQueryBuilder implements LanguageQueryBuilder
 
         Query alfrescoQuery = constructQuery(searchParameters, functionContext);
         QueryBuilderContext<org.opensearch.client.opensearch._types.query_dsl.Query, Sort, ParseException> elasticContext = new AFTSQueryBuilderContext(searchParameters,
-                namespace, dictionaryService, exactTermSearchConfig, siteService, esTypeResolver);
+                namespace, dictionaryService, exactTermSearchConfig, siteService, esTypeResolver, fingerprintResolver);
 
         // Create the Elasticsearch query alfrescoQuery.
         return createQueryBuilder(functionContext, alfrescoQuery, elasticContext);

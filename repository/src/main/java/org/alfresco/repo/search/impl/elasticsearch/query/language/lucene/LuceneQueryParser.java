@@ -97,12 +97,14 @@ import static org.alfresco.repo.site.SiteModel.TYPE_SITE;
 import java.io.Closeable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -130,7 +132,9 @@ import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfig;
 import org.alfresco.repo.search.impl.elasticsearch.model.FieldName;
 import org.alfresco.repo.search.impl.elasticsearch.query.AlfrescoDefaultTextFields;
+import org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.FingerprintResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.FieldQueryTransformer;
+import org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants;
 import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.repo.search.impl.elasticsearch.util.ThrowingFunction;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -158,6 +162,8 @@ public class LuceneQueryParser extends QueryParser
     public static final String PRIMARY_PARENT_FIELD = "PRIMARYPARENT";
     public static final String PARENT_FIELD = "PARENT";
     public static final String ANCESTOR_FIELD = "ANCESTOR";
+    public static final String FINGERPRINT_FIELD = ElasticsearchConstants.CONTENT_FINGERPRINT;
+    private static final Pattern SHA256_HEX = Pattern.compile("[0-9a-f]{64}");
 
     private static final List<String> DERIVED_FIELDS_SUFFIXES = List.of(FIELD_SIZE_SUFFIX,
             FIELD_MIMETYPE_SUFFIX,
@@ -172,6 +178,7 @@ public class LuceneQueryParser extends QueryParser
     private final SiteService siteService;
     private final ElasticsearchExactTermSearchConfig exactTermSearchConfig;
     private final SearchParameters parameters;
+    private final FingerprintResolver fingerprintResolver; // nullable
     private static final FieldQueryTransformer fieldQueryTransformer = FieldQueryTransformer.DEFAULT;
 
     private final BiFunction<BooleanQuery.Builder, Query, BooleanQuery.Builder> accumulateDisjunctionClauses = (accumulator, nthQuery) -> accumulator.add(nthQuery, SHOULD);
@@ -190,6 +197,11 @@ public class LuceneQueryParser extends QueryParser
 
     public LuceneQueryParser(NamespacePrefixResolver namespaceResolver, DictionaryService dictionaryService, SiteService siteService, SearchParameters parameters, ElasticsearchExactTermSearchConfig exactTermSearchConfig)
     {
+        this(namespaceResolver, dictionaryService, siteService, parameters, exactTermSearchConfig, null);
+    }
+
+    public LuceneQueryParser(NamespacePrefixResolver namespaceResolver, DictionaryService dictionaryService, SiteService siteService, SearchParameters parameters, ElasticsearchExactTermSearchConfig exactTermSearchConfig, FingerprintResolver fingerprintResolver)
+    {
         super(FIELD_TEXT, new Analyzer() {
             @Override
             protected TokenStreamComponents createComponents(String fieldName)
@@ -207,6 +219,7 @@ public class LuceneQueryParser extends QueryParser
         this.setAllowLeadingWildcard(true);
         this.setDefaultOperator(ofNullable(parameters.getDefaultOperator())
                 .map(operator -> Operator.valueOf(operator.name())).orElse(OR_OPERATOR));
+        this.fingerprintResolver = fingerprintResolver;
     }
 
     @Override
@@ -329,8 +342,9 @@ public class LuceneQueryParser extends QueryParser
         case FIELD_ISROOT:
         case FIELD_ISCONTAINER:
         case FIELD_TENANT:
-        case FIELD_FINGERPRINT:
             return unsupportedField(fieldName);
+        case FIELD_FINGERPRINT:
+            return fingerprintQuery(queryText);
         default:
             return getPropertyQuery(fieldName, escape(queryText, true), quoted, exactTermSearch, untokenisedSearch)
                     .or(() -> datatypeDefinition(fieldName).map(def -> dataTypeDefinitionQuery(def, propertyName -> getFieldQuery(propertyName, queryText, quoted))))
@@ -757,6 +771,57 @@ public class LuceneQueryParser extends QueryParser
     {
         String nodeId = NodeRef.isNodeRef(id) ? id.substring(id.lastIndexOf('/') + 1) : id;
         return luceneTermQuery(field, escape(nodeId, true));
+    }
+
+    private Query fingerprintQuery(String queryText)
+    {
+        if (fingerprintResolver == null || !fingerprintResolver.isEnabled())
+        {
+            return unsupportedField(FIELD_FINGERPRINT);
+        }
+        String text = stripQuotes(queryText.trim());
+        String lower = text.toLowerCase(Locale.ROOT);
+        if (SHA256_HEX.matcher(lower).matches())
+        {
+            return luceneTermQuery(FINGERPRINT_FIELD, lower);
+        }
+        // Solr syntax: <id>[_<overlap>[_<probability>]]; node refs and UUIDs contain no '_'
+        int separator = text.indexOf('_');
+        String nodeId = separator < 0 ? text : text.substring(0, separator);
+        if (separator >= 0)
+        {
+            warnIfSimilarityRequested(text.substring(separator + 1));
+        }
+        String hash = fingerprintResolver.resolve(nodeId).orElse(UNKNOWN);
+        return luceneTermQuery(FINGERPRINT_FIELD, hash);
+    }
+
+    private void warnIfSimilarityRequested(String thresholds)
+    {
+        String overlap = thresholds.split("_")[0];
+        try
+        {
+            float value = Float.parseFloat(overlap);
+            float fraction = value > 1f ? value / 100f : value; // Solr rule: 60 and 0.6 both mean 60%
+            if (fraction < 1f)
+            {
+                LOGGER.warn("FINGERPRINT similarity threshold '{}' is not supported by Elasticsearch search yet; returning exact duplicates only.", thresholds);
+            }
+        }
+        catch (NumberFormatException e)
+        {
+            LOGGER.warn("Invalid FINGERPRINT threshold '{}'; returning exact duplicates only.", thresholds);
+        }
+    }
+
+    private static String stripQuotes(String value)
+    {
+        if (value.length() >= 2
+                && (value.startsWith("'") && value.endsWith("'") || value.startsWith("\"") && value.endsWith("\"")))
+        {
+            return value.substring(1, value.length() - 1);
+        }
+        return value;
     }
 
     Query classDefinitionQuery(String text, boolean quoted)

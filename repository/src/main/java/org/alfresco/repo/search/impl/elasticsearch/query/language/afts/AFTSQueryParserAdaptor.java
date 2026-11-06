@@ -54,6 +54,7 @@ import org.alfresco.repo.search.adaptor.QueryParserExpressionAdaptor;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfig;
 import org.alfresco.repo.search.impl.elasticsearch.model.FieldName;
 import org.alfresco.repo.search.impl.elasticsearch.query.StoreRefStripper;
+import org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.FingerprintResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.EsTypeResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.FieldQueryTransformer;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.LuceneQueryParser;
@@ -97,11 +98,22 @@ public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch
             ElasticsearchExactTermSearchConfig exactTermSearchConfig,
             EsTypeResolver esTypeResolver)
     {
+        this(searchParameters, namespacePrefixResolver, dictionaryService, siteService, exactTermSearchConfig, esTypeResolver, null);
+    }
+
+    public AFTSQueryParserAdaptor(SearchParameters searchParameters,
+            NamespacePrefixResolver namespacePrefixResolver,
+            DictionaryService dictionaryService,
+            SiteService siteService,
+            ElasticsearchExactTermSearchConfig exactTermSearchConfig,
+            EsTypeResolver esTypeResolver,
+            FingerprintResolver fingerprintResolver)
+    {
         this.searchParameters = searchParameters;
         this.namespaceResolver = namespacePrefixResolver;
         this.dictionaryService = dictionaryService;
         this.esTypeResolver = esTypeResolver;
-        this.lucene = new LuceneQueryParser(namespacePrefixResolver, dictionaryService, siteService, searchParameters, exactTermSearchConfig);
+        this.lucene = new LuceneQueryParser(namespacePrefixResolver, dictionaryService, siteService, searchParameters, exactTermSearchConfig, fingerprintResolver);
         this.storeRefStripper = new StoreRefStripper(namespacePrefixResolver, dictionaryService,
                 searchParameters.getNamespace());
     }

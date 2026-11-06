@@ -37,6 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ANCESTOR;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_FINGERPRINT;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PARENT;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PRIMARYPARENT;
 import static org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.LuceneQueryParser.PRIMARY_HIERARCHY_FIELD;
@@ -63,6 +64,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.AnalysisMode;
 import org.alfresco.repo.search.adaptor.LuceneFunction;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfig;
+import org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.FingerprintResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.EsTypeResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.QueryConverter;
 import org.alfresco.repo.search.impl.elasticsearch.util.MockNamespaceService;
@@ -156,6 +158,24 @@ public class ElasticsearchQueryParserAdaptorTest
                 .getFieldQuery("{http://www.alfresco.org/model/content/1.0}name", "test");
 
         assertThat(aftsQuery.queryString().query(), is("cm%3Aname:test"));
+    }
+
+    @Test
+    public void shouldGetFingerprintTermQueryWhenFingerprintResolverIsEnabled() throws ParseException
+    {
+        String uuid = "1a0b110f-1e09-4ca2-b367-fe25e4964a4e";
+        String hash = "46b5f1fc07ba950cdbf478fc0403668d2ad91b3b8084739e5681895a194f4e54"; // pragma: allowlist secret
+        FingerprintResolver fingerprintResolver = mock(FingerprintResolver.class);
+        when(fingerprintResolver.isEnabled()).thenReturn(true);
+        when(fingerprintResolver.resolve(uuid)).thenReturn(Optional.of(hash));
+        var resolver = new MockNamespaceService();
+        resolver.registerNamespace(NamespaceService.CONTENT_MODEL_PREFIX, NamespaceService.CONTENT_MODEL_1_0_URI);
+        AFTSQueryParserAdaptor adaptor = new AFTSQueryParserAdaptor(new SearchParameters(), resolver, dictionaryService, mock(SiteService.class),
+                exactTermSearchConfig, esTypeResolver, fingerprintResolver);
+
+        Query aftsQuery = adaptor.getFieldQuery(FIELD_FINGERPRINT, uuid);
+
+        assertThat(aftsQuery.queryString().query(), is("FINGERPRINT:" + hash));
     }
 
     @Test

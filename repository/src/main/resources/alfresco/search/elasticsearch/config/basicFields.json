@@ -141,6 +141,13 @@
         "cm%3Acontent%2Etr_ex": {
             "type": "keyword",
             "index": false
+        },
+        "FINGERPRINT": {
+            "type": "keyword"
+        },
+        "FINGERPRINT_untokenized": {
+            "type": "alias",
+            "path": "FINGERPRINT"
         }
     }
 }

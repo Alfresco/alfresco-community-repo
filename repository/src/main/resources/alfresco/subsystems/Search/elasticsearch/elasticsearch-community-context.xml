@@ -269,12 +269,21 @@
         <constructor-arg name="elasticsearchHttpClientFactory" ref="elasticsearchHttpClientFactory" />
     </bean>
 
+    <bean id="elasticsearchFingerprintResolver"
+          class="org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.ElasticsearchFingerprintResolver">
+        <constructor-arg name="clientFactory" ref="elasticsearchHttpClientFactory"/>
+        <constructor-arg name="permissionService" ref="permissionService"/>
+        <constructor-arg name="nodeDAO" ref="nodeDAO"/>
+        <property name="enabled" value="${elasticsearch.query.fingerprint.enabled}"/>
+    </bean>
+
     <bean id="aFTSQueryBuilder" class="org.alfresco.repo.search.impl.elasticsearch.query.language.afts.AFTSQueryBuilder">
         <constructor-arg name="namespace" ref="namespaceDAO"/>
         <constructor-arg name="dictionaryService" ref="DictionaryService"/>
         <constructor-arg name="exactTermSearchConfig" ref="search.elasticsearchExactTermSearchConfig"/>
         <constructor-arg name="siteService" ref="siteService" />
         <constructor-arg name="esTypeResolver" ref="esTypeResolver" />
+        <constructor-arg name="fingerprintResolver" ref="elasticsearchFingerprintResolver" />
     </bean>
 
     <bean name="userVisibleSitesCache" factory-bean="cacheFactory" factory-method="createCache">
@@ -326,6 +335,7 @@
         <constructor-arg name="namespaceResolver" ref="namespaceDAO"/>
         <constructor-arg name="dictionaryService" ref="DictionaryService"/>
         <constructor-arg name="siteService" ref="siteService" />
+        <constructor-arg name="fingerprintResolver" ref="elasticsearchFingerprintResolver" />
     </bean>
 
     <bean id="cmisQueryParserFactory" class="org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.CMISQueryParserFactory" />

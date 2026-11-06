@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.elasticsearch.query.language.afts;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,6 +45,7 @@ import org.mockito.stubbing.Answer;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 
+import org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.FingerprintResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.EsTypeResolver;
 import org.alfresco.repo.search.impl.elasticsearch.util.MockNamespaceService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -180,5 +182,22 @@ public class ElasticsearchAFTSQueryBuilderTest extends TestCase
     private AFTSQueryBuilder givenAFTSQueryBuilder()
     {
         return new AFTSQueryBuilder(namespace, dictionaryService, null, siteService, esTypeResolver);
+    }
+
+    @Test
+    public void shouldResolveFingerprintQuery_whenFingerprintResolverIsEnabled() throws ParseException
+    {
+        String uuid = "1a0b110f-1e09-4ca2-b367-fe25e4964a4e";
+        String hash = "46b5f1fc07ba950cdbf478fc0403668d2ad91b3b8084739e5681895a194f4e54"; // pragma: allowlist secret
+        FingerprintResolver fingerprintResolver = mock(FingerprintResolver.class);
+        when(fingerprintResolver.isEnabled()).thenReturn(true);
+        when(fingerprintResolver.resolve(uuid)).thenReturn(Optional.of(hash));
+        AFTSQueryBuilder elasticsearchAFTSQueryBuilder = new AFTSQueryBuilder(namespace, dictionaryService, null, siteService, esTypeResolver, fingerprintResolver);
+        SearchParameters searchParameters = new SearchParameters();
+        searchParameters.setQuery("FINGERPRINT:" + uuid);
+
+        Query ftsQuery = elasticsearchAFTSQueryBuilder.getQuery(searchParameters);
+
+        assertThat(ftsQuery.queryString().query(), containsString("FINGERPRINT:" + hash));
     }
 }

@@ -31,6 +31,7 @@ import org.opensearch.client.opensearch._types.query_dsl.Query;
 
 import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfig;
+import org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.FingerprintResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.EsTypeResolver;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -49,6 +50,7 @@ public class AFTSQueryBuilderContext implements QueryBuilderContext<Query, Sort,
     private final ElasticsearchExactTermSearchConfig exactTermSearchConfig;
     private final SiteService siteService;
     private final EsTypeResolver esTypeResolver;
+    private final FingerprintResolver fingerprintResolver;
 
     public AFTSQueryBuilderContext(SearchParameters searchParameters,
             NamespacePrefixResolver namespacePrefixResolver,
@@ -57,18 +59,30 @@ public class AFTSQueryBuilderContext implements QueryBuilderContext<Query, Sort,
             SiteService siteService,
             EsTypeResolver esTypeResolver)
     {
+        this(searchParameters, namespacePrefixResolver, dictionaryService, exactTermSearchConfig, siteService, esTypeResolver, null);
+    }
+
+    public AFTSQueryBuilderContext(SearchParameters searchParameters,
+            NamespacePrefixResolver namespacePrefixResolver,
+            DictionaryService dictionaryService,
+            ElasticsearchExactTermSearchConfig exactTermSearchConfig,
+            SiteService siteService,
+            EsTypeResolver esTypeResolver,
+            FingerprintResolver fingerprintResolver)
+    {
         this.searchParameters = searchParameters;
         this.namespacePrefixResolver = namespacePrefixResolver;
         this.dictionaryService = dictionaryService;
         this.exactTermSearchConfig = exactTermSearchConfig;
         this.siteService = siteService;
         this.esTypeResolver = esTypeResolver;
+        this.fingerprintResolver = fingerprintResolver;
     }
 
     @Override
     public QueryParserAdaptor<Query, Sort, ParseException> getLuceneQueryParserAdaptor()
     {
-        return new AFTSQueryParserAdaptor(searchParameters, namespacePrefixResolver, dictionaryService, siteService, exactTermSearchConfig, esTypeResolver);
+        return new AFTSQueryParserAdaptor(searchParameters, namespacePrefixResolver, dictionaryService, siteService, exactTermSearchConfig, esTypeResolver, fingerprintResolver);
     }
 
     @Override

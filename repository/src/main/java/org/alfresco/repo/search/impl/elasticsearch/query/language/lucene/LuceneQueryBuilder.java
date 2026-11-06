@@ -36,6 +36,7 @@ import org.apache.lucene.search.RegexpQuery;
 import org.apache.lucene.search.TermQuery;
 import org.opensearch.client.opensearch._types.query_dsl.QueryStringQuery;
 
+import org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.FingerprintResolver;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.LanguageQueryBuilder;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -47,18 +48,25 @@ public class LuceneQueryBuilder implements LanguageQueryBuilder
     private final NamespacePrefixResolver namespaceResolver;
     private final DictionaryService dictionaryService;
     private final SiteService siteService;
+    private final FingerprintResolver fingerprintResolver;
 
     public LuceneQueryBuilder(NamespacePrefixResolver namespaceResolver, DictionaryService dictionaryService, SiteService siteService)
+    {
+        this(namespaceResolver, dictionaryService, siteService, null);
+    }
+
+    public LuceneQueryBuilder(NamespacePrefixResolver namespaceResolver, DictionaryService dictionaryService, SiteService siteService, FingerprintResolver fingerprintResolver)
     {
         this.namespaceResolver = namespaceResolver;
         this.dictionaryService = dictionaryService;
         this.siteService = siteService;
+        this.fingerprintResolver = fingerprintResolver;
     }
 
     @Override
     public org.opensearch.client.opensearch._types.query_dsl.Query getQuery(SearchParameters searchParameters) throws ParseException
     {
-        final var parser = new LuceneQueryParser(namespaceResolver, dictionaryService, siteService, searchParameters);
+        final var parser = new LuceneQueryParser(namespaceResolver, dictionaryService, siteService, searchParameters, null, fingerprintResolver);
 
         final Query luceneQuery = parser.parse(searchParameters.getQuery());
 

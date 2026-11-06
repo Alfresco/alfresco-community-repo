@@ -44,8 +44,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CyclicBarrier;
+import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,6 +61,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
@@ -1669,6 +1674,95 @@ public class NodeServiceTest
         {
             assertTrue("Not found: " + childNodeId, lostAndFoundNodeIds.contains(childNodeId) || !nodeDAO.exists(childNodeId));
         }
+    }
+
+    /**
+     * Several transactions that detect the same orphan at the same time must not each re-home it under lost_found. Each of them used to add its own primary parent assoc, leaving the node with two or more primary parents.
+     */
+    @Test
+    public void testConcurrentRecoveryOfNonRootNodeWithNoParentNode() throws Throwable
+    {
+        final int orphanCount = 5;
+        final int threadCount = 8;
+
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        final NodeRef[] nodeRefs = new NodeRef[10];
+        buildNodeHierarchy(workspaceRootNodeRef, nodeRefs);
+
+        final JdbcTemplate jdbcTemplate = new JdbcTemplate(
+                (DataSource) APP_CONTEXT_INIT.getApplicationContext().getBean("dataSource"));
+
+        for (int i = 0; i < orphanCount; i++)
+        {
+            final String name = this.getClass().getName() + "-" + System.nanoTime();
+            final Map<QName, Serializable> props = new HashMap<>();
+            props.put(ContentModel.PROP_NAME, name);
+            final NodeRef childNodeRef = txnService.getRetryingTransactionHelper().doInTransaction(() -> nodeService.createNode(
+                    nodeRefs[0],
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                    ContentModel.TYPE_CONTENT,
+                    props).getChildRef());
+            final Long childNodeId = (Long) nodeService.getProperty(childNodeRef, ContentModel.PROP_NODE_DBID);
+
+            // Orphan the node, as testForceNonRootNodeWithNoParentNode does
+            txnService.getRetryingTransactionHelper().doInTransaction(() -> {
+                nodeDAO.deleteChildAssoc(nodeDAO.getPrimaryParentAssoc(childNodeId).getFirst());
+                return null;
+            });
+            assertEquals(0, countPrimaryParentAssocs(jdbcTemplate, childNodeId));
+
+            // Every thread sees the orphan and binds its own lost+found recovery
+            final CyclicBarrier barrier = new CyclicBarrier(threadCount);
+            final Queue<Throwable> unexpectedErrors = new ConcurrentLinkedQueue<>();
+            List<Thread> threads = new ArrayList<>(threadCount);
+            for (int t = 0; t < threadCount; t++)
+            {
+                Thread thread = new Thread(() -> {
+                    AuthenticationUtil.setRunAsUserSystem();
+                    try
+                    {
+                        barrier.await();
+                        txnService.getRetryingTransactionHelper().doInTransaction(() -> nodeService.getPath(childNodeRef), true, true);
+                    }
+                    catch (ConcurrencyFailureException e)
+                    {
+                        // Expected: the request that finds the orphan fails with NonRootNodeWithoutParentsException,
+                        // and the lost+found recovery runs after rollback
+                    }
+                    catch (Exception e)
+                    {
+                        unexpectedErrors.add(e);
+                    }
+                    finally
+                    {
+                        AuthenticationUtil.clearCurrentSecurityContext();
+                    }
+                });
+                thread.setUncaughtExceptionHandler((th, e) -> unexpectedErrors.add(e));
+                thread.start();
+                threads.add(thread);
+            }
+            for (Thread thread : threads)
+            {
+                thread.join(60000);
+                assertFalse("Worker thread " + thread.getName() + " did not finish within the timeout", thread.isAlive());
+            }
+            assertTrue("Unexpected worker failures: " + unexpectedErrors, unexpectedErrors.isEmpty());
+
+            assertEquals("Node " + childNodeId + " must have exactly one primary parent assoc", 1, countPrimaryParentAssocs(jdbcTemplate, childNodeId));
+            txnService.getRetryingTransactionHelper().doInTransaction(() -> {
+                Path path = nodeService.getPath(childNodeRef);
+                assertNotNull(path);
+                return null;
+            }, true, true);
+        }
+    }
+
+    private int countPrimaryParentAssocs(JdbcTemplate jdbcTemplate, Long childNodeId)
+    {
+        return jdbcTemplate.queryForObject("select count(*) from alf_child_assoc where child_node_id = ? and is_primary = ?",
+                Integer.class, childNodeId, true);
     }
 
     private List<Long> getChildNodesWithDeletedParentNode(NodeEntity params, int idsToSkip)

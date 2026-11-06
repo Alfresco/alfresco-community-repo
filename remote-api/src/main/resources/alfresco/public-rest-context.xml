@@ -1691,6 +1691,7 @@
         <property name="authenticationService" ref="AuthenticationService" />
         <property name="ticketComponent" ref="ticketComponent" />
         <property name="remoteUserMapper" ref="RemoteUserMapper" />
+        <property name="authenticationContextManager" ref="Authentication" />
     </bean>
 
     <bean id="Authentications" class="org.springframework.aop.framework.ProxyFactoryBean">

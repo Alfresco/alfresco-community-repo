@@ -1,7 +1,6 @@
 <settings>
     <mirrors>
-        <!-- Maven Central goes through cic-ext-pull-through, as supply-chain policy requires.
-             alfresco-public is declared in the pom and stays anonymous. -->
+        <!-- Maven Central goes through cic-ext-pull-through, as supply-chain policy requires. -->
         <mirror>
             <id>cic-ext-pull-through</id>
             <name>Maven Central</name>
@@ -24,4 +23,36 @@
             <password>${env.MAVEN_PASSWORD}</password>
         </server>
     </servers>
+
+    <profiles>
+        <profile>
+            <id>alfresco-public</id>
+            <repositories>
+                <repository>
+                    <id>central</id>
+                    <name>Central Repository</name>
+                    <url>https://repo.maven.apache.org/maven2</url>
+                    <layout>default</layout>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>alfresco-public</id>
+                    <name>Alfresco Public Repository</name>
+                    <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>alfresco-public</activeProfile>
+    </activeProfiles>
 </settings>

@@ -29,6 +29,15 @@
             <id>alfresco-public</id>
             <repositories>
                 <repository>
+                    <id>central</id>
+                    <name>Central Repository</name>
+                    <url>https://repo.maven.apache.org/maven2</url>
+                    <layout>default</layout>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
                     <id>alfresco-public</id>
                     <name>Alfresco Public Repository</name>
                     <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>

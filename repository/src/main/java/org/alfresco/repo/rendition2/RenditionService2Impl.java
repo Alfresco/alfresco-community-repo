@@ -372,6 +372,18 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                                 renderOrTransform.throwIllegalStateExceptionIfAlreadyDone(sourceContentHashCode);
                             }
                         }
+                        try
+                        {
+                            // transform() uses the transformer chosen by checkSupported() on the same thread (thread-locals),
+                            // and this callback may run on a background thread, so choose it again here.
+                            transformClient.checkSupported(sourceNodeRef, renditionDefinition, sourceContentData.getMimetype(),
+                                    sourceContentData.getSize(), sourceContentData.getContentUrl());
+                        }
+                        catch (UnsupportedOperationException e)
+                        {
+                            failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
+                            return null;
+                        }
                         transformClient.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
                     }
                     else
@@ -386,7 +398,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 return null;
             };
             String renditionName = renditionDefinition.getRenditionName();
-            renditionRequestSheduler.scheduleRendition(callback, sourceNodeRef + renditionName);
+            String requestId = renditionDefinition instanceof TransformDefinition transformDefinition ? transformDefinition.getRequestId() : null;
+            renditionRequestSheduler.scheduleRendition(callback, sourceNodeRef + renditionName + (requestId == null ? "" : requestId));
         }
         catch (Exception e)
         {

@@ -67,8 +67,10 @@
         <property name="thumbnailsEnabled" value="${system.thumbnail.generate}" />
     </bean>
 
-    <bean id="renditionRequestSheduler" class="org.alfresco.repo.util.PostTxnCallbackScheduler">
+    <bean id="renditionRequestSheduler" class="org.alfresco.repo.util.PostTxnCallbackScheduler" init-method="init" destroy-method="destroy">
         <property name="transactionService" ref="TransactionService" />
+        <property name="threadPoolSize" value="${renditionService2.dispatch.threadPoolSize}" />
+        <property name="queueSizeWarning" value="${renditionService2.dispatch.queueSizeWarning}" />
     </bean>
 
     <bean id="transformReplyProvider" class="org.alfresco.repo.rendition2.StubTransformReplyProvider">

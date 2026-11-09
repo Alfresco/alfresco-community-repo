@@ -16,11 +16,11 @@
             <username>${env.CLOUDSMITH_USERNAME}</username>
             <password>${env.CLOUDSMITH_API_KEY}</password>
         </server>
-        <!-- Deploy server: replaced in Phase 2 (push) -->
+        <!-- Deploy server (distributionManagement in pom.xml) -->
         <server>
-            <id>alfresco-public-releases</id>
-            <username>${env.MAVEN_USERNAME}</username>
-            <password>${env.MAVEN_PASSWORD}</password>
+            <id>alfresco-releases</id>
+            <username>${env.CLOUDSMITH_USERNAME}</username>
+            <password>${env.CLOUDSMITH_API_KEY}</password>
         </server>
     </servers>
 

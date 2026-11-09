@@ -20,11 +20,15 @@ cloneRepo "${DOWNSTREAM_REPO}" "${BRANCH_NAME}"
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../../../$(basename "${DOWNSTREAM_REPO%.git}")"
 
+# Pin the versions plugin: an unpinned "versions:" prefix resolves to the latest release (2.24.0 since the
+# Cloudsmith migration), which silently skips update-parent. 2.7 is the last version known to work.
+VERSIONS_PLUGIN="org.codehaus.mojo:versions-maven-plugin:2.7"
+
 # Update parent version
-mvn -B versions:update-parent versions:commit "-DparentVersion=[${VERSION}]"
+mvn -B "${VERSIONS_PLUGIN}:update-parent" "${VERSIONS_PLUGIN}:commit" "-DparentVersion=[${VERSION}]"
 
 # Update dependency version
-mvn -B versions:set-property versions:commit \
+mvn -B "${VERSIONS_PLUGIN}:set-property" "${VERSIONS_PLUGIN}:commit" \
   -Dproperty=dependency.alfresco-community-repo.version \
   "-DnewVersion=${VERSION}"
 

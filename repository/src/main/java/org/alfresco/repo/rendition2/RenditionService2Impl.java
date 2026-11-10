@@ -404,7 +404,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             };
             String renditionName = renditionDefinition.getRenditionName();
             String requestId = renditionDefinition instanceof TransformDefinition transformDefinition ? transformDefinition.getRequestId() : null;
-            renditionRequestSheduler.schedule(callback, sourceNodeRef + renditionName + (requestId == null ? "" : requestId));
+            renditionRequestSheduler.scheduleRendition(callback, sourceNodeRef + renditionName + (requestId == null ? "" : requestId));
         }
         catch (Exception e)
         {

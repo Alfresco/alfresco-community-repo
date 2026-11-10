@@ -185,7 +185,7 @@ public class RenditionService2Test
     private class RenditionRequestSchedulerMock extends PostTxnCallbackScheduler
     {
         @Override
-        public void schedule(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
+        public void scheduleRendition(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
         {
             try
             {

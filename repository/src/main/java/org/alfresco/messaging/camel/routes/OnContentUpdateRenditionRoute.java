@@ -40,13 +40,9 @@ import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.rawevents.TransactionAwareEventProducer;
-import org.alfresco.repo.rawevents.types.EventType;
-import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.util.PostTxnCallbackScheduler;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.GUID;
 
 /**
  * Rendition listener for on content update raw event.
@@ -65,13 +61,13 @@ public class OnContentUpdateRenditionRoute extends RouteBuilder implements Conte
     private ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Autowired
-    private TransactionAwareEventProducer transactionAwareEventProducer;
-
-    @Autowired
     private PolicyComponent policyComponent;
 
     @Autowired
-    private PostTxnCallbackScheduler postTxnCallbackScheduler;
+    private PostTxnCallbackScheduler renditionRequestSheduler;
+
+    @Autowired
+    private RenditionService2Impl renditionService2;
 
     @Override
     public void configure() throws Exception
@@ -85,35 +81,17 @@ public class OnContentUpdateRenditionRoute extends RouteBuilder implements Conte
         policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, RenditionModel.ASPECT_RENDITIONED,
                 new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.EVERY_EVENT));
 
+        // Only consumes messages sent by earlier versions, which sent each content update to this queue.
         from(sourceQueue).threads().executorService(executorService).process("renditionEventProcessor").end();
     }
 
     @Override
     public void onContentUpdate(NodeRef sourceNodeRef, boolean newContent)
     {
-        // Sent like a rendition request, so the committing thread does not wait for the message broker.
-        OnContentUpdatePolicyEvent event = createOnContentUpdateEvent(sourceNodeRef, newContent);
-        postTxnCallbackScheduler.schedule(() -> {
-            transactionAwareEventProducer.send(sourceQueue, event);
+        // Re-render after commit on a background thread, without a round trip through the message broker.
+        renditionRequestSheduler.scheduleRendition(() -> {
+            renditionService2.onContentUpdate(sourceNodeRef, newContent);
             return null;
         }, "onContentUpdate:" + sourceNodeRef);
-    }
-
-    public OnContentUpdatePolicyEvent createOnContentUpdateEvent(NodeRef sourceNodeRef, boolean newContent)
-    {
-        OnContentUpdatePolicyEvent event = new OnContentUpdatePolicyEvent();
-
-        // Raw event specific
-        event.setId(GUID.generate());
-        event.setType(EventType.CONTENT_UPDATED.toString());
-        event.setAuthenticatedUser(AuthenticationUtil.getFullyAuthenticatedUser());
-        event.setExecutingUser(AuthenticationUtil.getRunAsUser());
-        event.setTimestamp(System.currentTimeMillis());
-        event.setSchema(1);
-
-        // On content update policy event specific
-        event.setNodeRef(sourceNodeRef.toString());
-        event.setNewContent(newContent);
-        return event;
     }
 }

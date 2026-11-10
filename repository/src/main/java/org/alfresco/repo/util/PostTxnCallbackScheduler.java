@@ -108,7 +108,7 @@ public class PostTxnCallbackScheduler
      * @param uniqueId
      *            The unique id of the callback. Consecutive requests to schedule the callback with the same id will overwrite the previously scheduled one.
      */
-    public void scheduleRendition(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
+    public void schedule(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
     {
         AlfrescoTransactionSupport.bindListener(new PostTxTransactionListener(callback, uniqueId));
     }

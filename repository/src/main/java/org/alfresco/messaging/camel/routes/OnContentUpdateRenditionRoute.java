@@ -38,12 +38,13 @@ import org.springframework.stereotype.Component;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
-import org.alfresco.repo.policy.EventBehaviour;
+import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rawevents.TransactionAwareEventProducer;
 import org.alfresco.repo.rawevents.types.EventType;
 import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.util.PostTxnCallbackScheduler;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 
@@ -53,7 +54,7 @@ import org.alfresco.util.GUID;
  * @author Cristian Turlica
  */
 @Component
-public class OnContentUpdateRenditionRoute extends RouteBuilder
+public class OnContentUpdateRenditionRoute extends RouteBuilder implements ContentServicePolicies.OnContentUpdatePolicy
 {
     private static Log logger = LogFactory.getLog(OnContentUpdateRenditionRoute.class);
 
@@ -69,6 +70,9 @@ public class OnContentUpdateRenditionRoute extends RouteBuilder
     @Autowired
     private PolicyComponent policyComponent;
 
+    @Autowired
+    private PostTxnCallbackScheduler postTxnCallbackScheduler;
+
     @Override
     public void configure() throws Exception
     {
@@ -78,14 +82,23 @@ public class OnContentUpdateRenditionRoute extends RouteBuilder
             logger.debug("SourceQueue is " + sourceQueue);
         }
 
-        EventBehaviour eventBehaviour = new EventBehaviour(transactionAwareEventProducer, sourceQueue, this, "createOnContentUpdateEvent",
-                Behaviour.NotificationFrequency.EVERY_EVENT);
-        policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, RenditionModel.ASPECT_RENDITIONED, eventBehaviour);
+        policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, RenditionModel.ASPECT_RENDITIONED,
+                new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.EVERY_EVENT));
 
         from(sourceQueue).threads().executorService(executorService).process("renditionEventProcessor").end();
     }
 
-    @SuppressWarnings("unused")
+    @Override
+    public void onContentUpdate(NodeRef sourceNodeRef, boolean newContent)
+    {
+        // Sent like a rendition request, so the committing thread does not wait for the message broker.
+        OnContentUpdatePolicyEvent event = createOnContentUpdateEvent(sourceNodeRef, newContent);
+        postTxnCallbackScheduler.schedule(() -> {
+            transactionAwareEventProducer.send(sourceQueue, event);
+            return null;
+        }, "onContentUpdate:" + sourceNodeRef);
+    }
+
     public OnContentUpdatePolicyEvent createOnContentUpdateEvent(NodeRef sourceNodeRef, boolean newContent)
     {
         OnContentUpdatePolicyEvent event = new OnContentUpdatePolicyEvent();

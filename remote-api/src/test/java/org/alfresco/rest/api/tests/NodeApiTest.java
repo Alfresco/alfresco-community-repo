@@ -27,6 +27,7 @@ package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -7299,6 +7300,87 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Clean up
         post(getNodeOperationUrl(d1Id, "cancel-checkout"), null, null, 200);
         deleteNode(f1Id);
+    }
+
+    /**
+     * Tests that deleting a working copy directly is still allowed and behaves like a cancel checkout: the working copy is removed and the original document is unlocked.
+     */
+    @Test
+    public void testDeleteWorkingCopyDirectly() throws Exception
+    {
+        setRequestContext(user1);
+
+        String f1Id = createFolder(Nodes.PATH_MY, "f1-deleteWorkingCopy-" + RUNID).getId();
+        String d1Id = createTextFile(f1Id, "content-deleteWorkingCopy-" + RUNID, "Content to be checked out.").getId();
+
+        HttpResponse response = post(getNodeOperationUrl(d1Id, "checkout"), null, null, 200);
+        String wcId = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class).getId();
+        assertNotEquals(d1Id, wcId);
+
+        // the guard only inspects descendants, so the working copy itself can be deleted
+        deleteNode(wcId);
+
+        getSingle(URL_NODES, wcId, null, null, 404);
+
+        // cancel checkout semantics - the original is no longer locked or checked out
+        Map<String, String> params = Collections.singletonMap("include", "isLocked,aspectNames");
+        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        Node original = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertFalse("Original should not be locked after its working copy is deleted", original.getIsLocked());
+        assertFalse("Original should not have cm:checkedOut after its working copy is deleted", original.getAspectNames().contains("cm:checkedOut"));
+
+        // nothing is checked out any more, so the folder can be deleted
+        deleteNode(f1Id);
+        assertTrue(existsArchiveNode(f1Id));
+        assertTrue(existsArchiveNode(d1Id));
+    }
+
+    /**
+     * Tests that deleting a plain document or an empty folder is unaffected by the checked out descendant guard, even when an unrelated document elsewhere in the repository is checked out.
+     */
+    @Test
+    public void testDeletePlainDocumentAndEmptyFolderUnaffected() throws Exception
+    {
+        setRequestContext(user1);
+
+        // an unrelated checked out document in a sibling folder must not block other deletions
+        String otherFolderId = createFolder(Nodes.PATH_MY, "other-unaffectedDelete-" + RUNID).getId();
+        String otherDocId = createTextFile(otherFolderId, "other-content-unaffectedDelete-" + RUNID, "Unrelated checked out content.").getId();
+        post(getNodeOperationUrl(otherDocId, "checkout"), null, null, 200);
+
+        String f1Id = createFolder(Nodes.PATH_MY, "f1-unaffectedDelete-" + RUNID).getId();
+        String d1Id = createTextFile(f1Id, "content-unaffectedDelete-" + RUNID, "Plain content.").getId();
+        String d2Id = createTextFile(f1Id, "content2-unaffectedDelete-" + RUNID, "Plain content.").getId();
+        String emptyFolder1Id = createFolder(Nodes.PATH_MY, "empty1-unaffectedDelete-" + RUNID).getId();
+        String emptyFolder2Id = createFolder(Nodes.PATH_MY, "empty2-unaffectedDelete-" + RUNID).getId();
+
+        // plain document
+        deleteNode(d1Id);
+        assertTrue(existsArchiveNode(d1Id));
+
+        deleteNode(d2Id, true, 204);
+        assertFalse(existsArchiveNode(d2Id));
+
+        // empty folder
+        deleteNode(emptyFolder1Id);
+        assertTrue(existsArchiveNode(emptyFolder1Id));
+
+        deleteNode(emptyFolder2Id, true, 204);
+        assertFalse(existsArchiveNode(emptyFolder2Id));
+
+        // folder that is now empty after its documents were deleted
+        deleteNode(f1Id);
+        assertTrue(existsArchiveNode(f1Id));
+
+        // the unrelated checked out document is untouched
+        Map<String, String> params = Collections.singletonMap("include", "aspectNames");
+        HttpResponse response = getSingle(URL_NODES, otherDocId, params, null, 200);
+        Node otherDoc = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertTrue("Unrelated document should still be checked out", otherDoc.getAspectNames().contains("cm:checkedOut"));
+
+        // Clean up
+        post(getNodeOperationUrl(otherDocId, "cancel-checkout"), null, null, 200);
+        deleteNode(otherFolderId);
     }
 
     private String getNodeSecondaryChildrenUrl(String nodeId)

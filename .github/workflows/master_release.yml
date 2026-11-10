@@ -154,6 +154,16 @@ jobs:
         run: bash ./scripts/ci/update_downstream.sh
         env:
           APP_TOKEN: ${{ steps.app-token.outputs.token }}
+      # Named here because alfresco-enterprise-repo sees this release as one bot commit.
+      - name: "List who is in this release"
+        id: authors
+        if: github.event.before != '0000000000000000000000000000000000000000'
+        # Names are a nicety; losing them must not stop the release propagating.
+        continue-on-error: true
+        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-pr-authors@837a4dfd80d15ec3bc05b9168b97e0864aa3066c # v19.14.0
+        with:
+          from-ref: ${{ github.event.before }}
+          to-ref: ${{ github.sha }}
       - name: "Compute downstream commit message"
         id: commit-meta
         uses: ./.github/actions/get-downstream-commit-message
@@ -161,6 +171,8 @@ jobs:
           commit-title: ${{ needs.commit_parser.outputs.title }}
           version: ${{ steps.update-downstream.outputs.version }}
           downstream-repo: community-repo
+          # Handles only - this message lands in a repository with a different audience.
+          authors: ${{ steps.authors.outputs.cc }}
       - name: "Commit downstream version update"
         uses: iarekylew00t/verified-bot-commit@1ee4374942e5c5f814e9b3121d766cbe45cea360 # v2.3.6
         with:

@@ -2185,6 +2185,10 @@ public class NodesImpl implements Nodes
             throw new PermissionDeniedException("Cannot delete: " + nodeId);
         }
 
+        if (permissionService.hasPermission(nodeRef, PermissionService.DELETE_NODE) != AccessStatus.ALLOWED)
+        {
+            throw new PermissionDeniedException("Cannot delete: " + nodeId);
+        }
         validateNoWorkingCopyDescendants(nodeRef, nodeId);
 
         // default false (if not provided)

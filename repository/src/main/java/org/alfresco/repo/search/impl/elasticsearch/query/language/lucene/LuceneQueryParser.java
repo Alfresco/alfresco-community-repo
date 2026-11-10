@@ -156,7 +156,7 @@ public class LuceneQueryParser extends QueryParser
     /** The primary hierarchy field name in Elasticsearch. */
     public static final String PRIMARY_HIERARCHY_FIELD = "primaryHierarchy";
     /** The analysed multi-field of the TAG keyword field in Elasticsearch. */
-    public static final String TAG_ANALYSED_FIELD = ElasticsearchConstants.TAG + ".text";
+    public static final String TAG_ANALYSED_FIELD = ElasticsearchConstants.TAG_ANALYSED;
     /** The primary parent field name in Elasticsearch. */
     public static final String PRIMARY_PARENT_FIELD = "PRIMARYPARENT";
     public static final String PARENT_FIELD = "PARENT";

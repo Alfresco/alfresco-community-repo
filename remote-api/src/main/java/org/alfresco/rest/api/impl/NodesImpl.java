@@ -64,6 +64,7 @@ import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
@@ -80,6 +81,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -221,6 +223,8 @@ public class NodesImpl implements Nodes
     private ClassDefinitionMapper classDefinitionMapper;
     private RuleService ruleService;
     private CheckOutCheckInService checkOutCheckInService;
+    private NodeDAO nodeDAO;
+    private TenantService tenantService;
 
     private enum Activity_Type
     {
@@ -262,6 +266,8 @@ public class NodesImpl implements Nodes
         PropertyCheck.mandatory(this, "repositoryHelper", repositoryHelper);
         PropertyCheck.mandatory(this, "quickShareLinks", quickShareLinks);
         PropertyCheck.mandatory(this, "poster", poster);
+        PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
+        PropertyCheck.mandatory(this, "tenantService", tenantService);
 
         this.namespaceService = sr.getNamespaceService();
         this.fileFolderService = sr.getFileFolderService();
@@ -348,6 +354,16 @@ public class NodesImpl implements Nodes
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
+    }
+
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
+
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     // excluded namespaces (aspects, properties, assoc types)
@@ -2169,6 +2185,12 @@ public class NodesImpl implements Nodes
             throw new PermissionDeniedException("Cannot delete: " + nodeId);
         }
 
+        if (permissionService.hasPermission(nodeRef, PermissionService.DELETE_NODE) != AccessStatus.ALLOWED)
+        {
+            throw new PermissionDeniedException("Cannot delete: " + nodeId);
+        }
+        validateNoWorkingCopyDescendants(nodeRef, nodeId);
+
         // default false (if not provided)
         boolean permanentDelete = Boolean.valueOf(parameters.getParameter(PARAM_PERMANENT));
 
@@ -2193,6 +2215,74 @@ public class NodesImpl implements Nodes
         postActivity(Activity_Type.DELETED, activityInfo, true);
 
         fileFolderService.delete(nodeRef);
+    }
+
+    private void validateNoWorkingCopyDescendants(NodeRef nodeRef, String nodeId)
+    {
+        // Only folders can contain checked out documents: a document's own primary children are renditions, which are not checked out.
+        if (!isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false))
+        {
+            return;
+        }
+
+        if (hasCheckedOutDescendant(nodeRef))
+        {
+            // Deliberately does not identify the descendant, which the caller may not be allowed to see.
+            throw new ConstraintViolatedException("Cannot delete " + nodeId + " because it contains a checked out node");
+        }
+    }
+
+    /**
+     * Rather than walking down the subtree, which costs one query per descendant, this fetches every checked out node and working copy in a single indexed query and walks up the primary parent chain of each one. The cost therefore depends on the number of checked out nodes and the folder depth, not on the folder size.
+     * <p>
+     * NodeDAO is not permission filtered, so descendants that are not readable by the caller are also found, matching the cascade delete.
+     */
+    private boolean hasCheckedOutDescendant(NodeRef nodeRef)
+    {
+        // NodeDAO sits below the multi-tenancy layer, so it works with tenant qualified (physical) node refs
+        NodeRef physicalNodeRef = tenantService.getName(nodeRef);
+        Long targetId = nodeDAO.getNodePair(physicalNodeRef).getFirst();
+        StoreRef storeRef = physicalNodeRef.getStoreRef();
+        // Ancestors already known to be outside the subtree; checked out nodes usually share folders, so this avoids walking the same chain twice
+        Set<Long> outsideSubtree = new HashSet<>();
+        boolean[] found = {false};
+
+        nodeDAO.getNodesWithAspects(Set.of(ContentModel.ASPECT_WORKING_COPY, ContentModel.ASPECT_CHECKED_OUT), 0L, null, nodePair -> {
+            if (!found[0] && storeRef.equals(nodePair.getSecond().getStoreRef()))
+            {
+                found[0] = isPrimaryDescendant(nodePair.getFirst(), targetId, outsideSubtree);
+            }
+            return !found[0];
+        });
+        return found[0];
+    }
+
+    private boolean isPrimaryDescendant(Long nodeId, Long ancestorId, Set<Long> outsideSubtree)
+    {
+        List<Long> visited = new ArrayList<>();
+        Long currentId = nodeId;
+        while (true)
+        {
+            // cascade delete only follows primary child associations
+            Pair<Long, ChildAssociationRef> parentAssoc = nodeDAO.getPrimaryParentAssoc(currentId);
+            if (parentAssoc == null)
+            {
+                break;
+            }
+            Long parentId = nodeDAO.getNodePair(parentAssoc.getSecond().getParentRef()).getFirst();
+            if (parentId.equals(ancestorId))
+            {
+                return true;
+            }
+            if (outsideSubtree.contains(parentId))
+            {
+                break;
+            }
+            visited.add(parentId);
+            currentId = parentId;
+        }
+        outsideSubtree.addAll(visited);
+        return false;
     }
 
     @Override

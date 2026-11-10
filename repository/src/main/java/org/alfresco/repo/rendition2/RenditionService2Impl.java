@@ -366,7 +366,12 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                             // hasn't propagated yet. Bypass the shared cache to read directly from DB.
                             nodeDAO.setCheckNodeConsistency();
                             sourceContentData = getSourceContentData(sourceNodeRef);
-                            if (sourceContentData != null && sourceContentData.getSize() > 0)
+                            if (sourceContentData == null)
+                            {
+                                failure(sourceNodeRef, renditionDefinition, SOURCE_HAS_NO_CONTENT);
+                                return null;
+                            }
+                            if (sourceContentData.getSize() > 0)
                             {
                                 sourceContentHashCode = getSourceContentHashCode(sourceContentData);
                                 renderOrTransform.throwIllegalStateExceptionIfAlreadyDone(sourceContentHashCode);

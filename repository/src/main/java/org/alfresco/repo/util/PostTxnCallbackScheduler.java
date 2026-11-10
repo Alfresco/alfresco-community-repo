@@ -158,7 +158,7 @@ public class PostTxnCallbackScheduler
         private void warnIfQueueIsLarge()
         {
             int queueSize = pending.size();
-            if (queueSizeWarning > 0 && queueSize % queueSizeWarning == 0)
+            if (queueSizeWarning > 0 && queueSize > 0 && queueSize % queueSizeWarning == 0)
             {
                 logger.warn(queueSize + " rendition/transform requests are waiting to be sent. Check that the message broker is reachable.");
             }

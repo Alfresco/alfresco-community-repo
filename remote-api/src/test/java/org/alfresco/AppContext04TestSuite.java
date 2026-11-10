@@ -75,6 +75,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.web.scripts.custommodel.CustomModelImportTest.class,
         org.alfresco.repo.web.scripts.site.SurfConfigTest.class,
         org.alfresco.repo.web.scripts.node.NodeWebScripTest.class,
+        org.alfresco.rest.api.impl.AuthenticationsImplUnitTest.class,
         org.alfresco.rest.api.impl.CommentsImplUnitTest.class,
         org.alfresco.rest.api.impl.DownloadsImplCheckArchiveStatusUnitTest.class,
         org.alfresco.rest.api.impl.RestApiDirectUrlConfigUnitTest.class,

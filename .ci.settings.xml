@@ -1,43 +1,58 @@
 <settings>
-    <profiles>
-        <profile>
+    <mirrors>
+        <!-- Also serves the -A.x releases of other Alfresco projects, which alfresco-public doesn't. -->
+        <mirror>
             <id>alfresco-internal</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <repositories>
-                <repository>
-                    <id>alfresco-internal</id>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                    <name>Alfresco Internal Repository</name>
-                    <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>alfresco-internal</id>
-                    <name>Alfresco Internal Repository</name>
-                    <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-                </pluginRepository>
-            </pluginRepositories>
-        </profile>
-    </profiles>
+            <name>Alfresco Internal</name>
+            <url>https://artifacts.hyland.dev/basic/alfresco-internal/maven/</url>
+            <mirrorOf>*</mirrorOf>
+        </mirror>
+    </mirrors>
 
     <servers>
-        <server>
-            <id>alfresco-public</id>
-            <username>${env.MAVEN_USERNAME}</username>
-            <password>${env.MAVEN_PASSWORD}</password>
-        </server>
+        <!-- Exported by the cloudsmith-auth action -->
         <server>
             <id>alfresco-internal</id>
+            <username>${env.CLOUDSMITH_USERNAME}</username>
+            <password>${env.CLOUDSMITH_API_KEY}</password>
+        </server>
+        <!-- Deploy server: replaced in Phase 2 (push) -->
+        <server>
+            <id>alfresco-public-releases</id>
             <username>${env.MAVEN_USERNAME}</username>
             <password>${env.MAVEN_PASSWORD}</password>
         </server>
     </servers>
+
+    <profiles>
+        <profile>
+            <id>alfresco-public</id>
+            <repositories>
+                <repository>
+                    <id>central</id>
+                    <name>Central Repository</name>
+                    <url>https://repo.maven.apache.org/maven2</url>
+                    <layout>default</layout>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>alfresco-public</id>
+                    <name>Alfresco Public Repository</name>
+                    <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>alfresco-public</activeProfile>
+    </activeProfiles>
 </settings>

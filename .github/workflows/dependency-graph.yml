@@ -22,13 +22,15 @@ jobs:
     # Submitting the dependency snapshot via the Dependency Submission API requires write access.
     permissions:
       contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/maven-dependency-scan@v19.7.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
+      - uses: Alfresco/alfresco-build-tools/.github/actions/maven-dependency-scan@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           java-version: '21'
           maven-version: '3.9.9'
           maven-args: -Dscopes=compile,runtime
-          maven-username: ${{ secrets.NEXUS_USERNAME }}
-          maven-password: ${{ secrets.NEXUS_PASSWORD }}
           maven-settings-path: ".ci.settings.xml"

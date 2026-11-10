@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="CMISSuites-part2" parallel="classes" thread-count="1">
+	<listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+	</listeners>
+    <!-- Runs the whole package except the classes listed in cmis-part1-suite.xml. Keep both files in sync. -->
+	<test name="CMIS Tests - part2">
+		<packages>
+            <package name="org.alfresco.cmis"/>
+		</packages>
+		<classes>
+            <class name="org.alfresco.cmis.AppendContentStreamTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.CancelCheckOutTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.CopyTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.CreateFolderTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.DeleteContentStreamTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.DeleteTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.GetAllVersionsTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.GetChildrenTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.GetDescendantsTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.GetFolderParentTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.GetFolderTreeTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.GetObjectOfLatestVersionTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.GetTypeChildrenTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.GetTypeDescendantsTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.IsPrivateWorkingCopyTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.MoveTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.RelationshipTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.RemoveObjectFromFolderTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.RenameTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.RepositoryInfoTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.alfresco.cmis.SetContentTests">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+		</classes>
+	</test>
+</suite>

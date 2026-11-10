@@ -66,6 +66,7 @@ public class CompositeActionExecuter extends ActionExecuterAbstractBase
      */
     public void verifyActionAccessRestrictions(Action action)
     {
+        super.verifyActionAccessRestrictions(action);
         for (Action subAction : ((CompositeAction) action).getActions())
         {
             this.actionService.verifyActionAccessRestrictions(subAction);

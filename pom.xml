@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <groupId>org.alfresco</groupId>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>26.3.0.93-SNAPSHOT</version>
+    <version>26.3.0.102-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
+    <url>http://www.alfresco.org/</url>
+    <inceptionYear>2005</inceptionYear>
 
-    <parent>
-      <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-super-pom</artifactId>
-      <version>12</version>
-    </parent>
+    <organization>
+        <name>Alfresco Software</name>
+        <url>http://www.alfresco.org/</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License v3.0 or later</name>
+            <url>http://www.gnu.org/licenses/lgpl-3.0-standalone.html</url>
+        </license>
+    </licenses>
+
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://issues.alfresco.com/</url>
+    </issueManagement>
 
     <modules>
         <module>core</module>
@@ -38,6 +52,7 @@
         <builder.name>entitled-builder</builder.name>
         <local.registry>127.0.0.1:5000</local.registry>
 
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>21</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -57,22 +72,22 @@
         <dependency.acs-event-model.version>1.2.0-A.1</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
-        <dependency.spring.version>7.0.9</dependency.spring.version>
-        <dependency.spring-security.version>7.0.7</dependency.spring-security.version>
+        <dependency.spring.version>7.0.10</dependency.spring.version>
+        <dependency.spring-security.version>7.0.8</dependency.spring-security.version>
         <dependency.micrometer.version>1.16.7</dependency.micrometer.version> <!-- should be in sync with micrometer-observation transitive dependency from spring-context -->
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.22.3</dependency.jackson.version>
+        <dependency.jackson.version>2.22.4</dependency.jackson.version>
         <dependency.cxf.version>4.1.9</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
-        <dependency.webscripts.version>10.2</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.85</dependency.bouncycastle.version>
+        <dependency.webscripts.version>10.6</dependency.webscripts.version>
+        <dependency.bouncycastle.version>1.86</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.18.0</dependency.mockito-core.version>
         <dependency.test-parameter-injector.version>1.18</dependency.test-parameter-injector.version>
         <dependency.assertj.version>3.27.3</dependency.assertj.version>
         <dependency.org-json.version>20250517</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.12.0</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.20.0</dependency.commons-io.version>
-        <dependency.gson.version>2.13.1</dependency.gson.version>
+        <dependency.gson.version>2.13.2</dependency.gson.version>
         <dependency.guava.version>33.7.2-jre</dependency.guava.version>
         <dependency.httpclient.version>4.5.14</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.16</dependency.httpcore.version>
@@ -92,7 +107,7 @@
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.4.0</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>4.18.3</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.camel.version>4.18.5</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.139.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>6.2.7</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
@@ -126,17 +141,17 @@
         <dependency.jakarta-json-path.version>2.9.0</dependency.jakarta-json-path.version>
         <dependency.json-smart.version>2.5.2</dependency.json-smart.version>
         <alfresco.googledrive.version>5.0.0</alfresco.googledrive.version>
-        <alfresco.aos-module.version>3.5.0-A.2</alfresco.aos-module.version>
+        <alfresco.aos-module.version>3.5.0-A.3</alfresco.aos-module.version>
         <alfresco.api-explorer.version>26.3.0-A.4</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
-        <license-maven-plugin.version>2.4.0</license-maven-plugin.version>
+        <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
         <spotless-plugin.version>2.45.0</spotless-plugin.version>
 
         <dependency.postgresql.version>42.7.7</dependency.postgresql.version>
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
-        <dependency.mariadb.version>3.5.6</dependency.mariadb.version>
+        <dependency.mariadb.version>3.5.11</dependency.mariadb.version>
         <dependency.tas-utility.version>6.0.0</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.5.5</dependency.rest-assured.version>
         <dependency.tas-email.version>2.0.0</dependency.tas-email.version>
@@ -168,13 +183,58 @@
         <tag>HEAD</tag>
     </scm>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>alfresco-public-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
+    <!-- Central first: alfresco-public does not serve Maven Central content, and asking it first
+         for every artifact slows the build down. -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>alfresco-public</id>
+            <name>Alfresco Public Repository</name>
+            <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <!-- Public, anonymous Alfresco repository: the Alfresco artifacts that are not on Maven Central. -->
         <repository>
             <id>alfresco-public</id>
+            <name>Alfresco Public Repository</name>
+            <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>alfresco-public-releases</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
         </repository>
     </distributionManagement>
@@ -1081,48 +1141,81 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.jibx</groupId>
+                    <artifactId>maven-jibx-plugin</artifactId>
+                    <version>1.3.1</version>
+                    <!-- ACE-3667: Workaround for JIBX-515 -->
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jibx</groupId>
+                            <artifactId>jibx-bind</artifactId>
+                            <version>1.3.1</version>
+                            <exclusions>
+                                <exclusion>
+                                    <artifactId>bcel</artifactId>
+                                    <groupId>bcel</groupId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
+                        <!-- REPO-3918 Workaround for https://github.com/jibx/jibx/issues/9 -->
+                        <dependency>
+                            <groupId>org.apache.bcel</groupId>
+                            <artifactId>bcel</artifactId>
+                            <version>6.2.99</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>buildnumber-maven-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.tmatesoft.svnkit</groupId>
+                            <artifactId>svnkit</artifactId>
+                            <version>1.10.11</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>org.tmatesoft.sqljet</groupId>
+                                    <artifactId>*</artifactId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.5.0</version>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.13.0</version>
+                    <version>3.16.0</version>
                     <configuration>
                         <compilerArgs>
                             <arg>-parameters</arg>
                         </compilerArgs>
                     </configuration>
                 </plugin>
-                <!-- Ensure consistent maven-release-plugin version-->
                 <plugin>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
-                    <configuration>
-                        <tagNameFormat>@{project.version}</tagNameFormat>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>io.fabric8</groupId>
-                    <artifactId>docker-maven-plugin</artifactId>
-                    <version>0.46.0</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.2</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.5.2</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.4.2</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>3.4.0</version>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>3.1.4</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.12.0</version>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>3.1.4</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>3.3.1</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -1130,24 +1223,115 @@
                     <version>3.4.0</version>
                 </plugin>
                 <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.46.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.6</version>
+                    <configuration>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <runOrder>alphabetical</runOrder>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.5.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.5.1</version>
+                    <configuration>
+                        <skipIfEmpty>true</skipIfEmpty>
+                        <archive>
+                            <manifest>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                            </manifest>
+                            <manifestEntries>
+                                <Implementation-Version>${project.version}</Implementation-Version>
+                                <Build-Date>${maven.build.timestamp}</Build-Date>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>3.5.1</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                            </manifest>
+                            <manifestEntries>
+                                <Implementation-Version>${project.version}</Implementation-Version>
+                                <Build-Date>${maven.build.timestamp}</Build-Date>
+                            </manifestEntries>
+                        </archive>
+                        <attachClasses>true</attachClasses>
+                        <recompressZippedFiles>false</recompressZippedFiles>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.12.0</version>
+                    <configuration>
+                        <doclint>none</doclint>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <version>3.5.0</version>
+                    <configuration>
+                        <includeEmptyDirs>true</includeEmptyDirs>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.6.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.8.0</version>
+                    <version>3.11.0</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.7.1</version>
+                    <version>3.8.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.alfresco.maven.plugin</groupId>
                     <artifactId>alfresco-maven-plugin</artifactId>
                     <version>${alfresco.maven-plugin.version}</version>
                     <extensions>true</extensions>
+                    <configuration>
+                        <attachClasses>true</attachClasses>
+                        <ampBuildDirectory>${project.build.directory}/${project.build.finalName}</ampBuildDirectory>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.6.3</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>3.6.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -1178,7 +1362,19 @@
                     </executions>
                 </plugin>
                 <plugin>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-maven-plugin</artifactId>
+                    <version>11.0.26</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.google.code.maven-replacer-plugin</groupId>
+                    <artifactId>replacer</artifactId>
+                    <version>1.5.3</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
+                    <version>3.22.0</version>
                     <configuration>
                         <skip>true</skip>
                         <skipDeploy>true</skipDeploy>
@@ -1192,7 +1388,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.6.3</version>
                     <executions>
                         <execution>
                             <id>enforce-banned-dependencies</id>
@@ -1241,6 +1437,11 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-help-plugin</artifactId>
+                    <version>3.5.2</version>
                 </plugin>
                 <plugin>
                     <groupId>com.diffplug.spotless</groupId>

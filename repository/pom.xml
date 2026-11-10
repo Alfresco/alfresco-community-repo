@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>26.3.0.93-SNAPSHOT</version>
+        <version>26.3.0.102-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -873,7 +873,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.15.0</version>
+                <version>1.16.1</version>
                 <executions>
                     <execution>
                         <!-- phase>process-sources</phase -->

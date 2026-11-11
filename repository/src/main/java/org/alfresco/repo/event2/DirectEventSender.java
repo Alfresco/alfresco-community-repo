@@ -48,9 +48,15 @@ public class DirectEventSender implements EventSender
     @Override
     public void accept(Callable<Optional<RepoEvent<?>>> eventProducer)
     {
+        acceptMessage(() -> eventProducer.call().map(Event2Message::unfiltered));
+    }
+
+    @Override
+    public void acceptMessage(Callable<Optional<Event2Message>> messageProducer)
+    {
         try
         {
-            eventProducer.call().ifPresent(event -> event2MessageProducer.send(event));
+            messageProducer.call().ifPresent(this::send);
         }
         catch (RuntimeException e)
         {
@@ -60,5 +66,10 @@ public class DirectEventSender implements EventSender
         {
             throw new AlfrescoRuntimeException("Unexpected error while executing maker function for repository event", e);
         }
+    }
+
+    protected void send(Event2Message message)
+    {
+        event2MessageProducer.send(message.getEvent(), message.isFiltered());
     }
 }

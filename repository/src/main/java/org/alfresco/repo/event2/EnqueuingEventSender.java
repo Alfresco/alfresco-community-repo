@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.util.PropertyCheck;
 
 /**
@@ -63,13 +62,13 @@ public class EnqueuingEventSender extends DirectEventSender
     /**
      * Procedure to enqueue the callback functions that creates an event.
      * 
-     * @param eventProducer
-     *            Callback function that creates an event.
+     * @param messageProducer
+     *            Callback function that creates an event and its filter verdict.
      */
     @Override
-    public void accept(Callable<Optional<RepoEvent<?>>> eventProducer)
+    public void acceptMessage(Callable<Optional<Event2Message>> messageProducer)
     {
-        EventInMaking eventInMaking = new EventInMaking(eventProducer);
+        EventInMaking eventInMaking = new EventInMaking(messageProducer);
         queue.offer(eventInMaking);
         enqueueThreadPoolExecutor.execute(() -> {
             try
@@ -103,7 +102,7 @@ public class EnqueuingEventSender extends DirectEventSender
                 {
                     try
                     {
-                        queue.take().getEventWhenReady().ifPresent(event -> event2MessageProducer.send(event));
+                        queue.take().getMessageWhenReady().ifPresent(this::send);
                     }
                     catch (Exception e)
                     {
@@ -125,11 +124,11 @@ public class EnqueuingEventSender extends DirectEventSender
      */
     private static class EventInMaking
     {
-        private final Callable<Optional<RepoEvent<?>>> maker;
-        private volatile RepoEvent<?> event;
+        private final Callable<Optional<Event2Message>> maker;
+        private volatile Event2Message message;
         private final CountDownLatch latch;
 
-        public EventInMaking(Callable<Optional<RepoEvent<?>>> maker)
+        public EventInMaking(Callable<Optional<Event2Message>> maker)
         {
             this.maker = maker;
             this.latch = new CountDownLatch(1);
@@ -139,7 +138,7 @@ public class EnqueuingEventSender extends DirectEventSender
         {
             try
             {
-                event = maker.call().orElse(null);
+                message = maker.call().orElse(null);
             }
             finally
             {
@@ -147,10 +146,10 @@ public class EnqueuingEventSender extends DirectEventSender
             }
         }
 
-        public Optional<RepoEvent<?>> getEventWhenReady() throws InterruptedException
+        public Optional<Event2Message> getMessageWhenReady() throws InterruptedException
         {
             latch.await(30, TimeUnit.SECONDS);
-            return Optional.ofNullable(event);
+            return Optional.ofNullable(message);
         }
 
         @Override

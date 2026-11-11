@@ -44,6 +44,18 @@ public interface EventSender
     void accept(Callable<Optional<RepoEvent<?>>> eventProducer);
 
     /**
+     * Accepts a callback function creating an event together with whether the configured {@code repo.event2.filter.*} rules match it, and sends it to specified destination.
+     *
+     * @param messageProducer
+     *            - callback function that creates the event and its filter verdict
+     */
+    default void acceptMessage(Callable<Optional<Event2Message>> messageProducer)
+    {
+        // Senders that cannot carry the verdict still send the event, without the filtered header.
+        accept(() -> messageProducer.call().map(Event2Message::getEvent));
+    }
+
+    /**
      * Called by {@link org.alfresco.repo.event2.EventSenderFactoryBean} during {@link org.springframework.context.SmartLifecycle#start()}. It might be used to initialize the sender implementation.
      */
     default void initialize()

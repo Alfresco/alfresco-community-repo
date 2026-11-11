@@ -29,6 +29,8 @@ import static java.lang.Thread.sleep;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -97,7 +99,7 @@ public class EnqueuingEventSenderUnitTest
                 recordedEvents.add(event);
                 return null;
             }
-        }).when(bus).send(any());
+        }).when(bus).send(any(), anyBoolean());
     }
 
     @Test
@@ -176,7 +178,7 @@ public class EnqueuingEventSenderUnitTest
     {
         Callable<Optional<RepoEvent<?>>> makerB = messageWithDelay("B", 55l);
         RepoEvent<?> messageB = makerB.call().get();
-        doThrow(new RuntimeException("Boom! (not to worry, this is a test)")).when(bus).send(messageB);
+        doThrow(new RuntimeException("Boom! (not to worry, this is a test)")).when(bus).send(eq(messageB), anyBoolean());
         eventSender.accept(messageWithDelay("A", 300l));
         eventSender.accept(makerB);
         eventSender.accept(messageWithDelay("C", 0l));
@@ -211,7 +213,7 @@ public class EnqueuingEventSenderUnitTest
     {
         Callable<Optional<RepoEvent<?>>> makerB = messageWithDelay("B", 55l);
         RepoEvent<?> messageB = makerB.call().get();
-        doThrow(new OutOfMemoryError("Boom! (not to worry, this is a test)")).when(bus).send(messageB);
+        doThrow(new OutOfMemoryError("Boom! (not to worry, this is a test)")).when(bus).send(eq(messageB), anyBoolean());
         eventSender.accept(messageWithDelay("A", 300l));
         eventSender.accept(makerB);
         eventSender.accept(messageWithDelay("C", 0l));

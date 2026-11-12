@@ -10,6 +10,9 @@ description: >
   tests] is appended directly after the force token so the downstream repo triggers its own release.
 
   If directives is set (e.g. '[release]'), those tokens are prepended to the message body.
+
+  If authors is set, an 'Authors:' line is appended to the message so the downstream repo can
+  name them when its own build fails.
   '[publish]' is appended to directives automatically when the upstream commit title contains a
   [publish] token (producing e.g. '[release][publish]').
 
@@ -50,6 +53,12 @@ inputs:
       (producing e.g. '[release][publish]'). Defaults to empty for backward compatibility.
     required: false
     default: ""
+  authors:
+    description: >
+      Comma-separated handles to record on an 'Authors:' line at the end of the message, so a
+      downstream repository can name the people behind a bump without reading this repository.
+    required: false
+    default: ""
 
 outputs:
   message:
@@ -72,5 +81,6 @@ runs:
         BRANCH_NAME: ${{ inputs.branch-name }}
         TRIGGER_RELEASE_ON_FORCE: ${{ inputs.trigger-release-on-force }}
         DIRECTIVES: ${{ inputs.directives }}
+        AUTHORS: ${{ inputs.authors }}
       shell: bash
       run: ${{ github.action_path }}/action.sh

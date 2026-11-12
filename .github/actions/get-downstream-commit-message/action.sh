@@ -47,6 +47,15 @@ if [[ -n "${PENDING_DOWNSTREAM:-}" ]]; then
 ${directive} until ${PENDING_DOWNSTREAM} triggers the build or it is built manually"
 fi
 
+# The downstream repo cannot see who changed anything here, so the names travel with the bump.
+if [[ -n "${AUTHORS:-}" ]]; then
+    authors="${AUTHORS//$'\n'/ }"
+    authors="${authors//$'\r'/ }"
+    message="${message}
+
+Authors: ${authors}"
+fi
+
 printf 'allow-empty-commit=%s\n' "${allow_empty_commit}" >> "$GITHUB_OUTPUT"
 {
     printf 'message<<EOF\n'

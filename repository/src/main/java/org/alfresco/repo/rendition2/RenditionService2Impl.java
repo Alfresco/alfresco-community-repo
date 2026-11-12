@@ -53,6 +53,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition.RenditionPreventionRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.util.PostTxnCallbackScheduler;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -403,14 +404,30 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 return null;
             };
             String renditionName = renditionDefinition.getRenditionName();
-            String requestId = renditionDefinition instanceof TransformDefinition transformDefinition ? transformDefinition.getRequestId() : null;
-            renditionRequestSheduler.scheduleRendition(callback, sourceNodeRef + renditionName + (requestId == null ? "" : requestId));
+            String uniqueId = sourceNodeRef + renditionName + getUniqueIdSuffix(renditionDefinition);
+            renditionRequestSheduler.scheduleRendition(callback, uniqueId);
         }
         catch (Exception e)
         {
             logger.debug(e.getMessage());
             throw e;
         }
+    }
+
+    private String getUniqueIdSuffix(RenditionDefinition2 renditionDefinition)
+    {
+        if (renditionDefinition instanceof TransformDefinition transformDefinition)
+        {
+            if (transformDefinition.getRequestId() != null)
+            {
+                return transformDefinition.getRequestId();
+            }
+            if (transformDefinition.getReplyQueue() != null || transformDefinition.getClientData() != null)
+            {
+                return AlfrescoTransactionSupport.getTransactionId();
+            }
+        }
+        return "";
     }
 
     public void failure(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, int transformContentHashCode)

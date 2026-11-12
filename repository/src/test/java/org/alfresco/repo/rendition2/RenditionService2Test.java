@@ -28,6 +28,7 @@ package org.alfresco.repo.rendition2;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -35,8 +36,10 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,6 +49,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.model.ContentModel;
@@ -64,6 +68,7 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.transform.registry.TransformServiceRegistryImpl;
+import org.alfresco.util.transaction.TransactionSupportUtil;
 
 /**
  * Tests the RenditionService2 in a Community context where we only have local transformers.
@@ -118,6 +123,7 @@ public class RenditionService2Test
     private static final String REQUEST_ID = "some_requestId";
     private static final TransformDefinition TEST_TRANSFORM = new TransformDefinition(JPEG, Collections.singletonMap("a", "A"), CLIENT_DATA, REPLY_QUEUE, REQUEST_ID);
     private boolean failureCalled;
+    private final List<String> scheduledIds = new ArrayList<>();
 
     @Before
     public void setup() throws Exception
@@ -187,6 +193,7 @@ public class RenditionService2Test
         @Override
         public void scheduleRendition(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
         {
+            scheduledIds.add(uniqueId);
             try
             {
                 callback.execute();
@@ -249,6 +256,43 @@ public class RenditionService2Test
         verify(transformClient, times(1)).transform(any(), any(), nullable(String.class), anyInt());
         verify(transformReplyProvider, times(1)).produceTransformEvent(any(), any(), any(), anyInt());
 
+    }
+
+    private String scheduledIdIn(String transactionId, Runnable request)
+    {
+        try (MockedStatic<TransactionSupportUtil> txn = mockStatic(TransactionSupportUtil.class, CALLS_REAL_METHODS))
+        {
+            txn.when(TransactionSupportUtil::getTransactionId).thenReturn(transactionId);
+            request.run();
+        }
+        return scheduledIds.get(scheduledIds.size() - 1);
+    }
+
+    @Test
+    public void transformsWithOwnReplyTargetAreMergedOnlyWithinATransaction()
+    {
+        for (TransformDefinition transform : List.of(
+                new TransformDefinition(JPEG, Collections.singletonMap("a", "A"), null, REPLY_QUEUE, null),
+                new TransformDefinition(JPEG, Collections.singletonMap("a", "A"), CLIENT_DATA, null, null),
+                new TransformDefinition("named", JPEG, Collections.singletonMap("a", "A"), CLIENT_DATA, REPLY_QUEUE, null, null)))
+        {
+            String first = scheduledIdIn("txn-1", () -> renditionService2.transform(nodeRef, transform));
+            assertEquals(first, scheduledIdIn("txn-1", () -> renditionService2.transform(nodeRef, transform)));
+            assertNotEquals(first, scheduledIdIn("txn-2", () -> renditionService2.transform(nodeRef, transform)));
+        }
+    }
+
+    @Test
+    public void otherRequestsAreMergedAcrossTransactions()
+    {
+        TransformDefinition extract = new TransformDefinition("extract", JPEG, Collections.singletonMap("a", "A"), null, null, null, null);
+        for (Runnable request : List.<Runnable> of(
+                () -> renditionService2.render(nodeRef, TEST_RENDITION),
+                () -> renditionService2.transform(nodeRef, extract),
+                () -> renditionService2.transform(nodeRef, TEST_TRANSFORM)))
+        {
+            assertEquals(scheduledIdIn("txn-1", request), scheduledIdIn("txn-2", request));
+        }
     }
 
     @Test(expected = UnsupportedOperationException.class)

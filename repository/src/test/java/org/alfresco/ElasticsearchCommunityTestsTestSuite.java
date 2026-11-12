@@ -72,6 +72,7 @@ import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteMembers
 import org.alfresco.repo.search.impl.elasticsearch.query.aggregation.SiteTermsAggregationBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.filter.DefaultAliveStateFilterBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.ElasticsearchFingerprintResolverTest;
+import org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.FingerprintQueryTextTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilderTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.AFTSBooleanOperatorsAdaptorTest;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.afts.ElasticsearchAFTSQueryBuilderTest;
@@ -178,6 +179,7 @@ import org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTe
         EscapeCharacterTest.class,
         FingerprintQueryTest.class,
         ElasticsearchFingerprintResolverTest.class,
+        FingerprintQueryTextTest.class,
 
         // language = afts ITs
         ExactTermQueryIT.class,

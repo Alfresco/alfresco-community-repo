@@ -67,7 +67,6 @@ public class ElasticsearchConstants
     public static final String CM_CATEGORIES = "cm:categories";
     public static final String CM_CONTENT_TR_EX = "cm:content.tr_ex";
     public static final String CM_CONTENT_TR_STATUS = "cm:content.tr_status";
-    /** Exact-match fingerprint of the extracted text content */
     public static final String CONTENT_FINGERPRINT = "FINGERPRINT";
 
     // Input properties - Property names used for taking information from the event

@@ -312,6 +312,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.search.impl.elasticsearch.query.SearchStrategySelectorTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.StoreRefStripperTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.ElasticsearchFingerprintResolverTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.fingerprint.FingerprintQueryTextTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.highlight.ElasticsearchHighlightBuilderTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.afts.AFTSBooleanOperatorsAdaptorTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.afts.DateMathConverterTest.class,

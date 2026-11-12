@@ -28,6 +28,7 @@ package org.alfresco.repo.search.impl.elasticsearch.query.fingerprint;
 import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_FINGERPRINT;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -52,6 +53,7 @@ public class ElasticsearchFingerprintResolver implements FingerprintResolver
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchFingerprintResolver.class);
     private static final Pattern DBID = Pattern.compile("\\d+");
+    private static final Set<StoreRef> INDEXED_STORES = Set.of(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
 
     /** Indexed document source, restricted to the fingerprint field. */
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -87,7 +89,7 @@ public class ElasticsearchFingerprintResolver implements FingerprintResolver
         try
         {
             NodeRef nodeRef = toNodeRef(nodeIdentifier);
-            if (nodeRef == null || permissionService.hasReadPermission(nodeRef) != AccessStatus.ALLOWED)
+            if (!isIndexedNode(nodeRef) || permissionService.hasReadPermission(nodeRef) != AccessStatus.ALLOWED)
             {
                 return Optional.empty();
             }
@@ -108,6 +110,16 @@ public class ElasticsearchFingerprintResolver implements FingerprintResolver
             LOGGER.debug("Unable to resolve fingerprint for node {}", nodeIdentifier, e);
             return Optional.empty();
         }
+    }
+
+    /**
+     * The index is keyed by UUID only, so the exact NodeRef must exist in an indexed store; otherwise {@link PermissionService#hasReadPermission} allows it (missing node) while the GET reads another store's node.
+     */
+    private boolean isIndexedNode(NodeRef nodeRef)
+    {
+        return nodeRef != null
+                && INDEXED_STORES.contains(nodeRef.getStoreRef())
+                && nodeDAO.exists(nodeRef);
     }
 
     private NodeRef toNodeRef(String id)

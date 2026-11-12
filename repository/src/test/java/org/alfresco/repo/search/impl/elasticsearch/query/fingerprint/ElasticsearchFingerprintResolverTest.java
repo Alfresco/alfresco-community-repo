@@ -82,6 +82,7 @@ public class ElasticsearchFingerprintResolverTest
         when(clientFactory.getElasticsearchClient()).thenReturn(client);
         when(clientFactory.getIndexName()).thenReturn(INDEX);
         when(permissionService.hasReadPermission(NODE_REF)).thenReturn(AccessStatus.ALLOWED);
+        when(nodeDAO.exists(NODE_REF)).thenReturn(true);
         resolver = new ElasticsearchFingerprintResolver(clientFactory, permissionService, nodeDAO);
     }
 
@@ -167,6 +168,40 @@ public class ElasticsearchFingerprintResolverTest
         when(nodeDAO.getNodePair(123L)).thenReturn(null);
 
         assertEquals(Optional.empty(), resolver.resolve("123"));
+        verifyNoInteractions(client);
+    }
+
+    @Test
+    public void returnsEmptyWhenNodeRefInAnotherStoreDoesNotExist()
+    {
+        // Same UUID as a live node; PermissionServiceImpl allows read on missing nodes
+        NodeRef missingArchiveRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, UUID);
+        when(permissionService.hasReadPermission(missingArchiveRef)).thenReturn(AccessStatus.ALLOWED);
+        when(nodeDAO.exists(missingArchiveRef)).thenReturn(false);
+
+        assertEquals(Optional.empty(), resolver.resolve(missingArchiveRef.toString()));
+        verifyNoInteractions(client);
+    }
+
+    @Test
+    public void resolvesExistingArchivedNode() throws IOException
+    {
+        NodeRef archiveRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, UUID);
+        when(permissionService.hasReadPermission(archiveRef)).thenReturn(AccessStatus.ALLOWED);
+        when(nodeDAO.exists(archiveRef)).thenReturn(true);
+        givenDocument(true, new FingerprintSource(HASH));
+
+        assertEquals(Optional.of(HASH), resolver.resolve(archiveRef.toString()));
+    }
+
+    @Test
+    public void returnsEmptyForNonIndexedStore()
+    {
+        NodeRef versionRef = new NodeRef(new StoreRef("workspace", "version2Store"), UUID);
+        when(permissionService.hasReadPermission(versionRef)).thenReturn(AccessStatus.ALLOWED);
+        when(nodeDAO.exists(versionRef)).thenReturn(true);
+
+        assertEquals(Optional.empty(), resolver.resolve(versionRef.toString()));
         verifyNoInteractions(client);
     }
 

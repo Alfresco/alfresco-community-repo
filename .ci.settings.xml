@@ -16,6 +16,11 @@
             <username>${env.CLOUDSMITH_USERNAME}</username>
             <password>${env.CLOUDSMITH_API_KEY}</password>
         </server>
+        <server>
+            <id>alfresco-internal-releases</id>
+            <username>${env.CLOUDSMITH_USERNAME}</username>
+            <password>${env.CLOUDSMITH_API_KEY}</password>
+        </server>
         <!-- Deploy server: replaced in Phase 2 (push) -->
         <server>
             <id>alfresco-public-releases</id>
@@ -41,6 +46,17 @@
                     <id>alfresco-public</id>
                     <name>Alfresco Public Repository</name>
                     <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>alfresco-internal-releases</id>
+                    <name>Alfresco Internal Releases</name>
+                    <url>https://maven.cloudsmith.io/hyland/alfresco-internal-releases/</url>
                     <releases>
                         <enabled>true</enabled>
                     </releases>

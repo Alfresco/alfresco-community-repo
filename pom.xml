@@ -112,6 +112,7 @@
         <dependency.activemq.version>6.2.7</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>
+        <dependency.owasp-java-html-sanitizer.version>20261102.1</dependency.owasp-java-html-sanitizer.version>
 
         <!-- Elasticsearch / OpenSearch search support -->
         <dependency.opensearch.version>2.26.0</dependency.opensearch.version>
@@ -369,6 +370,11 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+                <artifactId>owasp-java-html-sanitizer</artifactId>
+                <version>${dependency.owasp-java-html-sanitizer.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-queryparser</artifactId>

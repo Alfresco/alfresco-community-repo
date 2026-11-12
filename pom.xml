@@ -115,6 +115,7 @@
 
         <!-- Elasticsearch / OpenSearch search support -->
         <dependency.opensearch.version>2.26.0</dependency.opensearch.version>
+        <dependency.alfresco-search-index-model.version>5.11.0-A.1</dependency.alfresco-search-index-model.version>
         <dependency.lucene.version>9.7.0</dependency.lucene.version>
         <dependency.swagger-ui.version>4.1.3</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.73</dependency.swagger-parser.version>
@@ -336,6 +337,18 @@
                 <groupId>org.eclipse.parsson</groupId>
                 <artifactId>parsson</artifactId>
                 <version>${dependency.jakarta-ee-json-impl.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-search-index-model</artifactId>
+                <version>${dependency.alfresco-search-index-model.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Excluded yasson because it transitively pulls in org.glassfish:jakarta.json which is banned by the enforcer.

@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.contentmodelsync;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.TAG_ANALYSED;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.TAG_ANALYSED;
 
 import java.io.IOException;
 import jakarta.json.Json;

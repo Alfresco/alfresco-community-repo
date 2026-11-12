@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query.filter;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.ALIVE;
 
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.query_dsl.Query;

@@ -35,10 +35,10 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
       # The check-format-and-headers hook runs Maven, so it needs the CI settings and credentials.
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: "21"
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: Set up Python
@@ -51,7 +51,7 @@ jobs:
           extra_args: --all-files
       - name: Update secrets baseline
         run: pip install detect-secrets && detect-secrets scan --baseline .secrets.baseline
-      - uses: iarekylew00t/verified-bot-commit@1ee4374942e5c5f814e9b3121d766cbe45cea360 # v2.3.6
+      - uses: iarekylew00t/verified-bot-commit@3a1e72c2443cce5574f76a9b2bb36e355d667743 # v2.3.7
         with:
           token: ${{ steps.app-token.outputs.token }}
           files: |

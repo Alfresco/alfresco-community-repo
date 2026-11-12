@@ -28,13 +28,16 @@ package org.alfresco.repo.util;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.rawevents.TransactionAwareEventProducer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -46,20 +49,20 @@ import org.alfresco.util.transaction.TransactionListenerAdapter;
 /**
  * Schedules a callback to a post-commit phase.
  * <p>
- * With {@code threadPoolSize > 0} the callback runs on a background thread and its messages are sent only after its transaction has released the DB connection, so neither a request thread nor a DB connection waits for the message broker. Pending callbacks are kept in memory only; a newer callback with the same id replaces a pending one.
+ * The callback runs on a background thread, as the user and tenant that scheduled it, and its messages are sent only after its transaction has released the DB connection, so neither a request thread nor a DB connection waits for the message broker. Pending callbacks are kept in memory only; a newer callback with the same id replaces a pending one.
  *
  * @author alex.mukha
  */
 public class PostTxnCallbackScheduler
 {
-    private static Log logger = LogFactory.getLog(PostTxnCallbackScheduler.class);
+    private static final Log LOGGER = LogFactory.getLog(PostTxnCallbackScheduler.class);
 
     private TransactionService transactionService;
     private int threadPoolSize;
     private int queueSizeWarning;
 
     private final Map<String, PostTxTransactionListener> pending = new ConcurrentHashMap<>();
-    private ExecutorService executorService;
+    private ThreadPoolExecutor executorService;
 
     public void setTransactionService(TransactionService transactionService)
     {
@@ -81,13 +84,19 @@ public class PostTxnCallbackScheduler
         return pending.size();
     }
 
+    public int getActiveCount()
+    {
+        return executorService == null ? 0 : executorService.getActiveCount();
+    }
+
     public void init()
     {
-        if (threadPoolSize > 0)
+        if (threadPoolSize < 1)
         {
-            var threadFactory = new ThreadFactoryBuilder().setNameFormat("rendition-dispatch-%d").setDaemon(true).build();
-            executorService = Executors.newFixedThreadPool(threadPoolSize, threadFactory);
+            throw new AlfrescoRuntimeException("renditionService2.dispatch.threadPoolSize must be at least 1, but is " + threadPoolSize);
         }
+        var threadFactory = new ThreadFactoryBuilder().setNameFormat("rendition-dispatch-%d").setDaemon(true).build();
+        executorService = new ThreadPoolExecutor(threadPoolSize, threadPoolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), threadFactory);
     }
 
     public void destroy()
@@ -97,7 +106,7 @@ public class PostTxnCallbackScheduler
             executorService.shutdownNow();
             if (!pending.isEmpty())
             {
-                logger.warn(pending.size() + " pending rendition/transform requests were not sent and are lost.");
+                LOGGER.warn(pending.size() + " pending rendition/transform requests were not sent and are lost.");
             }
         }
     }
@@ -117,41 +126,44 @@ public class PostTxnCallbackScheduler
     {
         private final RetryingTransactionHelper.RetryingTransactionCallback callback;
         private final String id;
-        private String user;
-        private String tenantDomain;
+        private final String user;
+        private final String tenantDomain;
 
         PostTxTransactionListener(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
         {
             this.callback = callback;
             this.id = uniqueId;
-            logger.debug("Created lister with id = " + id);
+            String runAsUser = AuthenticationUtil.getRunAsUser();
+            this.user = runAsUser == null ? AuthenticationUtil.getSystemUserName() : runAsUser;
+            this.tenantDomain = TenantUtil.getCurrentDomain();
+            LOGGER.debug("Created lister with id = " + id);
         }
 
         @Override
         public void afterCommit()
         {
-            String runAsUser = AuthenticationUtil.getRunAsUser();
-            boolean runOnThisThread = executorService == null || runAsUser == null;
-            if (runOnThisThread)
+            boolean alreadyQueued = pending.put(id, this) != null;
+            if (alreadyQueued)
             {
-                // run on the committing thread.
-                runCallback();
+                LOGGER.trace("Callback " + id + " is already queued; the queued entry now runs this newer callback.");
             }
             else
             {
-                // run on a background thread, outside the committing thread and its transaction.
-                user = runAsUser;
-                tenantDomain = TenantUtil.getCurrentDomain();
-                boolean alreadyQueued = pending.put(id, this) != null;
-                if (alreadyQueued)
-                {
-                    logger.trace("Callback " + id + " is already queued; the queued entry now runs this newer callback.");
-                }
-                else
-                {
-                    executorService.execute(() -> pending.remove(id).runOnBackgroundThread());
-                    warnIfQueueIsLarge();
-                }
+                queue();
+            }
+        }
+
+        private void queue()
+        {
+            try
+            {
+                executorService.execute(() -> pending.remove(id).runOnBackgroundThread());
+                warnIfQueueIsLarge();
+            }
+            catch (RejectedExecutionException e)
+            {
+                pending.remove(id);
+                LOGGER.warn("Callback " + id + " was not run: the repository is shutting down.");
             }
         }
 
@@ -160,11 +172,10 @@ public class PostTxnCallbackScheduler
             int queueSize = pending.size();
             if (queueSizeWarning > 0 && queueSize > 0 && queueSize % queueSizeWarning == 0)
             {
-                logger.warn(queueSize + " rendition/transform requests are waiting to be sent. Check that the message broker is reachable.");
+                LOGGER.warn(queueSize + " rendition/transform requests are waiting to be sent. Check that the message broker is reachable.");
             }
         }
 
-        /** same user and tenant as the committing thread. */
         private void runOnBackgroundThread()
         {
             try
@@ -173,7 +184,7 @@ public class PostTxnCallbackScheduler
             }
             catch (Exception e)
             {
-                logger.error("The after commit callback " + id + " failed to execute: " + e.getMessage(), e);
+                LOGGER.error("The after commit callback " + id + " failed to execute: " + e.getMessage(), e);
             }
         }
 
@@ -199,8 +210,8 @@ public class PostTxnCallbackScheduler
             }
             catch (Exception e)
             {
-                logger.debug("The after commit callback " + id + " failed to execute: " + e.getMessage());
-                // consume exception in afterCommit
+                LOGGER.debug("The after commit callback " + id + " failed to execute: " + e.getMessage());
+                // consume exception, as before the background dispatch
             }
         }
 

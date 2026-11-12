@@ -37,7 +37,7 @@ jobs:
           extra_args: --all-files
       - name: Update secrets baseline
         run: pip install detect-secrets && detect-secrets scan --baseline .secrets.baseline
-      - uses: iarekylew00t/verified-bot-commit@1ee4374942e5c5f814e9b3121d766cbe45cea360 # v2.3.6
+      - uses: iarekylew00t/verified-bot-commit@3a1e72c2443cce5574f76a9b2bb36e355d667743 # v2.3.7
         with:
           token: ${{ steps.app-token.outputs.token }}
           files: |

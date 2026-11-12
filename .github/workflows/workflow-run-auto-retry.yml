@@ -27,6 +27,7 @@ jobs:
           # These publish or propagate, so repeating them is not safe.
           non-retryable-jobs: |
             Parse commit metadata
+            Push to Maven
             Push to Nexus
             Update alfresco-enterprise-repo
           max-attempts: 3

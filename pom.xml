@@ -233,9 +233,13 @@
     </repositories>
 
     <distributionManagement>
+        <!-- Public repository: GA and -A.x releases both go to alfresco-community-releases, so there is
+             no prerelease profile. -->
         <repository>
-            <id>alfresco-public-releases</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
+            <id>alfresco-releases</id>
+            <name>Alfresco Community Releases</name>
+            <!-- TODO: switch to maven.artifacts.hyland.dev once its DNS record exists -->
+            <url>https://maven.cloudsmith.io/hyland/alfresco-community-releases/</url>
         </repository>
     </distributionManagement>
 

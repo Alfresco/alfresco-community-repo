@@ -49,17 +49,14 @@ jobs:
       GH_APP_ENGINEERING_RO_PRIVATE_KEY: ${{ secrets.GH_APP_ENGINEERING_RO_PRIVATE_KEY }}
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-  push_to_nexus:
-    name: "Push to Nexus"
+  push_to_maven:
+    name: "Push to Maven"
     runs-on: ubuntu-latest
     needs: [run_ci, commit_parser]
     if: >
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no release]') &&
       github.event_name != 'pull_request'
-    env:
-      MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-      MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
     steps:
       - name: "Generate GitHub App token"
         id: app-token
@@ -111,7 +108,7 @@ jobs:
   update_downstream:
     name: "Update alfresco-enterprise-repo"
     runs-on: ubuntu-latest
-    needs: [push_to_nexus, commit_parser]
+    needs: [push_to_maven, commit_parser]
     if: >
       !(failure() || cancelled()) &&
       !contains(needs.commit_parser.outputs.title, '[no downstream]') &&

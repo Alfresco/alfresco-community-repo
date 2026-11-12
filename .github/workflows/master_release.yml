@@ -169,7 +169,7 @@ jobs:
         id: authors
         if: steps.baseline.outputs.previous-release != ''
         continue-on-error: true
-        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-pr-authors@837a4dfd80d15ec3bc05b9168b97e0864aa3066c # v19.14.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-pr-authors@74d5f71b8cac71b5c056c8e53d51ba660b0f59fd # v19.14.1
         with:
           from-ref: ${{ steps.baseline.outputs.previous-release }}
           to-ref: ${{ github.sha }}

@@ -52,6 +52,10 @@
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+            <artifactId>owasp-java-html-sanitizer</artifactId>
+        </dependency>
         <!-- This is needed at runtime by Web Client, so not really a test dependency -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>

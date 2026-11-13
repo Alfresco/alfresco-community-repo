@@ -107,11 +107,13 @@
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.4.0</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>4.18.5</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
-        <dependency.netty.version>4.1.140.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
+        <dependency.camel.version>4.22.2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.netty.version>4.2.18.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
+        <dependency.netty-tcnative.version>2.0.84.Final</dependency.netty-tcnative.version> <!-- must be in sync with the netty-tcnative version used by netty-bom -->
         <dependency.activemq.version>6.2.7</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>
+        <dependency.owasp-java-html-sanitizer.version>20261102.1</dependency.owasp-java-html-sanitizer.version>
 
         <!-- Elasticsearch / OpenSearch search support -->
         <dependency.opensearch.version>2.26.0</dependency.opensearch.version>
@@ -369,6 +371,11 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+                <artifactId>owasp-java-html-sanitizer</artifactId>
+                <version>${dependency.owasp-java-html-sanitizer.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-queryparser</artifactId>
@@ -1122,6 +1129,184 @@
                 <version>${dependency.netty.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- netty-bom 4.2.x manages the native artifacts below with runtime scope. Re-declare them with version only
+                 (no scope), so their scope follows the dependency path as with netty 4.1. Otherwise they become runtime under
+                 provided dependencies and get packaged into AMPs, which then fail to install. -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-resolver-dns-native-macos</artifactId>
+                <classifier>osx-x86_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-resolver-dns-native-macos</artifactId>
+                <classifier>osx-aarch_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-unix-common</artifactId>
+                <classifier>linux-aarch_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-unix-common</artifactId>
+                <classifier>linux-riscv64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-unix-common</artifactId>
+                <classifier>linux-x86_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-unix-common</artifactId>
+                <classifier>osx-x86_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-unix-common</artifactId>
+                <classifier>osx-aarch_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-epoll</artifactId>
+                <classifier>linux-aarch_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-epoll</artifactId>
+                <classifier>linux-riscv64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-epoll</artifactId>
+                <classifier>linux-x86_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-io_uring</artifactId>
+                <classifier>linux-aarch_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-io_uring</artifactId>
+                <classifier>linux-riscv64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-io_uring</artifactId>
+                <classifier>linux-x86_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-kqueue</artifactId>
+                <classifier>osx-x86_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-kqueue</artifactId>
+                <classifier>osx-aarch_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-native-quic</artifactId>
+                <classifier>linux-x86_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-native-quic</artifactId>
+                <classifier>linux-aarch_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-native-quic</artifactId>
+                <classifier>osx-x86_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-native-quic</artifactId>
+                <classifier>osx-aarch_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-native-quic</artifactId>
+                <classifier>windows-x86_64</classifier>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative</artifactId>
+                <classifier>linux-x86_64</classifier>
+                <version>${dependency.netty-tcnative.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative</artifactId>
+                <classifier>linux-x86_64-fedora</classifier>
+                <version>${dependency.netty-tcnative.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative</artifactId>
+                <classifier>osx-x86_64</classifier>
+                <version>${dependency.netty-tcnative.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative</artifactId>
+                <classifier>osx-aarch_64</classifier>
+                <version>${dependency.netty-tcnative.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative-boringssl-static</artifactId>
+                <classifier>linux-x86_64</classifier>
+                <version>${dependency.netty-tcnative.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative-boringssl-static</artifactId>
+                <classifier>linux-aarch_64</classifier>
+                <version>${dependency.netty-tcnative.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative-boringssl-static</artifactId>
+                <classifier>osx-x86_64</classifier>
+                <version>${dependency.netty-tcnative.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative-boringssl-static</artifactId>
+                <classifier>osx-aarch_64</classifier>
+                <version>${dependency.netty-tcnative.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative-boringssl-static</artifactId>
+                <classifier>windows-x86_64</classifier>
+                <version>${dependency.netty-tcnative.version}</version>
             </dependency>
 
             <dependency>

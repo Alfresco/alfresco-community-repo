@@ -45,6 +45,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         // Requires running transformers
         org.alfresco.transform.registry.LocalTransformServiceRegistryConfigTest.class,
         org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
+        org.alfresco.repo.rendition2.RenditionRequestsDuringBrokerOutageTest.class,
         org.alfresco.repo.rendition2.LocalTransformServiceRegistryIntegrationTest.class,
         org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest.class,
         org.alfresco.repo.rendition2.LocalRenditionTest.class,

@@ -48,6 +48,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -293,6 +294,42 @@ public class RenditionService2Test
         {
             assertEquals(scheduledIdIn("txn-1", request), scheduledIdIn("txn-2", request));
         }
+    }
+
+    @Test
+    public void transformerIsChosenAgainBeforeTransformingOnTheDispatchThread()
+    {
+        renditionService2.render(nodeRef, TEST_RENDITION);
+
+        InOrder inOrder = inOrder(transformClient);
+        inOrder.verify(transformClient, times(2)).checkSupported(eq(nodeRef), any(), any(), anyLong(), any());
+        inOrder.verify(transformClient).transform(eq(nodeRef), any(), nullable(String.class), anyInt());
+    }
+
+    @Test
+    public void noTransformWhenTheTransformerIsNoLongerSupportedOnTheDispatchThread()
+    {
+        doNothing().doThrow(new UnsupportedOperationException("no longer supported"))
+                .when(transformClient).checkSupported(any(), any(), any(), anyLong(), any());
+
+        renditionService2.render(nodeRef, TEST_RENDITION);
+
+        verify(transformClient, never()).transform(any(), any(), nullable(String.class), anyInt());
+        assertTrue("failure() should be called", failureCalled);
+    }
+
+    @Test
+    public void noTransformWhenTheSourceContentIsGoneOnReRead()
+    {
+        // Size 0 makes the dispatched request re-read the content from the DB, where it is gone.
+        when(contentData.getSize()).thenReturn(0L);
+        when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(contentData, contentData, null);
+
+        renditionService2.render(nodeRef, TEST_RENDITION);
+
+        verify(nodeDAO).setCheckNodeConsistency();
+        verify(transformClient, never()).transform(any(), any(), nullable(String.class), anyInt());
+        assertTrue("failure() should be called", failureCalled);
     }
 
     @Test(expected = UnsupportedOperationException.class)

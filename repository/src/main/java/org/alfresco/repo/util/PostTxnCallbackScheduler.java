@@ -59,7 +59,6 @@ public class PostTxnCallbackScheduler
 
     private TransactionService transactionService;
     private int threadPoolSize;
-    private int queueSizeWarning;
 
     private final Map<String, PostTxTransactionListener> pending = new ConcurrentHashMap<>();
     private ThreadPoolExecutor executorService;
@@ -72,11 +71,6 @@ public class PostTxnCallbackScheduler
     public void setThreadPoolSize(int threadPoolSize)
     {
         this.threadPoolSize = threadPoolSize;
-    }
-
-    public void setQueueSizeWarning(int queueSizeWarning)
-    {
-        this.queueSizeWarning = queueSizeWarning;
     }
 
     public int getPendingCount()
@@ -158,21 +152,11 @@ public class PostTxnCallbackScheduler
             try
             {
                 executorService.execute(() -> pending.remove(id).runOnBackgroundThread());
-                warnIfQueueIsLarge();
             }
             catch (RejectedExecutionException e)
             {
                 pending.remove(id);
                 LOGGER.warn("Callback " + id + " was not run: the repository is shutting down.");
-            }
-        }
-
-        private void warnIfQueueIsLarge()
-        {
-            int queueSize = pending.size();
-            if (queueSizeWarning > 0 && queueSize > 0 && queueSize % queueSizeWarning == 0)
-            {
-                LOGGER.warn(queueSize + " rendition/transform requests are waiting to be sent. Check that the message broker is reachable.");
             }
         }
 

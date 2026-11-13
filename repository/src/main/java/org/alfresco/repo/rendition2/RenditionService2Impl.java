@@ -53,6 +53,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition.RenditionPreventionRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.util.PostTxnCallbackScheduler;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -366,11 +367,28 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                             // hasn't propagated yet. Bypass the shared cache to read directly from DB.
                             nodeDAO.setCheckNodeConsistency();
                             sourceContentData = getSourceContentData(sourceNodeRef);
-                            if (sourceContentData != null && sourceContentData.getSize() > 0)
+                            if (sourceContentData == null)
+                            {
+                                failure(sourceNodeRef, renditionDefinition, SOURCE_HAS_NO_CONTENT);
+                                return null;
+                            }
+                            if (sourceContentData.getSize() > 0)
                             {
                                 sourceContentHashCode = getSourceContentHashCode(sourceContentData);
                                 renderOrTransform.throwIllegalStateExceptionIfAlreadyDone(sourceContentHashCode);
                             }
+                        }
+                        try
+                        {
+                            // transform() uses the transformer chosen by checkSupported() on the same thread (thread-locals),
+                            // and this callback may run on a background thread, so choose it again here.
+                            transformClient.checkSupported(sourceNodeRef, renditionDefinition, sourceContentData.getMimetype(),
+                                    sourceContentData.getSize(), sourceContentData.getContentUrl());
+                        }
+                        catch (UnsupportedOperationException e)
+                        {
+                            failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
+                            return null;
                         }
                         transformClient.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
                     }
@@ -386,13 +404,30 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 return null;
             };
             String renditionName = renditionDefinition.getRenditionName();
-            renditionRequestSheduler.scheduleRendition(callback, sourceNodeRef + renditionName);
+            String uniqueId = sourceNodeRef + renditionName + getUniqueIdSuffix(renditionDefinition);
+            renditionRequestSheduler.scheduleRendition(callback, uniqueId);
         }
         catch (Exception e)
         {
             logger.debug(e.getMessage());
             throw e;
         }
+    }
+
+    private String getUniqueIdSuffix(RenditionDefinition2 renditionDefinition)
+    {
+        if (renditionDefinition instanceof TransformDefinition transformDefinition)
+        {
+            if (transformDefinition.getRequestId() != null)
+            {
+                return transformDefinition.getRequestId();
+            }
+            if (transformDefinition.getReplyQueue() != null || transformDefinition.getClientData() != null)
+            {
+                return AlfrescoTransactionSupport.getTransactionId();
+            }
+        }
+        return "";
     }
 
     public void failure(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, int transformContentHashCode)

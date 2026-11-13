@@ -48,6 +48,38 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
 
     private static final String POST_TRANSACTION_PENDING_REQUESTS = "postTransactionPendingEventRequests";
 
+    private static final DeferredSends<PendingRequest> DEFERRED_SENDS = new DeferredSends<>();
+
+    /**
+     * From now on, events committed on this thread are kept until {@link #sendAndDisableDeferredSendsOnThisThread()} instead of being sent in afterCommit, where the transaction still holds its DB connection.
+     */
+    public static void enableDeferredSendsOnThisThread()
+    {
+        DEFERRED_SENDS.enableDeferredSendsOnThisThread();
+    }
+
+    public static void sendAndDisableDeferredSendsOnThisThread()
+    {
+        List<PendingRequest> pendingRequests = DEFERRED_SENDS.consumeAndDisableDeferredSends();
+        sendAll(pendingRequests, "The deferred send");
+    }
+
+    private static void sendAll(List<PendingRequest> pendingRequests, String description)
+    {
+        for (PendingRequest pendingRequest : pendingRequests)
+        {
+            try
+            {
+                pendingRequest.send();
+            }
+            catch (Exception e)
+            {
+                logger.error(description + " failed to execute: " + e.getMessage(), e);
+                // consume exception
+            }
+        }
+    }
+
     public void send(String endpointUri, Object event)
     {
         send(endpointUri, null, event, null);
@@ -137,17 +169,16 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
         @Override
         public void afterCommit()
         {
-            for (TransactionAwareEventProducer.PendingRequest pendingRequest : (List<PendingRequest>) AlfrescoTransactionSupport.getResource(POST_TRANSACTION_PENDING_REQUESTS))
+            List<PendingRequest> pendingRequests = AlfrescoTransactionSupport.getResource(POST_TRANSACTION_PENDING_REQUESTS);
+            if (DEFERRED_SENDS.isDeferredSendsEnabledOnThisThread())
             {
-                try
-                {
-                    pendingRequest.send();
-                }
-                catch (Exception e)
-                {
-                    logger.error("The after commit callback " + id + " failed to execute: " + e.getMessage(), e);
-                    // consume exception
-                }
+                // sent later, after this transaction has released its DB connection.
+                DEFERRED_SENDS.addToDeferred(pendingRequests);
+            }
+            else
+            {
+                // send now.
+                sendAll(pendingRequests, "The after commit callback " + id);
             }
         }
 

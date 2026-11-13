@@ -285,6 +285,9 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.events.ClientUtilTest.class,
         org.alfresco.repo.rendition2.RenditionService2Test.class,
         org.alfresco.repo.rendition2.TransformationOptionsConverterTest.class,
+        org.alfresco.repo.util.PostTxnCallbackSchedulerTest.class,
+        org.alfresco.repo.rawevents.TransactionAwareEventProducerDeferredSendsTest.class,
+        org.alfresco.messaging.camel.routes.OnContentUpdateRenditionRouteTest.class,
 
         org.alfresco.repo.event2.RepoEvent2UnitSuite.class,
 

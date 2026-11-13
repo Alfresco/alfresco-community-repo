@@ -25,11 +25,22 @@
  */
 package org.alfresco.repo.util;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.rawevents.TransactionAwareEventProducer;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.transaction.TransactionService;
@@ -37,18 +48,61 @@ import org.alfresco.util.transaction.TransactionListenerAdapter;
 
 /**
  * Schedules a callback to a post-commit phase.
+ * <p>
+ * The callback runs on a background thread, as the user and tenant that scheduled it, and its messages are sent only after its transaction has released the DB connection, so neither a request thread nor a DB connection waits for the message broker. Pending callbacks are kept in memory only; a newer callback with the same id replaces a pending one.
  *
  * @author alex.mukha
  */
 public class PostTxnCallbackScheduler
 {
-    private static Log logger = LogFactory.getLog(PostTxnCallbackScheduler.class);
+    private static final Log LOGGER = LogFactory.getLog(PostTxnCallbackScheduler.class);
 
     private TransactionService transactionService;
+    private int threadPoolSize;
+
+    private final Map<String, PostTxTransactionListener> pending = new ConcurrentHashMap<>();
+    private ThreadPoolExecutor executorService;
 
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    public void setThreadPoolSize(int threadPoolSize)
+    {
+        this.threadPoolSize = threadPoolSize;
+    }
+
+    public int getPendingCount()
+    {
+        return pending.size();
+    }
+
+    public int getActiveCount()
+    {
+        return executorService == null ? 0 : executorService.getActiveCount();
+    }
+
+    public void init()
+    {
+        if (threadPoolSize < 1)
+        {
+            throw new AlfrescoRuntimeException("renditionService2.dispatch.threadPoolSize must be at least 1, but is " + threadPoolSize);
+        }
+        var threadFactory = new ThreadFactoryBuilder().setNameFormat("rendition-dispatch-%d").setDaemon(true).build();
+        executorService = new ThreadPoolExecutor(threadPoolSize, threadPoolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), threadFactory);
+    }
+
+    public void destroy()
+    {
+        if (executorService != null)
+        {
+            executorService.shutdownNow();
+            if (!pending.isEmpty())
+            {
+                LOGGER.warn(pending.size() + " pending rendition/transform requests were not sent and are lost.");
+            }
+        }
     }
 
     /**
@@ -66,16 +120,79 @@ public class PostTxnCallbackScheduler
     {
         private final RetryingTransactionHelper.RetryingTransactionCallback callback;
         private final String id;
+        private final String user;
+        private final String tenantDomain;
 
         PostTxTransactionListener(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
         {
             this.callback = callback;
             this.id = uniqueId;
-            logger.debug("Created lister with id = " + id);
+            String runAsUser = AuthenticationUtil.getRunAsUser();
+            this.user = runAsUser == null ? AuthenticationUtil.getSystemUserName() : runAsUser;
+            this.tenantDomain = TenantUtil.getCurrentDomain();
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Created lister with id = " + id);
+            }
         }
 
         @Override
         public void afterCommit()
+        {
+            boolean alreadyQueued = pending.put(id, this) != null;
+            if (alreadyQueued)
+            {
+                if (LOGGER.isTraceEnabled())
+                {
+                    LOGGER.trace("Callback " + id + " is already queued; the queued entry now runs this newer callback.");
+                }
+            }
+            else
+            {
+                queue();
+            }
+        }
+
+        private void queue()
+        {
+            try
+            {
+                executorService.execute(() -> pending.remove(id).runOnBackgroundThread());
+            }
+            catch (RejectedExecutionException e)
+            {
+                pending.remove(id);
+                LOGGER.warn("Callback " + id + " was not run: the repository is shutting down.");
+            }
+        }
+
+        private void runOnBackgroundThread()
+        {
+            try
+            {
+                TenantUtil.runAsUserTenant(this::runCallbackThenSendMessages, user, tenantDomain);
+            }
+            catch (Exception e)
+            {
+                LOGGER.error("The after commit callback " + id + " failed to execute: " + e.getMessage(), e);
+            }
+        }
+
+        private Void runCallbackThenSendMessages()
+        {
+            TransactionAwareEventProducer.enableDeferredSendsOnThisThread();
+            try
+            {
+                runCallback();
+            }
+            finally
+            {
+                TransactionAwareEventProducer.sendAndDisableDeferredSendsOnThisThread();
+            }
+            return null;
+        }
+
+        private void runCallback()
         {
             try
             {
@@ -83,8 +200,11 @@ public class PostTxnCallbackScheduler
             }
             catch (Exception e)
             {
-                logger.debug("The after commit callback " + id + " failed to execute: " + e.getMessage());
-                // consume exception in afterCommit
+                if (LOGGER.isDebugEnabled())
+                {
+                    LOGGER.debug("The after commit callback " + id + " failed to execute: " + e.getMessage());
+                }
+                // consume exception, as before the background dispatch
             }
         }
 

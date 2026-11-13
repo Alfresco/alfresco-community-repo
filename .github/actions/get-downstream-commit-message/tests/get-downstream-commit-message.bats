@@ -445,3 +445,57 @@ get_output() {
 [skip docker_latest] until acs-community-packaging triggers the build or it is built manually"
     [ "$(get_output message)" = "$expected" ]
 }
+
+@test "authors are appended on their own line" {
+    export AUTHORS="@alice,@bob"
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    expected="Update community-repo version to 26.3.0-A.4
+
+Authors: @alice,@bob"
+    [ "$(get_output message)" = "$expected" ]
+}
+
+@test "no authors leaves the message unchanged" {
+    export AUTHORS=""
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [ "$(get_output message)" = "Update community-repo version to 26.3.0-A.4" ]
+}
+
+@test "authors follow a pending-downstream directive" {
+    export AUTHORS="@alice"
+    export VERSION="26.3.0-A.4"
+    export PENDING_DOWNSTREAM="alfresco-enterprise-share"
+    export BRANCH_NAME="master"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    expected="Update community-repo version to 26.3.0-A.4
+
+[skip docker_latest] until alfresco-enterprise-share triggers the build or it is built manually
+
+Authors: @alice"
+    [ "$(get_output message)" = "$expected" ]
+}
+
+@test "a newline in authors cannot start a line of its own" {
+    export AUTHORS="@alice
+[release] @bob"
+    export VERSION="26.3.0-A.4"
+
+    run bash "$ACTION_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    expected="Update community-repo version to 26.3.0-A.4
+
+Authors: @alice [release] @bob"
+    [ "$(get_output message)" = "$expected" ]
+}

@@ -27,14 +27,15 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_MIME_TYPE;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_SIZE;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.NAME;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.USER_MODIFIER;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CONTENT_MIME_TYPE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CONTENT_SIZE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.NAME;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.USER_MODIFIER;
 import static org.alfresco.transform.common.Mimetype.MIMETYPE_IMAGE_JPEG;
 import static org.alfresco.transform.common.Mimetype.MIMETYPE_PDF;
 import static org.alfresco.transform.common.Mimetype.MIMETYPE_TEXT_PLAIN;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collections;
@@ -309,9 +310,13 @@ public class SortIT extends ElasticsearchBaseQueryIT
     }
 
     @Test
-    public void whenSearchSortByDocument_shouldReturnDocumentsSortedByIndexOrder()
+    public void whenSearchSortByDocument_shouldReturnDocumentsSortedByIndexOrder() throws IOException
     {
         // given
+        // The index order changes when segments are merged, which could happen between two page requests. Merge
+        // them up front, so all pages are read with the same order.
+        client.indices().forcemerge(r -> r.index(indexName).maxNumSegments(1L).flush(true));
+        client.indices().refresh(r -> r.index(indexName));
         SearchParameters searchParams = new SearchParameters();
         searchParams.setQuery("batch_");
         searchParams.setLimit(10);

@@ -317,6 +317,11 @@
     <!-- Actions -->
 
     <bean id="action-executer" abstract="true" init-method="init">
+        <property name="actionAccessRestrictions">
+            <list>
+                <ref bean="configurableActionAccessRestriction" />
+            </list>
+        </property>
         <property name="runtimeActionService">
             <ref bean="actionService" />
         </property>
@@ -790,6 +795,12 @@
     </bean>
 
     <bean id="adminActionAccessRestriction" class="org.alfresco.repo.action.access.AdminActionAccessRestriction" parent="actionAccessRestrictionBase">
+        <property name="authorityService">
+            <ref bean="AuthorityService" />
+        </property>
+    </bean>
+
+    <bean id="configurableActionAccessRestriction" class="org.alfresco.repo.action.access.ConfigurableActionAccessRestriction" parent="actionAccessRestrictionBase">
         <property name="authorityService">
             <ref bean="AuthorityService" />
         </property>

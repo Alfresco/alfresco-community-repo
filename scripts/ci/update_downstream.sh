@@ -21,7 +21,9 @@ cloneRepo "${DOWNSTREAM_REPO}" "${BRANCH_NAME}"
 cd "$(dirname "${BASH_SOURCE[0]}")/../../../$(basename "${DOWNSTREAM_REPO%.git}")"
 
 # Update parent version
-mvn -B versions:update-parent versions:commit "-DparentVersion=[${VERSION}]"
+sed -i "/<parent>/,/<\/parent>/s|<version>.*</version>|<version>${VERSION}</version>|" pom.xml
+grep -q "<version>${VERSION}</version>" <(sed -n "/<parent>/,/<\/parent>/p" pom.xml) \
+  || { echo "ERROR: parent version was not updated to ${VERSION} in pom.xml"; exit 1; }
 
 # Update dependency version
 mvn -B versions:set-property versions:commit \

@@ -124,6 +124,8 @@ import org.jaxen.saxpath.base.XPathReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.alfresco.elasticsearch.shared.ElasticsearchConstants;
+import org.alfresco.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.impl.QueryParserUtils;
@@ -131,8 +133,6 @@ import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.Elast
 import org.alfresco.repo.search.impl.elasticsearch.model.FieldName;
 import org.alfresco.repo.search.impl.elasticsearch.query.AlfrescoDefaultTextFields;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.FieldQueryTransformer;
-import org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants;
-import org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator;
 import org.alfresco.repo.search.impl.elasticsearch.util.ThrowingFunction;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;

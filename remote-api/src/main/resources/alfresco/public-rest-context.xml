@@ -544,6 +544,8 @@
         <property name="smartStore" ref="smartStore"/>
         <property name="classDefinitionMapper" ref="classDefinitionMapper" />
         <property name="ruleService" ref="RuleService" />
+        <property name="nodeDAO" ref="nodeDAO" />
+        <property name="tenantService" ref="tenantService" />
     </bean>
 
     <bean id="Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1691,6 +1693,7 @@
         <property name="authenticationService" ref="AuthenticationService" />
         <property name="ticketComponent" ref="ticketComponent" />
         <property name="remoteUserMapper" ref="RemoteUserMapper" />
+        <property name="authenticationContextManager" ref="Authentication" />
     </bean>
 
     <bean id="Authentications" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -7,8 +7,9 @@ on:
     branches: ["master", "release/25.N" , "release/23.7", "release/25.5", "release/26.2"]
 
 permissions:
-  actions: write    # re-run the failed jobs
-  contents: read    # read the branch tip
+  actions: write       # re-run the failed jobs
+  contents: read       # read the branch tip
+  pull-requests: read  # match the commits in range to their pull requests
 
 jobs:
   retry:
@@ -21,14 +22,24 @@ jobs:
       HAS_TEAMS_WEBHOOK: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK != '' }}
     steps:
       - id: retry
-        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@v19.11.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@74d5f71b8cac71b5c056c8e53d51ba660b0f59fd # v19.14.1
         with:
           # These publish or propagate, so repeating them is not safe.
           non-retryable-jobs: |
             Parse commit metadata
+            Push to Maven
             Push to Nexus
             Update alfresco-enterprise-repo
           max-attempts: 3
+
+      # Who to name on the card: whoever's pull requests landed since the last green run.
+      - id: authors
+        if: steps.retry.outputs.decision == 'escalate' && steps.retry.outputs.last-successful-sha != ''
+        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-pr-authors@74d5f71b8cac71b5c056c8e53d51ba660b0f59fd # v19.14.1
+        with:
+          from-ref: ${{ steps.retry.outputs.last-successful-sha }}
+          to-ref: ${{ github.event.workflow_run.head_sha }}
+          mention-email-domain: hyland.com
 
       # The release version is the pom version at the commit that was being released,
       # which is what maven-compute-release-versions strips -SNAPSHOT from.
@@ -53,11 +64,12 @@ jobs:
 
       - name: Report to Teams
         if: steps.retry.outputs.decision == 'escalate' && env.HAS_TEAMS_WEBHOOK == 'true'
-        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-workflow-run-notification@v19.11.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-workflow-run-notification@74d5f71b8cac71b5c056c8e53d51ba660b0f59fd # v19.14.1
         with:
           webhook-url: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK }}
           reason-code: ${{ steps.retry.outputs.reason-code }}
           failed-jobs: ${{ steps.retry.outputs.failed-jobs }}
+          cc: ${{ steps.authors.outputs.cc }}
           max-attempts: ${{ steps.retry.outputs.max-attempts }}
           title: Release chain blocked
           subtitle: Hop 1 of 5 - alfresco-community-repo
@@ -67,7 +79,7 @@ jobs:
             until this is resolved.
           facts: |
             Release version|${{ steps.version.outputs.release }}
-          footer: "cc: release duty - please pick this up."
+          footer: "Release duty - please pick this up."
 
       # A missing webhook must not turn a blocked release into a green run.
       - name: Fail visibly when no Teams webhook is configured

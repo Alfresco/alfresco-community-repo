@@ -444,6 +444,41 @@
             </property>
          </properties>
       </aspect>
+
+      <!-- Store move details so later uploads can be merged into the moved folder. -->
+      <aspect name="sys:ruleMoveTracking">
+         <title>Rule move tracking</title>
+         <properties>
+            <property name="sys:ruleMoveSourceParent">
+               <type>d:noderef</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleMoveActionId">
+               <type>d:text</type>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleMoveLastActivity">
+               <type>d:datetime</type>
+               <index enabled="false"></index>
+            </property>
+         </properties>
+      </aspect>
+
+      <!-- Store copy details so later uploads can be copied to the destination folder. -->
+      <aspect name="sys:ruleCopyTracking">
+         <title>Rule copy tracking</title>
+         <properties>
+            <property name="sys:ruleCopyDestinations">
+               <type>d:noderef</type>
+               <multiple>true</multiple>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:ruleCopyLastActivity">
+               <type>d:datetime</type>
+               <index enabled="false"></index>
+            </property>
+         </properties>
+      </aspect>
    </aspects>
 
 </model>

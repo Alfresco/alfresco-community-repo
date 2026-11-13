@@ -22,7 +22,7 @@ jobs:
       HAS_TEAMS_WEBHOOK: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK != '' }}
     steps:
       - id: retry
-        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@837a4dfd80d15ec3bc05b9168b97e0864aa3066c # v19.14.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/workflow-run-auto-retry@74d5f71b8cac71b5c056c8e53d51ba660b0f59fd # v19.14.1
         with:
           # These publish or propagate, so repeating them is not safe.
           non-retryable-jobs: |
@@ -35,7 +35,7 @@ jobs:
       # Who to name on the card: whoever's pull requests landed since the last green run.
       - id: authors
         if: steps.retry.outputs.decision == 'escalate' && steps.retry.outputs.last-successful-sha != ''
-        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-pr-authors@837a4dfd80d15ec3bc05b9168b97e0864aa3066c # v19.14.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-pr-authors@74d5f71b8cac71b5c056c8e53d51ba660b0f59fd # v19.14.1
         with:
           from-ref: ${{ steps.retry.outputs.last-successful-sha }}
           to-ref: ${{ github.event.workflow_run.head_sha }}
@@ -64,7 +64,7 @@ jobs:
 
       - name: Report to Teams
         if: steps.retry.outputs.decision == 'escalate' && env.HAS_TEAMS_WEBHOOK == 'true'
-        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-workflow-run-notification@837a4dfd80d15ec3bc05b9168b97e0864aa3066c # v19.14.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/send-teams-workflow-run-notification@74d5f71b8cac71b5c056c8e53d51ba660b0f59fd # v19.14.1
         with:
           webhook-url: ${{ secrets.TEAMS_NOTIFICATION_ACS_BACKEND_ALERTS_WEBHOOK }}
           reason-code: ${{ steps.retry.outputs.reason-code }}

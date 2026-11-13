@@ -151,15 +151,27 @@ jobs:
         run: bash ./scripts/ci/update_downstream.sh
         env:
           APP_TOKEN: ${{ steps.app-token.outputs.token }}
+      # Authors are everyone merged since the previous release, not just since the last
+      # push, because the people behind a release run that failed would go unnamed.
+      - name: "Find the previous release"
+        id: baseline
+        # Names are a nicety; losing them must not stop the release propagating.
+        continue-on-error: true
+        env:
+          VERSION: ${{ steps.update-downstream.outputs.version }}
+        run: |
+          set -euo pipefail
+          # The checkout is shallow, so reach back far enough to see the tag before this one.
+          git fetch --deepen=200 --quiet origin
+          echo "previous-release=$(git describe --abbrev=0 --tags "$VERSION^")" >> "$GITHUB_OUTPUT"
       # Named here because alfresco-enterprise-repo sees this release as one bot commit.
       - name: "List who is in this release"
         id: authors
-        if: github.event.before != '0000000000000000000000000000000000000000'
-        # Names are a nicety; losing them must not stop the release propagating.
+        if: steps.baseline.outputs.previous-release != ''
         continue-on-error: true
-        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-pr-authors@837a4dfd80d15ec3bc05b9168b97e0864aa3066c # v19.14.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-pr-authors@74d5f71b8cac71b5c056c8e53d51ba660b0f59fd # v19.14.1
         with:
-          from-ref: ${{ github.event.before }}
+          from-ref: ${{ steps.baseline.outputs.previous-release }}
           to-ref: ${{ github.sha }}
       - name: "Compute downstream commit message"
         id: commit-meta

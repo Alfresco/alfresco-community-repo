@@ -51,18 +51,8 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 /**
  * Stands in for the message broker behind a {@link ProducerTemplate}. While {@link #stop() stopped}, sends block like they do when ActiveMQ is unreachable. Records the thread and transaction state of every send. No network is involved.
  */
-public class TestBroker
+public class StubBroker
 {
-    /** A send as seen by the broker, with the state of the sending thread. */
-    public record Send(String body, Map<String, Object> headers, String thread, boolean transactionActive, String alfrescoTransactionId, boolean resourcesBound)
-    {
-        /** The sending thread holds no transaction and no transaction-bound resource such as a DB connection. */
-        public boolean outsideTransaction()
-        {
-            return !transactionActive && alfrescoTransactionId == null && !resourcesBound;
-        }
-    }
-
     private static final long MAX_OUTAGE_MINUTES = 5;
 
     private final List<Send> received = new CopyOnWriteArrayList<>();
@@ -71,7 +61,7 @@ public class TestBroker
     private final ProducerTemplate producer = mock(ProducerTemplate.class, withSettings().strictness(Strictness.LENIENT));
     private volatile CountDownLatch up = new CountDownLatch(0);
 
-    public TestBroker()
+    public StubBroker()
     {
         doAnswer(invocation -> {
             String body = String.valueOf((Object) invocation.getArgument(2));
@@ -83,11 +73,11 @@ public class TestBroker
             CountDownLatch latch = up;
             if (!latch.await(MAX_OUTAGE_MINUTES, TimeUnit.MINUTES))
             {
-                throw new IllegalStateException("The test broker was not started again");
+                throw new IllegalStateException("The stub broker was not started again");
             }
             if (rejected.contains(body))
             {
-                throw new IllegalStateException("The test broker rejected " + body);
+                throw new IllegalStateException("The stub broker rejected " + body);
             }
             delivered.add(body);
             return null;
@@ -138,5 +128,15 @@ public class TestBroker
     public List<String> delivered()
     {
         return List.copyOf(delivered);
+    }
+
+    /** A send as seen by the broker, with the state of the sending thread. */
+    public record Send(String body, Map<String, Object> headers, String thread, boolean transactionActive, String alfrescoTransactionId, boolean resourcesBound)
+    {
+        /** The sending thread holds no transaction and no transaction-bound resource such as a DB connection. */
+        public boolean outsideTransaction()
+        {
+            return !transactionActive && alfrescoTransactionId == null && !resourcesBound;
+        }
     }
 }

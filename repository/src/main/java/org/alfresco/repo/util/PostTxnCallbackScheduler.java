@@ -130,7 +130,10 @@ public class PostTxnCallbackScheduler
             String runAsUser = AuthenticationUtil.getRunAsUser();
             this.user = runAsUser == null ? AuthenticationUtil.getSystemUserName() : runAsUser;
             this.tenantDomain = TenantUtil.getCurrentDomain();
-            LOGGER.debug("Created lister with id = " + id);
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Created lister with id = " + id);
+            }
         }
 
         @Override
@@ -139,7 +142,10 @@ public class PostTxnCallbackScheduler
             boolean alreadyQueued = pending.put(id, this) != null;
             if (alreadyQueued)
             {
-                LOGGER.trace("Callback " + id + " is already queued; the queued entry now runs this newer callback.");
+                if (LOGGER.isTraceEnabled())
+                {
+                    LOGGER.trace("Callback " + id + " is already queued; the queued entry now runs this newer callback.");
+                }
             }
             else
             {
@@ -194,7 +200,10 @@ public class PostTxnCallbackScheduler
             }
             catch (Exception e)
             {
-                LOGGER.debug("The after commit callback " + id + " failed to execute: " + e.getMessage());
+                if (LOGGER.isDebugEnabled())
+                {
+                    LOGGER.debug("The after commit callback " + id + " failed to execute: " + e.getMessage());
+                }
                 // consume exception, as before the background dispatch
             }
         }

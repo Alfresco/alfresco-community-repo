@@ -34,8 +34,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.After;
 import org.junit.Test;
@@ -50,7 +52,7 @@ public class TransactionAwareEventProducerDeferredSendsTest
     private static final long TIMEOUT_SECONDS = 60;
 
     private final InMemoryTransactionHelper transactions = new InMemoryTransactionHelper();
-    private final TestBroker broker = new TestBroker();
+    private final StubBroker broker = new StubBroker();
     private final TransactionAwareEventProducer eventProducer = broker.eventProducer();
     private final ExecutorService threads = Executors.newCachedThreadPool();
 
@@ -75,9 +77,9 @@ public class TransactionAwareEventProducerDeferredSendsTest
                 eventProducer.send("test:queue", "rolled back");
                 throw new IllegalStateException("roll back");
             }));
-            assertEquals(List.of("committed"), broker.receivedBodies());
             return null;
         });
+        assertEquals(List.of("committed"), broker.receivedBodies());
     }
 
     @Test
@@ -99,9 +101,9 @@ public class TransactionAwareEventProducerDeferredSendsTest
 
             // Deferred sends are off again: the next commit sends at once.
             send("d");
-            assertEquals(List.of("a", "b", "c", "d"), broker.delivered());
             return null;
         });
+        assertEquals(List.of("a", "b", "c", "d"), broker.delivered());
     }
 
     @Test
@@ -130,15 +132,15 @@ public class TransactionAwareEventProducerDeferredSendsTest
             send("deferred");
             assertEquals(List.of("other thread"), broker.delivered());
             TransactionAwareEventProducer.sendAndDisableDeferredSendsOnThisThread();
-            assertEquals(List.of("other thread", "deferred"), broker.delivered());
             return null;
         });
+        assertEquals(List.of("other thread", "deferred"), broker.delivered());
     }
 
     @Test
     public void deferredSendsMustBeEnabledFirst() throws Exception
     {
-        onOwnThread(() -> {
+        List<String> consumed = onOwnThread(() -> {
             DeferredSends<String> deferredSends = new DeferredSends<>();
             assertFalse(deferredSends.isDeferredSendsEnabledOnThisThread());
             assertThrows(IllegalStateException.class, () -> deferredSends.addToDeferred(List.of("a")));
@@ -148,10 +150,11 @@ public class TransactionAwareEventProducerDeferredSendsTest
             assertTrue(deferredSends.isDeferredSendsEnabledOnThisThread());
             deferredSends.addToDeferred(List.of("a", "b"));
             deferredSends.addToDeferred(List.of("c"));
-            assertEquals(List.of("a", "b", "c"), deferredSends.consumeAndDisableDeferredSends());
+            List<String> sends = deferredSends.consumeAndDisableDeferredSends();
             assertFalse(deferredSends.isDeferredSendsEnabledOnThisThread());
-            return null;
+            return sends;
         });
+        assertEquals(List.of("a", "b", "c"), consumed);
     }
 
     private Void send(String... messages)
@@ -165,7 +168,7 @@ public class TransactionAwareEventProducerDeferredSendsTest
         });
     }
 
-    private <T> T onOwnThread(Callable<T> work) throws Exception
+    private <T> T onOwnThread(Callable<T> work) throws InterruptedException, ExecutionException, TimeoutException
     {
         return threads.submit(work).get(TIMEOUT_SECONDS, SECONDS);
     }

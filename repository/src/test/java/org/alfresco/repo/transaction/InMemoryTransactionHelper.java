@@ -25,7 +25,9 @@
  */
 package org.alfresco.repo.transaction;
 
-import java.lang.reflect.Proxy;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+
 import java.lang.reflect.UndeclaredThrowableException;
 
 import org.springframework.transaction.TransactionDefinition;
@@ -44,6 +46,7 @@ public class InMemoryTransactionHelper extends RetryingTransactionHelper
     private final SynchronizationOnlyTransactionManager transactionManager = new SynchronizationOnlyTransactionManager();
 
     @Override
+    @SuppressWarnings("PMD.AvoidCatchingThrowable") // RetryingTransactionCallback.execute() declares Throwable
     public <R> R doInTransaction(RetryingTransactionCallback<R> cb, boolean readOnly, boolean requiresNew)
     {
         TransactionTemplate template = new TransactionTemplate(transactionManager);
@@ -66,27 +69,13 @@ public class InMemoryTransactionHelper extends RetryingTransactionHelper
     }
 
     /**
-     * @return a {@link TransactionService} whose only supported method returns this helper.
+     * @return a {@link TransactionService} whose {@link TransactionService#getRetryingTransactionHelper()} returns this helper.
      */
     public TransactionService transactionService()
     {
-        return (TransactionService) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{TransactionService.class},
-                (proxy, method, args) -> {
-                    if (method.getDeclaringClass() == Object.class)
-                    {
-                        return switch (method.getName())
-                        {
-                        case "equals" -> proxy == args[0];
-                        case "hashCode" -> System.identityHashCode(proxy);
-                        default -> "InMemoryTransactionService";
-                        };
-                    }
-                    if (method.getName().equals("getRetryingTransactionHelper"))
-                    {
-                        return this;
-                    }
-                    throw new UnsupportedOperationException(method.getName());
-                });
+        TransactionService transactionService = mock(TransactionService.class);
+        lenient().when(transactionService.getRetryingTransactionHelper()).thenReturn(this);
+        return transactionService;
     }
 
     private static class SynchronizationOnlyTransactionManager extends AbstractPlatformTransactionManager
@@ -105,7 +94,9 @@ public class InMemoryTransactionHelper extends RetryingTransactionHelper
 
         @Override
         protected void doBegin(Object transaction, TransactionDefinition definition)
-        {}
+        {
+            // Nothing to begin: there is no resource, only synchronization.
+        }
 
         @Override
         protected Object doSuspend(Object transaction)
@@ -115,14 +106,20 @@ public class InMemoryTransactionHelper extends RetryingTransactionHelper
 
         @Override
         protected void doResume(Object transaction, Object suspendedResources)
-        {}
+        {
+            // Nothing to resume: doSuspend holds no resource.
+        }
 
         @Override
         protected void doCommit(DefaultTransactionStatus status)
-        {}
+        {
+            // Nothing to commit: synchronization callbacks are run by the superclass.
+        }
 
         @Override
         protected void doRollback(DefaultTransactionStatus status)
-        {}
+        {
+            // Nothing to roll back: synchronization callbacks are run by the superclass.
+        }
     }
 }

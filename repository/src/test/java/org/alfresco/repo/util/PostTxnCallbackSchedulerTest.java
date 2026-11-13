@@ -54,7 +54,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.rawevents.TestBroker;
+import org.alfresco.repo.rawevents.StubBroker;
 import org.alfresco.repo.rawevents.TransactionAwareEventProducer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -69,7 +69,7 @@ public class PostTxnCallbackSchedulerTest
 
     private final InMemoryTransactionHelper transactions = new InMemoryTransactionHelper();
     private final ExecutorService requestThreads = Executors.newCachedThreadPool();
-    private final TestBroker broker = new TestBroker();
+    private final StubBroker broker = new StubBroker();
     private final TransactionAwareEventProducer eventProducer = broker.eventProducer();
     private final List<CountDownLatch> latches = new CopyOnWriteArrayList<>();
     private final List<String> runs = new CopyOnWriteArrayList<>();
@@ -255,7 +255,7 @@ public class PostTxnCallbackSchedulerTest
         }));
         commit(() -> schedule("next", next::countDown));
 
-        awaitLatch(next);
+        assertTrue("The next callback did not run within " + TIMEOUT_SECONDS + " s", next.await(TIMEOUT_SECONDS, SECONDS));
     }
 
     @Test
@@ -349,7 +349,7 @@ public class PostTxnCallbackSchedulerTest
     }
 
     /** Blocks the only worker, so callbacks committed afterwards wait in the queue. Count down the result to free it. */
-    private CountDownLatch occupyTheOnlyWorker() throws Exception
+    private CountDownLatch occupyTheOnlyWorker() throws InterruptedException, ExecutionException
     {
         CountDownLatch started = latch();
         CountDownLatch release = latch();
@@ -370,7 +370,7 @@ public class PostTxnCallbackSchedulerTest
     }
 
     /** Runs the work in a transaction on another thread, like a request thread, and waits for the commit to return. */
-    private void commit(Runnable work) throws Exception
+    private void commit(Runnable work) throws InterruptedException, ExecutionException
     {
         submitAndWait(() -> transactions.doInTransaction(() -> {
             work.run();
@@ -378,7 +378,7 @@ public class PostTxnCallbackSchedulerTest
         }));
     }
 
-    private void submitAndWait(Runnable task) throws Exception
+    private void submitAndWait(Runnable task) throws InterruptedException, ExecutionException
     {
         Future<?> future = requestThreads.submit(task);
         try
@@ -415,9 +415,9 @@ public class PostTxnCallbackSchedulerTest
         }
     }
 
-    private static void assertSentOnDispatchThreadsOutsideTransactions(List<TestBroker.Send> sends)
+    private static void assertSentOnDispatchThreadsOutsideTransactions(List<StubBroker.Send> sends)
     {
-        for (TestBroker.Send send : sends)
+        for (StubBroker.Send send : sends)
         {
             assertTrue(send.toString(), send.thread().startsWith(DISPATCH_THREAD_PREFIX));
             assertTrue(send.toString(), send.outsideTransaction());

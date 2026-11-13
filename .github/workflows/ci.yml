@@ -66,7 +66,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 2
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         id: get-commit
         with:
           header-only: "true"
@@ -82,21 +82,21 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
           # Separate cache so this job (which only resolves plugins) never saves a partial Maven repository
           # under the main key. The prefix must not start with "maven" or other jobs' restore-keys would match it.
           cache-key-prefix: pre-commit-maven
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
 
   prepare:
     name: "Prepare"
@@ -107,15 +107,15 @@ jobs:
       !contains(needs.commit_parser.outputs.title, '[force]')
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -162,15 +162,15 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true' && github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - uses: Alfresco/ya-pmd-scan@v4.4.1
@@ -196,15 +196,15 @@ jobs:
             testAttributes: "-Dtest=AllUnitTestsSuite"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -253,15 +253,15 @@ jobs:
             transformers-tag: 5.2.0
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
@@ -304,15 +304,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -340,15 +340,15 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -376,15 +376,15 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -413,15 +413,15 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -450,15 +450,15 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -486,15 +486,15 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -526,15 +526,15 @@ jobs:
         activemq: [ 'activemq6', 'activemq5' ]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -603,15 +603,15 @@ jobs:
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -725,15 +725,15 @@ jobs:
             mvn-options: '-DsolrWaitTimeInSeconds=3'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
@@ -775,15 +775,15 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -815,15 +815,15 @@ jobs:
         part: [ 1, 2, 3, 4 ]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
@@ -857,15 +857,15 @@ jobs:
         part: [ 1, 2, 3, 4 ]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
@@ -899,15 +899,15 @@ jobs:
         part: [1, 2]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
@@ -955,15 +955,15 @@ jobs:
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           remove-android: 'false'
           remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@2fb68b82ad8ffd30088b5977da32d011af40f6ef # v19.13.1
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"

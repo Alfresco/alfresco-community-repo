@@ -28,40 +28,47 @@ package org.alfresco.repo.rawevents;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class DeferredSends<T>
+class DeferredSends<T>
 {
     private final ThreadLocal<List<T>> deferred = new ThreadLocal<>();
 
-    public void enableDeferredSendsOnThisThread()
+    /**
+     * Sends deferred while the work runs are passed to {@code send} once it ends, even if it throws. A nested call joins the outer one.
+     */
+    void run(Runnable work, Consumer<List<T>> send)
     {
-        deferred.set(new LinkedList<>());
+        if (isDeferring())
+        {
+            work.run();
+            return;
+        }
+        List<T> sends = new LinkedList<>();
+        deferred.set(sends);
+        try
+        {
+            work.run();
+        }
+        finally
+        {
+            deferred.remove();
+            send.accept(sends);
+        }
     }
 
-    public boolean isDeferredSendsEnabledOnThisThread()
+    boolean isDeferring()
     {
         return deferred.get() != null;
     }
 
-    public void addToDeferred(Collection<T> sends)
+    void defer(Collection<T> sends)
     {
-        getDeferredOnThisThread().addAll(sends);
-    }
-
-    public List<T> consumeAndDisableDeferredSends()
-    {
-        List<T> sends = getDeferredOnThisThread();
-        deferred.remove();
-        return sends;
-    }
-
-    private List<T> getDeferredOnThisThread()
-    {
-        List<T> sends = deferred.get();
-        if (sends == null)
+        List<T> deferredSends = deferred.get();
+        if (deferredSends == null)
         {
-            throw new IllegalStateException("enableDeferredSendsOnThisThread was not called first");
+            throw new IllegalStateException("Sends are not deferred on this thread");
         }
-        return sends;
+        deferredSends.addAll(sends);
     }
 }

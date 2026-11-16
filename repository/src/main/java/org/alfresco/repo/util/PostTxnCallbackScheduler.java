@@ -49,7 +49,7 @@ import org.alfresco.util.transaction.TransactionListenerAdapter;
 /**
  * Schedules a callback to a post-commit phase.
  * <p>
- * The callback runs on a background thread, as the user and tenant that scheduled it, and its messages are sent only after its transaction has released the DB connection, so neither a request thread nor a DB connection waits for the message broker. Pending callbacks are kept in memory only; a newer callback with the same id replaces a pending one.
+ * The callback runs on a background thread, as the user and tenant that scheduled it. Messages sent from its transactions go out only after they have released their DB connections, so neither a request thread nor a DB connection waits for the message broker. Pending callbacks are kept in memory only; a newer callback with the same id replaces a pending one.
  *
  * @author alex.mukha
  */
@@ -170,26 +170,15 @@ public class PostTxnCallbackScheduler
         {
             try
             {
-                TenantUtil.runAsUserTenant(this::runCallbackThenSendMessages, user, tenantDomain);
+                TenantUtil.runAsUserTenant(() -> {
+                    TransactionAwareEventProducer.runDeferringSends(this::runCallback);
+                    return null;
+                }, user, tenantDomain);
             }
             catch (Exception e)
             {
                 LOGGER.error("The after commit callback " + id + " failed to execute: " + e.getMessage(), e);
             }
-        }
-
-        private Void runCallbackThenSendMessages()
-        {
-            TransactionAwareEventProducer.enableDeferredSendsOnThisThread();
-            try
-            {
-                runCallback();
-            }
-            finally
-            {
-                TransactionAwareEventProducer.sendAndDisableDeferredSendsOnThisThread();
-            }
-            return null;
         }
 
         private void runCallback()

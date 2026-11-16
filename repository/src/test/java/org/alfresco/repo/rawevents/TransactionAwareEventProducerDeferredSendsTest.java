@@ -32,8 +32,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -86,16 +88,15 @@ public class TransactionAwareEventProducerDeferredSendsTest
     public void deferredMessagesOfCommittedTransactionsAreSentInOrderOutsideAnyTransaction() throws Exception
     {
         onOwnThread(() -> {
-            TransactionAwareEventProducer.enableDeferredSendsOnThisThread();
-            send("a");
-            send("b", "c");
-            assertThrows(IllegalStateException.class, () -> transactions.doInTransaction(() -> {
-                eventProducer.send("test:queue", "rolled back");
-                throw new IllegalStateException("roll back");
-            }));
-            assertEquals(List.of(), broker.received());
-
-            TransactionAwareEventProducer.sendAndDisableDeferredSendsOnThisThread();
+            TransactionAwareEventProducer.runDeferringSends(() -> {
+                send("a");
+                send("b", "c");
+                assertThrows(IllegalStateException.class, () -> transactions.doInTransaction(() -> {
+                    eventProducer.send("test:queue", "rolled back");
+                    throw new IllegalStateException("roll back");
+                }));
+                assertEquals(List.of(), broker.received());
+            });
             assertEquals(List.of("a", "b", "c"), broker.delivered());
             broker.received().forEach(send -> assertTrue(send.toString(), send.outsideTransaction()));
 
@@ -107,14 +108,64 @@ public class TransactionAwareEventProducerDeferredSendsTest
     }
 
     @Test
+    public void messagesOfANestedRequiresNewTransactionAreDeferredToo() throws Exception
+    {
+        List<String> sentDuringOuter = new ArrayList<>();
+        onOwnThread(() -> {
+            TransactionAwareEventProducer.runDeferringSends(() -> transactions.doInTransaction(() -> {
+                eventProducer.send("test:queue", "outer");
+                transactions.doInTransaction(() -> {
+                    eventProducer.send("test:queue", "inner");
+                    return null;
+                }, false, true);
+                sentDuringOuter.addAll(broker.receivedBodies());
+                return null;
+            }));
+            return null;
+        });
+        assertEquals(List.of(), sentDuringOuter);
+        assertEquals(List.of("inner", "outer"), broker.delivered());
+        broker.received().forEach(send -> assertTrue(send.toString(), send.outsideTransaction()));
+    }
+
+    @Test
+    public void committedMessagesAreSentAndDeferralEndsEvenIfTheWorkFails() throws Exception
+    {
+        onOwnThread(() -> {
+            assertThrows(IllegalStateException.class, () -> TransactionAwareEventProducer.runDeferringSends(() -> {
+                send("a");
+                throw new IllegalStateException("work failed");
+            }));
+            send("b");
+            return null;
+        });
+        assertEquals(List.of("a", "b"), broker.delivered());
+    }
+
+    @Test
+    public void nestedCallJoinsTheOuterOne() throws Exception
+    {
+        onOwnThread(() -> {
+            TransactionAwareEventProducer.runDeferringSends(() -> {
+                send("a");
+                TransactionAwareEventProducer.runDeferringSends(() -> send("b"));
+                send("c");
+                assertEquals(List.of(), broker.received());
+            });
+            return null;
+        });
+        assertEquals(List.of("a", "b", "c"), broker.delivered());
+    }
+
+    @Test
     public void failedDeferredSendDoesNotStopTheOthers() throws Exception
     {
         broker.reject("a");
         onOwnThread(() -> {
-            TransactionAwareEventProducer.enableDeferredSendsOnThisThread();
-            send("a", "b");
-            send("c");
-            TransactionAwareEventProducer.sendAndDisableDeferredSendsOnThisThread();
+            TransactionAwareEventProducer.runDeferringSends(() -> {
+                send("a", "b");
+                send("c");
+            });
             return null;
         });
         assertEquals(List.of("a", "b", "c"), broker.receivedBodies());
@@ -122,39 +173,39 @@ public class TransactionAwareEventProducerDeferredSendsTest
     }
 
     @Test
-    public void deferredSendsAffectOnlyTheThreadThatEnabledThem() throws Exception
+    public void deferredSendsAffectOnlyTheThreadThatDefersThem() throws Exception
     {
         onOwnThread(() -> {
-            TransactionAwareEventProducer.enableDeferredSendsOnThisThread();
-            onOwnThread(() -> send("other thread"));
-            assertEquals(List.of("other thread"), broker.delivered());
+            TransactionAwareEventProducer.runDeferringSends(() -> {
+                CompletableFuture.runAsync(() -> send("other thread"), threads).orTimeout(TIMEOUT_SECONDS, SECONDS).join();
+                assertEquals(List.of("other thread"), broker.delivered());
 
-            send("deferred");
-            assertEquals(List.of("other thread"), broker.delivered());
-            TransactionAwareEventProducer.sendAndDisableDeferredSendsOnThisThread();
+                send("deferred");
+                assertEquals(List.of("other thread"), broker.delivered());
+            });
             return null;
         });
         assertEquals(List.of("other thread", "deferred"), broker.delivered());
     }
 
     @Test
-    public void deferredSendsMustBeEnabledFirst() throws Exception
+    public void sendsCanOnlyBeDeferredInsideRun() throws Exception
     {
-        List<String> consumed = onOwnThread(() -> {
-            DeferredSends<String> deferredSends = new DeferredSends<>();
-            assertFalse(deferredSends.isDeferredSendsEnabledOnThisThread());
-            assertThrows(IllegalStateException.class, () -> deferredSends.addToDeferred(List.of("a")));
-            assertThrows(IllegalStateException.class, deferredSends::consumeAndDisableDeferredSends);
+        DeferredSends<String> deferredSends = new DeferredSends<>();
+        List<List<String>> sent = new ArrayList<>();
+        onOwnThread(() -> {
+            assertFalse(deferredSends.isDeferring());
+            assertThrows(IllegalStateException.class, () -> deferredSends.defer(List.of("a")));
 
-            deferredSends.enableDeferredSendsOnThisThread();
-            assertTrue(deferredSends.isDeferredSendsEnabledOnThisThread());
-            deferredSends.addToDeferred(List.of("a", "b"));
-            deferredSends.addToDeferred(List.of("c"));
-            List<String> sends = deferredSends.consumeAndDisableDeferredSends();
-            assertFalse(deferredSends.isDeferredSendsEnabledOnThisThread());
-            return sends;
+            deferredSends.run(() -> {
+                assertTrue(deferredSends.isDeferring());
+                deferredSends.defer(List.of("a", "b"));
+                deferredSends.defer(List.of("c"));
+            }, sent::add);
+            assertFalse(deferredSends.isDeferring());
+            return null;
         });
-        assertEquals(List.of("a", "b", "c"), consumed);
+        assertEquals(List.of(List.of("a", "b", "c")), sent);
     }
 
     private Void send(String... messages)

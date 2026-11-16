@@ -42,6 +42,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.LocalTransform;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
+import org.alfresco.repo.rawevents.TransactionAwareEventProducer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -154,7 +155,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         LocalTransform localTransform = transform.get();
         Map<String, String> actualOptions = addDirectAccessUrlToOptionsIfPossible(renditionOptions, sourceNodeRef, localTransform);
 
-        executorService.submit(() -> {
+        Runnable transformAndConsume = () -> {
             AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
                 try
                 {
@@ -203,7 +204,9 @@ public class LocalTransformClient implements TransformClient, InitializingBean
                 }
                 return null;
             }), user);
-        });
+        };
+        // Transform API replies are sent after the transaction has released its DB connection.
+        executorService.submit(() -> TransactionAwareEventProducer.runDeferringSends(transformAndConsume));
     }
 
     private Map<String, String> addDirectAccessUrlToOptionsIfPossible(Map<String, String> actualOptions,

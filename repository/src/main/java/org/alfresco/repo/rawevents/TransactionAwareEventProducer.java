@@ -51,17 +51,11 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
     private static final DeferredSends<PendingRequest> DEFERRED_SENDS = new DeferredSends<>();
 
     /**
-     * From now on, events committed on this thread are kept until {@link #sendAndDisableDeferredSendsOnThisThread()} instead of being sent in afterCommit, where the transaction still holds its DB connection.
+     * Events committed on this thread while the work runs are sent when it ends, instead of in afterCommit, where the transaction still holds its DB connection.
      */
-    public static void enableDeferredSendsOnThisThread()
+    public static void runDeferringSends(Runnable work)
     {
-        DEFERRED_SENDS.enableDeferredSendsOnThisThread();
-    }
-
-    public static void sendAndDisableDeferredSendsOnThisThread()
-    {
-        List<PendingRequest> pendingRequests = DEFERRED_SENDS.consumeAndDisableDeferredSends();
-        sendAll(pendingRequests, "The deferred send");
+        DEFERRED_SENDS.run(work, pendingRequests -> sendAll(pendingRequests, "The deferred send"));
     }
 
     private static void sendAll(List<PendingRequest> pendingRequests, String description)
@@ -170,10 +164,10 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
         public void afterCommit()
         {
             List<PendingRequest> pendingRequests = AlfrescoTransactionSupport.getResource(POST_TRANSACTION_PENDING_REQUESTS);
-            if (DEFERRED_SENDS.isDeferredSendsEnabledOnThisThread())
+            if (DEFERRED_SENDS.isDeferring())
             {
                 // sent later, after this transaction has released its DB connection.
-                DEFERRED_SENDS.addToDeferred(pendingRequests);
+                DEFERRED_SENDS.defer(pendingRequests);
             }
             else
             {

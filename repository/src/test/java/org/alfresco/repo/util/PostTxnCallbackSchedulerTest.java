@@ -245,17 +245,25 @@ public class PostTxnCallbackSchedulerTest
     }
 
     @Test
-    public void failingCallbackDoesNotStopLaterCallbacks() throws Exception
+    public void workerSendsNormallyAfterAFailingCallback() throws Exception
     {
         startScheduler(1);
-        CountDownLatch next = latch();
+        List<String> threads = new CopyOnWriteArrayList<>();
 
         commit(() -> schedule("fails", () -> {
+            threads.add(Thread.currentThread().getName());
+            eventProducer.send("test:queue", "rolled back");
             throw new IllegalStateException("callback failed");
         }));
-        commit(() -> schedule("next", next::countDown));
+        commit(() -> schedule("next", () -> {
+            threads.add(Thread.currentThread().getName());
+            eventProducer.send("test:queue", "next");
+        }));
 
-        assertTrue("The next callback did not run within " + TIMEOUT_SECONDS + " s", next.await(TIMEOUT_SECONDS, SECONDS));
+        await().atMost(TIMEOUT).until(() -> broker.delivered().size() == 1);
+        assertEquals(List.of("next"), broker.delivered());
+        assertEquals(2, threads.size());
+        assertEquals(threads.get(0), threads.get(1));
     }
 
     @Test

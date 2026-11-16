@@ -175,7 +175,7 @@ public class FolderUploadHandlersUnitTest
     }
 
     @Test
-    public void mergesSubfoldersAndRenamesClashingFiles() throws Exception
+    public void mergesSubfoldersRenamesClashesAndKeepsUnreadableFiles() throws Exception
     {
         movedMark(ACTION_ID, NOW);
         NodeRef sub = folder(node("src-sub"), "sub");
@@ -185,12 +185,14 @@ public class FolderUploadHandlersUnitTest
         children(sub, clash);
         when(nodeService.getChildByName(movedFolder, ContentModel.ASSOC_CONTAINS, "sub")).thenReturn(existingSub);
         when(nodeService.getChildByName(existingSub, ContentModel.ASSOC_CONTAINS, "a.txt")).thenReturn(node("existing-a"));
+        // A file the uploader cannot read is only visible to the system user.
+        when(nodeService.getChildAssocs(sub)).thenAnswer(invocation -> AuthenticationUtil.isRunAsUserTheSystemUser() ? List.of(association(sub, node("unreadable"))) : List.of());
+        when(nodeService.getChildAssocs(uploadedFolder)).thenReturn(List.of(association(uploadedFolder, sub)));
 
         assertTrue("The late folder should be merged", moveHandler.mergeIntoPreviouslyMovedFolder(ruleAction, uploadedFolder, src, dst));
 
         verify(fileFolderService).move(clash, existingSub, "a-1.txt");
-        verify(nodeService).deleteNode(sub);
-        verify(nodeService).deleteNode(uploadedFolder);
+        verify(nodeService, never()).deleteNode(any());
     }
 
     @Test
@@ -265,17 +267,23 @@ public class FolderUploadHandlersUnitTest
     }
 
     @Test
-    public void keepsExistingFileInCopy() throws Exception
+    public void skipsExistingFilesAndWorkingCopies() throws Exception
     {
         NodeRef copy = node("copy");
         copyMark(uploadedFolder, NOW, copy);
-        ChildAssociationRef association = parent(file(node("file2"), "file2.txt"), uploadedFolder);
+        ChildAssociationRef existingFile = parent(file(node("file2"), "file2.txt"), uploadedFolder);
         when(nodeService.getChildByName(copy, ContentModel.ASSOC_CONTAINS, "file2.txt")).thenReturn(node("existing"));
+        NodeRef workingCopy = file(node("working-copy"), "file3 (Working Copy).txt");
+        when(nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY)).thenReturn(true);
+        ChildAssociationRef workingCopyItem = parent(workingCopy, uploadedFolder);
 
-        copyHandler.onCreateChildAssociation(association, true);
+        copyHandler.onCreateChildAssociation(existingFile, true);
+        copyHandler.onCreateChildAssociation(workingCopyItem, true);
         TransactionSynchronizationUtils.triggerBeforeCommit(false);
 
         verifyNoCopies();
+        // The skipped upload still counts as activity, the working copy does not.
+        verify(nodeService).setProperty(eq(uploadedFolder), eq(PROP_RULE_COPY_LAST_ACTIVITY), any(Date.class));
     }
 
     @Test

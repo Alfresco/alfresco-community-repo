@@ -143,6 +143,19 @@ public class FolderUploadCopyHandler implements NodeServicePolicies.OnCreateChil
     // The folder remembers its copy, and each subfolder remembers its own copy.
     private void rememberCopy(NodeRef folder, NodeRef copy)
     {
+        // Subfolders first, so an expired mark on this folder is not refreshed before they check it.
+        for (NodeRef child : support.getChildren(folder))
+        {
+            if (support.isFolder(child))
+            {
+                NodeRef childCopy = nodeService.getChildByName(copy, ContentModel.ASSOC_CONTAINS, support.getName(child));
+                if (childCopy != null)
+                {
+                    rememberCopy(child, childCopy);
+                }
+            }
+        }
+
         // Several rules can copy the same folder, so keep the copies made earlier in this upload.
         List<NodeRef> copies = isUploadInProgress(folder) ? getCopies(folder) : new ArrayList<>();
         if (!copies.contains(copy))
@@ -153,15 +166,6 @@ public class FolderUploadCopyHandler implements NodeServicePolicies.OnCreateChil
         mark.put(PROP_RULE_COPY_DESTINATIONS, (Serializable) copies);
         mark.put(PROP_RULE_COPY_LAST_ACTIVITY, new Date());
         support.writeMark(folder, () -> nodeService.addAspect(folder, ASPECT_RULE_COPY_TRACKING, mark));
-
-        for (NodeRef child : support.getChildren(folder))
-        {
-            NodeRef childCopy = nodeService.getChildByName(copy, ContentModel.ASSOC_CONTAINS, support.getName(child));
-            if (support.isFolder(child) && childCopy != null)
-            {
-                rememberCopy(child, childCopy);
-            }
-        }
     }
 
     // ----- Step 2: a file or subfolder is added to a tracked folder -----
@@ -234,8 +238,12 @@ public class FolderUploadCopyHandler implements NodeServicePolicies.OnCreateChil
         {
             return;
         }
+        // A checked-out working copy or an empty WebDAV placeholder is not an uploaded file.
+        if (nodeService.hasAspect(item, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(item, ContentModel.ASPECT_WEBDAV_NO_CONTENT))
+        {
+            return;
+        }
         String name = support.getName(item);
-        boolean copiedAny = false;
         for (NodeRef folderCopy : getCopies(folder))
         {
             // Skip a copy that was deleted, and never replace something that is already there.
@@ -248,12 +256,8 @@ public class FolderUploadCopyHandler implements NodeServicePolicies.OnCreateChil
             {
                 rememberCopy(item, itemCopy);
             }
-            copiedAny = true;
         }
-        if (copiedAny)
-        {
-            recordUploadActivity(folder);
-        }
+        recordUploadActivity(folder);
     }
 
     private NodeRef copy(NodeRef item, NodeRef folderCopy, String name)

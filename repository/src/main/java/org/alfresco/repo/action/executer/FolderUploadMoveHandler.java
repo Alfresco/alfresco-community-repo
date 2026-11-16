@@ -37,6 +37,7 @@ import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -166,16 +167,14 @@ public class FolderUploadMoveHandler implements CopyServicePolicies.OnCopyNodePo
 
     private void deleteIfEmpty(NodeRef folder)
     {
-        for (ChildAssociationRef child : nodeService.getChildAssocs(folder))
+        // Check as system, because a child the uploader cannot read must never be deleted with the folder.
+        boolean empty = AuthenticationUtil.runAsSystem(() -> nodeService.getChildAssocs(folder).stream().noneMatch(ChildAssociationRef::isPrimary));
+        if (empty)
         {
-            if (child.isPrimary())
-            {
-                return;
-            }
+            // The empty folder is not needed, so do not keep it in the trashcan.
+            nodeService.addAspect(folder, ContentModel.ASPECT_TEMPORARY, null);
+            nodeService.deleteNode(folder);
         }
-        // The empty folder is not needed, so do not keep it in the trashcan.
-        nodeService.addAspect(folder, ContentModel.ASPECT_TEMPORARY, null);
-        nodeService.deleteNode(folder);
     }
 
     private String getFreeName(NodeRef folder, String name)

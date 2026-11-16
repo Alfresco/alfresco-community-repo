@@ -49,7 +49,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.transform.config.CoreFunction;
 import org.alfresco.util.PropertyCheck;
 
@@ -64,7 +63,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     private static Log logger = LogFactory.getLog(LocalTransformClient.class);
 
     private LocalTransformServiceRegistry localTransformServiceRegistry;
-    private TransactionService transactionService;
+    private TransactionAwareEventProducer transactionAwareEventProducer;
     private ContentService contentService;
     private RenditionService2Impl renditionService2;
     private boolean directAccessUrlEnabled;
@@ -78,9 +77,9 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         this.localTransformServiceRegistry = localTransformServiceRegistry;
     }
 
-    public void setTransactionService(TransactionService transactionService)
+    public void setTransactionAwareEventProducer(TransactionAwareEventProducer transactionAwareEventProducer)
     {
-        this.transactionService = transactionService;
+        this.transactionAwareEventProducer = transactionAwareEventProducer;
     }
 
     public void setContentService(ContentService contentService)
@@ -112,7 +111,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "localTransformServiceRegistry", localTransformServiceRegistry);
-        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "transactionAwareEventProducer", transactionAwareEventProducer);
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "renditionService2", renditionService2);
         PropertyCheck.mandatory(this, "directAccessUrlEnabled", directAccessUrlEnabled);
@@ -149,64 +148,9 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user,
             int sourceContentHashCode)
     {
-        String renditionName = renditionDefinition.getRenditionName();
-        String targetMimetype = renditionDefinition.getTargetMimetype();
-        Map<String, String> renditionOptions = renditionDefinition.getTransformOptions();
         LocalTransform localTransform = transform.get();
-        Map<String, String> actualOptions = addDirectAccessUrlToOptionsIfPossible(renditionOptions, sourceNodeRef, localTransform);
-
-        Runnable transformAndConsume = () -> {
-            AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-                try
-                {
-                    if (localTransform == null)
-                    {
-                        throw new IllegalStateException("isSupported was not called prior to an asynchronous transform.");
-                    }
-
-                    ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
-                    if (null == reader || !reader.exists())
-                    {
-                        throw new IllegalArgumentException("sourceNodeRef " + sourceNodeRef + " has no content.");
-                    }
-
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug(TRANSFORM + "requested " + renditionName);
-                    }
-                    ContentWriter writer = contentService.getTempWriter();
-                    writer.setMimetype(targetMimetype);
-                    localTransform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
-
-                    InputStream inputStream = writer.getReader().getContentInputStream();
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug(TRANSFORM + "to be consumed " + renditionName);
-                    }
-                    renditionService2.consume(sourceNodeRef, inputStream, renditionDefinition, sourceContentHashCode);
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug(TRANSFORM + "consumed " + renditionName);
-                    }
-                }
-                catch (Exception e)
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug(TRANSFORM + "failed " + renditionName, e);
-                    }
-                    if (renditionDefinition instanceof TransformDefinition)
-                    {
-                        ((TransformDefinition) renditionDefinition).setErrorMessage(e.getMessage());
-                    }
-                    renditionService2.failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
-                    throw e;
-                }
-                return null;
-            }), user);
-        };
-        // Transform API replies are sent after the transaction has released its DB connection.
-        executorService.submit(() -> TransactionAwareEventProducer.runDeferringSends(transformAndConsume));
+        Map<String, String> actualOptions = addDirectAccessUrlToOptionsIfPossible(renditionDefinition.getTransformOptions(), sourceNodeRef, localTransform);
+        executorService.submit(new LocalTransformTask(sourceNodeRef, renditionDefinition, user, sourceContentHashCode, localTransform, actualOptions));
     }
 
     private Map<String, String> addDirectAccessUrlToOptionsIfPossible(Map<String, String> actualOptions,
@@ -221,5 +165,91 @@ public class LocalTransformClient implements TransformClient, InitializingBean
             actualOptions.put(DIRECT_ACCESS_URL, directAccessUrl.getContentUrl());
         }
         return actualOptions;
+    }
+
+    /** Transforms on a local transform thread, as the user who asked for it, and consumes the result. */
+    private class LocalTransformTask implements Runnable
+    {
+        private final NodeRef sourceNodeRef;
+        private final RenditionDefinition2 renditionDefinition;
+        private final String user;
+        private final int sourceContentHashCode;
+        private final LocalTransform localTransform;
+        private final Map<String, String> actualOptions;
+
+        LocalTransformTask(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentHashCode,
+                LocalTransform localTransform, Map<String, String> actualOptions)
+        {
+            this.sourceNodeRef = sourceNodeRef;
+            this.renditionDefinition = renditionDefinition;
+            this.user = user;
+            this.sourceContentHashCode = sourceContentHashCode;
+            this.localTransform = localTransform;
+            this.actualOptions = actualOptions;
+        }
+
+        @Override
+        public void run()
+        {
+            AuthenticationUtil.runAs(this::transformAndConsume, user);
+        }
+
+        /** Transform API replies are sent after the transaction has released its DB connection. */
+        private Void transformAndConsume()
+        {
+            return transactionAwareEventProducer.doInTransactionThenSend(this::transformAndConsumeInTransaction);
+        }
+
+        private Void transformAndConsumeInTransaction()
+        {
+            String renditionName = renditionDefinition.getRenditionName();
+            String targetMimetype = renditionDefinition.getTargetMimetype();
+            try
+            {
+                if (localTransform == null)
+                {
+                    throw new IllegalStateException("isSupported was not called prior to an asynchronous transform.");
+                }
+
+                ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+                if (null == reader || !reader.exists())
+                {
+                    throw new IllegalArgumentException("sourceNodeRef " + sourceNodeRef + " has no content.");
+                }
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(TRANSFORM + "requested " + renditionName);
+                }
+                ContentWriter writer = contentService.getTempWriter();
+                writer.setMimetype(targetMimetype);
+                localTransform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
+
+                InputStream inputStream = writer.getReader().getContentInputStream();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(TRANSFORM + "to be consumed " + renditionName);
+                }
+                renditionService2.consume(sourceNodeRef, inputStream, renditionDefinition, sourceContentHashCode);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(TRANSFORM + "consumed " + renditionName);
+                }
+            }
+            catch (Exception e)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(TRANSFORM + "failed " + renditionName, e);
+                }
+                if (renditionDefinition instanceof TransformDefinition)
+                {
+                    ((TransformDefinition) renditionDefinition).setErrorMessage(e.getMessage());
+                }
+                renditionService2.failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
+                throw e;
+            }
+            return null;
+        }
     }
 }

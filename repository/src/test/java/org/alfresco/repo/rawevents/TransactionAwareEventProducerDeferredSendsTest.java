@@ -40,14 +40,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 import org.junit.After;
 import org.junit.Test;
 
 import org.alfresco.repo.transaction.InMemoryTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 
 /**
- * Sends of {@link TransactionAwareEventProducer} with and without deferred sends. Each test runs on its own thread, so the per-thread deferred mode never leaks into other tests.
+ * Sends of {@link TransactionAwareEventProducer} with and without {@link TransactionAwareEventProducer#doInTransactionThenSend}. Each test runs on its own thread, so the per-thread deferred mode never leaks into other tests.
  */
 public class TransactionAwareEventProducerDeferredSendsTest
 {
@@ -55,7 +57,7 @@ public class TransactionAwareEventProducerDeferredSendsTest
 
     private final InMemoryTransactionHelper transactions = new InMemoryTransactionHelper();
     private final StubBroker broker = new StubBroker();
-    private final TransactionAwareEventProducer eventProducer = broker.eventProducer();
+    private final TransactionAwareEventProducer eventProducer = broker.eventProducer(transactions.transactionService());
     private final ExecutorService threads = Executors.newCachedThreadPool();
 
     @After
@@ -67,107 +69,115 @@ public class TransactionAwareEventProducerDeferredSendsTest
     @Test
     public void withoutDeferredSendsMessagesAreSentAfterCommitAndNotAfterRollback() throws Exception
     {
-        onOwnThread(() -> {
-            transactions.doInTransaction(() -> {
-                eventProducer.send("test:queue", "committed");
-                assertEquals(List.of(), broker.received());
-                return null;
-            });
-            assertEquals(List.of("committed"), broker.delivered());
-
-            assertThrows(IllegalStateException.class, () -> transactions.doInTransaction(() -> {
-                eventProducer.send("test:queue", "rolled back");
-                throw new IllegalStateException("roll back");
-            }));
+        RetryingTransactionCallback<Void> sendBeforeCommit = () -> {
+            send("committed");
+            assertEquals(List.of(), broker.received());
             return null;
-        });
+        };
+        RetryingTransactionCallback<Void> sendThenRollBack = () -> {
+            send("rolled back");
+            throw new IllegalStateException("roll back");
+        };
+        Callable<Void> commitThenRollBack = () -> {
+            transactions.doInTransaction(sendBeforeCommit);
+            assertEquals(List.of("committed"), broker.delivered());
+            assertThrows(IllegalStateException.class, () -> transactions.doInTransaction(sendThenRollBack));
+            return null;
+        };
+
+        onOwnThread(commitThenRollBack);
+
         assertEquals(List.of("committed"), broker.receivedBodies());
     }
 
     @Test
-    public void deferredMessagesOfCommittedTransactionsAreSentInOrderOutsideAnyTransaction() throws Exception
+    public void messagesAreSentInOrderAfterTheTransactionOutsideAnyTransaction() throws Exception
     {
-        onOwnThread(() -> {
-            TransactionAwareEventProducer.runDeferringSends(() -> {
-                send("a");
-                send("b", "c");
-                assertThrows(IllegalStateException.class, () -> transactions.doInTransaction(() -> {
-                    eventProducer.send("test:queue", "rolled back");
-                    throw new IllegalStateException("roll back");
-                }));
-                assertEquals(List.of(), broker.received());
-            });
-            assertEquals(List.of("a", "b", "c"), broker.delivered());
+        RetryingTransactionCallback<String> sendThree = () -> {
+            send("a", "b");
+            send("c");
+            return "result";
+        };
+        Callable<String> deferThenCommit = () -> {
+            String value = doInTransactionThenSend(sendThree);
             broker.received().forEach(send -> assertTrue(send.toString(), send.outsideTransaction()));
 
             // Deferred sends are off again: the next commit sends at once.
-            send("d");
+            commit("d");
+            assertEquals(List.of("a", "b", "c", "d"), broker.delivered());
+            return value;
+        };
+
+        assertEquals("result", onOwnThread(deferThenCommit));
+    }
+
+    @Test
+    public void committedNestedTransactionsAreSentEvenIfTheTransactionFails() throws Exception
+    {
+        RetryingTransactionCallback<Void> commitInnerThenRollBack = () -> {
+            commitNew("inner");
+            send("rolled back");
+            throw new IllegalStateException("roll back");
+        };
+        Callable<Void> failThenCommit = () -> {
+            assertThrows(IllegalStateException.class, () -> doInTransactionThenSend(commitInnerThenRollBack));
+            commit("next");
             return null;
-        });
-        assertEquals(List.of("a", "b", "c", "d"), broker.delivered());
+        };
+
+        onOwnThread(failThenCommit);
+
+        assertEquals(List.of("inner", "next"), broker.delivered());
     }
 
     @Test
     public void messagesOfANestedRequiresNewTransactionAreDeferredToo() throws Exception
     {
         List<String> sentDuringOuter = new ArrayList<>();
-        onOwnThread(() -> {
-            TransactionAwareEventProducer.runDeferringSends(() -> transactions.doInTransaction(() -> {
-                eventProducer.send("test:queue", "outer");
-                transactions.doInTransaction(() -> {
-                    eventProducer.send("test:queue", "inner");
-                    return null;
-                }, false, true);
-                sentDuringOuter.addAll(broker.receivedBodies());
-                return null;
-            }));
+        RetryingTransactionCallback<Void> outerWithInner = () -> {
+            send("outer");
+            commitNew("inner");
+            sentDuringOuter.addAll(broker.receivedBodies());
             return null;
-        });
+        };
+
+        doInTransactionThenSendOnOwnThread(outerWithInner);
+
         assertEquals(List.of(), sentDuringOuter);
         assertEquals(List.of("inner", "outer"), broker.delivered());
         broker.received().forEach(send -> assertTrue(send.toString(), send.outsideTransaction()));
     }
 
     @Test
-    public void committedMessagesAreSentAndDeferralEndsEvenIfTheWorkFails() throws Exception
-    {
-        onOwnThread(() -> {
-            assertThrows(IllegalStateException.class, () -> TransactionAwareEventProducer.runDeferringSends(() -> {
-                send("a");
-                throw new IllegalStateException("work failed");
-            }));
-            send("b");
-            return null;
-        });
-        assertEquals(List.of("a", "b"), broker.delivered());
-    }
-
-    @Test
     public void nestedCallJoinsTheOuterOne() throws Exception
     {
-        onOwnThread(() -> {
-            TransactionAwareEventProducer.runDeferringSends(() -> {
-                send("a");
-                TransactionAwareEventProducer.runDeferringSends(() -> send("b"));
-                send("c");
-                assertEquals(List.of(), broker.received());
-            });
+        List<String> sentDuringOuter = new ArrayList<>();
+        RetryingTransactionCallback<Void> inner = () -> commitNew("b");
+        RetryingTransactionCallback<Void> outer = () -> {
+            send("a");
+            doInTransactionThenSend(inner);
+            send("c");
+            sentDuringOuter.addAll(broker.receivedBodies());
             return null;
-        });
-        assertEquals(List.of("a", "b", "c"), broker.delivered());
+        };
+
+        doInTransactionThenSendOnOwnThread(outer);
+
+        assertEquals(List.of(), sentDuringOuter);
+        assertEquals(List.of("b", "a", "c"), broker.delivered());
     }
 
     @Test
     public void failedDeferredSendDoesNotStopTheOthers() throws Exception
     {
         broker.reject("a");
-        onOwnThread(() -> {
-            TransactionAwareEventProducer.runDeferringSends(() -> {
-                send("a", "b");
-                send("c");
-            });
+        RetryingTransactionCallback<Void> sendThree = () -> {
+            send("a", "b", "c");
             return null;
-        });
+        };
+
+        doInTransactionThenSendOnOwnThread(sendThree);
+
         assertEquals(List.of("a", "b", "c"), broker.receivedBodies());
         assertEquals(List.of("b", "c"), broker.delivered());
     }
@@ -175,16 +185,17 @@ public class TransactionAwareEventProducerDeferredSendsTest
     @Test
     public void deferredSendsAffectOnlyTheThreadThatDefersThem() throws Exception
     {
-        onOwnThread(() -> {
-            TransactionAwareEventProducer.runDeferringSends(() -> {
-                CompletableFuture.runAsync(() -> send("other thread"), threads).orTimeout(TIMEOUT_SECONDS, SECONDS).join();
-                assertEquals(List.of("other thread"), broker.delivered());
-
-                send("deferred");
-                assertEquals(List.of("other thread"), broker.delivered());
-            });
+        List<String> deliveredDuringOuter = new ArrayList<>();
+        RetryingTransactionCallback<Void> commitOnBothThreads = () -> {
+            commitOnAnotherThread("other thread");
+            commitNew("deferred");
+            deliveredDuringOuter.addAll(broker.delivered());
             return null;
-        });
+        };
+
+        doInTransactionThenSendOnOwnThread(commitOnBothThreads);
+
+        assertEquals(List.of("other thread"), deliveredDuringOuter);
         assertEquals(List.of("other thread", "deferred"), broker.delivered());
     }
 
@@ -193,30 +204,61 @@ public class TransactionAwareEventProducerDeferredSendsTest
     {
         DeferredSends<String> deferredSends = new DeferredSends<>();
         List<List<String>> sent = new ArrayList<>();
-        onOwnThread(() -> {
+        Supplier<String> deferThree = () -> {
+            assertTrue(deferredSends.isDeferring());
+            deferredSends.defer(List.of("a", "b"));
+            deferredSends.defer(List.of("c"));
+            return "result";
+        };
+        Callable<String> deferOnlyInsideRun = () -> {
             assertFalse(deferredSends.isDeferring());
             assertThrows(IllegalStateException.class, () -> deferredSends.defer(List.of("a")));
-
-            deferredSends.run(() -> {
-                assertTrue(deferredSends.isDeferring());
-                deferredSends.defer(List.of("a", "b"));
-                deferredSends.defer(List.of("c"));
-            }, sent::add);
+            String value = deferredSends.run(deferThree, sent::add);
             assertFalse(deferredSends.isDeferring());
-            return null;
-        });
+            return value;
+        };
+
+        assertEquals("result", onOwnThread(deferOnlyInsideRun));
         assertEquals(List.of(List.of("a", "b", "c")), sent);
     }
 
-    private Void send(String... messages)
+    private <R> R doInTransactionThenSend(RetryingTransactionCallback<R> callback)
+    {
+        return eventProducer.doInTransactionThenSend(callback);
+    }
+
+    private <R> R doInTransactionThenSendOnOwnThread(RetryingTransactionCallback<R> callback) throws InterruptedException, ExecutionException, TimeoutException
+    {
+        return onOwnThread(() -> doInTransactionThenSend(callback));
+    }
+
+    /** Sends in the current transaction. */
+    private void send(String... messages)
+    {
+        for (String message : messages)
+        {
+            eventProducer.send("test:queue", message);
+        }
+    }
+
+    /** Sends in a transaction of its own, or in the current one if there is one. */
+    private Void commit(String... messages)
+    {
+        return transactions.runInTransaction(() -> send(messages));
+    }
+
+    /** Sends in a new transaction that commits at once, also inside another one. */
+    private Void commitNew(String... messages)
     {
         return transactions.doInTransaction(() -> {
-            for (String message : messages)
-            {
-                eventProducer.send("test:queue", message);
-            }
+            send(messages);
             return null;
-        });
+        }, false, true);
+    }
+
+    private void commitOnAnotherThread(String message)
+    {
+        CompletableFuture.runAsync(() -> commit(message), threads).orTimeout(TIMEOUT_SECONDS, SECONDS).join();
     }
 
     private <T> T onOwnThread(Callable<T> work) throws InterruptedException, ExecutionException, TimeoutException

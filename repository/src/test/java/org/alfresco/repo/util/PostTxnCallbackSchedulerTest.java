@@ -70,7 +70,7 @@ public class PostTxnCallbackSchedulerTest
     private final InMemoryTransactionHelper transactions = new InMemoryTransactionHelper();
     private final ExecutorService requestThreads = Executors.newCachedThreadPool();
     private final StubBroker broker = new StubBroker();
-    private final TransactionAwareEventProducer eventProducer = broker.eventProducer();
+    private final TransactionAwareEventProducer eventProducer = broker.eventProducer(transactions.transactionService());
     private final List<CountDownLatch> latches = new CopyOnWriteArrayList<>();
     private final List<String> runs = new CopyOnWriteArrayList<>();
     private PostTxnCallbackScheduler scheduler;
@@ -101,15 +101,17 @@ public class PostTxnCallbackSchedulerTest
         AtomicReference<String> callbackTransaction = new AtomicReference<>();
         AtomicReference<String> callbackThread = new AtomicReference<>();
         CountDownLatch done = latch();
-
-        commit(() -> {
+        Runnable callback = () -> {
+            callbackThread.set(Thread.currentThread().getName());
+            callbackTransaction.set(AlfrescoTransactionSupport.getTransactionId());
+            done.countDown();
+        };
+        Runnable request = () -> {
             requestTransaction.set(AlfrescoTransactionSupport.getTransactionId());
-            schedule("a", () -> {
-                callbackThread.set(Thread.currentThread().getName());
-                callbackTransaction.set(AlfrescoTransactionSupport.getTransactionId());
-                done.countDown();
-            });
-        });
+            schedule("a", callback);
+        };
+
+        commit(request);
 
         awaitLatch(done);
         assertTrue(callbackThread.get(), callbackThread.get().startsWith(DISPATCH_THREAD_PREFIX));
@@ -124,16 +126,15 @@ public class PostTxnCallbackSchedulerTest
         AtomicReference<String> user = new AtomicReference<>();
         AtomicReference<String> tenant = new AtomicReference<>();
         CountDownLatch done = latch();
+        Runnable callback = () -> {
+            user.set(AuthenticationUtil.getRunAsUser());
+            tenant.set(TenantUtil.getCurrentDomain());
+            done.countDown();
+        };
+        Runnable scheduleAsAliceInAcme = () -> TenantUtil.runAsUserTenant(() -> schedule("a", callback), "alice", "acme.example");
 
         // The transaction commits as bob, but alice in tenant acme.example scheduled the callback.
-        submitAndWait(() -> AuthenticationUtil.runAs(() -> transactions.doInTransaction(() -> TenantUtil.runAsUserTenant(() -> {
-            schedule("a", () -> {
-                user.set(AuthenticationUtil.getRunAsUser());
-                tenant.set(TenantUtil.getCurrentDomain());
-                done.countDown();
-            });
-            return null;
-        }, "alice", "acme.example")), "bob"));
+        submitAndWait(() -> AuthenticationUtil.runAs(() -> transactions.runInTransaction(scheduleAsAliceInAcme), "bob"));
 
         awaitLatch(done);
         assertEquals("alice", user.get());
@@ -146,11 +147,12 @@ public class PostTxnCallbackSchedulerTest
         startScheduler(1);
         AtomicReference<String> user = new AtomicReference<>();
         CountDownLatch done = latch();
-
-        commit(() -> schedule("a", () -> {
+        Runnable callback = () -> {
             user.set(AuthenticationUtil.getRunAsUser());
             done.countDown();
-        }));
+        };
+
+        scheduleAndCommit("a", callback);
 
         awaitLatch(done);
         assertEquals(AuthenticationUtil.getSystemUserName(), user.get());
@@ -163,13 +165,14 @@ public class PostTxnCallbackSchedulerTest
         CountDownLatch started = latch();
         CountDownLatch release = latch();
         CountDownLatch finished = latch();
-
-        // commit() fails if the committing thread waits for the callback, which cannot finish before release.
-        commit(() -> schedule("slow", () -> {
+        Runnable slowCallback = () -> {
             started.countDown();
             awaitQuietly(release);
             finished.countDown();
-        }));
+        };
+
+        // scheduleAndCommit() fails if the committing thread waits for the callback, which cannot finish before release.
+        scheduleAndCommit("slow", slowCallback);
 
         awaitLatch(started);
         assertEquals(1, finished.getCount());
@@ -183,15 +186,16 @@ public class PostTxnCallbackSchedulerTest
     {
         startScheduler(1);
         CountDownLatch sentinel = latch();
-
-        ExecutionException e = assertThrows(ExecutionException.class, () -> submitAndWait(() -> transactions.doInTransaction(() -> {
+        Runnable scheduleThenRollBack = () -> {
             schedule("rolled-back", () -> runs.add("rolled-back"));
             throw new IllegalStateException("roll back");
-        })));
+        };
+
+        ExecutionException e = assertThrows(ExecutionException.class, () -> commit(scheduleThenRollBack));
         assertEquals("roll back", e.getCause().getMessage());
 
         // One worker runs callbacks in order, so the sentinel runs after anything queued before it.
-        commit(() -> schedule("sentinel", sentinel::countDown));
+        scheduleAndCommit("sentinel", sentinel::countDown);
         awaitLatch(sentinel);
         assertEquals(List.of(), runs);
         assertEquals(0, scheduler.getPendingCount());
@@ -201,15 +205,24 @@ public class PostTxnCallbackSchedulerTest
     public void queuedCallbackIsReplacedByANewerOneWithTheSameId() throws Exception
     {
         startScheduler(1);
-        CountDownLatch release = occupyTheOnlyWorker();
+        CountDownLatch blockerStarted = latch();
+        CountDownLatch release = latch();
         CountDownLatch sentinel = latch();
-
-        commit(() -> schedule("x", () -> runs.add("x v1")));
-        commit(() -> schedule("x", () -> runs.add("x v2")));
-        commit(() -> schedule("y", () -> {
+        Runnable blocker = () -> {
+            blockerStarted.countDown();
+            awaitQuietly(release);
+        };
+        Runnable last = () -> {
             runs.add("y");
             sentinel.countDown();
-        }));
+        };
+
+        // The blocker occupies the only worker, so the callbacks committed after it wait in the queue.
+        scheduleAndCommit("blocker", blocker);
+        awaitLatch(blockerStarted);
+        scheduleAndCommit("x", () -> runs.add("x v1"));
+        scheduleAndCommit("x", () -> runs.add("x v2"));
+        scheduleAndCommit("y", last);
         assertEquals(2, scheduler.getPendingCount());
 
         release.countDown();
@@ -224,20 +237,24 @@ public class PostTxnCallbackSchedulerTest
         CountDownLatch bothRan = new CountDownLatch(2);
         latches.add(bothRan);
         CountDownLatch sentinel = latch();
+        Runnable first = () -> {
+            runs.add("x v1");
+            bothRan.countDown();
+        };
+        Runnable second = () -> runs.add("x v2");
+        Runnable other = () -> {
+            runs.add("y");
+            bothRan.countDown();
+        };
+        Runnable request = () -> {
+            schedule("x", first);
+            schedule("x", second);
+            schedule("y", other);
+        };
 
-        commit(() -> {
-            schedule("x", () -> {
-                runs.add("x v1");
-                bothRan.countDown();
-            });
-            schedule("x", () -> runs.add("x v2"));
-            schedule("y", () -> {
-                runs.add("y");
-                bothRan.countDown();
-            });
-        });
+        commit(request);
         awaitLatch(bothRan);
-        commit(() -> schedule("sentinel", sentinel::countDown));
+        scheduleAndCommit("sentinel", sentinel::countDown);
         awaitLatch(sentinel);
 
         assertEquals(Set.of("x v1", "y"), Set.copyOf(runs));
@@ -249,16 +266,18 @@ public class PostTxnCallbackSchedulerTest
     {
         startScheduler(1);
         List<String> threads = new CopyOnWriteArrayList<>();
-
-        commit(() -> schedule("fails", () -> {
+        Runnable failing = () -> {
             threads.add(Thread.currentThread().getName());
             eventProducer.send("test:queue", "rolled back");
             throw new IllegalStateException("callback failed");
-        }));
-        commit(() -> schedule("next", () -> {
+        };
+        Runnable next = () -> {
             threads.add(Thread.currentThread().getName());
             eventProducer.send("test:queue", "next");
-        }));
+        };
+
+        scheduleAndCommit("fails", failing);
+        scheduleAndCommit("next", next);
 
         await().atMost(TIMEOUT).until(() -> broker.delivered().size() == 1);
         assertEquals(List.of("next"), broker.delivered());
@@ -270,11 +289,12 @@ public class PostTxnCallbackSchedulerTest
     public void messagesAreSentOnlyAfterTheCallbackTransactionHasFinished() throws Exception
     {
         startScheduler(1);
-
-        commit(() -> schedule("a", () -> {
+        Runnable twoSends = () -> {
             eventProducer.send("test:queue", "m1");
             eventProducer.send("test:queue", "m2");
-        }));
+        };
+
+        scheduleAndCommit("a", twoSends);
 
         await().atMost(TIMEOUT).until(() -> broker.delivered().size() == 2);
         assertEquals(List.of("m1", "m2"), broker.delivered());
@@ -287,11 +307,11 @@ public class PostTxnCallbackSchedulerTest
         startScheduler(2);
         broker.stop();
 
-        // Each commit() fails instead of hanging if the committing thread waits for the broker.
+        // Each scheduleAndCommit() fails instead of hanging if the committing thread waits for the broker.
         for (int i = 0; i < 10; i++)
         {
             String message = "m" + i;
-            commit(() -> schedule(message, () -> eventProducer.send("test:queue", message)));
+            scheduleAndCommit(message, () -> eventProducer.send("test:queue", message));
         }
 
         await().atMost(TIMEOUT).until(() -> broker.received().size() == 2);
@@ -312,12 +332,13 @@ public class PostTxnCallbackSchedulerTest
     {
         startScheduler(1);
         broker.reject("bad");
-
-        commit(() -> schedule("a", () -> {
+        Runnable badThenGood = () -> {
             eventProducer.send("test:queue", "bad");
             eventProducer.send("test:queue", "good");
-        }));
-        commit(() -> schedule("b", () -> eventProducer.send("test:queue", "next")));
+        };
+
+        scheduleAndCommit("a", badThenGood);
+        scheduleAndCommit("b", () -> eventProducer.send("test:queue", "next"));
 
         await().atMost(TIMEOUT).until(() -> broker.delivered().size() == 2);
         assertEquals(List.of("good", "next"), broker.delivered());
@@ -329,7 +350,7 @@ public class PostTxnCallbackSchedulerTest
         for (int threadPoolSize : new int[]{0, -1})
         {
             PostTxnCallbackScheduler invalid = new PostTxnCallbackScheduler();
-            invalid.setTransactionService(transactions.transactionService());
+            invalid.setTransactionAwareEventProducer(eventProducer);
             invalid.setThreadPoolSize(threadPoolSize);
             assertThrows(AlfrescoRuntimeException.class, invalid::init);
             assertEquals(0, invalid.getActiveCount());
@@ -342,7 +363,7 @@ public class PostTxnCallbackSchedulerTest
         startScheduler(1);
         scheduler.destroy();
 
-        commit(() -> schedule("late", () -> runs.add("late")));
+        scheduleAndCommit("late", () -> runs.add("late"));
 
         assertEquals(0, scheduler.getPendingCount());
         assertEquals(List.of(), runs);
@@ -351,39 +372,31 @@ public class PostTxnCallbackSchedulerTest
     private void startScheduler(int threadPoolSize)
     {
         scheduler = new PostTxnCallbackScheduler();
-        scheduler.setTransactionService(transactions.transactionService());
+        scheduler.setTransactionAwareEventProducer(eventProducer);
         scheduler.setThreadPoolSize(threadPoolSize);
         scheduler.init();
     }
 
-    /** Blocks the only worker, so callbacks committed afterwards wait in the queue. Count down the result to free it. */
-    private CountDownLatch occupyTheOnlyWorker() throws InterruptedException, ExecutionException
+    /** A request thread schedules the callback in a transaction and commits it. */
+    private void scheduleAndCommit(String id, Runnable callback) throws InterruptedException, ExecutionException
     {
-        CountDownLatch started = latch();
-        CountDownLatch release = latch();
-        commit(() -> schedule("blocker", () -> {
-            started.countDown();
-            awaitQuietly(release);
-        }));
-        awaitLatch(started);
-        return release;
+        commit(() -> schedule(id, callback));
     }
 
-    private void schedule(String id, Runnable callback)
+    /** Returns null, for callers that need a value. */
+    private Void schedule(String id, Runnable callback)
     {
         scheduler.scheduleRendition(() -> {
             callback.run();
             return null;
         }, id);
+        return null;
     }
 
     /** Runs the work in a transaction on another thread, like a request thread, and waits for the commit to return. */
     private void commit(Runnable work) throws InterruptedException, ExecutionException
     {
-        submitAndWait(() -> transactions.doInTransaction(() -> {
-            work.run();
-            return null;
-        }));
+        submitAndWait(() -> transactions.runInTransaction(work));
     }
 
     private void submitAndWait(Runnable task) throws InterruptedException, ExecutionException

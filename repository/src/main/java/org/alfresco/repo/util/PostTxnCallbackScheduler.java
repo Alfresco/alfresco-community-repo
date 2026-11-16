@@ -43,7 +43,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
 
 /**
@@ -57,15 +56,15 @@ public class PostTxnCallbackScheduler
 {
     private static final Log LOGGER = LogFactory.getLog(PostTxnCallbackScheduler.class);
 
-    private TransactionService transactionService;
+    private TransactionAwareEventProducer transactionAwareEventProducer;
     private int threadPoolSize;
 
     private final Map<String, PostTxTransactionListener> pending = new ConcurrentHashMap<>();
     private ThreadPoolExecutor executorService;
 
-    public void setTransactionService(TransactionService transactionService)
+    public void setTransactionAwareEventProducer(TransactionAwareEventProducer transactionAwareEventProducer)
     {
-        this.transactionService = transactionService;
+        this.transactionAwareEventProducer = transactionAwareEventProducer;
     }
 
     public void setThreadPoolSize(int threadPoolSize)
@@ -157,7 +156,7 @@ public class PostTxnCallbackScheduler
         {
             try
             {
-                executorService.execute(() -> pending.remove(id).runOnBackgroundThread());
+                executorService.execute(this::runNewestQueuedForId);
             }
             catch (RejectedExecutionException e)
             {
@@ -166,14 +165,17 @@ public class PostTxnCallbackScheduler
             }
         }
 
+        /** Runs the callback queued for this id, which is the newest one scheduled with it, not necessarily this one. */
+        private void runNewestQueuedForId()
+        {
+            pending.remove(id).runOnBackgroundThread();
+        }
+
         private void runOnBackgroundThread()
         {
             try
             {
-                TenantUtil.runAsUserTenant(() -> {
-                    TransactionAwareEventProducer.runDeferringSends(this::runCallback);
-                    return null;
-                }, user, tenantDomain);
+                TenantUtil.runAsUserTenant(this::runCallback, user, tenantDomain);
             }
             catch (Exception e)
             {
@@ -181,11 +183,11 @@ public class PostTxnCallbackScheduler
             }
         }
 
-        private void runCallback()
+        private Void runCallback()
         {
             try
             {
-                transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+                transactionAwareEventProducer.doInTransactionThenSend(callback);
             }
             catch (Exception e)
             {
@@ -195,6 +197,7 @@ public class PostTxnCallbackScheduler
                 }
                 // consume exception, as before the background dispatch
             }
+            return null;
         }
 
         @Override

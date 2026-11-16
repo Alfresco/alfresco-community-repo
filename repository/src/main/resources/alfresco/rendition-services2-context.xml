@@ -68,7 +68,7 @@
     </bean>
 
     <bean id="renditionRequestSheduler" class="org.alfresco.repo.util.PostTxnCallbackScheduler" init-method="init" destroy-method="destroy">
-        <property name="transactionService" ref="TransactionService" />
+        <property name="transactionAwareEventProducer" ref="transactionAwareEventProducer" />
         <property name="threadPoolSize" value="${renditionService2.dispatch.threadPoolSize}" />
     </bean>
 
@@ -80,7 +80,7 @@
 
     <bean id="localTransformClient" class="org.alfresco.repo.rendition2.LocalTransformClient">
         <property name="localTransformServiceRegistry" ref="localTransformServiceRegistry" />
-        <property name="transactionService" ref="transactionService" />
+        <property name="transactionAwareEventProducer" ref="transactionAwareEventProducer" />
         <property name="contentService" ref="contentService" />
         <property name="renditionService2" ref="renditionService2" />
         <property name="directAccessUrlEnabled" value="${local.transform.directAccessUrl.enabled}"/>

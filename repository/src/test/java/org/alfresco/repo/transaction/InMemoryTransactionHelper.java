@@ -68,6 +68,15 @@ public class InMemoryTransactionHelper extends RetryingTransactionHelper
         });
     }
 
+    /** Runs the work in a transaction. Returns null, for callers that need a value. */
+    public Void runInTransaction(Runnable work)
+    {
+        return doInTransaction(() -> {
+            work.run();
+            return null;
+        });
+    }
+
     /**
      * @return a {@link TransactionService} whose {@link TransactionService#getRetryingTransactionHelper()} returns this helper.
      */

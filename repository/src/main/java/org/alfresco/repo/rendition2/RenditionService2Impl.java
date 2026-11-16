@@ -378,14 +378,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                                 renderOrTransform.throwIllegalStateExceptionIfAlreadyDone(sourceContentHashCode);
                             }
                         }
-                        try
-                        {
-                            // transform() uses the transformer chosen by checkSupported() on the same thread (thread-locals),
-                            // and this callback may run on a background thread, so choose it again here.
-                            transformClient.checkSupported(sourceNodeRef, renditionDefinition, sourceContentData.getMimetype(),
-                                    sourceContentData.getSize(), sourceContentData.getContentUrl());
-                        }
-                        catch (UnsupportedOperationException e)
+                        if (!chooseTransformerAgain(sourceNodeRef, renditionDefinition, sourceContentData))
                         {
                             failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
                             return null;
@@ -411,6 +404,25 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         {
             logger.debug(e.getMessage());
             throw e;
+        }
+    }
+
+    /**
+     * transform() uses the transformer chosen by checkSupported() on the same thread (thread-locals), and the scheduled callback runs on a background thread, so it chooses it again there.
+     *
+     * @return false if no transformer supports the content any more
+     */
+    private boolean chooseTransformerAgain(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, ContentData sourceContentData)
+    {
+        try
+        {
+            transformClient.checkSupported(sourceNodeRef, renditionDefinition, sourceContentData.getMimetype(),
+                    sourceContentData.getSize(), sourceContentData.getContentUrl());
+            return true;
+        }
+        catch (UnsupportedOperationException e)
+        {
+            return false;
         }
     }
 

@@ -35,6 +35,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
 
 /**
@@ -48,17 +50,35 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
 
     private static final String POST_TRANSACTION_PENDING_REQUESTS = "postTransactionPendingEventRequests";
 
+    // Per thread, for all producers: an event committed on a thread that defers its sends is deferred whichever producer sent it.
     private static final DeferredSends<PendingRequest> DEFERRED_SENDS = new DeferredSends<>();
 
-    /**
-     * Events committed on this thread while the work runs are sent when it ends, instead of in afterCommit, where the transaction still holds its DB connection.
-     */
-    public static void runDeferringSends(Runnable work)
+    private TransactionService transactionService;
+
+    public void setTransactionService(TransactionService transactionService)
     {
-        DEFERRED_SENDS.run(work, pendingRequests -> sendAll(pendingRequests, "The deferred send"));
+        this.transactionService = transactionService;
     }
 
-    private static void sendAll(List<PendingRequest> pendingRequests, String description)
+    /**
+     * Runs the callback in a retrying transaction. Events committed on this thread meanwhile, also by nested transactions, are sent after it has finished, instead of in afterCommit, where the transaction still holds its DB connection. A nested call joins the outer one.
+     */
+    public <R> R doInTransactionThenSend(RetryingTransactionHelper.RetryingTransactionCallback<R> callback)
+    {
+        return DEFERRED_SENDS.run(() -> doInTransaction(callback), this::sendDeferred);
+    }
+
+    private <R> R doInTransaction(RetryingTransactionHelper.RetryingTransactionCallback<R> callback)
+    {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+    }
+
+    private void sendDeferred(List<PendingRequest> pendingRequests)
+    {
+        sendAll(pendingRequests, "The deferred send");
+    }
+
+    private void sendAll(List<PendingRequest> pendingRequests, String description)
     {
         for (PendingRequest pendingRequest : pendingRequests)
         {

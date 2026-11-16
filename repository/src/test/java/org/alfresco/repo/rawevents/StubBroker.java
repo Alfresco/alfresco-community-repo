@@ -47,6 +47,7 @@ import org.mockito.quality.Strictness;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Stands in for the message broker behind a {@link ProducerTemplate}. While {@link #stop() stopped}, sends block like they do when ActiveMQ is unreachable. Records the thread and transaction state of every send. No network is involved.
@@ -89,11 +90,12 @@ public class StubBroker
         return producer;
     }
 
-    /** @return a new {@link TransactionAwareEventProducer} that sends to this broker. */
-    public TransactionAwareEventProducer eventProducer()
+    /** @return a new {@link TransactionAwareEventProducer} that sends to this broker and runs its transactions with the given service. */
+    public TransactionAwareEventProducer eventProducer(TransactionService transactionService)
     {
         TransactionAwareEventProducer eventProducer = new TransactionAwareEventProducer();
         eventProducer.setProducer(producer);
+        eventProducer.setTransactionService(transactionService);
         return eventProducer;
     }
 

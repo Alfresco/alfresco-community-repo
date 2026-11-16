@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 class DeferredSends<T>
 {
@@ -37,18 +38,17 @@ class DeferredSends<T>
     /**
      * Sends deferred while the work runs are passed to {@code send} once it ends, even if it throws. A nested call joins the outer one.
      */
-    void run(Runnable work, Consumer<List<T>> send)
+    <R> R run(Supplier<R> work, Consumer<List<T>> send)
     {
         if (isDeferring())
         {
-            work.run();
-            return;
+            return work.get();
         }
         List<T> sends = new LinkedList<>();
         deferred.set(sends);
         try
         {
-            work.run();
+            return work.get();
         }
         finally
         {

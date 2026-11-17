@@ -142,6 +142,7 @@ public class FolderUploadMoveHandler implements CopyServicePolicies.OnCopyNodePo
         }
 
         moveContents(folder, movedFolder);
+        copyHandler.removeCopiesReplacedByMerge(folder, movedFolder);
         deleteIfEmpty(folder);
         markRuleMovedFolder(ruleAction, movedFolder, sourceParent);
         return true;

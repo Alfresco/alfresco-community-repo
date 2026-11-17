@@ -175,6 +175,27 @@ public class FolderUploadHandlersUnitTest
     }
 
     @Test
+    public void removesOnlyTheCopyMadeByThisUpload()
+    {
+        NodeRef cdst = node("cdst");
+        NodeRef firstCopy = node("first-copy");
+        NodeRef newCopy = node("new-copy");
+        NodeRef olderCopy = node("older-copy");
+        parent(firstCopy, cdst);
+        parent(newCopy, cdst);
+        parent(olderCopy, cdst);
+        parent(movedFolder, dst);
+        copyMark(movedFolder, NOW, firstCopy);
+        copyMark(uploadedFolder, NOW, olderCopy, newCopy);
+        copyHandler.trackCopiedFolder(ruleAction, uploadedFolder, newCopy);
+
+        copyHandler.removeCopiesReplacedByMerge(uploadedFolder, movedFolder);
+
+        verify(nodeService).deleteNode(newCopy);
+        verify(nodeService, never()).deleteNode(olderCopy);
+    }
+
+    @Test
     public void mergesSubfoldersRenamesClashesAndKeepsUnreadableFiles() throws Exception
     {
         movedMark(ACTION_ID, NOW);

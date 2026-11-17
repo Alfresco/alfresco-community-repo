@@ -285,20 +285,40 @@ public class RuleServiceIntegrationTest
         assertUploadedFiles(CopyActionExecuter.NAME, "first.txt", "second.txt");
     }
 
+    @Test
+    public void testFolderUploadCopyThenMoveLeavesNoExtraCopies()
+    {
+        NodeRef copyDestination = testNodes.createNode(TEST_FOLDER, "copyDestination", ContentModel.TYPE_FOLDER, TEST_USER2.getUsername());
+        createFolderUploadRule(CopyActionExecuter.NAME, copyDestination);
+        createFolderUploadRule(MoveActionExecuter.NAME, childFolder);
+
+        uploadFolderFile(TEST_USER1.getUsername(), "first.txt");
+        uploadFolderFile(TEST_USER1.getUsername(), "second.txt");
+
+        int copies = AuthenticationUtil.runAsSystem(() -> TRANSACTION_HELPER.doInTransaction(
+                () -> NODE_SERVICE.getChildAssocs(copyDestination, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL).size(), true, true));
+        Assert.assertEquals("No extra \"Copy of build\" folder must be left", 1, copies);
+    }
+
     private void createFolderUploadRule(String actionName)
+    {
+        createFolderUploadRule(actionName, childFolder);
+    }
+
+    private void createFolderUploadRule(String actionName, NodeRef destination)
     {
         AuthenticationUtil.runAsSystem(() -> TRANSACTION_HELPER.doInTransaction(() -> {
             for (String user : List.of(TEST_USER1.getUsername(), TEST_USER2.getUsername()))
             {
                 SERVICE_REGISTRY.getPermissionService().setPermission(parentFolder, user, PermissionService.COORDINATOR, true);
-                SERVICE_REGISTRY.getPermissionService().setPermission(childFolder, user, PermissionService.COORDINATOR, true);
+                SERVICE_REGISTRY.getPermissionService().setPermission(destination, user, PermissionService.COORDINATOR, true);
             }
             org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule();
             rule.setTitle("Folder upload " + GUID.generate());
             rule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
             rule.applyToChildren(false);
             Action action = ACTION_SERVICE.createAction(actionName);
-            action.setParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER, childFolder);
+            action.setParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER, destination);
             if (CopyActionExecuter.NAME.equals(actionName))
             {
                 action.setParameterValue(CopyActionExecuter.PARAM_DEEP_COPY, true);

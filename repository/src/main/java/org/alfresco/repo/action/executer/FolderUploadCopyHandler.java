@@ -71,6 +71,7 @@ public class FolderUploadCopyHandler implements NodeServicePolicies.OnCreateChil
     public static final QName PROP_RULE_COPY_LAST_ACTIVITY = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ruleCopyLastActivity");
 
     private static final String KEY_ITEMS_TO_COPY = FolderUploadCopyHandler.class.getName() + ".itemsToCopy";
+    private static final String KEY_COPIES_MADE = FolderUploadCopyHandler.class.getName() + ".copiesMade";
 
     private NodeService nodeService;
     private FileFolderService fileFolderService;
@@ -137,6 +138,39 @@ public class FolderUploadCopyHandler implements NodeServicePolicies.OnCreateChil
         if (support.isFolder(folder) && support.isSupportedRule(ruleAction))
         {
             rememberCopy(folder, copy);
+            TransactionalResourceHelper.getSet(KEY_COPIES_MADE).add(copy);
+        }
+    }
+
+    /**
+     * Called by the Move handler when it merges a late folder into the folder it moved earlier. A copy of the late folder made in this transaction, for example "Copy of build", is deleted when the moved folder already has a copy in the same place, because the merged files are copied there instead.
+     */
+    public void removeCopiesReplacedByMerge(NodeRef lateFolder, NodeRef movedFolder)
+    {
+        if (!ruleService.isEnabled() || !nodeService.hasAspect(lateFolder, ASPECT_RULE_COPY_TRACKING)
+                || !nodeService.hasAspect(movedFolder, ASPECT_RULE_COPY_TRACKING) || !isUploadInProgress(movedFolder))
+        {
+            return;
+        }
+        Set<NodeRef> copiesMade = TransactionalResourceHelper.getSet(KEY_COPIES_MADE);
+        List<NodeRef> movedFolderCopies = getCopies(movedFolder);
+        for (NodeRef lateCopy : getCopies(lateFolder))
+        {
+            // Never delete an older copy, only the one this upload just made.
+            if (!copiesMade.contains(lateCopy) || !nodeService.exists(lateCopy))
+            {
+                continue;
+            }
+            NodeRef copyParent = support.getParent(lateCopy);
+            boolean replaced = movedFolderCopies.stream()
+                    .anyMatch(copy -> !copy.equals(lateCopy) && nodeService.exists(copy) && copyParent.equals(support.getParent(copy)));
+            if (replaced)
+            {
+                // The duplicate is not needed, so do not keep it in the trashcan.
+                nodeService.addAspect(lateCopy, ContentModel.ASPECT_TEMPORARY, null);
+                nodeService.deleteNode(lateCopy);
+                copiesMade.remove(lateCopy);
+            }
         }
     }
 

@@ -35,6 +35,8 @@ jobs:
       # Who to name on the card: whoever's pull requests landed since the last green run.
       - id: authors
         if: steps.retry.outputs.decision == 'escalate' && steps.retry.outputs.last-successful-sha != ''
+        # Names are a nicety; losing them must not cost us the card.
+        continue-on-error: true
         uses: Alfresco/alfresco-build-tools/.github/actions/github-list-pr-authors@74d5f71b8cac71b5c056c8e53d51ba660b0f59fd # v19.14.1
         with:
           from-ref: ${{ steps.retry.outputs.last-successful-sha }}

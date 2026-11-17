@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -161,7 +161,7 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
         @Override
         public void afterCommit()
         {
-            List<PendingRequest> pendingRequests = AlfrescoTransactionSupport.getResource(POST_TRANSACTION_PENDING_REQUESTS);
+            List<PendingRequest> pendingRequests = List.copyOf(AlfrescoTransactionSupport.getResource(POST_TRANSACTION_PENDING_REQUESTS));
             sendCommitted(() -> sendAll(pendingRequests, id));
         }
 

@@ -19,7 +19,7 @@ jobs:
       id-token: write
     if: contains(github.event.head_commit.message, '[reformat code]')
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # The check-format-and-headers hook runs Maven, so it needs the CI settings and credentials.
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:

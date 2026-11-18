@@ -30,7 +30,7 @@ jobs:
     outputs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -56,7 +56,7 @@ jobs:
       !contains(needs.commit_parser.outputs.title, '[no release]') &&
       github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -90,7 +90,7 @@ jobs:
       !contains(needs.commit_parser.outputs.title, '[no downstream]') &&
       github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0

@@ -41,7 +41,7 @@ jobs:
     outputs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -57,7 +57,7 @@ jobs:
       !contains(needs.commit_parser.outputs.title, '[skip tests]') &&
       !contains(needs.commit_parser.outputs.title, '[force]')
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -107,6 +107,7 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true' && github.event_name == 'pull_request'
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -143,7 +144,7 @@ jobs:
             testModule: mmt
             testAttributes: "-Dtest=AllMmtUnitTestSuite"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -191,7 +192,7 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -233,7 +234,7 @@ jobs:
       matrix:
         version: ['10.11']
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -261,7 +262,7 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -289,7 +290,7 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -318,7 +319,7 @@ jobs:
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -347,7 +348,7 @@ jobs:
       - commit_parser
     if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -375,7 +376,7 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -407,7 +408,7 @@ jobs:
       matrix:
         activemq: [ 'activemq6', 'activemq5' ]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -470,7 +471,7 @@ jobs:
             disabledHostnameVerification: false
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -542,7 +543,7 @@ jobs:
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -585,7 +586,7 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -617,7 +618,7 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -651,7 +652,7 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -681,7 +682,7 @@ jobs:
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -729,7 +730,7 @@ jobs:
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0

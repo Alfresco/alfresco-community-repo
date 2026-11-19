@@ -34,7 +34,7 @@ jobs:
         run: echo "value=$(date --iso-8601)" >> "$GITHUB_OUTPUT"
 
       - name: "Create empty force-release commit"
-        uses: iarekylew00t/verified-bot-commit@1ee4374942e5c5f814e9b3121d766cbe45cea360 # v2.3.6
+        uses: iarekylew00t/verified-bot-commit@3a1e72c2443cce5574f76a9b2bb36e355d667743 # v2.3.7
         with:
           token: ${{ steps.app-token.outputs.token }}
           message: "[force] Force release for ${{ steps.date.outputs.value }}"

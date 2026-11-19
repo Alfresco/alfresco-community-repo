@@ -127,6 +127,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
 import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
 import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
+import org.alfresco.util.collections.CollectionUtils;
 
 /**
  * Creates an instance of {@link IdentityServiceFacade}. <br>
@@ -682,7 +683,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                             .collect(Collectors.toSet()),
                     newJWKSCache));
 
-            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
+            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT, null));
         }
 
         private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)
@@ -829,7 +830,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     {
         public CustomJOSEObjectTypeVerifier(JOSEObjectType... allowedTypes)
         {
-            super(Set.of(allowedTypes));
+            super(CollectionUtils.asSet(allowedTypes));
         }
 
         @Override

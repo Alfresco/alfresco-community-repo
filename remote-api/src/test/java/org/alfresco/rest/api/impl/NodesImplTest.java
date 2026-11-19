@@ -28,10 +28,15 @@ package org.alfresco.rest.api.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -45,12 +50,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link NodesImpl#mapToNodeProperties(Map)}, in particular the handling of multi-valued {@code d:noderef} properties (MNT-25833).
@@ -75,6 +86,12 @@ public class NodesImplTest
     private PropertyDefinition singleValuedNodeRefPropDef;
     @Mock
     private DataTypeDefinition nodeRefDataType;
+    @Mock
+    private ContentService contentService;
+    @Mock
+    private ContentWriter contentWriter;
+    @Mock
+    private MimetypeService mimetypeService;
 
     @InjectMocks
     private NodesImpl nodesImpl;
@@ -92,6 +109,22 @@ public class NodesImplTest
 
         given(dictionaryService.getProperty(MULTI_NODE_REF_QNAME)).willReturn(multiValuedNodeRefPropDef);
         given(dictionaryService.getProperty(SINGLE_NODE_REF_QNAME)).willReturn(singleValuedNodeRefPropDef);
+    }
+
+    @Test
+    public void testWriteContentUsesExplicitMimeTypeAndEncoding()
+    {
+        NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, REF_1_UUID);
+        InputStream stream = new ByteArrayInputStream("synthetic content".getBytes(StandardCharsets.UTF_16));
+        ContentInfoImpl contentInfo = new ContentInfoImpl("application/x-synthetic", "UTF-16", 17, null);
+        given(contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true)).willReturn(contentWriter);
+
+        ReflectionTestUtils.invokeMethod(nodesImpl, "writeContent", nodeRef, "fixture.bin", contentInfo, stream, true);
+
+        verify(contentWriter).setMimetype("application/x-synthetic");
+        verify(contentWriter).setEncoding("UTF-16");
+        verify(contentWriter).putContent(stream);
+        verify(mimetypeService, never()).guessMimetype("fixture.bin");
     }
 
     @Test

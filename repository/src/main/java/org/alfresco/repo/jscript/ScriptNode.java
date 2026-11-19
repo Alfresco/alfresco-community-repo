@@ -79,8 +79,10 @@ import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeExcep
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
+import org.alfresco.repo.rendition2.RenditionRequestNotAcceptedException;
 import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
+import org.alfresco.repo.rendition2.ViewDrivenRenditionRequest;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -3069,6 +3071,30 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     public ScriptThumbnail createThumbnail(String thumbnailName, boolean async)
     {
         return createThumbnail(thumbnailName, async, false);
+    }
+
+    /**
+     * As {@link #createThumbnail(String, boolean, boolean)}, for a request made by a view: the thumbnail is shown if it exists and the view asks again later if not. A view-driven request for a viewer rendition may be skipped while transform requests cannot be sent; null is returned then.
+     *
+     * @param viewDriven
+     *            the request comes from a view that repeats it by itself
+     */
+    public ScriptThumbnail createThumbnail(String thumbnailName, boolean async, boolean force, boolean viewDriven)
+    {
+        if (!viewDriven || !ViewDrivenRenditionRequest.VIEWER_RENDITIONS.contains(thumbnailName))
+        {
+            return createThumbnail(thumbnailName, async, force);
+        }
+        try
+        {
+            return ViewDrivenRenditionRequest.call(true, () -> createThumbnail(thumbnailName, async, force));
+        }
+        catch (RenditionRequestNotAcceptedException e)
+        {
+            // The view shows a placeholder and asks again the next time it is displayed.
+            logger.debug("Thumbnail '" + thumbnailName + "' not requested: " + e.getMessage());
+            return null;
+        }
     }
 
     /**

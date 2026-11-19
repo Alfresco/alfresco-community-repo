@@ -150,7 +150,7 @@ public class QuickShareThumbnailContentGet extends QuickShareContentGet
             {
                 if (qc)
                 {
-                    node.createThumbnail(thumbnailName, true);
+                    node.createThumbnail(thumbnailName, true, false, true);
                 }
             }
 

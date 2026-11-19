@@ -56,7 +56,7 @@ function main()
    else
    {
 	   // Create the the thumbnail asyncronously
-	   node.createThumbnail(thumbnailName, true);
+	   node.createThumbnail(thumbnailName, true, false, true);
    }    
 }
 

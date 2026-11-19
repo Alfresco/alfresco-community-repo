@@ -50,7 +50,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
+import org.alfresco.repo.rendition2.RenditionRequestNotAcceptedException;
 import org.alfresco.repo.rendition2.RenditionService2;
+import org.alfresco.repo.rendition2.ViewDrivenRenditionRequest;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.repo.version.common.VersionUtil;
@@ -65,6 +67,7 @@ import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
+import org.alfresco.rest.framework.core.exceptions.ServiceUnavailableException;
 import org.alfresco.rest.framework.core.exceptions.StaleEntityException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.CacheDirective;
@@ -296,6 +299,21 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         return toApiRendition(renditionNodeRef);
     }
 
+    /**
+     * A client is waiting for the answer and can retry, so a viewer rendition that cannot be requested right now is answered with 503 instead of being queued.
+     */
+    private void renderForClient(NodeRef sourceNodeRef, String renditionName)
+    {
+        try
+        {
+            ViewDrivenRenditionRequest.runFor(renditionName, () -> renditionService2.render(sourceNodeRef, renditionName));
+        }
+        catch (RenditionRequestNotAcceptedException e)
+        {
+            throw new ServiceUnavailableException(e.getMessage()); // 503
+        }
+    }
+
     @Override
     public void createRendition(NodeRef nodeRef, Rendition rendition, Parameters parameters)
     {
@@ -326,7 +344,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 
         try
         {
-            renditionService2.render(sourceNodeRef, rendition.getId());
+            renderForClient(sourceNodeRef, rendition.getId());
         }
         catch (IllegalArgumentException e)
         {
@@ -430,7 +448,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         {
             try
             {
-                renditionService2.render(sourceNodeRef, renditionName);
+                renderForClient(sourceNodeRef, renditionName);
             }
             catch (UnsupportedOperationException e)
             {

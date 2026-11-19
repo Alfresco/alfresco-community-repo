@@ -96,7 +96,8 @@ function main()
       {
          if (qc)
          {
-            node.createThumbnail(thumbnailName, true);
+            // View-driven: the client asks again on the next view, so this may be skipped when requests cannot be sent
+            node.createThumbnail(thumbnailName, true, false, true);
          }
          
          if (ph == true)

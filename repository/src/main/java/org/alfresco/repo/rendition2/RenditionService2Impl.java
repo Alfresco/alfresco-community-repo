@@ -341,6 +341,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             }
 
             String user = AuthenticationUtil.getRunAsUser();
+            // The callback runs after commit, when the caller's marker is gone, so it is captured here.
+            boolean viewDriven = ViewDrivenRenditionRequest.isActive();
             RetryingTransactionHelper.RetryingTransactionCallback callback = () -> {
                 ContentData sourceContentData = getSourceContentData(sourceNodeRef);
                 int sourceContentHashCode = getSourceContentHashCode(sourceContentData);
@@ -372,7 +374,11 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                                 renderOrTransform.throwIllegalStateExceptionIfAlreadyDone(sourceContentHashCode);
                             }
                         }
-                        transformClient.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
+                        int hashCode = sourceContentHashCode;
+                        ViewDrivenRenditionRequest.call(viewDriven, () -> {
+                            transformClient.transform(sourceNodeRef, renditionDefinition, user, hashCode);
+                            return null;
+                        });
                     }
                     else
                     {

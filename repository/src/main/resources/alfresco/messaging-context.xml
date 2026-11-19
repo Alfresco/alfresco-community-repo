@@ -40,13 +40,24 @@
         </property>
     </bean>
 
+    <bean id="messagePublisher"
+        class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="Messaging" />
+        <property name="sourceBeanName" value="messagePublisher" />
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.messaging.MessagePublisher</value>
+            </list>
+        </property>
+    </bean>
+
     <bean id="alfrescoEventObjectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean">
         <property name="failOnEmptyBeans" value="false"/>
         <property name="indentOutput" value="true"/>
     </bean>
 
     <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer">
-        <property name="producer" ref="camelProducerTemplate" />
+        <property name="publisher" ref="messagePublisher" />
         <property name="endpoint" value="direct:alfresco.raw.events" />
         <property name="objectMapper" ref="alfrescoEventObjectMapper"/>
     </bean>
@@ -55,7 +66,7 @@
     <bean id="event2ObjectMapper" class="org.alfresco.repo.event.databind.ObjectMapperFactory" factory-method="createInstance"/>
 
     <bean id="event2MessageProducer" class="org.alfresco.repo.event2.Event2MessageProducer">
-        <property name="producer" ref="camelProducerTemplate"/>
+        <property name="publisher" ref="messagePublisher"/>
         <property name="endpoint" value="${repo.event2.topic.endpoint}"/>
         <property name="objectMapper" ref="event2ObjectMapper"/>
     </bean>

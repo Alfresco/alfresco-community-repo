@@ -27,7 +27,6 @@ package org.alfresco.repo.event2;
 
 import java.util.Map;
 
-import org.apache.camel.ExchangePattern;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -46,7 +45,7 @@ public class Event2MessageProducer extends AbstractEventProducer implements Init
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        PropertyCheck.mandatory(this, "producer", this.producer);
+        PropertyCheck.mandatory(this, "publisher", this.publisher);
         PropertyCheck.mandatory(this, "endpoint", this.endpoint);
         PropertyCheck.mandatory(this, "objectMapper", this.objectMapper);
 
@@ -58,11 +57,11 @@ public class Event2MessageProducer extends AbstractEventProducer implements Init
 
     public void send(Object event)
     {
-        send(this.endpoint, null, event, null);
+        send(this.endpoint, event, null);
     }
 
     @Override
-    public void send(String endpointUri, ExchangePattern exchangePattern, Object event, Map<String, Object> headers)
+    public void send(String endpointUri, Object event, Map<String, Object> headers)
     {
         try
         {
@@ -70,12 +69,7 @@ public class Event2MessageProducer extends AbstractEventProducer implements Init
             {
                 event = this.objectMapper.writeValueAsString(event);
             }
-            if (exchangePattern == null)
-            {
-                exchangePattern = ExchangePattern.InOnly;
-            }
-
-            this.producer.sendBodyAndHeaders(endpointUri, exchangePattern, event, this.addHeaders(headers));
+            this.publisher.send(endpointUri, (String) event, this.addHeaders(headers));
         }
         catch (Exception e)
         {

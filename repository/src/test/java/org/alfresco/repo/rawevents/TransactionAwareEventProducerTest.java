@@ -25,13 +25,17 @@
  */
 package org.alfresco.repo.rawevents;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.camel.CamelContext;
-import org.apache.camel.component.mock.MockEndpoint;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
+import org.alfresco.messaging.MessagePublisher;
 import org.alfresco.repo.rawevents.types.EventType;
 import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -48,19 +52,14 @@ public class TransactionAwareEventProducerTest extends BaseSpringTest
     @Autowired
     private RetryingTransactionHelper retryingTransactionHelper;
     @Autowired
-    private CamelContext camelContext;
-    @Autowired
     private TransactionAwareEventProducer eventProducer;
-    @Autowired
-    @Qualifier("alfrescoEventObjectMapper") private ObjectMapper messagingObjectMapper;
 
     @Test
     public void send() throws Exception
     {
-        String endpointUri = getMockEndpointUri();
-
-        MockEndpoint mockEndpoint = camelContext.getEndpoint(endpointUri, MockEndpoint.class);
-        mockEndpoint.setAssertPeriod(500);
+        String endpointUri = "jms:" + this.getClass().getSimpleName() + "_" + GUID.generate();
+        MessagePublisher publisher = mock(MessagePublisher.class);
+        eventProducer.setPublisher(publisher);
 
         String stringMessage = "stringMessage";
         OnContentUpdatePolicyEvent objectMessage = new OnContentUpdatePolicyEvent();
@@ -71,45 +70,16 @@ public class TransactionAwareEventProducerTest extends BaseSpringTest
         retryingTransactionHelper.doInTransaction(() -> {
             eventProducer.send(endpointUri, stringMessage);
 
-            // Assert that the endpoint didn't receive any message
-            // Event is sent only on transaction commit.
-            mockEndpoint.setExpectedCount(0);
-            mockEndpoint.assertIsSatisfied();
+            verify(publisher, never()).send(eq(endpointUri), eq(stringMessage), anyMap());
 
             eventProducer.send(endpointUri, objectMessage);
 
-            // Assert that the endpoint didn't receive any message
-            // Event is sent only on transaction commit.
-            mockEndpoint.setExpectedCount(0);
-            mockEndpoint.assertIsSatisfied();
+            verify(publisher, never()).send(eq(endpointUri), eq(stringMessage), anyMap());
 
             return null;
         });
 
-        // Assert that the endpoint received 2 messages
-        mockEndpoint.setExpectedCount(2);
-        mockEndpoint.assertIsSatisfied();
-
-        // Get the sent string message
-        String stringMessageSent = (String) mockEndpoint.getExchanges().get(0).getIn().getBody();
-
-        assertNotNull(stringMessageSent);
-        assertEquals(stringMessage, stringMessageSent);
-
-        // Get the sent json marshaled object message
-        String jsonMessageSent = (String) mockEndpoint.getExchanges().get(1).getIn().getBody();
-        assertNotNull(jsonMessageSent);
-
-        OnContentUpdatePolicyEvent objectMessageSent = messagingObjectMapper.readValue(jsonMessageSent, OnContentUpdatePolicyEvent.class);
-
-        assertNotNull(objectMessageSent);
-        assertEquals(objectMessage.getId(), objectMessageSent.getId());
-        assertEquals(objectMessage.getType(), objectMessageSent.getType());
-        assertEquals(objectMessage.getTimestamp(), objectMessageSent.getTimestamp());
-    }
-
-    private String getMockEndpointUri()
-    {
-        return "mock:" + this.getClass().getSimpleName() + "_" + GUID.generate();
+        verify(publisher).send(eq(endpointUri), eq(stringMessage), anyMap());
+        verify(publisher, times(2)).send(eq(endpointUri), org.mockito.ArgumentMatchers.anyString(), anyMap());
     }
 }

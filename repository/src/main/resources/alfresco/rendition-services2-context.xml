@@ -170,6 +170,13 @@
         <property name="transactionService" ref="transactionService" />
     </bean>
 
+    <bean id="onContentUpdateRenditionHandler" class="org.alfresco.repo.rendition2.OnContentUpdateRenditionHandler">
+        <constructor-arg value="${acs.repo.rendition.events.endpoint}" />
+        <constructor-arg ref="transactionAwareEventProducer" />
+        <constructor-arg ref="policyComponent" />
+        <constructor-arg ref="renditionEventProcessor" />
+    </bean>
+
     <!-- Process transform request events. -->
     <bean id="transformRequestProcessor" class="org.alfresco.repo.rendition2.TransformRequestProcessor">
         <property name="renditionService2" ref="renditionService2" />

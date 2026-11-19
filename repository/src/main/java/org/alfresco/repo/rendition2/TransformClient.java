@@ -57,6 +57,22 @@ public interface TransformClient
             long sourceSizeInBytes, String contentUrl);
 
     /**
+     * As {@link #checkSupported(NodeRef, RenditionDefinition2, String, long, String)}, for a request the caller says may be refused: its client asks again by itself, so a transform client that cannot send requests at the moment refuses it here, while the caller can still be told, instead of queueing it.
+     *
+     * @param mayRefuse
+     *            {@code true} if the request may be refused rather than queued.
+     * @throws UnsupportedOperationException
+     *             if the transform is not supported.
+     * @throws RenditionRequestNotAcceptedException
+     *             if {@code mayRefuse} and requests cannot be sent at the moment.
+     */
+    default void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype,
+            long sourceSizeInBytes, String contentUrl, boolean mayRefuse)
+    {
+        checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
+    }
+
+    /**
      * Requests an asynchronous transform and the subsequent linkage of that transform as a rendition. The call to this method <b>MUST</b> be proceeded by a successful call to {@link #checkSupported(NodeRef, RenditionDefinition2, String, long, String)} in the <b>SAME</b> Thread.
      * 
      * @param sourceNodeRef

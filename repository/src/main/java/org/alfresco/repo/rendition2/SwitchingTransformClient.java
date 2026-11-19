@@ -47,16 +47,22 @@ public class SwitchingTransformClient implements TransformClient
     @Override
     public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype, long sourceSizeInBytes, String contentUrl)
     {
+        checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl, false);
+    }
+
+    @Override
+    public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype, long sourceSizeInBytes, String contentUrl, boolean mayRefuse)
+    {
         try
         {
-            primary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
+            primary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl, mayRefuse);
             transformClient.set(primary);
         }
         catch (UnsupportedOperationException e)
         {
             try
             {
-                secondary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
+                secondary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl, mayRefuse);
                 transformClient.set(secondary);
             }
             catch (UnsupportedOperationException e2)

@@ -254,14 +254,14 @@ public class RenditionService2Test
     @Test(expected = UnsupportedOperationException.class)
     public void noTransformForRenditions()
     {
-        doThrow(UnsupportedOperationException.class).when(transformClient).checkSupported(any(), any(), any(), anyLong(), any());
+        doThrow(UnsupportedOperationException.class).when(transformClient).checkSupported(any(), any(), any(), anyLong(), any(), anyBoolean());
         renditionService2.render(nodeRef, TEST_RENDITION);
     }
 
     @Test
     public void noTransformForTransforms()
     {
-        doThrow(UnsupportedOperationException.class).when(transformClient).checkSupported(any(), any(), any(), anyLong(), any());
+        doThrow(UnsupportedOperationException.class).when(transformClient).checkSupported(any(), any(), any(), anyLong(), any(), anyBoolean());
         renditionService2.transform(nodeRef, TEST_TRANSFORM);
         assertTrue("failure() should be called with transform(...) if an unsupported transform rather than " +
                 "having UnsupportedOperationException thrown", failureCalled);

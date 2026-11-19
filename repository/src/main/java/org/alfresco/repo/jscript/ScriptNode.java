@@ -82,7 +82,6 @@ import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionRequestNotAcceptedException;
 import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
-import org.alfresco.repo.rendition2.ViewDrivenRenditionRequest;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -3074,30 +3073,6 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     }
 
     /**
-     * As {@link #createThumbnail(String, boolean, boolean)}, for a request made by a view: the thumbnail is shown if it exists and the view asks again later if not. A view-driven request for a viewer rendition may be skipped while transform requests cannot be sent; null is returned then.
-     *
-     * @param viewDriven
-     *            the request comes from a view that repeats it by itself
-     */
-    public ScriptThumbnail createThumbnail(String thumbnailName, boolean async, boolean force, boolean viewDriven)
-    {
-        if (!viewDriven || !ViewDrivenRenditionRequest.VIEWER_RENDITIONS.contains(thumbnailName))
-        {
-            return createThumbnail(thumbnailName, async, force);
-        }
-        try
-        {
-            return ViewDrivenRenditionRequest.call(true, () -> createThumbnail(thumbnailName, async, force));
-        }
-        catch (RenditionRequestNotAcceptedException e)
-        {
-            // The view shows a placeholder and asks again the next time it is displayed.
-            logger.debug("Thumbnail '" + thumbnailName + "' not requested: " + e.getMessage());
-            return null;
-        }
-    }
-
-    /**
      * Creates a thumbnail for the content property of the node.
      * 
      * The thumbnail name corresponds to pre-set thumbnail details stored in the repository.
@@ -3118,6 +3093,17 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      */
     @Deprecated
     public ScriptThumbnail createThumbnail(String thumbnailName, boolean async, boolean force)
+    {
+        return createThumbnail(thumbnailName, async, force, false);
+    }
+
+    /**
+     * As {@link #createThumbnail(String, boolean, boolean)}, for a request made by a view: the thumbnail is shown if it exists and the view asks again later if not. Such an asynchronous request may be skipped while transform requests cannot be sent; null is returned as for any asynchronous request.
+     *
+     * @param viewDriven
+     *            the request comes from a view that repeats it by itself
+     */
+    public ScriptThumbnail createThumbnail(String thumbnailName, boolean async, boolean force, boolean viewDriven)
     {
         final ThumbnailService thumbnailService = services.getThumbnailService();
 
@@ -3189,16 +3175,28 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             }
             else
             {
-                createAsyncThumbnail(thumbnailName, details);
+                createAsyncThumbnail(thumbnailName, details, viewDriven);
             }
         }
         return result;
     }
 
-    private void createAsyncThumbnail(String thumbnailName, ThumbnailDefinition details)
+    private void createAsyncThumbnail(String thumbnailName, ThumbnailDefinition details, boolean viewDriven)
     {
         RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(thumbnailName);
-        if (renditionDefinition != null)
+        if (renditionDefinition != null && viewDriven)
+        {
+            try
+            {
+                renditionService2.renderForView(nodeRef, thumbnailName);
+            }
+            catch (RenditionRequestNotAcceptedException e)
+            {
+                // The view shows a placeholder and asks again the next time it is displayed.
+                logger.debug("Thumbnail '" + thumbnailName + "' not requested: " + e.getMessage());
+            }
+        }
+        else if (renditionDefinition != null)
         {
             renditionService2.render(nodeRef, thumbnailName);
         }

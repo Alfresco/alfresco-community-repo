@@ -26,7 +26,7 @@
 package org.alfresco.repo.rendition2;
 
 /**
- * A {@link ViewDrivenRenditionRequest view-driven} rendition request was refused because transform requests cannot be sent at the moment. Nothing was queued; the client may ask again later.
+ * A {@link RenditionService2#renderForView view-driven} rendition request was refused because transform requests cannot be sent at the moment. Nothing was queued; the client may ask again later.
  */
 public class RenditionRequestNotAcceptedException extends RenditionService2Exception
 {

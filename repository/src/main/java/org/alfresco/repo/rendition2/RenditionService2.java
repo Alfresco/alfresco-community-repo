@@ -87,6 +87,24 @@ public interface RenditionService2
     public void render(NodeRef sourceNodeRef, String renditionName);
 
     /**
+     * As {@link #render(NodeRef, String)}, for a request a client makes each time it displays the node: a thumbnail in a folder listing, a preview in a viewer. As such a client asks again by itself, the request is refused rather than queued while transform requests cannot be sent. Only a rendition that exists just to be looked at is ever refused; any other is requested exactly as by {@link #render(NodeRef, String)}.
+     *
+     * @param sourceNodeRef
+     *            the node from which the content is retrieved.
+     * @param renditionName
+     *            the rendition to be performed.
+     * @throws UnsupportedOperationException
+     *             if the transform is not supported AND the rendition has not been created before.
+     * @throws RenditionRequestNotAcceptedException
+     *             if the request was refused. Nothing was queued.
+     */
+    @NotAuditable
+    default void renderForView(NodeRef sourceNodeRef, String renditionName)
+    {
+        render(sourceNodeRef, renditionName);
+    }
+
+    /**
      * This method gets all the renditions of the {@code sourceNodeRef}.
      *
      * @return a list of {@link ChildAssociationRef}s which link the {@code sourceNodeRef} to the renditions.

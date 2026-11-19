@@ -52,7 +52,6 @@ import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionRequestNotAcceptedException;
 import org.alfresco.repo.rendition2.RenditionService2;
-import org.alfresco.repo.rendition2.ViewDrivenRenditionRequest;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.repo.version.common.VersionUtil;
@@ -300,13 +299,13 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     }
 
     /**
-     * A client is waiting for the answer and can retry, so a viewer rendition that cannot be requested right now is answered with 503 instead of being queued.
+     * A client is waiting for the answer and can ask again, so a viewer rendition that cannot be requested right now is answered with 503 instead of being queued.
      */
     private void renderForClient(NodeRef sourceNodeRef, String renditionName)
     {
         try
         {
-            ViewDrivenRenditionRequest.runFor(renditionName, () -> renditionService2.render(sourceNodeRef, renditionName));
+            renditionService2.renderForView(sourceNodeRef, renditionName);
         }
         catch (RenditionRequestNotAcceptedException e)
         {

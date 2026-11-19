@@ -89,6 +89,9 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     public static final int SOURCE_HAS_NO_CONTENT = -1;
     public static final int RENDITION2_DOES_NOT_EXIST = -2;
 
+    /** Renditions that exist only to be looked at. A request for any other rendition is never refused, as it may carry data. */
+    private static final Set<String> VIEWER_RENDITIONS = Set.of("doclib", "imgpreview", "medium", "avatar", "avatar32", "pdf", "webpreview");
+
     // Allowed mimetypes to support text or metadata extract transforms when thumbnails are disabled.
     private static final Set<String> ALLOWED_MIMETYPES = Set.of(
             MimetypeMap.MIMETYPE_TEXT_PLAIN,
@@ -232,7 +235,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     @Override
     public void transform(NodeRef sourceNodeRef, TransformDefinition transformDefinition)
     {
-        requestAsyncTransformOrRendition(sourceNodeRef, new RenderOrTransformCallBack() {
+        requestAsyncTransformOrRendition(sourceNodeRef, false, new RenderOrTransformCallBack() {
             @Override
             public String getName()
             {
@@ -251,7 +254,18 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     @Override
     public void render(NodeRef sourceNodeRef, String renditionName)
     {
-        requestAsyncTransformOrRendition(sourceNodeRef, new RenderOrTransformCallBack() {
+        render(sourceNodeRef, renditionName, false);
+    }
+
+    @Override
+    public void renderForView(NodeRef sourceNodeRef, String renditionName)
+    {
+        render(sourceNodeRef, renditionName, VIEWER_RENDITIONS.contains(renditionName));
+    }
+
+    private void render(NodeRef sourceNodeRef, String renditionName, boolean mayRefuse)
+    {
+        requestAsyncTransformOrRendition(sourceNodeRef, mayRefuse, new RenderOrTransformCallBack() {
             @Override
             public String getName()
             {
@@ -300,7 +314,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         });
     }
 
-    private void requestAsyncTransformOrRendition(NodeRef sourceNodeRef, RenderOrTransformCallBack renderOrTransform)
+    private void requestAsyncTransformOrRendition(NodeRef sourceNodeRef, boolean mayRefuse, RenderOrTransformCallBack renderOrTransform)
     {
         try
         {
@@ -331,7 +345,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 long size = contentData.getSize();
                 try
                 {
-                    transformClient.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, size, contentUrl);
+                    transformClient.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, size, contentUrl, mayRefuse);
                 }
                 catch (UnsupportedOperationException e)
                 {
@@ -341,8 +355,6 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             }
 
             String user = AuthenticationUtil.getRunAsUser();
-            // The callback runs after commit, when the caller's marker is gone, so it is captured here.
-            boolean viewDriven = ViewDrivenRenditionRequest.isActive();
             RetryingTransactionHelper.RetryingTransactionCallback callback = () -> {
                 ContentData sourceContentData = getSourceContentData(sourceNodeRef);
                 int sourceContentHashCode = getSourceContentHashCode(sourceContentData);
@@ -374,11 +386,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                                 renderOrTransform.throwIllegalStateExceptionIfAlreadyDone(sourceContentHashCode);
                             }
                         }
-                        int hashCode = sourceContentHashCode;
-                        ViewDrivenRenditionRequest.call(viewDriven, () -> {
-                            transformClient.transform(sourceNodeRef, renditionDefinition, user, hashCode);
-                            return null;
-                        });
+                        transformClient.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
                     }
                     else
                     {

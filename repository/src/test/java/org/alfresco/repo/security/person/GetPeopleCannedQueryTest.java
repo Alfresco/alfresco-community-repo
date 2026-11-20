@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.security.person;
 
+import static org.junit.Assert.assertThrows;
+
 import static org.alfresco.repo.security.person.PersonServiceImpl.CANNED_QUERY_PEOPLE_LIST;
 
 import java.io.Serializable;
@@ -40,6 +42,7 @@ import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
@@ -173,6 +176,17 @@ public class GetPeopleCannedQueryTest extends BaseSpringTest
                 personService.deletePerson(systemPerson);
                 return null;
             });
+        }
+    }
+
+    /** The system user name is rejected in any case. */
+    @Test
+    public void testCreatePersonWithSystemUserNameIsRejected()
+    {
+        for (String userName : new String[]{"System", "system", "SYSTEM"})
+        {
+            Map<QName, Serializable> properties = createDefaultProperties(userName, "Some", "User", "some.user@example.com", "alfresco");
+            assertThrows(userName, AlfrescoRuntimeException.class, () -> personService.createPerson(properties));
         }
     }
 

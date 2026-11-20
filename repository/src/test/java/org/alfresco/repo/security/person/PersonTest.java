@@ -451,23 +451,6 @@ public class PersonTest extends TestCase
         assertTrue("Tests the impl method. We should have at least 1 person.", theImpl.countPeople() > 0);
     }
 
-    /** The system user name is rejected in any case. */
-    public void testCreatePersonWithSystemUserNameIsRejected()
-    {
-        for (String userName : new String[]{"System", "system", "SYSTEM"})
-        {
-            try
-            {
-                personService.createPerson(createDefaultProperties(userName, "Some", "User", "some.user@example.com", "alfresco", rootNodeRef));
-                fail("Person must not be created for the system user name: " + userName);
-            }
-            catch (AlfrescoRuntimeException expected)
-            {
-                // Expected
-            }
-        }
-    }
-
     public void testCreatePersonWithIllegalCharacters() throws Exception
     {
         char[] illegalCharacters = {'/', '\\', '\n', '\r', '"'};

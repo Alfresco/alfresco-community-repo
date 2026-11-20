@@ -234,7 +234,8 @@ public class PeopleImpl implements People
         }
 
         personId = personService.getUserIdentifier(personId);
-        if (personId == null)
+        // The system user is not a person
+        if (personId == null || AuthenticationUtil.getSystemUserName().equalsIgnoreCase(personId))
         {
             // Could not find canonical user ID by case-sensitive ID.
             throw new EntityNotFoundException(requestedPersonId);
@@ -666,6 +667,11 @@ public class PeopleImpl implements People
         if (username.length() > 100)
         {
             throw new InvalidArgumentException("Username exceeds max length of " + USERNAME_MAXLENGTH + " characters.");
+        }
+
+        if (AuthenticationUtil.getSystemUserName().equalsIgnoreCase(username))
+        {
+            throw new InvalidArgumentException("Username cannot be the built-in authority '" + AuthenticationUtil.getSystemUserName() + "'.");
         }
 
         for (String prefix : RESERVED_AUTHORITY_PREFIXES)

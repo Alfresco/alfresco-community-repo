@@ -534,13 +534,14 @@ jobs:
       - name: "Run tests"
         env:
           DB_PROFILE: ${{ matrix.profile }}
-        run: |
+        # detect-secrets reports a block scalar at its key line, so the pragma has to be on the run: line
+        run: | # pragma: allowlist secret
           case "${DB_PROFILE}" in
             mariadb)  db_args=(-Ddb.driver=org.mariadb.jdbc.Driver "-Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes&characterEncoding=UTF-8") ;;
             mysql)    db_args=(-Ddb.driver=com.mysql.jdbc.Driver -Ddb.url=jdbc:mysql://localhost:3307/alfresco) ;;
             postgres) db_args=(-Ddb.driver=org.postgresql.Driver -Ddb.url=jdbc:postgresql://localhost:5433/alfresco) ;;
           esac
-          mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.name=alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${db_args[@]}" # pragma: allowlist secret
+          mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.name=alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${db_args[@]}"
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

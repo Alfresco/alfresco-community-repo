@@ -158,7 +158,7 @@ jobs:
               idp: Keycloak
             - testSuite: AppContext05TestSuite
               compose-profile: default
-              mvn-options: '-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.credentials.secret=${AUTH0_CLIENT_SECRET} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dadmin.password=${AUTH0_ADMIN_PASSWORD} -Dauth0.enabled=true -Dauth0.admin.password=${AUTH0_ADMIN_PASSWORD} -Didentity-service.principal-attribute=nickname'
+              mvn-options: '-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dauth0.enabled=true -Didentity-service.principal-attribute=nickname'
               idp: Auth0
             - testSuite: AppContext06TestSuite
               compose-profile: with-transform-core-aio
@@ -648,7 +648,11 @@ jobs:
           AUTH0_CLIENT_ID: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_CLIENT_ID || '' }}
           AUTH0_CLIENT_SECRET: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_CLIENT_SECRET || '' }}
           AUTH0_ADMIN_PASSWORD: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_PASSWORD || '' }}
-        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
+        # The Auth0 credential options are added here and not in the matrix built by commit_parser: GitHub drops a job
+        # output that looks like it contains a password. detect-secrets needs the pragma on the run: line.
+        run: | # pragma: allowlist secret
+          mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} \
+            ${{ matrix.idp == 'Auth0' && '-Didentity-service.credentials.secret=${AUTH0_CLIENT_SECRET} -Dadmin.password=${AUTH0_ADMIN_PASSWORD} -Dauth0.admin.password=${AUTH0_ADMIN_PASSWORD}' || '' }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

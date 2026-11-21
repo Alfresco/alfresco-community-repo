@@ -359,6 +359,13 @@ public class TestPeople extends AbstractBaseApiTest
         // lower case
         person.setUserName("role_whatever");
         people.create(person, 400);
+
+        // the system user name, in any case
+        person.setUserName("System");
+        people.create(person, 400);
+
+        person.setUserName("system");
+        people.create(person, 400);
     }
 
     @Test

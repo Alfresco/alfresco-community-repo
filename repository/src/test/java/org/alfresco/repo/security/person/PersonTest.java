@@ -1728,6 +1728,35 @@ public class PersonTest extends TestCase
         }
     }
 
+    public void testPreventCreationOfSystemUserCaseInsensitive()
+    {
+        String[] systemUserNames = {"system", "SyStEm", "SYSTEM", "System"};
+        for (String userName : systemUserNames)
+        {
+            try
+            {
+                personService.createPerson(createDefaultProperties(userName, "myFirstName", "myLastName", "myFirstName.myLastName@email.com", "myOrgId", rootNodeRef));
+                fail("Should not be able to create a person with the built-in system user name: " + userName);
+            }
+            catch (AlfrescoRuntimeException e)
+            {
+                assertTrue("Unexpected message: " + e.getMessage(), e.getMessage().contains("is a user, but not a Person"));
+            }
+        }
+    }
+
+    public void testAllowCreationOfNonSystemUsers()
+    {
+        String[] userNames = {"otherUser", "SystemLikeUser"};
+        for (String userName : userNames)
+        {
+            NodeRef personRef = personService.createPerson(createDefaultProperties(userName, "myFirstName", "myLastName", "myFirstName.myLastName@email.com", "myOrgId", rootNodeRef));
+            assertNotNull(personRef);
+            assertEquals(personRef, personService.getPerson(userName));
+            personService.deletePerson(userName);
+        }
+    }
+
     public void testUserShouldBeAbleToUpdateTheProfile()
     {
         final String USERNAME = GUID.generate();

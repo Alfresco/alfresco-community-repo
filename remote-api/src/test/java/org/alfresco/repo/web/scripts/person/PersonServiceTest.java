@@ -739,6 +739,18 @@ public class PersonServiceTest extends BaseWebScriptTest
                 "myJobTitle", "myEmail", "myBio", "images/avatar.jpg", 0, 409);
     }
 
+    public void testCreatePersonWithSystemUserName() throws Exception
+    {
+        String[] systemUserNames = {"system", "SyStEm", "SYSTEM", "System"};
+        for (String userName : systemUserNames)
+        {
+            // Create a new person with built-in system userName
+            createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                    "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                    Status.STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public void testCreatePersonMissingUserName() throws Exception
     {
         // Create a new person with userName == null (user name missing)

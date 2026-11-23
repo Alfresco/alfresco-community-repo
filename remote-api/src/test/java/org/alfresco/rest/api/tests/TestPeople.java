@@ -635,6 +635,25 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     @Test
+    public void testCreatePerson_systemUserNameRejected() throws Exception
+    {
+        setRequestContext(null, DEFAULT_ADMIN, DEFAULT_ADMIN_PWD);
+
+        String[] systemUserNames = {"system", "SyStEm", "SYSTEM", "System"};
+        for (String userName : systemUserNames)
+        {
+            // Create a new person with built-in system userName
+            Person person = new Person();
+            person.setUserName(userName);
+            person.setFirstName("myFirstName");
+            person.setEmail("myFirstName@example.com");
+            person.setEnabled(true);
+            person.setPassword("password");
+            people.create(person, 500);
+        }
+    }
+
+    @Test
     public void testGetPerson_withCustomProps() throws PublicApiException
     {
         // Create the person directly using the Java services - we don't want to test

@@ -739,6 +739,7 @@ public class PersonServiceTest extends BaseWebScriptTest
                 "myJobTitle", "myEmail", "myBio", "images/avatar.jpg", 0, 409);
     }
 
+    @SuppressWarnings({"PMD.UnitTestShouldUseTestAnnotation", "PMD.SignatureDeclareThrowsException"})
     public void testCreatePersonWithSystemUserName() throws Exception
     {
         String[] systemUserNames = {"system", "SyStEm", "SYSTEM", "System"};

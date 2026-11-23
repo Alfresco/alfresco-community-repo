@@ -1728,6 +1728,7 @@ public class PersonTest extends TestCase
         }
     }
 
+    @SuppressWarnings({"PMD.UnitTestShouldUseTestAnnotation", "PMD.DetachedTestCase"})
     public void testPreventCreationOfSystemUserCaseInsensitive()
     {
         String[] systemUserNames = {"system", "SyStEm", "SYSTEM", "System"};
@@ -1745,6 +1746,7 @@ public class PersonTest extends TestCase
         }
     }
 
+    @SuppressWarnings({"PMD.UnitTestShouldUseTestAnnotation", "PMD.DetachedTestCase"})
     public void testAllowCreationOfNonSystemUsers()
     {
         String[] userNames = {"otherUser", "SystemLikeUser"};

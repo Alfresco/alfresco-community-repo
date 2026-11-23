@@ -649,7 +649,7 @@ public class TestPeople extends AbstractBaseApiTest
             person.setEmail("myFirstName@example.com");
             person.setEnabled(true);
             person.setPassword("password");
-            people.create(person, 500);
+            assertNull(people.create(person, 500));
         }
     }
 

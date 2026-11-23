@@ -1,0 +1,67 @@
+# What this branch's CI tests. Read by the "Resolve CI configuration" step of .github/workflows/ci-jobs.yml.
+# How the tests run is defined in ci-jobs.yml, which release branches take from master. This file stays with the
+# branch and describes what its code can run, so change it together with the code (new suites, profiles, versions).
+# A missing list means "no such jobs". Quote versions: YAML would turn 15.10 into 15.1.
+
+java-version: "21"
+
+# pr-gated: on PRs, only run when the PR title contains [db]
+db-tests:
+  - { name: MariaDB 10.11, profile: mariadb, version: "10.11", pr-gated: true }
+  - { name: MariaDB 11.8, profile: mariadb, version: "11.8" }
+  - { name: MySQL 8, profile: mysql, version: "8" }
+  - { name: PostgreSQL 15.17, profile: postgres, version: "15.17", pr-gated: true }
+  - { name: PostgreSQL 16.13, profile: postgres, version: "16.13", pr-gated: true }
+  - { name: PostgreSQL 17.9, profile: postgres, version: "17.9" }
+
+# Profiles in scripts/ci/docker-compose/docker-compose.yaml
+activemq-profiles: [activemq6, activemq5]
+
+# Repository app context suites. Auth0 credentials are added by the job, not here.
+app-context-tests:
+  - { testSuite: AppContext01TestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: AppContext02TestSuite, compose-profile: default }
+  - { testSuite: AppContext03TestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: AppContext04TestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: ElasticsearchCommunityTestsPart1TestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch" }
+  - { testSuite: ElasticsearchCommunityTestsPart2TestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch" }
+  - { testSuite: ElasticsearchCommunityTestsPart3TestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch" }
+  - testSuite: AppContext05TestSuite
+    compose-profile: with-sso
+    mvn-options: "-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm"
+    idp: Keycloak
+  - testSuite: AppContext05TestSuite
+    compose-profile: default
+    mvn-options: "-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dauth0.enabled=true -Didentity-service.principal-attribute=nickname"
+    idp: Auth0
+  - { testSuite: AppContext06TestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: AppContextExtraTestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: MiscContextTestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: SearchTestSuite, compose-profile: default, mvn-options: "-Dindex.subsystem.name=solr6" }
+  - testSuite: MTLSTestSuite
+    compose-profile: with-mtls-transform-core-aio
+    mtls: true
+    disabledHostnameVerification: false
+    mvn-options: "-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore"
+
+# TAS suites (pom-dir under packaging/tests; test-profile from that pom)
+tas-tests:
+  - { test-name: "REST API TAS tests part1", pom-dir: tas-restapi, test-profile: run-restapi-part1 }
+  - { test-name: "REST API TAS tests part2", pom-dir: tas-restapi, test-profile: run-restapi-part2 }
+  - { test-name: "REST API TAS tests part3", pom-dir: tas-restapi, test-profile: run-restapi-part3 }
+  - { test-name: "REST API TAS tests part4", pom-dir: tas-restapi, test-profile: run-restapi-part4 }
+  - { test-name: "CMIS TAS tests - BROWSER binding - part1", pom-dir: tas-cmis, test-profile: "run-cmis-browser,cmis-part1" }
+  - { test-name: "CMIS TAS tests - BROWSER binding - part2", pom-dir: tas-cmis, test-profile: "run-cmis-browser,cmis-part2" }
+  - { test-name: "CMIS TAS tests - ATOM binding - part1", pom-dir: tas-cmis, test-profile: "run-cmis-atom,cmis-part1" }
+  - { test-name: "CMIS TAS tests - ATOM binding - part2", pom-dir: tas-cmis, test-profile: "run-cmis-atom,cmis-part2" }
+  - { test-name: "CMIS TAS tests - WEBSERVICES binding - part1", pom-dir: tas-cmis, test-profile: "run-cmis-webservices,cmis-part1" }
+  - { test-name: "CMIS TAS tests - WEBSERVICES binding - part2", pom-dir: tas-cmis, test-profile: "run-cmis-webservices,cmis-part2" }
+  - { test-name: "Email TAS tests", pom-dir: tas-email }
+  - { test-name: "WebDAV TAS tests", pom-dir: tas-webdav }
+  - { test-name: "Integration TAS tests", pom-dir: tas-integration }
+  - { test-name: "Elasticsearch E2E Tests - part1", pom-dir: tas-restapi, test-profile: elasticsearch-e2e-tests-part1, compose-file: docker-compose-minimal+batch-indexing.yml, mvn-options: "-DsolrWaitTimeInSeconds=3" }
+  - { test-name: "Elasticsearch E2E Tests - part2", pom-dir: tas-restapi, test-profile: elasticsearch-e2e-tests-part2, compose-file: docker-compose-minimal+batch-indexing.yml, mvn-options: "-DsolrWaitTimeInSeconds=3" }
+  - { test-name: "Elasticsearch E2E Tests - part3", pom-dir: tas-restapi, test-profile: elasticsearch-e2e-tests-part3, compose-file: docker-compose-minimal+batch-indexing.yml, mvn-options: "-DsolrWaitTimeInSeconds=3" }
+
+# TestNG suites of rm-automation-community-rest-api
+ags-rest-api-suites: [testng-part1.xml, testng-part2.xml]

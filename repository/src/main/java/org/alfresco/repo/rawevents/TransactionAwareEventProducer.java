@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,20 +25,20 @@
  */
 package org.alfresco.repo.rawevents;
 
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.camel.ExchangePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.camel.ExchangePattern;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.util.transaction.TransactionListenerAdapter;
+
 /**
- * A transaction aware {@link AbstractEventProducer}. Events are scheduled to be sent in
- * post-commit phase.
+ * A transaction aware {@link AbstractEventProducer}. Events are scheduled to be sent in post-commit phase.
  * 
  * @author Cristian Turlica
  */
@@ -74,6 +74,30 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
 
         PendingRequest pendingRequest = new PendingRequest(endpointUri, exchangePattern, event, headers);
         pendingRequests.add(pendingRequest);
+    }
+
+    /**
+     * Sends the events of a committed transaction. Called in afterCommit, where the transaction still holds its DB connection; sends at once.
+     */
+    protected void sendCommitted(Runnable sends)
+    {
+        sends.run();
+    }
+
+    private void sendAll(List<PendingRequest> pendingRequests, String listenerId)
+    {
+        for (PendingRequest pendingRequest : pendingRequests)
+        {
+            try
+            {
+                pendingRequest.send();
+            }
+            catch (Exception e)
+            {
+                logger.error("The after commit callback " + listenerId + " failed to execute: " + e.getMessage(), e);
+                // consume exception
+            }
+        }
     }
 
     private class PendingRequest
@@ -137,24 +161,13 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
         @Override
         public void afterCommit()
         {
-            for (TransactionAwareEventProducer.PendingRequest pendingRequest : (List<PendingRequest>) AlfrescoTransactionSupport.getResource(POST_TRANSACTION_PENDING_REQUESTS))
-            {
-                try
-                {
-                    pendingRequest.send();
-                }
-                catch (Exception e)
-                {
-                    logger.error("The after commit callback " + id + " failed to execute: " + e.getMessage(), e);
-                    // consume exception
-                }
-            }
+            List<PendingRequest> pendingRequests = List.copyOf(AlfrescoTransactionSupport.getResource(POST_TRANSACTION_PENDING_REQUESTS));
+            sendCommitted(() -> sendAll(pendingRequests, id));
         }
 
         @Override
         public void flush()
-        {
-        }
+        {}
 
         @Override
         public boolean equals(Object o)

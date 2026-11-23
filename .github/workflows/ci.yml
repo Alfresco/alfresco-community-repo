@@ -33,7 +33,7 @@ jobs:
     # TODO ACS-13096: temporary ref so this PR can test master's new ci.yml before it is merged.
     # Switch back to @master once the master PR (feature/ACS-13096) is merged, and before merging this PR.
     uses: Alfresco/alfresco-community-repo/.github/workflows/ci.yml@feature/ACS-13096
-    secrets: inherit
+    secrets: inherit # pragma: allowlist secret
     with:
       # The Part1/2/3 split of this suite (ACS-13092) is not on this branch
       elasticsearch-test-suites: "[ElasticsearchCommunityTestsTestSuite]"

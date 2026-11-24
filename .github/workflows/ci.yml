@@ -4,7 +4,7 @@ name: Alfresco Community Repo CI
 # - PRs into master and pushes to master/feature/fix branches run this branch's own ci-jobs.yml, so a PR that changes CI
 #   tests its own change.
 # - Release branches (PRs into them, pushes and master_release.yml runs) always run master's ci-jobs.yml, so CI fixes
-#   reach them without a backport. What they test still comes from their own .github/ci-config.yml.
+#   reach them without a backport. ci-jobs.yml works out from each branch's own code which tests it can run.
 # uses: cannot be an expression, hence two jobs where exactly one runs and the other shows as skipped.
 
 permissions:

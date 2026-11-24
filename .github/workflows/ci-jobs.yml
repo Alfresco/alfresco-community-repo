@@ -1,11 +1,13 @@
 name: Alfresco Community Repo CI jobs
 
-# The CI jobs, called by ci.yml (never triggered directly).
-# - "How" to test lives here and is shared: release branches run master's copy of this file.
-# - "What" to test lives in .github/ci-config.yml on each branch, next to the code it describes. It is read from the
-#   checked-out branch by the "Resolve CI configuration" step in commit_parser.
-# Rule for changes here: release branches run this file against their own code and scripts, so keep the way jobs call
-# branch scripts (scripts/ci/*.sh) backward compatible, and switch new test jobs on through a new ci-config.yml key.
+# The CI jobs, called by ci.yml (never triggered directly). Release branches run master's copy of this file against
+# their own code, so a CI fix made here reaches every branch without a backport.
+# Which tests a branch runs is worked out from the branch itself by the "Resolve CI configuration" step in commit_parser:
+# - every test entry that does not exist on all branches says what it needs (requires:) or what replaces it (unless:);
+# - DB versions say which releases support them (from:/before:, compared with the version in the branch's pom.xml);
+# - the Java version is the branch's java.version property.
+# Rules for changes here: give a new test entry a requires: for its suite file, and keep the way jobs call branch
+# scripts (scripts/ci/*.sh) backward compatible.
 
 permissions:
   contents: read
@@ -71,27 +73,168 @@ jobs:
         id: get-commit
         with:
           header-only: "true"
-      # Reads what this branch can test from its own .github/ci-config.yml. A missing list key means "no such jobs",
-      # so a test job added to master later stays off on older branches until their ci-config.yml lists it.
+      # Works out which tests this branch can run from the branch itself, so release branches need no CI settings of
+      # their own. On master and PRs into master every requires: must hold, so a renamed suite file cannot drop tests
+      # silently. Skipped entries are listed in the job summary.
       - name: "Resolve CI configuration"
         id: ci-config
         env:
-          CI_CONFIG: .github/ci-config.yml
           EVENT_NAME: ${{ github.event_name }}
           COMMIT_TITLE: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
+          TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}
+          # pr-gated: on PRs, only run when the PR title contains [db]. from/before: releases that support the version.
+          DB_TESTS: |
+            - { name: MySQL 8, profile: mysql, version: "8" }
+            - { name: MariaDB 10.2.18, profile: mariadb, version: "10.2.18", pr-gated: true, before: "25.0" }
+            - { name: MariaDB 10.4, profile: mariadb, version: "10.4", pr-gated: true, before: "25.0" }
+            - { name: MariaDB 10.5, profile: mariadb, version: "10.5", pr-gated: true, before: "26.0" }
+            - { name: MariaDB 10.6, profile: mariadb, version: "10.6", before: "25.0" }
+            - { name: MariaDB 10.6, profile: mariadb, version: "10.6", pr-gated: true, from: "25.0", before: "26.0" }
+            - { name: MariaDB 10.11, profile: mariadb, version: "10.11", from: "25.0", before: "26.0" }
+            - { name: MariaDB 10.11, profile: mariadb, version: "10.11", pr-gated: true, from: "26.1" }
+            - { name: MariaDB 11.8, profile: mariadb, version: "11.8", from: "26.1" }
+            - { name: PostgreSQL 13.12, profile: postgres, version: "13.12", pr-gated: true, before: "25.0" }
+            - { name: PostgreSQL 14.9, profile: postgres, version: "14.9", pr-gated: true, before: "25.0" }
+            - { name: PostgreSQL 15.4, profile: postgres, version: "15.4", before: "25.0" }
+            - { name: PostgreSQL 14.15, profile: postgres, version: "14.15", pr-gated: true, from: "25.0", before: "26.0" }
+            - { name: PostgreSQL 15.10, profile: postgres, version: "15.10", pr-gated: true, from: "25.0", before: "26.0" }
+            - { name: PostgreSQL 16.6, profile: postgres, version: "16.6", from: "25.0", before: "26.0" }
+            - { name: PostgreSQL 15.17, profile: postgres, version: "15.17", pr-gated: true, from: "26.1" }
+            - { name: PostgreSQL 16.13, profile: postgres, version: "16.13", pr-gated: true, from: "26.1" }
+            - { name: PostgreSQL 17.9, profile: postgres, version: "17.9", from: "26.1" }
+          # Profiles of scripts/ci/docker-compose/docker-compose.yaml
+          ACTIVEMQ_PROFILES: |
+            - { profile: activemq6, requires: "compose-profile:activemq6" }
+            - { profile: activemq5, requires: "compose-profile:activemq5" }
+            - { profile: activemq, unless: "compose-profile:activemq6" }
+          # Auth0 credentials are added by the job, not here: GitHub drops job outputs that look like passwords
+          APP_CONTEXT_TESTS: |
+            - { testSuite: AppContext01TestSuite, compose-profile: with-transform-core-aio }
+            - { testSuite: AppContext02TestSuite, compose-profile: default }
+            - { testSuite: AppContext03TestSuite, compose-profile: with-transform-core-aio }
+            - { testSuite: AppContext04TestSuite, compose-profile: with-transform-core-aio }
+            - { testSuite: ElasticsearchCommunityTestsPart1TestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch",
+                requires: repository/src/test/java/org/alfresco/ElasticsearchCommunityTestsPart1TestSuite.java }
+            - { testSuite: ElasticsearchCommunityTestsPart2TestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch",
+                requires: repository/src/test/java/org/alfresco/ElasticsearchCommunityTestsPart2TestSuite.java }
+            - { testSuite: ElasticsearchCommunityTestsPart3TestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch",
+                requires: repository/src/test/java/org/alfresco/ElasticsearchCommunityTestsPart3TestSuite.java }
+            - { testSuite: ElasticsearchCommunityTestsTestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch",
+                requires: repository/src/test/java/org/alfresco/ElasticsearchCommunityTestsTestSuite.java,
+                unless: repository/src/test/java/org/alfresco/ElasticsearchCommunityTestsPart1TestSuite.java }
+            - testSuite: AppContext05TestSuite
+              compose-profile: with-sso
+              mvn-options: "-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm"
+              idp: Keycloak
+            - testSuite: AppContext05TestSuite
+              compose-profile: default
+              mvn-options: "-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dauth0.enabled=true -Didentity-service.principal-attribute=nickname"
+              idp: Auth0
+            - { testSuite: AppContext06TestSuite, compose-profile: with-transform-core-aio }
+            - { testSuite: AppContextExtraTestSuite, compose-profile: with-transform-core-aio }
+            - { testSuite: MiscContextTestSuite, compose-profile: with-transform-core-aio }
+            - { testSuite: SearchTestSuite, compose-profile: default, mvn-options: "-Dindex.subsystem.name=solr6" }
+            - testSuite: MTLSTestSuite
+              compose-profile: with-mtls-transform-core-aio
+              mtls: true
+              disabledHostnameVerification: false
+              mvn-options: "-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore"
+          # pom-dir under packaging/tests; test-profile from that pom
+          TAS_TESTS: |
+            - { test-name: "REST API TAS tests part1", pom-dir: tas-restapi, test-profile: run-restapi-part1 }
+            - { test-name: "REST API TAS tests part2", pom-dir: tas-restapi, test-profile: run-restapi-part2 }
+            - { test-name: "REST API TAS tests part3", pom-dir: tas-restapi, test-profile: run-restapi-part3 }
+            - { test-name: "REST API TAS tests part4", pom-dir: tas-restapi, test-profile: run-restapi-part4,
+                requires: packaging/tests/tas-restapi/src/test/resources/test-suites/part4-suite.xml }
+            - { test-name: "CMIS TAS tests - BROWSER binding - part1", pom-dir: tas-cmis, test-profile: "run-cmis-browser,cmis-part1",
+                requires: packaging/tests/tas-cmis/src/test/resources/cmis-part1-suite.xml }
+            - { test-name: "CMIS TAS tests - BROWSER binding - part2", pom-dir: tas-cmis, test-profile: "run-cmis-browser,cmis-part2",
+                requires: packaging/tests/tas-cmis/src/test/resources/cmis-part2-suite.xml }
+            - { test-name: "CMIS TAS tests - ATOM binding - part1", pom-dir: tas-cmis, test-profile: "run-cmis-atom,cmis-part1",
+                requires: packaging/tests/tas-cmis/src/test/resources/cmis-part1-suite.xml }
+            - { test-name: "CMIS TAS tests - ATOM binding - part2", pom-dir: tas-cmis, test-profile: "run-cmis-atom,cmis-part2",
+                requires: packaging/tests/tas-cmis/src/test/resources/cmis-part2-suite.xml }
+            - { test-name: "CMIS TAS tests - WEBSERVICES binding - part1", pom-dir: tas-cmis, test-profile: "run-cmis-webservices,cmis-part1",
+                requires: packaging/tests/tas-cmis/src/test/resources/cmis-part1-suite.xml }
+            - { test-name: "CMIS TAS tests - WEBSERVICES binding - part2", pom-dir: tas-cmis, test-profile: "run-cmis-webservices,cmis-part2",
+                requires: packaging/tests/tas-cmis/src/test/resources/cmis-part2-suite.xml }
+            - { test-name: "CMIS TAS tests - BROWSER binding", pom-dir: tas-cmis, test-profile: run-cmis-browser,
+                unless: packaging/tests/tas-cmis/src/test/resources/cmis-part1-suite.xml }
+            - { test-name: "CMIS TAS tests - ATOM binding", pom-dir: tas-cmis, test-profile: run-cmis-atom,
+                unless: packaging/tests/tas-cmis/src/test/resources/cmis-part1-suite.xml }
+            - { test-name: "CMIS TAS tests - WEBSERVICES binding", pom-dir: tas-cmis, test-profile: run-cmis-webservices,
+                unless: packaging/tests/tas-cmis/src/test/resources/cmis-part1-suite.xml }
+            - { test-name: "Email TAS tests", pom-dir: tas-email }
+            - { test-name: "WebDAV TAS tests", pom-dir: tas-webdav }
+            - { test-name: "Integration TAS tests", pom-dir: tas-integration }
+            - { test-name: "Elasticsearch E2E Tests - part1", pom-dir: tas-restapi, test-profile: elasticsearch-e2e-tests-part1,
+                compose-file: docker-compose-minimal+batch-indexing.yml, mvn-options: "-DsolrWaitTimeInSeconds=3",
+                requires: packaging/tests/tas-restapi/src/test/resources/test-suites/elasticsearch-e2e-part1-suite.xml }
+            - { test-name: "Elasticsearch E2E Tests - part2", pom-dir: tas-restapi, test-profile: elasticsearch-e2e-tests-part2,
+                compose-file: docker-compose-minimal+batch-indexing.yml, mvn-options: "-DsolrWaitTimeInSeconds=3",
+                requires: packaging/tests/tas-restapi/src/test/resources/test-suites/elasticsearch-e2e-part2-suite.xml }
+            - { test-name: "Elasticsearch E2E Tests - part3", pom-dir: tas-restapi, test-profile: elasticsearch-e2e-tests-part3,
+                compose-file: docker-compose-minimal+batch-indexing.yml, mvn-options: "-DsolrWaitTimeInSeconds=3",
+                requires: packaging/tests/tas-restapi/src/test/resources/test-suites/elasticsearch-e2e-part3-suite.xml }
+          # TestNG suites of rm-automation-community-rest-api
+          AGS_REST_API_SUITES: |
+            - { suite-file: testng-part1.xml, requires: amps/ags/rm-automation/rm-automation-community-rest-api/src/test/resources/testng-part1.xml }
+            - { suite-file: testng-part2.xml, requires: amps/ags/rm-automation/rm-automation-community-rest-api/src/test/resources/testng-part2.xml }
+            - { suite-file: testng.xml, unless: amps/ags/rm-automation/rm-automation-community-rest-api/src/test/resources/testng-part1.xml }
         run: |
           set -euo pipefail
-          fail() { echo "::error file=${CI_CONFIG},title=Invalid CI configuration::$1"; exit 1; }
-          [[ -f "${CI_CONFIG}" ]] || fail "${CI_CONFIG} not found: every branch needs one"
-          # The list under the given key as compact JSON, [] when the key is missing
-          list() { yq -o=json -I=0 ".[\"$1\"] // []" "${CI_CONFIG}"; }
-          is_string_list='type == "array" and all(.[]; type == "string")'
+          fail() { echo "::error title=Invalid CI configuration::$1"; exit 1; }
+          summary="${GITHUB_STEP_SUMMARY:-/dev/null}"
 
-          java_version=$(yq '.["java-version"] // ""' "${CI_CONFIG}")
-          [[ "${java_version}" =~ ^[0-9]+$ ]] || fail "java-version must be set, for example \"21\""
+          # What the branch provides
+          release=$(yq -p=xml -oy '.project.version' pom.xml | grep -oE '^[0-9]+\.[0-9]+') || fail "no version in pom.xml"
+          java_version=$(yq -p=xml -oy '.project.properties."java.version"' pom.xml)
+          [[ "${java_version}" =~ ^[0-9]+$ ]] || fail "no java.version property in pom.xml"
+          compose_profiles=$(yq -o=json -I=0 '[.services[].profiles[]] | unique' scripts/ci/docker-compose/docker-compose.yaml)
+          echo "Release ${release}, Java ${java_version}"
 
-          db_tests=$(list db-tests)
-          jq -e 'type == "array" and all(.[]; (.name | type == "string") and (.profile | IN("mariadb", "mysql", "postgres")) and (.version | type == "string"))' <<<"${db_tests}" >/dev/null \
+          # A condition is a file path or compose-profile:<name>
+          holds() {
+            if [[ "$1" == compose-profile:* ]]; then
+              jq -e --arg p "${1#compose-profile:}" 'index($p) != null' <<<"${compose_profiles}" >/dev/null
+            else
+              [[ -e "$1" ]]
+            fi
+          }
+          version_ge() { [[ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -n1)" == "$2" ]]; }  # $1 >= $2
+          conditions() { jq -r --arg k "$1" '.[$k] // [] | if type == "string" then [.] else . end | .[]' <<<"$2"; }
+          missing_required=()
+          printf '| List | Skipped entry | Reason |\n|---|---|---|\n' >> "${summary}"
+
+          # Sets SELECTED to the entries of the YAML list $2 that this branch can run, without the rule keys
+          select_entries() {
+            local list="$1" entry reason condition label from before
+            SELECTED="[]"
+            while IFS= read -r entry; do
+              reason=""
+              while IFS= read -r condition; do
+                if ! holds "${condition}"; then reason="needs ${condition}"; missing_required+=("${list}: ${condition}"); break; fi
+              done < <(conditions requires "${entry}")
+              if [[ -z "${reason}" ]]; then
+                while IFS= read -r condition; do
+                  if holds "${condition}"; then reason="replaced, ${condition} exists"; break; fi
+                done < <(conditions unless "${entry}")
+              fi
+              from=$(jq -r '.from // ""' <<<"${entry}")
+              before=$(jq -r '.before // ""' <<<"${entry}")
+              if [[ -z "${reason}" && -n "${from}" ]] && ! version_ge "${release}" "${from}"; then reason="supported from ${from}"; fi
+              if [[ -z "${reason}" && -n "${before}" ]] && version_ge "${release}" "${before}"; then reason="supported before ${before}"; fi
+              if [[ -n "${reason}" ]]; then
+                label=$(jq -r '.name // ."test-name" // .testSuite // ."suite-file" // .profile' <<<"${entry}")
+                echo "| ${list} | ${label} | ${reason} |" >> "${summary}"
+              else
+                SELECTED=$(jq -c --argjson e "${entry}" '. + [$e | del(.requires, .unless, .from, .before)]' <<<"${SELECTED}")
+              fi
+            done < <(yq -o=json -I=0 '.[]' <<<"$2")
+          }
+
+          select_entries db-tests "${DB_TESTS}"; db_tests="${SELECTED}"
+          jq -e 'all(.[]; (.name | type == "string") and (.profile | IN("mariadb", "mysql", "postgres")) and (.version | type == "string"))' <<<"${db_tests}" >/dev/null \
             || fail "db-tests: every entry needs a name, a profile (mariadb, mysql or postgres) and a quoted version"
           # pr-gated DB tests run on PRs only when the title contains [db] (case-insensitive, like contains())
           shopt -s nocasematch
@@ -100,25 +243,20 @@ jobs:
           fi
           shopt -u nocasematch
 
-          activemq_profiles=$(list activemq-profiles)
-          jq -e "${is_string_list}" <<<"${activemq_profiles}" >/dev/null || fail "activemq-profiles must be a list of profile names"
-
-          app_context_tests=$(list app-context-tests)
-          jq -e 'type == "array" and all(.[]; (.testSuite | type == "string") and (."compose-profile" | type == "string"))' <<<"${app_context_tests}" >/dev/null \
-            || fail "app-context-tests: every entry needs a testSuite and a compose-profile"
-
-          tas_tests=$(list tas-tests)
-          jq -e 'type == "array" and all(.[]; (."test-name" | type == "string") and (."pom-dir" | type == "string"))' <<<"${tas_tests}" >/dev/null \
-            || fail "tas-tests: every entry needs a test-name and a pom-dir"
-
-          ags_suites=$(list ags-rest-api-suites)
-          jq -e "${is_string_list}" <<<"${ags_suites}" >/dev/null || fail "ags-rest-api-suites must be a list of TestNG suite files"
+          select_entries activemq-profiles "${ACTIVEMQ_PROFILES}"; activemq_profiles=$(jq -c 'map(.profile)' <<<"${SELECTED}")
+          select_entries app-context-tests "${APP_CONTEXT_TESTS}"; app_context_tests="${SELECTED}"
+          select_entries tas-tests "${TAS_TESTS}"; tas_tests="${SELECTED}"
+          select_entries ags-rest-api-suites "${AGS_REST_API_SUITES}"
           # testng-part1.xml -> part1 (keeps the job names and S3 paths); testng.xml -> all
-          ags_suites=$(jq -c '[.[] | {name: (rtrimstr(".xml") | ltrimstr("testng") | ltrimstr("-") | if . == "" then "all" else . end), "suite-file": .}]' <<<"${ags_suites}")
+          ags_suites=$(jq -c '[.[]."suite-file" | {name: (rtrimstr(".xml") | ltrimstr("testng") | ltrimstr("-") | if . == "" then "all" else . end), "suite-file": .}]' <<<"${SELECTED}")
 
+          # master has every suite: a missing requires: there means a file was renamed or deleted
+          if [[ "${TARGET_BRANCH}" == "master" && ${#missing_required[@]} -gt 0 ]]; then
+            fail "required files missing on master: ${missing_required[*]}"
+          fi
           # Job outputs must not look like they hold a password, or GitHub drops them
           for value in "${db_tests}" "${activemq_profiles}" "${app_context_tests}" "${tas_tests}" "${ags_suites}"; do
-            [[ "${value,,}" != *password* ]] || fail "keep credentials out of ${CI_CONFIG}; pass them in the job step instead"
+            [[ "${value,,}" != *password* ]] || fail "keep credentials out of the test lists; pass them in the job step instead"
           done
 
           {
@@ -507,7 +645,7 @@ jobs:
           AUTH0_CLIENT_ID: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_CLIENT_ID || '' }}
           AUTH0_CLIENT_SECRET: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_CLIENT_SECRET || '' }}
           AUTH0_ADMIN_PASSWORD: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_PASSWORD || '' }}
-        # The Auth0 credential options are added here and not in ci-config.yml: GitHub drops a job output that looks
+        # The Auth0 credential options are added here and not in the test list: GitHub drops a job output that looks
         # like it contains a password. detect-secrets needs the pragma on the run: line.
         run: | # pragma: allowlist secret
           mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} \

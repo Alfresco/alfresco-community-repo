@@ -4,8 +4,12 @@ name: Alfresco Community Repo CI
 # - PRs into master and pushes to master/feature/fix branches run this branch's own ci-jobs.yml, so a PR that changes CI
 #   tests its own change.
 # - Release branches (PRs into them, pushes and master_release.yml runs) always run master's ci-jobs.yml, so CI fixes
-#   reach them without a backport. What they test still comes from their own .github/ci-config.yml.
+#   reach them without a backport. ci-jobs.yml works out from each branch's own code which tests it can run.
 # uses: cannot be an expression, hence two jobs where exactly one runs and the other shows as skipped.
+#
+# TODO ACS-13096: the ci_release job is added in a follow-up PR once ci-jobs.yml exists on master. GitHub resolves
+# every uses: when it loads the workflow, even for a skipped job, so a reference to ci-jobs.yml@master fails until
+# that file has been merged. Until then this file only has the ci job.
 
 permissions:
   contents: read
@@ -55,14 +59,4 @@ jobs:
       id-token: write
       security-events: write
     uses: ./.github/workflows/ci-jobs.yml
-    secrets: inherit # pragma: allowlist secret
-
-  ci_release:
-    name: CI
-    if: ${{ startsWith(github.base_ref || github.ref_name, 'release/') }}
-    permissions:
-      contents: read
-      id-token: write
-      security-events: write
-    uses: Alfresco/alfresco-community-repo/.github/workflows/ci-jobs.yml@master
     secrets: inherit # pragma: allowlist secret

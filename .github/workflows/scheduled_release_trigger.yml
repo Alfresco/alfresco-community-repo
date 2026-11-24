@@ -37,6 +37,7 @@ jobs:
         uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
         with:
           token: ${{ steps.app-token.outputs.token }}
+          ref: master
           message: "[force] Force release for ${{ steps.date.outputs.value }}"
           allow-empty-commit: true
           if-no-commit: error

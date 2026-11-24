@@ -79,8 +79,10 @@ function remoteBranchExists() {
   local BRANCH="${2}"
 
   { set +x; } 2>/dev/null
-  git ls-remote --exit-code --heads "https://x-access-token:${APP_TOKEN}@${REMOTE_REPO}" "${BRANCH}" &>/dev/null
+  local STATUS=0
+  git ls-remote --exit-code --heads "https://x-access-token:${APP_TOKEN}@${REMOTE_REPO}" "${BRANCH}" &>/dev/null || STATUS=$?
   { set -x; } 2>/dev/null
+  return "${STATUS}"
 }
 
 function identifyUpstreamSourceBranch() {

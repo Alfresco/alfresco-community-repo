@@ -2,6 +2,7 @@ name: Alfresco Community Repo CI
 
 permissions:
   contents: read
+  id-token: write
 
 on:
   pull_request:
@@ -22,8 +23,6 @@ env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
   LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
   QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
   QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   CI_WORKSPACE: ${{ github.workspace }}
@@ -44,12 +43,15 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - id: changed-files
         uses: Alfresco/alfresco-build-tools/.github/actions/github-list-changes@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
@@ -68,6 +70,7 @@ jobs:
     # ya-pmd-scan uploads its findings as SARIF to GitHub code scanning, which needs security-events: write.
     permissions:
       contents: read
+      id-token: write
       security-events: write
     needs: [prepare]
     if: >
@@ -76,9 +79,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - uses: Alfresco/ya-pmd-scan@v4.4.1
         with:
           classpath-build-command: "mvn test-compile -ntp -Pags -pl \"-:alfresco-community-repo-docker\""
@@ -108,10 +115,13 @@ jobs:
             testModule: mmt
             testAttributes: "-Dtest=AllMmtUnitTestSuite"
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare Report Portal"
@@ -188,10 +198,13 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -267,10 +280,13 @@ jobs:
       matrix:
         version: ['10.2.18', '10.4', '10.5']
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: Run MariaDB ${{ matrix.version }} database
@@ -338,10 +354,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MariaDB 10.6 database"
@@ -409,10 +428,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MySQL 8 database"
@@ -479,10 +501,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 13.12 database"
@@ -549,10 +574,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 14.9 database"
@@ -619,10 +647,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 15.4 database"
@@ -687,10 +718,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run ActiveMQ"
@@ -787,10 +821,13 @@ jobs:
             disabledHostnameVerification: false
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
@@ -909,10 +946,13 @@ jobs:
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -991,10 +1031,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run Postgres 15.4 database"
@@ -1065,10 +1108,13 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -1111,10 +1157,13 @@ jobs:
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -1153,10 +1202,13 @@ jobs:
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -1243,10 +1295,13 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        with:
+          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |

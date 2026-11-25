@@ -8,10 +8,12 @@ on:
     branches: [ master ]
     paths:
       - '.github/actions/**'
+      - '.github/ci/**'
   pull_request:
     branches: [ master ]
     paths:
       - '.github/actions/**'
+      - '.github/ci/**'
 
 jobs:
   test:

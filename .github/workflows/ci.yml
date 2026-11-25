@@ -1,10 +1,9 @@
 name: Alfresco Community Repo CI
 
-# This branch runs master's CI workflow instead of keeping its own copy (ACS-13096), so CI fixes and improvements
-# made on master apply here without a backport. Only the settings where this branch differs from master are passed
-# below; everything else uses master's defaults (see the workflow_call inputs in master's ci.yml).
-# master_release.yml calls this file as well, so this is the single place for this branch's CI settings.
-# There is deliberately no concurrency block: master's ci.yml defines it, and the same group here would cancel the run.
+# This branch runs master's CI workflow (ACS-13096) with the settings below, so CI fixes on master reach it without a
+# backport. This branch predates the cut script, so its settings were written by hand in the format that
+# .github/ci/create-release-caller.sh produces. Change them here when this branch's code changes (suites, versions,
+# profiles); master's later default changes never reach this branch.
 
 permissions:
   contents: read
@@ -21,47 +20,63 @@ on:
       - feature/**
       - fix/**
   workflow_call:
+    secrets:
+      AGS_AWS_ACCESS_KEY_ID:
+        required: false
+      AGS_AWS_SECRET_ACCESS_KEY:
+        required: false
+      AUTH0_OIDC_ADMIN_CLIENT_ID:
+        required: false
+      AUTH0_OIDC_ADMIN_PASSWORD:
+        required: false
+      AUTH0_OIDC_CLIENT_SECRET:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
+      DOCKER_USERNAME:
+        required: false
+      GH_APP_ENGINEERING_RO_PRIVATE_KEY:
+        required: false
+      QUAY_PASSWORD:
+        required: false
+      QUAY_USERNAME:
+        required: false
   workflow_dispatch:
 
 jobs:
   ci:
-    # Cloudsmith authentication needs id-token: write; the pmd_scan job uploads SARIF and needs security-events: write
     permissions:
       contents: read
       id-token: write
       security-events: write
-    # TODO ACS-13096: temporary ref so this PR can test master's new ci.yml before it is merged.
-    # Switch back to @master once the master PR (feature/ACS-13096) is merged, and before merging this PR.
+    # TODO ACS-13096: temporary ref so this PR can test the master PR before it is merged; switch back to @master.
     uses: Alfresco/alfresco-community-repo/.github/workflows/ci.yml@feature/ACS-13096
     secrets: inherit # pragma: allowlist secret
     with:
+      java-version: "21"
+      db-tests: |
+        - { name: MariaDB 10.11, profile: mariadb, version: "10.11", pr-gated: true }
+        - { name: MariaDB 11.8, profile: mariadb, version: "11.8" }
+        - { name: MySQL 8, profile: mysql, version: "8" }
+        - { name: PostgreSQL 15.17, profile: postgres, version: "15.17", pr-gated: true }
+        - { name: PostgreSQL 16.13, profile: postgres, version: "16.13", pr-gated: true }
+        - { name: PostgreSQL 17.9, profile: postgres, version: "17.9" }
+      activemq-profiles: |
+        [activemq6, activemq5]
       # The Part1/2/3 split of this suite (ACS-13092) is not on this branch
-      elasticsearch-test-suites: "[ElasticsearchCommunityTestsTestSuite]"
-      # This branch's TAS suites: no REST API part4, CMIS not split into parts and no Elasticsearch E2E tests
+      elasticsearch-test-suites: |
+        - ElasticsearchCommunityTestsTestSuite
+      # This branch has no REST API part4, no CMIS part1/part2 split and no Elasticsearch E2E suites
       tas-tests: |
-        - test-name: "REST API TAS tests part1"
-          pom-dir: tas-restapi
-          test-profile: run-restapi-part1
-        - test-name: "REST API TAS tests part2"
-          pom-dir: tas-restapi
-          test-profile: run-restapi-part2
-        - test-name: "REST API TAS tests part3"
-          pom-dir: tas-restapi
-          test-profile: run-restapi-part3
-        - test-name: "CMIS TAS tests - BROWSER binding"
-          pom-dir: tas-cmis
-          test-profile: run-cmis-browser
-        - test-name: "CMIS TAS tests - ATOM binding"
-          pom-dir: tas-cmis
-          test-profile: run-cmis-atom
-        - test-name: "CMIS TAS tests - WEBSERVICES binding"
-          pom-dir: tas-cmis
-          test-profile: run-cmis-webservices
-        - test-name: "Email TAS tests"
-          pom-dir: tas-email
-        - test-name: "WebDAV TAS tests"
-          pom-dir: tas-webdav
-        - test-name: "Integration TAS tests"
-          pom-dir: tas-integration
+        - { test-name: "REST API TAS tests part1", pom-dir: tas-restapi, test-profile: run-restapi-part1 }
+        - { test-name: "REST API TAS tests part2", pom-dir: tas-restapi, test-profile: run-restapi-part2 }
+        - { test-name: "REST API TAS tests part3", pom-dir: tas-restapi, test-profile: run-restapi-part3 }
+        - { test-name: "CMIS TAS tests - BROWSER binding", pom-dir: tas-cmis, test-profile: run-cmis-browser }
+        - { test-name: "CMIS TAS tests - ATOM binding", pom-dir: tas-cmis, test-profile: run-cmis-atom }
+        - { test-name: "CMIS TAS tests - WEBSERVICES binding", pom-dir: tas-cmis, test-profile: run-cmis-webservices }
+        - { test-name: "Email TAS tests", pom-dir: tas-email }
+        - { test-name: "WebDAV TAS tests", pom-dir: tas-webdav }
+        - { test-name: "Integration TAS tests", pom-dir: tas-integration }
       # testng-part1.xml and testng-part2.xml are not on this branch
-      ags-rest-api-suites: "[testng.xml]"
+      ags-rest-api-suites: |
+        [testng.xml]

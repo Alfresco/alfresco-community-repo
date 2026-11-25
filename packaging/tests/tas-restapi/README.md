@@ -41,7 +41,7 @@ As a high level overview, this project makes use of the following functionality 
 * health checks (verify if server is reachable, if server is online)
 * generic Internal-DSL (Domain Specific Language)
 
-Using Nexus -Release Repository, everyone will be able to use individual interfaces in their projects by extending the automation core functionalities.
+Using the Alfresco Maven repository, everyone will be able to use individual interfaces in their projects by extending the automation core functionalities.
 
 **[Back to Top ^](#table-of-contents)**
 
@@ -51,7 +51,7 @@ Using Nexus -Release Repository, everyone will be able to use individual interfa
 * [Maven 3.3](https://maven.apache.org/download.cgi) installed and configure according to [Windows OS](https://maven.apache.org/guides/getting-started/windows-prerequisites.html) or [Mac OS](https://maven.apache.org/install.html).
 * Configure Maven to use Alfresco alfresco-internal repository following this [Guide](https://ts.alfresco.com/share/page/site/eng/wiki-page?title=Maven_Setup).
 * Your favorite IDE as [Eclipse](https://eclipse.org/downloads/) or [InteliJ](https://www.jetbrains.com/idea).
-* Access to [Nexus](https://nexus.alfresco.com/nexus/) repository.
+* Access to the [Alfresco Maven repository](https://artifacts.hyland.dev/public/alfresco-public/maven/).
 * Access to Gitlab [TAS](https://gitlab.alfresco.com/tas/) repository.
 * GitLab client for your operating system. (we recommend [SourceTree](https://www.sourcetreeapp.com) - use your google account for initial setup).
 * Getting familiar with [Basic Git Commands](http://docs.gitlab.com/ee/gitlab-basics/basic-git-commands.html).

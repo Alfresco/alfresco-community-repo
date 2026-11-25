@@ -1,5 +1,6 @@
-# Master's CI settings (ACS-13096). Used by resolve-ci-config.sh whenever ci.yml gets no workflow_call input for a key,
-# and copied into a new release branch's caller by create-release-caller.sh when the branch is cut.
+# Master's CI settings (ACS-13096). Used by resolve-ci-config.sh when master runs its own ci.yml (never for release
+# branches: a setting their caller does not pass means "none"), and copied into a new release branch's caller by
+# create-release-caller.sh when the branch is cut.
 # Quote versions: YAML would turn 15.10 into 15.1.
 
 java-version: "21"
@@ -16,11 +17,33 @@ db-tests:
 # Profiles in scripts/ci/docker-compose/docker-compose.yaml
 activemq-profiles: [activemq6, activemq5]
 
-# Added to app-context-tests below
-elasticsearch-test-suites:
-  - ElasticsearchCommunityTestsPart1TestSuite
-  - ElasticsearchCommunityTestsPart2TestSuite
-  - ElasticsearchCommunityTestsPart3TestSuite
+# Repository app context suites, including the Elasticsearch ones.
+# Auth0 credentials are added by the job, not here: GitHub drops job outputs that look like passwords.
+app-context-tests:
+  - { testSuite: AppContext01TestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: AppContext02TestSuite, compose-profile: default }
+  - { testSuite: AppContext03TestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: AppContext04TestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: ElasticsearchCommunityTestsPart1TestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch" }
+  - { testSuite: ElasticsearchCommunityTestsPart2TestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch" }
+  - { testSuite: ElasticsearchCommunityTestsPart3TestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch" }
+  - testSuite: AppContext05TestSuite
+    compose-profile: with-sso
+    mvn-options: "-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm"
+    idp: Keycloak
+  - testSuite: AppContext05TestSuite
+    compose-profile: default
+    mvn-options: "-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dauth0.enabled=true -Didentity-service.principal-attribute=nickname"
+    idp: Auth0
+  - { testSuite: AppContext06TestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: AppContextExtraTestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: MiscContextTestSuite, compose-profile: with-transform-core-aio }
+  - { testSuite: SearchTestSuite, compose-profile: default, mvn-options: "-Dindex.subsystem.name=solr6" }
+  - testSuite: MTLSTestSuite
+    compose-profile: with-mtls-transform-core-aio
+    mtls: true
+    disabledHostnameVerification: false
+    mvn-options: "-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore"
 
 # TAS suites (pom-dir under packaging/tests; test-profile from that pom)
 tas-tests:
@@ -43,28 +66,3 @@ tas-tests:
 
 # TestNG suites of rm-automation-community-rest-api
 ags-rest-api-suites: [testng-part1.xml, testng-part2.xml]
-
-# Not an input: the same on every branch. The Elasticsearch suites are appended to it.
-# Auth0 credentials are added by the job, not here: GitHub drops job outputs that look like passwords.
-app-context-tests:
-  - { testSuite: AppContext01TestSuite, compose-profile: with-transform-core-aio }
-  - { testSuite: AppContext02TestSuite, compose-profile: default }
-  - { testSuite: AppContext03TestSuite, compose-profile: with-transform-core-aio }
-  - { testSuite: AppContext04TestSuite, compose-profile: with-transform-core-aio }
-  - testSuite: AppContext05TestSuite
-    compose-profile: with-sso
-    mvn-options: "-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm"
-    idp: Keycloak
-  - testSuite: AppContext05TestSuite
-    compose-profile: default
-    mvn-options: "-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dauth0.enabled=true -Didentity-service.principal-attribute=nickname"
-    idp: Auth0
-  - { testSuite: AppContext06TestSuite, compose-profile: with-transform-core-aio }
-  - { testSuite: AppContextExtraTestSuite, compose-profile: with-transform-core-aio }
-  - { testSuite: MiscContextTestSuite, compose-profile: with-transform-core-aio }
-  - { testSuite: SearchTestSuite, compose-profile: default, mvn-options: "-Dindex.subsystem.name=solr6" }
-  - testSuite: MTLSTestSuite
-    compose-profile: with-mtls-transform-core-aio
-    mtls: true
-    disabledHostnameVerification: false
-    mvn-options: "-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore"

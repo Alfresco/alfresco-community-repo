@@ -25,7 +25,7 @@ block() { yq ".[\"$1\"]" "${defaults}" | sed 's/^/        /'; }
   echo "    secrets: inherit # pragma: allowlist secret"
   echo "    with:"
   printf '      java-version: "%s"\n' "$(yq '.["java-version"]' "${defaults}")"
-  for key in db-tests activemq-profiles elasticsearch-test-suites tas-tests ags-rest-api-suites; do
+  for key in db-tests activemq-profiles app-context-tests tas-tests ags-rest-api-suites; do
     printf '      %s: |\n' "${key}"
     block "${key}"
   done

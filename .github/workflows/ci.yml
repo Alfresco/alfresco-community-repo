@@ -17,8 +17,9 @@ on:
       - fix/**
   workflow_call:
     # Release branches run this workflow through a caller instead of keeping their own copy. Their caller
-    # passes every input (written by .github/ci/create-release-caller.sh at the cut). An empty input means master's
-    # default from .github/ci/defaults.yml. List inputs accept YAML or JSON; [] means "none". Quote versions as strings.
+    # passes every input (written by .github/ci/create-release-caller.sh at the cut). An input a release caller does not
+    # pass means "none" (java-version is required); on master, inputs are empty and .github/ci/defaults.yml applies.
+    # List inputs accept YAML or JSON; [] means "none". Quote versions as strings.
     inputs:
       java-version:
         description: "JDK used to build and test"
@@ -32,8 +33,8 @@ on:
         description: "docker-compose.yaml profiles for the messaging tests"
         type: string
         default: ""
-      elasticsearch-test-suites:
-        description: "Elasticsearch suites added to the repository app context tests"
+      app-context-tests:
+        description: "Repository app context suites, including the Elasticsearch ones: list of {testSuite, compose-profile, mvn-options, idp, mtls, disabledHostnameVerification}"
         type: string
         default: ""
       tas-tests:
@@ -118,10 +119,13 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           COMMIT_TITLE: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
+          # Same ref: this branch runs its own CI (defaults apply). Different: a release branch runs master's CI.
+          CI_LOGIC_REF: ${{ job.workflow_ref }}
+          CODE_REF: ${{ github.ref }}
           INPUT_JAVA_VERSION: ${{ inputs.java-version }}
           INPUT_DB_TESTS: ${{ inputs.db-tests }}
           INPUT_ACTIVEMQ_PROFILES: ${{ inputs.activemq-profiles }}
-          INPUT_ELASTICSEARCH_TEST_SUITES: ${{ inputs.elasticsearch-test-suites }}
+          INPUT_APP_CONTEXT_TESTS: ${{ inputs.app-context-tests }}
           INPUT_TAS_TESTS: ${{ inputs.tas-tests }}
           INPUT_AGS_REST_API_SUITES: ${{ inputs.ags-rest-api-suites }}
         run: bash .ci-logic/.github/ci/resolve-ci-config.sh
@@ -447,11 +451,10 @@ jobs:
       - commit_parser
       - prepare
       - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
+    if: needs.test_run_check.outputs.tests == 'true' && needs.commit_parser.outputs.app-context-tests != '[]'
     strategy:
       fail-fast: false
       matrix:
-        # APP_CONTEXT_TESTS plus the Elasticsearch suites, see commit_parser
         include: ${{ fromJSON(needs.commit_parser.outputs.app-context-tests) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

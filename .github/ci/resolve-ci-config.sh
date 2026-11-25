@@ -1,28 +1,48 @@
 #!/usr/bin/env bash
-# Resolves the test matrices for .github/workflows/ci.yml (ACS-13096): a workflow_call input wins, an empty input falls
-# back to master's default in defaults.yml (next to this script). Release branches run master's copy of this script,
-# because ci.yml checks it out at job.workflow_sha rather than taking it from the calling branch.
+# Resolves the test matrices for .github/workflows/ci.yml (ACS-13096). A workflow_call input always wins. What an empty
+# input means depends on who runs the CI:
+# - master (or a branch based on it) running its own ci.yml: master's default from defaults.yml (next to this script);
+# - a release branch running master's ci.yml: "none", so a setting added on master after the branch was cut stays off
+#   there until the branch's own caller lists it. Only java-version is required instead.
+# Release branches run master's copy of this script, because ci.yml checks it out at job.workflow_sha.
 #
-# Reads:  INPUT_JAVA_VERSION, INPUT_DB_TESTS, INPUT_ACTIVEMQ_PROFILES, INPUT_ELASTICSEARCH_TEST_SUITES, INPUT_TAS_TESTS,
-#         INPUT_AGS_REST_API_SUITES (YAML or JSON; [] means "none"), EVENT_NAME, COMMIT_TITLE
+# Reads:  INPUT_JAVA_VERSION, INPUT_DB_TESTS, INPUT_ACTIVEMQ_PROFILES, INPUT_APP_CONTEXT_TESTS, INPUT_TAS_TESTS,
+#         INPUT_AGS_REST_API_SUITES (YAML or JSON; [] means "none"), EVENT_NAME, COMMIT_TITLE,
+#         CI_LOGIC_REF (job.workflow_ref, e.g. owner/repo/.github/workflows/ci.yml@refs/heads/master), CODE_REF (github.ref)
 # Writes: name=value lines to $GITHUB_OUTPUT (and the log)
 set -euo pipefail
 
 defaults="$(dirname "${BASH_SOURCE[0]}")/defaults.yml"
 fail() { echo "::error title=Invalid CI configuration::$1"; exit 1; }
 
-# The input as compact JSON, or the default for that key when the input is empty
+# The CI logic comes from the same ref as the code when a branch runs its own ci.yml (on a PR both are
+# refs/pull/<n>/merge). A release branch calls ci.yml@master, so the two differ. Without the refs (local runs), act as master.
+if [[ -z "${CI_LOGIC_REF:-}" || "${CI_LOGIC_REF}" == *"@${CODE_REF:-}" ]]; then
+  use_defaults=true
+  echo "Running this branch's own CI: settings that are not passed use defaults.yml"
+else
+  use_defaults=false
+  echo "Running ${CI_LOGIC_REF##*@}'s CI for ${CODE_REF:-}: settings that are not passed mean none"
+fi
+
+# The input as compact JSON; when it is empty, the default for that key on master and [] (none) on a release branch
 resolve() {
   local input="$1" key="$2"
   if [[ -n "${input//[[:space:]]/}" ]]; then
     yq -p=yaml -o=json -I=0 '.' <<<"${input}"
-  else
+  elif [[ "${use_defaults}" == true ]]; then
     yq -o=json -I=0 ".[\"${key}\"]" "${defaults}"
+  else
+    echo "[]"
   fi
 }
 is_string_list='type == "array" and all(.[]; type == "string")'
 
-java_version=$(resolve "${INPUT_JAVA_VERSION:-}" java-version | jq -r '.')
+java_input="${INPUT_JAVA_VERSION:-}"
+if [[ -z "${java_input//[[:space:]]/}" && "${use_defaults}" != true ]]; then
+  fail "java-version must be passed by a release branch's caller; it has no \"none\""
+fi
+java_version=$(resolve "${java_input}" java-version | jq -r '.')
 [[ "${java_version}" =~ ^[0-9]+$ ]] || fail "java-version must be a number, for example \"21\""
 
 db_tests=$(resolve "${INPUT_DB_TESTS:-}" db-tests)
@@ -38,10 +58,9 @@ shopt -u nocasematch
 activemq_profiles=$(resolve "${INPUT_ACTIVEMQ_PROFILES:-}" activemq-profiles)
 jq -e "${is_string_list}" <<<"${activemq_profiles}" >/dev/null || fail "activemq-profiles must be a list of profile names"
 
-es_suites=$(resolve "${INPUT_ELASTICSEARCH_TEST_SUITES:-}" elasticsearch-test-suites)
-jq -e "${is_string_list}" <<<"${es_suites}" >/dev/null || fail "elasticsearch-test-suites must be a list of test suite names"
-app_context_tests=$(yq -o=json -I=0 '.["app-context-tests"]' "${defaults}" | jq -c --argjson es "${es_suites}" \
-  '. + [$es[] | {testSuite: ., "compose-profile": "with-elasticsearch", "mvn-options": "-Dindex.subsystem.name=elasticsearch"}]')
+app_context_tests=$(resolve "${INPUT_APP_CONTEXT_TESTS:-}" app-context-tests)
+jq -e 'type == "array" and all(.[]; (.testSuite | type == "string") and (."compose-profile" | type == "string"))' <<<"${app_context_tests}" >/dev/null \
+  || fail "app-context-tests: every entry needs a testSuite and a compose-profile"
 
 tas_tests=$(resolve "${INPUT_TAS_TESTS:-}" tas-tests)
 jq -e 'type == "array" and all(.[]; (."test-name" | type == "string") and (."pom-dir" | type == "string"))' <<<"${tas_tests}" >/dev/null \

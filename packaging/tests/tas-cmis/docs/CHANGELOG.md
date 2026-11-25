@@ -4,7 +4,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-Each tag bellow has a corresponded version released in [Nexus](https://nexus.alfresco.com/nexus/#welcome).
+Each tag bellow has a corresponded version released in the [Alfresco Maven repository](https://artifacts.hyland.dev/public/alfresco-public/maven/).
 Currently we are testing [CMIS v1.1](http://docs.oasis-open.org/cmis/CMIS/v1.1/CMIS-v1.1.html) with Alfresco One.
 
 (if you need to update/polish tests please branch from the release tags)

@@ -49,6 +49,7 @@ public class TagQueryIT extends LuceneOrAFTSQueryIT
     private NodeRef withTag1;
     private NodeRef withTag1AndTag2;
     private NodeRef withTag2;
+    private NodeRef withMultiWordTag;
 
     public TagQueryIT(String language)
     {
@@ -63,6 +64,8 @@ public class TagQueryIT extends LuceneOrAFTSQueryIT
         withTag1 = indexDocument(b("withTag1").withTag(TAG_1));
         withTag1AndTag2 = indexDocument(b("withTag1AndTag2").withTag(TAG_1, TAG_2));
         withTag2 = indexDocument(b("withTag2").withTag(TAG_2));
+        indexDocument(b("jpg"));
+        withMultiWordTag = indexDocument(b("withMultiWordTag").withTag("file jpg"));
     }
 
     // simulates the default share's search-box behaviour
@@ -104,6 +107,12 @@ public class TagQueryIT extends LuceneOrAFTSQueryIT
     {
         assertContainsOnly(searchFor(language, tagDoubleQuotedQuery(TAG_2)), withTag1AndTag2, withTag2);
         assertContainsOnly(searchFor(language, lowerCaseTagDoubleQuotedQuery(TAG_2)), withTag1AndTag2, withTag2);
+    }
+
+    @Test
+    public void shouldReturnOnlyNodeWithExactMultiWordTag()
+    {
+        assertContainsOnly(searchFor(language, tagDoubleQuotedQuery("file jpg")), withMultiWordTag);
     }
 
     private static String tagQuery(final String tag)

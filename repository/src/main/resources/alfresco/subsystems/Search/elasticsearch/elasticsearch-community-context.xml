@@ -339,4 +339,14 @@
         </property>
     </bean>
 
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod"
+                  value="org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.QueryConverter.setExactMatchFields"/>
+        <property name="arguments">
+            <list>
+                <value>${elasticsearch.query.exactMatch.fields}</value>
+            </list>
+        </property>
+    </bean>
+
 </beans>

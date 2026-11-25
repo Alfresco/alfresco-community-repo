@@ -319,6 +319,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.FuzzyQueryTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.LuceneXPathHandlerTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PathQueryConverterTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.QueryConverterTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.PrefixQueryTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.RangeQueryTest.class,
         org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.TermOrPhraseQueryTest.class,

@@ -5,7 +5,9 @@
 #
 # It replaces .github/workflows/ci.yml, master's full workflow, with a caller of master's ci.yml that passes every
 # setting explicitly, copied from defaults.yml as it is at the cut. Master's later default changes then never reach
-# the branch; its settings change only in its own caller. Review the result, then commit it.
+# the branch; its settings change only in its own caller.
+# It then removes .github/ci/ (including itself): release branches always run master's copy of these scripts, so a
+# copy on the branch would only be a stale duplicate. Review the result, then commit both changes.
 set -euo pipefail
 
 dir="$(dirname "${BASH_SOURCE[0]}")"
@@ -31,4 +33,8 @@ block() { yq ".[\"$1\"]" "${defaults}" | sed 's/^/        /'; }
   done
 } > "${target}.new"
 mv "${target}.new" "${target}"
-echo "Wrote ${target} for ${branch}. Review it, then commit."
+echo "Wrote ${target} for ${branch} and removed .github/ci/. Review both changes, then commit them."
+
+# Last command on purpose: it deletes this script. ci.yml checks master's .github/ci out at job.workflow_sha, so the
+# branch never needs its own copy.
+rm -rf -- .github/ci

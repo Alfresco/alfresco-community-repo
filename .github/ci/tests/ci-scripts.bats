@@ -252,6 +252,7 @@ make_repo() {
     [ "$status" -ne 0 ]
     [[ "$output" == *"release/*"* ]]
     [ "$(cat .github/workflows/ci.yml)" = "name: placeholder for master's full workflow" ]
+    [ -f .github/ci/create-release-caller.sh ]
 }
 
 @test "cut script writes a caller of ci.yml@master with every setting and the secrets" {
@@ -265,6 +266,18 @@ make_repo() {
     [ "$(yq '.jobs.ci.with | keys | join(",")' .github/workflows/ci.yml)" = "$(IFS=,; echo "${SETTINGS[*]}")" ]
     [ "$(yq '.on.workflow_call.secrets | keys | length' .github/workflows/ci.yml)" = "10" ]
     [ "$(yq '.jobs.ci.permissions."id-token"' .github/workflows/ci.yml)" = "write" ]
+}
+
+@test "cut script removes .github/ci/ so the release branch keeps no stale copy" {
+    make_repo "release/26.3"
+    cd "$REPO"
+
+    run bash .github/ci/create-release-caller.sh
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"removed .github/ci/"* ]]
+    [ ! -e .github/ci ]
+    [ -f .github/workflows/ci.yml ]
 }
 
 @test "the caller written at the cut resolves exactly like master's defaults" {

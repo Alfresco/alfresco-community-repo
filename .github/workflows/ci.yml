@@ -63,9 +63,31 @@ jobs:
         - { name: PostgreSQL 17.9, profile: postgres, version: "17.9" }
       activemq-profiles: |
         [activemq6, activemq5]
-      # The Part1/2/3 split of this suite (ACS-13092) is not on this branch
-      elasticsearch-test-suites: |
-        - ElasticsearchCommunityTestsTestSuite
+      # The single Elasticsearch suite: its Part1/2/3 split (ACS-13092) is not on this branch.
+      # Auth0 credentials are added by the job, not here.
+      app-context-tests: |
+        - { testSuite: AppContext01TestSuite, compose-profile: with-transform-core-aio }
+        - { testSuite: AppContext02TestSuite, compose-profile: default }
+        - { testSuite: AppContext03TestSuite, compose-profile: with-transform-core-aio }
+        - { testSuite: AppContext04TestSuite, compose-profile: with-transform-core-aio }
+        - { testSuite: ElasticsearchCommunityTestsTestSuite, compose-profile: with-elasticsearch, mvn-options: "-Dindex.subsystem.name=elasticsearch" }
+        - testSuite: AppContext05TestSuite
+          compose-profile: with-sso
+          mvn-options: "-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm"
+          idp: Keycloak
+        - testSuite: AppContext05TestSuite
+          compose-profile: default
+          mvn-options: "-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dauth0.enabled=true -Didentity-service.principal-attribute=nickname"
+          idp: Auth0
+        - { testSuite: AppContext06TestSuite, compose-profile: with-transform-core-aio }
+        - { testSuite: AppContextExtraTestSuite, compose-profile: with-transform-core-aio }
+        - { testSuite: MiscContextTestSuite, compose-profile: with-transform-core-aio }
+        - { testSuite: SearchTestSuite, compose-profile: default, mvn-options: "-Dindex.subsystem.name=solr6" }
+        - testSuite: MTLSTestSuite
+          compose-profile: with-mtls-transform-core-aio
+          mtls: true
+          disabledHostnameVerification: false
+          mvn-options: "-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore"
       # This branch has no REST API part4, no CMIS part1/part2 split and no Elasticsearch E2E suites
       tas-tests: |
         - { test-name: "REST API TAS tests part1", pom-dir: tas-restapi, test-profile: run-restapi-part1 }

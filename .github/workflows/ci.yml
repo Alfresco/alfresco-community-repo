@@ -17,7 +17,7 @@ on:
       - fix/**
   workflow_call:
     # Release branches run this workflow through a caller instead of keeping their own copy. Their caller
-    # passes every input (written by .github/ci/create-release-caller.sh at the cut). An input a release caller does not
+    # passes every input (written by .github/ci/setup-release-branch-ci.sh at the cut). An input a release caller does not
     # pass means "none" (java-version is required); on master, inputs are empty and .github/ci/defaults.yml applies.
     # List inputs accept YAML or JSON; [] means "none". Quote versions as strings.
     inputs:

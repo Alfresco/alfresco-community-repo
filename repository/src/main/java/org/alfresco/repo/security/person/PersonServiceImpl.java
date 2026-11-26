@@ -978,7 +978,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
         if (isSystemUserName(userName))
         {
-            throw new AlfrescoRuntimeException("The built-in authority '" + AuthenticationUtil.getSystemUserName() + "' is a user, but not a Person (i.e. it does not have a profile).");
+            throw new AlfrescoRuntimeException("The built-in authority '" + userName + "' is a user, but not a Person (i.e. it does not have a profile).");
         }
 
         AuthorityType authorityType = AuthorityType.getAuthorityType(userName);

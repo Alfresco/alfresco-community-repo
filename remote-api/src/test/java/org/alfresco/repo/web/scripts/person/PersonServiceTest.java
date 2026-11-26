@@ -748,7 +748,7 @@ public class PersonServiceTest extends BaseWebScriptTest
             // Create a new person with built-in system userName
             createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                     "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                    Status.STATUS_INTERNAL_SERVER_ERROR);
+                    Status.STATUS_BAD_REQUEST);
         }
     }
 

@@ -22,6 +22,12 @@ function main()
       return;
    }
    
+   if (String(json.get("userName")).toLowerCase() == "system")
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "User name is reserved for the built-in authority: " + json.get("userName"));
+      return;
+   }
+   
    var password = "password";
    if (json.has("password"))
    {

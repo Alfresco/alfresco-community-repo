@@ -668,6 +668,11 @@ public class PeopleImpl implements People
             throw new InvalidArgumentException("Username exceeds max length of " + USERNAME_MAXLENGTH + " characters.");
         }
 
+        if (username.equalsIgnoreCase(AuthenticationUtil.getSystemUserName()))
+        {
+            throw new InvalidArgumentException("Username '" + username + "' is reserved for the built-in authority.");
+        }
+
         for (String prefix : RESERVED_AUTHORITY_PREFIXES)
         {
             if (username.toUpperCase().startsWith(prefix))

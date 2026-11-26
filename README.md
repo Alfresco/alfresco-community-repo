@@ -48,7 +48,7 @@ Remote API is a library packaged as a jar file which contains the following:
 ## Artifacts
 
 The artifacts can be obtained by:
-* downloading from [Alfresco maven repository](https://artifacts.alfresco.com/nexus/#browse/browse:public)
+* downloading from [Alfresco maven repository](https://artifacts.hyland.dev/public/alfresco-public/maven/)
 * as Maven dependency by adding the dependency to your pom file:
 
 ~~~xml
@@ -92,7 +92,7 @@ and Alfresco maven repository:
 
 <repository>
   <id>alfresco-maven-repo</id>
-  <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+  <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
 </repository>
 
 ~~~

@@ -1,0 +1,35 @@
+name: CI with BATS 🦇
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - '.github/actions/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - '.github/actions/**'
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Bats and bats libs
+        id: setup-bats
+        uses: bats-core/bats-action@3566550e0f594451ac0f58fcbfdeca93aa29a45e # v4.1.0
+        with:
+          bats-version: 1.13.0
+
+      - name: 🦇🦇🦇
+        shell: bash
+        env:
+          BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
+          TERM: xterm
+        run: bats -r --print-output-on-failure --formatter pretty .

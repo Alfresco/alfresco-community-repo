@@ -68,12 +68,12 @@ public abstract class BaseRangeQueryIT extends ElasticsearchBaseQueryIT
                 indexDefaultDocumentWithModifiedDate("2020-05-12T23:59:59+00:00")};
     }
 
-    @SuppressWarnings("PMD.UselessParentheses")
-    private NodeRef indexDefaultDocumentWithModifiedDate(String modifiedDate)
+    protected NodeRef indexDefaultDocumentWithModifiedDate(String modifiedDate)
     {
+        OffsetDateTime offsetDateTime = OffsetDateTime.parse(modifiedDate);
         return this.indexDocument(new IndexDocumentSourceBuilder()
                 .withName("dateTest")
-                .withDate(Date.from(OffsetDateTime.parse((modifiedDate)).toInstant())));
+                .withDate(Date.from(offsetDateTime.toInstant())));
     }
 
     @Test

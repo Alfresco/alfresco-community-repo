@@ -38,7 +38,10 @@ import java.util.regex.Pattern;
 final class DateValueConverter
 {
     private static final Pattern MONTH_NAME_DATE = Pattern.compile("(\\d{4})-(\\p{Alpha}+)(.*)");
+    private static final Pattern YEAR = Pattern.compile("\\d{4}");
     private static final Pattern YEAR_OR_MONTH = Pattern.compile("\\d{4}(-\\d{1,2})?");
+    private static final String YEAR_ROUNDING = "||/y";
+    private static final String MONTH_ROUNDING = "||/M";
     private static final DateTimeFormatter MONTH_NAME = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
             .appendPattern("[MMMM][MMM]")
@@ -58,7 +61,7 @@ final class DateValueConverter
         try
         {
             int month = MONTH_NAME.parse(matcher.group(2)).get(MONTH_OF_YEAR);
-            return "%s-%02d%s".formatted(matcher.group(1), month, matcher.group(3));
+            return String.format(Locale.ROOT, "%s-%02d%s", matcher.group(1), month, matcher.group(3));
         }
         catch (DateTimeParseException e)
         {
@@ -92,6 +95,11 @@ final class DateValueConverter
         {
             return date;
         }
-        return date + (date.length() == 4 ? "||/y" : "||/M");
+        return date + roundingToWholePeriod(date);
+    }
+
+    private static String roundingToWholePeriod(String yearOrMonth)
+    {
+        return YEAR.matcher(yearOrMonth).matches() ? YEAR_ROUNDING : MONTH_ROUNDING;
     }
 }

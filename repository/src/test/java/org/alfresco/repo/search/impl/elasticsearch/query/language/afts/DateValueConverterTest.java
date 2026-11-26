@@ -31,6 +31,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Test;
@@ -75,5 +76,22 @@ public class DateValueConverterTest
                 "*", "*")
                 .forEach((bound, expected) -> assertEquals(bound, expected, DateValueConverter.toRangeBound(bound)));
         assertNull(DateValueConverter.toRangeBound(null));
+    }
+
+    /** Elasticsearch reads ASCII digits only; String.format without a locale writes Arabic-Indic digits on ar-EG. */
+    @Test
+    public void shouldWriteAsciiDigitsWhateverTheDefaultLocale()
+    {
+        Locale defaultLocale = Locale.getDefault(Locale.Category.FORMAT);
+        Locale.setDefault(Locale.Category.FORMAT, Locale.forLanguageTag("ar-EG"));
+        try
+        {
+            assertEquals("2025-08-05T", DateValueConverter.withNumericMonth("2025-Aug-05T"));
+            assertEquals("2025-08||/M", DateValueConverter.toRangeBound("2025-Aug"));
+        }
+        finally
+        {
+            Locale.setDefault(Locale.Category.FORMAT, defaultLocale);
+        }
     }
 }

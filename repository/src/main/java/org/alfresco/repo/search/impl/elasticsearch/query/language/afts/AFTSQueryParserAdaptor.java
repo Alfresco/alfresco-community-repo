@@ -25,22 +25,14 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query.language.afts;
 
-import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
-
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import static org.alfresco.repo.search.impl.QueryParserUtils.matchPropertyDefinition;
 import static org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.QueryConverter.fromLuceneSpanToElasticsearchSpan;
 import static org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.QueryConverter.fromLuceneToElasticsearch;
 
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.lucene.queries.spans.SpanQuery;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -88,12 +80,6 @@ public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch
     public static final String TODAY_START_OF_THE_DAY = "now/d";
     public static final String TOMORROW_START_OF_THE_DAY = "now+1d/d";
 
-    private static final Pattern MONTH_NAME_DATE = Pattern.compile("(\\d{4})-(\\p{Alpha}+)(.*)");
-    private static final DateTimeFormatter MONTH_NAME = new DateTimeFormatterBuilder()
-            .parseCaseInsensitive()
-            .appendPattern("[MMMM][MMM]")
-            .toFormatter(Locale.ENGLISH);
-
     protected final SearchParameters searchParameters;
     protected final LuceneQueryParser lucene;
     protected final NamespacePrefixResolver namespaceResolver;
@@ -115,7 +101,7 @@ public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch
         this.namespaceResolver = namespacePrefixResolver;
         this.dictionaryService = dictionaryService;
         this.esTypeResolver = esTypeResolver;
-        this.lucene = new LuceneQueryParser(namespacePrefixResolver, dictionaryService, siteService, searchParameters, exactTermSearchConfig);
+        this.lucene = new AftsLuceneQueryParser(namespacePrefixResolver, dictionaryService, siteService, searchParameters, exactTermSearchConfig);
         this.storeRefStripper = new StoreRefStripper(namespacePrefixResolver, dictionaryService,
                 searchParameters.getNamespace());
     }
@@ -127,7 +113,6 @@ public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch
         {
             return getRangeQuery(fieldName, TODAY_START_OF_THE_DAY, TOMORROW_START_OF_THE_DAY, true, false, AnalysisMode.DEFAULT, LuceneFunction.FIELD);
         }
-        term = withNumericMonth(fieldName, term);
         term = fieldQueryTransformer.transformTerm(fieldName, term);
         if (fieldName == null)
         {
@@ -185,26 +170,6 @@ public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch
                 .orElse(false);
     }
 
-    /** Elasticsearch parses numeric months only, while AFTS also accepts month names (e.g. 2025-Aug-05T). */
-    protected String withNumericMonth(String fieldName, String term)
-    {
-        Matcher date = term == null ? null : MONTH_NAME_DATE.matcher(term);
-        if (date == null || !date.matches())
-        {
-            return term;
-        }
-        try
-        {
-            int month = MONTH_NAME.parse(date.group(2)).get(MONTH_OF_YEAR);
-            // isDate() asks Elasticsearch for the field mapping, so it is only called for month-name dates
-            return isDate(fieldName) ? "%s-%02d%s".formatted(date.group(1), month, date.group(3)) : term;
-        }
-        catch (DateTimeParseException e)
-        {
-            return term;
-        }
-    }
-
     private Optional<String> mapToEsFieldNameAndGetEsType(String fieldName)
     {
         return Optional.ofNullable(fieldName)
@@ -224,7 +189,6 @@ public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch
     public org.opensearch.client.opensearch._types.query_dsl.Query getFieldQuery(String fieldName, String phrase, AnalysisMode analysisMode, Integer slop, LuceneFunction luceneFunction)
     {
         phrase = storeRefStripper.stripIfNeeded(fieldName, phrase);
-        phrase = withNumericMonth(fieldName, phrase);
         phrase = fieldQueryTransformer.transformTerm(fieldName, phrase);
         if (fieldName == null)
         {
@@ -255,7 +219,7 @@ public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch
         }
         else
         {
-            lower = DateMathConverter.convert(withNumericMonth(fieldName, lower));
+            lower = DateMathConverter.convert(lower);
         }
         if (RANGE_MAX.equals(upper) || RANGE_MAX_CHAR.equals(upper))
         {
@@ -263,7 +227,7 @@ public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch
         }
         else
         {
-            upper = DateMathConverter.convert(withNumericMonth(fieldName, upper));
+            upper = DateMathConverter.convert(upper);
         }
         Query luceneQuery = lucene.getRangeQuery(fieldName, lower, upper, includeLower, includeUpper);
 

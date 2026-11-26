@@ -99,8 +99,8 @@ public class RangeQueryIT extends BaseRangeQueryIT
     @Override
     public void whenSearchUsingPartialDate()
     {
-        assertContainsOnly(aftsSearch("cm:modified:['1950' TO '2021']"), dateBefore1970, testDates[0], testDates[1], testDates[2], testDates[3]); // becomes 1950-01-01T00:00:00 TO 2021-01-01T23:59:59
-        assertContainsOnly(aftsSearch("cm:modified:['2020-05' TO '2020-06']"), testDates); // becomes 2020-05-01T00:00:00 TO 2020-06-01T23:59:59
+        assertContainsOnly(aftsSearch("cm:modified:['1950' TO '2021']"), dateBefore1970, testDates[0], testDates[1], testDates[2], testDates[3]); // becomes 1950-01-01T00:00:00 TO 2021-12-31T23:59:59.999
+        assertContainsOnly(aftsSearch("cm:modified:['2020-05' TO '2020-06']"), testDates); // becomes 2020-05-01T00:00:00 TO 2020-06-30T23:59:59.999
         assertContainsOnly(aftsSearch("cm:modified:['2020-05-11' TO '2020-05-11']"), testDates[0], testDates[1]); // becomes 2020-05-11T00:00:00 TO 2020-05-11T23:59:59
         assertContainsOnly(aftsSearch("cm:modified:['2020-05-11T01' TO '2020-05-11T01']"), testDates[1]); // becomes 2020-05-11T01:00:00 TO 2020-05-11T01:59:59
         assertContainsOnly(aftsSearch("cm:modified:['2020-05-11T01:00' TO '2020-05-11T01:59']"), testDates[1]); // becomes 2020-05-11T01:00:00 TO 2020-05-11T01:00:59
@@ -113,6 +113,17 @@ public class RangeQueryIT extends BaseRangeQueryIT
         assertContainsOnly(aftsSearch("cm:modified:2020-may-12"), testDates[2], testDates[3]);
         assertContainsOnly(aftsSearch("cm:modified:\"2020-MAY-11T01\""), testDates[1]);
         assertContainsOnly(aftsSearch("cm:modified:['2020-May-11' TO '2020-May-12']"), testDates);
+    }
+
+    /** A year or month matches all of it (as on Solr), not only its first day. */
+    @Test
+    public void whenSearchUsingYearOrMonth()
+    {
+        assertContainsOnly(aftsSearch("cm:modified:2020"), testDates);
+        assertContainsOnly(aftsSearch("cm:modified:2020-05"), testDates);
+        assertContainsOnly(aftsSearch("cm:modified:\"2020-May\""), testDates);
+        assertContainsOnly(aftsSearch("cm:modified:[2020-05 TO 2020-05]"), testDates);
+        assertZeroResults(aftsSearch("cm:modified:<2020-05 TO 2020-06]"));
     }
 
     /** A date term matches the UTC day (as on Solr): the request time zone is not applied, unlike for ranges. */

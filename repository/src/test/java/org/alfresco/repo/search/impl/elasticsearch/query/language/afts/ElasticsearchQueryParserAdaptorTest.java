@@ -33,8 +33,8 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ANCESTOR;
@@ -44,7 +44,6 @@ import static org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -66,10 +65,10 @@ import org.alfresco.repo.search.adaptor.AnalysisMode;
 import org.alfresco.repo.search.adaptor.LuceneFunction;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfig;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.EsTypeResolver;
-import org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.AFTSForCMISQueryParserAdaptor;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.QueryConverter;
 import org.alfresco.repo.search.impl.elasticsearch.util.MockNamespaceService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -81,10 +80,7 @@ import org.alfresco.service.namespace.QName;
 @RunWith(MockitoJUnitRunner.class)
 public class ElasticsearchQueryParserAdaptorTest
 {
-    private static final String CM_CREATED = "{http://www.alfresco.org/model/content/1.0}created";
-
     private AFTSQueryParserAdaptor aftsQueryParserAdaptor;
-    private AFTSForCMISQueryParserAdaptor cmisQueryParserAdaptor;
     private DictionaryService dictionaryService;
     private EsTypeResolver esTypeResolver;
     private ElasticsearchExactTermSearchConfig exactTermSearchConfig;
@@ -114,8 +110,6 @@ public class ElasticsearchQueryParserAdaptorTest
 
         SearchParameters searchParameter = new SearchParameters();
         aftsQueryParserAdaptor = new AFTSQueryParserAdaptor(searchParameter, resolver, dictionaryService, siteService, exactTermSearchConfig,
-                esTypeResolver);
-        cmisQueryParserAdaptor = new AFTSForCMISQueryParserAdaptor(searchParameter, resolver, dictionaryService, siteService, exactTermSearchConfig,
                 esTypeResolver);
     }
 
@@ -167,64 +161,6 @@ public class ElasticsearchQueryParserAdaptorTest
     }
 
     @Test
-    public void shouldConvertMonthNameToNumberWhenFieldIsDate()
-    {
-        when(esTypeResolver.resolve(any())).thenReturn(Optional.of("date"));
-
-        Map.of("2025-Aug-05T", "2025-08-05T",
-                "2025-aug-05T", "2025-08-05T",
-                "2025-AUG-05T", "2025-08-05T",
-                "2025-August-05T", "2025-08-05T",
-                "2025-Dec-31", "2025-12-31",
-                "2025-May", "2025-05",
-                "2025-Aug-05T10:15", "2025-08-05T10\\:15")
-                .forEach((term, expected) -> assertThat(term, aftsQueryParserAdaptor.getFieldQuery(CM_CREATED, term).queryString().query(),
-                        is("cm%3Acreated:" + expected)));
-    }
-
-    @Test
-    public void shouldKeepMonthNameWhenFieldIsNotDate()
-    {
-        when(esTypeResolver.resolve(any())).thenReturn(Optional.of("text"));
-
-        Query aftsQuery = aftsQueryParserAdaptor.getFieldQuery("{http://www.alfresco.org/model/content/1.0}name", "2025-Aug-05T");
-
-        assertThat(aftsQuery.queryString().query(), is("cm%3Aname:2025-Aug-05T"));
-    }
-
-    /** The field type lookup is a request to Elasticsearch, so it must not happen for terms without a month name. */
-    @Test
-    public void shouldNotLookUpFieldTypeWhenTermHasNoMonthName()
-    {
-        assertThat(aftsQueryParserAdaptor.getFieldQuery(CM_CREATED, "2025-08-05T").queryString().query(), is("cm%3Acreated:2025-08-05T"));
-        assertThat(aftsQueryParserAdaptor.getFieldQuery(CM_CREATED, "2025-Foo-05T").queryString().query(), is("cm%3Acreated:2025-Foo-05T"));
-        assertThat(aftsQueryParserAdaptor.getFieldQuery(CM_CREATED, "test").queryString().query(), is("cm%3Acreated:test"));
-
-        verifyNoInteractions(esTypeResolver);
-    }
-
-    @Test
-    public void shouldConvertMonthNameToNumberInQuotedDate()
-    {
-        when(esTypeResolver.resolve(any())).thenReturn(Optional.of("date"));
-
-        Query aftsQuery = aftsQueryParserAdaptor.getFieldQuery(CM_CREATED, "2025-Aug-05T", AnalysisMode.DEFAULT, 0, LuceneFunction.FIELD);
-
-        assertThat(aftsQuery.queryString().query(), is("cm%3Acreated:2025-08-05T"));
-    }
-
-    /** CMIS CONTAINS terms go through the CMIS adaptor, which overrides getFieldQuery. */
-    @Test
-    public void shouldConvertMonthNameToNumberInCmisContainsTerm()
-    {
-        when(esTypeResolver.resolve(any())).thenReturn(Optional.of("date"));
-
-        Query cmisQuery = cmisQueryParserAdaptor.getFieldQuery(CM_CREATED, "2025-Aug-05T");
-
-        assertThat(cmisQuery.queryString().query(), is("cm%3Acreated:2025-08-05T"));
-    }
-
-    @Test
     public void shouldGetFieldQueryWhenFieldNameIsContent() throws ParseException
     {
         Query queryBuilderFullName = aftsQueryParserAdaptor
@@ -253,14 +189,20 @@ public class ElasticsearchQueryParserAdaptorTest
         assertThat(rangeQuery.queryString().query(), is("cm%3Acreated:[now-1M/d TO now+2w/d}"));
     }
 
+    /** Terms and ranges go through {@link AftsLuceneQueryParser}, which converts dates as Solr reads them. */
     @Test
-    public void shouldConvertMonthNameToNumberInDateRange()
+    public void shouldConvertDatesWithAftsParser()
     {
-        when(esTypeResolver.resolve(any())).thenReturn(Optional.of("date"));
+        var datetime = mock(DataTypeDefinition.class);
+        when(datetime.getName()).thenReturn(DataTypeDefinition.DATETIME);
+        var created = mock(PropertyDefinition.class);
+        when(created.getName()).thenReturn(ContentModel.PROP_CREATED);
+        when(created.getDataType()).thenReturn(datetime);
+        doReturn(created).when(dictionaryService).getProperty(ContentModel.PROP_CREATED);
 
-        Query rangeQuery = aftsQueryParserAdaptor.getRangeQuery(CM_CREATED, "2025-Aug-01", "2025-Aug-05T", true, true, AnalysisMode.DEFAULT, LuceneFunction.FIELD);
-
-        assertThat(rangeQuery.queryString().query(), is("cm%3Acreated:[2025-08-01 TO 2025-08-05T]"));
+        assertThat(aftsQueryParserAdaptor.getFieldQuery("cm:created", "2025-Aug").queryString().query(), is("cm%3Acreated:[2025-08||/M TO 2025-08||/M]"));
+        assertThat(aftsQueryParserAdaptor.getRangeQuery("cm:created", "2025", "2025-Aug-05", true, true, AnalysisMode.DEFAULT, LuceneFunction.FIELD)
+                .queryString().query(), is("cm%3Acreated:[2025||/y TO 2025-08-05]"));
     }
 
     /** Check that a query by id is converted into a match query. */

@@ -193,7 +193,7 @@ public class ElasticsearchQueryParserAdaptorTest
         assertThat(rangeQuery.queryString().query(), is("cm%3Acreated:[now-1M/d TO now+2w/d}"));
     }
 
-    /** Terms and ranges go through {@link AftsLuceneQueryParser}, which converts dates as Solr reads them; CMIS CONTAINS inherits it. */
+    /** Terms and ranges go through {@link AFTSLuceneQueryParser}; the CMIS adaptor inherits it. */
     @Test
     public void shouldConvertDatesWithAftsParser()
     {

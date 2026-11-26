@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -48,7 +48,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
-public class AftsLuceneQueryParserTest
+public class AFTSLuceneQueryParserTest
 {
     private static final String CM_CREATED = "{http://www.alfresco.org/model/content/1.0}created";
     private static final String CM_EXPIRY_DATE = "{http://www.alfresco.org/model/content/1.0}expiryDate";
@@ -56,7 +56,7 @@ public class AftsLuceneQueryParserTest
 
     private MockNamespaceService resolver;
     private DictionaryService dictionaryService;
-    private AftsLuceneQueryParser parser;
+    private AFTSLuceneQueryParser parser;
 
     @Before
     public void setUp()
@@ -73,7 +73,7 @@ public class AftsLuceneQueryParserTest
             when(property.getDataType()).thenReturn(dataTypes.get(name));
             return property;
         });
-        parser = new AftsLuceneQueryParser(resolver, dictionaryService, mock(SiteService.class), new SearchParameters(),
+        parser = new AFTSLuceneQueryParser(resolver, dictionaryService, mock(SiteService.class), new SearchParameters(),
                 mock(ElasticsearchExactTermSearchConfig.class));
     }
 

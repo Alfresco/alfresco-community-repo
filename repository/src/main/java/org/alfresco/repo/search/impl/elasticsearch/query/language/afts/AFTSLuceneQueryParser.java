@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -40,14 +40,14 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 
-/** The parser behind AFTS (and CMIS CONTAINS) terms and ranges: date values are converted with {@link DateValueConverter}. */
-public class AftsLuceneQueryParser extends LuceneQueryParser
+/** The parser of {@link AFTSQueryParserAdaptor} (AFTS and CMIS): date values are converted with {@link DateValueConverter}. */
+class AFTSLuceneQueryParser extends LuceneQueryParser
 {
     private final NamespacePrefixResolver namespaceResolver;
     private final DictionaryService dictionaryService;
     private final SearchParameters searchParameters;
 
-    public AftsLuceneQueryParser(NamespacePrefixResolver namespaceResolver, DictionaryService dictionaryService, SiteService siteService,
+    AFTSLuceneQueryParser(NamespacePrefixResolver namespaceResolver, DictionaryService dictionaryService, SiteService siteService,
             SearchParameters searchParameters, ElasticsearchExactTermSearchConfig exactTermSearchConfig)
     {
         super(namespaceResolver, dictionaryService, siteService, searchParameters, exactTermSearchConfig);

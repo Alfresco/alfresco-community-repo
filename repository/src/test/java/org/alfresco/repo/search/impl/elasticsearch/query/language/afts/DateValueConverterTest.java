@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2026 Alfresco Software Limited
+ * Copyright (C) 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert") // PMD misses the asserts inside lambdas
 public class DateValueConverterTest
 {
     @Test

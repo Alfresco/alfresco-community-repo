@@ -65,6 +65,7 @@ import org.alfresco.repo.search.adaptor.AnalysisMode;
 import org.alfresco.repo.search.adaptor.LuceneFunction;
 import org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.config.ElasticsearchExactTermSearchConfig;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.EsTypeResolver;
+import org.alfresco.repo.search.impl.elasticsearch.query.language.cmis.AFTSForCMISQueryParserAdaptor;
 import org.alfresco.repo.search.impl.elasticsearch.query.language.lucene.QueryConverter;
 import org.alfresco.repo.search.impl.elasticsearch.util.MockNamespaceService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -81,6 +82,7 @@ import org.alfresco.service.namespace.QName;
 public class ElasticsearchQueryParserAdaptorTest
 {
     private AFTSQueryParserAdaptor aftsQueryParserAdaptor;
+    private AFTSForCMISQueryParserAdaptor cmisQueryParserAdaptor;
     private DictionaryService dictionaryService;
     private EsTypeResolver esTypeResolver;
     private ElasticsearchExactTermSearchConfig exactTermSearchConfig;
@@ -110,6 +112,8 @@ public class ElasticsearchQueryParserAdaptorTest
 
         SearchParameters searchParameter = new SearchParameters();
         aftsQueryParserAdaptor = new AFTSQueryParserAdaptor(searchParameter, resolver, dictionaryService, siteService, exactTermSearchConfig,
+                esTypeResolver);
+        cmisQueryParserAdaptor = new AFTSForCMISQueryParserAdaptor(searchParameter, resolver, dictionaryService, siteService, exactTermSearchConfig,
                 esTypeResolver);
     }
 
@@ -189,7 +193,7 @@ public class ElasticsearchQueryParserAdaptorTest
         assertThat(rangeQuery.queryString().query(), is("cm%3Acreated:[now-1M/d TO now+2w/d}"));
     }
 
-    /** Terms and ranges go through {@link AftsLuceneQueryParser}, which converts dates as Solr reads them. */
+    /** Terms and ranges go through {@link AftsLuceneQueryParser}, which converts dates as Solr reads them; CMIS CONTAINS inherits it. */
     @Test
     public void shouldConvertDatesWithAftsParser()
     {
@@ -203,6 +207,7 @@ public class ElasticsearchQueryParserAdaptorTest
         assertThat(aftsQueryParserAdaptor.getFieldQuery("cm:created", "2025-Aug").queryString().query(), is("cm%3Acreated:[2025-08||/M TO 2025-08||/M]"));
         assertThat(aftsQueryParserAdaptor.getRangeQuery("cm:created", "2025", "2025-Aug-05", true, true, AnalysisMode.DEFAULT, LuceneFunction.FIELD)
                 .queryString().query(), is("cm%3Acreated:[2025||/y TO 2025-08-05]"));
+        assertThat(cmisQueryParserAdaptor.getFieldQuery("cm:created", "2025-Aug").queryString().query(), is("cm%3Acreated:[2025-08||/M TO 2025-08||/M]"));
     }
 
     /** Check that a query by id is converted into a match query. */

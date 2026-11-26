@@ -30,6 +30,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
+
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +51,7 @@ import org.alfresco.service.namespace.QName;
 public class AftsLuceneQueryParserTest
 {
     private static final String CM_CREATED = "{http://www.alfresco.org/model/content/1.0}created";
+    private static final String CM_EXPIRY_DATE = "{http://www.alfresco.org/model/content/1.0}expiryDate";
     private static final String CM_NAME = "{http://www.alfresco.org/model/content/1.0}name";
 
     private MockNamespaceService resolver;
@@ -60,21 +63,25 @@ public class AftsLuceneQueryParserTest
     {
         resolver = new MockNamespaceService();
         resolver.registerNamespace(NamespaceService.CONTENT_MODEL_PREFIX, NamespaceService.CONTENT_MODEL_1_0_URI);
-        var datetime = mock(DataTypeDefinition.class);
-        when(datetime.getName()).thenReturn(DataTypeDefinition.DATETIME);
+        var dataTypes = Map.of(ContentModel.PROP_CREATED, dataType(DataTypeDefinition.DATETIME), ContentModel.PROP_EXPIRY_DATE, dataType(DataTypeDefinition.DATE),
+                ContentModel.PROP_NAME, dataType(DataTypeDefinition.TEXT));
         dictionaryService = mock(DictionaryService.class);
         when(dictionaryService.getProperty(any())).thenAnswer(invocation -> {
             QName name = invocation.getArgument(0);
             var property = mock(PropertyDefinition.class);
             when(property.getName()).thenReturn(name);
-            if (ContentModel.PROP_CREATED.equals(name))
-            {
-                when(property.getDataType()).thenReturn(datetime);
-            }
+            when(property.getDataType()).thenReturn(dataTypes.get(name));
             return property;
         });
         parser = new AftsLuceneQueryParser(resolver, dictionaryService, mock(SiteService.class), new SearchParameters(),
                 mock(ElasticsearchExactTermSearchConfig.class));
+    }
+
+    private static DataTypeDefinition dataType(QName name)
+    {
+        var dataType = mock(DataTypeDefinition.class);
+        when(dataType.getName()).thenReturn(name);
+        return dataType;
     }
 
     @Test
@@ -90,6 +97,12 @@ public class AftsLuceneQueryParserTest
         assertEquals("cm%3Acreated:[2025||/y TO 2025||/y]", parser.getFieldQuery(CM_CREATED, "2025", false).toString());
         assertEquals("cm%3Acreated:[2025-08||/M TO 2025-08||/M]", parser.getFieldQuery(CM_CREATED, "2025-08", false).toString());
         assertEquals("cm%3Acreated:[2025-08||/M TO 2025-08||/M]", parser.getFieldQuery(CM_CREATED, "2025-Aug", true).toString());
+    }
+
+    @Test
+    public void shouldConvertDateOnlyProperty()
+    {
+        assertEquals("cm%3AexpiryDate:[2025-08||/M TO 2025-08||/M]", parser.getFieldQuery(CM_EXPIRY_DATE, "2025-Aug", false).toString());
     }
 
     @Test

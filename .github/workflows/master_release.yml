@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-commit-message@16298278308f674c76542d61658da190e975e31c # v19.16.0
         id: get-commit
         with:
           header-only: "true"
@@ -54,7 +54,7 @@ jobs:
     steps:
       - name: "Generate GitHub App token"
         id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
           client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
           private-key: ${{ secrets.GH_APP_ENGINEERING_CONTRIB_PRIVATE_KEY }}
@@ -64,22 +64,22 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
       - name: "Create local release branch"
         run: git checkout -B "${{ github.ref_name }}"
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@16298278308f674c76542d61658da190e975e31c # v19.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@16298278308f674c76542d61658da190e975e31c # v19.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@16298278308f674c76542d61658da190e975e31c # v19.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@16298278308f674c76542d61658da190e975e31c # v19.16.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Compute release and next development versions"
         id: versions
-        uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/maven-compute-release-versions@16298278308f674c76542d61658da190e975e31c # v19.16.0
       - name: "Verify release version"
         run: bash scripts/ci/verify_release_tag.sh
       - name: "Release"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/maven-release-slim@16298278308f674c76542d61658da190e975e31c # v19.16.0
         with:
           token: ${{ steps.app-token.outputs.token }}
           release-version: ${{ steps.versions.outputs.release-version }}
@@ -100,7 +100,7 @@ jobs:
     steps:
       - name: "Generate GitHub App token"
         id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
           owner: Alfresco
           client-id: ${{ vars.GH_APP_ENGINEERING_CONTRIB_CLIENT_ID }}
@@ -112,10 +112,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.app-token.outputs.token }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@16298278308f674c76542d61658da190e975e31c # v19.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@16298278308f674c76542d61658da190e975e31c # v19.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@16298278308f674c76542d61658da190e975e31c # v19.16.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@16298278308f674c76542d61658da190e975e31c # v19.16.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
       - name: "Init"
@@ -133,7 +133,7 @@ jobs:
           version: ${{ steps.update-downstream.outputs.version }}
           downstream-repo: community-repo
       - name: "Commit downstream version update"
-        uses: iarekylew00t/verified-bot-commit@33985d44b7719dcaf0b854a0f4b0caad9bdc5b86 # v2.3.3
+        uses: iarekylew00t/verified-bot-commit@3a1e72c2443cce5574f76a9b2bb36e355d667743 # v2.3.7
         with:
           token: ${{ steps.app-token.outputs.token }}
           repository: Alfresco/alfresco-enterprise-repo

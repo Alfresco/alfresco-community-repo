@@ -2,7 +2,7 @@ name: Alfresco Community Repo CI
 
 # This branch runs master's CI workflow (ACS-13096) with the settings below, so CI fixes on master reach it without a
 # backport. This branch predates the cut script, so its settings were written by hand in the format that
-# .github/ci/create-release-caller.sh produces. Change them here when this branch's code changes (suites, versions,
+# .github/ci/setup-release-branch-ci.sh produces. Change them here when this branch's code changes (suites, versions,
 # profiles); master's later default changes never reach this branch.
 
 permissions:

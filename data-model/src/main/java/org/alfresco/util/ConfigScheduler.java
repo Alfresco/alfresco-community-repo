@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -153,6 +153,7 @@ public abstract class ConfigScheduler<Data>
                 this.cronExpression = cronExpression;
                 this.initialAndOnErrorCronExpression = initialAndOnErrorCronExpression;
                 schedule();
+                triggerNow();
             }
             else
             {
@@ -185,6 +186,21 @@ public abstract class ConfigScheduler<Data>
         catch (Exception e)
         {
             log.error("Error scheduling " + e.getMessage());
+        }
+    }
+
+    private synchronized void triggerNow()
+    {
+        if (scheduler != null && jobKey != null)
+        {
+            try
+            {
+                scheduler.triggerJob(jobKey);
+            }
+            catch (Exception e)
+            {
+                log.error("Error triggering the first config read " + e.getMessage());
+            }
         }
     }
 

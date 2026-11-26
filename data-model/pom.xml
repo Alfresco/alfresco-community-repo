@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>26.3.0.61-SNAPSHOT</version>
+        <version>26.3.0.125-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -158,9 +158,6 @@
             <artifactId>chemistry-opencmis-server-bindings</artifactId>
             <version>${dependency.opencmis.version}</version>
         </dependency>
-        <!-- This is now deployed at:
-            | http://artifacts.alfresco.com/nexus/content/repositories/thirdparty/org/acegisecurity/acegi-security/0.8.2_patched/
-            -->
         <dependency>
             <groupId>org.acegisecurity</groupId>
             <artifactId>acegi-security</artifactId>
@@ -255,6 +252,12 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${dependency.awaitility.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -61,6 +61,8 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
      */
     private NodeService nodeService;
 
+    private FolderUploadMoveHandler folderUploadMoveHandler;
+
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
@@ -72,6 +74,11 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void setFolderUploadMoveHandler(FolderUploadMoveHandler folderUploadMoveHandler)
+    {
+        this.folderUploadMoveHandler = folderUploadMoveHandler;
     }
 
     @Override
@@ -101,7 +108,15 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
 
             try
             {
+                // If this rule already moved a folder with this name, add the files to it.
+                NodeRef sourceParent = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
+                if (folderUploadMoveHandler.mergeIntoPreviouslyMovedFolder(ruleAction, actionedUponNodeRef, sourceParent, destinationParent))
+                {
+                    return;
+                }
+
                 fileFolderService.move(actionedUponNodeRef, destinationParent, null);
+                folderUploadMoveHandler.markRuleMovedFolder(ruleAction, actionedUponNodeRef, sourceParent);
             }
             catch (FileNotFoundException e)
             {

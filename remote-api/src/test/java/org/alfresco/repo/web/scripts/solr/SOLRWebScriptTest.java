@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.web.scripts.solr;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -124,9 +125,11 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         super.tearDown();
     }
 
-    private JSONArray getTransactions(long fromCommitTime) throws Exception
+    private JSONArray getTransactions(long fromCommitTime, long txnId) throws IOException
     {
-        String url = "/api/solr/transactions?fromCommitTime=" + fromCommitTime;
+        // Limit the query to the test's own transaction (minTxnId inclusive, maxTxnId exclusive): other transactions
+        // of the repository, e.g. from background jobs, can commit after fromCommitTime too
+        String url = "/api/solr/transactions?fromCommitTime=" + fromCommitTime + "&minTxnId=" + txnId + "&maxTxnId=" + (txnId + 1);
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
         long startTime = System.currentTimeMillis();
         Response response = sendRequest(req, Status.STATUS_OK, admin);
@@ -455,10 +458,11 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
     private NodeRef container6;
 
-    private void buildTransactions5()
+    private long buildTransactions5()
     {
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
-            public Void execute() throws Throwable
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<>() {
+            @Override
+            public Long execute() throws Throwable
             {
                 PropertyMap props = new PropertyMap();
                 props.put(ContentModel.PROP_NAME, "Container6");
@@ -476,7 +480,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
                 aspectProperties.put(ContentModel.PROP_AUTHOR, "steve");
                 nodeService.addAspect(contentInfo.getNodeRef(), ContentModel.ASPECT_AUTHOR, aspectProperties);
 
-                return null;
+                return nodeDAO.getCurrentTransactionId(false);
             }
         });
     }
@@ -530,10 +534,11 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         return nodes;
     }
 
-    private void buildTransactions6()
+    private long buildTransactions6()
     {
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
-            public Void execute() throws Throwable
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<>() {
+            @Override
+            public Long execute() throws Throwable
             {
                 PropertyMap props = new PropertyMap();
                 props.put(ContentModel.PROP_NAME, "Container6");
@@ -560,7 +565,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
                     }
                 }
 
-                return null;
+                return nodeDAO.getCurrentTransactionId(false);
             }
         });
     }
@@ -569,10 +574,11 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     {
         long fromCommitTime = System.currentTimeMillis();
 
-        buildTransactions5();
+        long txnId = buildTransactions5();
 
-        JSONArray transactions = getTransactions(fromCommitTime);
+        JSONArray transactions = getTransactions(fromCommitTime, txnId);
         assertEquals("Number of transactions is incorrect", 1, transactions.length());
+        assertEquals("Unexpected transaction", txnId, transactions.getJSONObject(0).getLong("id"));
 
         List<Long> transactionIds = getTransactionIds(transactions);
 
@@ -621,10 +627,11 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
     private NodeRef container7;
 
-    private void buildTransactions7()
+    private long buildTransactions7()
     {
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
-            public Void execute() throws Throwable
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<>() {
+            @Override
+            public Long execute() throws Throwable
             {
                 PropertyMap props = new PropertyMap();
                 props.put(ContentModel.PROP_NAME, "Container7");
@@ -642,7 +649,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
                 aspectProperties.put(ContentModel.PROP_AUTHOR, "ste\"ve");
                 nodeService.addAspect(contentInfo.getNodeRef(), ContentModel.ASPECT_AUTHOR, aspectProperties);
 
-                return null;
+                return nodeDAO.getCurrentTransactionId(false);
             }
         });
     }
@@ -651,10 +658,11 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     {
         long fromCommitTime = System.currentTimeMillis();
 
-        buildTransactions7();
+        long txnId = buildTransactions7();
 
-        JSONArray transactions = getTransactions(fromCommitTime);
+        JSONArray transactions = getTransactions(fromCommitTime, txnId);
         assertEquals("Number of transactions is incorrect", 1, transactions.length());
+        assertEquals("Unexpected transaction", txnId, transactions.getJSONObject(0).getLong("id"));
 
         List<Long> transactionIds = getTransactionIds(transactions);
 
@@ -693,10 +701,11 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     {
         long fromCommitTime = System.currentTimeMillis();
 
-        buildTransactions6();
+        long txnId = buildTransactions6();
 
-        JSONArray transactions = getTransactions(fromCommitTime);
+        JSONArray transactions = getTransactions(fromCommitTime, txnId);
         assertEquals("Number of transactions is incorrect", 1, transactions.length());
+        assertEquals("Unexpected transaction", txnId, transactions.getJSONObject(0).getLong("id"));
 
         List<Long> transactionIds = getTransactionIds(transactions);
 

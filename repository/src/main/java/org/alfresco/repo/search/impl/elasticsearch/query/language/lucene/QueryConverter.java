@@ -43,7 +43,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.RegexpQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
-import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.QueryBuilders;
 import org.opensearch.client.opensearch._types.query_dsl.SpanMultiTermQuery;
@@ -53,24 +52,13 @@ import org.alfresco.repo.search.impl.elasticsearch.model.FieldName;
 public final class QueryConverter
 {
     private static Set<String> analyzeWildcardFields = Set.of();
-    private static Set<String> exactMatchFields = Set.of();
 
     private QueryConverter()
     {}
 
     public static void setAnalyzeWildcardFields(String fields)
     {
-        analyzeWildcardFields = toEncodedFieldNames(fields);
-    }
-
-    public static void setExactMatchFields(String fields)
-    {
-        exactMatchFields = toEncodedFieldNames(fields);
-    }
-
-    private static Set<String> toEncodedFieldNames(String fields)
-    {
-        return Arrays.stream(fields.split(","))
+        analyzeWildcardFields = Arrays.stream(fields.split(","))
                 .map(String::trim)
                 .filter(StringUtils::isNotBlank)
                 .map(FieldName::encoded)
@@ -99,11 +87,6 @@ public final class QueryConverter
         {
             return QueryBuilders.wildcard().field(wildcardQuery.getField()).value(wildcardQuery.getTerm().text()).build().toQuery();
         }
-        else if (luceneQuery instanceof TermQuery termQuery && shouldUseExactMatch(termQuery.getTerm().field()))
-        {
-            Term term = termQuery.getTerm();
-            return QueryBuilders.term().field(term.field()).value(FieldValue.of(term.text())).build().toQuery();
-        }
         else if (luceneQuery instanceof TermQuery termQuery && shouldAnalyzeWildcard(termQuery.getTerm().field()))
         {
             return QueryBuilders.queryString().query(luceneQuery.toString()).analyzeWildcard(true).build().toQuery();
@@ -115,11 +98,6 @@ public final class QueryConverter
     private static boolean shouldAnalyzeWildcard(String field)
     {
         return analyzeWildcardFields.contains(field);
-    }
-
-    private static boolean shouldUseExactMatch(String field)
-    {
-        return exactMatchFields.contains(field);
     }
 
     public static BoolQuery fromLuceneBoolToElasticsearchBoolean(BooleanQuery booleanQuery)

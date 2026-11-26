@@ -44,12 +44,18 @@ public class TagQueryIT extends LuceneOrAFTSQueryIT
 {
     private static final String TAG_1 = unique("TAG_1");
     private static final String TAG_2 = unique("TAG_2");
+    /** Made unique without hyphens, so that neither the AFTS parser nor the TAG.text analyser splits it further. */
+    private static final String FIRST_WORD = "purple" + uniqueSuffix();
+    /** Made unique without hyphens, so that neither the AFTS parser nor the TAG.text analyser splits it further. */
+    private static final String SECOND_WORD = "elephant" + uniqueSuffix();
+    /** A tag containing whitespace, which is indexed as a single keyword token. */
+    private static final String TAG_WITH_WHITESPACE = FIRST_WORD + " " + SECOND_WORD;
 
     private NodeRef noTagButTag1TextInContent;
     private NodeRef withTag1;
     private NodeRef withTag1AndTag2;
     private NodeRef withTag2;
-    private NodeRef withMultiWordTag;
+    private NodeRef withTagWithWhitespace;
 
     public TagQueryIT(String language)
     {
@@ -64,8 +70,54 @@ public class TagQueryIT extends LuceneOrAFTSQueryIT
         withTag1 = indexDocument(b("withTag1").withTag(TAG_1));
         withTag1AndTag2 = indexDocument(b("withTag1AndTag2").withTag(TAG_1, TAG_2));
         withTag2 = indexDocument(b("withTag2").withTag(TAG_2));
-        indexDocument(b("jpg"));
-        withMultiWordTag = indexDocument(b("withMultiWordTag").withTag("file jpg"));
+        withTagWithWhitespace = indexDocument(b("withTagWithWhitespace").withTag(TAG_WITH_WHITESPACE));
+    }
+
+    /** a quoted tag containing whitespace must match that tag exactly, rather than being split into separate terms. */
+    @Test
+    public void shouldReturnOnlyTheTaggedNodeWhenSearchingForDoubleQuotedTagContainingWhitespace()
+    {
+        assertContainsOnly(searchFor(language, tagDoubleQuotedQuery(TAG_WITH_WHITESPACE)), withTagWithWhitespace);
+        assertContainsOnly(searchFor(language, lowerCaseTagDoubleQuotedQuery(TAG_WITH_WHITESPACE)), withTagWithWhitespace);
+    }
+
+    /** a quoted multi-word tag, as sent by the ADW Tags filter, must not match nodes that only contain one of its words in their name (ACS-10967). */
+    @Test
+    public void shouldNotReturnNodesNamedAfterAWordOfADoubleQuotedTagContainingWhitespace()
+    {
+        indexDocument(b(SECOND_WORD));
+
+        assertContainsOnly(searchFor(language, tagDoubleQuotedQuery(TAG_WITH_WHITESPACE)), withTagWithWhitespace);
+    }
+
+    /** a quoted single word must match the keyword exactly, so it does not return nodes whose multi-word tag merely contains that word. */
+    @Test
+    public void shouldNotReturnNodesWithAMultiWordTagWhenSearchingForOneOfItsWordsDoubleQuoted()
+    {
+        final NodeRef withSecondWordTag = indexDocument(b("withSecondWordTag").withTag(SECOND_WORD));
+
+        assertContainsOnly(searchFor(language, tagDoubleQuotedQuery(SECOND_WORD)), withSecondWordTag);
+    }
+
+    /** a single word of a multi-word tag must match it through the analysed TAG.text field. */
+    @Test
+    public void shouldReturnTaggedNodeWhenSearchingForASingleWordOfATagContainingWhitespace()
+    {
+        assertContainsOnly(searchFor(language, tagQuery(FIRST_WORD)), withTagWithWhitespace);
+        assertContainsOnly(searchFor(language, tagQuery(SECOND_WORD)), withTagWithWhitespace);
+    }
+
+    /** simulates the Share search box, which splits a multi-word tag into separate terms. */
+    @Test
+    public void shouldReturnTaggedNodeWhenSearchingForTagContainingWhitespaceInTheDefaultQueryTemplate()
+    {
+        assumeFalse("Lucene language doesn't support query templates.", language.equals("lucene"));
+
+        final SearchParameters searchParams = createSearchParameters(language, TAG_WITH_WHITESPACE, null);
+        searchParams.addQueryTemplate("keywords", "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT TAG)");
+        searchParams.setDefaultFieldName("keywords");
+
+        assertContainsOnly(searchFor(searchParams), withTagWithWhitespace);
     }
 
     // simulates the default share's search-box behaviour
@@ -109,12 +161,6 @@ public class TagQueryIT extends LuceneOrAFTSQueryIT
         assertContainsOnly(searchFor(language, lowerCaseTagDoubleQuotedQuery(TAG_2)), withTag1AndTag2, withTag2);
     }
 
-    @Test
-    public void shouldReturnOnlyNodeWithExactMultiWordTag()
-    {
-        assertContainsOnly(searchFor(language, tagDoubleQuotedQuery("file jpg")), withMultiWordTag);
-    }
-
     private static String tagQuery(final String tag)
     {
         return FIELD_TAG + ":" + Objects.requireNonNull(tag);
@@ -143,5 +189,11 @@ public class TagQueryIT extends LuceneOrAFTSQueryIT
     private static String unique(final String s)
     {
         return Objects.requireNonNull(s) + "_" + UUID.randomUUID().toString();
+    }
+
+    /** A unique suffix with no hyphens, so that it survives tokenisation as a single term. */
+    private static String uniqueSuffix()
+    {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 }

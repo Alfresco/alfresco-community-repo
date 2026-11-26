@@ -66,7 +66,7 @@ public abstract class BaseAuthenticationFilter
     public static final String AUTHENTICATION_USER = "_alfDAVAuthTicket";
 
     /** The session attribute that indicates external authentication. */
-    private static final String LOGIN_EXTERNAL_AUTH = "_alfExternalAuth";
+    public static final String LOGIN_EXTERNAL_AUTH = "_alfExternalAuth";
 
     /** The name of the ticket argument. */
     protected static final String ARG_TICKET = "ticket";

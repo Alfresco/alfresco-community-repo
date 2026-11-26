@@ -68,7 +68,7 @@ public class ContentModelSynchronizer
     static final String CONFIG_PATH = "/alfresco/search/elasticsearch/config/";
     static final String LOCALE_PATH = "/alfresco/search/elasticsearch/config/locale/";
     static final List<String> MANDATORY_ANALYZERS_SETTINGS_ATTRIBUTES = List.of(
-            "settings", "analysis", "analyzer", "filter", "locale_content", "locale_text_index", "locale_text_query", "path_emulator", "locale_cross_text_index", "locale_cross_text_query");
+            "settings", "analysis", "analyzer", "filter", "locale_content", "locale_text_index", "locale_text_query", "path_emulator", "locale_cross_text_index", "locale_cross_text_query", "tag_analyzer");
     static final boolean PRESERVE_EXISTING = true;
     private static final String SUPPORTED_ANALYZERS_FILE = "supportedAnalyzers.json";
     /** Elasticsearch wording for the index field cap. */

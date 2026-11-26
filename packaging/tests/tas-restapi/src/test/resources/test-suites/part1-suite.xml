@@ -16,6 +16,8 @@
             <package name="org.alfresco.rest.favorites.*"/>
             <package name="org.alfresco.rest.rules.*" />
             <package name="org.alfresco.rest.servlet.*"/>
+            <package name="org.alfresco.rest.misc.*"/>
+            <package name="org.alfresco.rest.people.*"/>
         </packages>
     </test>
 </suite>

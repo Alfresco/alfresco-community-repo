@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -79,6 +81,9 @@ public class IdentityServiceConfig
     private String webScriptsHomeRedirectPath;
     private String webScriptsHomeScopes;
     private boolean scopeValidationDisabled;
+    private static final String ADDITIONAL_PARAMS_PROPERTY = "identity-service.authorization.additional-params";
+
+    private Map<String, String> authorizationAdditionalParams = Collections.emptyMap();
 
     public boolean isScopeValidationDisabled()
     {
@@ -88,6 +93,41 @@ public class IdentityServiceConfig
     public void setScopeValidationDisabled(boolean scopeValidationDisabled)
     {
         this.scopeValidationDisabled = scopeValidationDisabled;
+    }
+
+    public Map<String, String> getAuthorizationAdditionalParams()
+    {
+        return authorizationAdditionalParams;
+    }
+
+    /**
+     * Parses a comma-delimited list of additional OIDC parameters in {@code name=value} format. Values containing commas can be single-quoted, using {@code ''} for a literal quote. Malformed entries are ignored and duplicate names use the last value.
+     *
+     * @param additionalParams
+     *            configured additional authorization parameters, or {@code null}
+     */
+    public void setAuthorizationAdditionalParams(String additionalParams)
+    {
+        setAuthorizationAdditionalParams(additionalParams, ADDITIONAL_PARAMS_PROPERTY);
+    }
+
+    /**
+     * Like {@link #setAuthorizationAdditionalParams(String)}, using {@code propertyName} in warnings.
+     *
+     * @param additionalParams
+     *            configured additional authorization parameters, or {@code null}
+     * @param propertyName
+     *            configuration property name
+     */
+    public void setAuthorizationAdditionalParams(String additionalParams, String propertyName)
+    {
+        if (StringUtils.isBlank(additionalParams))
+        {
+            authorizationAdditionalParams = Collections.emptyMap();
+            return;
+        }
+
+        authorizationAdditionalParams = Collections.unmodifiableMap(AdditionalAuthorizationParametersParser.parse(additionalParams, propertyName));
     }
 
     public String getWebScriptsHomeRedirectPath()

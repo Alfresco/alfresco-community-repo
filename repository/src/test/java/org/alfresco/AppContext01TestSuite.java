@@ -53,6 +53,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.action.access.ActionAccessRestrictionAbstractBaseTest.class,
         org.alfresco.repo.action.access.ActionAccessRestrictionTest.class,
         org.alfresco.repo.action.access.AdminActionAccessRestrictionTest.class,
+        org.alfresco.repo.action.access.ConfigurableActionAccessRestrictionTest.class,
 
         org.alfresco.repo.rule.RuleLinkTest.class,
         org.alfresco.repo.rule.RuleServiceCoverageTest.class,

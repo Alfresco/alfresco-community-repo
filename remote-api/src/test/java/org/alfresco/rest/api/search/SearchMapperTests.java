@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,6 +29,7 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
@@ -72,6 +73,7 @@ import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
 import org.alfresco.rest.api.search.model.Spelling;
 import org.alfresco.rest.api.search.model.Template;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -519,6 +521,10 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
 
+        // Emulate an edition (e.g. Enterprise) that supports the 'deleted-nodes' scope, so the assertions below
+        // (including the 'history' combined with 'deleted-nodes' check further down) can exercise it.
+        searchMapper.setDeletedNodesScopeSupported(true);
+
         searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.DELETED, StoreMapper.LIVE_NODES, StoreMapper.VERSIONS)),
                 searchRequestContext);
         assertEquals(3, searchParameters.getStores().size());
@@ -562,6 +568,23 @@ public class SearchMapperTests
             // Must be a valid scope with history
             assertNotNull(iae);
         }
+
+        // Reset
+        searchMapper.setDeletedNodesScopeSupported(false);
+    }
+
+    @Test
+    public void fromScope_deletedNodesScopeNotSupported()
+    {
+        SearchMapper communitySearchMapper = new SearchMapper();
+        communitySearchMapper.setStoreMapper(new StoreMapper());
+        SearchParameters searchParameters = new SearchParameters();
+        communitySearchMapper.setDefaults(searchParameters);
+        SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
+
+        assertThatThrownBy(() -> communitySearchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.DELETED)), searchRequestContext))
+                .isInstanceOf(DisabledServiceException.class)
+                .hasMessageContaining("not supported");
     }
 
     @Test
@@ -1018,7 +1041,7 @@ public class SearchMapperTests
 
         searchRequestContext = SearchRequestContext.from(minimalQuery());
         searchParameters = new SearchParameters();
-        List<RangeParameters> rangeParams = new ArrayList<RangeParameters>();
+        List<RangeParameters> rangeParams = new ArrayList<>();
         facets = new ArrayList<>(2);
         facets.add(new FacetField("king", null, null, null, null, null, null, null, null, null, null));
         facets.add(new FacetField("kong", null, null, null, null, null, null, null, null, null, null));
@@ -1143,7 +1166,7 @@ public class SearchMapperTests
     public void facetRange()
     {
         SearchParameters searchParameters = new SearchParameters();
-        List<RangeParameters> rangeParams = new ArrayList<RangeParameters>();
+        List<RangeParameters> rangeParams = new ArrayList<>();
         rangeParams.add(new RangeParameters(null, null, null, null, false, null, null, null, null));
         try
         {
@@ -1160,9 +1183,9 @@ public class SearchMapperTests
         assertEquals(searchParameters.getRanges(), rangeParams);
 
         rangeParams.clear();
-        List<String> includes = new ArrayList<String>();
+        List<String> includes = new ArrayList<>();
         includes.add("lower");
-        List<String> other = new ArrayList<String>();
+        List<String> other = new ArrayList<>();
         includes.add("before");
 
         rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000", true, other, includes, null, null));

@@ -49,6 +49,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.webdav.RenameShuffleDetectionTest.class,
         org.alfresco.repo.webdav.WebDAVHelperTest.class,
         org.alfresco.repo.webdav.WebDAVLockServiceImplTest.class,
+        org.alfresco.repo.webdav.auth.SSOFallbackBasicAuthenticationDriverTest.class,
         org.alfresco.rest.api.RulesUnitTests.class,
         org.alfresco.rest.api.CategoriesUnitTests.class,
         org.alfresco.rest.api.TagsUnitTests.class,

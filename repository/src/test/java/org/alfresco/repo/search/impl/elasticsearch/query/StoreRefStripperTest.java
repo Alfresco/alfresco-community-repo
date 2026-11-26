@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants;
+import org.alfresco.elasticsearch.shared.ElasticsearchConstants;
 import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;

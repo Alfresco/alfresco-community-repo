@@ -47,7 +47,6 @@ import org.junit.runner.RunWith;
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.disposition\\..*Test",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.dod\\..*Test",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.event\\..*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.hold\\..*Test",
         "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\..*Test",
 
         // Exclude all UnitTests

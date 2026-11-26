@@ -50,7 +50,8 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
             ContentModel.PROP_CREATED,
             ContentModel.PROP_CONTENT);
     // These properties should not be excluded from the properties object
-    private static final Set<QName> ALLOWED_PROPERTIES = Set.of(ContentModel.PROP_CASCADE_TX,
+    private static final Set<QName> ALLOWED_PROPERTIES = Set.of(ContentModel.PROP_NODE_DBID,
+            ContentModel.PROP_CASCADE_TX,
             ContentModel.PROP_CASCADE_CRC);
 
     private final List<String> nodePropertiesBlackList = new ArrayList<>();

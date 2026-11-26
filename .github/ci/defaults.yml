@@ -1,6 +1,6 @@
 # Master's CI settings (ACS-13096). Used by resolve-ci-config.sh when master runs its own ci.yml (never for release
-# branches: a setting their caller does not pass means "none"), and copied into a new release branch's caller by
-# create-release-caller.sh when the branch is cut.
+# branches: a setting their ci.yml does not pass means "none"), and copied into a new release branch's ci.yml by
+# setup-release-branch-ci.sh when the branch is cut.
 # Quote versions: YAML would turn 15.10 into 15.1.
 
 java-version: "21"

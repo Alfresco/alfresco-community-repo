@@ -241,25 +241,25 @@ make_repo() {
     [ ! -s "$GITHUB_OUTPUT" ]
 }
 
-# --- create-release-caller.sh -----------------------------------------------------------------------
+# --- setup-release-branch-ci.sh -----------------------------------------------------------------------
 
 @test "cut script refuses to run on a branch that is not release/*" {
     make_repo "feature/something"
     cd "$REPO"
 
-    run bash .github/ci/create-release-caller.sh
+    run bash .github/ci/setup-release-branch-ci.sh
 
     [ "$status" -ne 0 ]
     [[ "$output" == *"release/*"* ]]
     [ "$(cat .github/workflows/ci.yml)" = "name: placeholder for master's full workflow" ]
-    [ -f .github/ci/create-release-caller.sh ]
+    [ -f .github/ci/setup-release-branch-ci.sh ]
 }
 
 @test "cut script writes a caller of ci.yml@master with every setting and the secrets" {
     make_repo "release/26.3"
     cd "$REPO"
 
-    run bash .github/ci/create-release-caller.sh
+    run bash .github/ci/setup-release-branch-ci.sh
 
     [ "$status" -eq 0 ]
     [ "$(yq '.jobs.ci.uses' .github/workflows/ci.yml)" = "Alfresco/alfresco-community-repo/.github/workflows/ci.yml@master" ]
@@ -272,17 +272,18 @@ make_repo() {
     make_repo "release/26.3"
     cd "$REPO"
 
-    run bash .github/ci/create-release-caller.sh
+    run bash .github/ci/setup-release-branch-ci.sh
 
     [ "$status" -eq 0 ]
-    [[ "$output" == *"removed .github/ci/"* ]]
+    # Reported only once it has happened: the message is the last thing the script prints
+    [[ "${lines[-1]}" == *"removed .github/ci/"* ]]
     [ ! -e .github/ci ]
     [ -f .github/workflows/ci.yml ]
 }
 
 @test "the caller written at the cut resolves exactly like master's defaults" {
     make_repo "release/26.3"
-    (cd "$REPO" && bash .github/ci/create-release-caller.sh)
+    (cd "$REPO" && bash .github/ci/setup-release-branch-ci.sh)
 
     run bash "$RESOLVE"
     [ "$status" -eq 0 ]

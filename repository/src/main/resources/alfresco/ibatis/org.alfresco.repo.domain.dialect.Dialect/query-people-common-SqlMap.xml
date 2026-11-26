@@ -27,6 +27,8 @@
             </if>
         where
             assoc.parent_node_id = #{parentNodeId}
+            <!-- exclude the system user -->
+            and assoc.qname_localname != 'system'
             <foreach item="item" index="index" collection="pattern" open=" " separator=" " close=" ">
               <if test="prop1qnameId != null or prop2qnameId != null or prop3qnameId != null ">
               and lower(

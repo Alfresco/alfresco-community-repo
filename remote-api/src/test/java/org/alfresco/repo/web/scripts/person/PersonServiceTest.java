@@ -753,6 +753,16 @@ public class PersonServiceTest extends BaseWebScriptTest
                         Status.STATUS_BAD_REQUEST);        
     }
     
+    public void testCreatePersonWithSystemUserName() throws Exception
+    {
+        String userName = AuthenticationUtil.getSystemUserName().toLowerCase();
+
+        JSONObject result = createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                Status.STATUS_BAD_REQUEST);
+        assertEquals(userName + ": this user name is reserved", result.getString("message"));
+    }
+
     public void testCreatePersonMissingFirstName() throws Exception
     {
         String userName  = RandomStringUtils.randomNumeric(6);

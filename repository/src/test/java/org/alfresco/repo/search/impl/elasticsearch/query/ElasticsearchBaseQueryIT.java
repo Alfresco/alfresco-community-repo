@@ -30,9 +30,9 @@ import static java.util.Arrays.asList;
 
 import static org.awaitility.Awaitility.await;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_ENCODING;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_MIME_TYPE;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_SIZE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CONTENT_ENCODING;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CONTENT_MIME_TYPE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CONTENT_SIZE;
 
 import java.io.IOException;
 import java.io.InputStream;

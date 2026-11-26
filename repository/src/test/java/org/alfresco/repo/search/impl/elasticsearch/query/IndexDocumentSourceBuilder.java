@@ -27,22 +27,22 @@ package org.alfresco.repo.search.impl.elasticsearch.query;
 
 import static java.util.Arrays.asList;
 
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.ALIVE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.ASPECT;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CONTENT_ATTRIBUTE_NAME;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CREATION_DATE_FIELD;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.METADATA_INDEXING_LAST_UPDATE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.MODIFICATION_DATE_FIELD;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.NAME;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.OWNER;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.PATH;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.PRIMARY_HIERARCHY;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.READER;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.TAG;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.TYPE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.UNPREFIXED_PATH;
+import static org.alfresco.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator.encode;
 import static org.alfresco.model.ContentModel.PROP_NAME;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ALIVE;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.ASPECT;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_ATTRIBUTE_NAME;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CREATION_DATE_FIELD;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.METADATA_INDEXING_LAST_UPDATE;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.MODIFICATION_DATE_FIELD;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.NAME;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.OWNER;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.PATH;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.PRIMARY_HIERARCHY;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.READER;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.TAG;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.TYPE;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.UNPREFIXED_PATH;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.translator.AlfrescoQualifiedNameTranslator.encode;
 
 import java.io.IOException;
 import java.io.Serializable;

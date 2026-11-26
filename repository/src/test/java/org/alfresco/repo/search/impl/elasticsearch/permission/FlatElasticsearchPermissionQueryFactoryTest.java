@@ -33,8 +33,8 @@ import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.util.collections.Sets.newSet;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.OWNER;
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.READER;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.OWNER;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.READER;
 
 import java.util.Collections;
 import java.util.List;

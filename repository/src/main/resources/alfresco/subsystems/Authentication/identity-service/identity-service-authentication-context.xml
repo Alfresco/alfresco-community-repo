@@ -226,6 +226,9 @@
        <property name="scopeValidationDisabled">
            <value>${identity-service.scope-validation.disabled:false}</value>
        </property>
+       <property name="authorizationAdditionalParams">
+           <value>${identity-service.authorization.additional-params:}</value>
+       </property>
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->
@@ -290,6 +293,7 @@
       <constructor-arg ref="identityServiceFacade"/>
       <constructor-arg ref="transactionService"/>
       <constructor-arg ref="identityServiceConfig"/>
+      <constructor-arg ref="JobLockService"/>
    </bean>
 
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">

@@ -29,6 +29,8 @@ import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
@@ -47,9 +49,14 @@ import static org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.Elast
 import static org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiser.LOCK_TTL;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -63,13 +70,14 @@ import org.alfresco.repo.dictionary.DictionaryDAOImpl;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.search.impl.elasticsearch.admin.SearchEngineDetector;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
 /**
  * Unit tests for {@link ElasticsearchInitialiser}.
  */
-@SuppressWarnings("PMD.LambdaCanBeMethodReference")
+@SuppressWarnings({"PMD.LambdaCanBeMethodReference", "PMD.TooManyMethods"})
 public class ElasticsearchInitialiserTest
 {
 
@@ -458,6 +466,265 @@ public class ElasticsearchInitialiserTest
         toTest.afterDictionaryInit();
 
         verify(mockContentModelSynchronizer, times(1)).initializeElasticsearchIndexMappings(anyCollection());
+    }
+
+    @Test
+    public void onModelUpdate_oneInvalidProperty_shouldStillMapTheOthers() throws IOException
+    {
+        toTest.setCreateIndexIfNotExists(true);
+        toTest.setRetryAttempts(1);
+        toTest.setRetryPeriodSeconds(0);
+        toTest.setLockRetryAttempts(1);
+        when(mockElasticSearchIndexService.indexExists()).thenReturn(true);
+
+        PropertyDefinition poison = propertyNamed("poison");
+        List<PropertyDefinition> properties = new ArrayList<>(List.of(
+                propertyNamed("good1"), propertyNamed("good2"), poison, propertyNamed("good3")));
+        doReturn(properties).when(mockCompiledModel).getProperties();
+        when(mockDictionary.getModels(true)).thenReturn(List.of(mockModel));
+        when(mockDictionary.getCompiledModel(any(QName.class))).thenReturn(mockCompiledModel);
+
+        Set<PropertyDefinition> mapped = ConcurrentHashMap.newKeySet();
+        when(mockContentModelSynchronizer.initializeElasticsearchIndexMappings(anyCollection()))
+                .thenAnswer(invocation -> {
+                    Collection<PropertyDefinition> sent = invocation.getArgument(0);
+                    ContentModelSynchronizer.IndexMappingResult result = mock(ContentModelSynchronizer.IndexMappingResult.class);
+                    if (sent.contains(poison))
+                    {
+                        when(result.isAcknowledged()).thenReturn(false);
+                        when(result.getStatus()).thenReturn(400);
+                        return result;
+                    }
+                    mapped.addAll(sent);
+                    when(result.isAcknowledged()).thenReturn(true);
+                    when(result.getSuccessfullyMappedPropertiesCount()).thenReturn(sent.size());
+                    return result;
+                });
+
+        toTest.afterDictionaryInit();
+
+        assertEquals("every valid property should be mapped despite the invalid one", 3, mapped.size());
+        assertFalse("the invalid property must not be reported as mapped", mapped.contains(poison));
+    }
+
+    /**
+     * A rejected property is never accepted, so re-collecting it on a later pass would re-run the whole bisection for nothing.
+     */
+    @Test
+    public void onModelUpdate_rejectedProperty_shouldNotBeRetriedOnALaterPass() throws IOException
+    {
+        toTest.setCreateIndexIfNotExists(true);
+        toTest.setRetryAttempts(1);
+        toTest.setRetryPeriodSeconds(0);
+        toTest.setLockRetryAttempts(1);
+        when(mockElasticSearchIndexService.indexExists()).thenReturn(true);
+
+        PropertyDefinition poison = propertyNamed("poison");
+        List<PropertyDefinition> properties = new ArrayList<>(List.of(propertyNamed("good1"), poison));
+        doReturn(properties).when(mockCompiledModel).getProperties();
+        when(mockDictionary.getModels(true)).thenReturn(List.of(mockModel));
+        when(mockDictionary.getCompiledModel(any(QName.class))).thenReturn(mockCompiledModel);
+
+        AtomicInteger poisonSendCount = new AtomicInteger();
+        when(mockContentModelSynchronizer.initializeElasticsearchIndexMappings(anyCollection()))
+                .thenAnswer(invocation -> {
+                    Collection<PropertyDefinition> sent = invocation.getArgument(0);
+                    ContentModelSynchronizer.IndexMappingResult result = mock(ContentModelSynchronizer.IndexMappingResult.class);
+                    if (sent.contains(poison))
+                    {
+                        poisonSendCount.incrementAndGet();
+                        when(result.isAcknowledged()).thenReturn(false);
+                        when(result.getStatus()).thenReturn(400);
+                        return result;
+                    }
+                    when(result.isAcknowledged()).thenReturn(true);
+                    when(result.getSuccessfullyMappedPropertiesCount()).thenReturn(sent.size());
+                    return result;
+                });
+
+        toTest.afterDictionaryInit();
+        int afterFirstPass = poisonSendCount.get();
+        toTest.afterDictionaryInit();
+
+        assertEquals("the rejected property must not be sent again once it is known to be rejected",
+                afterFirstPass, poisonSendCount.get());
+        assertEquals("the rejected property should be reported as quarantined",
+                Set.of(poison.getName()), toTest.getQuarantinedProperties());
+    }
+
+    @Test
+    public void onModelUpdate_everythingAlreadyMapped_shouldNotResendProperties() throws IOException
+    {
+        toTest.setCreateIndexIfNotExists(true);
+        toTest.setRetryAttempts(1);
+        toTest.setRetryPeriodSeconds(0);
+        toTest.setLockRetryAttempts(1);
+        when(mockElasticSearchIndexService.indexExists()).thenReturn(true);
+
+        List<PropertyDefinition> properties = new ArrayList<>(List.of(propertyNamed("a"), propertyNamed("b")));
+        doReturn(properties).when(mockCompiledModel).getProperties();
+        when(mockDictionary.getModels(true)).thenReturn(List.of(mockModel));
+        when(mockDictionary.getCompiledModel(any(QName.class))).thenReturn(mockCompiledModel);
+
+        List<Integer> sentSizes = new ArrayList<>();
+        when(mockContentModelSynchronizer.initializeElasticsearchIndexMappings(anyCollection()))
+                .thenAnswer(invocation -> {
+                    sentSizes.add(((Collection<?>) invocation.getArgument(0)).size());
+                    return acknowledged(((Collection<?>) invocation.getArgument(0)).size());
+                });
+
+        toTest.afterDictionaryInit();
+        toTest.afterDictionaryInit();
+
+        assertEquals("first pass sends both properties, second pass sends none", List.of(2, 0), sentSizes);
+    }
+
+    @Test
+    public void onModelUpdate_morePropertiesThanBatchSize_shouldSplitAtTheBoundary() throws IOException
+    {
+        toTest.setCreateIndexIfNotExists(true);
+        toTest.setRetryAttempts(1);
+        toTest.setRetryPeriodSeconds(0);
+        toTest.setLockRetryAttempts(1);
+        toTest.setMappingBatchSize(2);
+        when(mockElasticSearchIndexService.indexExists()).thenReturn(true);
+
+        List<PropertyDefinition> properties = new ArrayList<>(List.of(
+                propertyNamed("p1"), propertyNamed("p2"), propertyNamed("p3"), propertyNamed("p4"), propertyNamed("p5")));
+        doReturn(properties).when(mockCompiledModel).getProperties();
+        when(mockDictionary.getModels(true)).thenReturn(List.of(mockModel));
+        when(mockDictionary.getCompiledModel(any(QName.class))).thenReturn(mockCompiledModel);
+
+        List<Integer> sentSizes = new ArrayList<>();
+        when(mockContentModelSynchronizer.initializeElasticsearchIndexMappings(anyCollection()))
+                .thenAnswer(invocation -> {
+                    sentSizes.add(((Collection<?>) invocation.getArgument(0)).size());
+                    return acknowledged(((Collection<?>) invocation.getArgument(0)).size());
+                });
+
+        toTest.afterDictionaryInit();
+
+        assertEquals("five properties at a batch size of two must be sent as 2 + 2 + 1", List.of(2, 2, 1), sentSizes);
+    }
+
+    @Test
+    public void onModelUpdate_transportFailure_shouldNotSplitTheBatch() throws IOException
+    {
+        toTest.setCreateIndexIfNotExists(true);
+        toTest.setRetryAttempts(1);
+        toTest.setRetryPeriodSeconds(0);
+        toTest.setLockRetryAttempts(1);
+        when(mockElasticSearchIndexService.indexExists()).thenReturn(true);
+
+        List<PropertyDefinition> properties = new ArrayList<>(List.of(
+                propertyNamed("p1"), propertyNamed("p2"), propertyNamed("p3"), propertyNamed("p4")));
+        doReturn(properties).when(mockCompiledModel).getProperties();
+        when(mockDictionary.getModels(true)).thenReturn(List.of(mockModel));
+        when(mockDictionary.getCompiledModel(any(QName.class))).thenReturn(mockCompiledModel);
+
+        AtomicInteger requests = new AtomicInteger();
+        when(mockContentModelSynchronizer.initializeElasticsearchIndexMappings(anyCollection()))
+                .thenAnswer(invocation -> {
+                    requests.incrementAndGet();
+                    throw new IOException("connection reset");
+                });
+
+        toTest.afterDictionaryInit();
+
+        assertEquals("a transport failure must cost exactly one request, not a bisection cascade", 1, requests.get());
+    }
+
+    @Test
+    public void onModelUpdate_unavailableMidPass_shouldRetryOnlyTheUnfinishedModels() throws IOException
+    {
+        toTest.setCreateIndexIfNotExists(true);
+        toTest.setRetryAttempts(2);
+        toTest.setRetryPeriodSeconds(0);
+        toTest.setLockRetryAttempts(1);
+        toTest.setMappingBatchSize(1);
+        when(mockElasticSearchIndexService.indexExists()).thenReturn(true);
+
+        QName mapped = QName.createQName("http://test/model/1.0", "mapped");
+        QName failing = QName.createQName("http://test/model/1.0", "failing");
+        QName unattempted = QName.createQName("http://test/model/1.0", "unattempted");
+        PropertyDefinition a = propertyNamed("a");
+        PropertyDefinition b = propertyNamed("b");
+        PropertyDefinition c = propertyNamed("c");
+        when(mockDictionary.getModels(true)).thenReturn(List.of(mapped, failing, unattempted));
+        doReturn(compiledModelWith(a)).when(mockDictionary).getCompiledModel(mapped);
+        doReturn(compiledModelWith(b)).when(mockDictionary).getCompiledModel(failing);
+        doReturn(compiledModelWith(c)).when(mockDictionary).getCompiledModel(unattempted);
+
+        AtomicInteger attemptsOnB = new AtomicInteger();
+        Set<PropertyDefinition> sent = ConcurrentHashMap.newKeySet();
+        when(mockContentModelSynchronizer.initializeElasticsearchIndexMappings(anyCollection()))
+                .thenAnswer(invocation -> {
+                    Collection<PropertyDefinition> batch = invocation.getArgument(0);
+                    if (batch.contains(b) && attemptsOnB.incrementAndGet() == 1)
+                    {
+                        throw new IOException("connection reset");
+                    }
+                    sent.addAll(batch);
+                    return acknowledged(batch.size());
+                });
+
+        toTest.afterDictionaryInit();
+
+        assertEquals("the batch that was never attempted must still be mapped", Set.of(a, b, c), sent);
+        verify(mockDictionary, times(1)).getCompiledModel(mapped);
+    }
+
+    @Test
+    public void onModelUpdate_totalFieldsLimitExceeded_shouldNotBisectOrQuarantine() throws IOException
+    {
+        toTest.setCreateIndexIfNotExists(true);
+        toTest.setRetryAttempts(1);
+        toTest.setRetryPeriodSeconds(0);
+        toTest.setLockRetryAttempts(1);
+        when(mockElasticSearchIndexService.indexExists()).thenReturn(true);
+
+        List<PropertyDefinition> properties = new ArrayList<>(List.of(propertyNamed("p1"), propertyNamed("p2")));
+        doReturn(properties).when(mockCompiledModel).getProperties();
+        when(mockDictionary.getModels(true)).thenReturn(List.of(mockModel));
+        when(mockDictionary.getCompiledModel(any(QName.class))).thenReturn(mockCompiledModel);
+
+        AtomicInteger requests = new AtomicInteger();
+        when(mockContentModelSynchronizer.initializeElasticsearchIndexMappings(anyCollection()))
+                .thenAnswer(invocation -> {
+                    requests.incrementAndGet();
+                    ContentModelSynchronizer.IndexMappingResult result = mock(ContentModelSynchronizer.IndexMappingResult.class);
+                    when(result.isAcknowledged()).thenReturn(false);
+                    when(result.getStatus()).thenReturn(400);
+                    when(result.isTotalFieldsLimitExceeded()).thenReturn(true);
+                    return result;
+                });
+
+        toTest.afterDictionaryInit();
+
+        assertEquals("the batch must not be split", 1, requests.get());
+        assertEquals("no property is to blame for a field limit", Set.of(), toTest.getQuarantinedProperties());
+    }
+
+    private static CompiledModel compiledModelWith(PropertyDefinition property)
+    {
+        CompiledModel compiledModel = mock(CompiledModel.class);
+        doReturn(List.of(property)).when(compiledModel).getProperties();
+        return compiledModel;
+    }
+
+    private static ContentModelSynchronizer.IndexMappingResult acknowledged(int mappedCount)
+    {
+        ContentModelSynchronizer.IndexMappingResult result = mock(ContentModelSynchronizer.IndexMappingResult.class);
+        when(result.isAcknowledged()).thenReturn(true);
+        when(result.getSuccessfullyMappedPropertiesCount()).thenReturn(mappedCount);
+        return result;
+    }
+
+    private static PropertyDefinition propertyNamed(String localName)
+    {
+        PropertyDefinition property = mock(PropertyDefinition.class);
+        when(property.getName()).thenReturn(QName.createQName("http://test/model/1.0", localName));
+        return property;
     }
 
 }

@@ -46,7 +46,7 @@ public abstract class ActionAccessRestrictionAbstractBase implements ActionAcces
             ActionAccessRestriction.V0_ACTION_CONTEXT, ActionAccessRestriction.V1_ACTION_CONTEXT);
 
     protected NodeService nodeService;
-    private Properties configProperties;
+    protected Properties configProperties;
 
     public void setNodeService(NodeService nodeService)
     {

@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
 import jakarta.transaction.UserTransaction;
 
 import org.json.simple.JSONObject;
@@ -59,6 +61,8 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -79,6 +83,7 @@ import org.alfresco.util.PropertyMap;
 /**
  * TODO: Fix the loose transaction handling. TODO: Rationalise with other v0 Comment REST API tests (eg. see BlogServiceTest ... etc). See also ACE-5437.
  */
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.UnitTestShouldUseTestAnnotation"})
 public class CommentsApiTest extends BaseWebScriptTest
 {
     // V0 Comments REST API
@@ -97,12 +102,16 @@ public class CommentsApiTest extends BaseWebScriptTest
     private static final String JSON_KEY_NODEREF = "nodeRef";
     private static final String JSON_KEY_ITEM = "item";
 
+    /** Disallowed event-handler attributes on parsed HTML (CommentsPost / comment.put.json.js OWASP policy). */
+    private static final Pattern EVENT_HANDLER_ATTRIBUTE = Pattern.compile("(?i)\\s(on\\w+|formaction|xmlns)\\s*=");
+
     private String requestBodyJson = "{\"title\" : \"Test Title\", \"content\" : \"Test Comment\"}";
 
     private FileFolderService fileFolderService;
     private TransactionService transactionService;
     private SearchService searchService;
     private NodeService nodeService;
+    private ContentService contentService;
     private NamespaceService namespaceService;
     private VersionService versionService;
     private PersonService personService;
@@ -140,6 +149,7 @@ public class CommentsApiTest extends BaseWebScriptTest
         transactionService = (TransactionService) appContext.getBean("transactionService");
         searchService = (SearchService) appContext.getBean("SearchService");
         nodeService = (NodeService) appContext.getBean("nodeService");
+        contentService = (ContentService) appContext.getBean("contentService");
         namespaceService = (NamespaceService) appContext.getBean("namespaceService");
         versionService = (VersionService) appContext.getBean("versionService");
         personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
@@ -422,6 +432,305 @@ public class CommentsApiTest extends BaseWebScriptTest
     {
         String version = versionService.getCurrentVersion(nodeRef).getVersionLabel();
         return version;
+    }
+
+    private void assertNoEventHandlerAttributes(String storedContent)
+    {
+        assertFalse("Event handler attributes must be removed", EVENT_HANDLER_ATTRIBUTE.matcher(storedContent).find());
+    }
+
+    private static String toLowerCaseRoot(String value)
+    {
+        return value.toLowerCase(Locale.ROOT);
+    }
+
+    private void assertDisallowedHtmlRemoved(String storedContent)
+    {
+        String lower = toLowerCaseRoot(storedContent);
+        assertFalse("Script tag must be removed", lower.contains("<script"));
+        assertFalse("Disallowed img element must be removed", lower.contains("<img"));
+        assertFalse("Unsafe javascript: URL must be removed", lower.contains("javascript:"));
+        assertNoEventHandlerAttributes(storedContent);
+    }
+
+    /**
+     * Updates a comment with the supplied raw content and returns the content actually stored on the comment node.
+     *
+     * @param commentNodeRef
+     *            the comment node to update
+     * @param user
+     *            the user performing the update
+     * @param rawContent
+     *            the (potentially unsafe) HTML content to send
+     * @return the sanitized content persisted on the comment node
+     */
+    private String updateCommentContent(NodeRef commentNodeRef, String user, String rawContent)
+    {
+        try
+        {
+            UserTransaction txn = transactionService.getUserTransaction();
+            txn.begin();
+            AuthenticationUtil.setFullyAuthenticatedUser(user);
+
+            JSONObject comment = new JSONObject();
+            comment.put("title", "Test title");
+            comment.put("content", rawContent);
+
+            StoreRef storeRef = commentNodeRef.getStoreRef();
+            Response response = sendRequest(new PutRequest(
+                    MessageFormat.format(URL_PUT_COMMENT, storeRef.getProtocol(), storeRef.getIdentifier(), commentNodeRef.getId()),
+                    comment.toString(), JSON), 200);
+
+            assertEquals(200, response.getStatus());
+
+            // read back the content that was actually stored on the comment node
+            ContentReader reader = contentService.getReader(commentNodeRef, ContentModel.PROP_CONTENT);
+            String storedContent = (reader != null && reader.exists()) ? reader.getContentString() : null;
+
+            // Normally, webscripts are in their own transaction. The test infrastructure here forces us to have a transaction
+            // around the calls. if the WebScript fails, then we should rollback.
+            if (response.getStatus() == 500)
+            {
+                txn.rollback();
+            }
+            else
+            {
+                txn.commit();
+            }
+
+            return storedContent;
+        }
+        catch (Exception e)
+        {
+            throw new AlfrescoRuntimeException("Failed to update comment content in test", e);
+        }
+    }
+
+    /**
+     * Verifies that unsafe HTML in an updated comment is sanitized (stored XSS protection) while allowed formatting markup is preserved, mirroring the policy used in CommentsPost.java.
+     *
+     * @throws Exception
+     */
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
+    public void testUpdateCommentSanitizesUnsafeHtml() throws Exception
+    {
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        NodeRef content = fileFolderService.create(companyHomeNodeRef, "CommentSanitize" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+        txn.commit();
+
+        // create a comment to update
+        Response response = addComment(content, AuthenticationUtil.getAdminUserName(), 200);
+        JSONObject jsonResponse = parseResponseJSON(response);
+        NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
+
+        // update the comment with a mix of malicious and allowed markup
+        String unsafeContent = "<p>Hello <b>world</b></p>"
+                + "<script>alert('xss')</script>"
+                + "<img src=x onerror=alert('xss')>"
+                + "<a href=\"javascript:alert('xss')\">click</a>";
+
+        String storedContent = updateCommentContent(commentNodeRef, AuthenticationUtil.getAdminUserName(), unsafeContent);
+
+        assertNotNull("Comment content should have been stored", storedContent);
+
+        assertDisallowedHtmlRemoved(storedContent);
+
+        // allowed formatting markup must be preserved
+        String lowerStored = toLowerCaseRoot(storedContent);
+        assertTrue("Allowed paragraph element should be preserved", lowerStored.contains("<p"));
+        assertTrue("Allowed bold element should be preserved", lowerStored.contains("<b"));
+        assertTrue("Text content should be preserved", storedContent.contains("Hello"));
+
+        // cleanup
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        nodeService.deleteNode(content);
+        txn.commit();
+    }
+
+    /**
+     * Verifies that event handlers on nested {@code div} elements are stripped by the PUT sanitization policy (same OWASP allow-list as {@code CommentsPost.java}) while allowed structural markup is preserved.
+     *
+     * @throws Exception
+     */
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
+    public void testUpdateCommentSanitizesNestedDivXssPayload() throws Exception
+    {
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+        // create a node to attach the comment to
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        NodeRef content = fileFolderService.create(companyHomeNodeRef,
+                "CommentNestedDivXss" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+        txn.commit();
+
+        // create a comment to update
+        Response response = addComment(content, AuthenticationUtil.getAdminUserName(), 200);
+        JSONObject jsonResponse = parseResponseJSON(response);
+        NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
+
+        // nested divs with disallowed event-handler attributes; use allowStyling()-safe CSS (e.g. color, not display)
+        String unsafeContent = "<div style=\"color:blue\">"
+                + "<div onmouseover=\"alert(document.domain)\" style=\"color:green\">"
+                + "<br><br><br>"
+                + "</div></div>";
+
+        String storedContent = updateCommentContent(commentNodeRef,
+                AuthenticationUtil.getAdminUserName(), unsafeContent);
+
+        assertNotNull("Comment content should have been stored", storedContent);
+
+        String lower = toLowerCaseRoot(storedContent);
+
+        assertNoEventHandlerAttributes(storedContent);
+
+        // safe structural markup must be preserved
+        assertTrue("Allowed br element should be preserved", lower.contains("<br"));
+        assertTrue("Allowed style attribute should be preserved", lower.contains("color:green"));
+        assertTrue("Allowed nested div structure should be preserved", lower.contains("<div"));
+
+        // cleanup
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        nodeService.deleteNode(content);
+        txn.commit();
+    }
+
+    /**
+     * Verifies that common DOM event-handler attributes are stripped when updating a comment (stored XSS).
+     *
+     * @throws Exception
+     */
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
+    public void testUpdateCommentSanitizesDomEventHandlers() throws Exception
+    {
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        NodeRef content = fileFolderService.create(companyHomeNodeRef,
+                "CommentEventHandlers" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+        txn.commit();
+
+        Response response = addComment(content, AuthenticationUtil.getAdminUserName(), 200);
+        JSONObject jsonResponse = parseResponseJSON(response);
+        NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
+
+        String[] domEventHandlers = {
+                "onclick", "ondblclick", "onmousedown", "onmouseup", "onmouseover", "onmouseout",
+                "onmouseenter", "onmouseleave", "onmousemove", "oncontextmenu", "onwheel", "onauxclick",
+                "ondrag", "ondragstart", "ondragend", "ondragenter", "ondragleave", "ondragover", "ondrop",
+                "onpointerdown", "onpointerup", "onpointermove", "onpointerover", "onpointerout",
+                "onpointerenter", "onpointerleave", "onpointercancel"
+        };
+
+        StringBuilder payload = new StringBuilder();
+        for (String eventHandler : domEventHandlers)
+        {
+            payload.append("<div ").append(eventHandler).append("=\"alert(1)\">x</div>");
+        }
+        payload.append("<span onmouseover=\"alert(1)\" style=\"color:red\">styled</span>");
+
+        String storedContent = updateCommentContent(commentNodeRef, AuthenticationUtil.getAdminUserName(),
+                payload.toString());
+
+        assertNotNull("Comment content should have been stored", storedContent);
+
+        assertNoEventHandlerAttributes(storedContent);
+
+        assertTrue("Allowed style attribute should be preserved on span",
+                toLowerCaseRoot(storedContent).contains("color:red"));
+
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        nodeService.deleteNode(content);
+        txn.commit();
+    }
+
+    /**
+     * PUT update with site activity parameters (same shape as Share uses for comment-updated feed entries).
+     */
+    private Response putCommentWithSiteActivity(NodeRef commentNodeRef, NodeRef parentNodeRef, String user,
+            String content, int expectedStatus)
+    {
+        try
+        {
+            UserTransaction txn = transactionService.getUserTransaction();
+            txn.begin();
+            AuthenticationUtil.setFullyAuthenticatedUser(user);
+
+            JSONObject comment = new JSONObject();
+            comment.put("title", "Test title");
+            comment.put("content", content);
+            comment.put("site", SITE_SHORT_NAME);
+            comment.put("itemTitle", "Test Title");
+            comment.put("page", "document-details");
+            comment.put("pageParams", "{\"nodeRef\":\"" + parentNodeRef.toString() + "\"}");
+
+            StoreRef storeRef = commentNodeRef.getStoreRef();
+            Response response = sendRequest(new PutRequest(
+                    MessageFormat.format(URL_PUT_COMMENT, storeRef.getProtocol(), storeRef.getIdentifier(), commentNodeRef.getId()),
+                    comment.toString(), JSON), expectedStatus);
+
+            assertEquals(expectedStatus, response.getStatus());
+
+            if (response.getStatus() == 500)
+            {
+                txn.rollback();
+            }
+            else
+            {
+                txn.commit();
+            }
+
+            return response;
+        }
+        catch (Exception e)
+        {
+            throw new AlfrescoRuntimeException("Failed to PUT comment with site activity params in test", e);
+        }
+    }
+
+    /**
+     * Empty comment content must return 400 and must not post a comment-updated site activity (comment.put.json.js).
+     *
+     * @throws Exception
+     */
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
+    public void testUpdateCommentEmptyContentDoesNotPostActivity() throws Exception
+    {
+        permissionService.setPermission(sitePage, USER_TWO, PermissionService.ALL_PERMISSIONS, true);
+        postLookup.execute();
+        feedGenerator.execute();
+
+        Response addResponse = addComment(sitePage, USER_TWO, 200);
+        JSONObject jsonResponse = parseResponseJSON(addResponse);
+        NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
+
+        ContentReader readerBefore = contentService.getReader(commentNodeRef, ContentModel.PROP_CONTENT);
+        String contentBefore = readerBefore.getContentString();
+
+        postLookup.execute();
+        feedGenerator.execute();
+        int activityCountBeforeReject = activityService.getSiteFeedEntries(SITE_SHORT_NAME).size();
+
+        putCommentWithSiteActivity(commentNodeRef, sitePage, USER_TWO, "   ", Status.STATUS_BAD_REQUEST);
+
+        ContentReader readerAfter = contentService.getReader(commentNodeRef, ContentModel.PROP_CONTENT);
+        assertEquals("Comment content must be unchanged after rejected update", contentBefore, readerAfter.getContentString());
+
+        postLookup.execute();
+        feedGenerator.execute();
+        int activityCountAfterReject = activityService.getSiteFeedEntries(SITE_SHORT_NAME).size();
+        assertEquals("Rejected empty update must not post comment-updated activity", activityCountBeforeReject,
+                activityCountAfterReject);
     }
 
     public void testCommentDoesNotVersion() throws Exception

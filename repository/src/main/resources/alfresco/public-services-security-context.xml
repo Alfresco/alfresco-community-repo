@@ -127,6 +127,13 @@
         <property name="policyComponent" ref="policyComponent"/>
         <property name="policyIgnoreUtil" ref="policyIgnoreUtil"/>
     </bean>
+
+    <bean id="unusedAclCleaner" class="org.alfresco.repo.domain.permissions.UnusedAclCleaner" init-method="init">
+        <property name="aclCrudDAO" ref="aclCrudDAO"/>
+        <property name="transactionService" ref="transactionService"/>
+        <property name="enabled" value="${system.aclCleanup.enabled}"/>
+        <property name="batchSize" value="${system.aclCleanup.batchSize}"/>
+    </bean>
     
     <!-- =================== -->
     <!-- Dynamic Authorities -->

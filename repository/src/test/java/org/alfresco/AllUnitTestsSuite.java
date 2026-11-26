@@ -32,6 +32,7 @@ import org.junit.runners.Suite;
 import org.alfresco.repo.security.authentication.identityservice.CachingUserTokenProviderTest;
 import org.alfresco.repo.security.authentication.identityservice.ClientRegistrationProviderUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.DirectUserTokenProviderTest;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfigUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBeanTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceUserTokenWiringTest;
@@ -153,6 +154,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.search.impl.solr.SolrSQLJSONResultMetadataSetTest.class,
         org.alfresco.repo.search.impl.solr.facet.SolrFacetComparatorTest.class,
         org.alfresco.repo.search.impl.solr.facet.FacetQNameUtilsTest.class,
+        org.alfresco.repo.search.SearchServiceTransactionWiringTest.class,
         org.alfresco.util.BeanExtenderUnitTest.class,
         org.alfresco.repo.solr.SOLRTrackingComponentUnitTest.class,
         IdentityServiceFacadeFactoryBeanTest.class,
@@ -163,6 +165,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         TokenUserToOIDCUserMapperUnitTest.class,
         AdminAuthenticationCookiesServiceUnitTest.class,
         AdditionalHeadersHttpServletRequestWrapperUnitTest.class,
+        IdentityServiceConfigUnitTest.class,
         IdentityServiceAdminConsoleAuthenticatorUnitTest.class,
         IdentityServiceWebScriptsHomeAuthenticatorUnitTest.class,
         ClientRegistrationProviderUnitTest.class,
@@ -216,11 +219,13 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.action.CompositeActionConditionImplTest.class,
         org.alfresco.repo.action.executer.TransformActionExecuterTest.class,
         org.alfresco.repo.action.executer.ImporterActionExecutorUnitTest.class,
+        org.alfresco.repo.action.executer.FolderUploadHandlersUnitTest.class,
         org.alfresco.repo.audit.AuditableAnnotationTest.class,
         org.alfresco.repo.audit.AuditComponentImplUnitTest.class,
         org.alfresco.repo.audit.PropertyAuditFilterTest.class,
         org.alfresco.repo.audit.access.NodeChangeTest.class,
         org.alfresco.repo.content.ContentServiceImplUnitTest.class,
+        org.alfresco.repo.content.AbstractRoutingContentStoreTest.class,
         org.alfresco.repo.content.directurl.SystemWideDirectUrlConfigUnitTest.class,
         org.alfresco.repo.content.directurl.ContentStoreDirectUrlConfigUnitTest.class,
         org.alfresco.repo.content.LimitedStreamCopierTest.class,
@@ -239,6 +244,8 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.content.caching.CachingContentStoreTest.class,
         org.alfresco.repo.content.caching.ContentCacheImplTest.class,
         org.alfresco.repo.domain.permissions.FixedAclUpdaterUnitTest.class,
+        org.alfresco.repo.domain.permissions.UnusedAclCleanerTest.class,
+        org.alfresco.repo.domain.permissions.UnusedAclCleanupJobTest.class,
         org.alfresco.repo.domain.propval.PropertyTypeConverterTest.class,
         org.alfresco.repo.domain.schema.script.ScriptBundleExecutorImplTest.class,
         org.alfresco.repo.search.MLAnaysisModeExpansionTest.class,
@@ -328,9 +335,12 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationHandlerTest.class,
         org.alfresco.repo.search.impl.elasticsearch.resultset.AggregationNameUtilTest.class,
         org.alfresco.repo.search.impl.elasticsearch.resultset.HighlightsHandlerTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.store.SearchStoreResolverTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.ElasticsearchInitialiserTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.FieldMappingBuilderTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.ResourceUtilsTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.filter.DefaultAliveStateFilterBuilderTest.class,
+        org.alfresco.repo.search.impl.elasticsearch.query.sort.ElasticsearchSortBuilderTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.utils.SettingsJsonUtilsTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.DateFieldMapperTest.class,
         org.alfresco.repo.search.impl.elasticsearch.contentmodelsync.field.mapper.predefined.PathFieldMapperTest.class,

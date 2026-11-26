@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>26.3.0.45-SNAPSHOT</version>
+        <version>26.3.0.125-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -42,6 +42,12 @@
             </properties>
         </profile>
         <profile>
+            <id>run-restapi-part4</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/part4-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <profile>
             <id>elasticsearch-e2e-tests-part1</id>
             <properties>
                 <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/elasticsearch-e2e-part1-suite.xml</suiteXmlFile>
@@ -51,6 +57,12 @@
             <id>elasticsearch-e2e-tests-part2</id>
             <properties>
                 <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/elasticsearch-e2e-part2-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <profile>
+            <id>elasticsearch-e2e-tests-part3</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/elasticsearch-e2e-part3-suite.xml</suiteXmlFile>
             </properties>
         </profile>
     </profiles>

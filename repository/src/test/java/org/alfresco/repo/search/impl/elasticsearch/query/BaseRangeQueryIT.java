@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query;
 
-import static org.alfresco.repo.search.impl.elasticsearch.shared.ElasticsearchConstants.CONTENT_SIZE;
+import static org.alfresco.elasticsearch.shared.ElasticsearchConstants.CONTENT_SIZE;
 
 import java.time.OffsetDateTime;
 import java.util.Date;

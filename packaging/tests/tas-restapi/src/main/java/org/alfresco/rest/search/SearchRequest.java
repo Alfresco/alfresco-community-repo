@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2026 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,24 +23,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-/*
- * Copyright (C) 2017 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
- * Alfresco is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Alfresco is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- */
 package org.alfresco.rest.search;
 
 import java.util.ArrayList;
@@ -58,6 +40,9 @@ import org.alfresco.utility.model.TestModel;
  * @author msuzuki
  *
  */
+// This model mirrors the public Search API's request schema, which is wide by nature (one field/accessor pair
+// per top-level JSON property), so the field/public-member counts are expected to grow with the API.
+@SuppressWarnings({"PMD.TooManyFields", "PMD.ExcessivePublicCount"})
 public class SearchRequest extends TestModel
 {
     @JsonProperty(value = "query")
@@ -81,6 +66,7 @@ public class SearchRequest extends TestModel
     RestRequestDefaultsModel defaults;
     List<RestRequestTemplatesModel> templates;
     RestRequestLimitsModel limits;
+    RestRequestScopeModel scope;
 
     public SearchRequest()
     {}
@@ -235,6 +221,16 @@ public class SearchRequest extends TestModel
     public void setFilterQueries(RestRequestFilterQueryModel filterQueries)
     {
         this.filterQueries = filterQueries;
+    }
+
+    public RestRequestScopeModel getScope()
+    {
+        return scope;
+    }
+
+    public void setScope(RestRequestScopeModel scope)
+    {
+        this.scope = scope;
     }
 
     public List<RestRequestRangesModel> getRanges()

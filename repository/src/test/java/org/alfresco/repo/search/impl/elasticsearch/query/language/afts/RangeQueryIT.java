@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query.language.afts;
 
+import org.junit.Test;
+
 import org.alfresco.repo.search.impl.elasticsearch.query.BaseRangeQueryIT;
 import org.alfresco.service.cmr.search.SearchParameters;
 
@@ -102,6 +104,27 @@ public class RangeQueryIT extends BaseRangeQueryIT
         assertContainsOnly(aftsSearch("cm:modified:['2020-05-11' TO '2020-05-11']"), testDates[0], testDates[1]); // becomes 2020-05-11T00:00:00 TO 2020-05-11T23:59:59
         assertContainsOnly(aftsSearch("cm:modified:['2020-05-11T01' TO '2020-05-11T01']"), testDates[1]); // becomes 2020-05-11T01:00:00 TO 2020-05-11T01:59:59
         assertContainsOnly(aftsSearch("cm:modified:['2020-05-11T01:00' TO '2020-05-11T01:59']"), testDates[1]); // becomes 2020-05-11T01:00:00 TO 2020-05-11T01:00:59
+    }
+
+    @Test
+    public void whenSearchUsingMonthName()
+    {
+        assertContainsOnly(aftsSearch("cm:modified:2020-May-11T"), testDates[0], testDates[1]);
+        assertContainsOnly(aftsSearch("cm:modified:2020-may-12"), testDates[2], testDates[3]);
+        assertContainsOnly(aftsSearch("cm:modified:\"2020-MAY-11T01\""), testDates[1]);
+        assertContainsOnly(aftsSearch("cm:modified:['2020-May-11' TO '2020-May-12']"), testDates);
+    }
+
+    /** A date term matches the UTC day (as on Solr): the request time zone is not applied, unlike for ranges. */
+    @Test
+    public void whenSearchUsingMonthNameWithTimezone()
+    {
+        for (String day : new String[]{"2020-May-11T", "2020-05-11T"})
+        {
+            SearchParameters searchParams = createSearchParameters("afts", "cm:modified:" + day, null);
+            searchParams.setTimezone("America/New_York");
+            assertContainsOnly(searchFor(searchParams), testDates[0], testDates[1]);
+        }
     }
 
 }

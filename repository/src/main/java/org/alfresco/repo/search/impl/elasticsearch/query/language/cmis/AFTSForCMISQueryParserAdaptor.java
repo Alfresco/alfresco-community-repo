@@ -62,6 +62,7 @@ public class AFTSForCMISQueryParserAdaptor extends AFTSQueryParserAdaptor
         // Replace the % wildcard with * for CMIS queries
         term = lucene.containsWildcard(term) ? replaceWildcardCharacters(term) : term;
 
+        term = withNumericMonth(fieldName, term);
         term = fieldQueryTransformer.transformTerm(fieldName, term);
         if (fieldName == null)
         {

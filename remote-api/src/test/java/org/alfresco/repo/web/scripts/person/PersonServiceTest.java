@@ -738,6 +738,12 @@ public class PersonServiceTest extends BaseWebScriptTest
         // Check for duplicate names
         createPerson(userName, "myTitle", "myFirstName", "mylastName", "myOrganisation",
                 "myJobTitle", "myEmail", "myBio", "images/avatar.jpg", 0, 409);
+
+        // The system user name is reserved
+        result = createPerson("system", "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                Status.STATUS_BAD_REQUEST);
+        assertEquals("system: this user name is reserved", result.getString("message"));
     }
     
     public void testCreatePersonMissingUserName() throws Exception

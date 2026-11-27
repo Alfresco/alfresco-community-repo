@@ -1,0 +1,52 @@
+name: Alfresco Community Repo CI
+
+# This branch runs master's CI workflow (ACS-13096) with the settings below, so CI fixes on master reach it without a
+# backport. The settings were copied from master's .github/ci/defaults.yml when the branch was cut
+# (.github/ci/setup-release-branch-ci.sh). Change them here when this branch's code changes (suites, versions, profiles);
+# master's later default changes never reach this branch.
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - feature/**
+      - fix/**
+      - master
+      - release/**
+  push:
+    branches:
+      - feature/**
+      - fix/**
+  workflow_call:
+    secrets:
+      AGS_AWS_ACCESS_KEY_ID:
+        required: false
+      AGS_AWS_SECRET_ACCESS_KEY:
+        required: false
+      AUTH0_OIDC_ADMIN_CLIENT_ID:
+        required: false
+      AUTH0_OIDC_ADMIN_PASSWORD:
+        required: false
+      AUTH0_OIDC_CLIENT_SECRET:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
+      DOCKER_USERNAME:
+        required: false
+      GH_APP_ENGINEERING_RO_PRIVATE_KEY:
+        required: false
+      QUAY_PASSWORD:
+        required: false
+      QUAY_USERNAME:
+        required: false
+  workflow_dispatch:
+
+jobs:
+  ci:
+    # Cloudsmith authentication needs id-token: write; the pmd_scan job uploads SARIF and needs security-events: write
+    permissions:
+      contents: read
+      id-token: write
+      security-events: write

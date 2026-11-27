@@ -16,6 +16,35 @@ on:
       - feature/**
       - fix/**
   workflow_call:
+    # Release branches run this workflow through a caller instead of keeping their own copy. Their caller
+    # passes every input (written by .github/ci/setup-release-branch-ci.sh at the cut). An input a release caller does not
+    # pass means "none" (java-version is required); on master, inputs are empty and .github/ci/defaults.yml applies.
+    # List inputs accept YAML or JSON; [] means "none". Quote versions as strings.
+    inputs:
+      java-version:
+        description: "JDK used to build and test"
+        type: string
+        default: ""
+      db-tests:
+        description: "Repository DB tests: list of {name, profile: mariadb|mysql|postgres, version, pr-gated}; pr-gated entries run on PRs only with [db] in the title"
+        type: string
+        default: ""
+      activemq-profiles:
+        description: "docker-compose.yaml profiles for the messaging tests"
+        type: string
+        default: ""
+      app-context-tests:
+        description: "Repository app context suites, including the Elasticsearch ones: list of {testSuite, compose-profile, mvn-options, idp, mtls, disabledHostnameVerification}"
+        type: string
+        default: ""
+      tas-tests:
+        description: "Full TAS test matrix: list of {test-name, pom-dir, test-profile, compose-file, mvn-options}"
+        type: string
+        default: ""
+      ags-rest-api-suites:
+        description: "TestNG suite files for the AGS Community REST API tests"
+        type: string
+        default: ""
     secrets:
       AGS_AWS_ACCESS_KEY_ID:
         required: false
@@ -49,7 +78,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  JAVA_VERSION: '21'
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
   LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
   CI_WORKSPACE: ${{ github.workspace }}
@@ -62,6 +90,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       title: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
+      java-version: ${{ steps.ci-config.outputs.java-version }}
+      db-tests: ${{ steps.ci-config.outputs.db-tests }}
+      activemq-profiles: ${{ steps.ci-config.outputs.activemq-profiles }}
+      app-context-tests: ${{ steps.ci-config.outputs.app-context-tests }}
+      tas-tests: ${{ steps.ci-config.outputs.tas-tests }}
+      ags-rest-api-suites: ${{ steps.ci-config.outputs.ags-rest-api-suites }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -70,6 +104,31 @@ jobs:
         id: get-commit
         with:
           header-only: "true"
+      # Release branches run master's copy of the resolve script: check out this workflow's own source (the commit of
+      # the ci.yml being run), not the calling branch's code.
+      - name: "Check out the CI scripts"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .ci-logic
+          sparse-checkout: .github/ci
+          persist-credentials: false
+      - name: "Resolve CI configuration"
+        id: ci-config
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          COMMIT_TITLE: ${{ steps.get-commit.outputs.COMMIT_MESSAGE }}
+          # Same ref: this branch runs its own CI (defaults apply). Different: a release branch runs master's CI.
+          CI_LOGIC_REF: ${{ job.workflow_ref }}
+          CODE_REF: ${{ github.ref }}
+          INPUT_JAVA_VERSION: ${{ inputs.java-version }}
+          INPUT_DB_TESTS: ${{ inputs.db-tests }}
+          INPUT_ACTIVEMQ_PROFILES: ${{ inputs.activemq-profiles }}
+          INPUT_APP_CONTEXT_TESTS: ${{ inputs.app-context-tests }}
+          INPUT_TAS_TESTS: ${{ inputs.tas-tests }}
+          INPUT_AGS_REST_API_SUITES: ${{ inputs.ags-rest-api-suites }}
+        run: bash .ci-logic/.github/ci/resolve-ci-config.sh
 
   pre_commit:
     name: "Pre-commit checks"
@@ -89,7 +148,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
           # Separate cache so this job (which only resolves plugins) never saves a partial Maven repository
           # under the main key. The prefix must not start with "maven" or other jobs' restore-keys would match it.
           cache-key-prefix: pre-commit-maven
@@ -114,7 +173,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -157,6 +216,7 @@ jobs:
       id-token: write
       security-events: write
     needs:
+      - commit_parser
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true' && github.event_name == 'pull_request'
@@ -169,7 +229,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -181,6 +241,7 @@ jobs:
     name: ${{ matrix.testName }} - AllUnitTestsSuite - Build and test
     runs-on: ubuntu-latest
     needs:
+      - commit_parser
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
@@ -203,7 +264,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -227,6 +288,7 @@ jobs:
       format('Remote-api - {0}', matrix.testSuite) }}
     runs-on: ubuntu-latest
     needs:
+      - commit_parser
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
@@ -260,7 +322,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -289,19 +351,19 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_mariadb_tests:
-    name: Repository - MariaDB 10.11 tests
+  repository_db_tests:
+    name: Repository - ${{ matrix.name }} tests
     runs-on: ubuntu-latest
     needs:
+      - commit_parser
       - prepare
       - test_run_check
-      - commit_parser
-    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
+    # On PRs commit_parser drops the pr-gated entries unless the title contains [db]
+    if: needs.test_run_check.outputs.tests == 'true' && needs.commit_parser.outputs.db-tests != '[]'
     strategy:
       fail-fast: false
       matrix:
-        version: ['10.11']
-
+        include: ${{ fromJSON(needs.commit_parser.outputs.db-tests) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -311,7 +373,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -322,194 +384,24 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
         run: bash ./scripts/ci/init.sh
-      - name: Run MariaDB ${{ matrix.version }} database
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
+      - name: Run ${{ matrix.name }} database
+        # Only the variable of the selected profile is used
+        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile ${{ matrix.profile }} up -d
         env:
           MARIADB_VERSION: ${{ matrix.version }}
+          MYSQL_VERSION: ${{ matrix.version }}
+          POSTGRES_VERSION: ${{ matrix.version }}
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_mariadb_11_8_tests:
-    name: "Repository - MariaDB 11.8 tests"
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          remove-android: 'false'
-          remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
-      - name: "Init"
         env:
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: bash ./scripts/ci/init.sh
-      - name: "Run MariaDB 11.8 database"
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
-        env:
-          MARIADB_VERSION: 11.8
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver # pragma: allowlist secret
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_mysql_tests:
-    name: Repository - MySQL 8 tests
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          remove-android: 'false'
-          remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
-      - name: "Init"
-        env:
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: bash ./scripts/ci/init.sh
-      - name: "Run MySQL 8 database"
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
-        env:
-          MYSQL_VERSION: 8
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_postgresql_15_17_tests:
-    name: "Repository - PostgreSQL 15.17 tests"
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-      - commit_parser
-    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          remove-android: 'false'
-          remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
-      - name: "Init"
-        env:
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 15.17 database"
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: 15.17
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_postgresql_16_13_tests:
-    name: "Repository - PostgreSQL 16.13 tests"
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-      - commit_parser
-    if: needs.test_run_check.outputs.tests == 'true' && (github.event_name != 'pull_request' || contains(needs.commit_parser.outputs.title, '[db]'))
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          remove-android: 'false'
-          remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
-      - name: "Init"
-        env:
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 16.13 database"
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: 16.13
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_postgresql_17_9_tests:
-    name: "Repository - PostgreSQL 17.9 tests"
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-      - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          remove-android: 'false'
-          remove-tools-cache: 'false'
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-      - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
-        with:
-          oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
-      - name: "Init"
-        env:
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-        run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 17.9 database"
-        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: 17.9
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco # pragma: allowlist secret
+          DB_PROFILE: ${{ matrix.profile }}
+        # detect-secrets reports a block scalar at its key line, so the pragma has to be on the run: line
+        run: | # pragma: allowlist secret
+          case "${DB_PROFILE}" in
+            mariadb)  db_args=(-Ddb.driver=org.mariadb.jdbc.Driver "-Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes&characterEncoding=UTF-8") ;;
+            mysql)    db_args=(-Ddb.driver=com.mysql.jdbc.Driver -Ddb.url=jdbc:mysql://localhost:3307/alfresco) ;;
+            postgres) db_args=(-Ddb.driver=org.postgresql.Driver -Ddb.url=jdbc:postgresql://localhost:5433/alfresco) ;;
+          esac
+          mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -Dsurefire.failIfNoSpecifiedTests=false -Ddb.name=alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${db_args[@]}"
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -517,13 +409,14 @@ jobs:
     name: Repository - Messaging tests against ${{ matrix.activemq }}
     runs-on: ubuntu-latest
     needs:
+      - commit_parser
       - prepare
       - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
+    if: needs.test_run_check.outputs.tests == 'true' && needs.commit_parser.outputs.activemq-profiles != '[]'
     strategy:
       fail-fast: false
       matrix:
-        activemq: [ 'activemq6', 'activemq5' ]
+        activemq: ${{ fromJSON(needs.commit_parser.outputs.activemq-profiles) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -533,7 +426,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -555,52 +448,14 @@ jobs:
     name: Repository - ${{ matrix.testSuite }} ${{ matrix.idp }}
     runs-on: ubuntu-latest
     needs:
+      - commit_parser
       - prepare
       - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
+    if: needs.test_run_check.outputs.tests == 'true' && needs.commit_parser.outputs.app-context-tests != '[]'
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - testSuite: AppContext01TestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: AppContext02TestSuite
-            compose-profile: default
-          - testSuite: AppContext03TestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: AppContext04TestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: ElasticsearchCommunityTestsPart1TestSuite
-            compose-profile: with-elasticsearch
-            mvn-options: '-Dindex.subsystem.name=elasticsearch'
-          - testSuite: ElasticsearchCommunityTestsPart2TestSuite
-            compose-profile: with-elasticsearch
-            mvn-options: '-Dindex.subsystem.name=elasticsearch'
-          - testSuite: ElasticsearchCommunityTestsPart3TestSuite
-            compose-profile: with-elasticsearch
-            mvn-options: '-Dindex.subsystem.name=elasticsearch'
-          - testSuite: AppContext05TestSuite
-            compose-profile: with-sso
-            mvn-options: '-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm'
-            idp: Keycloak
-          - testSuite: AppContext05TestSuite
-            compose-profile: default
-            mvn-options: '-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.credentials.secret=${AUTH0_CLIENT_SECRET} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dadmin.password=${AUTH0_ADMIN_PASSWORD} -Dauth0.enabled=true -Dauth0.admin.password=${AUTH0_ADMIN_PASSWORD} -Didentity-service.principal-attribute=nickname'
-            idp: Auth0
-          - testSuite: AppContext06TestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: AppContextExtraTestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: MiscContextTestSuite
-            compose-profile: with-transform-core-aio
-          - testSuite: SearchTestSuite
-            compose-profile: default
-            mvn-options: '-Dindex.subsystem.name=solr6'
-          - testSuite: MTLSTestSuite
-            compose-profile: with-mtls-transform-core-aio
-            mtls: true
-            disabledHostnameVerification: false
-            mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
+        include: ${{ fromJSON(needs.commit_parser.outputs.app-context-tests) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -610,7 +465,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -652,7 +507,11 @@ jobs:
           AUTH0_CLIENT_ID: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_CLIENT_ID || '' }}
           AUTH0_CLIENT_SECRET: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_CLIENT_SECRET || '' }}
           AUTH0_ADMIN_PASSWORD: ${{ matrix.idp == 'Auth0' && secrets.AUTH0_OIDC_ADMIN_PASSWORD || '' }}
-        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} # pragma: allowlist secret
+        # The Auth0 credential options are added here and not in the matrix built by commit_parser: GitHub drops a job
+        # output that looks like it contains a password. detect-secrets needs the pragma on the run: line.
+        run: | # pragma: allowlist secret
+          mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -Dsurefire.failIfNoSpecifiedTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dmessaging.broker.username=admin -Dmessaging.broker.password=admin ${{ matrix.mvn-options }} \
+            ${{ matrix.idp == 'Auth0' && '-Didentity-service.credentials.secret=${AUTH0_CLIENT_SECRET} -Dadmin.password=${AUTH0_ADMIN_PASSWORD} -Dauth0.admin.password=${AUTH0_ADMIN_PASSWORD}' || '' }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -661,68 +520,19 @@ jobs:
     runs-on: ubuntu-latest
     # Not gated on Prepare: this job builds the whole reactor itself and is on the critical path
     needs:
+      - commit_parser
       - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
+    if: needs.test_run_check.outputs.tests == 'true' && needs.commit_parser.outputs.tas-tests != '[]'
     env:
-      # Community image only: just the AGS Community REST API job needs the AGS modules and image
-      BUILD_PROFILES: "-Pbuild-docker-images"
-      REQUIRES_TAS_TESTS: true
+      # Community image only: just the AGS Community REST API job needs the AGS modules and image.
+      # -Pall-tas-tests is passed here rather than through REQUIRES_TAS_TESTS because release branches' build.sh
+      # only understands BUILD_PROFILES.
+      BUILD_PROFILES: "-Pbuild-docker-images -Pall-tas-tests"
       REQUIRES_INSTALLED_ARTIFACTS: true
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - test-name: "REST API TAS tests part1"
-            pom-dir: tas-restapi
-            test-profile: run-restapi-part1
-          - test-name: "REST API TAS tests part2"
-            pom-dir: tas-restapi
-            test-profile: run-restapi-part2
-          - test-name: "REST API TAS tests part3"
-            pom-dir: tas-restapi
-            test-profile: run-restapi-part3
-          - test-name: "REST API TAS tests part4"
-            pom-dir: tas-restapi
-            test-profile: run-restapi-part4
-          - test-name: "CMIS TAS tests - BROWSER binding - part1"
-            pom-dir: tas-cmis
-            test-profile: run-cmis-browser,cmis-part1
-          - test-name: "CMIS TAS tests - BROWSER binding - part2"
-            pom-dir: tas-cmis
-            test-profile: run-cmis-browser,cmis-part2
-          - test-name: "CMIS TAS tests - ATOM binding - part1"
-            pom-dir: tas-cmis
-            test-profile: run-cmis-atom,cmis-part1
-          - test-name: "CMIS TAS tests - ATOM binding - part2"
-            pom-dir: tas-cmis
-            test-profile: run-cmis-atom,cmis-part2
-          - test-name: "CMIS TAS tests - WEBSERVICES binding - part1"
-            pom-dir: tas-cmis
-            test-profile: run-cmis-webservices,cmis-part1
-          - test-name: "CMIS TAS tests - WEBSERVICES binding - part2"
-            pom-dir: tas-cmis
-            test-profile: run-cmis-webservices,cmis-part2
-          - test-name: "Email TAS tests"
-            pom-dir: tas-email
-          - test-name: "WebDAV TAS tests"
-            pom-dir: tas-webdav
-          - test-name: "Integration TAS tests"
-            pom-dir: tas-integration
-          - test-name: "Elasticsearch E2E Tests - part1"
-            pom-dir: tas-restapi
-            test-profile: elasticsearch-e2e-tests-part1
-            compose-file: docker-compose-minimal+batch-indexing.yml
-            mvn-options: '-DsolrWaitTimeInSeconds=3'
-          - test-name: "Elasticsearch E2E Tests - part2"
-            pom-dir: tas-restapi
-            test-profile: elasticsearch-e2e-tests-part2
-            compose-file: docker-compose-minimal+batch-indexing.yml
-            mvn-options: '-DsolrWaitTimeInSeconds=3'
-          - test-name: "Elasticsearch E2E Tests - part3"
-            pom-dir: tas-restapi
-            test-profile: elasticsearch-e2e-tests-part3
-            compose-file: docker-compose-minimal+batch-indexing.yml
-            mvn-options: '-DsolrWaitTimeInSeconds=3'
+        include: ${{ fromJSON(needs.commit_parser.outputs.tas-tests) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -732,7 +542,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -770,6 +580,7 @@ jobs:
     name: Share Services - ShareServicesTestSuite
     runs-on: ubuntu-latest
     needs:
+      - commit_parser
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
@@ -782,7 +593,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -804,6 +615,7 @@ jobs:
     name: AGS Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs:
+      - commit_parser
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
@@ -822,7 +634,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -846,6 +658,7 @@ jobs:
     name: AGS Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs:
+      - commit_parser
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
@@ -864,7 +677,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -885,18 +698,19 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_community_rest_api_tests:
-    name: "AGS Community Rest API Tests - part${{ matrix.part }}"
+    name: "AGS Community Rest API Tests - ${{ matrix.name }}"
     runs-on: ubuntu-latest
     # Not gated on Prepare: this job builds the whole reactor itself
     needs:
+      - commit_parser
       - test_run_check
-    if: needs.test_run_check.outputs.tests == 'true'
+    if: needs.test_run_check.outputs.tests == 'true' && needs.commit_parser.outputs.ags-rest-api-suites != '[]'
     env:
       REQUIRES_LOCAL_IMAGES: true
     strategy:
       fail-fast: false
       matrix:
-        part: [1, 2]
+        include: ${{ fromJSON(needs.commit_parser.outputs.ags-rest-api-suites) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
@@ -906,7 +720,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}
@@ -928,7 +742,7 @@ jobs:
           mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
       - name: "Test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -DsuiteXmlFile=testng-part${{ matrix.part }}.xml -Pags -Pall-tas-tests
+        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -DsuiteXmlFile=${{ matrix.suite-file }} -Pags -Pall-tas-tests
       - name: "Configure AWS credentials"
         if: ${{ always() }}
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
@@ -940,9 +754,9 @@ jobs:
         if: ${{ always() }}
         run: |
           bash amps/ags/ci/scripts/getLogs.sh
-          aws s3 cp --acl private alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/part${{ matrix.part }}/alfresco.log
-          aws s3 cp --acl private solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/part${{ matrix.part }}/solr.log
-          aws s3 cp --acl private ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/part${{ matrix.part }}/rm-automation-community-rest-api.log
+          aws s3 cp --acl private alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/${{ matrix.name }}/alfresco.log
+          aws s3 cp --acl private solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/${{ matrix.name }}/solr.log
+          aws s3 cp --acl private ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/${{ matrix.name }}/rm-automation-community-rest-api.log
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -950,6 +764,7 @@ jobs:
     name: "Test Tomcat deployment of api explorer"
     runs-on: ubuntu-latest
     needs:
+      - commit_parser
       - prepare
       - test_run_check
     if: needs.test_run_check.outputs.tests == 'true'
@@ -962,7 +777,7 @@ jobs:
           remove-tools-cache: 'false'
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ needs.commit_parser.outputs.java-version }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/cloudsmith-auth@f3b931eb59ada4485cdf7440ae3c65ce34f0a749 # v19.12.0
         with:
           oidc-namespace: ${{ vars.CLOUDSMITH_NAMESPACE }}

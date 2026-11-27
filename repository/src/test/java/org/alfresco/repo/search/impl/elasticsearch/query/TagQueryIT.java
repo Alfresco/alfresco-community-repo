@@ -81,6 +81,24 @@ public class TagQueryIT extends LuceneOrAFTSQueryIT
         assertContainsOnly(searchFor(language, lowerCaseTagDoubleQuotedQuery(TAG_WITH_WHITESPACE)), withTagWithWhitespace);
     }
 
+    /** a quoted multi-word tag, as sent by the ADW Tags filter, must not match nodes that only contain one of its words in their name (ACS-10967). */
+    @Test
+    public void shouldNotReturnNodesNamedAfterAWordOfADoubleQuotedTagContainingWhitespace()
+    {
+        indexDocument(b(SECOND_WORD));
+
+        assertContainsOnly(searchFor(language, tagDoubleQuotedQuery(TAG_WITH_WHITESPACE)), withTagWithWhitespace);
+    }
+
+    /** a quoted single word must match the keyword exactly, so it does not return nodes whose multi-word tag merely contains that word. */
+    @Test
+    public void shouldNotReturnNodesWithAMultiWordTagWhenSearchingForOneOfItsWordsDoubleQuoted()
+    {
+        final NodeRef withSecondWordTag = indexDocument(b("withSecondWordTag").withTag(SECOND_WORD));
+
+        assertContainsOnly(searchFor(language, tagDoubleQuotedQuery(SECOND_WORD)), withSecondWordTag);
+    }
+
     /** a single word of a multi-word tag must match it through the analysed TAG.text field. */
     @Test
     public void shouldReturnTaggedNodeWhenSearchingForASingleWordOfATagContainingWhitespace()

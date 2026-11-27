@@ -101,7 +101,7 @@ public class AFTSQueryParserAdaptor implements QueryParserAdaptor<org.opensearch
         this.namespaceResolver = namespacePrefixResolver;
         this.dictionaryService = dictionaryService;
         this.esTypeResolver = esTypeResolver;
-        this.lucene = new LuceneQueryParser(namespacePrefixResolver, dictionaryService, siteService, searchParameters, exactTermSearchConfig);
+        this.lucene = new AFTSLuceneQueryParser(namespacePrefixResolver, dictionaryService, siteService, searchParameters, exactTermSearchConfig);
         this.storeRefStripper = new StoreRefStripper(namespacePrefixResolver, dictionaryService,
                 searchParameters.getNamespace());
     }

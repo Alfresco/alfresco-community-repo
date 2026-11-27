@@ -25,7 +25,10 @@
  */
 package org.alfresco.repo.search.impl.elasticsearch.query.language.afts;
 
+import org.junit.Test;
+
 import org.alfresco.repo.search.impl.elasticsearch.query.BaseRangeQueryIT;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 
 public class RangeQueryIT extends BaseRangeQueryIT
@@ -97,11 +100,60 @@ public class RangeQueryIT extends BaseRangeQueryIT
     @Override
     public void whenSearchUsingPartialDate()
     {
-        assertContainsOnly(aftsSearch("cm:modified:['1950' TO '2021']"), dateBefore1970, testDates[0], testDates[1], testDates[2], testDates[3]); // becomes 1950-01-01T00:00:00 TO 2021-01-01T23:59:59
-        assertContainsOnly(aftsSearch("cm:modified:['2020-05' TO '2020-06']"), testDates); // becomes 2020-05-01T00:00:00 TO 2020-06-01T23:59:59
+        assertContainsOnly(aftsSearch("cm:modified:['1950' TO '2021']"), dateBefore1970, testDates[0], testDates[1], testDates[2], testDates[3]); // becomes 1950-01-01T00:00:00 TO 2021-12-31T23:59:59.999
+        assertContainsOnly(aftsSearch("cm:modified:['2020-05' TO '2020-06']"), testDates); // becomes 2020-05-01T00:00:00 TO 2020-06-30T23:59:59.999
         assertContainsOnly(aftsSearch("cm:modified:['2020-05-11' TO '2020-05-11']"), testDates[0], testDates[1]); // becomes 2020-05-11T00:00:00 TO 2020-05-11T23:59:59
         assertContainsOnly(aftsSearch("cm:modified:['2020-05-11T01' TO '2020-05-11T01']"), testDates[1]); // becomes 2020-05-11T01:00:00 TO 2020-05-11T01:59:59
         assertContainsOnly(aftsSearch("cm:modified:['2020-05-11T01:00' TO '2020-05-11T01:59']"), testDates[1]); // becomes 2020-05-11T01:00:00 TO 2020-05-11T01:00:59
+    }
+
+    @Test
+    public void whenSearchUsingMonthName()
+    {
+        assertContainsOnly(aftsSearch("cm:modified:2020-May-11T"), testDates[0], testDates[1]);
+        assertContainsOnly(aftsSearch("cm:modified:2020-may-12"), testDates[2], testDates[3]);
+        assertContainsOnly(aftsSearch("cm:modified:\"2020-MAY-11T01\""), testDates[1]);
+        assertContainsOnly(aftsSearch("cm:modified:['2020-May-11' TO '2020-May-12']"), testDates);
+    }
+
+    /** A year or a month covers all of it, from its first to its last millisecond (as on Solr), for each bound type. */
+    @Test
+    public void whenSearchUsingYearOrMonth()
+    {
+        NodeRef lastOf2020 = indexDefaultDocumentWithModifiedDate("2020-12-31T23:59:59.999Z");
+        NodeRef firstOf2021 = indexDefaultDocumentWithModifiedDate("2021-01-01T00:00:00Z");
+        NodeRef lastOfApril = indexDefaultDocumentWithModifiedDate("2021-04-30T23:59:59.999Z");
+        NodeRef firstOfMay = indexDefaultDocumentWithModifiedDate("2021-05-01T00:00:00Z");
+        NodeRef lastOfMay = indexDefaultDocumentWithModifiedDate("2021-05-31T23:59:59.999Z");
+        NodeRef firstOfJune = indexDefaultDocumentWithModifiedDate("2021-06-01T00:00:00Z");
+        NodeRef lastOf2021 = indexDefaultDocumentWithModifiedDate("2021-12-31T23:59:59.999Z");
+        NodeRef firstOf2022 = indexDefaultDocumentWithModifiedDate("2022-01-01T00:00:00Z");
+
+        assertContainsOnly(aftsSearch("cm:modified:2021-05"), firstOfMay, lastOfMay);
+        assertContainsOnly(aftsSearch("cm:modified:\"2021-May\""), firstOfMay, lastOfMay);
+        assertContainsOnly(aftsSearch("cm:modified:[2021-05 TO 2021-05]"), firstOfMay, lastOfMay);
+        assertContainsOnly(aftsSearch("cm:modified:<2021-04 TO 2021-06>"), firstOfMay, lastOfMay);
+        assertContainsOnly(aftsSearch("cm:modified:<2021-Apr TO 2021-May]"), firstOfMay, lastOfMay);
+        assertContainsOnly(aftsSearch("cm:modified:[2021-05 TO 2021-06>"), firstOfMay, lastOfMay);
+        assertContainsOnly(aftsSearch("cm:modified:[2021-04 TO 2021-05>"), lastOfApril);
+        assertContainsOnly(aftsSearch("cm:modified:<2021-05 TO 2021-06]"), firstOfJune);
+        assertContainsOnly(aftsSearch("cm:modified:2021"), firstOf2021, lastOfApril, firstOfMay, lastOfMay, firstOfJune, lastOf2021);
+        assertContainsOnly(aftsSearch("cm:modified:[2021 TO 2021]"), firstOf2021, lastOfApril, firstOfMay, lastOfMay, firstOfJune, lastOf2021);
+        assertContainsOnly(aftsSearch("cm:modified:<2020 TO 2022>"), firstOf2021, lastOfApril, firstOfMay, lastOfMay, firstOfJune, lastOf2021);
+        assertContainsOnly(aftsSearch("cm:modified:<2021 TO 2022]"), firstOf2022);
+        assertContainsOnly(aftsSearch("cm:modified:[2020-12 TO 2021-01]"), lastOf2020, firstOf2021);
+    }
+
+    /** A date term matches the UTC day (as on Solr): the request time zone is not applied, unlike for ranges. */
+    @Test
+    public void whenSearchUsingMonthNameWithTimezone()
+    {
+        for (String day : new String[]{"2020-May-11T", "2020-05-11T"})
+        {
+            SearchParameters searchParams = createSearchParameters("afts", "cm:modified:" + day, null);
+            searchParams.setTimezone("America/New_York");
+            assertContainsOnly(searchFor(searchParams), testDates[0], testDates[1]);
+        }
     }
 
 }

@@ -56,6 +56,7 @@ import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -489,6 +490,7 @@ public class FixedAclUpdaterTest
 
             // Set permissions on target folder
             txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                exceedFixedAclMaxTransactionTime();
                 permissionService.setInheritParentPermissions(targetRef, false, false);
                 permissionService.setPermission(targetRef, TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR, true);
                 aclComparatorTarget.setOriginalPermission(TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR);
@@ -578,6 +580,7 @@ public class FixedAclUpdaterTest
 
             // Set permissions on target folder
             txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                exceedFixedAclMaxTransactionTime();
                 permissionService.setInheritParentPermissions(targetRef, false, false);
                 permissionService.setPermission(targetRef, TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR, true);
                 aclComparatorTarget.setOriginalPermission(TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR);
@@ -684,6 +687,7 @@ public class FixedAclUpdaterTest
 
             // Set permissions on a child to get a new shared ACL with pending acl nodes
             txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                exceedFixedAclMaxTransactionTime();
                 permissionService.setInheritParentPermissions(targetRef, true, false);
                 permissionService.setPermission(targetRef, TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR, true);
                 return null;
@@ -902,6 +906,7 @@ public class FixedAclUpdaterTest
 
             // Set permissions on target folder
             txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                exceedFixedAclMaxTransactionTime();
                 permissionService.setInheritParentPermissions(targetRef, false, false);
                 permissionService.setPermission(targetRef, TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR, true);
                 aclComparatorTarget.setOriginalPermission(TEST_GROUP_NAME_FULL, PermissionService.COORDINATOR);
@@ -1525,6 +1530,18 @@ public class FixedAclUpdaterTest
             }
         };
 
+    }
+
+    /**
+     * Lets the current transaction run past MAX_TRANSACTION_TIME_DEFAULT, so the next ACL propagation always marks the first children with ASPECT_PENDING_FIX_ACL instead of depending on how fast the database processes a small subtree.
+     */
+    private static void exceedFixedAclMaxTransactionTime() throws InterruptedException
+    {
+        long transactionStartTime = AlfrescoTransactionSupport.getTransactionStartTime();
+        while (System.currentTimeMillis() - transactionStartTime <= MAX_TRANSACTION_TIME_DEFAULT)
+        {
+            Thread.sleep(MAX_TRANSACTION_TIME_DEFAULT);
+        }
     }
 
     private static void setFixedAclMaxTransactionTime(PermissionsDaoComponent permissionsDaoComponent, NodeRef folderNodeRef,

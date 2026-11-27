@@ -10,6 +10,15 @@ function main()
       return;
    }
    
+   // Matches AuthenticationUtil.SYSTEM_USER_NAME, which is a user but can never be a person
+   if (String(json.get("userName")).toLowerCase() == "system")
+   {
+      var message = json.get("userName") + ": this user name is reserved";
+      logger.warn("Could not create user " + message);
+      status.setCode(status.STATUS_BAD_REQUEST, message);
+      return;
+   }
+   
    if ((json.isNull("firstName")) || (json.get("firstName").length() == 0))
    {
       status.setCode(status.STATUS_BAD_REQUEST, "First name missing when creating person");

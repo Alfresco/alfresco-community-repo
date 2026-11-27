@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.security.person;
 
+import static org.junit.Assert.assertThrows;
+
 import static org.alfresco.repo.security.person.PersonServiceImpl.CANNED_QUERY_PEOPLE_LIST;
 
 import java.io.Serializable;
@@ -40,12 +42,14 @@ import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -134,6 +138,56 @@ public class GetPeopleCannedQueryTest extends BaseSpringTest
                         pagingRequest);
 
         return transactionService.getRetryingTransactionHelper().doInTransaction(cq::execute, true);
+    }
+
+    /**
+     * A person with the system user name is not listed or counted.
+     */
+    @Test
+    public void testSystemUserPersonIsExcluded()
+    {
+        NodeRef aa = personService.createPerson(createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco1"));
+        NodeRef bb = personService.createPerson(createDefaultProperties("bb", "Bb", "Bb", "bb@bb", "alfresco2"));
+        // The system user name cannot be used to create a person, so rename an existing one
+        NodeRef systemPerson = personService.createPerson(createDefaultProperties("legacy", "System", "System", "system@system", "alfresco3"));
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            AlfrescoTransactionSupport.bindResource(PersonServiceImpl.KEY_ALLOW_UID_UPDATE, Boolean.TRUE);
+            nodeService.setProperty(systemPerson, ContentModel.PROP_USERNAME, "system");
+            return null;
+        });
+        try
+        {
+            PagingRequest pagingRequest = new PagingRequest(0, 100, null);
+            pagingRequest.setRequestTotalCountMax(Integer.MAX_VALUE);
+
+            CannedQueryResults<NodeRef> people = executeGetPeopleQuery(pagingRequest, null, null, true, null);
+            List<NodeRef> page = people.getPage();
+
+            // admin, guest, aa, bb
+            assertEquals(4, page.size());
+            assertTrue(page.contains(aa));
+            assertTrue(page.contains(bb));
+            assertFalse("System user person must not be listed", page.contains(systemPerson));
+            assertEquals(new Pair<>(4, 4), people.getTotalResultCount());
+        }
+        finally
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                personService.deletePerson(systemPerson);
+                return null;
+            });
+        }
+    }
+
+    /** The system user name is rejected in any case. */
+    @Test
+    public void testCreatePersonWithSystemUserNameIsRejected()
+    {
+        for (String userName : new String[]{"System", "system", "SYSTEM"})
+        {
+            Map<QName, Serializable> properties = createDefaultProperties(userName, "Some", "User", "some.user@example.com", "alfresco");
+            assertThrows(userName, AlfrescoRuntimeException.class, () -> personService.createPerson(properties));
+        }
     }
 
     @Test

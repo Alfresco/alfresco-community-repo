@@ -461,7 +461,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     
     private long buildTransactions5()
     {
-        return txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<>()
         {
             public Long execute() throws Throwable
             {
@@ -537,7 +537,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     
     private long buildTransactions6()
     {
-        return txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<>()
         {
             public Long execute() throws Throwable
             {
@@ -630,7 +630,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     
     private long buildTransactions7()
     {
-        return txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<>()
         {
             public Long execute() throws Throwable
             {
